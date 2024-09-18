@@ -18,33 +18,50 @@ package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.BackupScheduleName;
 import java.util.UUID;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class CreateBackupScheduleSampleIT extends SampleTestBaseV2 {
-  // Default instance and given db should exist for tests to pass.
+public class CreateBackupScheduleWithEncryptionSampleIT
+    extends SampleTestBaseV2 {
+  // Default instance, given db and kms key should exist for tests to pass.
   private static String databaseId =
       System.getProperty("spanner.sample.database", "mysample");
+  private static String key;
+
+  @BeforeClass
+  public static void setUp() {
+    String keyLocation = Preconditions.checkNotNull(
+        System.getProperty("spanner.test.key.location"));
+    String keyRing =
+        Preconditions.checkNotNull(System.getProperty("spanner.test.key.ring"));
+    String keyName =
+        Preconditions.checkNotNull(System.getProperty("spanner.test.key.name"));
+    key = "projects/" + projectId + "/locations/" + keyLocation + "/keyRings/" +
+          keyRing + "/cryptoKeys/" + keyName;
+  }
 
   @Test
-  public void testCreateBackupScheduleSample() throws Exception {
+  public void testCreateBackupScheduleWithEncryptionSample() throws Exception {
     String backupScheduleId = String.format("schedule-%s", UUID.randomUUID());
     BackupScheduleName backupScheduleName = BackupScheduleName.of(
         projectId, instanceId, databaseId, backupScheduleId);
     String out = SampleRunner.runSample(() -> {
       try {
-        CreateBackupScheduleSample.createBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId);
+        CreateBackupScheduleWithEncryptionSample
+            .createBackupScheduleWithEncryption(
+                projectId, instanceId, databaseId, backupScheduleId, key);
       } finally {
         DeleteBackupScheduleSample.deleteBackupSchedule(
             projectId, instanceId, databaseId, backupScheduleId);
       }
     });
-    assertThat(out).contains(
-        String.format("Created backup schedule: %s", backupScheduleName));
+    assertThat(out).contains(String.format(
+        "Created backup schedule with encryption: %s", backupScheduleName));
   }
 }

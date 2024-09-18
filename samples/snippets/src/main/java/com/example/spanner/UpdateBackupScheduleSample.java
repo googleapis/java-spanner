@@ -16,58 +16,61 @@
 
 package com.example.spanner;
 
-// [START spanner_create_backup_schedule_sample]
+// [START spanner_update_backup_schedule_sample]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.protobuf.Duration;
+import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.BackupSchedule;
+import com.google.spanner.admin.database.v1.BackupScheduleName;
 import com.google.spanner.admin.database.v1.BackupScheduleSpec;
-import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CrontabSpec;
-import com.google.spanner.admin.database.v1.DatabaseName;
-import com.google.spanner.admin.database.v1.FullBackupSpec;
+import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import java.io.IOException;
 
-class CreateBackupScheduleSample {
+class UpdateBackupScheduleSample {
 
-  static void createBackupSchedule() throws IOException {
+  static void updateBackupSchedule() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
     String backupScheduleId = "my-backup-schedule";
-    createBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
+    updateBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
   }
 
-  static void createBackupSchedule(String projectId, String instanceId,
+  static void updateBackupSchedule(String projectId, String instanceId,
                                    String databaseId, String backupScheduleId)
       throws IOException {
+    BackupScheduleName backupScheduleName = BackupScheduleName.of(
+        projectId, instanceId, databaseId, backupScheduleId);
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
-            .setFullBackupSpec(FullBackupSpec.newBuilder().build())
+            .setName(backupScheduleName.toString())
             .setRetentionDuration(
-                Duration.newBuilder().setSeconds(3600 * 24 * 7).build())
+                Duration.newBuilder().setSeconds(3600 * 24 * 14))
             .setSpec(
                 BackupScheduleSpec.newBuilder()
                     .setCronSpec(
-                        CrontabSpec.newBuilder().setText("0 0 * * *").build())
+                        CrontabSpec.newBuilder().setText("0 12 * * *").build())
                     .build())
             .build();
 
     try (DatabaseAdminClient databaseAdminClient =
              DatabaseAdminClient.create()) {
-      DatabaseName databaseName =
-          DatabaseName.of(projectId, instanceId, databaseId);
-      final BackupSchedule createdBackupSchedule =
-          databaseAdminClient.createBackupSchedule(
-              CreateBackupScheduleRequest.newBuilder()
-                  .setParent(databaseName.toString())
-                  .setBackupScheduleId(backupScheduleId)
+      final FieldMask fieldMask = FieldMask.newBuilder()
+                                      .addPaths("retention_duration")
+                                      .addPaths("spec.cron_spec.text")
+                                      .build();
+      final BackupSchedule updatedBackupSchedule =
+          databaseAdminClient.updateBackupSchedule(
+              UpdateBackupScheduleRequest.newBuilder()
                   .setBackupSchedule(backupSchedule)
+                  .setUpdateMask(fieldMask)
                   .build());
-      System.out.println(String.format("Created backup schedule: %s",
-                                       createdBackupSchedule.getName()));
+      System.out.println(String.format("Updated backup schedule: %s",
+                                       updatedBackupSchedule.getName()));
     }
   }
 }
-// [END spanner_create_backup_schedule_sample]
+// [END spanner_update_backup_schedule_sample]

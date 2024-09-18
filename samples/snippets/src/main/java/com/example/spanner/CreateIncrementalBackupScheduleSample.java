@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_create_backup_schedule_sample]
+// [START spanner_create_incremental_backup_schedule_sample]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.protobuf.Duration;
@@ -25,32 +25,35 @@ import com.google.spanner.admin.database.v1.BackupScheduleSpec;
 import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CrontabSpec;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import com.google.spanner.admin.database.v1.FullBackupSpec;
+import com.google.spanner.admin.database.v1.IncrementalBackupSpec;
 import java.io.IOException;
 
-class CreateBackupScheduleSample {
+class CreateIncrementalBackupScheduleSample {
 
-  static void createBackupSchedule() throws IOException {
+  static void createIncrementalBackupSchedule() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
     String backupScheduleId = "my-backup-schedule";
-    createBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
+    createIncrementalBackupSchedule(projectId, instanceId, databaseId,
+                                    backupScheduleId);
   }
 
-  static void createBackupSchedule(String projectId, String instanceId,
-                                   String databaseId, String backupScheduleId)
+  static void
+  createIncrementalBackupSchedule(String projectId, String instanceId,
+                                  String databaseId, String backupScheduleId)
       throws IOException {
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
-            .setFullBackupSpec(FullBackupSpec.newBuilder().build())
+            .setIncrementalBackupSpec(
+                IncrementalBackupSpec.newBuilder().build())
             .setRetentionDuration(
                 Duration.newBuilder().setSeconds(3600 * 24 * 7).build())
             .setSpec(
                 BackupScheduleSpec.newBuilder()
                     .setCronSpec(
-                        CrontabSpec.newBuilder().setText("0 0 * * *").build())
+                        CrontabSpec.newBuilder().setText("0 */6 * * *").build())
                     .build())
             .build();
 
@@ -65,9 +68,10 @@ class CreateBackupScheduleSample {
                   .setBackupScheduleId(backupScheduleId)
                   .setBackupSchedule(backupSchedule)
                   .build());
-      System.out.println(String.format("Created backup schedule: %s",
-                                       createdBackupSchedule.getName()));
+      System.out.println(
+          String.format("Created incremental backup schedule: %s",
+                        createdBackupSchedule.getName()));
     }
   }
 }
-// [END spanner_create_backup_schedule_sample]
+// [END spanner_create_incremental_backup_schedule_sample]
