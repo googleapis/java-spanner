@@ -23,7 +23,6 @@ import com.google.protobuf.Duration;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.BackupScheduleSpec;
 import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
-import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType;
 import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CrontabSpec;
 import com.google.spanner.admin.database.v1.DatabaseName;
@@ -39,39 +38,37 @@ class CreateBackupScheduleWithEncryptionSample {
     String databaseId = "my-database";
     String backupScheduleId = "my-backup-schedule";
     String kmsKeyName =
-        "projects/" + projectId +
-        "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
-    createBackupScheduleWithEncryption(projectId, instanceId, databaseId,
-                                       backupScheduleId, kmsKeyName);
+        "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
+    createBackupScheduleWithEncryption(
+        projectId, instanceId, databaseId, backupScheduleId, kmsKeyName);
   }
 
-  static void
-  createBackupScheduleWithEncryption(String projectId, String instanceId,
-                                     String databaseId, String backupScheduleId,
-                                     String kmsKeyName) throws IOException {
+  static void createBackupScheduleWithEncryption(
+      String projectId,
+      String instanceId,
+      String databaseId,
+      String backupScheduleId,
+      String kmsKeyName)
+      throws IOException {
     final CreateBackupEncryptionConfig encryptionConfig =
         CreateBackupEncryptionConfig.newBuilder()
-            .setEncryptionType(CreateBackupEncryptionConfig.EncryptionType
-                                   .CUSTOMER_MANAGED_ENCRYPTION)
+            .setEncryptionType(
+                CreateBackupEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
             .setKmsKeyName(kmsKeyName)
             .build();
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
             .setFullBackupSpec(FullBackupSpec.newBuilder().build())
-            .setRetentionDuration(
-                Duration.newBuilder().setSeconds(3600 * 24 * 7))
+            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24 * 7))
             .setSpec(
                 BackupScheduleSpec.newBuilder()
-                    .setCronSpec(
-                        CrontabSpec.newBuilder().setText("0 0 * * *").build())
+                    .setCronSpec(CrontabSpec.newBuilder().setText("0 0 * * *").build())
                     .build())
             .setEncryptionConfig(encryptionConfig)
             .build();
 
-    try (DatabaseAdminClient databaseAdminClient =
-             DatabaseAdminClient.create()) {
-      DatabaseName databaseName =
-          DatabaseName.of(projectId, instanceId, databaseId);
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+      DatabaseName databaseName = DatabaseName.of(projectId, instanceId, databaseId);
       final BackupSchedule createdBackupSchedule =
           databaseAdminClient.createBackupSchedule(
               CreateBackupScheduleRequest.newBuilder()
@@ -80,8 +77,8 @@ class CreateBackupScheduleWithEncryptionSample {
                   .setBackupSchedule(backupSchedule)
                   .build());
       System.out.println(
-          String.format("Created backup schedule with encryption: %s",
-                        createdBackupSchedule.getName()));
+          String.format(
+              "Created backup schedule with encryption: %s", createdBackupSchedule.getName()));
     }
   }
 }

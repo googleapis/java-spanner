@@ -35,20 +35,17 @@ class GetBackupScheduleSample {
     getBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
   }
 
-  static void getBackupSchedule(String projectId, String instanceId,
-                                String databaseId, String backupScheduleId)
+  static void getBackupSchedule(
+      String projectId, String instanceId, String databaseId, String backupScheduleId)
       throws IOException {
-    try (DatabaseAdminClient databaseAdminClient =
-             DatabaseAdminClient.create()) {
-      BackupScheduleName backupScheduleName = BackupScheduleName.of(
-          projectId, instanceId, databaseId, backupScheduleId);
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+      BackupScheduleName backupScheduleName =
+          BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId);
       final BackupSchedule backupSchedule =
           databaseAdminClient.getBackupSchedule(
-              GetBackupScheduleRequest.newBuilder()
-                  .setName(backupScheduleName.toString())
-                  .build());
-      System.out.println(String.format("Retrieved backup schedule: %s",
-                                       backupScheduleName.toString()));
+              GetBackupScheduleRequest.newBuilder().setName(backupScheduleName.toString()).build());
+      System.out.println(
+          String.format("Retrieved backup schedule: %s", backupScheduleName.toString()));
     }
   }
 }

@@ -39,37 +39,35 @@ class UpdateBackupScheduleSample {
     updateBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
   }
 
-  static void updateBackupSchedule(String projectId, String instanceId,
-                                   String databaseId, String backupScheduleId)
+  static void updateBackupSchedule(
+      String projectId, String instanceId, String databaseId, String backupScheduleId)
       throws IOException {
-    BackupScheduleName backupScheduleName = BackupScheduleName.of(
-        projectId, instanceId, databaseId, backupScheduleId);
+    BackupScheduleName backupScheduleName =
+        BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId);
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
             .setName(backupScheduleName.toString())
-            .setRetentionDuration(
-                Duration.newBuilder().setSeconds(3600 * 24 * 14))
+            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24 * 14))
             .setSpec(
                 BackupScheduleSpec.newBuilder()
-                    .setCronSpec(
-                        CrontabSpec.newBuilder().setText("0 12 * * *").build())
+                    .setCronSpec(CrontabSpec.newBuilder().setText("0 12 * * *").build())
                     .build())
             .build();
 
-    try (DatabaseAdminClient databaseAdminClient =
-             DatabaseAdminClient.create()) {
-      final FieldMask fieldMask = FieldMask.newBuilder()
-                                      .addPaths("retention_duration")
-                                      .addPaths("spec.cron_spec.text")
-                                      .build();
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+      final FieldMask fieldMask =
+          FieldMask.newBuilder()
+              .addPaths("retention_duration")
+              .addPaths("spec.cron_spec.text")
+              .build();
       final BackupSchedule updatedBackupSchedule =
           databaseAdminClient.updateBackupSchedule(
               UpdateBackupScheduleRequest.newBuilder()
                   .setBackupSchedule(backupSchedule)
                   .setUpdateMask(fieldMask)
                   .build());
-      System.out.println(String.format("Updated backup schedule: %s",
-                                       updatedBackupSchedule.getName()));
+      System.out.println(
+          String.format("Updated backup schedule: %s", updatedBackupSchedule.getName()));
     }
   }
 }

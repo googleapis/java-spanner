@@ -34,19 +34,16 @@ class DeleteBackupScheduleSample {
     deleteBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
   }
 
-  static void deleteBackupSchedule(String projectId, String instanceId,
-                                   String databaseId, String backupScheduleId)
+  static void deleteBackupSchedule(
+      String projectId, String instanceId, String databaseId, String backupScheduleId)
       throws IOException {
-    try (DatabaseAdminClient databaseAdminClient =
-             DatabaseAdminClient.create()) {
-      BackupScheduleName backupScheduleName = BackupScheduleName.of(
-          projectId, instanceId, databaseId, backupScheduleId);
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+      BackupScheduleName backupScheduleName =
+          BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId);
       databaseAdminClient.deleteBackupSchedule(
-          DeleteBackupScheduleRequest.newBuilder()
-              .setName(backupScheduleName.toString())
-              .build());
-      System.out.println(String.format("Deleted backup schedule: %s",
-                                       backupScheduleName.toString()));
+          DeleteBackupScheduleRequest.newBuilder().setName(backupScheduleName.toString()).build());
+      System.out.println(
+          String.format("Deleted backup schedule: %s", backupScheduleName.toString()));
     }
   }
 }

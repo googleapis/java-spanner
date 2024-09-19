@@ -36,31 +36,24 @@ class CreateIncrementalBackupScheduleSample {
     String instanceId = "my-instance";
     String databaseId = "my-database";
     String backupScheduleId = "my-backup-schedule";
-    createIncrementalBackupSchedule(projectId, instanceId, databaseId,
-                                    backupScheduleId);
+    createIncrementalBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
   }
 
-  static void
-  createIncrementalBackupSchedule(String projectId, String instanceId,
-                                  String databaseId, String backupScheduleId)
+  static void createIncrementalBackupSchedule(
+      String projectId, String instanceId, String databaseId, String backupScheduleId)
       throws IOException {
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
-            .setIncrementalBackupSpec(
-                IncrementalBackupSpec.newBuilder().build())
-            .setRetentionDuration(
-                Duration.newBuilder().setSeconds(3600 * 24 * 7).build())
+            .setIncrementalBackupSpec(IncrementalBackupSpec.newBuilder().build())
+            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24 * 7).build())
             .setSpec(
                 BackupScheduleSpec.newBuilder()
-                    .setCronSpec(
-                        CrontabSpec.newBuilder().setText("0 */6 * * *").build())
+                    .setCronSpec(CrontabSpec.newBuilder().setText("0 */6 * * *").build())
                     .build())
             .build();
 
-    try (DatabaseAdminClient databaseAdminClient =
-             DatabaseAdminClient.create()) {
-      DatabaseName databaseName =
-          DatabaseName.of(projectId, instanceId, databaseId);
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+      DatabaseName databaseName = DatabaseName.of(projectId, instanceId, databaseId);
       final BackupSchedule createdBackupSchedule =
           databaseAdminClient.createBackupSchedule(
               CreateBackupScheduleRequest.newBuilder()
@@ -69,8 +62,8 @@ class CreateIncrementalBackupScheduleSample {
                   .setBackupSchedule(backupSchedule)
                   .build());
       System.out.println(
-          String.format("Created incremental backup schedule: %s",
-                        createdBackupSchedule.getName()));
+          String.format(
+              "Created incremental backup schedule: %s", createdBackupSchedule.getName()));
     }
   }
 }

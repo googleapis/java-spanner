@@ -36,24 +36,19 @@ class ListBackupSchedulesSample {
     listBackupSchedules(projectId, instanceId, databaseId);
   }
 
-  static void listBackupSchedules(String projectId, String instanceId,
-                                  String databaseId) throws IOException {
-    try (DatabaseAdminClient databaseAdminClient =
-             DatabaseAdminClient.create()) {
-      DatabaseName databaseName =
-          DatabaseName.of(projectId, instanceId, databaseId);
+  static void listBackupSchedules(String projectId, String instanceId, String databaseId)
+      throws IOException {
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+      DatabaseName databaseName = DatabaseName.of(projectId, instanceId, databaseId);
       ListBackupSchedulesPagedResponse backupSchedules =
           databaseAdminClient.listBackupSchedules(
-              ListBackupSchedulesRequest.newBuilder()
-                  .setParent(databaseName.toString())
-                  .build());
+              ListBackupSchedulesRequest.newBuilder().setParent(databaseName.toString()).build());
 
-      System.out.println(String.format("Backup schedules for database '%s'",
-                                       databaseName.toString()));
+      System.out.println(
+          String.format("Backup schedules for database '%s'", databaseName.toString()));
       for (ListBackupSchedulesPage page : backupSchedules.iteratePages()) {
         for (BackupSchedule backupSchedule : page.iterateAll())
-          System.out.println(
-              String.format("Backup schedule: %s", backupSchedule.getName()));
+          System.out.println(String.format("Backup schedule: %s", backupSchedule.getName()));
       }
     }
   }

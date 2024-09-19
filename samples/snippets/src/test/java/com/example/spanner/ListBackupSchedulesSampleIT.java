@@ -27,37 +27,35 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ListBackupSchedulesSampleIT extends SampleTestBaseV2 {
   // Default instance and given db should exist for tests to pass.
-  private static String databaseId =
-      System.getProperty("spanner.sample.database", "mysample");
+  private static String databaseId = System.getProperty("spanner.sample.database", "mysample");
 
   @Test
   public void testListBackupSchedulesSample() throws Exception {
     String backupScheduleId1 = String.format("schedule-%s", UUID.randomUUID());
-    BackupScheduleName backupScheduleName1 = BackupScheduleName.of(
-        projectId, instanceId, databaseId, backupScheduleId1);
+    BackupScheduleName backupScheduleName1 =
+        BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId1);
 
     String backupScheduleId2 = String.format("schedule-%s", UUID.randomUUID());
-    BackupScheduleName backupScheduleName2 = BackupScheduleName.of(
-        projectId, instanceId, databaseId, backupScheduleId2);
+    BackupScheduleName backupScheduleName2 =
+        BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId2);
 
-    String out = SampleRunner.runSample(() -> {
-      try {
-        CreateBackupScheduleSample.createBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId1);
-        CreateBackupScheduleSample.createBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId2);
-        ListBackupSchedulesSample.listBackupSchedules(projectId, instanceId,
-                                                      databaseId);
-      } finally {
-        DeleteBackupScheduleSample.deleteBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId1);
-        DeleteBackupScheduleSample.deleteBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId2);
-      }
-    });
-    assertThat(out).contains(
-        String.format("Backup schedule: %s", backupScheduleName1));
-    assertThat(out).contains(
-        String.format("Backup schedule: %s", backupScheduleName2));
+    String out =
+        SampleRunner.runSample(
+            () -> {
+              try {
+                CreateBackupScheduleSample.createBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId1);
+                CreateBackupScheduleSample.createBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId2);
+                ListBackupSchedulesSample.listBackupSchedules(projectId, instanceId, databaseId);
+              } finally {
+                DeleteBackupScheduleSample.deleteBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId1);
+                DeleteBackupScheduleSample.deleteBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId2);
+              }
+            });
+    assertThat(out).contains(String.format("Backup schedule: %s", backupScheduleName1));
+    assertThat(out).contains(String.format("Backup schedule: %s", backupScheduleName2));
   }
 }

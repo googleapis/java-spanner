@@ -27,24 +27,25 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class CreateIncrementalBackupScheduleSampleIT extends SampleTestBaseV2 {
   // Default instance and given db should exist for tests to pass.
-  private static String databaseId =
-      System.getProperty("spanner.sample.database", "mysample");
+  private static String databaseId = System.getProperty("spanner.sample.database", "mysample");
 
   @Test
   public void testCreateIncrementalBackupScheduleSample() throws Exception {
     String backupScheduleId = String.format("schedule-%s", UUID.randomUUID());
-    BackupScheduleName backupScheduleName = BackupScheduleName.of(
-        projectId, instanceId, databaseId, backupScheduleId);
-    String out = SampleRunner.runSample(() -> {
-      try {
-        CreateIncrementalBackupScheduleSample.createIncrementalBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId);
-      } finally {
-        DeleteBackupScheduleSample.deleteBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId);
-      }
-    });
-    assertThat(out).contains(String.format(
-        "Created incremental backup schedule: %s", backupScheduleName));
+    BackupScheduleName backupScheduleName =
+        BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId);
+    String out =
+        SampleRunner.runSample(
+            () -> {
+              try {
+                CreateIncrementalBackupScheduleSample.createIncrementalBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId);
+              } finally {
+                DeleteBackupScheduleSample.deleteBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId);
+              }
+            });
+    assertThat(out)
+        .contains(String.format("Created incremental backup schedule: %s", backupScheduleName));
   }
 }

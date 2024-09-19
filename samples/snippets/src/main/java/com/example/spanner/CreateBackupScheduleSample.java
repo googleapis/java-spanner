@@ -39,25 +39,21 @@ class CreateBackupScheduleSample {
     createBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
   }
 
-  static void createBackupSchedule(String projectId, String instanceId,
-                                   String databaseId, String backupScheduleId)
+  static void createBackupSchedule(
+      String projectId, String instanceId, String databaseId, String backupScheduleId)
       throws IOException {
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
             .setFullBackupSpec(FullBackupSpec.newBuilder().build())
-            .setRetentionDuration(
-                Duration.newBuilder().setSeconds(3600 * 24 * 7).build())
+            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24 * 7).build())
             .setSpec(
                 BackupScheduleSpec.newBuilder()
-                    .setCronSpec(
-                        CrontabSpec.newBuilder().setText("0 0 * * *").build())
+                    .setCronSpec(CrontabSpec.newBuilder().setText("0 0 * * *").build())
                     .build())
             .build();
 
-    try (DatabaseAdminClient databaseAdminClient =
-             DatabaseAdminClient.create()) {
-      DatabaseName databaseName =
-          DatabaseName.of(projectId, instanceId, databaseId);
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+      DatabaseName databaseName = DatabaseName.of(projectId, instanceId, databaseId);
       final BackupSchedule createdBackupSchedule =
           databaseAdminClient.createBackupSchedule(
               CreateBackupScheduleRequest.newBuilder()
@@ -65,8 +61,8 @@ class CreateBackupScheduleSample {
                   .setBackupScheduleId(backupScheduleId)
                   .setBackupSchedule(backupSchedule)
                   .build());
-      System.out.println(String.format("Created backup schedule: %s",
-                                       createdBackupSchedule.getName()));
+      System.out.println(
+          String.format("Created backup schedule: %s", createdBackupSchedule.getName()));
     }
   }
 }

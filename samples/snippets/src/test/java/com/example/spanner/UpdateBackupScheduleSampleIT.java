@@ -27,26 +27,26 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class UpdateBackupScheduleSampleIT extends SampleTestBaseV2 {
   // Default instance and given db should exist for tests to pass.
-  private static String databaseId =
-      System.getProperty("spanner.sample.database", "mysample");
+  private static String databaseId = System.getProperty("spanner.sample.database", "mysample");
 
   @Test
   public void testUpdateBackupScheduleSample() throws Exception {
     String backupScheduleId = String.format("schedule-%s", UUID.randomUUID());
-    BackupScheduleName backupScheduleName = BackupScheduleName.of(
-        projectId, instanceId, databaseId, backupScheduleId);
-    String out = SampleRunner.runSample(() -> {
-      try {
-        CreateBackupScheduleSample.createBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId);
-        UpdateBackupScheduleSample.updateBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId);
-      } finally {
-        DeleteBackupScheduleSample.deleteBackupSchedule(
-            projectId, instanceId, databaseId, backupScheduleId);
-      }
-    });
-    assertThat(out).contains(
-        String.format("Updated backup schedule: %s", backupScheduleName));
+    BackupScheduleName backupScheduleName =
+        BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId);
+    String out =
+        SampleRunner.runSample(
+            () -> {
+              try {
+                CreateBackupScheduleSample.createBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId);
+                UpdateBackupScheduleSample.updateBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId);
+              } finally {
+                DeleteBackupScheduleSample.deleteBackupSchedule(
+                    projectId, instanceId, databaseId, backupScheduleId);
+              }
+            });
+    assertThat(out).contains(String.format("Updated backup schedule: %s", backupScheduleName));
   }
 }
