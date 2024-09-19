@@ -28,7 +28,7 @@ import java.io.IOException;
 
 class ListBackupSchedulesSample {
 
-  static void ListBackupSchedules() throws IOException {
+  static void listBackupSchedules() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -47,8 +47,9 @@ class ListBackupSchedulesSample {
       System.out.println(
           String.format("Backup schedules for database '%s'", databaseName.toString()));
       for (ListBackupSchedulesPage page : backupSchedules.iteratePages()) {
-        for (BackupSchedule backupSchedule : page.iterateAll())
+        for (BackupSchedule backupSchedule : page.iterateAll()) {
           System.out.println(String.format("Backup schedule: %s", backupSchedule.getName()));
+        }
       }
     }
   }

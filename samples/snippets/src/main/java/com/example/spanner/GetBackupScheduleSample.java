@@ -26,7 +26,7 @@ import java.io.IOException;
 
 class GetBackupScheduleSample {
 
-  static void GetBackupSchedule() throws IOException {
+  static void getBackupSchedule() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
