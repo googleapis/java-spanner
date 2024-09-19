@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.75.0](https://github.com/googleapis/java-spanner/compare/v6.74.1...v6.75.0) (2024-09-19)
+
+
+### Features
+
+* Support multiplexed session for blind write with single use transaction ([#3229](https://github.com/googleapis/java-spanner/issues/3229)) ([b3e2b0f](https://github.com/googleapis/java-spanner/commit/b3e2b0f4892951867715cb7f354c089fca4f050f))
+
 ## [6.74.1](https://github.com/googleapis/java-spanner/compare/v6.74.0...v6.74.1) (2024-09-16)
 
 
