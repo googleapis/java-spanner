@@ -58,12 +58,6 @@
   <difference>
     <differenceType>7006</differenceType>
     <className>com/google/spanner/executor/v1/**</className>
-    <method>* clear()</method>
-    <to>**</to>
-  </difference>
-  <difference>
-    <differenceType>7006</differenceType>
-    <className>com/google/spanner/executor/v1/**</className>
     <method>* clearField(*)</method>
     <to>**</to>
   </difference>
