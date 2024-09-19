@@ -748,6 +748,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @Override
     public boolean isEnableBuiltInMetrics() {
+      // The environment variable SPANNER_ENABLE_BUILTIN_METRICS is used for testing and will be
+      // removed in the future.
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_BUILTIN_METRICS));
     }
   }

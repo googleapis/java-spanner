@@ -233,7 +233,9 @@ class HeaderInterceptor implements ClientInterceptor {
   }
 
   private void addBuiltInMetricAttributes(
-      CompositeTracer compositeTracer, Map<String, String> builtInMetricsAttributes, Boolean isDirectPathUsed) {
+      CompositeTracer compositeTracer,
+      Map<String, String> builtInMetricsAttributes,
+      Boolean isDirectPathUsed) {
     if (compositeTracer != null) {
       // Direct Path used attribute
       Map<String, String> attributes = new HashMap<>(builtInMetricsAttributes);
