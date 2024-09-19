@@ -108,6 +108,7 @@ jobs:
         distribution: temurin
     - run: echo "JAVA11_HOME=${JAVA_HOME}" >> $GITHUB_ENV
       shell: bash
+    - run: git config --system core.longpaths true
     - run: java -version
     - run: .kokoro/build.bat
       env:
