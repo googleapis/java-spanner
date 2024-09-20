@@ -27,6 +27,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.Value.KindCase;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.Transaction;
 import java.io.IOException;
 import java.io.Serializable;
@@ -51,6 +52,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
      */
     void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
         throws SpannerException;
+
+    void onPrecommitToken(MultiplexedSessionPrecommitToken token);
 
     /** Called when the read finishes with an error. Returns the error that should be thrown. */
     SpannerException onError(SpannerException e, boolean withBeginTransaction);

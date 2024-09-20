@@ -404,6 +404,11 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     return createMultiplexedSessionTransaction(false).readOnlyTransaction(bound);
   }
 
+  @Override
+  public TransactionRunner readWriteTransaction(TransactionOption... options) {
+    return createMultiplexedSessionTransaction(false).readWriteTransaction(options);
+  }
+
   /**
    * It is enough with one executor to maintain the multiplexed sessions in all the clients, as they
    * do not need to be updated often, and the maintenance task is light. The core pool size is set

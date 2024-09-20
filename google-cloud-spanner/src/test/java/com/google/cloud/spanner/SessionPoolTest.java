@@ -87,6 +87,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.Transaction;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
@@ -1497,7 +1498,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
-      when(closedSession.beginTransactionAsync(any(), eq(true), any())).thenThrow(sessionNotFound);
+      when(closedSession.beginTransactionAsync(any(), eq(true), any(), any())).thenThrow(sessionNotFound);
       when(closedSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
       closedTransactionRunner.setSpan(span);
@@ -1512,8 +1513,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);
       when(openSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(openTransactionContext);
-      when(openSession.beginTransactionAsync(any(), eq(true), any()))
-          .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
+      when(openSession.beginTransactionAsync(any(), eq(true), any(), any()))
+          .thenReturn(ApiFutures.immediateFuture(Transaction.getDefaultInstance()));
       when(openSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(span);

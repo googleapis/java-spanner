@@ -24,6 +24,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.io.Resources;
 import com.google.protobuf.util.JsonFormat;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Transaction;
 import java.math.BigDecimal;
@@ -48,6 +49,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
     @Override
     public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
         throws SpannerException {}
+
+    @Override
+    public void onPrecommitToken(MultiplexedSessionPrecommitToken token) {}
 
     @Override
     public SpannerException onError(SpannerException e, boolean withBeginTransaction) {

@@ -426,15 +426,18 @@ class SessionImpl implements Session {
     }
   }
 
-  ApiFuture<ByteString> beginTransactionAsync(
-      Options transactionOptions, boolean routeToLeader, Map<SpannerRpc.Option, ?> channelHint) {
-    final SettableApiFuture<ByteString> res = SettableApiFuture.create();
+  ApiFuture<Transaction> beginTransactionAsync(
+      Options transactionOptions, boolean routeToLeader, Map<SpannerRpc.Option, ?> channelHint, com.google.spanner.v1.Mutation mutation) {
+    final SettableApiFuture<Transaction> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
-    final BeginTransactionRequest request =
+    BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(createReadWriteTransactionOptions(transactionOptions))
             .build();
+    if (sessionReference.getIsMultiplexed()) {
+      request = request.toBuilder().setMutationKey(mutation).build();
+    }
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
       requestFuture = spanner.getRpc().beginTransactionAsync(request, channelHint, routeToLeader);
@@ -448,7 +451,7 @@ class SessionImpl implements Session {
                   ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
             }
             span.end();
-            res.set(txn.getId());
+            res.set(txn);
           } catch (ExecutionException e) {
             span.setStatus(e);
             span.end();
