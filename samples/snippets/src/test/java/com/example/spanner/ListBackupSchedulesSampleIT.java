@@ -43,9 +43,9 @@ public class ListBackupSchedulesSampleIT extends SampleTestBaseV2 {
         SampleRunner.runSample(
             () -> {
               try {
-                CreateBackupScheduleSample.createBackupSchedule(
+                CreateFullBackupScheduleSample.createFullBackupSchedule(
                     projectId, instanceId, databaseId, backupScheduleId1);
-                CreateBackupScheduleSample.createBackupSchedule(
+                CreateFullBackupScheduleSample.createFullBackupSchedule(
                     projectId, instanceId, databaseId, backupScheduleId2);
                 ListBackupSchedulesSample.listBackupSchedules(projectId, instanceId, databaseId);
               } finally {

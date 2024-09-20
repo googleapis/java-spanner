@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_get_backup_schedule_sample]
+// [START spanner_get_backup_schedule]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.spanner.admin.database.v1.BackupSchedule;
@@ -49,4 +49,4 @@ class GetBackupScheduleSample {
     }
   }
 }
-// [END spanner_get_backup_schedule_sample]
+// [END spanner_get_backup_schedule]

@@ -25,12 +25,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class CreateBackupScheduleSampleIT extends SampleTestBaseV2 {
+public class CreateFullBackupScheduleSampleIT extends SampleTestBaseV2 {
   // Default instance and given db should exist for tests to pass.
   private static String databaseId = System.getProperty("spanner.sample.database", "mysample");
 
   @Test
-  public void testCreateBackupScheduleSample() throws Exception {
+  public void testCreateFullBackupScheduleSample() throws Exception {
     String backupScheduleId = String.format("schedule-%s", UUID.randomUUID());
     BackupScheduleName backupScheduleName =
         BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId);
@@ -38,7 +38,7 @@ public class CreateBackupScheduleSampleIT extends SampleTestBaseV2 {
         SampleRunner.runSample(
             () -> {
               try {
-                CreateBackupScheduleSample.createBackupSchedule(
+                CreateFullBackupScheduleSample.createFullBackupSchedule(
                     projectId, instanceId, databaseId, backupScheduleId);
               } finally {
                 DeleteBackupScheduleSample.deleteBackupSchedule(

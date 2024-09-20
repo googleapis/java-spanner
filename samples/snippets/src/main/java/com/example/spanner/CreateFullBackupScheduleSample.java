@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_create_backup_schedule_with_encryption_sample]
+// [START spanner_create_full_backup_schedule]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.protobuf.Duration;
@@ -29,40 +29,31 @@ import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.FullBackupSpec;
 import java.io.IOException;
 
-class CreateBackupScheduleWithEncryptionSample {
+class CreateFullBackupScheduleSample {
 
-  static void createBackupScheduleWithEncryption() throws IOException {
+  static void createFullBackupSchedule() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
     String backupScheduleId = "my-backup-schedule";
-    String kmsKeyName =
-        "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
-    createBackupScheduleWithEncryption(
-        projectId, instanceId, databaseId, backupScheduleId, kmsKeyName);
+    createFullBackupSchedule(projectId, instanceId, databaseId, backupScheduleId);
   }
 
-  static void createBackupScheduleWithEncryption(
-      String projectId,
-      String instanceId,
-      String databaseId,
-      String backupScheduleId,
-      String kmsKeyName)
+  static void createFullBackupSchedule(
+      String projectId, String instanceId, String databaseId, String backupScheduleId)
       throws IOException {
     final CreateBackupEncryptionConfig encryptionConfig =
         CreateBackupEncryptionConfig.newBuilder()
-            .setEncryptionType(
-                CreateBackupEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
-            .setKmsKeyName(kmsKeyName)
+            .setEncryptionType(CreateBackupEncryptionConfig.EncryptionType.USE_DATABASE_ENCRYPTION)
             .build();
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
             .setFullBackupSpec(FullBackupSpec.newBuilder().build())
-            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24 * 7))
+            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24).build())
             .setSpec(
                 BackupScheduleSpec.newBuilder()
-                    .setCronSpec(CrontabSpec.newBuilder().setText("0 0 * * *").build())
+                    .setCronSpec(CrontabSpec.newBuilder().setText("30 12 * * *").build())
                     .build())
             .setEncryptionConfig(encryptionConfig)
             .build();
@@ -77,9 +68,8 @@ class CreateBackupScheduleWithEncryptionSample {
                   .setBackupSchedule(backupSchedule)
                   .build());
       System.out.println(
-          String.format(
-              "Created backup schedule with encryption: %s", createdBackupSchedule.getName()));
+          String.format("Created backup schedule: %s", createdBackupSchedule.getName()));
     }
   }
 }
-// [END spanner_create_backup_schedule_with_encryption_sample]
+// [END spanner_create_full_backup_schedule]

@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_delete_backup_schedule_sample]
+// [START spanner_delete_backup_schedule]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.spanner.admin.database.v1.BackupScheduleName;
@@ -47,4 +47,4 @@ class DeleteBackupScheduleSample {
     }
   }
 }
-// [END spanner_delete_backup_schedule_sample]
+// [END spanner_delete_backup_schedule]

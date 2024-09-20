@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_update_backup_schedule_sample]
+// [START spanner_update_backup_schedule]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.protobuf.Duration;
@@ -24,6 +24,7 @@ import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.BackupScheduleName;
 import com.google.spanner.admin.database.v1.BackupScheduleSpec;
+import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.CrontabSpec;
 import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import java.io.IOException;
@@ -44,14 +45,19 @@ class UpdateBackupScheduleSample {
       throws IOException {
     BackupScheduleName backupScheduleName =
         BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId);
+    final CreateBackupEncryptionConfig encryptionConfig =
+        CreateBackupEncryptionConfig.newBuilder()
+            .setEncryptionType(CreateBackupEncryptionConfig.EncryptionType.USE_DATABASE_ENCRYPTION)
+            .build();
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
             .setName(backupScheduleName.toString())
-            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24 * 14))
+            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 48))
             .setSpec(
                 BackupScheduleSpec.newBuilder()
-                    .setCronSpec(CrontabSpec.newBuilder().setText("0 12 * * *").build())
+                    .setCronSpec(CrontabSpec.newBuilder().setText("45 15 * * *").build())
                     .build())
+            .setEncryptionConfig(encryptionConfig)
             .build();
 
     try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
@@ -59,6 +65,7 @@ class UpdateBackupScheduleSample {
           FieldMask.newBuilder()
               .addPaths("retention_duration")
               .addPaths("spec.cron_spec.text")
+              .addPaths("encryption_config")
               .build();
       final BackupSchedule updatedBackupSchedule =
           databaseAdminClient.updateBackupSchedule(
@@ -71,4 +78,4 @@ class UpdateBackupScheduleSample {
     }
   }
 }
-// [END spanner_update_backup_schedule_sample]
+// [END spanner_update_backup_schedule]

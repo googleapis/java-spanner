@@ -16,12 +16,13 @@
 
 package com.example.spanner;
 
-// [START spanner_create_incremental_backup_schedule_sample]
+// [START spanner_create_incremental_backup_schedule]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.protobuf.Duration;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.BackupScheduleSpec;
+import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CrontabSpec;
 import com.google.spanner.admin.database.v1.DatabaseName;
@@ -42,14 +43,20 @@ class CreateIncrementalBackupScheduleSample {
   static void createIncrementalBackupSchedule(
       String projectId, String instanceId, String databaseId, String backupScheduleId)
       throws IOException {
+    final CreateBackupEncryptionConfig encryptionConfig =
+        CreateBackupEncryptionConfig.newBuilder()
+            .setEncryptionType(
+                CreateBackupEncryptionConfig.EncryptionType.GOOGLE_DEFAULT_ENCRYPTION)
+            .build();
     final BackupSchedule backupSchedule =
         BackupSchedule.newBuilder()
             .setIncrementalBackupSpec(IncrementalBackupSpec.newBuilder().build())
-            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24 * 7).build())
+            .setRetentionDuration(Duration.newBuilder().setSeconds(3600 * 24).build())
             .setSpec(
                 BackupScheduleSpec.newBuilder()
-                    .setCronSpec(CrontabSpec.newBuilder().setText("0 */6 * * *").build())
+                    .setCronSpec(CrontabSpec.newBuilder().setText("30 12 * * *").build())
                     .build())
+            .setEncryptionConfig(encryptionConfig)
             .build();
 
     try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
@@ -67,4 +74,4 @@ class CreateIncrementalBackupScheduleSample {
     }
   }
 }
-// [END spanner_create_incremental_backup_schedule_sample]
+// [END spanner_create_incremental_backup_schedule]

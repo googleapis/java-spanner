@@ -38,7 +38,7 @@ public class GetBackupScheduleSampleIT extends SampleTestBaseV2 {
         SampleRunner.runSample(
             () -> {
               try {
-                CreateBackupScheduleSample.createBackupSchedule(
+                CreateFullBackupScheduleSample.createFullBackupSchedule(
                     projectId, instanceId, databaseId, backupScheduleId);
                 GetBackupScheduleSample.getBackupSchedule(
                     projectId, instanceId,

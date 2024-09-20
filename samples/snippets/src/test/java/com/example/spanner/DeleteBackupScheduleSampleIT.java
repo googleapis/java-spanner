@@ -38,7 +38,7 @@ public class DeleteBackupScheduleSampleIT extends SampleTestBaseV2 {
         SampleRunner.runSample(
             () -> {
               try {
-                CreateBackupScheduleSample.createBackupSchedule(
+                CreateFullBackupScheduleSample.createFullBackupSchedule(
                     projectId, instanceId, databaseId, backupScheduleId);
               } finally {
                 DeleteBackupScheduleSample.deleteBackupSchedule(

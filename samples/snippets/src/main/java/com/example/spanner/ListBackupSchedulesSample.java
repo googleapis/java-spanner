@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_list_backup_schedules_sample]
+// [START spanner_list_backup_schedules]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupSchedulesPage;
@@ -54,4 +54,4 @@ class ListBackupSchedulesSample {
     }
   }
 }
-// [END spanner_list_backup_schedules_sample]
+// [END spanner_list_backup_schedules]
