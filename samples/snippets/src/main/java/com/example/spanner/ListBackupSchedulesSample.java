@@ -19,11 +19,8 @@ package com.example.spanner;
 // [START spanner_list_backup_schedules]
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
-import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupSchedulesPage;
-import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupSchedulesPagedResponse;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
 import java.io.IOException;
 
 class ListBackupSchedulesSample {
@@ -40,16 +37,14 @@ class ListBackupSchedulesSample {
       throws IOException {
     try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
       DatabaseName databaseName = DatabaseName.of(projectId, instanceId, databaseId);
-      ListBackupSchedulesPagedResponse backupSchedules =
-          databaseAdminClient.listBackupSchedules(
-              ListBackupSchedulesRequest.newBuilder().setParent(databaseName.toString()).build());
 
       System.out.println(
           String.format("Backup schedules for database '%s'", databaseName.toString()));
-      for (ListBackupSchedulesPage page : backupSchedules.iteratePages()) {
-        for (BackupSchedule backupSchedule : page.iterateAll()) {
-          System.out.println(String.format("Backup schedule: %s", backupSchedule.getName()));
-        }
+      for (BackupSchedule backupSchedule :
+          databaseAdminClient.listBackupSchedules(databaseName).iterateAll()) {
+        System.out.println(
+            String.format(
+                "Backup schedule: %s\n%s", backupSchedule.getName(), backupSchedule.toString()));
       }
     }
   }

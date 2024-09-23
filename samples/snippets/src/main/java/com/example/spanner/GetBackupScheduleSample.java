@@ -45,7 +45,8 @@ class GetBackupScheduleSample {
           databaseAdminClient.getBackupSchedule(
               GetBackupScheduleRequest.newBuilder().setName(backupScheduleName.toString()).build());
       System.out.println(
-          String.format("Retrieved backup schedule: %s", backupScheduleName.toString()));
+          String.format(
+              "Backup schedule: %s\n%s", backupSchedule.getName(), backupSchedule.toString()));
     }
   }
 }

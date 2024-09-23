@@ -70,7 +70,8 @@ class CreateIncrementalBackupScheduleSample {
                   .build());
       System.out.println(
           String.format(
-              "Created incremental backup schedule: %s", createdBackupSchedule.getName()));
+              "Created incremental backup schedule: %s\n%s",
+              createdBackupSchedule.getName(), createdBackupSchedule.toString()));
     }
   }
 }

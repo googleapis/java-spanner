@@ -74,7 +74,9 @@ class UpdateBackupScheduleSample {
                   .setUpdateMask(fieldMask)
                   .build());
       System.out.println(
-          String.format("Updated backup schedule: %s", updatedBackupSchedule.getName()));
+          String.format(
+              "Updated backup schedule: %s\n%s",
+              updatedBackupSchedule.getName(), updatedBackupSchedule.toString()));
     }
   }
 }

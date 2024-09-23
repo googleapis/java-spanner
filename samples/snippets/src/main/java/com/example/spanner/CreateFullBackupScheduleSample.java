@@ -68,7 +68,9 @@ class CreateFullBackupScheduleSample {
                   .setBackupSchedule(backupSchedule)
                   .build());
       System.out.println(
-          String.format("Created backup schedule: %s", createdBackupSchedule.getName()));
+          String.format(
+              "Created backup schedule: %s\n%s",
+              createdBackupSchedule.getName(), createdBackupSchedule.toString()));
     }
   }
 }

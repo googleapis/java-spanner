@@ -48,6 +48,6 @@ public class GetBackupScheduleSampleIT extends SampleTestBaseV2 {
                     projectId, instanceId, databaseId, backupScheduleId);
               }
             });
-    assertThat(out).contains(String.format("Retrieved backup schedule: %s", backupScheduleName));
+    assertThat(out).contains(String.format("Backup schedule: %s", backupScheduleName));
   }
 }
