@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.opentelemetry.detection.GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
@@ -83,6 +84,7 @@ final class BuiltInOpenTelemetryMetricsProvider {
     clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
     clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
     clientAttributes.put(CLIENT_UID_KEY.getKey(), getDefaultTaskValue());
+    clientAttributes.put(CLIENT_HASH_KEY.getKey(), "cloud_spanner_client_raw_metrics");
     return clientAttributes;
   }
 

@@ -61,10 +61,16 @@ public class BuiltInMetricsConstant {
   public static final AttributeKey<String> LOCATION_ID_KEY = AttributeKey.stringKey("location");
   public static final AttributeKey<String> INSTANCE_CONFIG_ID_KEY =
       AttributeKey.stringKey("instance_config");
+  public static final AttributeKey<String> CLIENT_HASH_KEY = AttributeKey.stringKey("client_hash");
 
   // These metric labels will be promoted to the spanner monitored resource fields
   public static final Set<AttributeKey<String>> SPANNER_PROMOTED_RESOURCE_LABELS =
-      ImmutableSet.of(PROJECT_ID_KEY, INSTANCE_ID_KEY, INSTANCE_CONFIG_ID_KEY, LOCATION_ID_KEY);
+      ImmutableSet.of(
+          PROJECT_ID_KEY,
+          INSTANCE_ID_KEY,
+          INSTANCE_CONFIG_ID_KEY,
+          LOCATION_ID_KEY,
+          CLIENT_HASH_KEY);
 
   public static final AttributeKey<String> DATABASE_KEY = AttributeKey.stringKey("database");
   public static final AttributeKey<String> CLIENT_UID_KEY = AttributeKey.stringKey("client_uid");
@@ -87,6 +93,7 @@ public class BuiltInMetricsConstant {
           LOCATION_ID_KEY,
           INSTANCE_CONFIG_ID_KEY,
           CLIENT_UID_KEY,
+          CLIENT_HASH_KEY,
           METHOD_KEY,
           STATUS_KEY,
           DATABASE_KEY,
