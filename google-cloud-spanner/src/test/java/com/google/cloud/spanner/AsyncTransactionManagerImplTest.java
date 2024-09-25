@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +44,7 @@ public class AsyncTransactionManagerImplTest {
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
     try (AsyncTransactionManagerImpl manager =
         new AsyncTransactionManagerImpl(session, span, Options.commitStats())) {
-      when(session.newTransaction(Options.fromTransactionOptions(Options.commitStats())))
+      when(session.newTransaction(eq(Options.fromTransactionOptions(Options.commitStats())), any()))
           .thenReturn(transaction);
       when(transaction.ensureTxnAsync()).thenReturn(ApiFutures.immediateFuture(null));
       Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
