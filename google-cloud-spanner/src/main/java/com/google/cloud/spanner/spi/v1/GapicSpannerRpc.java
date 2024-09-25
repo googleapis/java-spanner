@@ -272,7 +272,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
   private final boolean leaderAwareRoutingEnabled;
-  private final boolean serverSideTracingEnabled;
+  private final boolean spannerTracingEnabled;
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
 
@@ -326,7 +326,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
-    this.serverSideTracingEnabled = options.isServerSideTracingEnabled();
+    this.spannerTracingEnabled = options.isSpannerTracingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
 
@@ -353,7 +353,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                               options.getInterceptorProvider(),
                               SpannerInterceptorProvider.createDefault(options.getOpenTelemetry())))
                       // This sets the trace context headers.
-                      .withTraceContext(serverSideTracingEnabled, options.getOpenTelemetry())
+                      .withTraceContext(spannerTracingEnabled, options.getOpenTelemetry())
                       // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
@@ -2011,8 +2011,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
     }
-    if (serverSideTracingEnabled) {
-      context = context.withExtraHeaders(metadataProvider.newServerSideTracingHeader());
+    if (spannerTracingEnabled) {
+      context = context.withExtraHeaders(metadataProvider.newSpannerTracingHeader());
     }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
