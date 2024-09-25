@@ -20,6 +20,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.ByteString;
 
 /** Implementation of {@link TransactionManager}. */
 final class TransactionManagerImpl implements TransactionManager, SessionTransaction {
@@ -53,7 +54,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   public TransactionContext begin() {
     Preconditions.checkState(txn == null, "begin can only be called once");
     try (IScope s = tracer.withSpan(span)) {
-      txn = session.newTransaction(options);
+      txn = session.newTransaction(options, null);
       session.setActive(this);
       txnState = TransactionState.STARTED;
       return txn;
@@ -102,7 +103,10 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     }
     try (IScope s = tracer.withSpan(span)) {
       boolean useInlinedBegin = txn.transactionId != null;
-      txn = session.newTransaction(options);
+
+      ByteString previousAbortedTransactionId =
+          session.getIsMultiplexed() ? txn.transactionId : null;
+      txn = session.newTransaction(options, previousAbortedTransactionId);
       if (!useInlinedBegin) {
         txn.ensureTxn();
       }
