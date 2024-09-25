@@ -209,7 +209,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     volatile ByteString transactionId;
 
-    final ByteString previousAbortedTransactionId;
+    ByteString previousAbortedTransactionId;
 
     private CommitResponse commitResponse;
     private final Clock clock;
