@@ -416,39 +416,48 @@ public abstract class CloudExecutor {
 
   /** Map Cloud ErrorCode to Status. */
   protected Status toStatus(SpannerException e) {
+    String errorMessage = e.getMessage();
+    com.google.rpc.Status rpcStatus = io.grpc.protobuf.StatusProto.fromThrowable(e);
+    if (rpcStatus != null) {
+      if (rpcStatus.getDetailsCount() > 0) {
+        errorMessage += "/n";
+      }
+      for (int i = 0; i < rpcStatus.getDetailsCount(); i++) {
+        errorMessage += "\nError detail: " + rpcStatus.getDetails(i).toString();
+      }
+    }
     switch (e.getErrorCode()) {
       case INVALID_ARGUMENT:
-        return Status.fromCode(Status.INVALID_ARGUMENT.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.INVALID_ARGUMENT.getCode()).withDescription(errorMessage);
       case PERMISSION_DENIED:
-        return Status.fromCode(Status.PERMISSION_DENIED.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.PERMISSION_DENIED.getCode()).withDescription(errorMessage);
       case ABORTED:
-        return Status.fromCode(Status.ABORTED.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.ABORTED.getCode()).withDescription(errorMessage);
       case ALREADY_EXISTS:
-        return Status.fromCode(Status.ALREADY_EXISTS.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.ALREADY_EXISTS.getCode()).withDescription(errorMessage);
       case CANCELLED:
-        return Status.fromCode(Status.CANCELLED.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.CANCELLED.getCode()).withDescription(errorMessage);
       case INTERNAL:
         return Status.fromCode(Status.INTERNAL.getCode())
-            .withDescription(e.getMessage() + e.getReason() == null ? "" : ": " + e.getReason());
+            .withDescription(errorMessage + e.getReason() == null ? "" : ": " + e.getReason());
       case FAILED_PRECONDITION:
-        return Status.fromCode(Status.FAILED_PRECONDITION.getCode())
-            .withDescription(e.getMessage());
+        return Status.fromCode(Status.FAILED_PRECONDITION.getCode()).withDescription(errorMessage);
       case NOT_FOUND:
-        return Status.fromCode(Status.NOT_FOUND.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.NOT_FOUND.getCode()).withDescription(errorMessage);
       case DEADLINE_EXCEEDED:
-        return Status.fromCode(Status.DEADLINE_EXCEEDED.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.DEADLINE_EXCEEDED.getCode()).withDescription(errorMessage);
       case RESOURCE_EXHAUSTED:
-        return Status.fromCode(Status.RESOURCE_EXHAUSTED.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.RESOURCE_EXHAUSTED.getCode()).withDescription(errorMessage);
       case OUT_OF_RANGE:
-        return Status.fromCode(Status.OUT_OF_RANGE.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.OUT_OF_RANGE.getCode()).withDescription(errorMessage);
       case UNAUTHENTICATED:
-        return Status.fromCode(Status.UNAUTHENTICATED.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.UNAUTHENTICATED.getCode()).withDescription(errorMessage);
       case UNIMPLEMENTED:
-        return Status.fromCode(Status.UNIMPLEMENTED.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.UNIMPLEMENTED.getCode()).withDescription(errorMessage);
       case UNAVAILABLE:
-        return Status.fromCode(Status.UNAVAILABLE.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.UNAVAILABLE.getCode()).withDescription(errorMessage);
       case UNKNOWN:
-        return Status.fromCode(Status.UNKNOWN.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.UNKNOWN.getCode()).withDescription(errorMessage);
       default:
         return Status.fromCode(Status.UNKNOWN.getCode())
             .withDescription("Unsupported Spanner error code: " + e.getErrorCode());
