@@ -152,4 +152,57 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * <code>.google.rpc.Status status = 2;</code>
    */
   com.google.rpc.StatusOrBuilder getStatusOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * A precommit token will be included if the read-write transaction
+   * is on a multiplexed session.
+   * The precommit token with the highest sequence number from this transaction
+   * attempt should be passed to the
+   * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 3 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the precommitToken field is set.
+   */
+  boolean hasPrecommitToken();
+  /**
+   *
+   *
+   * <pre>
+   * A precommit token will be included if the read-write transaction
+   * is on a multiplexed session.
+   * The precommit token with the highest sequence number from this transaction
+   * attempt should be passed to the
+   * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 3 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The precommitToken.
+   */
+  com.google.spanner.v1.MultiplexedSessionPrecommitToken getPrecommitToken();
+  /**
+   *
+   *
+   * <pre>
+   * A precommit token will be included if the read-write transaction
+   * is on a multiplexed session.
+   * The precommit token with the highest sequence number from this transaction
+   * attempt should be passed to the
+   * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 3 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder getPrecommitTokenOrBuilder();
 }

@@ -48,6 +48,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RequestOptions;
@@ -878,9 +879,18 @@ abstract class AbstractReadContext
     return null;
   }
 
+  @Nullable
+  MultiplexedSessionPrecommitToken getLatestPrecommitToken() {
+    return null;
+  }
+
   /** This method is called when a statement returned a new transaction as part of its results. */
   @Override
   public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {}
+
+  /** This method is called when a response returns a new pre-commit token as part of its results. */
+  @Override
+  public void onPrecommitToken(MultiplexedSessionPrecommitToken token){}
 
   @Override
   public SpannerException onError(SpannerException e, boolean withBeginTransaction) {

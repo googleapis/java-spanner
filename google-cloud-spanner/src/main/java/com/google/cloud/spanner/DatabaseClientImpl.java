@@ -241,7 +241,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().readWriteTransaction(options);
+      return getMultiplexedSession().readWriteTransaction(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();

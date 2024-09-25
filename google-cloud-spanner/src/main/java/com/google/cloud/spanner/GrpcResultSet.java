@@ -47,7 +47,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufR
 
   GrpcResultSet(
       CloseableIterator<PartialResultSet> iterator, Listener listener, DecodeMode decodeMode) {
-    this.iterator = new GrpcValueIterator(iterator);
+    this.iterator = new GrpcValueIterator(iterator, listener);
     this.listener = listener;
     this.decodeMode = decodeMode;
   }

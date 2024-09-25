@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.cloud.spanner.AbstractResultSet.Listener;
 import com.google.protobuf.ListValue;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Transaction;
 import java.util.Iterator;
@@ -74,6 +75,9 @@ public class ResultSetsHelper {
           @Override
           public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
               throws SpannerException {}
+
+          @Override
+          public void onPrecommitToken(MultiplexedSessionPrecommitToken token) {}
 
           @Override
           public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
