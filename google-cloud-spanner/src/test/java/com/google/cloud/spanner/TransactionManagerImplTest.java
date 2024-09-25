@@ -365,6 +365,9 @@ public class TransactionManagerImplTest {
     }
   }
 
+  // This test ensures that when a transaction is aborted in a multiplexed session,
+  // the transaction ID of the aborted transaction is saved during the retry when a new transaction
+  // is created.
   @Test
   public void storePreviousTxnIdOnAbortForMultiplexedSession() {
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
@@ -385,6 +388,9 @@ public class TransactionManagerImplTest {
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
   }
 
+  // This test ensures that when a transaction is aborted in a regular session,
+  // the transaction ID of the aborted transaction is not saved during the retry when a new
+  // transaction is created.
   @Test
   public void skipTxnIdStorageOnAbortForRegularSession() {
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
