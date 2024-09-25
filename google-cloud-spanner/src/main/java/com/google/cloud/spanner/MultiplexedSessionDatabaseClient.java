@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
@@ -105,6 +106,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         }
         this.client.numCurrentSingleUseTransactions.decrementAndGet();
       }
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      CommitResponse response = super.writeAtLeastOnceWithOptions(mutations, options);
+      onTransactionDone();
+      return response;
     }
 
     @Override
@@ -359,6 +368,13 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   }
 
   @Override
+  public CommitResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+    return createMultiplexedSessionTransaction(true)
+        .writeAtLeastOnceWithOptions(mutations, options);
+  }
+
+  @Override
   public ReadContext singleUse() {
     return createMultiplexedSessionTransaction(true).singleUse();
   }
@@ -390,11 +406,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   /**
    * It is enough with one executor to maintain the multiplexed sessions in all the clients, as they
-   * do not need to be updated often, and the maintenance task is light.
+   * do not need to be updated often, and the maintenance task is light. The core pool size is set
+   * to 1 to prevent continuous creating and tearing down threads, and to avoid high CPU usage when
+   * running on Java 8 due to <a href="https://bugs.openjdk.org/browse/JDK-8129861">
+   * https://bugs.openjdk.org/browse/JDK-8129861</a>.
    */
   private static final ScheduledExecutorService MAINTAINER_SERVICE =
       Executors.newScheduledThreadPool(
-          /* corePoolSize = */ 0,
+          /* corePoolSize = */ 1,
           ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory(
               "multiplexed-session-maintainer", /* tryVirtual = */ false));
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.75.0](https://github.com/googleapis/java-spanner/compare/v6.74.1...v6.75.0) (2024-09-19)
+
+
+### Features
+
+* Support multiplexed session for blind write with single use transaction ([#3229](https://github.com/googleapis/java-spanner/issues/3229)) ([b3e2b0f](https://github.com/googleapis/java-spanner/commit/b3e2b0f4892951867715cb7f354c089fca4f050f))
+
+## [6.74.1](https://github.com/googleapis/java-spanner/compare/v6.74.0...v6.74.1) (2024-09-16)
+
+
+### Bug Fixes
+
+* Use core pool size 1 for maintainer ([#3314](https://github.com/googleapis/java-spanner/issues/3314)) ([cce008d](https://github.com/googleapis/java-spanner/commit/cce008d212535d32da990242973f7f517ca5d6dc))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.35.0 ([#3329](https://github.com/googleapis/java-spanner/issues/3329)) ([654835f](https://github.com/googleapis/java-spanner/commit/654835f2433b97665c74be9ec80c169ac905a720))
+
 ## [6.74.0](https://github.com/googleapis/java-spanner/compare/v6.73.0...v6.74.0) (2024-08-27)
 
 

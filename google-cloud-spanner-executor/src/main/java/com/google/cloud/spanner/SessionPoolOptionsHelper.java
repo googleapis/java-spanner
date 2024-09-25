@@ -30,4 +30,12 @@ public class SessionPoolOptionsHelper {
       SessionPoolOptions.Builder sessionPoolOptionsBuilder, boolean useMultiplexedSession) {
     return sessionPoolOptionsBuilder.setUseMultiplexedSession(useMultiplexedSession);
   }
+
+  // TODO: Remove when multiplexed session for blind write is released.
+  public static SessionPoolOptions.Builder setUseMultiplexedSessionBlindWrite(
+      SessionPoolOptions.Builder sessionPoolOptionsBuilder,
+      boolean useMultiplexedSessionBlindWrite) {
+    return sessionPoolOptionsBuilder.setUseMultiplexedSessionBlindWrite(
+        useMultiplexedSessionBlindWrite);
+  }
 }
