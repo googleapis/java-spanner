@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
@@ -98,7 +99,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void beginCalledTwiceFails() {
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     assertThat(manager.begin()).isEqualTo(txn);
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
     IllegalStateException e = assertThrows(IllegalStateException.class, () -> manager.begin());
@@ -126,7 +127,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void transactionRolledBackOnClose() {
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     when(txn.isAborted()).thenReturn(false);
     manager.begin();
     manager.close();
@@ -135,7 +136,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void commitSucceeds() {
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
     CommitResponse response = new CommitResponse(commitTimestamp);
     when(txn.getCommitResponse()).thenReturn(response);
@@ -147,7 +148,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void resetAfterSuccessfulCommitFails() {
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     manager.begin();
     manager.commit();
     IllegalStateException e =
@@ -157,21 +158,21 @@ public class TransactionManagerImplTest {
 
   @Test
   public void resetAfterAbortSucceeds() {
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     manager.begin();
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
     assertThrows(AbortedException.class, () -> manager.commit());
     assertEquals(TransactionState.ABORTED, manager.getState());
 
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     assertThat(manager.resetForRetry()).isEqualTo(txn);
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
   }
 
   @Test
   public void resetAfterErrorFails() {
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     manager.begin();
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "")).when(txn).commit();
     SpannerException e = assertThrows(SpannerException.class, () -> manager.commit());
@@ -184,7 +185,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void rollbackAfterCommitFails() {
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     manager.begin();
     manager.commit();
     IllegalStateException e = assertThrows(IllegalStateException.class, () -> manager.rollback());
@@ -193,7 +194,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void commitAfterRollbackFails() {
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     manager.begin();
     manager.rollback();
     IllegalStateException e = assertThrows(IllegalStateException.class, () -> manager.commit());
