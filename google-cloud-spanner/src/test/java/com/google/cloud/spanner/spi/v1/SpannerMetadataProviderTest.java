@@ -98,7 +98,7 @@ public class SpannerMetadataProviderTest {
   public void testNewEndToEndTracingHeader() {
     SpannerMetadataProvider metadataProvider =
         SpannerMetadataProvider.create(ImmutableMap.of(), "header1");
-    Map<String, List<String>> extraHeaders = metadataProvider.newSpannerTracingHeader();
+    Map<String, List<String>> extraHeaders = metadataProvider.newEndToEndTracingHeader();
     Map<String, List<String>> expectedHeaders =
         ImmutableMap.<String, List<String>>of(
             "x-goog-spanner-end-to-end-tracing", ImmutableList.of("true"));

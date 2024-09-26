@@ -695,11 +695,11 @@
     <method>boolean isEnableApiTracing()</method>
   </difference>
 
-  <!-- Added Spanner tracing option -->
+  <!-- Added end to end tracing option -->
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
-    <method>boolean isEnableSpannerTracing()</method>
+    <method>boolean isEnableEndToEndTracing()</method>
   </difference>
 
   <!-- Added Built In Metrics option -->

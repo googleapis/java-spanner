@@ -737,21 +737,21 @@ public class SpannerOptionsTest {
   }
 
   @Test
-  public void testSpannerTracingEnablement() {
+  public void testEndToEndTracingEnablement() {
     // Test that end to end tracing is disabled by default.
-    assertFalse(SpannerOptions.newBuilder().setProjectId("p").build().isSpannerTracingEnabled());
+    assertFalse(SpannerOptions.newBuilder().setProjectId("p").build().isEndToEndTracingEnabled());
     assertTrue(
         SpannerOptions.newBuilder()
             .setProjectId("p")
-            .setEnableSpannerTracing(true)
+            .setEnableEndToEndTracing(true)
             .build()
-            .isSpannerTracingEnabled());
+            .isEndToEndTracingEnabled());
     assertFalse(
         SpannerOptions.newBuilder()
             .setProjectId("p")
-            .setEnableSpannerTracing(false)
+            .setEnableEndToEndTracing(false)
             .build()
-            .isSpannerTracingEnabled());
+            .isEndToEndTracingEnabled());
   }
 
   @Test

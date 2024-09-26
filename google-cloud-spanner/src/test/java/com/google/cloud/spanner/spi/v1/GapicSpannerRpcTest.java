@@ -155,7 +155,7 @@ public class GapicSpannerRpcTest {
   private static String defaultUserAgent;
   private static Spanner spanner;
   private static boolean isRouteToLeader;
-  private static boolean isSpannerTracing;
+  private static boolean isEndToEndTracing;
   private static boolean isTraceContextPresent;
 
   @Parameter public Dialect dialect;
@@ -215,16 +215,16 @@ public class GapicSpannerRpcTest {
                               Key.of(
                                   "x-goog-spanner-route-to-leader",
                                   Metadata.ASCII_STRING_MARSHALLER));
-                      String spannerTracingHeader =
+                      String endToEndTracingHeader =
                           headers.get(
                               Key.of(
                                   "x-goog-spanner-end-to-end-tracing",
                                   Metadata.ASCII_STRING_MARSHALLER));
                       isRouteToLeader =
                           (routeToLeaderHeader != null && routeToLeaderHeader.equals("true"));
-                      isSpannerTracing =
-                          (spannerTracingHeader != null
-                              && spannerTracingHeader.equals("true"));
+                      isEndToEndTracing =
+                          (endToEndTracingHeader != null
+                              && endToEndTracingHeader.equals("true"));
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
@@ -248,7 +248,7 @@ public class GapicSpannerRpcTest {
       server.awaitTermination();
     }
     isRouteToLeader = false;
-    isSpannerTracing = false;
+    isEndToEndTracing = false;
     isTraceContextPresent = false;
   }
 
@@ -491,11 +491,11 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
-  public void testNewCallContextWithSpannerTracingHeader() {
+  public void testNewCallContextWithEndToEndTracingHeader() {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
-            .setEnableSpannerTracing(true)
+            .setEnableEndToEndTracing(true)
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     GrpcCallContext callContext =
@@ -515,11 +515,11 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
-  public void testNewCallContextWithoutSpannerTracingHeader() {
+  public void testNewCallContextWithoutEndToEndTracingHeader() {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
-            .setEnableSpannerTracing(false)
+            .setEnableEndToEndTracing(false)
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     GrpcCallContext callContext =
@@ -534,9 +534,9 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
-  public void testSpannerTracingHeaderWithEnabledTracing() {
+  public void testEndToEndTracingHeaderWithEnabledTracing() {
     final SpannerOptions options =
-        createSpannerOptions().toBuilder().setEnableSpannerTracing(true).build();
+        createSpannerOptions().toBuilder().setEnableEndToEndTracing(true).build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -547,13 +547,13 @@ public class GapicSpannerRpcTest {
             return null;
           });
     }
-    assertTrue(isSpannerTracing);
+    assertTrue(isEndToEndTracing);
   }
 
   @Test
-  public void testSpannerTracingHeaderWithDisabledTracing() {
+  public void testEndToEndTracingHeaderWithDisabledTracing() {
     final SpannerOptions options =
-        createSpannerOptions().toBuilder().setEnableSpannerTracing(false).build();
+        createSpannerOptions().toBuilder().setEnableEndToEndTracing(false).build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -564,7 +564,7 @@ public class GapicSpannerRpcTest {
             return null;
           });
     }
-    assertFalse(isSpannerTracing);
+    assertFalse(isEndToEndTracing);
   }
 
   @Test
@@ -639,7 +639,7 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
-  public void testTraceContextHeaderWithOpenTelemetryAndSpannerTracingEnabled() {
+  public void testTraceContextHeaderWithOpenTelemetryAndEndToEndTracingEnabled() {
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -650,7 +650,7 @@ public class GapicSpannerRpcTest {
         createSpannerOptions()
             .toBuilder()
             .setOpenTelemetry(openTelemetry)
-            .setEnableSpannerTracing(true)
+            .setEnableEndToEndTracing(true)
             .build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
@@ -665,7 +665,7 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
-  public void testTraceContextHeaderWithOpenTelemetryAndSpannerTracingDisabled() {
+  public void testTraceContextHeaderWithOpenTelemetryAndEndToEndTracingDisabled() {
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -676,7 +676,7 @@ public class GapicSpannerRpcTest {
         createSpannerOptions()
             .toBuilder()
             .setOpenTelemetry(openTelemetry)
-            .setEnableSpannerTracing(false)
+            .setEnableEndToEndTracing(false)
             .build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
