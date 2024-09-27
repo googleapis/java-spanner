@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -375,17 +376,22 @@ public class TransactionManagerImplTest {
     txn.transactionId = mockTransactionId;
     when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
     manager.begin();
+    // Verify that for the first transaction attempt, the `previousTransactionId` is null.
+    // This is because no transaction has been previously aborted at this point.
+    verify(session).newTransaction(Options.fromTransactionOptions(), null);
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
     assertThrows(AbortedException.class, () -> manager.commit());
-    assertEquals(TransactionState.ABORTED, manager.getState());
 
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
-    txn.previousAbortedTransactionId = mockTransactionId;
+    txn.previousTransactionId = mockTransactionId;
     when(session.newTransaction(Options.fromTransactionOptions(), mockTransactionId))
         .thenReturn(txn);
     when(session.getIsMultiplexed()).thenReturn(true);
     assertThat(manager.resetForRetry()).isEqualTo(txn);
-    assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
+    // Verify that in the first retry attempt, the `previousTransactionId` is passed to the new
+    // transaction.
+    // This allows Spanner to retry the transaction using the ID of the aborted transaction.
+    verify(session).newTransaction(Options.fromTransactionOptions(), mockTransactionId);
   }
 
   // This test ensures that when a transaction is aborted in a regular session,
@@ -398,14 +404,18 @@ public class TransactionManagerImplTest {
     txn.transactionId = mockTransactionId;
     when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
     manager.begin();
+    verify(session).newTransaction(Options.fromTransactionOptions(), null);
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
     assertThrows(AbortedException.class, () -> manager.commit());
-    assertEquals(TransactionState.ABORTED, manager.getState());
+    clearInvocations(session);
 
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
     when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
     when(session.getIsMultiplexed()).thenReturn(false);
     assertThat(manager.resetForRetry()).isEqualTo(txn);
-    assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
+    // Verify that in the first retry attempt, the `previousTransactionId` is not passed to the new
+    // transaction
+    // in case of regular sessions.
+    verify(session).newTransaction(Options.fromTransactionOptions(), null);
   }
 }

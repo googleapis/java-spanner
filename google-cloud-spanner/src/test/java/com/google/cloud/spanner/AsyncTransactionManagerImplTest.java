@@ -16,14 +16,18 @@
 
 package com.google.cloud.spanner;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
+import com.google.protobuf.ByteString;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import org.junit.Test;
@@ -54,6 +58,67 @@ public class AsyncTransactionManagerImplTest {
       manager.beginAsync();
       manager.commitAsync();
       verify(transaction).commitAsync();
+    }
+  }
+
+  @Test
+  public void testRetryUsesPreviousTransactionIdOnMultiplexedSession() {
+    // Set up mock transaction IDs
+    final ByteString mockTransactionId = ByteString.copyFromUtf8("mockTransactionId");
+    final ByteString mockPreviousTransactionId =
+        ByteString.copyFromUtf8("mockPreviousTransactionId");
+
+    Span oTspan = mock(Span.class);
+    ISpan span = new OpenTelemetrySpan(oTspan);
+    when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
+    // Mark the session as multiplexed.
+    when(session.getIsMultiplexed()).thenReturn(true);
+
+    // Initialize a mock transaction with transactionId = null, previousTransactionId = null.
+    transaction = mock(TransactionRunnerImpl.TransactionContextImpl.class);
+    when(transaction.ensureTxnAsync()).thenReturn(ApiFutures.immediateFuture(null));
+    when(session.newTransaction(eq(Options.fromTransactionOptions(Options.commitStats())), any()))
+        .thenReturn(transaction);
+
+    // Simulate an ABORTED error being thrown when `commitAsync()` is called.
+    doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, ""))
+        .when(transaction)
+        .commitAsync();
+
+    try (AsyncTransactionManagerImpl manager =
+        new AsyncTransactionManagerImpl(session, span, Options.commitStats())) {
+      manager.beginAsync();
+
+      // Verify that for the first transaction attempt, the `previousTransactionId` is null.
+      // This is because no transaction has been previously aborted at this point.
+      verify(session).newTransaction(Options.fromTransactionOptions(Options.commitStats()), null);
+      assertThrows(AbortedException.class, manager::commitAsync);
+      clearInvocations(session);
+
+      // Mock the transaction object to contain transactionID=null and
+      // previousTransactionId=mockPreviousTransactionId
+      transaction.previousTransactionId = mockPreviousTransactionId;
+      manager.resetForRetryAsync();
+      // Verify that in the first retry attempt, the `previousTransactionId` is passed to the new
+      // transaction.
+      // This allows Spanner to retry the transaction using the ID of the aborted transaction.
+      verify(session)
+          .newTransaction(
+              Options.fromTransactionOptions(Options.commitStats()), mockPreviousTransactionId);
+      assertThrows(AbortedException.class, manager::commitAsync);
+      clearInvocations(session);
+
+      // Mock the transaction object to contain transactionID=mockTransactionId and
+      // previousTransactionId=mockPreviousTransactionId and transactionID = null
+      transaction.transactionId = mockTransactionId;
+      manager.resetForRetryAsync();
+      // Verify that the current `transactionId` is used in the retry.
+      // This ensures the retry logic is working as expected with the latest transaction ID.
+      verify(session)
+          .newTransaction(Options.fromTransactionOptions(Options.commitStats()), mockTransactionId);
+
+      when(transaction.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
+      manager.closeAsync();
     }
   }
 }

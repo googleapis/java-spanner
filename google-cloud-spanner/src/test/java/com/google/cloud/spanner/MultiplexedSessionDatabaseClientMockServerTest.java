@@ -16,6 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MockSpannerTestUtil.INVALID_UPDATE_STATEMENT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -58,6 +61,12 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   public static void setupResults() {
     mockSpanner.putStatementResults(
         StatementResult.query(STATEMENT, new RandomResultSetGenerator(1).generate()));
+
+    mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+    mockSpanner.putStatementResult(
+        StatementResult.exception(
+            INVALID_UPDATE_STATEMENT,
+            Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
   }
 
   @Before
@@ -466,6 +475,106 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
+
+  // TODO(sriharshach): Uncomment test once Lock order preservation proto is published
+  /*
+    @Test
+    public void testAbortedReadWriteTxnUsesPreviousTxnIdOnRetryWithInlineBegin() throws InterruptedException {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+      // after the first call, so the retry should succeed.
+      mockSpanner.setCommitExecutionTime(
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+      Thread.sleep(10000);
+      TransactionRunner runner = client.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            try (ResultSet resultSet =
+                transaction.executeQuery(STATEMENT)) {
+              while (resultSet.next()) {}
+            }
+            return null;
+          });
+
+      List<ExecuteSqlRequest> executeSqlRequests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+      assertEquals(2, executeSqlRequests.size());
+
+      // Verify the requests are executed using multiplexed sessions
+      for (ExecuteSqlRequest request : executeSqlRequests) {
+        assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      }
+
+      // Verify that the first request uses inline begin, and the previous transaction ID is set to ByteString.EMPTY
+      assertTrue(executeSqlRequests.get(0).hasTransaction());
+      assertTrue(executeSqlRequests.get(0).getTransaction().hasBegin());
+      assertTrue(executeSqlRequests.get(0).getTransaction().getBegin().hasReadWrite());
+      assertNotNull(executeSqlRequests.get(0).getTransaction().getBegin().getReadWrite()
+          .getMultiplexedSessionPreviousTransactionId());
+      assertThat(executeSqlRequests.get(0).getTransaction().getBegin().getReadWrite().getMultiplexedSessionPreviousTransactionId()).isEqualTo(ByteString.EMPTY);
+
+      // Verify that the second request uses inline begin, and the previous transaction ID is set appropriately
+      assertTrue(executeSqlRequests.get(1).hasTransaction());
+      assertTrue(executeSqlRequests.get(1).getTransaction().hasBegin());
+      assertTrue(executeSqlRequests.get(1).getTransaction().getBegin().hasReadWrite());
+      assertNotNull(executeSqlRequests.get(1).getTransaction().getBegin().getReadWrite()
+          .getMultiplexedSessionPreviousTransactionId());
+      assertThat(executeSqlRequests.get(1).getTransaction().getBegin().getReadWrite().getMultiplexedSessionPreviousTransactionId()).isNotEqualTo(ByteString.EMPTY);
+    }
+  */
+
+  // TODO(sriharshach): Uncomment test once Lock order preservation proto is published
+  /*
+    @Test
+    public void testAbortedReadWriteTxnUsesPreviousTxnIdOnRetryWithExplicitBegin() throws InterruptedException {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+      // after the first call, so the retry should succeed.
+      mockSpanner.setCommitExecutionTime(
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+      Thread.sleep(10000);
+      TransactionRunner runner = client.readWriteTransaction();
+      Long updateCount = runner.run(
+          transaction -> {
+            // This update statement carries the BeginTransaction, but fails. This will
+            // cause the entire transaction to be retried with an explicit
+            // BeginTransaction RPC to ensure all statements in the transaction are
+            // actually executed against the same transaction.
+            SpannerException e =
+                assertThrows(
+                    SpannerException.class,
+                    () -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
+            assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+            return transaction.executeUpdate(UPDATE_STATEMENT);
+          });
+
+      assertThat(updateCount).isEqualTo(1L);
+      List<BeginTransactionRequest> beginTransactionRequests = mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+      assertEquals(2, beginTransactionRequests.size());
+
+      // Verify the requests are executed using multiplexed sessions
+      for (BeginTransactionRequest request : beginTransactionRequests) {
+        assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      }
+
+      // Verify that explicit begin transaction is called during retry, and the previous transaction ID is set to ByteString.EMPTY
+      assertTrue(beginTransactionRequests.get(0).hasOptions());
+      assertTrue(beginTransactionRequests.get(0).getOptions().hasReadWrite());
+      assertNotNull(beginTransactionRequests.get(0).getOptions().getReadWrite()
+          .getMultiplexedSessionPreviousTransactionId());
+      assertThat(beginTransactionRequests.get(0).getOptions().getReadWrite().getMultiplexedSessionPreviousTransactionId()).isEqualTo(ByteString.EMPTY);
+
+      // The previous transaction with id (txn1) fails during commit operation with ABORTED error.
+      // Verify that explicit begin transaction is called during retry, and the previous transaction ID is not ByteString.EMPTY (should be set to txn1)
+      assertTrue(beginTransactionRequests.get(1).hasOptions());
+      assertTrue(beginTransactionRequests.get(1).getOptions().hasReadWrite());
+      assertNotNull(beginTransactionRequests.get(1).getOptions().getReadWrite().getMultiplexedSessionPreviousTransactionId());
+      assertThat(beginTransactionRequests.get(1).getOptions().getReadWrite().getMultiplexedSessionPreviousTransactionId()).isNotEqualTo(ByteString.EMPTY);
+    }
+  */
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
     assertNotNull(client.multiplexedSessionDatabaseClient);
