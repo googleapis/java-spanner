@@ -104,9 +104,15 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     try (IScope s = tracer.withSpan(span)) {
       boolean useInlinedBegin = txn.transactionId != null;
 
-      ByteString previousAbortedTransactionId =
-          session.getIsMultiplexed() ? txn.transactionId : null;
-      txn = session.newTransaction(options, previousAbortedTransactionId);
+      // Determine the latest transactionId when using a multiplexed session.
+      ByteString multiplexedSessionPreviousTransactionId = null;
+      if (session.getIsMultiplexed()) {
+        // Use the current transactionId if available, otherwise fallback to the previous aborted
+        // transactionId.
+        multiplexedSessionPreviousTransactionId =
+            txn.transactionId != null ? txn.transactionId : txn.previousTransactionId;
+      }
+      txn = session.newTransaction(options, multiplexedSessionPreviousTransactionId);
       if (!useInlinedBegin) {
         txn.ensureTxn();
       }

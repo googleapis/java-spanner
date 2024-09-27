@@ -78,9 +78,17 @@ final class AsyncTransactionManagerImpl
 
   private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
     txnState = TransactionState.STARTED;
-    ByteString previousAbortedTransactionId =
-        !firstAttempt && session.getIsMultiplexed() ? txn.transactionId : null;
-    txn = session.newTransaction(options, previousAbortedTransactionId);
+
+    // Determine the latest transactionId when using a multiplexed session.
+    ByteString multiplexedSessionPreviousTransactionId = null;
+    if (session.getIsMultiplexed() && !firstAttempt) {
+      // Use the current transactionId if available, otherwise fallback to the previous aborted
+      // transactionId.
+      multiplexedSessionPreviousTransactionId =
+          txn.transactionId != null ? txn.transactionId : txn.previousTransactionId;
+    }
+
+    txn = session.newTransaction(options, multiplexedSessionPreviousTransactionId);
     if (firstAttempt) {
       session.setActive(this);
     }

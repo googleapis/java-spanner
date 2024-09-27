@@ -70,7 +70,7 @@ class SessionImpl implements Session {
   }
 
   static TransactionOptions createReadWriteTransactionOptions(
-      Options options, ByteString previousAbortedTransactionId) {
+      Options options, ByteString previousTransactionId) {
     TransactionOptions.Builder transactionOptions = TransactionOptions.newBuilder();
     if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       transactionOptions.setExcludeTxnFromChangeStreams(true);
@@ -79,10 +79,10 @@ class SessionImpl implements Session {
     if (options.withOptimisticLock() == Boolean.TRUE) {
       readWrite.setReadLockMode(TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
     }
-    if (previousAbortedTransactionId != null
-        && previousAbortedTransactionId != com.google.protobuf.ByteString.EMPTY) {
+    if (previousTransactionId != null
+        && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
       // TODO(sriharshach): uncomment this when multiplexed session R/W proto is published
-      // readWrite.setMultiplexedSessionPreviousTransactionId(previousAbortedTransactionId);
+      // readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
     }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
@@ -436,14 +436,14 @@ class SessionImpl implements Session {
       Options transactionOptions,
       boolean routeToLeader,
       Map<SpannerRpc.Option, ?> channelHint,
-      ByteString previousAbortedTransactionId) {
+      ByteString previousTransactionId) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(
-                createReadWriteTransactionOptions(transactionOptions, previousAbortedTransactionId))
+                createReadWriteTransactionOptions(transactionOptions, previousTransactionId))
             .build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
@@ -479,12 +479,12 @@ class SessionImpl implements Session {
     return res;
   }
 
-  TransactionContextImpl newTransaction(Options options, ByteString previousAbortedTransactionId) {
+  TransactionContextImpl newTransaction(Options options, ByteString previousTransactionId) {
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
         .setTransactionId(null)
-        .setPreviousAbortedTransactionId(previousAbortedTransactionId)
+        .setPreviousTransactionId(previousTransactionId)
         .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())

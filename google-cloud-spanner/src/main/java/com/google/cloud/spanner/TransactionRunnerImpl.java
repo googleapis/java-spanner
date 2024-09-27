@@ -95,7 +95,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       private ByteString transactionId;
       // This field is set only when the transaction is created during a retry and uses a
       // multiplexed session.
-      private ByteString previousAbortedTransactionId;
+      private ByteString previousTransactionId;
       private Options options;
       private boolean trackTransactionStarter;
 
@@ -121,8 +121,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         return self();
       }
 
-      Builder setPreviousAbortedTransactionId(ByteString previousAbortedTransactionId) {
-        this.previousAbortedTransactionId = previousAbortedTransactionId;
+      Builder setPreviousTransactionId(ByteString previousTransactionId) {
+        this.previousTransactionId = previousTransactionId;
         return self();
       }
 
@@ -209,7 +209,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     volatile ByteString transactionId;
 
-    ByteString previousAbortedTransactionId;
+    ByteString previousTransactionId;
 
     private CommitResponse commitResponse;
     private final Clock clock;
@@ -226,7 +226,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.channelHint =
           getChannelHintOptions(
               session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
-      this.previousAbortedTransactionId = builder.previousAbortedTransactionId;
+      this.previousTransactionId = builder.previousTransactionId;
     }
 
     @Override
@@ -295,10 +295,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       span.addAnnotation("Creating Transaction");
       final ApiFuture<ByteString> fut =
           session.beginTransactionAsync(
-              options,
-              isRouteToLeader(),
-              getTransactionChannelHint(),
-              previousAbortedTransactionId);
+              options, isRouteToLeader(), getTransactionChannelHint(), previousTransactionId);
       fut.addListener(
           () -> {
             try {
@@ -574,8 +571,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           if (tx == null) {
             return TransactionSelector.newBuilder()
                 .setBegin(
-                    SessionImpl.createReadWriteTransactionOptions(
-                        options, previousAbortedTransactionId))
+                    SessionImpl.createReadWriteTransactionOptions(options, previousTransactionId))
                 .build();
           } else {
             // Wait for the transaction to come available. The tx.get() call will fail with an
@@ -1135,9 +1131,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // actually start a transaction.
             useInlinedBegin = txn.transactionId != null;
 
-            ByteString previousAbortedTransactionId =
-                session.getIsMultiplexed() ? txn.transactionId : null;
-            txn = session.newTransaction(options, previousAbortedTransactionId);
+            // Determine the latest transactionId when using a multiplexed session.
+            ByteString multiplexedSessionPreviousTransactionId = null;
+            if (session.getIsMultiplexed()) {
+              // Use the current transactionId if available, otherwise fallback to the previous
+              // transactionId.
+              multiplexedSessionPreviousTransactionId =
+                  txn.transactionId != null ? txn.transactionId : txn.previousTransactionId;
+            }
+
+            txn = session.newTransaction(options, multiplexedSessionPreviousTransactionId);
           }
           checkState(
               isValid, "TransactionRunner has been invalidated by a new operation on the session");
