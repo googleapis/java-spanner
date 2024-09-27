@@ -829,8 +829,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
-    private boolean enableEndToEndTracing =
-        SpannerOptions.environment.isEnableEndToEndTracing();
+    private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1432,10 +1431,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Sets whether to enable end to end tracing. Enabling this option will create the
-     * trace spans at the Spanner layer. By default, end to end tracing is disabled.
-     * Enabling end to end tracing requires OpenTelemetry to be set up. Simply enabling
-     * this option won't generate traces at Spanner layer.
+     * Sets whether to enable end to end tracing. Enabling this option will create the trace spans
+     * at the Spanner layer. By default, end to end tracing is disabled. Enabling end to end tracing
+     * requires OpenTelemetry to be set up. Simply enabling this option won't generate traces at
+     * Spanner layer.
      */
     public Builder setEnableEndToEndTracing(boolean enableEndToEndTracing) {
       this.enableEndToEndTracing = enableEndToEndTracing;
@@ -1774,8 +1773,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   /**
-   * Returns whether end to end tracing is enabled. If this option is enabled then trace spans
-   * will be created at the Spanner layer.
+   * Returns whether end to end tracing is enabled. If this option is enabled then trace spans will
+   * be created at the Spanner layer.
    */
   public boolean isEndToEndTracingEnabled() {
     return enableEndToEndTracing;

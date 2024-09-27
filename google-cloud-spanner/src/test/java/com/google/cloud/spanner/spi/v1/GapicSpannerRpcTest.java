@@ -223,8 +223,7 @@ public class GapicSpannerRpcTest {
                       isRouteToLeader =
                           (routeToLeaderHeader != null && routeToLeaderHeader.equals("true"));
                       isEndToEndTracing =
-                          (endToEndTracingHeader != null
-                              && endToEndTracingHeader.equals("true"));
+                          (endToEndTracingHeader != null && endToEndTracingHeader.equals("true"));
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
