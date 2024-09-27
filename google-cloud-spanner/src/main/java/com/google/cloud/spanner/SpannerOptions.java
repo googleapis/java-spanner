@@ -1434,8 +1434,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     /**
      * Sets whether to enable end to end tracing. Enabling this option will create the
      * trace spans at the Spanner layer. By default, end to end tracing is disabled.
-     * Enabling end to end tracing requires OpenTelemetry to be set up properly. Simply
-     * enabling this option won't generate traces at Spanner layer.
+     * Enabling end to end tracing requires OpenTelemetry to be set up. Simply enabling
+     * this option won't generate traces at Spanner layer.
      */
     public Builder setEnableEndToEndTracing(boolean enableEndToEndTracing) {
       this.enableEndToEndTracing = enableEndToEndTracing;
