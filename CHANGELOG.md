@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.76.0](https://github.com/googleapis/java-spanner/compare/v6.75.0...v6.76.0) (2024-09-27)
+
+
+### Features
+
+* Add opt-in flag and ClientInterceptor to propagate trace context for Spanner end to end tracing ([#3162](https://github.com/googleapis/java-spanner/issues/3162)) ([0b7fdaf](https://github.com/googleapis/java-spanner/commit/0b7fdaf1d25e81ca8dd35a0f8d8caa7b77a7e58c))
+* Add samples for backup schedule feature APIs. ([#3339](https://github.com/googleapis/java-spanner/issues/3339)) ([8cd5163](https://github.com/googleapis/java-spanner/commit/8cd516351e7859a81f00f17cb5071edbd804ea90))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.46.1 ([1719f44](https://github.com/googleapis/java-spanner/commit/1719f4465841354db3253fd132868394e530a82d))
+
 ## [6.75.0](https://github.com/googleapis/java-spanner/compare/v6.74.1...v6.75.0) (2024-09-19)
 
 
