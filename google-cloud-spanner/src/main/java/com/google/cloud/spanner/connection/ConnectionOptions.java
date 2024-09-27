@@ -83,6 +83,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -203,6 +204,13 @@ public class ConnectionOptions {
       return validValues;
     }
   }
+
+  /**
+   * Set this system property to true to enable transactional connection state by default for
+   * PostgreSQL-dialect databases. The default is currently false.
+   */
+  public static String ENABLE_TRANSACTIONAL_CONNECTION_STATE_FOR_POSTGRESQL_PROPERTY =
+      "spanner.enable_transactional_connection_state_for_postgresql";
 
   private static final LocalConnectionChecker LOCAL_CONNECTION_CHECKER =
       new LocalConnectionChecker();
@@ -334,6 +342,11 @@ public class ConnectionOptions {
         connectionPropertyName,
         systemPropertyName,
         systemPropertyName);
+  }
+
+  static boolean isEnableTransactionalConnectionStateForPostgreSQL() {
+    return Boolean.parseBoolean(
+        System.getProperty(ENABLE_TRANSACTIONAL_CONNECTION_STATE_FOR_POSTGRESQL_PROPERTY, "false"));
   }
 
   /**
@@ -987,22 +1000,22 @@ public class ConnectionOptions {
   /** Check that only valid properties have been specified. */
   @VisibleForTesting
   static String checkValidProperties(boolean lenient, String uri) {
-    String invalidProperties = "";
+    StringBuilder invalidProperties = new StringBuilder();
     List<String> properties = parseProperties(uri);
-    // boolean lenient = parseLenient(uri);
     for (String property : properties) {
-      if (!INTERNAL_VALID_PROPERTIES.contains(ConnectionProperty.createEmptyProperty(property))) {
+      if (!ConnectionProperties.CONNECTION_PROPERTIES.containsKey(
+          property.toLowerCase(Locale.ENGLISH))) {
         if (invalidProperties.length() > 0) {
-          invalidProperties = invalidProperties + ", ";
+          invalidProperties.append(", ");
         }
-        invalidProperties = invalidProperties + property;
+        invalidProperties.append(property);
       }
     }
     if (lenient) {
       return String.format("Invalid properties found in connection URI: %s", invalidProperties);
     } else {
       Preconditions.checkArgument(
-          invalidProperties.isEmpty(),
+          invalidProperties.length() == 0,
           String.format(
               "Invalid properties found in connection URI. Add lenient=true to the connection string to ignore unknown properties. Invalid properties: %s",
               invalidProperties));

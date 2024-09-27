@@ -97,7 +97,7 @@ import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.Di
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DurationConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.NonNegativeIntegerConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ReadOnlyStalenessConverter;
-import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.RpcPriorityEnumConverter;
+import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.RpcPriorityConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.SavepointSupportConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.StringValueConverter;
 import com.google.cloud.spanner.connection.ConnectionProperty.Context;
@@ -440,7 +440,7 @@ class ConnectionProperties {
           RPC_PRIORITY_NAME,
           "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH.",
           DEFAULT_RPC_PRIORITY,
-          RpcPriorityEnumConverter.INSTANCE,
+          RpcPriorityConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<SavepointSupport> SAVEPOINT_SUPPORT =
       create(

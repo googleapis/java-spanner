@@ -533,6 +533,8 @@ class ClientSideStatementValueConverters {
 
   /** Converter for converting strings to {@link RpcPriority} values. */
   static class RpcPriorityConverter implements ClientSideStatementValueConverter<RpcPriority> {
+    static final RpcPriorityConverter INSTANCE = new RpcPriorityConverter("(HIGH|MEDIUM|LOW|NULL)");
+
     private final CaseInsensitiveEnumMap<RpcPriority> values =
         new CaseInsensitiveEnumMap<>(RpcPriority.class);
     private final Pattern allowedValues;
@@ -556,32 +558,6 @@ class ClientSideStatementValueConverters {
         if (matcher.group(0).equalsIgnoreCase("null")) {
           return RpcPriority.UNSPECIFIED;
         }
-      }
-      return values.get(value);
-    }
-  }
-
-  /** Converter for converting strings to {@link RpcPriority} values. */
-  static class RpcPriorityEnumConverter implements ClientSideStatementValueConverter<RpcPriority> {
-    static final RpcPriorityEnumConverter INSTANCE = new RpcPriorityEnumConverter();
-
-    private final CaseInsensitiveEnumMap<RpcPriority> values =
-        new CaseInsensitiveEnumMap<>(RpcPriority.class);
-
-    private RpcPriorityEnumConverter() {}
-
-    /** Constructor needed for reflection. */
-    public RpcPriorityEnumConverter(String allowedValues) {}
-
-    @Override
-    public Class<RpcPriority> getParameterClass() {
-      return RpcPriority.class;
-    }
-
-    @Override
-    public RpcPriority convert(String value) {
-      if ("null".equalsIgnoreCase(value)) {
-        return RpcPriority.UNSPECIFIED;
       }
       return values.get(value);
     }
