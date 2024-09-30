@@ -115,13 +115,37 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * This mode returns both the query plan and the execution statistics along
-     * with the results.
+     * This mode returns the query plan, overall execution statistics,
+     * operator level execution statistics along with the results. This has a
+     * performance overhead compared to the other modes. It is not recommended
+     * to use this mode for production traffic.
      * </pre>
      *
      * <code>PROFILE = 2;</code>
      */
     PROFILE(2),
+    /**
+     *
+     *
+     * <pre>
+     * This mode returns the overall (but not operator-level) execution
+     * statistics along with the results.
+     * </pre>
+     *
+     * <code>WITH_STATS = 3;</code>
+     */
+    WITH_STATS(3),
+    /**
+     *
+     *
+     * <pre>
+     * This mode returns the query plan, overall (but not operator-level)
+     * execution statistics along with the results.
+     * </pre>
+     *
+     * <code>WITH_PLAN_AND_STATS = 4;</code>
+     */
+    WITH_PLAN_AND_STATS(4),
     UNRECOGNIZED(-1),
     ;
 
@@ -150,13 +174,37 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * This mode returns both the query plan and the execution statistics along
-     * with the results.
+     * This mode returns the query plan, overall execution statistics,
+     * operator level execution statistics along with the results. This has a
+     * performance overhead compared to the other modes. It is not recommended
+     * to use this mode for production traffic.
      * </pre>
      *
      * <code>PROFILE = 2;</code>
      */
     public static final int PROFILE_VALUE = 2;
+    /**
+     *
+     *
+     * <pre>
+     * This mode returns the overall (but not operator-level) execution
+     * statistics along with the results.
+     * </pre>
+     *
+     * <code>WITH_STATS = 3;</code>
+     */
+    public static final int WITH_STATS_VALUE = 3;
+    /**
+     *
+     *
+     * <pre>
+     * This mode returns the query plan, overall (but not operator-level)
+     * execution statistics along with the results.
+     * </pre>
+     *
+     * <code>WITH_PLAN_AND_STATS = 4;</code>
+     */
+    public static final int WITH_PLAN_AND_STATS_VALUE = 4;
 
     public final int getNumber() {
       if (this == UNRECOGNIZED) {
@@ -188,6 +236,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           return PLAN;
         case 2:
           return PROFILE;
+        case 3:
+          return WITH_STATS;
+        case 4:
+          return WITH_PLAN_AND_STATS;
         default:
           return null;
       }
