@@ -737,21 +737,21 @@ public class SpannerOptionsTest {
   }
 
   @Test
-  public void testServerSideTracingEnablement() {
+  public void testEndToEndTracingEnablement() {
     // Test that end to end tracing is disabled by default.
-    assertFalse(SpannerOptions.newBuilder().setProjectId("p").build().isServerSideTracingEnabled());
+    assertFalse(SpannerOptions.newBuilder().setProjectId("p").build().isEndToEndTracingEnabled());
     assertTrue(
         SpannerOptions.newBuilder()
             .setProjectId("p")
-            .setEnableServerSideTracing(true)
+            .setEnableEndToEndTracing(true)
             .build()
-            .isServerSideTracingEnabled());
+            .isEndToEndTracingEnabled());
     assertFalse(
         SpannerOptions.newBuilder()
             .setProjectId("p")
-            .setEnableServerSideTracing(false)
+            .setEnableEndToEndTracing(false)
             .build()
-            .isServerSideTracingEnabled());
+            .isEndToEndTracingEnabled());
   }
 
   @Test

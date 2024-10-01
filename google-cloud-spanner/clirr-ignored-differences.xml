@@ -695,11 +695,18 @@
     <method>boolean isEnableApiTracing()</method>
   </difference>
 
-  <!-- Added server side tracing option -->
+  <!-- Added end to end tracing option -->
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
-    <method>boolean isEnableServerSideTracing()</method>
+    <method>boolean isEnableEndToEndTracing()</method>
+  </difference>
+
+  <!-- Added Built In Metrics option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableBuiltInMetrics()</method>
   </difference>
 
   <!-- Added ExcludeTxnFromChangeStreams -->
@@ -732,7 +739,7 @@
     <className>com/google/cloud/spanner/SessionPoolOptions$Builder</className>
     <method>com.google.cloud.spanner.SessionPoolOptions$Builder setUseMultiplexedSession(boolean)</method>
   </difference>
-  
+
   <!-- Added reset() method -->
   <difference>
     <differenceType>7012</differenceType>

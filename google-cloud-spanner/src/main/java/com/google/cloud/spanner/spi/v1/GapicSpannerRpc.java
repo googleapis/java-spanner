@@ -272,6 +272,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
   private final boolean leaderAwareRoutingEnabled;
+  private final boolean endToEndTracingEnabled;
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
   private final boolean serverSideTracingEnabled;
@@ -326,6 +327,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
+    this.endToEndTracingEnabled = options.isEndToEndTracingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
     this.serverSideTracingEnabled = options.isServerSideTracingEnabled();
@@ -353,7 +355,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                               options.getInterceptorProvider(),
                               SpannerInterceptorProvider.createDefault(options.getOpenTelemetry())))
                       // This sets the trace context headers.
-                      .withTraceContext(serverSideTracingEnabled, options.getOpenTelemetry())
+                      .withTraceContext(endToEndTracingEnabled, options.getOpenTelemetry())
                       // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
@@ -393,6 +395,8 @@ public class GapicSpannerRpc implements SpannerRpc {
               .withCheckInterval(checkInterval)
               .withClock(NanoClock.getDefaultClock());
 
+      final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+
       try {
         this.spannerStub =
             GrpcSpannerStub.create(
@@ -402,7 +406,9 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setTransportChannelProvider(channelProvider)
                     .setCredentialsProvider(credentialsProvider)
                     .setStreamWatchdogProvider(watchdogProvider)
-                    .setTracerFactory(options.getApiTracerFactory())
+                    .setTracerFactory(
+                        options.getApiTracerFactory(
+                            /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
                     .build());
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
@@ -430,7 +436,9 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setTransportChannelProvider(channelProvider)
             .setCredentialsProvider(credentialsProvider)
             .setStreamWatchdogProvider(watchdogProvider)
-            .setTracerFactory(options.getApiTracerFactory())
+            .setTracerFactory(
+                options.getApiTracerFactory(
+                    /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
             .executeSqlSettings()
             .setRetrySettings(partitionedDmlRetrySettings);
         pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
@@ -457,7 +465,9 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
-                .setTracerFactory(options.getApiTracerFactory())
+                .setTracerFactory(
+                    options.getApiTracerFactory(
+                        /* isAdminClient = */ true, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
@@ -468,7 +478,9 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
-                .setTracerFactory(options.getApiTracerFactory())
+                .setTracerFactory(
+                    options.getApiTracerFactory(
+                        /* isAdminClient = */ true, isEmulatorEnabled(options, emulatorHost)))
                 .build();
 
         // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
@@ -512,7 +524,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
         // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator
         // is actually running.
-        checkEmulatorConnection(options, channelProvider, credentialsProvider);
+        checkEmulatorConnection(options, channelProvider, credentialsProvider, emulatorHost);
       } catch (Exception e) {
         throw newSpannerException(e);
       }
@@ -611,15 +623,11 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static void checkEmulatorConnection(
       SpannerOptions options,
       TransportChannelProvider channelProvider,
-      CredentialsProvider credentialsProvider)
+      CredentialsProvider credentialsProvider,
+      String emulatorHost)
       throws IOException {
-    final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     // Only do the check if the emulator environment variable has been set to localhost.
-    if (options.getChannelProvider() == null
-        && emulatorHost != null
-        && options.getHost() != null
-        && options.getHost().startsWith("http://localhost")
-        && options.getHost().endsWith(emulatorHost)) {
+    if (isEmulatorEnabled(options, emulatorHost)) {
       // Do a quick check to see if the emulator is actually running.
       try {
         InstanceAdminStubSettings.Builder testEmulatorSettings =
@@ -650,6 +658,15 @@ public class GapicSpannerRpc implements SpannerRpc {
                 emulatorHost));
       }
     }
+  }
+
+  private static boolean isEmulatorEnabled(SpannerOptions options, String emulatorHost) {
+    // Only do the check if the emulator environment variable has been set to localhost.
+    return options.getChannelProvider() == null
+        && emulatorHost != null
+        && options.getHost() != null
+        && options.getHost().startsWith("http://localhost")
+        && options.getHost().endsWith(emulatorHost);
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
@@ -1996,8 +2013,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
     }
-    if (serverSideTracingEnabled) {
-      context = context.withExtraHeaders(metadataProvider.newServerSideTracingHeader());
+    if (endToEndTracingEnabled) {
+      context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
     }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();

@@ -75,8 +75,8 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
   }
 
   SpannerInterceptorProvider withTraceContext(
-      boolean serverSideTracingEnabled, OpenTelemetry openTelemetry) {
-    if (serverSideTracingEnabled) {
+      boolean endToEndTracingEnabled, OpenTelemetry openTelemetry) {
+    if (endToEndTracingEnabled) {
       return with(new TraceContextInterceptor(openTelemetry));
     }
     return this;

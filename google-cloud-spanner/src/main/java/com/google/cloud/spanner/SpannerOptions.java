@@ -30,6 +30,8 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
+import com.google.api.gax.tracing.MetricsTracerFactory;
+import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.api.gax.tracing.OpencensusTracerFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
@@ -134,6 +136,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
+  private final BuiltInOpenTelemetryMetricsProvider builtInOpenTelemetryMetricsProvider =
+      BuiltInOpenTelemetryMetricsProvider.INSTANCE;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
@@ -157,8 +161,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
   private final boolean enableApiTracing;
+  private final boolean enableBuiltInMetrics;
   private final boolean enableExtendedTracing;
-  private final boolean enableServerSideTracing;
+  private final boolean enableEndToEndTracing;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -665,7 +670,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     openTelemetry = builder.openTelemetry;
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
-    enableServerSideTracing = builder.enableServerSideTracing;
+    enableBuiltInMetrics = builder.enableBuiltInMetrics;
+    enableEndToEndTracing = builder.enableEndToEndTracing;
   }
 
   /**
@@ -699,7 +705,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
-    default boolean isEnableServerSideTracing() {
+    default boolean isEnableBuiltInMetrics() {
+      return false;
+    }
+
+    default boolean isEnableEndToEndTracing() {
       return false;
     }
   }
@@ -715,8 +725,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
-    private static final String SPANNER_ENABLE_SERVER_SIDE_TRACING =
-        "SPANNER_ENABLE_SERVER_SIDE_TRACING";
+    private static final String SPANNER_ENABLE_BUILTIN_METRICS = "SPANNER_ENABLE_BUILTIN_METRICS";
+    private static final String SPANNER_ENABLE_END_TO_END_TRACING =
+        "SPANNER_ENABLE_END_TO_END_TRACING";
 
     private SpannerEnvironmentImpl() {}
 
@@ -744,8 +755,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
-    public boolean isEnableServerSideTracing() {
-      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_SERVER_SIDE_TRACING));
+    public boolean isEnableBuiltInMetrics() {
+      // The environment variable SPANNER_ENABLE_BUILTIN_METRICS is used for testing and will be
+      // removed in the future.
+      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_BUILTIN_METRICS));
+    }
+
+    @Override
+    public boolean isEnableEndToEndTracing() {
+      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_END_TO_END_TRACING));
     }
   }
 
@@ -810,8 +828,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
-    private boolean enableServerSideTracing =
-        SpannerOptions.environment.isEnableServerSideTracing();
+    private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
+    private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -877,7 +895,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.useVirtualThreads = options.useVirtualThreads;
       this.enableApiTracing = options.enableApiTracing;
       this.enableExtendedTracing = options.enableExtendedTracing;
-      this.enableServerSideTracing = options.enableServerSideTracing;
+      this.enableBuiltInMetrics = options.enableBuiltInMetrics;
+      this.enableEndToEndTracing = options.enableEndToEndTracing;
     }
 
     @Override
@@ -1391,6 +1410,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Enabling this will enable built in metrics for each individual RPC execution. */
+    Builder setEnableBuiltInMetrics(boolean enableBuiltInMetrics) {
+      this.enableBuiltInMetrics = enableBuiltInMetrics;
+      return this;
+    }
+
     /**
      * Sets whether to enable extended OpenTelemetry tracing. Enabling this option will add the
      * following additional attributes to the traces that are generated by the client:
@@ -1406,13 +1431,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Sets whether to enable Spanner server side tracing. Enabling this option will create the
-     * trace spans at the Spanner layer. By default, server side tracing is disabled. Enabling
-     * server side tracing requires OpenTelemetry to be set up properly. Simply enabling this option
-     * won't generate server side traces.
+     * Sets whether to enable end to end tracing. Enabling this option will create the trace spans
+     * at the Spanner layer. By default, end to end tracing is disabled. Enabling end to end tracing
+     * requires OpenTelemetry to be set up. Simply enabling this option won't generate traces at
+     * Spanner layer.
      */
-    public Builder setEnableServerSideTracing(boolean enableServerSideTracing) {
-      this.enableServerSideTracing = enableServerSideTracing;
+    public Builder setEnableEndToEndTracing(boolean enableEndToEndTracing) {
+      this.enableEndToEndTracing = enableEndToEndTracing;
       return this;
     }
 
@@ -1656,10 +1681,28 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   @Override
   public ApiTracerFactory getApiTracerFactory() {
-    List<ApiTracerFactory> apiTracerFactories = new ArrayList();
+    return createApiTracerFactory(false, false);
+  }
+
+  public ApiTracerFactory getApiTracerFactory(boolean isAdminClient, boolean isEmulatorEnabled) {
+    return createApiTracerFactory(isAdminClient, isEmulatorEnabled);
+  }
+
+  private ApiTracerFactory createApiTracerFactory(
+      boolean isAdminClient, boolean isEmulatorEnabled) {
+    List<ApiTracerFactory> apiTracerFactories = new ArrayList<>();
     // Prefer any direct ApiTracerFactory that might have been set on the builder.
     apiTracerFactories.add(
         MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory()));
+
+    // Add Metrics Tracer factory if built in metrics are enabled and if the client is data client
+    // and if emulator is not enabled.
+    if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled) {
+      ApiTracerFactory metricsTracerFactory = createMetricsApiTracerFactory();
+      if (metricsTracerFactory != null) {
+        apiTracerFactories.add(metricsTracerFactory);
+      }
+    }
 
     return new CompositeTracerFactory(apiTracerFactories);
   }
@@ -1680,6 +1723,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return BaseApiTracerFactory.getInstance();
   }
 
+  private ApiTracerFactory createMetricsApiTracerFactory() {
+    OpenTelemetry openTelemetry =
+        this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
+            getDefaultProjectId(), getCredentials());
+
+    return openTelemetry != null
+        ? new MetricsTracerFactory(
+            new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+            builtInOpenTelemetryMetricsProvider.createClientAttributes(
+                getDefaultProjectId(),
+                "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
+        : null;
+  }
+
   /**
    * Returns true if an {@link com.google.api.gax.tracing.ApiTracer} should be created and set on
    * the Spanner client. Enabling this only has effect if an OpenTelemetry or OpenCensus trace
@@ -1687,6 +1744,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public boolean isEnableApiTracing() {
     return enableApiTracing;
+  }
+
+  /**
+   * Returns true if an {@link com.google.api.gax.tracing.MetricsTracer} should be created and set
+   * on the Spanner client.
+   */
+  boolean isEnableBuiltInMetrics() {
+    return enableBuiltInMetrics;
   }
 
   @BetaApi
@@ -1708,11 +1773,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   /**
-   * Returns whether Spanner server side tracing is enabled. If this option is enabled then trace
-   * spans will be created at the Spanner layer.
+   * Returns whether end to end tracing is enabled. If this option is enabled then trace spans will
+   * be created at the Spanner layer.
    */
-  public boolean isServerSideTracingEnabled() {
-    return enableServerSideTracing;
+  public boolean isEndToEndTracingEnabled() {
+    return enableEndToEndTracing;
   }
 
   /** Returns the default query options to use for the specific database. */

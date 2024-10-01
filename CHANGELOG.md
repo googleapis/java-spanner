@@ -1,5 +1,37 @@
 # Changelog
 
+## [6.76.0](https://github.com/googleapis/java-spanner/compare/v6.75.0...v6.76.0) (2024-09-27)
+
+
+### Features
+
+* Add opt-in flag and ClientInterceptor to propagate trace context for Spanner end to end tracing ([#3162](https://github.com/googleapis/java-spanner/issues/3162)) ([0b7fdaf](https://github.com/googleapis/java-spanner/commit/0b7fdaf1d25e81ca8dd35a0f8d8caa7b77a7e58c))
+* Add samples for backup schedule feature APIs. ([#3339](https://github.com/googleapis/java-spanner/issues/3339)) ([8cd5163](https://github.com/googleapis/java-spanner/commit/8cd516351e7859a81f00f17cb5071edbd804ea90))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.46.1 ([1719f44](https://github.com/googleapis/java-spanner/commit/1719f4465841354db3253fd132868394e530a82d))
+
+## [6.75.0](https://github.com/googleapis/java-spanner/compare/v6.74.1...v6.75.0) (2024-09-19)
+
+
+### Features
+
+* Support multiplexed session for blind write with single use transaction ([#3229](https://github.com/googleapis/java-spanner/issues/3229)) ([b3e2b0f](https://github.com/googleapis/java-spanner/commit/b3e2b0f4892951867715cb7f354c089fca4f050f))
+
+## [6.74.1](https://github.com/googleapis/java-spanner/compare/v6.74.0...v6.74.1) (2024-09-16)
+
+
+### Bug Fixes
+
+* Use core pool size 1 for maintainer ([#3314](https://github.com/googleapis/java-spanner/issues/3314)) ([cce008d](https://github.com/googleapis/java-spanner/commit/cce008d212535d32da990242973f7f517ca5d6dc))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.35.0 ([#3329](https://github.com/googleapis/java-spanner/issues/3329)) ([654835f](https://github.com/googleapis/java-spanner/commit/654835f2433b97665c74be9ec80c169ac905a720))
+
 ## [6.74.0](https://github.com/googleapis/java-spanner/compare/v6.73.0...v6.74.0) (2024-08-27)
 
 
