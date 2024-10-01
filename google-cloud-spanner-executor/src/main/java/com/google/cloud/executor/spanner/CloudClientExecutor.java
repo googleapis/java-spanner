@@ -768,9 +768,9 @@ public class CloudClientExecutor extends CloudExecutor {
           new ThreadFactoryBuilder().setNameFormat("action-pool-%d").build());
 
   // Thread pool to verify end to end traces.
-  private static final Executor serverSideTracesThreadPool =
+  private static final Executor endToEndTracesThreadPool =
       Executors.newCachedThreadPool(
-          new ThreadFactoryBuilder().setNameFormat("server-side-traces-pool-%d").build());
+          new ThreadFactoryBuilder().setNameFormat("end-to-end-traces-pool-%d").build());
 
   private synchronized Spanner getClientWithTimeout(
       long timeoutSeconds, boolean useMultiplexedSession) throws IOException {
@@ -837,7 +837,7 @@ public class CloudClientExecutor extends CloudExecutor {
             .setHost(HOST_PREFIX + WorkerProxy.spannerPort)
             .setCredentials(credentials)
             .setChannelProvider(channelProvider)
-            .setEnableServerSideTracing(true)
+            .setEnableEndToEndTracing(true)
             .setOpenTelemetry(WorkerProxy.openTelemetrySdk)
             .setSessionPoolOption(sessionPoolOptions);
 
@@ -897,7 +897,7 @@ public class CloudClientExecutor extends CloudExecutor {
   /* Handles verification of end to end traces */
   public Status startVerificationOfEndToEndTrace(
       String traceId, ExecutionFlowContext executionContext) {
-    serverSideTracesThreadPool.execute(
+    endToEndTracesThreadPool.execute(
         () -> {
           boolean isValidTrace = isExportedEndToEndTraceValid(traceId);
           if (!isValidTrace) {

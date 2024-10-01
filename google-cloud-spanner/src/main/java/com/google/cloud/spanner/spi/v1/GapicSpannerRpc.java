@@ -275,7 +275,6 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final boolean endToEndTracingEnabled;
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
-  private final boolean serverSideTracingEnabled;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -330,7 +329,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.endToEndTracingEnabled = options.isEndToEndTracingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
-    this.serverSideTracingEnabled = options.isServerSideTracingEnabled();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
