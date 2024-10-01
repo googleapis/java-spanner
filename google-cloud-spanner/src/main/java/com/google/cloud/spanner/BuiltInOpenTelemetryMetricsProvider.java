@@ -28,6 +28,8 @@ import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -83,9 +85,39 @@ final class BuiltInOpenTelemetryMetricsProvider {
     // TODO: Replace this with real value.
     clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
     clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
-    clientAttributes.put(CLIENT_UID_KEY.getKey(), getDefaultTaskValue());
-    clientAttributes.put(CLIENT_HASH_KEY.getKey(), "cloud_spanner_client_raw_metrics");
+    String clientUid = getDefaultTaskValue();
+    clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
+    clientAttributes.put(CLIENT_HASH_KEY.getKey(), generateClientHash(clientUid));
     return clientAttributes;
+  }
+
+  // Returns a 6-digit zero-padded all lower case hexadecimal representation
+  // of hash of the accounting group.
+  //
+  // The hash utilizes the 10 most significant bits of the value returned by
+  // `Hashing.goodFastHash(64).hashBytes()`, so effectively the returned values are
+  // uniformly distributed in the range [000000, 0003ff].
+  //
+  // The primary purpose of this function is to generate a hash value for the
+  // `client_hash` resource label using `client_uid` metric field.
+  //
+  // The range of values is chosen to be small enough to keep the cardinality of
+  // the Resource targets under control.
+  //
+  // Note: If at later time the range needs to be increased, it can be done by
+  // increasing the value of `kPrefixLength` to up to 24 bits without changing
+  // the format of the returned value.
+  static String generateClientHash(String clientUid) {
+    if (clientUid == null) {
+      return "000000";
+    }
+
+    HashFunction hashFunction = Hashing.goodFastHash(64);
+    Long hash = hashFunction.hashBytes(clientUid.getBytes()).asLong();
+    // Don't change this value without reading above comment
+    int kPrefixLength = 10;
+    long shiftedValue = hash >>> (64 - kPrefixLength);
+    return String.format("%06x", shiftedValue);
   }
 
   static String detectClientLocation() {
