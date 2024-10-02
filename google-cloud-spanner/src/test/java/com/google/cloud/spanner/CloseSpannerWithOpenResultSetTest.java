@@ -96,7 +96,12 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
       }
       ((SpannerImpl) spanner).close(1, TimeUnit.MILLISECONDS);
       // This should return an error as the stream is cancelled.
-      SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () -> { //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {}
+              });
       assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
     }
   }
