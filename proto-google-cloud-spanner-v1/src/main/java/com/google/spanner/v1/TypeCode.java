@@ -163,14 +163,14 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    *
    * <pre>
    * Encoded as `string`, in decimal format or scientific notation format.
-   * &lt;br&gt;Decimal format:
-   * &lt;br&gt;`[+-]Digits[.[Digits]]` or
-   * &lt;br&gt;`[+-][Digits].Digits`
+   * Decimal format:
+   * `[+-]Digits[.[Digits]]` or
+   * `[+-][Digits].Digits`
    *
    * Scientific notation:
-   * &lt;br&gt;`[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
-   * &lt;br&gt;`[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
-   * &lt;br&gt;(ExponentIndicator is `"e"` or `"E"`)
+   * `[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
+   * `[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
+   * (ExponentIndicator is `"e"` or `"E"`)
    * </pre>
    *
    * <code>NUMERIC = 10;</code>
@@ -214,6 +214,20 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>ENUM = 14;</code>
    */
   ENUM(14),
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in `ISO8601` duration format -
+   * `P[n]Y[n]M[n]DT[n]H[n]M[n[.fraction]]S`
+   * where `n` is an integer.
+   * For example, `P1Y2M3DT4H5M6.5S` represents time duration of 1 year, 2
+   * months, 3 days, 4 hours, 5 minutes, and 6.5 seconds.
+   * </pre>
+   *
+   * <code>INTERVAL = 16;</code>
+   */
+  INTERVAL(16),
   UNRECOGNIZED(-1),
   ;
 
@@ -345,14 +359,14 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    *
    * <pre>
    * Encoded as `string`, in decimal format or scientific notation format.
-   * &lt;br&gt;Decimal format:
-   * &lt;br&gt;`[+-]Digits[.[Digits]]` or
-   * &lt;br&gt;`[+-][Digits].Digits`
+   * Decimal format:
+   * `[+-]Digits[.[Digits]]` or
+   * `[+-][Digits].Digits`
    *
    * Scientific notation:
-   * &lt;br&gt;`[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
-   * &lt;br&gt;`[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
-   * &lt;br&gt;(ExponentIndicator is `"e"` or `"E"`)
+   * `[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
+   * `[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
+   * (ExponentIndicator is `"e"` or `"E"`)
    * </pre>
    *
    * <code>NUMERIC = 10;</code>
@@ -396,6 +410,20 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>ENUM = 14;</code>
    */
   public static final int ENUM_VALUE = 14;
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in `ISO8601` duration format -
+   * `P[n]Y[n]M[n]DT[n]H[n]M[n[.fraction]]S`
+   * where `n` is an integer.
+   * For example, `P1Y2M3DT4H5M6.5S` represents time duration of 1 year, 2
+   * months, 3 days, 4 hours, 5 minutes, and 6.5 seconds.
+   * </pre>
+   *
+   * <code>INTERVAL = 16;</code>
+   */
+  public static final int INTERVAL_VALUE = 16;
 
   public final int getNumber() {
     if (this == UNRECOGNIZED) {
@@ -451,6 +479,8 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
         return PROTO;
       case 14:
         return ENUM;
+      case 16:
+        return INTERVAL;
       default:
         return null;
     }
