@@ -74,6 +74,14 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
     return this;
   }
 
+  SpannerInterceptorProvider withTraceContext(
+      boolean endToEndTracingEnabled, OpenTelemetry openTelemetry) {
+    if (endToEndTracingEnabled) {
+      return with(new TraceContextInterceptor(openTelemetry));
+    }
+    return this;
+  }
+
   @Override
   public List<ClientInterceptor> getInterceptors() {
     return clientInterceptors;

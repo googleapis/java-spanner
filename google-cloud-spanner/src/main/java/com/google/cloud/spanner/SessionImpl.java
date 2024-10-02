@@ -426,7 +426,8 @@ class SessionImpl implements Session {
     }
   }
 
-  ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
+  ApiFuture<ByteString> beginTransactionAsync(
+      Options transactionOptions, boolean routeToLeader, Map<SpannerRpc.Option, ?> channelHint) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
     final BeginTransactionRequest request =
@@ -436,7 +437,7 @@ class SessionImpl implements Session {
             .build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
-      requestFuture = spanner.getRpc().beginTransactionAsync(request, getOptions(), routeToLeader);
+      requestFuture = spanner.getRpc().beginTransactionAsync(request, channelHint, routeToLeader);
     }
     requestFuture.addListener(
         () -> {

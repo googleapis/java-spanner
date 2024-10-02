@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-executor</artifactId>
-  <version>6.74.0</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
+  <version>6.76.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Executor</name>
 
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.74.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.76.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -160,30 +160,61 @@
 
   </dependencies>
   <build>
-    <finalName>google-spanner-cloud-executor</finalName>
     <plugins>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.7.1</version>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/spanner-executor</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>resources</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/spanner-executor/lib</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <descriptors>
-            <descriptor>assembly-descriptor.xml</descriptor>
-          </descriptors>
+          <finalName>spanner-executor/google-spanner-cloud-executor</finalName>
           <archive>
+            <index>false</index>
             <manifest>
               <mainClass>com.google.cloud.executor.spanner.WorkerProxy</mainClass>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib/</classpathPrefix>
             </manifest>
           </archive>
         </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

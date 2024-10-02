@@ -421,9 +421,13 @@
       "method": "statementSetStatementTimeout",
       "exampleStatements": [
         "set statement_timeout=default",
+        "set statement_timeout = default ",
+        "set statement_timeout = DEFAULT ",
         "set statement_timeout='1s'",
+        "set statement_timeout = '1s' ",
         "set statement_timeout='100ms'",
         "set statement_timeout=100",
+        "set statement_timeout = 100 ",
         "set statement_timeout='10000us'",
         "set statement_timeout='9223372036854775807ns'",
         "set statement_timeout to default",
@@ -436,7 +440,7 @@
       "setStatement": {
         "propertyName": "STATEMENT_TIMEOUT",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "(\\d{1,19}|'(\\d{1,19})(s|ms|us|ns)'|DEFAULT)",
+        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|DEFAULT)",
         "converterName": "ClientSideStatementValueConverters$PgDurationConverter"
       }
     },
@@ -651,11 +655,23 @@
       "statementType": "SET_MAX_COMMIT_DELAY",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.max_commit_delay(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetMaxCommitDelay",
-      "exampleStatements": ["set spanner.max_commit_delay=null", "set spanner.max_commit_delay='1s'", "set spanner.max_commit_delay='100ms'", "set spanner.max_commit_delay to '10000us'", "set spanner.max_commit_delay TO '9223372036854775807ns'"],
+      "exampleStatements": [
+        "set spanner.max_commit_delay=null",
+        "set spanner.max_commit_delay = NULL",
+        "set spanner.max_commit_delay = null ",
+        "set spanner.max_commit_delay='1s'",
+        "set spanner.max_commit_delay = '1s'",
+        "set spanner.max_commit_delay = '1s' ",
+        "set spanner.max_commit_delay=1000",
+        "set spanner.max_commit_delay = 1000",
+        "set spanner.max_commit_delay = 1000 ",
+        "set spanner.max_commit_delay='100ms'",
+        "set spanner.max_commit_delay to '10000us'",
+        "set spanner.max_commit_delay TO '9223372036854775807ns'"],
       "setStatement": {
         "propertyName": "SPANNER.MAX_COMMIT_DELAY",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)",
         "converterName": "ClientSideStatementValueConverters$DurationConverter"
       }
     },

@@ -2083,7 +2083,8 @@ class SessionPool {
         Iterator<PooledSession> iterator = sessions.descendingIterator();
         while (iterator.hasNext()) {
           PooledSession session = iterator.next();
-          if (session.delegate.getLastUseTime().isBefore(minLastUseTime)) {
+          if (session.delegate.getLastUseTime() != null
+              && session.delegate.getLastUseTime().isBefore(minLastUseTime)) {
             if (session.state != SessionState.CLOSING) {
               boolean isRemoved = removeFromPool(session);
               if (isRemoved) {
@@ -2676,7 +2677,8 @@ class SessionPool {
         && (numChecked + numAlreadyChecked)
             < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
-      if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
+      if (session.delegate.getLastUseTime() != null
+          && session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
         iterator.remove();
         return Tuple.of(session, numChecked);
       }
