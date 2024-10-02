@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfig;
@@ -29,7 +28,6 @@ import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.SpannerException;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
@@ -169,13 +167,12 @@ public class ITInstanceAdminTest {
               InstanceInfo.InstanceField.AUTOSCALING_CONFIG,
               InstanceInfo.InstanceField.NODE_COUNT)
           .get();
-    } catch (SpannerException spannerException) {
+    } catch (Exception exception) {
       // TODO: Remove once the client lib supports creating instances with an Edition.
-      if (!(spannerException.getErrorCode() == ErrorCode.FAILED_PRECONDITION
-          && spannerException
-              .getMessage()
-              .contains("The minimum required Edition for this feature is ENTERPRISE."))) {
-        throw spannerException;
+      if (!exception
+          .getMessage()
+          .contains("The minimum required Edition for this feature is ENTERPRISE.")) {
+        throw exception;
       }
       // ignore this error for now.
     }
