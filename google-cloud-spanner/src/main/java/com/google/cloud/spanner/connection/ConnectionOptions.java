@@ -37,6 +37,7 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opentelemetry.api.OpenTelemetry;
@@ -381,6 +382,10 @@ public class ConnectionOptions {
                       "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
                           + "The instance and database in the connection string will automatically be created if these do not yet exist on the emulator. "
                           + "Add dialect=postgresql to the connection string to make sure that the database that is created uses the PostgreSQL dialect.",
+                      false),
+                  ConnectionProperty.createBooleanProperty(
+                      "useAutoSavepointsForEmulator",
+                      "Automatically creates savepoints for each statement in a read/write transaction when using the Emulator. This is no longer needed when using Emulator version 1.5.23 or higher.",
                       false),
                   ConnectionProperty.createBooleanProperty(
                       LENIENT_PROPERTY_NAME,
@@ -740,6 +745,7 @@ public class ConnectionOptions {
   private final boolean returnCommitStats;
   private final Long maxCommitDelay;
   private final boolean autoConfigEmulator;
+  private final boolean useAutoSavepointsForEmulator;
   private final Dialect dialect;
   private final RpcPriority rpcPriority;
   private final DdlInTransactionMode ddlInTransactionMode;
@@ -801,6 +807,7 @@ public class ConnectionOptions {
     this.returnCommitStats = parseReturnCommitStats(this.uri);
     this.maxCommitDelay = parseMaxCommitDelay(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
+    this.useAutoSavepointsForEmulator = parseUseAutoSavepointsForEmulator(this.uri);
     this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
     this.host =
@@ -1170,6 +1177,11 @@ public class ConnectionOptions {
     return Boolean.parseBoolean(value);
   }
 
+  static boolean parseUseAutoSavepointsForEmulator(String uri) {
+    String value = parseUriProperty(uri, "useAutoSavepointsForEmulator");
+    return Boolean.parseBoolean(value);
+  }
+
   @VisibleForTesting
   static Dialect parseDialect(String uri) {
     String value = parseUriProperty(uri, DIALECT_PROPERTY_NAME);
@@ -1535,6 +1547,14 @@ public class ConnectionOptions {
     return maxCommitDelay == null ? null : Duration.ofMillis(maxCommitDelay);
   }
 
+  boolean usesEmulator() {
+    return Suppliers.memoize(
+            () ->
+                this.autoConfigEmulator
+                    || !Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST")))
+        .get();
+  }
+
   /**
    * Whether connections created by this {@link ConnectionOptions} will automatically try to connect
    * to the emulator using the default host/port of the emulator, and automatically create the
@@ -1548,11 +1568,11 @@ public class ConnectionOptions {
   /**
    * Returns true if a connection should generate auto-savepoints for retrying transactions on the
    * emulator. This allows some more concurrent transactions on the emulator.
+   *
+   * <p>This is no longer needed since version 1.5.23 of the emulator.
    */
   boolean useAutoSavepointsForEmulator() {
-    // For now, this option is directly linked to the option autoConfigEmulator=true, which is the
-    // recommended way to configure the emulator for the Connection API.
-    return autoConfigEmulator;
+    return useAutoSavepointsForEmulator;
   }
 
   public Dialect getDialect() {

@@ -121,6 +121,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    */
   private static final String AUTO_SAVEPOINT_NAME = "_auto_savepoint";
 
+  private final boolean usesEmulator;
+
   /**
    * Indicates whether an automatic savepoint should be generated after each statement, so the
    * transaction can be manually aborted and retried by the Connection API when connected to the
@@ -191,6 +193,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
+    private boolean usesEmulator;
     private boolean useAutoSavepointsForEmulator;
     private DatabaseClient dbClient;
     private Boolean retryAbortsInternally;
@@ -202,6 +205,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private List<TransactionRetryListener> transactionRetryListeners;
 
     private Builder() {}
+
+    Builder setUsesEmulator(boolean usesEmulator) {
+      this.usesEmulator = usesEmulator;
+      return this;
+    }
 
     Builder setUseAutoSavepointsForEmulator(boolean useAutoSavepoints) {
       this.useAutoSavepointsForEmulator = useAutoSavepoints;
@@ -269,13 +277,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private ReadWriteTransaction(Builder builder) {
     super(builder);
     this.transactionId = ID_GENERATOR.incrementAndGet();
-    this.useAutoSavepointsForEmulator =
-        builder.useAutoSavepointsForEmulator && builder.retryAbortsInternally;
+    this.usesEmulator = builder.usesEmulator;
+    this.useAutoSavepointsForEmulator = builder.useAutoSavepointsForEmulator;
     // Use a higher max for internal retries if auto-savepoints have been enabled for the emulator.
     // This can cause a larger number of transactions to be aborted and retried, and retrying on the
     // emulator is fast, so increasing the limit is reasonable.
     this.maxInternalRetries =
-        this.useAutoSavepointsForEmulator
+        builder.usesEmulator && builder.retryAbortsInternally
             ? DEFAULT_MAX_INTERNAL_RETRIES * 10
             : DEFAULT_MAX_INTERNAL_RETRIES;
     this.dbClient = builder.dbClient;
@@ -1076,7 +1084,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             Thread.sleep(delay);
           } else if (aborted.isEmulatorOnlySupportsOneTransactionException()) {
             //noinspection BusyWait
-            Thread.sleep(ThreadLocalRandom.current().nextInt(50));
+            Thread.sleep(ThreadLocalRandom.current().nextInt(1, 5));
           }
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
