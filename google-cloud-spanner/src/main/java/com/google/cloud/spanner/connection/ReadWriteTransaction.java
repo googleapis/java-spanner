@@ -284,7 +284,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     // emulator is fast, so increasing the limit is reasonable.
     this.maxInternalRetries =
         builder.usesEmulator && builder.retryAbortsInternally
-            ? DEFAULT_MAX_INTERNAL_RETRIES * 10
+            ? DEFAULT_MAX_INTERNAL_RETRIES * 50
             : DEFAULT_MAX_INTERNAL_RETRIES;
     this.dbClient = builder.dbClient;
     this.delayTransactionStartUntilFirstWrite = builder.delayTransactionStartUntilFirstWrite;
