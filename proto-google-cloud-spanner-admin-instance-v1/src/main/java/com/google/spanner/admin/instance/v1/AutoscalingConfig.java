@@ -38,7 +38,9 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     super(builder);
   }
 
-  private AutoscalingConfig() {}
+  private AutoscalingConfig() {
+    asymmetricAutoscalingOptions_ = java.util.Collections.emptyList();
+  }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
@@ -2081,6 +2083,2270 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     }
   }
 
+  public interface AsymmetricAutoscalingOptionOrBuilder
+      extends
+      // @@protoc_insertion_point(interface_extends:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+     * applies. Only read-only replicas are supported.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     *
+     * @return Whether the replicaSelection field is set.
+     */
+    boolean hasReplicaSelection();
+    /**
+     *
+     *
+     * <pre>
+     * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+     * applies. Only read-only replicas are supported.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     *
+     * @return The replicaSelection.
+     */
+    com.google.spanner.admin.instance.v1.ReplicaSelection getReplicaSelection();
+    /**
+     *
+     *
+     * <pre>
+     * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+     * applies. Only read-only replicas are supported.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    com.google.spanner.admin.instance.v1.ReplicaSelectionOrBuilder getReplicaSelectionOrBuilder();
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Overrides applied to the top-level autoscaling configuration
+     * for the selected replicas.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the overrides field is set.
+     */
+    boolean hasOverrides();
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Overrides applied to the top-level autoscaling configuration
+     * for the selected replicas.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The overrides.
+     */
+    com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .AutoscalingConfigOverrides
+        getOverrides();
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Overrides applied to the top-level autoscaling configuration
+     * for the selected replicas.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .AutoscalingConfigOverridesOrBuilder
+        getOverridesOrBuilder();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * AsymmetricAutoscalingOption specifies the scaling of replicas identified by
+   * the given selection.
+   * </pre>
+   *
+   * Protobuf type {@code
+   * google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption}
+   */
+  public static final class AsymmetricAutoscalingOption
+      extends com.google.protobuf.GeneratedMessageV3
+      implements
+      // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption)
+      AsymmetricAutoscalingOptionOrBuilder {
+    private static final long serialVersionUID = 0L;
+    // Use AsymmetricAutoscalingOption.newBuilder() to construct.
+    private AsymmetricAutoscalingOption(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+
+    private AsymmetricAutoscalingOption() {}
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+      return new AsymmetricAutoscalingOption();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+          .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+          .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .class,
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .Builder.class);
+    }
+
+    public interface AutoscalingConfigOverridesOrBuilder
+        extends
+        // @@protoc_insertion_point(interface_extends:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the min/max limit in the top-level
+       * autoscaling configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return Whether the autoscalingLimits field is set.
+       */
+      boolean hasAutoscalingLimits();
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the min/max limit in the top-level
+       * autoscaling configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The autoscalingLimits.
+       */
+      com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+          getAutoscalingLimits();
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the min/max limit in the top-level
+       * autoscaling configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimitsOrBuilder
+          getAutoscalingLimitsOrBuilder();
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the autoscaling target
+       * high_priority_cpu_utilization_percent in the top-level autoscaling
+       * configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * int32 autoscaling_target_high_priority_cpu_utilization_percent = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The autoscalingTargetHighPriorityCpuUtilizationPercent.
+       */
+      int getAutoscalingTargetHighPriorityCpuUtilizationPercent();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Overrides the top-level autoscaling configuration for the replicas
+     * identified by `replica_selection`. All fields in this message are
+     * optional. Any unspecified fields will use the corresponding values from
+     * the top-level autoscaling configuration.
+     * </pre>
+     *
+     * Protobuf type {@code
+     * google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides}
+     */
+    public static final class AutoscalingConfigOverrides
+        extends com.google.protobuf.GeneratedMessageV3
+        implements
+        // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides)
+        AutoscalingConfigOverridesOrBuilder {
+      private static final long serialVersionUID = 0L;
+      // Use AutoscalingConfigOverrides.newBuilder() to construct.
+      private AutoscalingConfigOverrides(
+          com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+
+      private AutoscalingConfigOverrides() {}
+
+      @java.lang.Override
+      @SuppressWarnings({"unused"})
+      protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+        return new AutoscalingConfigOverrides();
+      }
+
+      public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+            .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_AutoscalingConfigOverrides_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+            .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_AutoscalingConfigOverrides_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                    .AutoscalingConfigOverrides.class,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                    .AutoscalingConfigOverrides.Builder.class);
+      }
+
+      private int bitField0_;
+      public static final int AUTOSCALING_LIMITS_FIELD_NUMBER = 1;
+      private com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+          autoscalingLimits_;
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the min/max limit in the top-level
+       * autoscaling configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return Whether the autoscalingLimits field is set.
+       */
+      @java.lang.Override
+      public boolean hasAutoscalingLimits() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the min/max limit in the top-level
+       * autoscaling configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The autoscalingLimits.
+       */
+      @java.lang.Override
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+          getAutoscalingLimits() {
+        return autoscalingLimits_ == null
+            ? com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                .getDefaultInstance()
+            : autoscalingLimits_;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the min/max limit in the top-level
+       * autoscaling configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      @java.lang.Override
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimitsOrBuilder
+          getAutoscalingLimitsOrBuilder() {
+        return autoscalingLimits_ == null
+            ? com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                .getDefaultInstance()
+            : autoscalingLimits_;
+      }
+
+      public static final int
+          AUTOSCALING_TARGET_HIGH_PRIORITY_CPU_UTILIZATION_PERCENT_FIELD_NUMBER = 2;
+      private int autoscalingTargetHighPriorityCpuUtilizationPercent_ = 0;
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the autoscaling target
+       * high_priority_cpu_utilization_percent in the top-level autoscaling
+       * configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * int32 autoscaling_target_high_priority_cpu_utilization_percent = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The autoscalingTargetHighPriorityCpuUtilizationPercent.
+       */
+      @java.lang.Override
+      public int getAutoscalingTargetHighPriorityCpuUtilizationPercent() {
+        return autoscalingTargetHighPriorityCpuUtilizationPercent_;
+      }
+
+      private byte memoizedIsInitialized = -1;
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) != 0)) {
+          output.writeMessage(1, getAutoscalingLimits());
+        }
+        if (autoscalingTargetHighPriorityCpuUtilizationPercent_ != 0) {
+          output.writeInt32(2, autoscalingTargetHighPriorityCpuUtilizationPercent_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) != 0)) {
+          size +=
+              com.google.protobuf.CodedOutputStream.computeMessageSize(1, getAutoscalingLimits());
+        }
+        if (autoscalingTargetHighPriorityCpuUtilizationPercent_ != 0) {
+          size +=
+              com.google.protobuf.CodedOutputStream.computeInt32Size(
+                  2, autoscalingTargetHighPriorityCpuUtilizationPercent_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+          return true;
+        }
+        if (!(obj
+            instanceof
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .AutoscalingConfigOverrides)) {
+          return super.equals(obj);
+        }
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .AutoscalingConfigOverrides
+            other =
+                (com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                        .AutoscalingConfigOverrides)
+                    obj;
+
+        if (hasAutoscalingLimits() != other.hasAutoscalingLimits()) return false;
+        if (hasAutoscalingLimits()) {
+          if (!getAutoscalingLimits().equals(other.getAutoscalingLimits())) return false;
+        }
+        if (getAutoscalingTargetHighPriorityCpuUtilizationPercent()
+            != other.getAutoscalingTargetHighPriorityCpuUtilizationPercent()) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+        return true;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (hasAutoscalingLimits()) {
+          hash = (37 * hash) + AUTOSCALING_LIMITS_FIELD_NUMBER;
+          hash = (53 * hash) + getAutoscalingLimits().hashCode();
+        }
+        hash = (37 * hash) + AUTOSCALING_TARGET_HIGH_PRIORITY_CPU_UTILIZATION_PERCENT_FIELD_NUMBER;
+        hash = (53 * hash) + getAutoscalingTargetHighPriorityCpuUtilizationPercent();
+        hash = (29 * hash) + getUnknownFields().hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(java.nio.ByteBuffer data)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(
+              java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(com.google.protobuf.ByteString data)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(
+              com.google.protobuf.ByteString data,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(java.io.InputStream input) throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(
+              java.io.InputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+            PARSER, input, extensionRegistry);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseDelimitedFrom(
+              java.io.InputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+            PARSER, input, extensionRegistry);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          parseFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+            PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() {
+        return newBuilder();
+      }
+
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+
+      public static Builder newBuilder(
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides
+              prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Overrides the top-level autoscaling configuration for the replicas
+       * identified by `replica_selection`. All fields in this message are
+       * optional. Any unspecified fields will use the corresponding values from
+       * the top-level autoscaling configuration.
+       * </pre>
+       *
+       * Protobuf type {@code
+       * google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides}
+       */
+      public static final class Builder
+          extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+          implements
+          // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides)
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverridesOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+          return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+              .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_AutoscalingConfigOverrides_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+              .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_AutoscalingConfigOverrides_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                      .AutoscalingConfigOverrides.class,
+                  com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                      .AutoscalingConfigOverrides.Builder.class);
+        }
+
+        // Construct using
+        // com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
+            getAutoscalingLimitsFieldBuilder();
+          }
+        }
+
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          bitField0_ = 0;
+          autoscalingLimits_ = null;
+          if (autoscalingLimitsBuilder_ != null) {
+            autoscalingLimitsBuilder_.dispose();
+            autoscalingLimitsBuilder_ = null;
+          }
+          autoscalingTargetHighPriorityCpuUtilizationPercent_ = 0;
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+          return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+              .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_AutoscalingConfigOverrides_descriptor;
+        }
+
+        @java.lang.Override
+        public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .AutoscalingConfigOverrides
+            getDefaultInstanceForType() {
+          return com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverrides.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .AutoscalingConfigOverrides
+            build() {
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides
+              result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .AutoscalingConfigOverrides
+            buildPartial() {
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides
+              result =
+                  new com.google.spanner.admin.instance.v1.AutoscalingConfig
+                      .AsymmetricAutoscalingOption.AutoscalingConfigOverrides(this);
+          if (bitField0_ != 0) {
+            buildPartial0(result);
+          }
+          onBuilt();
+          return result;
+        }
+
+        private void buildPartial0(
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                    .AutoscalingConfigOverrides
+                result) {
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            result.autoscalingLimits_ =
+                autoscalingLimitsBuilder_ == null
+                    ? autoscalingLimits_
+                    : autoscalingLimitsBuilder_.build();
+            to_bitField0_ |= 0x00000001;
+          }
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.autoscalingTargetHighPriorityCpuUtilizationPercent_ =
+                autoscalingTargetHighPriorityCpuUtilizationPercent_;
+          }
+          result.bitField0_ |= to_bitField0_;
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return super.clone();
+        }
+
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+          return super.setField(field, value);
+        }
+
+        @java.lang.Override
+        public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return super.clearField(field);
+        }
+
+        @java.lang.Override
+        public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return super.clearOneof(oneof);
+        }
+
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index,
+            java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
+        }
+
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+          return super.addRepeatedField(field, value);
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other
+              instanceof
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides) {
+            return mergeFrom(
+                (com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                        .AutoscalingConfigOverrides)
+                    other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                    .AutoscalingConfigOverrides
+                other) {
+          if (other
+              == com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides.getDefaultInstance()) return this;
+          if (other.hasAutoscalingLimits()) {
+            mergeAutoscalingLimits(other.getAutoscalingLimits());
+          }
+          if (other.getAutoscalingTargetHighPriorityCpuUtilizationPercent() != 0) {
+            setAutoscalingTargetHighPriorityCpuUtilizationPercent(
+                other.getAutoscalingTargetHighPriorityCpuUtilizationPercent());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
+          try {
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10:
+                  {
+                    input.readMessage(
+                        getAutoscalingLimitsFieldBuilder().getBuilder(), extensionRegistry);
+                    bitField0_ |= 0x00000001;
+                    break;
+                  } // case 10
+                case 16:
+                  {
+                    autoscalingTargetHighPriorityCpuUtilizationPercent_ = input.readInt32();
+                    bitField0_ |= 0x00000002;
+                    break;
+                  } // case 16
+                default:
+                  {
+                    if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                      done = true; // was an endgroup tag
+                    }
+                    break;
+                  } // default:
+              } // switch (tag)
+            } // while (!done)
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.unwrapIOException();
+          } finally {
+            onChanged();
+          } // finally
+          return this;
+        }
+
+        private int bitField0_;
+
+        private com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+            autoscalingLimits_;
+        private com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.Builder,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimitsOrBuilder>
+            autoscalingLimitsBuilder_;
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return Whether the autoscalingLimits field is set.
+         */
+        public boolean hasAutoscalingLimits() {
+          return ((bitField0_ & 0x00000001) != 0);
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return The autoscalingLimits.
+         */
+        public com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+            getAutoscalingLimits() {
+          if (autoscalingLimitsBuilder_ == null) {
+            return autoscalingLimits_ == null
+                ? com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                    .getDefaultInstance()
+                : autoscalingLimits_;
+          } else {
+            return autoscalingLimitsBuilder_.getMessage();
+          }
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         */
+        public Builder setAutoscalingLimits(
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits value) {
+          if (autoscalingLimitsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            autoscalingLimits_ = value;
+          } else {
+            autoscalingLimitsBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return this;
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         */
+        public Builder setAutoscalingLimits(
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.Builder
+                builderForValue) {
+          if (autoscalingLimitsBuilder_ == null) {
+            autoscalingLimits_ = builderForValue.build();
+          } else {
+            autoscalingLimitsBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return this;
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         */
+        public Builder mergeAutoscalingLimits(
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits value) {
+          if (autoscalingLimitsBuilder_ == null) {
+            if (((bitField0_ & 0x00000001) != 0)
+                && autoscalingLimits_ != null
+                && autoscalingLimits_
+                    != com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                        .getDefaultInstance()) {
+              getAutoscalingLimitsBuilder().mergeFrom(value);
+            } else {
+              autoscalingLimits_ = value;
+            }
+          } else {
+            autoscalingLimitsBuilder_.mergeFrom(value);
+          }
+          if (autoscalingLimits_ != null) {
+            bitField0_ |= 0x00000001;
+            onChanged();
+          }
+          return this;
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         */
+        public Builder clearAutoscalingLimits() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          autoscalingLimits_ = null;
+          if (autoscalingLimitsBuilder_ != null) {
+            autoscalingLimitsBuilder_.dispose();
+            autoscalingLimitsBuilder_ = null;
+          }
+          onChanged();
+          return this;
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         */
+        public com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.Builder
+            getAutoscalingLimitsBuilder() {
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return getAutoscalingLimitsFieldBuilder().getBuilder();
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         */
+        public com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimitsOrBuilder
+            getAutoscalingLimitsOrBuilder() {
+          if (autoscalingLimitsBuilder_ != null) {
+            return autoscalingLimitsBuilder_.getMessageOrBuilder();
+          } else {
+            return autoscalingLimits_ == null
+                ? com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                    .getDefaultInstance()
+                : autoscalingLimits_;
+          }
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the min/max limit in the top-level
+         * autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * .google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits autoscaling_limits = 1 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         */
+        private com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.Builder,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimitsOrBuilder>
+            getAutoscalingLimitsFieldBuilder() {
+          if (autoscalingLimitsBuilder_ == null) {
+            autoscalingLimitsBuilder_ =
+                new com.google.protobuf.SingleFieldBuilderV3<
+                    com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits,
+                    com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                        .Builder,
+                    com.google.spanner.admin.instance.v1.AutoscalingConfig
+                        .AutoscalingLimitsOrBuilder>(
+                    getAutoscalingLimits(), getParentForChildren(), isClean());
+            autoscalingLimits_ = null;
+          }
+          return autoscalingLimitsBuilder_;
+        }
+
+        private int autoscalingTargetHighPriorityCpuUtilizationPercent_;
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the autoscaling target
+         * high_priority_cpu_utilization_percent in the top-level autoscaling
+         * configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * int32 autoscaling_target_high_priority_cpu_utilization_percent = 2 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return The autoscalingTargetHighPriorityCpuUtilizationPercent.
+         */
+        @java.lang.Override
+        public int getAutoscalingTargetHighPriorityCpuUtilizationPercent() {
+          return autoscalingTargetHighPriorityCpuUtilizationPercent_;
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the autoscaling target
+         * high_priority_cpu_utilization_percent in the top-level autoscaling
+         * configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * int32 autoscaling_target_high_priority_cpu_utilization_percent = 2 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @param value The autoscalingTargetHighPriorityCpuUtilizationPercent to set.
+         * @return This builder for chaining.
+         */
+        public Builder setAutoscalingTargetHighPriorityCpuUtilizationPercent(int value) {
+
+          autoscalingTargetHighPriorityCpuUtilizationPercent_ = value;
+          bitField0_ |= 0x00000002;
+          onChanged();
+          return this;
+        }
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the autoscaling target
+         * high_priority_cpu_utilization_percent in the top-level autoscaling
+         * configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * int32 autoscaling_target_high_priority_cpu_utilization_percent = 2 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return This builder for chaining.
+         */
+        public Builder clearAutoscalingTargetHighPriorityCpuUtilizationPercent() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          autoscalingTargetHighPriorityCpuUtilizationPercent_ = 0;
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+        // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides)
+      }
+
+      // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides)
+      private static final com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          DEFAULT_INSTANCE;
+
+      static {
+        DEFAULT_INSTANCE =
+            new com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .AutoscalingConfigOverrides();
+      }
+
+      public static com.google.spanner.admin.instance.v1.AutoscalingConfig
+              .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+          getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      private static final com.google.protobuf.Parser<AutoscalingConfigOverrides> PARSER =
+          new com.google.protobuf.AbstractParser<AutoscalingConfigOverrides>() {
+            @java.lang.Override
+            public AutoscalingConfigOverrides parsePartialFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+              Builder builder = newBuilder();
+              try {
+                builder.mergeFrom(input, extensionRegistry);
+              } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+                throw e.setUnfinishedMessage(builder.buildPartial());
+              } catch (com.google.protobuf.UninitializedMessageException e) {
+                throw e.asInvalidProtocolBufferException()
+                    .setUnfinishedMessage(builder.buildPartial());
+              } catch (java.io.IOException e) {
+                throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                    .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
+            }
+          };
+
+      public static com.google.protobuf.Parser<AutoscalingConfigOverrides> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<AutoscalingConfigOverrides> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverrides
+          getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+    }
+
+    private int bitField0_;
+    public static final int REPLICA_SELECTION_FIELD_NUMBER = 1;
+    private com.google.spanner.admin.instance.v1.ReplicaSelection replicaSelection_;
+    /**
+     *
+     *
+     * <pre>
+     * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+     * applies. Only read-only replicas are supported.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     *
+     * @return Whether the replicaSelection field is set.
+     */
+    @java.lang.Override
+    public boolean hasReplicaSelection() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+     * applies. Only read-only replicas are supported.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     *
+     * @return The replicaSelection.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.ReplicaSelection getReplicaSelection() {
+      return replicaSelection_ == null
+          ? com.google.spanner.admin.instance.v1.ReplicaSelection.getDefaultInstance()
+          : replicaSelection_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+     * applies. Only read-only replicas are supported.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.ReplicaSelectionOrBuilder
+        getReplicaSelectionOrBuilder() {
+      return replicaSelection_ == null
+          ? com.google.spanner.admin.instance.v1.ReplicaSelection.getDefaultInstance()
+          : replicaSelection_;
+    }
+
+    public static final int OVERRIDES_FIELD_NUMBER = 2;
+    private com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .AutoscalingConfigOverrides
+        overrides_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Overrides applied to the top-level autoscaling configuration
+     * for the selected replicas.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the overrides field is set.
+     */
+    @java.lang.Override
+    public boolean hasOverrides() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Overrides applied to the top-level autoscaling configuration
+     * for the selected replicas.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The overrides.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .AutoscalingConfigOverrides
+        getOverrides() {
+      return overrides_ == null
+          ? com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverrides.getDefaultInstance()
+          : overrides_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Overrides applied to the top-level autoscaling configuration
+     * for the selected replicas.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .AutoscalingConfigOverridesOrBuilder
+        getOverridesOrBuilder() {
+      return overrides_ == null
+          ? com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverrides.getDefaultInstance()
+          : overrides_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeMessage(1, getReplicaSelection());
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeMessage(2, getOverrides());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, getReplicaSelection());
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getOverrides());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj
+          instanceof
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption)) {
+        return super.equals(obj);
+      }
+      com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption other =
+          (com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption) obj;
+
+      if (hasReplicaSelection() != other.hasReplicaSelection()) return false;
+      if (hasReplicaSelection()) {
+        if (!getReplicaSelection().equals(other.getReplicaSelection())) return false;
+      }
+      if (hasOverrides() != other.hasOverrides()) return false;
+      if (hasOverrides()) {
+        if (!getOverrides().equals(other.getOverrides())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasReplicaSelection()) {
+        hash = (37 * hash) + REPLICA_SELECTION_FIELD_NUMBER;
+        hash = (53 * hash) + getReplicaSelection().hashCode();
+      }
+      if (hasOverrides()) {
+        hash = (37 * hash) + OVERRIDES_FIELD_NUMBER;
+        hash = (53 * hash) + getOverrides().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(java.nio.ByteBuffer data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(
+            java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(com.google.protobuf.ByteString data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(
+            com.google.protobuf.ByteString data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(java.io.InputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(
+            java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseDelimitedFrom(
+            java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        parseFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * AsymmetricAutoscalingOption specifies the scaling of replicas identified by
+     * the given selection.
+     * </pre>
+     *
+     * Protobuf type {@code
+     * google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption}
+     */
+    public static final class Builder
+        extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+        implements
+        // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption)
+        com.google.spanner.admin.instance.v1.AutoscalingConfig
+            .AsymmetricAutoscalingOptionOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+            .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+            .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                    .class,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                    .Builder.class);
+      }
+
+      // Construct using
+      // com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
+          getReplicaSelectionFieldBuilder();
+          getOverridesFieldBuilder();
+        }
+      }
+
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        replicaSelection_ = null;
+        if (replicaSelectionBuilder_ != null) {
+          replicaSelectionBuilder_.dispose();
+          replicaSelectionBuilder_ = null;
+        }
+        overrides_ = null;
+        if (overridesBuilder_ != null) {
+          overridesBuilder_.dispose();
+          overridesBuilder_ = null;
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
+            .internal_static_google_spanner_admin_instance_v1_AutoscalingConfig_AsymmetricAutoscalingOption_descriptor;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+          getDefaultInstanceForType() {
+        return com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+          build() {
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption result =
+            buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+          buildPartial() {
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption result =
+            new com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption(
+                this);
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.replicaSelection_ =
+              replicaSelectionBuilder_ == null
+                  ? replicaSelection_
+                  : replicaSelectionBuilder_.build();
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.overrides_ = overridesBuilder_ == null ? overrides_ : overridesBuilder_.build();
+          to_bitField0_ |= 0x00000002;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.setField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+
+      @java.lang.Override
+      public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other
+            instanceof
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption) {
+          return mergeFrom(
+              (com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption)
+                  other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              other) {
+        if (other
+            == com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .getDefaultInstance()) return this;
+        if (other.hasReplicaSelection()) {
+          mergeReplicaSelection(other.getReplicaSelection());
+        }
+        if (other.hasOverrides()) {
+          mergeOverrides(other.getOverrides());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  input.readMessage(
+                      getReplicaSelectionFieldBuilder().getBuilder(), extensionRegistry);
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+              case 18:
+                {
+                  input.readMessage(getOverridesFieldBuilder().getBuilder(), extensionRegistry);
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+
+      private int bitField0_;
+
+      private com.google.spanner.admin.instance.v1.ReplicaSelection replicaSelection_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.spanner.admin.instance.v1.ReplicaSelection,
+              com.google.spanner.admin.instance.v1.ReplicaSelection.Builder,
+              com.google.spanner.admin.instance.v1.ReplicaSelectionOrBuilder>
+          replicaSelectionBuilder_;
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       *
+       * @return Whether the replicaSelection field is set.
+       */
+      public boolean hasReplicaSelection() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       *
+       * @return The replicaSelection.
+       */
+      public com.google.spanner.admin.instance.v1.ReplicaSelection getReplicaSelection() {
+        if (replicaSelectionBuilder_ == null) {
+          return replicaSelection_ == null
+              ? com.google.spanner.admin.instance.v1.ReplicaSelection.getDefaultInstance()
+              : replicaSelection_;
+        } else {
+          return replicaSelectionBuilder_.getMessage();
+        }
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       */
+      public Builder setReplicaSelection(
+          com.google.spanner.admin.instance.v1.ReplicaSelection value) {
+        if (replicaSelectionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          replicaSelection_ = value;
+        } else {
+          replicaSelectionBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       */
+      public Builder setReplicaSelection(
+          com.google.spanner.admin.instance.v1.ReplicaSelection.Builder builderForValue) {
+        if (replicaSelectionBuilder_ == null) {
+          replicaSelection_ = builderForValue.build();
+        } else {
+          replicaSelectionBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       */
+      public Builder mergeReplicaSelection(
+          com.google.spanner.admin.instance.v1.ReplicaSelection value) {
+        if (replicaSelectionBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0)
+              && replicaSelection_ != null
+              && replicaSelection_
+                  != com.google.spanner.admin.instance.v1.ReplicaSelection.getDefaultInstance()) {
+            getReplicaSelectionBuilder().mergeFrom(value);
+          } else {
+            replicaSelection_ = value;
+          }
+        } else {
+          replicaSelectionBuilder_.mergeFrom(value);
+        }
+        if (replicaSelection_ != null) {
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       */
+      public Builder clearReplicaSelection() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        replicaSelection_ = null;
+        if (replicaSelectionBuilder_ != null) {
+          replicaSelectionBuilder_.dispose();
+          replicaSelectionBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       */
+      public com.google.spanner.admin.instance.v1.ReplicaSelection.Builder
+          getReplicaSelectionBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getReplicaSelectionFieldBuilder().getBuilder();
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       */
+      public com.google.spanner.admin.instance.v1.ReplicaSelectionOrBuilder
+          getReplicaSelectionOrBuilder() {
+        if (replicaSelectionBuilder_ != null) {
+          return replicaSelectionBuilder_.getMessageOrBuilder();
+        } else {
+          return replicaSelection_ == null
+              ? com.google.spanner.admin.instance.v1.ReplicaSelection.getDefaultInstance()
+              : replicaSelection_;
+        }
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Required. Selects the replicas to which this AsymmetricAutoscalingOption
+       * applies. Only read-only replicas are supported.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.ReplicaSelection replica_selection = 1 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.spanner.admin.instance.v1.ReplicaSelection,
+              com.google.spanner.admin.instance.v1.ReplicaSelection.Builder,
+              com.google.spanner.admin.instance.v1.ReplicaSelectionOrBuilder>
+          getReplicaSelectionFieldBuilder() {
+        if (replicaSelectionBuilder_ == null) {
+          replicaSelectionBuilder_ =
+              new com.google.protobuf.SingleFieldBuilderV3<
+                  com.google.spanner.admin.instance.v1.ReplicaSelection,
+                  com.google.spanner.admin.instance.v1.ReplicaSelection.Builder,
+                  com.google.spanner.admin.instance.v1.ReplicaSelectionOrBuilder>(
+                  getReplicaSelection(), getParentForChildren(), isClean());
+          replicaSelection_ = null;
+        }
+        return replicaSelectionBuilder_;
+      }
+
+      private com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverrides
+          overrides_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides,
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides.Builder,
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverridesOrBuilder>
+          overridesBuilder_;
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return Whether the overrides field is set.
+       */
+      public boolean hasOverrides() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The overrides.
+       */
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverrides
+          getOverrides() {
+        if (overridesBuilder_ == null) {
+          return overrides_ == null
+              ? com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides.getDefaultInstance()
+              : overrides_;
+        } else {
+          return overridesBuilder_.getMessage();
+        }
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public Builder setOverrides(
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides
+              value) {
+        if (overridesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          overrides_ = value;
+        } else {
+          overridesBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public Builder setOverrides(
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides.Builder
+              builderForValue) {
+        if (overridesBuilder_ == null) {
+          overrides_ = builderForValue.build();
+        } else {
+          overridesBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public Builder mergeOverrides(
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides
+              value) {
+        if (overridesBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) != 0)
+              && overrides_ != null
+              && overrides_
+                  != com.google.spanner.admin.instance.v1.AutoscalingConfig
+                      .AsymmetricAutoscalingOption.AutoscalingConfigOverrides
+                      .getDefaultInstance()) {
+            getOverridesBuilder().mergeFrom(value);
+          } else {
+            overrides_ = value;
+          }
+        } else {
+          overridesBuilder_.mergeFrom(value);
+        }
+        if (overrides_ != null) {
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public Builder clearOverrides() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        overrides_ = null;
+        if (overridesBuilder_ != null) {
+          overridesBuilder_.dispose();
+          overridesBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverrides.Builder
+          getOverridesBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getOverridesFieldBuilder().getBuilder();
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+              .AutoscalingConfigOverridesOrBuilder
+          getOverridesOrBuilder() {
+        if (overridesBuilder_ != null) {
+          return overridesBuilder_.getMessageOrBuilder();
+        } else {
+          return overrides_ == null
+              ? com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides.getDefaultInstance()
+              : overrides_;
+        }
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Overrides applied to the top-level autoscaling configuration
+       * for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides overrides = 2 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides,
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverrides.Builder,
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .AutoscalingConfigOverridesOrBuilder>
+          getOverridesFieldBuilder() {
+        if (overridesBuilder_ == null) {
+          overridesBuilder_ =
+              new com.google.protobuf.SingleFieldBuilderV3<
+                  com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                      .AutoscalingConfigOverrides,
+                  com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                      .AutoscalingConfigOverrides.Builder,
+                  com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                      .AutoscalingConfigOverridesOrBuilder>(
+                  getOverrides(), getParentForChildren(), isClean());
+          overrides_ = null;
+        }
+        return overridesBuilder_;
+      }
+
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+      // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption)
+    }
+
+    // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption)
+    private static final com.google.spanner.admin.instance.v1.AutoscalingConfig
+            .AsymmetricAutoscalingOption
+        DEFAULT_INSTANCE;
+
+    static {
+      DEFAULT_INSTANCE =
+          new com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption();
+    }
+
+    public static com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<AsymmetricAutoscalingOption> PARSER =
+        new com.google.protobuf.AbstractParser<AsymmetricAutoscalingOption>() {
+          @java.lang.Override
+          public AsymmetricAutoscalingOption parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
+          }
+        };
+
+    public static com.google.protobuf.Parser<AsymmetricAutoscalingOption> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AsymmetricAutoscalingOption> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+  }
+
   private int bitField0_;
   public static final int AUTOSCALING_LIMITS_FIELD_NUMBER = 1;
   private com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
@@ -2204,6 +4470,136 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         : autoscalingTargets_;
   }
 
+  public static final int ASYMMETRIC_AUTOSCALING_OPTIONS_FIELD_NUMBER = 3;
+
+  @SuppressWarnings("serial")
+  private java.util.List<
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption>
+      asymmetricAutoscalingOptions_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional asymmetric autoscaling options.
+   * Replicas matching the replica selection criteria will be autoscaled
+   * independently from other replicas. The autoscaler will scale the replicas
+   * based on the utilization of replicas identified by the replica selection.
+   * Replica selections should not overlap with each other.
+   *
+   * Other replicas (those do not match any replica selection) will be
+   * autoscaled together and will have the same compute capacity allocated to
+   * them.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public java.util.List<
+          com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption>
+      getAsymmetricAutoscalingOptionsList() {
+    return asymmetricAutoscalingOptions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional asymmetric autoscaling options.
+   * Replicas matching the replica selection criteria will be autoscaled
+   * independently from other replicas. The autoscaler will scale the replicas
+   * based on the utilization of replicas identified by the replica selection.
+   * Replica selections should not overlap with each other.
+   *
+   * Other replicas (those do not match any replica selection) will be
+   * autoscaled together and will have the same compute capacity allocated to
+   * them.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public java.util.List<
+          ? extends
+              com.google.spanner.admin.instance.v1.AutoscalingConfig
+                  .AsymmetricAutoscalingOptionOrBuilder>
+      getAsymmetricAutoscalingOptionsOrBuilderList() {
+    return asymmetricAutoscalingOptions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional asymmetric autoscaling options.
+   * Replicas matching the replica selection criteria will be autoscaled
+   * independently from other replicas. The autoscaler will scale the replicas
+   * based on the utilization of replicas identified by the replica selection.
+   * Replica selections should not overlap with each other.
+   *
+   * Other replicas (those do not match any replica selection) will be
+   * autoscaled together and will have the same compute capacity allocated to
+   * them.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public int getAsymmetricAutoscalingOptionsCount() {
+    return asymmetricAutoscalingOptions_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional asymmetric autoscaling options.
+   * Replicas matching the replica selection criteria will be autoscaled
+   * independently from other replicas. The autoscaler will scale the replicas
+   * based on the utilization of replicas identified by the replica selection.
+   * Replica selections should not overlap with each other.
+   *
+   * Other replicas (those do not match any replica selection) will be
+   * autoscaled together and will have the same compute capacity allocated to
+   * them.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+      getAsymmetricAutoscalingOptions(int index) {
+    return asymmetricAutoscalingOptions_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional asymmetric autoscaling options.
+   * Replicas matching the replica selection criteria will be autoscaled
+   * independently from other replicas. The autoscaler will scale the replicas
+   * based on the utilization of replicas identified by the replica selection.
+   * Replica selections should not overlap with each other.
+   *
+   * Other replicas (those do not match any replica selection) will be
+   * autoscaled together and will have the same compute capacity allocated to
+   * them.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOptionOrBuilder
+      getAsymmetricAutoscalingOptionsOrBuilder(int index) {
+    return asymmetricAutoscalingOptions_.get(index);
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -2224,6 +4620,9 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(2, getAutoscalingTargets());
     }
+    for (int i = 0; i < asymmetricAutoscalingOptions_.size(); i++) {
+      output.writeMessage(3, asymmetricAutoscalingOptions_.get(i));
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -2238,6 +4637,11 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getAutoscalingTargets());
+    }
+    for (int i = 0; i < asymmetricAutoscalingOptions_.size(); i++) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              3, asymmetricAutoscalingOptions_.get(i));
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -2263,6 +4667,8 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     if (hasAutoscalingTargets()) {
       if (!getAutoscalingTargets().equals(other.getAutoscalingTargets())) return false;
     }
+    if (!getAsymmetricAutoscalingOptionsList().equals(other.getAsymmetricAutoscalingOptionsList()))
+      return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -2281,6 +4687,10 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     if (hasAutoscalingTargets()) {
       hash = (37 * hash) + AUTOSCALING_TARGETS_FIELD_NUMBER;
       hash = (53 * hash) + getAutoscalingTargets().hashCode();
+    }
+    if (getAsymmetricAutoscalingOptionsCount() > 0) {
+      hash = (37 * hash) + ASYMMETRIC_AUTOSCALING_OPTIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getAsymmetricAutoscalingOptionsList().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -2425,6 +4835,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
         getAutoscalingLimitsFieldBuilder();
         getAutoscalingTargetsFieldBuilder();
+        getAsymmetricAutoscalingOptionsFieldBuilder();
       }
     }
 
@@ -2442,6 +4853,13 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         autoscalingTargetsBuilder_.dispose();
         autoscalingTargetsBuilder_ = null;
       }
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        asymmetricAutoscalingOptions_ = java.util.Collections.emptyList();
+      } else {
+        asymmetricAutoscalingOptions_ = null;
+        asymmetricAutoscalingOptionsBuilder_.clear();
+      }
+      bitField0_ = (bitField0_ & ~0x00000004);
       return this;
     }
 
@@ -2469,11 +4887,26 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public com.google.spanner.admin.instance.v1.AutoscalingConfig buildPartial() {
       com.google.spanner.admin.instance.v1.AutoscalingConfig result =
           new com.google.spanner.admin.instance.v1.AutoscalingConfig(this);
+      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartialRepeatedFields(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig result) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        if (((bitField0_ & 0x00000004) != 0)) {
+          asymmetricAutoscalingOptions_ =
+              java.util.Collections.unmodifiableList(asymmetricAutoscalingOptions_);
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.asymmetricAutoscalingOptions_ = asymmetricAutoscalingOptions_;
+      } else {
+        result.asymmetricAutoscalingOptions_ = asymmetricAutoscalingOptionsBuilder_.build();
+      }
     }
 
     private void buildPartial0(com.google.spanner.admin.instance.v1.AutoscalingConfig result) {
@@ -2548,6 +4981,34 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       if (other.hasAutoscalingTargets()) {
         mergeAutoscalingTargets(other.getAutoscalingTargets());
       }
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        if (!other.asymmetricAutoscalingOptions_.isEmpty()) {
+          if (asymmetricAutoscalingOptions_.isEmpty()) {
+            asymmetricAutoscalingOptions_ = other.asymmetricAutoscalingOptions_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureAsymmetricAutoscalingOptionsIsMutable();
+            asymmetricAutoscalingOptions_.addAll(other.asymmetricAutoscalingOptions_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.asymmetricAutoscalingOptions_.isEmpty()) {
+          if (asymmetricAutoscalingOptionsBuilder_.isEmpty()) {
+            asymmetricAutoscalingOptionsBuilder_.dispose();
+            asymmetricAutoscalingOptionsBuilder_ = null;
+            asymmetricAutoscalingOptions_ = other.asymmetricAutoscalingOptions_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+            asymmetricAutoscalingOptionsBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getAsymmetricAutoscalingOptionsFieldBuilder()
+                    : null;
+          } else {
+            asymmetricAutoscalingOptionsBuilder_.addAllMessages(
+                other.asymmetricAutoscalingOptions_);
+          }
+        }
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -2588,6 +5049,22 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
                 bitField0_ |= 0x00000002;
                 break;
               } // case 18
+            case 26:
+              {
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                    m =
+                        input.readMessage(
+                            com.google.spanner.admin.instance.v1.AutoscalingConfig
+                                .AsymmetricAutoscalingOption.parser(),
+                            extensionRegistry);
+                if (asymmetricAutoscalingOptionsBuilder_ == null) {
+                  ensureAsymmetricAutoscalingOptionsIsMutable();
+                  asymmetricAutoscalingOptions_.add(m);
+                } else {
+                  asymmetricAutoscalingOptionsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 26
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -3035,6 +5512,585 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         autoscalingTargets_ = null;
       }
       return autoscalingTargetsBuilder_;
+    }
+
+    private java.util.List<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption>
+        asymmetricAutoscalingOptions_ = java.util.Collections.emptyList();
+
+    private void ensureAsymmetricAutoscalingOptionsIsMutable() {
+      if (!((bitField0_ & 0x00000004) != 0)) {
+        asymmetricAutoscalingOptions_ =
+            new java.util.ArrayList<
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption>(
+                asymmetricAutoscalingOptions_);
+        bitField0_ |= 0x00000004;
+      }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .Builder,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig
+                .AsymmetricAutoscalingOptionOrBuilder>
+        asymmetricAutoscalingOptionsBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public java.util.List<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption>
+        getAsymmetricAutoscalingOptionsList() {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(asymmetricAutoscalingOptions_);
+      } else {
+        return asymmetricAutoscalingOptionsBuilder_.getMessageList();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public int getAsymmetricAutoscalingOptionsCount() {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        return asymmetricAutoscalingOptions_.size();
+      } else {
+        return asymmetricAutoscalingOptionsBuilder_.getCount();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+        getAsymmetricAutoscalingOptions(int index) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        return asymmetricAutoscalingOptions_.get(index);
+      } else {
+        return asymmetricAutoscalingOptionsBuilder_.getMessage(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setAsymmetricAutoscalingOptions(
+        int index,
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption value) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureAsymmetricAutoscalingOptionsIsMutable();
+        asymmetricAutoscalingOptions_.set(index, value);
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setAsymmetricAutoscalingOptions(
+        int index,
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.Builder
+            builderForValue) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        ensureAsymmetricAutoscalingOptionsIsMutable();
+        asymmetricAutoscalingOptions_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder addAsymmetricAutoscalingOptions(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption value) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureAsymmetricAutoscalingOptionsIsMutable();
+        asymmetricAutoscalingOptions_.add(value);
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder addAsymmetricAutoscalingOptions(
+        int index,
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption value) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureAsymmetricAutoscalingOptionsIsMutable();
+        asymmetricAutoscalingOptions_.add(index, value);
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder addAsymmetricAutoscalingOptions(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.Builder
+            builderForValue) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        ensureAsymmetricAutoscalingOptionsIsMutable();
+        asymmetricAutoscalingOptions_.add(builderForValue.build());
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder addAsymmetricAutoscalingOptions(
+        int index,
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.Builder
+            builderForValue) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        ensureAsymmetricAutoscalingOptionsIsMutable();
+        asymmetricAutoscalingOptions_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder addAllAsymmetricAutoscalingOptions(
+        java.lang.Iterable<
+                ? extends
+                    com.google.spanner.admin.instance.v1.AutoscalingConfig
+                        .AsymmetricAutoscalingOption>
+            values) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        ensureAsymmetricAutoscalingOptionsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, asymmetricAutoscalingOptions_);
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearAsymmetricAutoscalingOptions() {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        asymmetricAutoscalingOptions_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder removeAsymmetricAutoscalingOptions(int index) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        ensureAsymmetricAutoscalingOptionsIsMutable();
+        asymmetricAutoscalingOptions_.remove(index);
+        onChanged();
+      } else {
+        asymmetricAutoscalingOptionsBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .Builder
+        getAsymmetricAutoscalingOptionsBuilder(int index) {
+      return getAsymmetricAutoscalingOptionsFieldBuilder().getBuilder(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig
+            .AsymmetricAutoscalingOptionOrBuilder
+        getAsymmetricAutoscalingOptionsOrBuilder(int index) {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        return asymmetricAutoscalingOptions_.get(index);
+      } else {
+        return asymmetricAutoscalingOptionsBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public java.util.List<
+            ? extends
+                com.google.spanner.admin.instance.v1.AutoscalingConfig
+                    .AsymmetricAutoscalingOptionOrBuilder>
+        getAsymmetricAutoscalingOptionsOrBuilderList() {
+      if (asymmetricAutoscalingOptionsBuilder_ != null) {
+        return asymmetricAutoscalingOptionsBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(asymmetricAutoscalingOptions_);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .Builder
+        addAsymmetricAutoscalingOptionsBuilder() {
+      return getAsymmetricAutoscalingOptionsFieldBuilder()
+          .addBuilder(
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+            .Builder
+        addAsymmetricAutoscalingOptionsBuilder(int index) {
+      return getAsymmetricAutoscalingOptionsFieldBuilder()
+          .addBuilder(
+              index,
+              com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                  .getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional asymmetric autoscaling options.
+     * Replicas matching the replica selection criteria will be autoscaled
+     * independently from other replicas. The autoscaler will scale the replicas
+     * based on the utilization of replicas identified by the replica selection.
+     * Replica selections should not overlap with each other.
+     *
+     * Other replicas (those do not match any replica selection) will be
+     * autoscaled together and will have the same compute capacity allocated to
+     * them.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption asymmetric_autoscaling_options = 3 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public java.util.List<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .Builder>
+        getAsymmetricAutoscalingOptionsBuilderList() {
+      return getAsymmetricAutoscalingOptionsFieldBuilder().getBuilderList();
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                .Builder,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig
+                .AsymmetricAutoscalingOptionOrBuilder>
+        getAsymmetricAutoscalingOptionsFieldBuilder() {
+      if (asymmetricAutoscalingOptionsBuilder_ == null) {
+        asymmetricAutoscalingOptionsBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
+                    .Builder,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig
+                    .AsymmetricAutoscalingOptionOrBuilder>(
+                asymmetricAutoscalingOptions_,
+                ((bitField0_ & 0x00000004) != 0),
+                getParentForChildren(),
+                isClean());
+        asymmetricAutoscalingOptions_ = null;
+      }
+      return asymmetricAutoscalingOptionsBuilder_;
     }
 
     @java.lang.Override
