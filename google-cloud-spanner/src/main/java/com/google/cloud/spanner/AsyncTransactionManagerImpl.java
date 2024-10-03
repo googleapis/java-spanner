@@ -80,15 +80,17 @@ final class AsyncTransactionManagerImpl
     txnState = TransactionState.STARTED;
 
     // Determine the latest transactionId when using a multiplexed session.
-    ByteString multiplexedSessionPreviousTransactionId = null;
-    if (session.getIsMultiplexed() && !firstAttempt) {
+    ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
+    if (txn != null && session.getIsMultiplexed() && !firstAttempt) {
       // Use the current transactionId if available, otherwise fallback to the previous aborted
       // transactionId.
       multiplexedSessionPreviousTransactionId =
           txn.transactionId != null ? txn.transactionId : txn.previousTransactionId;
     }
 
-    txn = session.newTransaction(options, multiplexedSessionPreviousTransactionId);
+    txn =
+        session.newTransaction(
+            options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
     if (firstAttempt) {
       session.setActive(this);
     }

@@ -1092,7 +1092,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   TransactionRunnerImpl(SessionImpl session, TransactionOption... options) {
     this.session = session;
     this.options = Options.fromTransactionOptions(options);
-    this.txn = session.newTransaction(this.options, null);
+    this.txn = session.newTransaction(this.options, /* previousTransactionId = */ ByteString.EMPTY);
     this.tracer = session.getTracer();
   }
 
@@ -1132,7 +1132,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             useInlinedBegin = txn.transactionId != null;
 
             // Determine the latest transactionId when using a multiplexed session.
-            ByteString multiplexedSessionPreviousTransactionId = null;
+            ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
             if (session.getIsMultiplexed()) {
               // Use the current transactionId if available, otherwise fallback to the previous
               // transactionId.
@@ -1140,7 +1140,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   txn.transactionId != null ? txn.transactionId : txn.previousTransactionId;
             }
 
-            txn = session.newTransaction(options, multiplexedSessionPreviousTransactionId);
+            txn =
+                session.newTransaction(
+                    options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
           }
           checkState(
               isValid, "TransactionRunner has been invalidated by a new operation on the session");

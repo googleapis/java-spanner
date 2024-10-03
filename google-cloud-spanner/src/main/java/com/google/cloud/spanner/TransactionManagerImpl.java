@@ -54,7 +54,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   public TransactionContext begin() {
     Preconditions.checkState(txn == null, "begin can only be called once");
     try (IScope s = tracer.withSpan(span)) {
-      txn = session.newTransaction(options, null);
+      txn = session.newTransaction(options, /* previousTransactionId = */ ByteString.EMPTY);
       session.setActive(this);
       txnState = TransactionState.STARTED;
       return txn;
@@ -105,14 +105,16 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       boolean useInlinedBegin = txn.transactionId != null;
 
       // Determine the latest transactionId when using a multiplexed session.
-      ByteString multiplexedSessionPreviousTransactionId = null;
+      ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
       if (session.getIsMultiplexed()) {
         // Use the current transactionId if available, otherwise fallback to the previous aborted
         // transactionId.
         multiplexedSessionPreviousTransactionId =
             txn.transactionId != null ? txn.transactionId : txn.previousTransactionId;
       }
-      txn = session.newTransaction(options, multiplexedSessionPreviousTransactionId);
+      txn =
+          session.newTransaction(
+              options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
       if (!useInlinedBegin) {
         txn.ensureTxn();
       }

@@ -99,8 +99,8 @@ public class AsyncTransactionManagerImplTest {
       // previousTransactionId=mockPreviousTransactionId
       transaction.previousTransactionId = mockPreviousTransactionId;
       manager.resetForRetryAsync();
-      // Verify that in the first retry attempt, the `previousTransactionId` is passed to the new
-      // transaction.
+      // Verify that in the first retry attempt, the `previousTransactionId`
+      // (mockPreviousTransactionId) is passed to the new transaction.
       // This allows Spanner to retry the transaction using the ID of the aborted transaction.
       verify(session)
           .newTransaction(
@@ -112,7 +112,7 @@ public class AsyncTransactionManagerImplTest {
       // previousTransactionId=mockPreviousTransactionId and transactionID = null
       transaction.transactionId = mockTransactionId;
       manager.resetForRetryAsync();
-      // Verify that the current `transactionId` is used in the retry.
+      // Verify that the latest `transactionId` (mockTransactionId) is used in the retry.
       // This ensures the retry logic is working as expected with the latest transaction ID.
       verify(session)
           .newTransaction(Options.fromTransactionOptions(Options.commitStats()), mockTransactionId);
