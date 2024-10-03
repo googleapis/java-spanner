@@ -160,6 +160,7 @@ public class IntegrationTestEnv extends ExternalResource {
         InstanceInfo.newBuilder(instanceId)
             .setNodeCount(1)
             .setDisplayName("Test instance")
+            .setEdition(com.google.spanner.admin.instance.v1.Instance.Edition.ENTERPRISE_PLUS)
             .setInstanceConfigId(configId)
             .build();
     OperationFuture<Instance, CreateInstanceMetadata> op =

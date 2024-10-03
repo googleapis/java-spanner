@@ -280,12 +280,17 @@ public class InstanceAdminClientImplTest {
     when(rpc.createInstance(
             "projects/" + PROJECT_ID,
             INSTANCE_ID,
-            getInstanceProto().toBuilder().setProcessingUnits(0).build()))
+            getInstanceProto()
+                .toBuilder()
+                .setProcessingUnits(0)
+                .setEdition(com.google.spanner.admin.instance.v1.Instance.Edition.ENTERPRISE_PLUS)
+                .build()))
         .thenReturn(rawOperationFuture);
     OperationFuture<Instance, CreateInstanceMetadata> op =
         client.createInstance(
             InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
                 .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
+                .setEdition(com.google.spanner.admin.instance.v1.Instance.Edition.ENTERPRISE_PLUS)
                 .setNodeCount(1)
                 .build());
     assertThat(op.isDone()).isTrue();
