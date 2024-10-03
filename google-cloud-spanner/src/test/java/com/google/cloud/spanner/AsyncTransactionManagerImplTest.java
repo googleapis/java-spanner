@@ -89,9 +89,11 @@ public class AsyncTransactionManagerImplTest {
         new AsyncTransactionManagerImpl(session, span, Options.commitStats())) {
       manager.beginAsync();
 
-      // Verify that for the first transaction attempt, the `previousTransactionId` is ByteString.EMPTY.
+      // Verify that for the first transaction attempt, the `previousTransactionId` is
+      // ByteString.EMPTY.
       // This is because no transaction has been previously aborted at this point.
-      verify(session).newTransaction(Options.fromTransactionOptions(Options.commitStats()), ByteString.EMPTY);
+      verify(session)
+          .newTransaction(Options.fromTransactionOptions(Options.commitStats()), ByteString.EMPTY);
       assertThrows(AbortedException.class, manager::commitAsync);
       clearInvocations(session);
 
