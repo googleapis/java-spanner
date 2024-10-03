@@ -145,37 +145,27 @@ public class ITInstanceAdminTest {
             .setNodeCount(0)
             .setAutoscalingConfig(autoscalingConfig)
             .build();
-    try {
-      OperationFuture<Instance, UpdateInstanceMetadata> op =
-          instanceClient.updateInstance(toUpdate, InstanceInfo.InstanceField.AUTOSCALING_CONFIG);
-      Instance newInstance = op.get();
-      assertThat(newInstance.getAutoscalingConfig()).isEqualTo(autoscalingConfig);
+    OperationFuture<Instance, UpdateInstanceMetadata> op =
+        instanceClient.updateInstance(toUpdate, InstanceInfo.InstanceField.AUTOSCALING_CONFIG);
+    Instance newInstance = op.get();
+    assertThat(newInstance.getAutoscalingConfig()).isEqualTo(autoscalingConfig);
 
-      Instance newInstanceFromGet =
-          instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
-      assertThat(newInstanceFromGet).isEqualTo(newInstance);
+    Instance newInstanceFromGet =
+        instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
+    assertThat(newInstanceFromGet).isEqualTo(newInstance);
 
-      // Revert back to the instance original state.
-      toUpdate =
-          InstanceInfo.newBuilder(instance.getId())
-              .setAutoscalingConfig(null)
-              .setNodeCount(instance.getNodeCount())
-              .build();
-      instanceClient
-          .updateInstance(
-              toUpdate,
-              InstanceInfo.InstanceField.AUTOSCALING_CONFIG,
-              InstanceInfo.InstanceField.NODE_COUNT)
-          .get();
-    } catch (Exception exception) {
-      // TODO: Remove once the client lib supports creating instances with an Edition.
-      if (!exception
-          .getMessage()
-          .contains("The minimum required Edition for this feature is ENTERPRISE.")) {
-        throw exception;
-      }
-      // ignore this error for now.
-    }
+    // Revert back to the instance original state.
+    toUpdate =
+        InstanceInfo.newBuilder(instance.getId())
+            .setAutoscalingConfig(null)
+            .setNodeCount(instance.getNodeCount())
+            .build();
+    instanceClient
+        .updateInstance(
+            toUpdate,
+            InstanceInfo.InstanceField.AUTOSCALING_CONFIG,
+            InstanceInfo.InstanceField.NODE_COUNT)
+        .get();
   }
 
   @Test
