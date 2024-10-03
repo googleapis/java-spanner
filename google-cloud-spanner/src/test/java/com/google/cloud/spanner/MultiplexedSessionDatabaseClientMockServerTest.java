@@ -568,7 +568,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
             .getMultiplexedSessionPreviousTransactionId());
   }
 */
-  
+
   // TODO(sriharshach): Uncomment test once Lock order preservation proto is published
   /*
   @Test

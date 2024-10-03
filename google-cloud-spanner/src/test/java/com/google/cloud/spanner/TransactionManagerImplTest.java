@@ -374,11 +374,11 @@ public class TransactionManagerImplTest {
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
     final ByteString mockTransactionId = ByteString.copyFromUtf8("mockTransactionId");
     txn.transactionId = mockTransactionId;
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions(), ByteString.EMPTY)).thenReturn(txn);
     manager.begin();
-    // Verify that for the first transaction attempt, the `previousTransactionId` is null.
+    // Verify that for the first transaction attempt, the `previousTransactionId` is ByteString.EMPTY.
     // This is because no transaction has been previously aborted at this point.
-    verify(session).newTransaction(Options.fromTransactionOptions(), null);
+    verify(session).newTransaction(Options.fromTransactionOptions(), ByteString.EMPTY);
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
     assertThrows(AbortedException.class, () -> manager.commit());
 
@@ -402,20 +402,20 @@ public class TransactionManagerImplTest {
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
     final ByteString mockTransactionId = ByteString.copyFromUtf8("mockTransactionId");
     txn.transactionId = mockTransactionId;
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions(), ByteString.EMPTY)).thenReturn(txn);
     manager.begin();
-    verify(session).newTransaction(Options.fromTransactionOptions(), null);
+    verify(session).newTransaction(Options.fromTransactionOptions(), ByteString.EMPTY);
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
     assertThrows(AbortedException.class, () -> manager.commit());
     clearInvocations(session);
 
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
-    when(session.newTransaction(Options.fromTransactionOptions(), null)).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions(), ByteString.EMPTY)).thenReturn(txn);
     when(session.getIsMultiplexed()).thenReturn(false);
     assertThat(manager.resetForRetry()).isEqualTo(txn);
     // Verify that in the first retry attempt, the `previousTransactionId` is not passed to the new
     // transaction
     // in case of regular sessions.
-    verify(session).newTransaction(Options.fromTransactionOptions(), null);
+    verify(session).newTransaction(Options.fromTransactionOptions(), ByteString.EMPTY);
   }
 }
