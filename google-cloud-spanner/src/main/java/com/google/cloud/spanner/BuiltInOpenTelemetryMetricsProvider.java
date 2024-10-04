@@ -94,7 +94,7 @@ final class BuiltInOpenTelemetryMetricsProvider {
     // All platform except GKE uses "cloud_region" for region attribute.
     String region = detectedPlatform.getAttributes().get("cloud_region");
     if (detectedPlatform.getSupportedPlatform() == GOOGLE_KUBERNETES_ENGINE) {
-      region = detectedPlatform.getAttributes().get(AttributeKeys.GKE_LOCATION_TYPE_REGION);
+      region = detectedPlatform.getAttributes().get(AttributeKeys.GKE_CLUSTER_LOCATION);
     }
     return region == null ? "global" : region;
   }

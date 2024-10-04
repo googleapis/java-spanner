@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection.it;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -26,6 +27,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,14 +44,24 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest {
+  @Parameters(name = "Use auto-savepoints={0}")
+  public static Object[] parameters() {
+    return new Object[] {Boolean.TRUE, Boolean.FALSE};
+  }
+
+  @Parameter public boolean useAutoSavepointsForEmulator;
+
   @Override
   public void appendConnectionUri(StringBuilder uri) {
-    uri.append(";autoConfigEmulator=true;autoCommit=false");
+    uri.append(";autoConfigEmulator=true;autoCommit=false;useAutoSavepointsForEmulator=")
+        .append(useAutoSavepointsForEmulator);
   }
 
   @Override
@@ -118,15 +131,21 @@ public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest 
   }
 
   @Test
-  public void testMultiThreadedRandomTransactions() throws InterruptedException {
+  public void testMultiThreadedRandomTransactions() throws Exception {
     int numThreads = ThreadLocalRandom.current().nextInt(10) + 5;
     ExecutorService executor = Executors.newFixedThreadPool(numThreads);
     AtomicInteger numRowsInserted = new AtomicInteger();
+    List<Future<?>> futures = new ArrayList<>(numThreads);
     for (int thread = 0; thread < numThreads; thread++) {
-      executor.submit(() -> runRandomTransactions(numRowsInserted));
+      futures.add(executor.submit(() -> runRandomTransactions(numRowsInserted)));
     }
     executor.shutdown();
     assertTrue(executor.awaitTermination(60L, TimeUnit.SECONDS));
+    // Get the results of each transaction so the test case fails with a logical error message if
+    // any of the transactions failed.
+    for (Future<?> future : futures) {
+      assertNull(future.get());
+    }
     verifyRowCount(numRowsInserted.get());
   }
 
@@ -141,7 +160,7 @@ public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest 
       while (!connections.isEmpty()) {
         int index = ThreadLocalRandom.current().nextInt(connections.size());
         Connection connection = connections.get(index);
-        if (ThreadLocalRandom.current().nextInt(10) < 3) {
+        if (ThreadLocalRandom.current().nextInt(10) < 5) {
           connection.commit();
           connection.close();
           assertEquals(connection, connections.remove(index));
@@ -154,6 +173,12 @@ public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest 
                       .to(ThreadLocalRandom.current().nextLong())
                       .build()));
           numRowsInserted.incrementAndGet();
+        }
+        try {
+          // Make sure to have a small wait between statements.
+          Thread.sleep(ThreadLocalRandom.current().nextInt(1, 5));
+        } catch (InterruptedException interruptedException) {
+          throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
         }
       }
     } finally {
