@@ -38,24 +38,40 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
 
+  final boolean useMultiplexedSessionBlindWrite;
+
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer, false);
+    this(
+        "",
+        pool,
+        /* useMultiplexedSessionBlindWrite = */ false,
+        /* multiplexedSessionDatabaseClient = */ null,
+        tracer,
+        false);
   }
 
   @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer, false);
+    this(
+        clientId,
+        pool,
+        /* useMultiplexedSessionBlindWrite = */ false,
+        /* multiplexedSessionDatabaseClient = */ null,
+        tracer,
+        false);
   }
 
   DatabaseClientImpl(
       String clientId,
       SessionPool pool,
+      boolean useMultiplexedSessionBlindWrite,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
       TraceWrapper tracer,
       boolean useMultiplexedSessionForRW) {
     this.clientId = clientId;
     this.pool = pool;
+    this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
     this.tracer = tracer;
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
@@ -68,19 +84,28 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @VisibleForTesting
   DatabaseClient getMultiplexedSession() {
-    if (this.multiplexedSessionDatabaseClient != null
-        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported()) {
+    if (canUseMultiplexedSessions()) {
       return this.multiplexedSessionDatabaseClient;
     }
     return pool.getMultiplexedSessionWithFallback();
   }
-
+  
+  
   @VisibleForTesting
   DatabaseClient getMultiplexedSessionForRW() {
     if (this.useMultiplexedSessionForRW) {
       return getMultiplexedSession();
     }
     return getSession();
+  }
+
+  private MultiplexedSessionDatabaseClient getMultiplexedSessionDatabaseClient() {
+    return canUseMultiplexedSessions() ? this.multiplexedSessionDatabaseClient : null;
+  }
+
+  private boolean canUseMultiplexedSessions() {
+    return this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported();
   }
 
   @Override
@@ -125,6 +150,10 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
+      if (useMultiplexedSessionBlindWrite && getMultiplexedSessionDatabaseClient() != null) {
+        return getMultiplexedSessionDatabaseClient()
+            .writeAtLeastOnceWithOptions(mutations, options);
+      }
       return runWithSessionRetry(
           session -> session.writeAtLeastOnceWithOptions(mutations, options));
     } catch (RuntimeException e) {

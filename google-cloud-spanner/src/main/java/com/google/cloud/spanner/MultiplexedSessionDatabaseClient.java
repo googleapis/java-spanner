@@ -109,6 +109,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
 
     @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      CommitResponse response = super.writeAtLeastOnceWithOptions(mutations, options);
+      onTransactionDone();
+      return response;
+    }
+
+    @Override
     void onTransactionDone() {
       boolean markedDone = false;
       synchronized (this) {
@@ -357,6 +365,13 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       this.channelUsage.set(channel);
       return channel;
     }
+  }
+
+  @Override
+  public CommitResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+    return createMultiplexedSessionTransaction(true)
+        .writeAtLeastOnceWithOptions(mutations, options);
   }
 
   @Override

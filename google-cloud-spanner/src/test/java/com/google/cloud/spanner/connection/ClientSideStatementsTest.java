@@ -18,17 +18,22 @@ package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,6 +103,96 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
     for (ClientSideStatementImpl statement : parser.getClientSideStatements()) {
       assertNotNull(
           statement.toString() + " misses a statement type", statement.getStatementType());
+    }
+  }
+
+  private static class DurationTestData {
+    final String sql;
+    final Duration expected;
+
+    DurationTestData(String sql, Duration expected) {
+      this.sql = sql;
+      this.expected = expected;
+    }
+  }
+
+  @Test
+  public void testSetStatementTimeout() {
+    AbstractStatementParser parser = AbstractStatementParser.getInstance(dialect);
+
+    String resetValue = dialect == Dialect.POSTGRESQL ? "default" : "null";
+    for (DurationTestData data :
+        new DurationTestData[] {
+          new DurationTestData("set statement_timeout=10", Duration.ofMillis(10)),
+          new DurationTestData("set statement_timeout = 10", Duration.ofMillis(10)),
+          new DurationTestData("set statement_timeout = 10 ", Duration.ofMillis(10)),
+          new DurationTestData("set statement_timeout='10ms'", Duration.ofMillis(10)),
+          new DurationTestData("set statement_timeout = '10ms'", Duration.ofMillis(10)),
+          new DurationTestData("set statement_timeout = '10ms' ", Duration.ofMillis(10)),
+          new DurationTestData("set statement_timeout='10ns'", Duration.ofNanos(10)),
+          new DurationTestData("set statement_timeout = '10ns'", Duration.ofNanos(10)),
+          new DurationTestData("set statement_timeout = '10ns' ", Duration.ofNanos(10)),
+          new DurationTestData("set statement_timeout='10us'", Duration.of(10, ChronoUnit.MICROS)),
+          new DurationTestData(
+              "set statement_timeout = '10us'", Duration.of(10, ChronoUnit.MICROS)),
+          new DurationTestData(
+              "set statement_timeout = '10us' ", Duration.of(10, ChronoUnit.MICROS)),
+          new DurationTestData("set statement_timeout='10s'", Duration.ofSeconds(10)),
+          new DurationTestData("set statement_timeout = '10s'", Duration.ofSeconds(10)),
+          new DurationTestData("set statement_timeout = '10s' ", Duration.ofSeconds(10)),
+          new DurationTestData("set statement_timeout=" + resetValue, Duration.ZERO),
+          new DurationTestData("set statement_timeout = " + resetValue, Duration.ZERO),
+          new DurationTestData("set statement_timeout = " + resetValue + " ", Duration.ZERO),
+        }) {
+      ConnectionStatementExecutor executor = mock(ConnectionStatementExecutor.class);
+      ParsedStatement statement = parser.parse(Statement.of(data.sql));
+      assertEquals(
+          ClientSideStatementType.SET_STATEMENT_TIMEOUT, statement.getClientSideStatementType());
+      statement.getClientSideStatement().execute(executor, statement);
+      verify(executor).statementSetStatementTimeout(data.expected);
+    }
+  }
+
+  @Test
+  public void testSetMaxCommitDelay() {
+    AbstractStatementParser parser = AbstractStatementParser.getInstance(dialect);
+
+    String prefix = dialect == Dialect.POSTGRESQL ? "spanner." : "";
+    for (DurationTestData data :
+        new DurationTestData[] {
+          new DurationTestData("set " + prefix + "max_commit_delay=10", Duration.ofMillis(10)),
+          new DurationTestData("set " + prefix + "max_commit_delay = 10", Duration.ofMillis(10)),
+          new DurationTestData("set " + prefix + "max_commit_delay = 10 ", Duration.ofMillis(10)),
+          new DurationTestData("set " + prefix + "max_commit_delay='10ms'", Duration.ofMillis(10)),
+          new DurationTestData(
+              "set " + prefix + "max_commit_delay = '10ms'", Duration.ofMillis(10)),
+          new DurationTestData(
+              "set " + prefix + "max_commit_delay = '10ms' ", Duration.ofMillis(10)),
+          new DurationTestData("set " + prefix + "max_commit_delay='10ns'", Duration.ofNanos(10)),
+          new DurationTestData("set " + prefix + "max_commit_delay = '10ns'", Duration.ofNanos(10)),
+          new DurationTestData(
+              "set " + prefix + "max_commit_delay = '10ns' ", Duration.ofNanos(10)),
+          new DurationTestData(
+              "set " + prefix + "max_commit_delay='10us'", Duration.of(10, ChronoUnit.MICROS)),
+          new DurationTestData(
+              "set " + prefix + "max_commit_delay = '10us'", Duration.of(10, ChronoUnit.MICROS)),
+          new DurationTestData(
+              "set " + prefix + "max_commit_delay = '10us' ", Duration.of(10, ChronoUnit.MICROS)),
+          new DurationTestData("set " + prefix + "max_commit_delay='10s'", Duration.ofSeconds(10)),
+          new DurationTestData(
+              "set " + prefix + "max_commit_delay = '10s'", Duration.ofSeconds(10)),
+          new DurationTestData(
+              "set " + prefix + "max_commit_delay = '10s' ", Duration.ofSeconds(10)),
+          new DurationTestData("set " + prefix + "max_commit_delay=null", Duration.ZERO),
+          new DurationTestData("set " + prefix + "max_commit_delay = null", Duration.ZERO),
+          new DurationTestData("set " + prefix + "max_commit_delay = null ", Duration.ZERO),
+        }) {
+      ConnectionStatementExecutor executor = mock(ConnectionStatementExecutor.class);
+      ParsedStatement statement = parser.parse(Statement.of(data.sql));
+      assertEquals(
+          ClientSideStatementType.SET_MAX_COMMIT_DELAY, statement.getClientSideStatementType());
+      statement.getClientSideStatement().execute(executor, statement);
+      verify(executor).statementSetMaxCommitDelay(data.expected);
     }
   }
 

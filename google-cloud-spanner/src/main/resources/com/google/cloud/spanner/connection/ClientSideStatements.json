@@ -365,11 +365,21 @@
 	  "statementType": "SET_STATEMENT_TIMEOUT",
 	  "regex": "(?is)\\A\\s*set\\s+statement_timeout\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetStatementTimeout",
-	  "exampleStatements": ["set statement_timeout=null", "set statement_timeout='1s'", "set statement_timeout='100ms'", "set statement_timeout='10000us'", "set statement_timeout='9223372036854775807ns'"],
+	  "exampleStatements": [
+			"set statement_timeout=null",
+			"set statement_timeout = null ",
+			"set statement_timeout='1s'",
+			"set statement_timeout = '1s' ",
+			"set statement_timeout=100",
+			"set statement_timeout = 100 ",
+			"set statement_timeout='100ms'",
+			"set statement_timeout='10000us'",
+			"set statement_timeout='9223372036854775807ns'"
+		],
 	  "setStatement": {
 	    "propertyName": "STATEMENT_TIMEOUT",
 	    "separator": "=",
-	    "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+	    "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)",
 	    "converterName": "ClientSideStatementValueConverters$DurationConverter"
 	  }
 	},
@@ -485,11 +495,23 @@
 		"statementType": "SET_MAX_COMMIT_DELAY",
 		"regex": "(?is)\\A\\s*set\\s+max_commit_delay\\s*(?:=)\\s*(.*)\\z",
 		"method": "statementSetMaxCommitDelay",
-		"exampleStatements": ["set max_commit_delay=null", "set max_commit_delay='1s'", "set max_commit_delay='100ms'", "set max_commit_delay='10000us'", "set max_commit_delay='9223372036854775807ns'"],
+		"exampleStatements": [
+			"set max_commit_delay=null",
+			"set max_commit_delay = null",
+			"set max_commit_delay = null ",
+			"set max_commit_delay=1000",
+			"set max_commit_delay = 1000",
+			"set max_commit_delay = 1000 ",
+			"set max_commit_delay='1s'",
+			"set max_commit_delay = '1s'",
+			"set max_commit_delay = '1s' ",
+			"set max_commit_delay='100ms'",
+			"set max_commit_delay='10000us'",
+			"set max_commit_delay='9223372036854775807ns'"],
 		"setStatement": {
 			"propertyName": "MAX_COMMIT_DELAY",
 			"separator": "=",
-			"allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+			"allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)",
 			"converterName": "ClientSideStatementValueConverters$DurationConverter"
 		}
 	},

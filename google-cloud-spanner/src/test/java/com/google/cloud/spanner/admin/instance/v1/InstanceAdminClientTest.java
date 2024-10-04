@@ -75,6 +75,7 @@ import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.MoveInstanceRequest;
 import com.google.spanner.admin.instance.v1.MoveInstanceResponse;
 import com.google.spanner.admin.instance.v1.ProjectName;
+import com.google.spanner.admin.instance.v1.ReplicaComputeCapacity;
 import com.google.spanner.admin.instance.v1.ReplicaInfo;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
@@ -845,6 +846,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .addAllReplicaComputeCapacity(new ArrayList<ReplicaComputeCapacity>())
             .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
@@ -892,6 +894,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .addAllReplicaComputeCapacity(new ArrayList<ReplicaComputeCapacity>())
             .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
@@ -939,6 +942,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .addAllReplicaComputeCapacity(new ArrayList<ReplicaComputeCapacity>())
             .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
@@ -1000,6 +1004,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .addAllReplicaComputeCapacity(new ArrayList<ReplicaComputeCapacity>())
             .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
@@ -1061,6 +1066,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .addAllReplicaComputeCapacity(new ArrayList<ReplicaComputeCapacity>())
             .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())

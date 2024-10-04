@@ -737,6 +737,24 @@ public class SpannerOptionsTest {
   }
 
   @Test
+  public void testEndToEndTracingEnablement() {
+    // Test that end to end tracing is disabled by default.
+    assertFalse(SpannerOptions.newBuilder().setProjectId("p").build().isEndToEndTracingEnabled());
+    assertTrue(
+        SpannerOptions.newBuilder()
+            .setProjectId("p")
+            .setEnableEndToEndTracing(true)
+            .build()
+            .isEndToEndTracingEnabled());
+    assertFalse(
+        SpannerOptions.newBuilder()
+            .setProjectId("p")
+            .setEnableEndToEndTracing(false)
+            .build()
+            .isEndToEndTracingEnabled());
+  }
+
+  @Test
   public void testSetDirectedReadOptions() {
     final DirectedReadOptions directedReadOptions =
         DirectedReadOptions.newBuilder()

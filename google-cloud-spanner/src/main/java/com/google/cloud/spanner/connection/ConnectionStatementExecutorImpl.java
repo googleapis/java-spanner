@@ -102,16 +102,13 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGe
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.Duration;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.PlanNode;
 import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
-import com.google.spanner.v1.RequestOptions.Priority;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -137,16 +134,6 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     public boolean hasDuration() {
       return connection.hasStatementTimeout();
     }
-  }
-
-  private static final Map<Priority, RpcPriority> validRPCPriorityValues;
-
-  static {
-    ImmutableMap.Builder<Priority, RpcPriority> builder = ImmutableMap.builder();
-    builder.put(Priority.PRIORITY_HIGH, RpcPriority.HIGH);
-    builder.put(Priority.PRIORITY_MEDIUM, RpcPriority.MEDIUM);
-    builder.put(Priority.PRIORITY_LOW, RpcPriority.LOW);
-    validRPCPriorityValues = builder.build();
   }
 
   /** The connection to execute the statements on. */
@@ -218,14 +205,19 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetStatementTimeout(Duration duration) {
-    if (duration.getSeconds() == 0L && duration.getNanos() == 0) {
+    if (duration == null || duration.isZero()) {
       getConnection().clearStatementTimeout();
     } else {
+      com.google.protobuf.Duration protoDuration =
+          com.google.protobuf.Duration.newBuilder()
+              .setSeconds(duration.getSeconds())
+              .setNanos(duration.getNano())
+              .build();
       TimeUnit unit =
           ReadOnlyStalenessUtil.getAppropriateTimeUnit(
-              new ReadOnlyStalenessUtil.DurationGetter(duration));
+              new ReadOnlyStalenessUtil.DurationGetter(protoDuration));
       getConnection()
-          .setStatementTimeout(ReadOnlyStalenessUtil.durationToUnits(duration, unit), unit);
+          .setStatementTimeout(ReadOnlyStalenessUtil.durationToUnits(protoDuration, unit), unit);
     }
     return noResult(SET_STATEMENT_TIMEOUT);
   }
@@ -356,11 +348,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetMaxCommitDelay(Duration duration) {
-    getConnection()
-        .setMaxCommitDelay(
-            duration == null || duration.equals(Duration.getDefaultInstance())
-                ? null
-                : java.time.Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
+    getConnection().setMaxCommitDelay(duration == null || duration.isZero() ? null : duration);
     return noResult(SET_MAX_COMMIT_DELAY);
   }
 
@@ -552,9 +540,8 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementSetRPCPriority(Priority priority) {
-    RpcPriority value = validRPCPriorityValues.get(priority);
-    getConnection().setRPCPriority(value);
+  public StatementResult statementSetRPCPriority(RpcPriority priority) {
+    getConnection().setRPCPriority(priority);
     return noResult(SET_RPC_PRIORITY);
   }
 

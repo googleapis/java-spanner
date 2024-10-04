@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.DATABASE_KEY;
@@ -76,6 +77,8 @@ public class SpannerCloudMonitoringExporterTest {
   private static final String locationId = "global";
   private static final String databaseId = "fake-database";
   private static final String clientName = "spanner-java";
+
+  private static final String clientHash = "spanner-test";
   private static final String instanceConfigId = "fake-instance-config-id";
 
   @Rule public final MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -101,6 +104,7 @@ public class SpannerCloudMonitoringExporterTest {
             .put(INSTANCE_CONFIG_ID_KEY, instanceConfigId)
             .put(DATABASE_KEY, databaseId)
             .put(CLIENT_NAME_KEY, clientName)
+            .put(CLIENT_HASH_KEY, clientHash)
             .put(String.valueOf(DIRECT_PATH_ENABLED_KEY), true)
             .put(String.valueOf(DIRECT_PATH_USED_KEY), true)
             .build();
@@ -153,9 +157,10 @@ public class SpannerCloudMonitoringExporterTest {
             PROJECT_ID_KEY.getKey(), projectId,
             INSTANCE_ID_KEY.getKey(), instanceId,
             LOCATION_ID_KEY.getKey(), locationId,
-            INSTANCE_CONFIG_ID_KEY.getKey(), instanceConfigId);
+            INSTANCE_CONFIG_ID_KEY.getKey(), instanceConfigId,
+            CLIENT_HASH_KEY.getKey(), clientHash);
 
-    assertThat(timeSeries.getResource().getLabelsMap()).hasSize(4);
+    assertThat(timeSeries.getResource().getLabelsMap()).hasSize(5);
 
     assertThat(timeSeries.getMetric().getLabelsMap())
         .containsExactly(
@@ -218,13 +223,14 @@ public class SpannerCloudMonitoringExporterTest {
 
     TimeSeries timeSeries = request.getTimeSeriesList().get(0);
 
-    assertThat(timeSeries.getResource().getLabelsMap()).hasSize(4);
+    assertThat(timeSeries.getResource().getLabelsMap()).hasSize(5);
     assertThat(timeSeries.getResource().getLabelsMap())
         .containsExactly(
             PROJECT_ID_KEY.getKey(), projectId,
             INSTANCE_ID_KEY.getKey(), instanceId,
             LOCATION_ID_KEY.getKey(), locationId,
-            INSTANCE_CONFIG_ID_KEY.getKey(), instanceConfigId);
+            INSTANCE_CONFIG_ID_KEY.getKey(), instanceConfigId,
+            CLIENT_HASH_KEY.getKey(), clientHash);
 
     assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(4);
     assertThat(timeSeries.getMetric().getLabelsMap())
@@ -296,13 +302,14 @@ public class SpannerCloudMonitoringExporterTest {
         timeSeries = secondRequest.getTimeSeriesList().get(i - 200);
       }
 
-      assertThat(timeSeries.getResource().getLabelsMap()).hasSize(4);
+      assertThat(timeSeries.getResource().getLabelsMap()).hasSize(5);
       assertThat(timeSeries.getResource().getLabelsMap())
           .containsExactly(
               PROJECT_ID_KEY.getKey(), projectId,
               INSTANCE_ID_KEY.getKey(), instanceId,
               LOCATION_ID_KEY.getKey(), locationId,
-              INSTANCE_CONFIG_ID_KEY.getKey(), instanceConfigId);
+              INSTANCE_CONFIG_ID_KEY.getKey(), instanceConfigId,
+              CLIENT_HASH_KEY.getKey(), clientHash);
 
       assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(5);
       assertThat(timeSeries.getMetric().getLabelsMap())
