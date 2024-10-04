@@ -891,9 +891,6 @@ public class CloudClientExecutor extends CloudExecutor {
     return traceServiceClient;
   }
 
-  private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
-  private static final String READ_ONLY_TRANSACTION = "CloudSpanner.ReadOnlyTransaction";
-
   /* Handles verification of end to end traces */
   public Status startVerificationOfEndToEndTrace(
       String traceId, ExecutionFlowContext executionContext) {
@@ -912,6 +909,9 @@ public class CloudClientExecutor extends CloudExecutor {
         });
     return Status.OK;
   }
+
+  private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
+  private static final String READ_ONLY_TRANSACTION = "CloudSpanner.ReadOnlyTransaction";
 
   /* Returns whether a exported trace is valid. */
   public boolean isExportedEndToEndTraceValid(String traceId) {
