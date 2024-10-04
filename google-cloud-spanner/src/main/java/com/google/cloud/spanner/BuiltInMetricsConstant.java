@@ -101,6 +101,7 @@ public class BuiltInMetricsConstant {
           DIRECT_PATH_ENABLED_KEY,
           DIRECT_PATH_USED_KEY);
 
+  public static boolean DIRECT_PATH_ENABLED;
   static Aggregation AGGREGATION_WITH_MILLIS_HISTOGRAM =
       Aggregation.explicitBucketHistogram(
           ImmutableList.of(
