@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Type.Code;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.UUID;
 
 /**
  * Base class for assisting {@link StructReader} implementations.
@@ -66,6 +68,8 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract Timestamp getTimestampInternal(int columnIndex);
 
   protected abstract Date getDateInternal(int columnIndex);
+
+  protected abstract UUID getUUIDInternal(int columnIndex);
 
   protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
     throw new UnsupportedOperationException("Not implemented");
@@ -127,6 +131,8 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract List<Timestamp> getTimestampListInternal(int columnIndex);
 
   protected abstract List<Date> getDateListInternal(int columnIndex);
+
+  protected abstract List<UUID> getUUIDListInternal(int columnIndex);
 
   protected abstract List<Struct> getStructListInternal(int columnIndex);
 
@@ -297,6 +303,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.date(), columnName);
     return getDateInternal(columnIndex);
+  }
+
+  @Override
+  public UUID getUUID(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.uuid(), columnIndex);
+    return getUUIDInternal(columnIndex);
+  }
+
+  @Override
+  public UUID getUUID(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.uuid(), columnName);
+    return getUUIDInternal(columnIndex);
   }
 
   @Override
@@ -584,6 +603,19 @@ public abstract class AbstractStructReader implements StructReader {
   }
 
   @Override
+  public List<UUID> getUUIDList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.uuid()), columnIndex);
+    return getUUIDListInternal(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUUIDList(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.uuid()), columnName);
+    return getUUIDListInternal(columnIndex);
+  }
+
+  @Override
   public List<Struct> getStructList(int columnIndex) {
     checkNonNullArrayOfStruct(columnIndex, columnIndex);
     return getStructListInternal(columnIndex);
@@ -600,7 +632,7 @@ public abstract class AbstractStructReader implements StructReader {
   public int getColumnIndex(String columnName) {
     // Use the Type instance for field name lookup.  Type instances are naturally shared by the
     // ResultSet, all Structs corresponding to rows in the read, and all Structs corresponding to
-    // the values of ARRAY<STRUCT<...>> columns in the read, so this is the best location to
+    // the values of ARRAY<STRUCT<...>> coreturn new Type.Builder(Code.STRUCT).add(new StructField("STRUCT_KEY", Type.int64())).build();lumns in the read, so this is the best location to
     // amortize lookup costs.
     return getType().getFieldIndex(columnName);
   }

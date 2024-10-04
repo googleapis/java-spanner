@@ -39,12 +39,14 @@ import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import java.util.UUID;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link ResultSets} */
@@ -67,6 +69,7 @@ public class ResultSetsTest {
     ProtocolMessageEnum protoEnumVal = Genre.ROCK;
     String byteVal = "101";
     long usecs = 32343;
+    UUID uuidVal = UUID.randomUUID();
     int year = 2018;
     int month = 5;
     int day = 26;
@@ -98,6 +101,7 @@ public class ResultSetsTest {
       protoMessageVal, SingerInfo.newBuilder().setSingerId(1).build()
     };
     ProtocolMessageEnum[] protoEnumArray = {protoEnumVal, Genre.JAZZ};
+    UUID[] uuidArray = {UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()};
 
     Type type =
         Type.struct(
@@ -133,7 +137,8 @@ public class ResultSetsTest {
             Type.StructField.of(
                 "protoMessageArray",
                 Type.array(Type.proto(SingerInfo.getDescriptor().getFullName()))),
-            Type.StructField.of(
+            Type.StructField.of("uuidArray", Type.array(Type.string())),
+          Type.StructField.of(
                 "protoEnumArray", Type.array(Type.protoEnum(Genre.getDescriptor().getFullName()))));
     Struct struct1 =
         Struct.newBuilder()
@@ -195,6 +200,7 @@ public class ResultSetsTest {
             .to(
                 Value.protoMessageArray(
                     Arrays.asList(protoMessageArray), protoMessageVal.getDescriptorForType()))
+            .set("uuidArray").to(Value.stringArray(Arrays.asList(uuidArray)))
             .set("protoEnumArray")
             .to(
                 Value.protoEnumArray(
@@ -260,6 +266,7 @@ public class ResultSetsTest {
             .to(
                 Value.protoMessageArray(
                     Arrays.asList(protoMessageArray), protoMessageVal.getDescriptorForType()))
+            .set("uuidArray").to(Value.stringArray(Arrays.asList(uuidArray)))
             .set("protoEnumArray")
             .to(
                 Value.protoEnumArray(
@@ -272,7 +279,7 @@ public class ResultSetsTest {
 
     int columnIndex = 0;
     assertThat(rs.next()).isTrue();
-    assertThat(rs.getType()).isEqualTo(type);
+    assertThat(rs.getType()).isEqualTo(type); 
     assertThat(rs.getColumnCount()).isEqualTo(type.getStructFields().size());
     assertThat(rs.getColumnIndex("f1")).isEqualTo(0);
     assertThat(rs.getColumnType("nonexistent")).isNull();
@@ -436,6 +443,12 @@ public class ResultSetsTest {
         .isEqualTo(Arrays.asList(protoEnumArray));
     assertThat(rs.getValue("protoEnumArray"))
         .isEqualTo(Value.protoEnumArray(Arrays.asList(protoEnumArray), Genre.getDescriptor()));
+
+    assertThat(rs.getStringList(columnIndex++)).isEqualTo(Arrays.asList(uuidArray));
+    assertThat(rs.getStringList("uuidArray")).isEqualTo(Arrays.asList(uuidArray));
+    assertThat(rs.getValue("uuidArray")).isEqualTo(Value.stringArray(Arrays.asList(uuidArray)));
+    columnIndex++;
+
 
     assertThat(rs.next()).isTrue();
     assertThat(rs.getCurrentRowAsStruct()).isEqualTo(struct2);

@@ -29,6 +29,7 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import java.util.UUID;
 import java.util.Random;
 
 /** @deprecated Use {@link com.google.cloud.spanner.connection.RandomResultSetGenerator} instead. */
@@ -44,6 +45,7 @@ public class RandomResultSetGenerator {
         Type.newBuilder().setCode(TypeCode.BYTES).build(),
         Type.newBuilder().setCode(TypeCode.DATE).build(),
         Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
+        Type.newBuilder().setCode(TypeCode.STRING).build(),
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
             .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
@@ -76,6 +78,11 @@ public class RandomResultSetGenerator {
             .setCode(TypeCode.ARRAY)
             .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
             .build(),
+        Type.newBuilder()
+            .setCode(TypeCode.ARRAY)
+            .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
+            .build(),
+
       };
 
   private static ResultSetMetadata generateMetadata() {
@@ -160,6 +167,9 @@ public class RandomResultSetGenerator {
                       .setNanos(random.nextInt(1000_000_000))
                       .build());
           builder.setStringValue(Timestamp.fromProto(ts).toString());
+          break;
+        case STRING:
+          builder.setStringValue(UUID.randomUUID().toString());
           break;
         case STRUCT:
         case TYPE_CODE_UNSPECIFIED:

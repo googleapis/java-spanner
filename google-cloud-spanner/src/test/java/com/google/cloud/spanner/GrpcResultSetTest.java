@@ -49,6 +49,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -866,6 +867,23 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getUuid() {
+    String uuid1 = "00000000-0000-0000-0000-000000000001";
+    String uuid2 = "00000000-0000-0000-0000-000000000002";
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.uuid()))))
+            .addValues(Value.string(uuid1).toProto())
+            .addValues(Value.string(uuid2).toProto())
+            .build());
+    consumer.onCompleted();
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getUuid(0)).isEqualTo(UUID.fromString(uuid1));
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getUuid(0)).isEqualTo(UUID.fromString(uuid2));
+  }
+
+  @Test
   public void getBooleanArray() {
     boolean[] boolArray = {true, true, false};
     consumer.onPartialResultSet(
@@ -1040,6 +1058,25 @@ public class GrpcResultSetTest {
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getLongArray(0)).isEqualTo(longArray);
   }
+
+  @Test
+  public void getUuidList() {
+    List<UUID> uuids = new ArrayList<>();
+    uuids.add(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+    uuids.add(UUID.fromString("00000000-0000-0000-0000-000000000002"));
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.uuid())))))
+            .addValues(Value.stringArray(uuids.stream().map(UUID::toString).toList()).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getUuidList(0)).isEqualTo(uuids);
+  }
+
 
   @Test
   public void getProtoMessageList() {

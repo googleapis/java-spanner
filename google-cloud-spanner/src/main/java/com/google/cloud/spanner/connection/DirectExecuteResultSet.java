@@ -24,6 +24,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Value.UUID;
 import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.AbstractMessage;
@@ -289,6 +290,20 @@ class DirectExecuteResultSet implements ProtobufResultSet {
   }
 
   @Override
+  public UUID getUUID(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getUUID(columnIndex);
+  }
+
+  @Override
+  public UUID getUUID(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getUUID(columnName);
+  }
+
+
+
+  @Override
   public Value getValue(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getValue(columnIndex);
@@ -478,6 +493,19 @@ class DirectExecuteResultSet implements ProtobufResultSet {
   public List<Date> getDateList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDateList(columnName);
+  }
+
+  @Override
+  public List<UUID> getUUIDList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getUUIDList(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUUIDList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getUUIDList(columnName);
+
   }
 
   @Override

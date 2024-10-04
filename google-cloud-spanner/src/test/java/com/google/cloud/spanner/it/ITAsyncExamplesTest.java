@@ -345,14 +345,12 @@ public class ITAsyncExamplesTest {
       }
     }
 
-    ApiFuture<List<List<String>>> allAsListValues =
-        ApiFutures.allAsList(Arrays.asList(values1, values2));
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
-            allAsListValues,
+            ApiFutures.allAsList(values1, values2),
             input ->
                 Iterables.mergeSorted(
-                    input, Comparator.comparing(o -> Integer.valueOf(o.substring(1)))),
+                    input, Comparator.comparing(o -> Integer.valueOf(o.substring(1)))), 
             executor);
     assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
   }
