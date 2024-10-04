@@ -184,7 +184,7 @@ public class CompositeTracer extends BaseApiTracer {
     for (ApiTracer child : children) {
       if (child instanceof MetricsTracer) {
         MetricsTracer metricsTracer = (MetricsTracer) child;
-        attributes.forEach((key, value) -> metricsTracer.addAttributes(key, value));
+        metricsTracer.addAttributes(attributes);
       }
     }
   }
