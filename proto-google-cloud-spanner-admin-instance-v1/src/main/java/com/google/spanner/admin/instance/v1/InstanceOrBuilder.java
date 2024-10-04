@@ -121,18 +121,25 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
-   * The number of nodes allocated to this instance. At most one of either
-   * node_count or processing_units should be present in the message.
+   * The number of nodes allocated to this instance. At most, one of either
+   * `node_count` or `processing_units` should be present in the message.
    *
-   * Users can set the node_count field to specify the target number of nodes
+   * Users can set the `node_count` field to specify the target number of nodes
    * allocated to the instance.
    *
-   * This may be zero in API responses for instances that are not yet in state
-   * `READY`.
+   * If autoscaling is enabled, `node_count` is treated as an `OUTPUT_ONLY`
+   * field and reflects the current number of nodes allocated to the instance.
    *
-   * See [the
-   * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
-   * for more information about nodes and processing units.
+   * This might be zero in API responses for instances that are not yet in the
+   * `READY` state.
+   *
+   * If the instance has varying node count across replicas (achieved by
+   * setting asymmetric_autoscaling_options in autoscaling config), the
+   * node_count here is the maximum node count across all replicas.
+   *
+   * For more information, see
+   * [Compute capacity, nodes, and processing
+   * units](https://cloud.google.com/spanner/docs/compute-capacity).
    * </pre>
    *
    * <code>int32 node_count = 5;</code>
@@ -145,18 +152,27 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
-   * The number of processing units allocated to this instance. At most one of
-   * processing_units or node_count should be present in the message.
+   * The number of processing units allocated to this instance. At most, one of
+   * either `processing_units` or `node_count` should be present in the message.
    *
-   * Users can set the processing_units field to specify the target number of
+   * Users can set the `processing_units` field to specify the target number of
    * processing units allocated to the instance.
    *
-   * This may be zero in API responses for instances that are not yet in state
-   * `READY`.
+   * If autoscaling is enabled, `processing_units` is treated as an
+   * `OUTPUT_ONLY` field and reflects the current number of processing units
+   * allocated to the instance.
    *
-   * See [the
-   * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
-   * for more information about nodes and processing units.
+   * This might be zero in API responses for instances that are not yet in the
+   * `READY` state.
+   *
+   * If the instance has varying processing units per replica
+   * (achieved by setting asymmetric_autoscaling_options in autoscaling config),
+   * the processing_units here is the maximum processing units across all
+   * replicas.
+   *
+   * For more information, see
+   * [Compute capacity, nodes and processing
+   * units](https://cloud.google.com/spanner/docs/compute-capacity).
    * </pre>
    *
    * <code>int32 processing_units = 9;</code>
@@ -164,6 +180,80 @@ public interface InstanceOrBuilder
    * @return The processingUnits.
    */
   int getProcessingUnits();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Lists the compute capacity per ReplicaSelection. A replica
+   * selection identifies a set of replicas with common properties. Replicas
+   * identified by a ReplicaSelection are scaled with the same compute capacity.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.ReplicaComputeCapacity replica_compute_capacity = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  java.util.List<com.google.spanner.admin.instance.v1.ReplicaComputeCapacity>
+      getReplicaComputeCapacityList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Lists the compute capacity per ReplicaSelection. A replica
+   * selection identifies a set of replicas with common properties. Replicas
+   * identified by a ReplicaSelection are scaled with the same compute capacity.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.ReplicaComputeCapacity replica_compute_capacity = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.instance.v1.ReplicaComputeCapacity getReplicaComputeCapacity(int index);
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Lists the compute capacity per ReplicaSelection. A replica
+   * selection identifies a set of replicas with common properties. Replicas
+   * identified by a ReplicaSelection are scaled with the same compute capacity.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.ReplicaComputeCapacity replica_compute_capacity = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  int getReplicaComputeCapacityCount();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Lists the compute capacity per ReplicaSelection. A replica
+   * selection identifies a set of replicas with common properties. Replicas
+   * identified by a ReplicaSelection are scaled with the same compute capacity.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.ReplicaComputeCapacity replica_compute_capacity = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  java.util.List<? extends com.google.spanner.admin.instance.v1.ReplicaComputeCapacityOrBuilder>
+      getReplicaComputeCapacityOrBuilderList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Lists the compute capacity per ReplicaSelection. A replica
+   * selection identifies a set of replicas with common properties. Replicas
+   * identified by a ReplicaSelection are scaled with the same compute capacity.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.instance.v1.ReplicaComputeCapacity replica_compute_capacity = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.instance.v1.ReplicaComputeCapacityOrBuilder
+      getReplicaComputeCapacityOrBuilder(int index);
 
   /**
    *
