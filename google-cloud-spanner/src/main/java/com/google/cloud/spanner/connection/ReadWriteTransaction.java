@@ -1093,6 +1093,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         }
         try {
           if (aborted.getCause() instanceof RollbackToSavepointException) {
+            if (txManager != null) {
+              txManager.close();
+            }
             txManager = dbClient.transactionManager(transactionOptions);
             txContextFuture = ApiFutures.immediateFuture(txManager.begin());
           } else {

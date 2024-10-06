@@ -1165,6 +1165,10 @@ public interface Connection extends AutoCloseable {
    */
   ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode);
 
+  void setAutoBatchDml(boolean autoBatchDml);
+
+  boolean isAutoBatchDml();
+
   /**
    * Enable data boost for partitioned queries. See also {@link #partitionQuery(Statement,
    * PartitionOptions, QueryOption...)}

@@ -105,6 +105,36 @@ class ConnectionImpl implements Connection {
   private static final String NOT_ALLOWED_IN_AUTOCOMMIT =
       "This method may not be called while in autocommit mode";
 
+  private static final ParsedStatement BEGIN_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
+  private static final ParsedStatement COMMIT_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("COMMIT"));
+  private static final ParsedStatement ROLLBACK_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("ROLLBACK"));
+  private static final ParsedStatement START_BATCH_DDL_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("START BATCH DDL"));
+  private static final ParsedStatement START_BATCH_DML_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("START BATCH DDL"));
+  private static final ParsedStatement RUN_BATCH_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("RUN BATCH"));
+
+  // These SAVEPOINT statements are used as sentinels to recognize the start/rollback/release of a
+  // savepoint.
+  private static final ParsedStatement SAVEPOINT_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("SAVEPOINT s1"));
+  private static final ParsedStatement ROLLBACK_TO_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("ROLLBACK TO s1"));
+  private static final ParsedStatement RELEASE_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("RELEASE s1"));
+
   /**
    * Exception that is used to register the stacktrace of the code that opened a {@link Connection}.
    * This exception is logged if the application closes without first closing the connection.
@@ -1067,7 +1097,8 @@ class ConnectionImpl implements Connection {
 
   private ApiFuture<Void> commitAsync(CallType callType) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return endCurrentTransactionAsync(callType, commit);
+    maybeAutoCommitOrFlushCurrentUnitOfWork(COMMIT_STATEMENT.getType(), COMMIT_STATEMENT);
+    return endCurrentTransactionAsync(callType, commit, COMMIT_STATEMENT);
   }
 
   private static final class Rollback implements EndTransactionMethod {
@@ -1091,11 +1122,14 @@ class ConnectionImpl implements Connection {
 
   private ApiFuture<Void> rollbackAsync(CallType callType) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return endCurrentTransactionAsync(callType, rollback);
+    maybeAutoCommitOrFlushCurrentUnitOfWork(ROLLBACK_STATEMENT.getType(), ROLLBACK_STATEMENT);
+    return endCurrentTransactionAsync(callType, rollback, ROLLBACK_STATEMENT);
   }
 
   private ApiFuture<Void> endCurrentTransactionAsync(
-      CallType callType, EndTransactionMethod endTransactionMethod) {
+      CallType callType,
+      EndTransactionMethod endTransactionMethod,
+      ParsedStatement parsedStatement) {
     ConnectionPreconditions.checkState(!isBatchActive(), "This connection has an active batch");
     ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
     ConnectionPreconditions.checkState(
@@ -1103,7 +1137,9 @@ class ConnectionImpl implements Connection {
     ApiFuture<Void> res;
     try {
       if (isTransactionStarted()) {
-        res = endTransactionMethod.endAsync(callType, getCurrentUnitOfWorkOrStartNewUnitOfWork());
+        res =
+            endTransactionMethod.endAsync(
+                callType, getCurrentUnitOfWorkOrStartNewUnitOfWork(parsedStatement));
       } else {
         this.currentUnitOfWork = null;
         res = ApiFutures.immediateFuture(null);
@@ -1140,21 +1176,23 @@ class ConnectionImpl implements Connection {
         savepointSupport.isSavepointCreationAllowed(),
         "This connection does not allow the creation of savepoints. Current value of SavepointSupport: "
             + savepointSupport);
-    getCurrentUnitOfWorkOrStartNewUnitOfWork().savepoint(checkValidIdentifier(name), getDialect());
+    getCurrentUnitOfWorkOrStartNewUnitOfWork(SAVEPOINT_STATEMENT)
+        .savepoint(checkValidIdentifier(name), getDialect());
   }
 
   @Override
   public void releaseSavepoint(String name) {
     ConnectionPreconditions.checkState(
         isTransactionStarted(), "This connection has no active transaction");
-    getCurrentUnitOfWorkOrStartNewUnitOfWork().releaseSavepoint(checkValidIdentifier(name));
+    getCurrentUnitOfWorkOrStartNewUnitOfWork(RELEASE_STATEMENT)
+        .releaseSavepoint(checkValidIdentifier(name));
   }
 
   @Override
   public void rollbackToSavepoint(String name) {
     ConnectionPreconditions.checkState(
         isTransactionStarted(), "This connection has no active transaction");
-    getCurrentUnitOfWorkOrStartNewUnitOfWork()
+    getCurrentUnitOfWorkOrStartNewUnitOfWork(ROLLBACK_TO_STATEMENT)
         .rollbackToSavepoint(checkValidIdentifier(name), savepointSupport);
   }
 
@@ -1296,6 +1334,18 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public void setAutoBatchDml(boolean autoBatchDml) {
+    // TODO: Replace with a connection variable
+    System.setProperty("spanner.auto_batch_dml", String.valueOf(autoBatchDml));
+  }
+
+  @Override
+  public boolean isAutoBatchDml() {
+    // TODO: Replace with a connection variable
+    return Boolean.parseBoolean(System.getProperty("spanner.auto_batch_dml"));
+  }
+
+  @Override
   public void setDataBoostEnabled(boolean dataBoostEnabled) {
     this.dataBoostEnabled = dataBoostEnabled;
   }
@@ -1336,7 +1386,7 @@ class ConnectionImpl implements Connection {
     }
 
     QueryOption[] combinedOptions = concat(parsedStatement.getOptionsFromHints(), options);
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(parsedStatement);
     return get(
         transaction.partitionQueryAsync(
             CallType.SYNC,
@@ -1743,7 +1793,8 @@ class ConnectionImpl implements Connection {
         "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
     boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
     QueryOption[] combinedOptions = concat(statement.getOptionsFromHints(), options);
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
+    UnitOfWork transaction =
+        getCurrentUnitOfWorkOrStartNewUnitOfWork(statement, isInternalMetadataQuery);
     if (autoPartitionMode
         && statement.getType() == StatementType.QUERY
         && !isInternalMetadataQuery) {
@@ -1772,7 +1823,8 @@ class ConnectionImpl implements Connection {
         "Partitioned queries cannot be executed asynchronously");
     boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
     QueryOption[] combinedOptions = concat(statement.getOptionsFromHints(), options);
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
+    UnitOfWork transaction =
+        getCurrentUnitOfWorkOrStartNewUnitOfWork(statement, isInternalMetadataQuery);
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(
             callType,
@@ -1788,7 +1840,8 @@ class ConnectionImpl implements Connection {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UpdateOption[] combinedOptions = concat(update.getOptionsFromHints(), options);
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    UnitOfWork transaction =
+        maybeStartAutoDmlBatch(getCurrentUnitOfWorkOrStartNewUnitOfWork(update));
     return transaction.executeUpdateAsync(
         callType, update, mergeUpdateRequestOptions(mergeUpdateStatementTag(combinedOptions)));
   }
@@ -1801,7 +1854,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UpdateOption[] combinedOptions = concat(update.getOptionsFromHints(), options);
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(update);
     return transaction.analyzeUpdateAsync(
         callType,
         update,
@@ -1813,22 +1866,40 @@ class ConnectionImpl implements Connection {
       CallType callType, List<ParsedStatement> updates, UpdateOption... options) {
     UpdateOption[] combinedOptions =
         updates.isEmpty() ? options : concat(updates.get(0).getOptionsFromHints(), options);
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    UnitOfWork transaction =
+        maybeStartAutoDmlBatch(getCurrentUnitOfWorkOrStartNewUnitOfWork(updates.get(0)));
     return transaction.executeBatchUpdateAsync(
         callType, updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(combinedOptions)));
   }
 
+  private UnitOfWork maybeStartAutoDmlBatch(UnitOfWork transaction) {
+    if (isInTransaction() && isAutoBatchDml() && !(transaction instanceof DmlBatch)) {
+      // Automatically start a DML batch.
+      return startBatchDml(/* autoBatch = */ true);
+    }
+    return transaction;
+  }
+
   private UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
-    return getCurrentUnitOfWorkOrStartNewUnitOfWork(StatementType.UNKNOWN, false);
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork(
+        StatementType.UNKNOWN, /* parsedStatement = */ null, /* internalMetadataQuery = */ false);
+  }
+
+  private UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
+      @Nonnull ParsedStatement parsedStatement) {
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork(
+        parsedStatement.getType(), parsedStatement, /* internalMetadataQuery = */ false);
   }
 
   @VisibleForTesting
-  UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
-    return getCurrentUnitOfWorkOrStartNewUnitOfWork(StatementType.UNKNOWN, isInternalMetadataQuery);
+  UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
+      @Nonnull ParsedStatement parsedStatement, boolean isInternalMetadataQuery) {
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork(
+        parsedStatement.getType(), parsedStatement, isInternalMetadataQuery);
   }
 
-  private UnitOfWork getOrStartDdlUnitOfWork() {
-    return getCurrentUnitOfWorkOrStartNewUnitOfWork(StatementType.DDL, false);
+  private UnitOfWork getOrStartDdlUnitOfWork(ParsedStatement parsedStatement) {
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork(StatementType.DDL, parsedStatement, false);
   }
 
   /**
@@ -1837,12 +1908,17 @@ class ConnectionImpl implements Connection {
    */
   @VisibleForTesting
   UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
-      StatementType statementType, boolean isInternalMetadataQuery) {
+      StatementType statementType,
+      @Nullable ParsedStatement parsedStatement,
+      boolean isInternalMetadataQuery) {
     if (isInternalMetadataQuery) {
       // Just return a temporary single-use transaction.
-      return createNewUnitOfWork(/* isInternalMetadataQuery = */ true, /* forceSingleUse = */ true);
+      return createNewUnitOfWork(
+          /* isInternalMetadataQuery = */ true,
+          /* forceSingleUse = */ true,
+          /* autoBatchDml = */ false);
     }
-    maybeAutoCommitCurrentTransaction(statementType);
+    maybeAutoCommitOrFlushCurrentUnitOfWork(statementType, parsedStatement);
     if (this.currentUnitOfWork == null || !this.currentUnitOfWork.isActive()) {
       this.currentUnitOfWork =
           createNewUnitOfWork(
@@ -1850,6 +1926,7 @@ class ConnectionImpl implements Connection {
               /* forceSingleUse = */ statementType == StatementType.DDL
                   && this.ddlInTransactionMode != DdlInTransactionMode.FAIL
                   && !this.transactionBeginMarked,
+              /* autoBatchDml = */ false,
               statementType);
     }
     return this.currentUnitOfWork;
@@ -1862,23 +1939,51 @@ class ConnectionImpl implements Connection {
         .startSpan();
   }
 
-  void maybeAutoCommitCurrentTransaction(StatementType statementType) {
+  void maybeAutoCommitOrFlushCurrentUnitOfWork(
+      StatementType statementType, @Nullable ParsedStatement parsedStatement) {
     if (this.currentUnitOfWork instanceof ReadWriteTransaction
         && this.currentUnitOfWork.isActive()
         && statementType == StatementType.DDL
         && this.ddlInTransactionMode == DdlInTransactionMode.AUTO_COMMIT_TRANSACTION) {
       commit();
+    } else {
+      maybeFlushAutoDmlBatch(parsedStatement);
+    }
+  }
+
+  private void maybeFlushAutoDmlBatch(@Nullable ParsedStatement parsedStatement) {
+    if (parsedStatement == null) {
+      return;
+    }
+    if (this.currentUnitOfWork instanceof DmlBatch && this.currentUnitOfWork.isActive()) {
+      DmlBatch batch = (DmlBatch) this.currentUnitOfWork;
+      if (batch.isAutoBatch()) {
+        if (parsedStatement == ROLLBACK_STATEMENT
+            || (parsedStatement == ROLLBACK_TO_STATEMENT
+                && getSavepointSupport() == SavepointSupport.ENABLED)) {
+          // Just abort the batch if the transaction is about to be rolled back.
+          abortBatch();
+        } else if (!parsedStatement.isUpdate() || parsedStatement.hasReturningClause()) {
+          // The statement that is about to be executed cannot be executed in a DML batch.
+          // Flush the current batch and then executed the statement.
+          runBatch();
+        }
+      }
     }
   }
 
   @VisibleForTesting
-  UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery, boolean forceSingleUse) {
-    return createNewUnitOfWork(isInternalMetadataQuery, forceSingleUse, null);
+  UnitOfWork createNewUnitOfWork(
+      boolean isInternalMetadataQuery, boolean forceSingleUse, boolean autoBatchDml) {
+    return createNewUnitOfWork(isInternalMetadataQuery, forceSingleUse, autoBatchDml, null);
   }
 
   @VisibleForTesting
   UnitOfWork createNewUnitOfWork(
-      boolean isInternalMetadataQuery, boolean forceSingleUse, StatementType statementType) {
+      boolean isInternalMetadataQuery,
+      boolean forceSingleUse,
+      boolean autoBatchDml,
+      StatementType statementType) {
     if (isInternalMetadataQuery
         || (isAutocommit() && !isInTransaction() && !isInBatch())
         || forceSingleUse) {
@@ -1943,6 +2048,7 @@ class ConnectionImpl implements Connection {
           // temporarily replace the current transaction.
           pushCurrentUnitOfWorkToTransactionStack();
           return DmlBatch.newBuilder()
+              .setAutoBatch(autoBatchDml)
               .setTransaction(currentUnitOfWork)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
@@ -1983,7 +2089,7 @@ class ConnectionImpl implements Connection {
   }
 
   private ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
-    ApiFuture<Void> result = getOrStartDdlUnitOfWork().executeDdlAsync(callType, ddl);
+    ApiFuture<Void> result = getOrStartDdlUnitOfWork(ddl).executeDdlAsync(callType, ddl);
     // reset proto descriptors after executing a DDL statement
     this.protoDescriptors = null;
     this.protoDescriptorsFilePath = null;
@@ -2046,11 +2152,14 @@ class ConnectionImpl implements Connection {
         isAutocommit() || getDdlInTransactionMode() != DdlInTransactionMode.FAIL,
         "Cannot start a DDL batch when autocommit=false and ddlInTransactionMode=FAIL");
 
-    maybeAutoCommitCurrentTransaction(StatementType.DDL);
+    maybeAutoCommitOrFlushCurrentUnitOfWork(StatementType.DDL, START_BATCH_DDL_STATEMENT);
     this.batchMode = BatchMode.DDL;
     this.unitOfWorkType = UnitOfWorkType.DDL_BATCH;
     this.currentUnitOfWork =
-        createNewUnitOfWork(/* isInternalMetadataQuery = */ false, /* forceSingleUse = */ false);
+        createNewUnitOfWork(
+            /* isInternalMetadataQuery = */ false,
+            /* forceSingleUse = */ false,
+            /* autoBatchDml = */ false);
   }
 
   @Override
@@ -2063,13 +2172,18 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !(isInTransaction() && getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION),
         "Cannot start a DML batch when a read-only transaction is in progress");
+    startBatchDml(/* autoBatch = */ false);
+  }
+
+  private UnitOfWork startBatchDml(boolean autoBatch) {
     // Make sure that there is a current unit of work that the batch can use.
-    getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    getCurrentUnitOfWorkOrStartNewUnitOfWork(START_BATCH_DML_STATEMENT);
     // Then create the DML batch.
     this.batchMode = BatchMode.DML;
     this.unitOfWorkType = UnitOfWorkType.DML_BATCH;
-    this.currentUnitOfWork =
-        createNewUnitOfWork(/* isInternalMetadataQuery = */ false, /* forceSingleUse = */ false);
+    return this.currentUnitOfWork =
+        createNewUnitOfWork(
+            /* isInternalMetadataQuery = */ false, /* forceSingleUse = */ false, autoBatch);
   }
 
   @Override

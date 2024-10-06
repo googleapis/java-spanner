@@ -32,9 +32,11 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,16 +45,23 @@ import java.util.List;
  * called.
  */
 class DmlBatch extends AbstractBaseUnitOfWork {
+  private final boolean autoBatch;
   private final UnitOfWork transaction;
   private final String statementTag;
   private final List<ParsedStatement> statements = new ArrayList<>();
   private UnitOfWorkState state = UnitOfWorkState.STARTED;
 
   static class Builder extends AbstractBaseUnitOfWork.Builder<Builder, DmlBatch> {
+    private boolean autoBatch;
     private UnitOfWork transaction;
     private String statementTag;
 
     private Builder() {}
+
+    Builder setAutoBatch(boolean autoBatch) {
+      this.autoBatch = autoBatch;
+      return this;
+    }
 
     Builder setTransaction(UnitOfWork transaction) {
       Preconditions.checkNotNull(transaction);
@@ -78,8 +87,14 @@ class DmlBatch extends AbstractBaseUnitOfWork {
 
   private DmlBatch(Builder builder) {
     super(builder);
+    this.autoBatch = builder.autoBatch;
+    ;
     this.transaction = Preconditions.checkNotNull(builder.transaction);
     this.statementTag = builder.statementTag;
+  }
+
+  boolean isAutoBatch() {
+    return this.autoBatch;
   }
 
   @Override
@@ -156,6 +171,13 @@ class DmlBatch extends AbstractBaseUnitOfWork {
         ErrorCode.FAILED_PRECONDITION, "Executing DDL statements is not allowed for DML batches.");
   }
 
+  long getUpdateCount() {
+    // TODO: Make configurable.
+    // Auto-batching returns update count 1, as this is what ORMs normally expect.
+    // Standard batches return -1 by default, to indicate that the update count is unknown.
+    return isAutoBatch() ? 1L : -1L;
+  }
+
   @Override
   public ApiFuture<Long> executeUpdateAsync(
       CallType callType, ParsedStatement update, UpdateOption... options) {
@@ -168,7 +190,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
             + update.getSqlWithoutComments()
             + "\" is not a DML-statement.");
     statements.add(update);
-    return ApiFutures.immediateFuture(-1L);
+    return ApiFutures.immediateFuture(getUpdateCount());
   }
 
   @Override
@@ -184,8 +206,20 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
       CallType callType, Iterable<ParsedStatement> updates, UpdateOption... options) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DML batches.");
+    ConnectionPreconditions.checkState(
+        state == UnitOfWorkState.STARTED,
+        "The batch is no longer active and cannot be used for further statements");
+    for (ParsedStatement update : updates) {
+      Preconditions.checkArgument(
+          update.getType() == StatementType.UPDATE,
+          "Only DML statements are allowed. \""
+              + update.getSqlWithoutComments()
+              + "\" is not a DML-statement.");
+    }
+    Iterables.addAll(statements, updates);
+    long[] result = new long[Iterables.size(updates)];
+    Arrays.fill(result, getUpdateCount());
+    return ApiFutures.immediateFuture(result);
   }
 
   @Override
