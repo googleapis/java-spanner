@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
@@ -365,6 +366,11 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       this.channelUsage.set(channel);
       return channel;
     }
+  }
+
+  @Override
+  public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+    return createMultiplexedSessionTransaction(false).write(mutations);
   }
 
   @Override

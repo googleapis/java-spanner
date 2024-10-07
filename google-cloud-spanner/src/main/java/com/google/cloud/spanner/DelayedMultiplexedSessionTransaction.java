@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DelayedReadContext.DelayedReadOnlyTransaction;
 import com.google.cloud.spanner.MultiplexedSessionDatabaseClient.MultiplexedSessionTransaction;
 import com.google.cloud.spanner.Options.TransactionOption;
@@ -133,6 +134,19 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     try (MultiplexedSessionTransaction transaction =
         new MultiplexedSessionTransaction(client, span, sessionReference, NO_CHANNEL_HINT, true)) {
       return transaction.writeAtLeastOnceWithOptions(mutations, options);
+    }
+  }
+
+  /**
+   * This is a blocking method, as the interface that it implements is also defined as a blocking
+   * method.
+   */
+  @Override
+  public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+    SessionReference sessionReference = getSessionReference();
+    try (MultiplexedSessionTransaction transaction =
+        new MultiplexedSessionTransaction(client, span, sessionReference, NO_CHANNEL_HINT, false)) {
+      return transaction.write(mutations);
     }
   }
 
