@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -666,6 +667,59 @@ public class AutoDmlBatchMockServerTest extends AbstractMockServerTest {
     ExecuteBatchDmlRequest request =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
     assertEquals(5, request.getStatementsCount());
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testTransactionRetry() {
+    try (Connection connection = createConnection()) {
+      assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+      assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+      try (ResultSet resultSet = connection.executeQuery(SELECT1_STATEMENT)) {
+        assertTrue(resultSet.next());
+        assertEquals(1L, resultSet.getLong(0));
+        assertFalse(resultSet.next());
+      }
+
+      mockSpanner.abortNextStatement();
+      connection.commit();
+    }
+
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    ExecuteBatchDmlRequest request =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
+    assertEquals(2, request.getStatementsCount());
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testTransactionRetryFails() {
+    try (Connection connection = createConnection()) {
+      assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+      assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+      try (ResultSet resultSet = connection.executeQuery(SELECT1_STATEMENT)) {
+        assertTrue(resultSet.next());
+        assertEquals(1L, resultSet.getLong(0));
+        assertFalse(resultSet.next());
+      }
+
+      // Modify the update count that is returned by the insert statement. This will cause the
+      // retry attempt to fail.
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, 2L));
+      mockSpanner.abortNextStatement();
+      assertThrows(AbortedDueToConcurrentModificationException.class, connection::commit);
+    } finally {
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, 1L));
+    }
+
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    ExecuteBatchDmlRequest request =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
+    assertEquals(2, request.getStatementsCount());
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 }
