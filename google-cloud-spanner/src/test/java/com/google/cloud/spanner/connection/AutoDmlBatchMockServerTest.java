@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
@@ -550,9 +551,12 @@ public class AutoDmlBatchMockServerTest extends AbstractMockServerTest {
 
       // This SELECT statement flushes the batch and is the one that gets the exception, even
       // though the statement itself is valid.
-      SpannerException exception =
-          assertThrows(SpannerException.class, () -> connection.executeQuery(SELECT1_STATEMENT));
+      SpannerBatchUpdateException exception =
+          assertThrows(
+              SpannerBatchUpdateException.class, () -> connection.executeQuery(SELECT1_STATEMENT));
       assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+      // The batch exception contains the update count for the successful DML statements.
+      assertArrayEquals(new long[] {1L}, exception.getUpdateCounts());
 
       connection.commit();
     }
@@ -564,6 +568,104 @@ public class AutoDmlBatchMockServerTest extends AbstractMockServerTest {
     // The query is never executed, as the DML batch that is being flushed before the query is
     // executed fails.
     assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testUpdateCount() {
+    try (Connection connection = createConnection()) {
+
+      // Setting a different update count is reflected in the update count that is returned by
+      // an auto-batch.
+      try {
+        // Disable update count verification to prevent errors.
+        connection.setAutoBatchDmlUpdateCountVerification(false);
+
+        connection.setAutoBatchDmlUpdateCount(2L);
+        assertEquals(2L, connection.executeUpdate(INSERT_STATEMENT));
+        // The update count can be modified during the batch.
+        connection.setAutoBatchDmlUpdateCount(3L);
+        assertEquals(3L, connection.executeUpdate(INSERT_STATEMENT));
+
+        connection.commit();
+
+        // The auto-batch update count setting is not used for explicit batches.
+        connection.startBatchDml();
+        assertEquals(-1L, connection.executeUpdate(INSERT_STATEMENT));
+        connection.runBatch();
+        connection.commit();
+      } finally {
+        // TODO: Remove once a normal connection variable is used for this.
+        System.clearProperty("spanner.auto_batch_dml_update_count");
+        System.clearProperty("spanner.auto_batch_dml_update_count_verification");
+      }
+    }
+
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testUpdateCountVerification_failsIfDifferent() {
+    try (Connection connection = createConnection()) {
+      try {
+        assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+        // Set a different (expected) update count. This will cause the batch to fail, as the
+        // actual update count will be 1.
+        connection.setAutoBatchDmlUpdateCount(3L);
+        assertEquals(3L, connection.executeUpdate(INSERT_STATEMENT));
+
+        assertThrows(SpannerException.class, connection::commit);
+      } finally {
+        // TODO: Remove once a normal connection variable is used for this.
+        System.clearProperty("spanner.auto_batch_dml_update_count");
+      }
+    }
+
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testUpdateCountVerification_succeedsIfSame() {
+    Statement statement1 = Statement.of("insert into foo (id, value) values (1, 'One')");
+    Statement statement2 = Statement.of("insert into foo (id, value) values (2, 'Two')");
+    Statement statement3 = Statement.of("insert into foo (id, value) values (3, 'Three')");
+    Statement statement4 = Statement.of("insert into foo (id, value) values (4, 'Four')");
+    Statement statement5 = Statement.of("insert into foo (id, value) values (5, 'Five')");
+    mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(statement1, 1L));
+    mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(statement2, 2L));
+    mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(statement3, 3L));
+    mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(statement4, 3L));
+    mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(statement5, 4L));
+
+    try (Connection connection = createConnection()) {
+      try {
+        connection.setAutoBatchDmlUpdateCount(1L);
+        assertEquals(1L, connection.executeUpdate(statement1));
+
+        connection.setAutoBatchDmlUpdateCount(2L);
+        assertEquals(2L, connection.executeUpdate(statement2));
+
+        connection.setAutoBatchDmlUpdateCount(3L);
+        assertArrayEquals(
+            new long[] {3L, 3L},
+            connection.executeBatchUpdate(ImmutableList.of(statement3, statement4)));
+
+        connection.setAutoBatchDmlUpdateCount(4L);
+        assertEquals(4L, connection.executeUpdate(statement5));
+
+        connection.commit();
+      } finally {
+        // TODO: Remove once a normal connection variable is used for this.
+        System.clearProperty("spanner.auto_batch_dml_update_count");
+      }
+    }
+
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    ExecuteBatchDmlRequest request =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
+    assertEquals(5, request.getStatementsCount());
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 }

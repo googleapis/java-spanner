@@ -116,6 +116,12 @@ public final class SpannerExceptionFactory {
     return new SpannerBatchUpdateException(token, code, message, updateCounts);
   }
 
+  public static DmlBatchUpdateCountVerificationFailedException
+      newDmlBatchUpdateCountVerificationFailedException(long[] expected, long[] actual) {
+    return new DmlBatchUpdateCountVerificationFailedException(
+        DoNotConstructDirectly.ALLOWED, expected, actual);
+  }
+
   /**
    * Constructs a specific aborted exception that should only be thrown by a connection after an
    * internal retry aborted due to concurrent modifications.

@@ -1346,6 +1346,32 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public void setAutoBatchDmlUpdateCount(long updateCount) {
+    // TODO: Replace with a connection variable
+    System.setProperty("spanner.auto_batch_dml_update_count", String.valueOf(updateCount));
+  }
+
+  @Override
+  public long getAutoBatchDmlUpdateCount() {
+    // TODO: Replace with a connection variable
+    return Long.parseLong(System.getProperty("spanner.auto_batch_dml_update_count", "1"));
+  }
+
+  @Override
+  public void setAutoBatchDmlUpdateCountVerification(boolean verification) {
+    // TODO: Replace with a connection variable
+    System.setProperty(
+        "spanner.auto_batch_dml_update_count_verification", String.valueOf(verification));
+  }
+
+  @Override
+  public boolean isAutoBatchDmlUpdateCountVerification() {
+    // TODO: Replace with a connection variable
+    return Boolean.parseBoolean(
+        System.getProperty("spanner.auto_batch_dml_update_count_verification", "true"));
+  }
+
+  @Override
   public void setDataBoostEnabled(boolean dataBoostEnabled) {
     this.dataBoostEnabled = dataBoostEnabled;
   }
@@ -2049,6 +2075,9 @@ class ConnectionImpl implements Connection {
           pushCurrentUnitOfWorkToTransactionStack();
           return DmlBatch.newBuilder()
               .setAutoBatch(autoBatchDml)
+              .setAutoBatchUpdateCountSupplier(this::getAutoBatchDmlUpdateCount)
+              .setAutoBatchUpdateCountVerificationSupplier(
+                  this::isAutoBatchDmlUpdateCountVerification)
               .setTransaction(currentUnitOfWork)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)

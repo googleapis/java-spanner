@@ -1169,6 +1169,14 @@ public interface Connection extends AutoCloseable {
 
   boolean isAutoBatchDml();
 
+  void setAutoBatchDmlUpdateCount(long updateCount);
+
+  long getAutoBatchDmlUpdateCount();
+
+  void setAutoBatchDmlUpdateCountVerification(boolean verification);
+
+  boolean isAutoBatchDmlUpdateCountVerification();
+
   /**
    * Enable data boost for partitioned queries. See also {@link #partitionQuery(Statement,
    * PartitionOptions, QueryOption...)}
