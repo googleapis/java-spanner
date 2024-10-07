@@ -136,6 +136,20 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     }
   }
 
+  /**
+   * This is a blocking method, as the interface that it implements is also defined as a blocking
+   * method.
+   */
+  @Override
+  public CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
+      throws SpannerException {
+    SessionReference sessionReference = getSessionReference();
+    try (MultiplexedSessionTransaction transaction =
+        new MultiplexedSessionTransaction(client, span, sessionReference, NO_CHANNEL_HINT, false)) {
+      return transaction.writeWithOptions(mutations, options);
+    }
+  }
+
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
     return new DelayedTransactionRunner(

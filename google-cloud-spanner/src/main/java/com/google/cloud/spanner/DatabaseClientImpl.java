@@ -129,6 +129,9 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
+      if (this.useMultiplexedSessionForRW && getMultiplexedSessionDatabaseClient() != null) {
+        return getMultiplexedSessionDatabaseClient().writeWithOptions(mutations, options);
+      }
       return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));
     } catch (RuntimeException e) {
       span.setStatus(e);

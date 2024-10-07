@@ -368,6 +368,13 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   }
 
   @Override
+  public CommitResponse writeWithOptions(
+      final Iterable<Mutation> mutations, final TransactionOption... options)
+      throws SpannerException {
+    return createMultiplexedSessionTransaction(false).writeWithOptions(mutations, options);
+  }
+
+  @Override
   public CommitResponse writeAtLeastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
     return createMultiplexedSessionTransaction(true)
