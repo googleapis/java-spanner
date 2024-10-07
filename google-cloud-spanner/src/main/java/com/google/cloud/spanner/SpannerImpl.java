@@ -323,7 +323,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient,
       boolean useMultiplexedSessionForRW) {
     return new DatabaseClientImpl(
-        clientId, pool, useMultiplexedSessionBlindWrite, multiplexedSessionClient, tracer, useMultiplexedSessionForRW);
+        clientId,
+        pool,
+        useMultiplexedSessionBlindWrite,
+        multiplexedSessionClient,
+        tracer,
+        useMultiplexedSessionForRW);
   }
 
   @Override
