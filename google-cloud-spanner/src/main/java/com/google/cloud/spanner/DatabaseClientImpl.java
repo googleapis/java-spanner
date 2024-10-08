@@ -281,7 +281,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public AsyncRunner runAsync(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().runAsync(options);
+      return getMultiplexedSessionForRW().runAsync(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -293,7 +293,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().transactionManagerAsync(options);
+      return getMultiplexedSessionForRW().transactionManagerAsync(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();

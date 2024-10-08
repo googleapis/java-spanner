@@ -53,16 +53,6 @@ abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClien
   }
 
   @Override
-  public AsyncRunner runAsync(TransactionOption... options) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
     throw new UnsupportedOperationException();
   }

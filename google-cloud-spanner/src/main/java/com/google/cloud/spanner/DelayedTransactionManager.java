@@ -20,6 +20,12 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Represents a {@link TransactionManager} using a multiplexed session that is not yet ready. The
+ * execution will be delayed until the multiplexed session has been created and is ready. This class
+ * is only used during the startup of the client and the multiplexed session has not yet been
+ * created.
+ */
 class DelayedTransactionManager implements TransactionManager {
 
   private final ApiFuture<TransactionManager> transactionManagerFuture;

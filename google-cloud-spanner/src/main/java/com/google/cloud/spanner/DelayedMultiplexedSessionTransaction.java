@@ -188,6 +188,30 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             MoreExecutors.directExecutor()));
   }
 
+  @Override
+  public AsyncRunner runAsync(TransactionOption... options) {
+    return new DelayedAsyncRunner(
+        ApiFutures.transform(
+            this.sessionFuture,
+            sessionReference ->
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, false)
+                    .runAsync(options),
+            MoreExecutors.directExecutor()));
+  }
+
+  @Override
+  public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+    return new DelayedAsyncTransactionManager(
+        ApiFutures.transform(
+            this.sessionFuture,
+            sessionReference ->
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, false)
+                    .transactionManagerAsync(options),
+            MoreExecutors.directExecutor()));
+  }
+
   /**
    * Gets the session reference that this delayed transaction is waiting for. This method should
    * only be called by methods that are allowed to be blocking.
