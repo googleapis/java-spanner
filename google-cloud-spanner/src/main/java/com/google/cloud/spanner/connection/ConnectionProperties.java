@@ -159,6 +159,14 @@ class ConnectionProperties {
           false,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
+  static final ConnectionProperty<Boolean> USE_AUTO_SAVEPOINTS_FOR_EMULATOR =
+      create(
+          "useAutoSavepointsForEmulator",
+          "Automatically creates savepoints for each statement in a read/write transaction when using the Emulator. "
+              + "This is no longer needed when using Emulator version 1.5.23 or higher.",
+          false,
+          BooleanConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_PLAIN_TEXT =
       create(
           USE_PLAIN_TEXT_PROPERTY_NAME,

@@ -45,6 +45,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.TRACING_P
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_CONNECTION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_SESSION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USER_AGENT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.USE_AUTO_SAVEPOINTS_FOR_EMULATOR;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_PLAIN_TEXT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_VIRTUAL_GRPC_TRANSPORT_THREADS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_VIRTUAL_THREADS;
@@ -71,6 +72,7 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import io.opentelemetry.api.OpenTelemetry;
@@ -437,6 +439,10 @@ public class ConnectionOptions {
                       "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
                           + "The instance and database in the connection string will automatically be created if these do not yet exist on the emulator. "
                           + "Add dialect=postgresql to the connection string to make sure that the database that is created uses the PostgreSQL dialect.",
+                      false),
+                  ConnectionProperty.createBooleanProperty(
+                      "useAutoSavepointsForEmulator",
+                      "Automatically creates savepoints for each statement in a read/write transaction when using the Emulator. This is no longer needed when using Emulator version 1.5.23 or higher.",
                       false),
                   ConnectionProperty.createBooleanProperty(
                       LENIENT_PROPERTY_NAME,
@@ -981,12 +987,6 @@ public class ConnectionOptions {
     }
   }
 
-  //  @VisibleForTesting
-  //  static boolean parseLenient(String uri) {
-  //    String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
-  //    return value != null ? Boolean.parseBoolean(value) : DEFAULT_LENIENT;
-  //  }
-
   @VisibleForTesting
   static String parseUriProperty(String uri, String property) {
     Pattern pattern = Pattern.compile(String.format("(?is)(?:;|\\?)%s=(.*?)(?:;|$)", property));
@@ -1244,6 +1244,14 @@ public class ConnectionOptions {
     return getInitialConnectionPropertyValue(MAX_COMMIT_DELAY);
   }
 
+  boolean usesEmulator() {
+    return Suppliers.memoize(
+            () ->
+                isAutoConfigEmulator()
+                    || !Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST")))
+        .get();
+  }
+
   /**
    * Whether connections created by this {@link ConnectionOptions} will automatically try to connect
    * to the emulator using the default host/port of the emulator, and automatically create the
@@ -1257,11 +1265,11 @@ public class ConnectionOptions {
   /**
    * Returns true if a connection should generate auto-savepoints for retrying transactions on the
    * emulator. This allows some more concurrent transactions on the emulator.
+   *
+   * <p>This is no longer needed since version 1.5.23 of the emulator.
    */
   boolean useAutoSavepointsForEmulator() {
-    // For now, this option is directly linked to the option autoConfigEmulator=true, which is the
-    // recommended way to configure the emulator for the Connection API.
-    return getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR);
+    return getInitialConnectionPropertyValue(USE_AUTO_SAVEPOINTS_FOR_EMULATOR);
   }
 
   public Dialect getDialect() {

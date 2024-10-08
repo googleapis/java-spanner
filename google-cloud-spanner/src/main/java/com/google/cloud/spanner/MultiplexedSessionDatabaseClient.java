@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
@@ -105,6 +106,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         }
         this.client.numCurrentSingleUseTransactions.decrementAndGet();
       }
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      CommitResponse response = super.writeAtLeastOnceWithOptions(mutations, options);
+      onTransactionDone();
+      return response;
     }
 
     @Override
@@ -356,6 +365,13 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       this.channelUsage.set(channel);
       return channel;
     }
+  }
+
+  @Override
+  public CommitResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+    return createMultiplexedSessionTransaction(true)
+        .writeAtLeastOnceWithOptions(mutations, options);
   }
 
   @Override

@@ -24,6 +24,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
+import com.google.spanner.admin.instance.v1.Instance.Edition;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -37,6 +38,7 @@ public class InstanceInfo {
     NODE_COUNT("node_count"),
     PROCESSING_UNITS("processing_units"),
     AUTOSCALING_CONFIG("autoscaling_config"),
+    EDITION("edition"),
     LABELS("labels");
 
     static InstanceField[] defaultFieldsToUpdate(InstanceInfo info) {
@@ -116,6 +118,10 @@ public class InstanceInfo {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
+    public Builder setEdition(Edition edition) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
     public abstract Builder setState(State state);
 
     public abstract Builder addLabel(String key, String value);
@@ -132,6 +138,7 @@ public class InstanceInfo {
     private int nodeCount;
     private int processingUnits;
     private AutoscalingConfig autoscalingConfig;
+    private Edition edition;
     private State state;
     private Map<String, String> labels;
     private Timestamp updateTime;
@@ -153,6 +160,7 @@ public class InstanceInfo {
       this.labels = new HashMap<>(instance.labels);
       this.updateTime = instance.updateTime;
       this.createTime = instance.createTime;
+      this.edition = instance.edition;
     }
 
     @Override
@@ -198,6 +206,12 @@ public class InstanceInfo {
     }
 
     @Override
+    public BuilderImpl setEdition(Edition edition) {
+      this.edition = edition;
+      return this;
+    }
+
+    @Override
     public BuilderImpl setState(State state) {
       this.state = state;
       return this;
@@ -227,6 +241,7 @@ public class InstanceInfo {
   private final int nodeCount;
   private final int processingUnits;
   private final AutoscalingConfig autoscalingConfig;
+  private final Edition edition;
   private final State state;
   private final ImmutableMap<String, String> labels;
   private final Timestamp updateTime;
@@ -239,6 +254,7 @@ public class InstanceInfo {
     this.nodeCount = builder.nodeCount;
     this.processingUnits = builder.processingUnits;
     this.autoscalingConfig = builder.autoscalingConfig;
+    this.edition = builder.edition;
     this.state = builder.state;
     this.labels = ImmutableMap.copyOf(builder.labels);
     this.updateTime = builder.updateTime;
@@ -283,6 +299,10 @@ public class InstanceInfo {
     return autoscalingConfig;
   }
 
+  public Edition getEdition() {
+    return edition;
+  }
+
   /** Returns the current state of the instance. */
   public State getState() {
     return state;
@@ -306,6 +326,7 @@ public class InstanceInfo {
         .add("nodeCount", nodeCount)
         .add("processingUnits", processingUnits)
         .add("autoscaling_config", autoscalingConfig)
+        .add("edition", edition)
         .add("state", state)
         .add("labels", labels)
         .add("createTime", createTime)
@@ -328,6 +349,7 @@ public class InstanceInfo {
         && nodeCount == that.nodeCount
         && processingUnits == that.processingUnits
         && Objects.equals(autoscalingConfig, that.autoscalingConfig)
+        && edition == that.edition
         && state == that.state
         && Objects.equals(labels, that.labels)
         && Objects.equals(updateTime, that.updateTime)
@@ -343,6 +365,7 @@ public class InstanceInfo {
         nodeCount,
         processingUnits,
         autoscalingConfig,
+        edition,
         state,
         labels,
         updateTime,
@@ -364,6 +387,9 @@ public class InstanceInfo {
     }
     if (getAutoscalingConfig() != null) {
       builder.setAutoscalingConfig(getAutoscalingConfig());
+    }
+    if (getEdition() != null) {
+      builder.setEdition(getEdition());
     }
     return builder.build();
   }
