@@ -507,8 +507,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
-    // TODO: fix this
-    // assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
@@ -556,8 +555,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
-    // TODO: fix this
-    // assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
@@ -583,7 +581,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
-    // assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
@@ -607,7 +605,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
-    // assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
