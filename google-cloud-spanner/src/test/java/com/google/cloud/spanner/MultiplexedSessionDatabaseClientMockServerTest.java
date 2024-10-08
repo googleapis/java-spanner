@@ -621,7 +621,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   }
 
   @Test
-  public void testAsyncTransactionManagerCommitAborted() throws Exception {
+  public void testReadWriteTransactionUsingAsyncTransactionManager() throws Exception {
     // Updates executed within a R/W transaction via AsyncTransactionManager should use a
     // multiplexed session.
     // During a retry (due to an ABORTED error), the transaction should use the same multiplexed
@@ -676,7 +676,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   }
 
   @Test
-  public void testAsyncRunnerCommitAborted() throws Exception {
+  public void testReadWriteTransactionUsingAsyncRunner() throws Exception {
     // Updates executed within a R/W transaction via AsyncRunner should use a multiplexed
     // session.
     // During a retry (due to an ABORTED error), the transaction should use the same multiplexed
