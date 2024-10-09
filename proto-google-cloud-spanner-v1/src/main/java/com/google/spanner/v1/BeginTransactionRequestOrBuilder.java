@@ -140,4 +140,57 @@ public interface BeginTransactionRequestOrBuilder
    * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
    */
   com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Required for read-write transactions on a multiplexed session
+   * that commit mutations but do not perform any reads or queries. Clients
+   * should randomly select one of the mutations from the mutation set and send
+   * it as a part of this request.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the mutationKey field is set.
+   */
+  boolean hasMutationKey();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Required for read-write transactions on a multiplexed session
+   * that commit mutations but do not perform any reads or queries. Clients
+   * should randomly select one of the mutations from the mutation set and send
+   * it as a part of this request.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The mutationKey.
+   */
+  com.google.spanner.v1.Mutation getMutationKey();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Required for read-write transactions on a multiplexed session
+   * that commit mutations but do not perform any reads or queries. Clients
+   * should randomly select one of the mutations from the mutation set and send
+   * it as a part of this request.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.MutationOrBuilder getMutationKeyOrBuilder();
 }

@@ -44,6 +44,7 @@ import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.KeySet;
 import com.google.spanner.v1.ListSessionsResponse;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.Mutation;
 import com.google.spanner.v1.Partition;
 import com.google.spanner.v1.PartitionOptions;
@@ -587,6 +588,7 @@ public class SpannerClientHttpJsonTest {
             .setMetadata(ResultSetMetadata.newBuilder().build())
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
+            .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -673,6 +675,7 @@ public class SpannerClientHttpJsonTest {
         ExecuteBatchDmlResponse.newBuilder()
             .addAllResultSets(new ArrayList<ResultSet>())
             .setStatus(Status.newBuilder().build())
+            .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -735,6 +738,7 @@ public class SpannerClientHttpJsonTest {
             .setMetadata(ResultSetMetadata.newBuilder().build())
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
+            .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -821,6 +825,7 @@ public class SpannerClientHttpJsonTest {
         Transaction.newBuilder()
             .setId(ByteString.EMPTY)
             .setReadTimestamp(Timestamp.newBuilder().build())
+            .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -868,6 +873,7 @@ public class SpannerClientHttpJsonTest {
         Transaction.newBuilder()
             .setId(ByteString.EMPTY)
             .setReadTimestamp(Timestamp.newBuilder().build())
+            .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
