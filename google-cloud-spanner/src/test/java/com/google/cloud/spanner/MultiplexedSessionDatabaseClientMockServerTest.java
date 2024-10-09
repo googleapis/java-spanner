@@ -713,6 +713,38 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
+  @Test
+  public void testAsyncRunnerIsNonBlockingWithMultiplexedSession() throws Exception {
+    mockSpanner.freeze();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    AsyncRunner runner = client.runAsync();
+    ApiFuture<Void> res =
+        runner.runAsync(
+            txn -> {
+              txn.executeUpdateAsync(UPDATE_STATEMENT);
+              return ApiFutures.immediateFuture(null);
+            },
+            MoreExecutors.directExecutor());
+    ApiFuture<Timestamp> ts = runner.getCommitTimestamp();
+    mockSpanner.unfreeze();
+    assertThat(res.get()).isNull();
+    assertThat(ts.get()).isNotNull();
+
+    List<ExecuteSqlRequest> executeSqlRequests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1L, executeSqlRequests.size());
+
+    // Verify the requests are executed using multiplexed sessions
+    for (ExecuteSqlRequest request : executeSqlRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+    }
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
     assertNotNull(client.multiplexedSessionDatabaseClient);
     SessionReference sessionReference =

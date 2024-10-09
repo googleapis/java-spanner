@@ -17,8 +17,9 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
-import java.util.concurrent.ExecutionException;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.Executor;
 
 /**
@@ -34,33 +35,36 @@ public class DelayedAsyncRunner implements AsyncRunner {
     this.asyncRunnerFuture = asyncRunnerFuture;
   }
 
-  AsyncRunner getAsyncRunner() {
-    try {
-      return this.asyncRunnerFuture.get();
-    } catch (ExecutionException executionException) {
-      // Propagate the underlying exception as a RuntimeException (SpannerException is also a
-      // RuntimeException).
-      if (executionException.getCause() instanceof RuntimeException) {
-        throw (RuntimeException) executionException.getCause();
-      }
-      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
-    } catch (InterruptedException interruptedException) {
-      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-    }
+  ApiFuture<AsyncRunner> getAsyncRunner() {
+    return ApiFutures.catchingAsync(
+        asyncRunnerFuture,
+        Exception.class,
+        exception -> {
+          if (exception instanceof InterruptedException) {
+            throw SpannerExceptionFactory.propagateInterrupt((InterruptedException) exception);
+          }
+          throw SpannerExceptionFactory.asSpannerException(exception.getCause());
+        },
+        MoreExecutors.directExecutor());
   }
 
   @Override
   public <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor) {
-    return getAsyncRunner().runAsync(work, executor);
+    return ApiFutures.transformAsync(
+        getAsyncRunner(),
+        asyncRunner -> asyncRunner.runAsync(work, executor),
+        MoreExecutors.directExecutor());
   }
 
   @Override
   public ApiFuture<Timestamp> getCommitTimestamp() {
-    return getAsyncRunner().getCommitTimestamp();
+    return ApiFutures.transformAsync(
+        getAsyncRunner(), AsyncRunner::getCommitTimestamp, MoreExecutors.directExecutor());
   }
 
   @Override
   public ApiFuture<CommitResponse> getCommitResponse() {
-    return getAsyncRunner().getCommitResponse();
+    return ApiFutures.transformAsync(
+        getAsyncRunner(), AsyncRunner::getCommitResponse, MoreExecutors.directExecutor());
   }
 }
