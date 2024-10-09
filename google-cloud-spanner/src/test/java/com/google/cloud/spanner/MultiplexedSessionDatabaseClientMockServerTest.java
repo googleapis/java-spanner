@@ -609,10 +609,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(response.getCommitTimestamp());
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
-    assertThat(commitRequests).hasSize(1);
+    assertEquals(1L, commitRequests.size());
     CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getRequestOptions());
-    assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
+    assertEquals("app=spanner,env=test", commit.getRequestOptions().getTransactionTag());
     assertTrue(mockSpanner.getSession(commit.getSession()).getMultiplexed());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
@@ -650,9 +650,9 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
               MoreExecutors.directExecutor());
           abortedLatch.await(10L, TimeUnit.SECONDS);
           CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
-          assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
-          assertThat(commitTimestamp.get()).isNotNull();
-          assertThat(attempt.get()).isEqualTo(2);
+          assertEquals(UPDATE_COUNT, updateCount.get().longValue());
+          assertNotNull(commitTimestamp.get());
+          assertEquals(2L, attempt.get());
           break;
         } catch (AbortedException e) {
           transactionContextFuture = manager.resetForRetryAsync();
@@ -695,12 +695,12 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
               return updateCount1;
             },
             MoreExecutors.directExecutor());
-    assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
-    assertThat(attempt.get()).isEqualTo(2);
+    assertEquals(UPDATE_COUNT, updateCount.get().longValue());
+    assertEquals(2L, attempt.get());
 
     List<ExecuteSqlRequest> executeSqlRequests =
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
-    assertEquals(2, executeSqlRequests.size());
+    assertEquals(2L, executeSqlRequests.size());
     assertEquals(executeSqlRequests.get(0).getSession(), executeSqlRequests.get(1).getSession());
 
     // Verify the requests are executed using multiplexed sessions

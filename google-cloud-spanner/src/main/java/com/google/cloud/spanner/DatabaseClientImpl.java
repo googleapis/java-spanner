@@ -48,7 +48,7 @@ class DatabaseClientImpl implements DatabaseClient {
         /* useMultiplexedSessionBlindWrite = */ false,
         /* multiplexedSessionDatabaseClient = */ null,
         tracer,
-        false);
+        /* useMultiplexedSessionForRW = */ false);
   }
 
   @VisibleForTesting
