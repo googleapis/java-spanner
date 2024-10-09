@@ -28,6 +28,10 @@ import java.util.stream.Collectors;
 public class DmlBatchUpdateCountVerificationFailedException extends AbortedException {
   private static final long serialVersionUID = 1L;
 
+  private final long[] expected;
+
+  private final long[] actual;
+
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   DmlBatchUpdateCountVerificationFailedException(
       DoNotConstructDirectly token, long[] expected, long[] actual) {
@@ -41,5 +45,24 @@ public class DmlBatchUpdateCountVerificationFailedException extends AbortedExcep
             Arrays.stream(expected).mapToObj(Long::toString).collect(Collectors.joining()),
             Arrays.stream(actual).mapToObj(Long::toString).collect(Collectors.joining())),
         /* cause = */ null);
+    this.expected = expected;
+    this.actual = actual;
+  }
+
+  /**
+   * The expected update counts. These were returned to the client application when the DML
+   * statements were buffered.
+   */
+  public long[] getExpected() {
+    return Arrays.copyOf(this.expected, this.expected.length);
+  }
+
+  /**
+   * The actual update counts. These were returned by Spanner to the client when the DML statements
+   * were actually executed, and are the update counts that the client application would have
+   * received if auto-batching had not been enabled.
+   */
+  public long[] getActual() {
+    return Arrays.copyOf(this.actual, this.actual.length);
   }
 }

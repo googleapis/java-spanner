@@ -116,6 +116,7 @@ public final class SpannerExceptionFactory {
     return new SpannerBatchUpdateException(token, code, message, updateCounts);
   }
 
+  /** Constructs a specific error that */
   public static DmlBatchUpdateCountVerificationFailedException
       newDmlBatchUpdateCountVerificationFailedException(long[] expected, long[] actual) {
     return new DmlBatchUpdateCountVerificationFailedException(

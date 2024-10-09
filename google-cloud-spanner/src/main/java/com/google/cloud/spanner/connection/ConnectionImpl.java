@@ -118,7 +118,7 @@ class ConnectionImpl implements Connection {
           .parse(Statement.of("START BATCH DDL"));
   private static final ParsedStatement START_BATCH_DML_STATEMENT =
       AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
-          .parse(Statement.of("START BATCH DDL"));
+          .parse(Statement.of("START BATCH DML"));
   private static final ParsedStatement RUN_BATCH_STATEMENT =
       AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
           .parse(Statement.of("RUN BATCH"));
