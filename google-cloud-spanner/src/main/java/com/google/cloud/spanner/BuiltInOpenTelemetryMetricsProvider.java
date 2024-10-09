@@ -91,22 +91,21 @@ final class BuiltInOpenTelemetryMetricsProvider {
     return clientAttributes;
   }
 
-  // Returns a 6-digit zero-padded all lower case hexadecimal representation
-  // of hash of the accounting group.
-  //
-  // The hash utilizes the 10 most significant bits of the value returned by
-  // `Hashing.goodFastHash(64).hashBytes()`, so effectively the returned values are
-  // uniformly distributed in the range [000000, 0003ff].
-  //
-  // The primary purpose of this function is to generate a hash value for the
-  // `client_hash` resource label using `client_uid` metric field.
-  //
-  // The range of values is chosen to be small enough to keep the cardinality of
-  // the Resource targets under control.
-  //
-  // Note: If at later time the range needs to be increased, it can be done by
-  // increasing the value of `kPrefixLength` to up to 24 bits without changing
-  // the format of the returned value.
+  /**
+   * Generates a 6-digit zero-padded all lower case hexadecimal representation of hash of the
+   * accounting group. The hash utilizes the 10 most significant bits of the value returned by
+   * `Hashing.goodFastHash(64).hashBytes()`, so effectively the returned values are uniformly
+   * distributed in the range [000000, 0003ff].
+   *
+   * <p>The primary purpose of this function is to generate a hash value for the `client_hash`
+   * resource label using `client_uid` metric field. The range of values is chosen to be small
+   * enough to keep the cardinality of the Resource targets under control. Note: If at later time
+   * the range needs to be increased, it can be done by increasing the value of `kPrefixLength` to
+   * up to 24 bits without changing the format of the returned value.
+   *
+   * @return Returns a 6-digit zero-padded all lower case hexadecimal representation of hash of the
+   *     accounting group.
+   */
   static String generateClientHash(String clientUid) {
     if (clientUid == null) {
       return "000000";

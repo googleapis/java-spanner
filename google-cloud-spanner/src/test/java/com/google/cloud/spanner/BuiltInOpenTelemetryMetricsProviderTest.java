@@ -16,7 +16,8 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,10 +58,9 @@ public class BuiltInOpenTelemetryMetricsProviderTest {
 
   private void verifyHash(String hash) {
     // Check if the hash length is 6
-    assertThat(hash.length()).isEqualTo(6);
+    assertEquals(hash.length(), 6);
     // Check if the hash is in the range [000000, 0003ff]
     long hashValue = Long.parseLong(hash, 16); // Convert hash from hex to decimal
-    assertThat(hashValue).isAtLeast(0);
-    assertThat(hashValue).isAtMost(0x3FF);
+    assertTrue(hashValue >= 0 && hashValue <= 0x3FF);
   }
 }
