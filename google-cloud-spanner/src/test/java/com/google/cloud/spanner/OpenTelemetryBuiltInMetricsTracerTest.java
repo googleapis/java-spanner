@@ -99,6 +99,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
                 BuiltInOpenTelemetryMetricsProvider.detectClientLocation())
             .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, client_name)
             .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
+            .put(BuiltInMetricsConstant.CLIENT_HASH_KEY, attributes.get("client_hash"))
             .build();
   }
 

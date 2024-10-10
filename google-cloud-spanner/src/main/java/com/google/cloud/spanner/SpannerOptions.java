@@ -163,6 +163,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableApiTracing;
   private final boolean enableBuiltInMetrics;
   private final boolean enableExtendedTracing;
+  private final boolean enableEndToEndTracing;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -670,6 +671,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
+    enableEndToEndTracing = builder.enableEndToEndTracing;
   }
 
   /**
@@ -706,6 +708,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default boolean isEnableBuiltInMetrics() {
       return false;
     }
+
+    default boolean isEnableEndToEndTracing() {
+      return false;
+    }
   }
 
   /**
@@ -720,6 +726,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
     private static final String SPANNER_ENABLE_BUILTIN_METRICS = "SPANNER_ENABLE_BUILTIN_METRICS";
+    private static final String SPANNER_ENABLE_END_TO_END_TRACING =
+        "SPANNER_ENABLE_END_TO_END_TRACING";
 
     private SpannerEnvironmentImpl() {}
 
@@ -751,6 +759,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       // The environment variable SPANNER_ENABLE_BUILTIN_METRICS is used for testing and will be
       // removed in the future.
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_BUILTIN_METRICS));
+    }
+
+    @Override
+    public boolean isEnableEndToEndTracing() {
+      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_END_TO_END_TRACING));
     }
   }
 
@@ -816,6 +829,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
+    private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -882,6 +896,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableApiTracing = options.enableApiTracing;
       this.enableExtendedTracing = options.enableExtendedTracing;
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
+      this.enableEndToEndTracing = options.enableEndToEndTracing;
     }
 
     @Override
@@ -1415,6 +1430,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Sets whether to enable end to end tracing. Enabling this option will create the trace spans
+     * at the Spanner layer. By default, end to end tracing is disabled. Enabling end to end tracing
+     * requires OpenTelemetry to be set up. Simply enabling this option won't generate traces at
+     * Spanner layer.
+     */
+    public Builder setEnableEndToEndTracing(boolean enableEndToEndTracing) {
+      this.enableEndToEndTracing = enableEndToEndTracing;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1504,6 +1530,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  @VisibleForTesting
   static void resetActiveTracingFramework() {
     activeTracingFramework = null;
   }
@@ -1743,6 +1770,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public boolean isEnableExtendedTracing() {
     return enableExtendedTracing;
+  }
+
+  /**
+   * Returns whether end to end tracing is enabled. If this option is enabled then trace spans will
+   * be created at the Spanner layer.
+   */
+  public boolean isEndToEndTracingEnabled() {
+    return enableEndToEndTracing;
   }
 
   /** Returns the default query options to use for the specific database. */

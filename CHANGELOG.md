@@ -1,5 +1,47 @@
 # Changelog
 
+## [6.77.0](https://github.com/googleapis/java-spanner/compare/v6.76.0...v6.77.0) (2024-10-02)
+
+
+### Features
+
+* Add INTERVAL API ([c078ac3](https://github.com/googleapis/java-spanner/commit/c078ac34c3d14b13bbd4a507de4f0013975dca4e))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.52.0 ([#3291](https://github.com/googleapis/java-spanner/issues/3291)) ([9241063](https://github.com/googleapis/java-spanner/commit/92410638b0ba88f8e89e28bd12dd58830f7aaeb3))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.52.0 ([#3292](https://github.com/googleapis/java-spanner/issues/3292)) ([da27a19](https://github.com/googleapis/java-spanner/commit/da27a1992e40b1b4591f0232f687d8031387e749))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.52.0 ([#3293](https://github.com/googleapis/java-spanner/issues/3293)) ([c6dbdb2](https://github.com/googleapis/java-spanner/commit/c6dbdb255eb4cd231a2dc7cef94bf3353fa7e837))
+* Update dependency com.google.cloud:google-cloud-trace to v2.51.0 ([#3294](https://github.com/googleapis/java-spanner/issues/3294)) ([a269747](https://github.com/googleapis/java-spanner/commit/a269747889ea0b2380f07e1efef3b288a9c4fd04))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.36.1 ([#3355](https://github.com/googleapis/java-spanner/issues/3355)) ([5191e71](https://github.com/googleapis/java-spanner/commit/5191e71a83a316b41564ce2604980c8f33135f2f))
+* Update dependency com.google.cloud.opentelemetry:exporter-metrics to v0.32.0 ([#3371](https://github.com/googleapis/java-spanner/issues/3371)) ([d5b5ca0](https://github.com/googleapis/java-spanner/commit/d5b5ca0cccc6cf73d759245d2bd72f33c7d39830))
+* Update dependency com.google.cloud.opentelemetry:exporter-trace to v0.32.0 ([#3372](https://github.com/googleapis/java-spanner/issues/3372)) ([aa9a71d](https://github.com/googleapis/java-spanner/commit/aa9a71d38dabd8d1974bb553761e93735ade5c26))
+* Update dependency commons-io:commons-io to v2.17.0 ([#3349](https://github.com/googleapis/java-spanner/issues/3349)) ([7c21164](https://github.com/googleapis/java-spanner/commit/7c21164f2b8e75afab268f2fb8e132a372ac0d67))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.42.1 ([#3323](https://github.com/googleapis/java-spanner/issues/3323)) ([95dfc02](https://github.com/googleapis/java-spanner/commit/95dfc02ae2d65f99219dcced66cf4e74d1c4975b))
+* Update dependency ubuntu to v24 ([#3356](https://github.com/googleapis/java-spanner/issues/3356)) ([042c294](https://github.com/googleapis/java-spanner/commit/042c294cc5f83eebd2e3600cffb165e5b467d63e))
+* Update googleapis/sdk-platform-java action to v2.46.1 ([#3354](https://github.com/googleapis/java-spanner/issues/3354)) ([378f5cf](https://github.com/googleapis/java-spanner/commit/378f5cfb08d4e5ee80b21007bfc829de61bfbdbe))
+* Update junixsocket.version to v2.10.1 ([#3367](https://github.com/googleapis/java-spanner/issues/3367)) ([5f94915](https://github.com/googleapis/java-spanner/commit/5f94915941c4e4132f8460a04dde0643fa63ab99))
+* Update opentelemetry.version to v1.42.1 ([#3330](https://github.com/googleapis/java-spanner/issues/3330)) ([7b05e43](https://github.com/googleapis/java-spanner/commit/7b05e4301953364617691e8ae225cea823e3a323))
+
+
+### Documentation
+
+* Update comment for PROFILE QueryMode ([c078ac3](https://github.com/googleapis/java-spanner/commit/c078ac34c3d14b13bbd4a507de4f0013975dca4e))
+
+## [6.76.0](https://github.com/googleapis/java-spanner/compare/v6.75.0...v6.76.0) (2024-09-27)
+
+
+### Features
+
+* Add opt-in flag and ClientInterceptor to propagate trace context for Spanner end to end tracing ([#3162](https://github.com/googleapis/java-spanner/issues/3162)) ([0b7fdaf](https://github.com/googleapis/java-spanner/commit/0b7fdaf1d25e81ca8dd35a0f8d8caa7b77a7e58c))
+* Add samples for backup schedule feature APIs. ([#3339](https://github.com/googleapis/java-spanner/issues/3339)) ([8cd5163](https://github.com/googleapis/java-spanner/commit/8cd516351e7859a81f00f17cb5071edbd804ea90))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.46.1 ([1719f44](https://github.com/googleapis/java-spanner/commit/1719f4465841354db3253fd132868394e530a82d))
+
 ## [6.75.0](https://github.com/googleapis/java-spanner/compare/v6.74.1...v6.75.0) (2024-09-19)
 
 
