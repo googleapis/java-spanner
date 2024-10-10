@@ -81,8 +81,7 @@ class SessionImpl implements Session {
     }
     if (previousTransactionId != null
         && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
-      // TODO(sriharshach): uncomment this when multiplexed session R/W proto is published
-      // readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
+      readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
     }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
