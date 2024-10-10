@@ -23,6 +23,25 @@ import com.google.protobuf.util.JsonFormat;
 import com.google.spanner.v1.DirectedReadOptions;
 
 public class DirectedReadOptionsUtil {
+  static class DirectedReadOptionsConverter
+      implements ClientSideStatementValueConverter<DirectedReadOptions> {
+    static DirectedReadOptionsConverter INSTANCE = new DirectedReadOptionsConverter();
+
+    @Override
+    public Class<DirectedReadOptions> getParameterClass() {
+      return DirectedReadOptions.class;
+    }
+
+    @Override
+    public DirectedReadOptions convert(String value) {
+      try {
+        return parse(value);
+      } catch (Throwable ignore) {
+        // ClientSideStatementValueConverters should return null if the value cannot be converted.
+        return null;
+      }
+    }
+  }
 
   /**
    * Generates a valid JSON string for the given {@link DirectedReadOptions} that can be used with

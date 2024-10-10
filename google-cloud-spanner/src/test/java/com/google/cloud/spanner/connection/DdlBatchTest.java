@@ -610,7 +610,7 @@ public class DdlBatchTest {
   public void testCommit() {
     DdlBatch batch = createSubject();
     try {
-      batch.commitAsync(CallType.SYNC);
+      batch.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE);
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -621,7 +621,7 @@ public class DdlBatchTest {
   public void testRollback() {
     DdlBatch batch = createSubject();
     try {
-      batch.rollbackAsync(CallType.SYNC);
+      batch.rollbackAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE);
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());

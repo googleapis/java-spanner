@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.SpannerGrpc;
 import io.opentelemetry.context.Scope;
 import java.util.concurrent.Callable;
+import javax.annotation.Nonnull;
 
 /**
  * Transaction that is used when a {@link Connection} is in read-only mode or when the transaction
@@ -241,20 +242,30 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> commitAsync(CallType callType) {
+  public ApiFuture<Void> commitAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     try (Scope ignore = span.makeCurrent()) {
       ApiFuture<Void> result = closeTransactions();
+      callback.onSuccess();
       this.state = UnitOfWorkState.COMMITTED;
       return result;
+    } catch (Throwable throwable) {
+      callback.onFailure();
+      throw throwable;
     }
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync(CallType callType) {
+  public ApiFuture<Void> rollbackAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     try (Scope ignore = span.makeCurrent()) {
       ApiFuture<Void> result = closeTransactions();
+      callback.onSuccess();
       this.state = UnitOfWorkState.ROLLED_BACK;
       return result;
+    } catch (Throwable throwable) {
+      callback.onFailure();
+      throw throwable;
     }
   }
 

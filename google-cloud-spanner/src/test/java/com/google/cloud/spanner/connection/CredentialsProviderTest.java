@@ -21,9 +21,11 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import io.grpc.ManagedChannelBuilder;
 import java.io.ObjectStreamException;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,6 +50,14 @@ public class CredentialsProviderTest extends AbstractMockServerTest {
 
     private Object readResolve() throws ObjectStreamException {
       return this;
+    }
+
+    @Override
+    public AccessToken refreshAccessToken() {
+      return AccessToken.newBuilder()
+          .setTokenValue("foo")
+          .setExpirationTime(new Date(Long.MAX_VALUE))
+          .build();
     }
 
     public boolean equals(Object obj) {

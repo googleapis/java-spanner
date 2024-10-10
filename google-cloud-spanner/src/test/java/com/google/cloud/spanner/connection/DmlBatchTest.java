@@ -195,7 +195,7 @@ public class DmlBatchTest {
   public void testCommit() {
     DmlBatch batch = createSubject();
     try {
-      batch.commitAsync(CallType.SYNC);
+      batch.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE);
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -206,7 +206,7 @@ public class DmlBatchTest {
   public void testRollback() {
     DmlBatch batch = createSubject();
     try {
-      batch.rollbackAsync(CallType.SYNC);
+      batch.rollbackAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE);
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
