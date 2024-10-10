@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
@@ -368,40 +369,77 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   }
 
   @Override
+  public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+    return createMultiplexedSessionTransaction(/* singleUse = */ false).write(mutations);
+  }
+
+  @Override
+  public CommitResponse writeWithOptions(
+      final Iterable<Mutation> mutations, final TransactionOption... options)
+      throws SpannerException {
+    return createMultiplexedSessionTransaction(/* singleUse = */ false)
+        .writeWithOptions(mutations, options);
+  }
+
+  @Override
   public CommitResponse writeAtLeastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-    return createMultiplexedSessionTransaction(true)
+    return createMultiplexedSessionTransaction(/* singleUse = */ true)
         .writeAtLeastOnceWithOptions(mutations, options);
   }
 
   @Override
   public ReadContext singleUse() {
-    return createMultiplexedSessionTransaction(true).singleUse();
+    return createMultiplexedSessionTransaction(/* singleUse = */ true).singleUse();
   }
 
   @Override
   public ReadContext singleUse(TimestampBound bound) {
-    return createMultiplexedSessionTransaction(true).singleUse(bound);
+    return createMultiplexedSessionTransaction(/* singleUse = */ true).singleUse(bound);
   }
 
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction() {
-    return createMultiplexedSessionTransaction(true).singleUseReadOnlyTransaction();
+    return createMultiplexedSessionTransaction(/* singleUse = */ true)
+        .singleUseReadOnlyTransaction();
   }
 
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
-    return createMultiplexedSessionTransaction(true).singleUseReadOnlyTransaction(bound);
+    return createMultiplexedSessionTransaction(/* singleUse = */ true)
+        .singleUseReadOnlyTransaction(bound);
   }
 
   @Override
   public ReadOnlyTransaction readOnlyTransaction() {
-    return createMultiplexedSessionTransaction(false).readOnlyTransaction();
+    return createMultiplexedSessionTransaction(/* singleUse = */ false).readOnlyTransaction();
   }
 
   @Override
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
-    return createMultiplexedSessionTransaction(false).readOnlyTransaction(bound);
+    return createMultiplexedSessionTransaction(/* singleUse = */ false).readOnlyTransaction(bound);
+  }
+
+  @Override
+  public TransactionRunner readWriteTransaction(TransactionOption... options) {
+    return createMultiplexedSessionTransaction(/* singleUse = */ false)
+        .readWriteTransaction(options);
+  }
+
+  @Override
+  public TransactionManager transactionManager(TransactionOption... options) {
+    return createMultiplexedSessionTransaction(/* singleUse = */ false).transactionManager(options);
+  }
+
+  @Override
+  public AsyncRunner runAsync(TransactionOption... options) {
+    return createMultiplexedSessionTransaction(/* singleUse = */ false).runAsync(options);
+  }
+
+  @Override
+  public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+    return createMultiplexedSessionTransaction(/* singleUse = */ false)
+        .transactionManagerAsync(options);
   }
 
   /**
