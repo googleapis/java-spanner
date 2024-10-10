@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
 import org.junit.After;
@@ -165,13 +166,32 @@ public class ReadAsyncTest {
 
   @Test
   public void pointReadAsync() throws Exception {
-    ApiFuture<Struct> row =
-        client
-            .singleUse(TimestampBound.strong())
-            .readRowAsync(READ_TABLE_NAME, Key.of("k1"), READ_COLUMN_NAMES);
-    assertThat(row.get()).isNotNull();
-    assertThat(row.get().getString(0)).isEqualTo("k1");
-    assertThat(row.get().getString(1)).isEqualTo("v1");
+    int numThreads = 32;
+    ExecutorService service = Executors.newFixedThreadPool(32);
+    List<Future<?>> futures = new ArrayList<>(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      Future<?> future =
+          service.submit(
+              () -> {
+                try {
+                  ApiFuture<Struct> row =
+                      client
+                          .singleUse(TimestampBound.strong())
+                          .readRowAsync(READ_TABLE_NAME, Key.of("k1"), READ_COLUMN_NAMES);
+                  assertThat(row.get()).isNotNull();
+                  assertThat(row.get().getString(0)).isEqualTo("k1");
+                  assertThat(row.get().getString(1)).isEqualTo("v1");
+                } catch (Throwable t) {
+                  throw SpannerExceptionFactory.asSpannerException(t);
+                }
+              });
+      futures.add(future);
+    }
+    service.shutdown();
+    for (Future<?> future : futures) {
+      future.get();
+    }
+    System.out.println("Done");
   }
 
   @Test
