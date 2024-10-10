@@ -758,4 +758,37 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isKeepTransactionAlive()</method>
   </difference>
+  
+  <!-- Automatic DML batching -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setAutoBatchDml(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isAutoBatchDml()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setAutoBatchDmlUpdateCount(long)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>long getAutoBatchDmlUpdateCount()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setAutoBatchDmlUpdateCountVerification(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isAutoBatchDmlUpdateCountVerification()</method>
+  </difference>
+  
 </differences>

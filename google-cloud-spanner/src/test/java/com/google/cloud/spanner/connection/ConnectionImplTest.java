@@ -89,6 +89,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -1536,7 +1537,8 @@ public class ConnectionImplTest {
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
+              @Nonnull ParsedStatement parsedStatement, boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1645,7 +1647,8 @@ public class ConnectionImplTest {
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
+              @Nonnull ParsedStatement parsedStatement, boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1759,6 +1762,7 @@ public class ConnectionImplTest {
           UnitOfWork createNewUnitOfWork(
               boolean isInternalMetadataQuery,
               boolean forceSingleUse,
+              boolean autoBatchDml,
               StatementType statementType) {
             return unitOfWork;
           }
@@ -1951,7 +1955,9 @@ public class ConnectionImplTest {
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
           UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
-              StatementType statementType, boolean isInternalMetadataQuery) {
+              StatementType statementType,
+              ParsedStatement parsedStatement,
+              boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
