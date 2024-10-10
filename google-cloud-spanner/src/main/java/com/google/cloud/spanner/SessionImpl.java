@@ -69,7 +69,8 @@ class SessionImpl implements Session {
     }
   }
 
-  static TransactionOptions createReadWriteTransactionOptions(Options options) {
+  static TransactionOptions createReadWriteTransactionOptions(
+      Options options, ByteString previousTransactionId) {
     TransactionOptions.Builder transactionOptions = TransactionOptions.newBuilder();
     if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       transactionOptions.setExcludeTxnFromChangeStreams(true);
@@ -77,6 +78,10 @@ class SessionImpl implements Session {
     TransactionOptions.ReadWrite.Builder readWrite = TransactionOptions.ReadWrite.newBuilder();
     if (options.withOptimisticLock() == Boolean.TRUE) {
       readWrite.setReadLockMode(TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
+    }
+    if (previousTransactionId != null
+        && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
+      readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
     }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
@@ -427,13 +432,17 @@ class SessionImpl implements Session {
   }
 
   ApiFuture<ByteString> beginTransactionAsync(
-      Options transactionOptions, boolean routeToLeader, Map<SpannerRpc.Option, ?> channelHint) {
+      Options transactionOptions,
+      boolean routeToLeader,
+      Map<SpannerRpc.Option, ?> channelHint,
+      ByteString previousTransactionId) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
-            .setOptions(createReadWriteTransactionOptions(transactionOptions))
+            .setOptions(
+                createReadWriteTransactionOptions(transactionOptions, previousTransactionId))
             .build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
@@ -469,11 +478,12 @@ class SessionImpl implements Session {
     return res;
   }
 
-  TransactionContextImpl newTransaction(Options options) {
+  TransactionContextImpl newTransaction(Options options, ByteString previousTransactionId) {
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
         .setTransactionId(null)
+        .setPreviousTransactionId(previousTransactionId)
         .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
