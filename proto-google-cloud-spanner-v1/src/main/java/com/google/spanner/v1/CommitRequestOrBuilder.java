@@ -298,5 +298,61 @@ public interface CommitRequestOrBuilder
    */
   com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
 
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If the read-write transaction was executed on a multiplexed
+   * session, the precommit token with the highest sequence number received in
+   * this transaction attempt, should be included here. Failing to do so will
+   * result in a FailedPrecondition error.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the precommitToken field is set.
+   */
+  boolean hasPrecommitToken();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If the read-write transaction was executed on a multiplexed
+   * session, the precommit token with the highest sequence number received in
+   * this transaction attempt, should be included here. Failing to do so will
+   * result in a FailedPrecondition error.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The precommitToken.
+   */
+  com.google.spanner.v1.MultiplexedSessionPrecommitToken getPrecommitToken();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If the read-write transaction was executed on a multiplexed
+   * session, the precommit token with the highest sequence number received in
+   * this transaction attempt, should be included here. Failing to do so will
+   * result in a FailedPrecondition error.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder getPrecommitTokenOrBuilder();
+
   com.google.spanner.v1.CommitRequest.TransactionCase getTransactionCase();
 }

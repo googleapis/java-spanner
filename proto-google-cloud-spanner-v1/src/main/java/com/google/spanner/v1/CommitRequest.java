@@ -495,6 +495,78 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         : requestOptions_;
   }
 
+  public static final int PRECOMMIT_TOKEN_FIELD_NUMBER = 9;
+  private com.google.spanner.v1.MultiplexedSessionPrecommitToken precommitToken_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If the read-write transaction was executed on a multiplexed
+   * session, the precommit token with the highest sequence number received in
+   * this transaction attempt, should be included here. Failing to do so will
+   * result in a FailedPrecondition error.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the precommitToken field is set.
+   */
+  @java.lang.Override
+  public boolean hasPrecommitToken() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If the read-write transaction was executed on a multiplexed
+   * session, the precommit token with the highest sequence number received in
+   * this transaction attempt, should be included here. Failing to do so will
+   * result in a FailedPrecondition error.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The precommitToken.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.MultiplexedSessionPrecommitToken getPrecommitToken() {
+    return precommitToken_ == null
+        ? com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance()
+        : precommitToken_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If the read-write transaction was executed on a multiplexed
+   * session, the precommit token with the highest sequence number received in
+   * this transaction attempt, should be included here. Failing to do so will
+   * result in a FailedPrecondition error.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder
+      getPrecommitTokenOrBuilder() {
+    return precommitToken_ == null
+        ? com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance()
+        : precommitToken_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -530,6 +602,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(8, getMaxCommitDelay());
     }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      output.writeMessage(9, getPrecommitToken());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -564,6 +639,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, getMaxCommitDelay());
     }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(9, getPrecommitToken());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -589,6 +667,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (hasRequestOptions() != other.hasRequestOptions()) return false;
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
+    }
+    if (hasPrecommitToken() != other.hasPrecommitToken()) return false;
+    if (hasPrecommitToken()) {
+      if (!getPrecommitToken().equals(other.getPrecommitToken())) return false;
     }
     if (!getTransactionCase().equals(other.getTransactionCase())) return false;
     switch (transactionCase_) {
@@ -627,6 +709,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (hasRequestOptions()) {
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
+    }
+    if (hasPrecommitToken()) {
+      hash = (37 * hash) + PRECOMMIT_TOKEN_FIELD_NUMBER;
+      hash = (53 * hash) + getPrecommitToken().hashCode();
     }
     switch (transactionCase_) {
       case 2:
@@ -782,6 +868,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         getMutationsFieldBuilder();
         getMaxCommitDelayFieldBuilder();
         getRequestOptionsFieldBuilder();
+        getPrecommitTokenFieldBuilder();
       }
     }
 
@@ -810,6 +897,11 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       if (requestOptionsBuilder_ != null) {
         requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
+      }
+      precommitToken_ = null;
+      if (precommitTokenBuilder_ != null) {
+        precommitTokenBuilder_.dispose();
+        precommitTokenBuilder_ = null;
       }
       transactionCase_ = 0;
       transaction_ = null;
@@ -878,6 +970,11 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         result.requestOptions_ =
             requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
         to_bitField0_ |= 0x00000002;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.precommitToken_ =
+            precommitTokenBuilder_ == null ? precommitToken_ : precommitTokenBuilder_.build();
+        to_bitField0_ |= 0x00000004;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -976,6 +1073,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
       }
+      if (other.hasPrecommitToken()) {
+        mergePrecommitToken(other.getPrecommitToken());
+      }
       switch (other.getTransactionCase()) {
         case TRANSACTION_ID:
           {
@@ -1067,6 +1167,12 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00000020;
                 break;
               } // case 66
+            case 74:
+              {
+                input.readMessage(getPrecommitTokenFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 74
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -2432,6 +2538,259 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         requestOptions_ = null;
       }
       return requestOptionsBuilder_;
+    }
+
+    private com.google.spanner.v1.MultiplexedSessionPrecommitToken precommitToken_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.MultiplexedSessionPrecommitToken,
+            com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder,
+            com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder>
+        precommitTokenBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the precommitToken field is set.
+     */
+    public boolean hasPrecommitToken() {
+      return ((bitField0_ & 0x00000080) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The precommitToken.
+     */
+    public com.google.spanner.v1.MultiplexedSessionPrecommitToken getPrecommitToken() {
+      if (precommitTokenBuilder_ == null) {
+        return precommitToken_ == null
+            ? com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance()
+            : precommitToken_;
+      } else {
+        return precommitTokenBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setPrecommitToken(com.google.spanner.v1.MultiplexedSessionPrecommitToken value) {
+      if (precommitTokenBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        precommitToken_ = value;
+      } else {
+        precommitTokenBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setPrecommitToken(
+        com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder builderForValue) {
+      if (precommitTokenBuilder_ == null) {
+        precommitToken_ = builderForValue.build();
+      } else {
+        precommitTokenBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergePrecommitToken(
+        com.google.spanner.v1.MultiplexedSessionPrecommitToken value) {
+      if (precommitTokenBuilder_ == null) {
+        if (((bitField0_ & 0x00000080) != 0)
+            && precommitToken_ != null
+            && precommitToken_
+                != com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance()) {
+          getPrecommitTokenBuilder().mergeFrom(value);
+        } else {
+          precommitToken_ = value;
+        }
+      } else {
+        precommitTokenBuilder_.mergeFrom(value);
+      }
+      if (precommitToken_ != null) {
+        bitField0_ |= 0x00000080;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearPrecommitToken() {
+      bitField0_ = (bitField0_ & ~0x00000080);
+      precommitToken_ = null;
+      if (precommitTokenBuilder_ != null) {
+        precommitTokenBuilder_.dispose();
+        precommitTokenBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder
+        getPrecommitTokenBuilder() {
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return getPrecommitTokenFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder
+        getPrecommitTokenOrBuilder() {
+      if (precommitTokenBuilder_ != null) {
+        return precommitTokenBuilder_.getMessageOrBuilder();
+      } else {
+        return precommitToken_ == null
+            ? com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance()
+            : precommitToken_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If the read-write transaction was executed on a multiplexed
+     * session, the precommit token with the highest sequence number received in
+     * this transaction attempt, should be included here. Failing to do so will
+     * result in a FailedPrecondition error.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 9 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.MultiplexedSessionPrecommitToken,
+            com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder,
+            com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder>
+        getPrecommitTokenFieldBuilder() {
+      if (precommitTokenBuilder_ == null) {
+        precommitTokenBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.MultiplexedSessionPrecommitToken,
+                com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder,
+                com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder>(
+                getPrecommitToken(), getParentForChildren(), isClean());
+        precommitToken_ = null;
+      }
+      return precommitTokenBuilder_;
     }
 
     @java.lang.Override
