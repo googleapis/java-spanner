@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.78.0](https://github.com/googleapis/java-spanner/compare/v6.77.0...v6.78.0) (2024-10-10)
+
+
+### Features
+
+* Define ReplicaComputeCapacity and AsymmetricAutoscalingOption ([f46a6b3](https://github.com/googleapis/java-spanner/commit/f46a6b34383fe45d63b2db912389b26067f3a853))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.47.0 ([139a715](https://github.com/googleapis/java-spanner/commit/139a715d3f617b20a00b0cf4f5819e5a61a87c96))
+
 ## [6.77.0](https://github.com/googleapis/java-spanner/compare/v6.76.0...v6.77.0) (2024-10-02)
 
 
