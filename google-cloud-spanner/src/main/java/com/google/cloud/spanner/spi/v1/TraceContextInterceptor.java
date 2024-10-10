@@ -33,11 +33,11 @@ import io.opentelemetry.context.propagation.TextMapSetter;
  * Spanner. This class takes reference from OpenTelemetry's JAVA instrumentation library for gRPC.
  * https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/9ecf7965aa455d41ea8cc0761b6c6b6eeb106324/instrumentation/grpc-1.6/library/src/main/java/io/opentelemetry/instrumentation/grpc/v1_6/TracingClientInterceptor.java#L27
  */
-class TraceContextInterceptor implements ClientInterceptor {
+public class TraceContextInterceptor implements ClientInterceptor {
 
   private final TextMapPropagator textMapPropagator;
 
-  TraceContextInterceptor(OpenTelemetry openTelemetry) {
+  public TraceContextInterceptor(OpenTelemetry openTelemetry) {
     this.textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();
   }
 
