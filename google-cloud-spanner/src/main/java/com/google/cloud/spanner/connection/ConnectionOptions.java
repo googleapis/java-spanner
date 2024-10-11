@@ -249,6 +249,9 @@ public class ConnectionOptions {
   static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
   static final Boolean DEFAULT_ENABLE_EXTENDED_TRACING = null;
   static final Boolean DEFAULT_ENABLE_API_TRACING = null;
+  static final boolean DEFAULT_AUTO_BATCH_DML = false;
+  static final long DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT = 1L;
+  static final boolean DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION = true;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -332,6 +335,12 @@ public class ConnectionOptions {
 
   public static final String ENABLE_EXTENDED_TRACING_PROPERTY_NAME = "enableExtendedTracing";
   public static final String ENABLE_API_TRACING_PROPERTY_NAME = "enableApiTracing";
+
+  public static final String AUTO_BATCH_DML_PROPERTY_NAME = "auto_batch_dml";
+  public static final String AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME =
+      "auto_batch_dml_update_count";
+  public static final String AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME =
+      "auto_batch_dml_update_count_verification";
 
   private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
       "%s can only be used if the system property %s has been set to true. "

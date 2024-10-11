@@ -254,7 +254,7 @@ public abstract class AbstractMockServerTest {
     return DriverManager.getConnection("jdbc:" + getBaseUrl());
   }
 
-  ITConnection createConnection() {
+  protected ITConnection createConnection() {
     return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 

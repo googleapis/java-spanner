@@ -21,6 +21,9 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.isEnableTran
 import static com.google.cloud.spanner.connection.ConnectionPreconditions.checkValidIdentifier;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML;
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML_UPDATE_COUNT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
@@ -1428,40 +1431,32 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setAutoBatchDml(boolean autoBatchDml) {
-    // TODO: Replace with a connection variable
-    System.setProperty("spanner.auto_batch_dml", String.valueOf(autoBatchDml));
+    setConnectionPropertyValue(AUTO_BATCH_DML, autoBatchDml);
   }
 
   @Override
   public boolean isAutoBatchDml() {
-    // TODO: Replace with a connection variable
-    return Boolean.parseBoolean(System.getProperty("spanner.auto_batch_dml"));
+    return getConnectionPropertyValue(AUTO_BATCH_DML);
   }
 
   @Override
   public void setAutoBatchDmlUpdateCount(long updateCount) {
-    // TODO: Replace with a connection variable
-    System.setProperty("spanner.auto_batch_dml_update_count", String.valueOf(updateCount));
+    setConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT, updateCount);
   }
 
   @Override
   public long getAutoBatchDmlUpdateCount() {
-    // TODO: Replace with a connection variable
-    return Long.parseLong(System.getProperty("spanner.auto_batch_dml_update_count", "1"));
+    return getConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT);
   }
 
   @Override
   public void setAutoBatchDmlUpdateCountVerification(boolean verification) {
-    // TODO: Replace with a connection variable
-    System.setProperty(
-        "spanner.auto_batch_dml_update_count_verification", String.valueOf(verification));
+    setConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION, verification);
   }
 
   @Override
   public boolean isAutoBatchDmlUpdateCountVerification() {
-    // TODO: Replace with a connection variable
-    return Boolean.parseBoolean(
-        System.getProperty("spanner.auto_batch_dml_update_count_verification", "true"));
+    return getConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
   }
 
   @Override

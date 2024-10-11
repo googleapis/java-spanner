@@ -177,6 +177,35 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  /** Converter from string to a long. */
+  static class LongConverter implements ClientSideStatementValueConverter<Long> {
+    static final LongConverter INSTANCE = new LongConverter();
+
+    private LongConverter() {}
+
+    /** Constructor needed for reflection. */
+    public LongConverter(String allowedValues) {}
+
+    @Override
+    public Class<Long> getParameterClass() {
+      return Long.class;
+    }
+
+    @Override
+    public Long convert(String value) {
+      try {
+        long res = Long.parseLong(value);
+        if (res < 0) {
+          // The conventions for these converters is to return null if the value is invalid.
+          return null;
+        }
+        return res;
+      } catch (Exception ignore) {
+        return null;
+      }
+    }
+  }
+
   /** Converter from string to {@link Duration}. */
   static class DurationConverter implements ClientSideStatementValueConverter<Duration> {
     static final DurationConverter INSTANCE =

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -30,6 +31,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.CommitRequest;
@@ -37,8 +39,6 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RollbackRequest;
 import io.grpc.Status;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -46,15 +46,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class AutoDmlBatchMockServerTest extends AbstractMockServerTest {
 
-  // TODO: Replace with setting a connection variable.
-  @BeforeClass
-  public static void enableAutoBatchDml() {
-    System.setProperty("spanner.auto_batch_dml", "true");
-  }
-
-  @AfterClass
-  public static void disableAutoBatchDml() {
-    System.clearProperty("spanner.auto_batch_dml");
+  protected ITConnection createConnection() {
+    return createConnection(";auto_batch_dml=true");
   }
 
   @Test
@@ -63,6 +56,7 @@ public class AutoDmlBatchMockServerTest extends AbstractMockServerTest {
     // the application would ever call commit() or any other statement that would automatically
     // flush the batch.
     try (Connection connection = createConnection()) {
+      assertTrue(connection.isAutoBatchDml());
       connection.setAutocommit(true);
 
       assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
@@ -721,5 +715,104 @@ public class AutoDmlBatchMockServerTest extends AbstractMockServerTest {
     assertEquals(2, request.getStatementsCount());
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testSqlStatements() {
+    try (Connection connection = createConnection()) {
+      for (boolean enable : new boolean[] {true, false}) {
+        connection.execute(Statement.of("set auto_batch_dml = " + enable));
+        try (ResultSet resultSet =
+            connection.executeQuery(Statement.of("show variable auto_batch_dml"))) {
+          assertTrue(resultSet.next());
+          assertEquals(enable, resultSet.getBoolean("AUTO_BATCH_DML"));
+          assertFalse(resultSet.next());
+        }
+      }
+      for (boolean enable : new boolean[] {true, false}) {
+        connection.execute(
+            Statement.of("set auto_batch_dml_update_count_verification = " + enable));
+        try (ResultSet resultSet =
+            connection.executeQuery(
+                Statement.of("show variable auto_batch_dml_update_count_verification"))) {
+          assertTrue(resultSet.next());
+          assertEquals(enable, resultSet.getBoolean("AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION"));
+          assertFalse(resultSet.next());
+        }
+      }
+      for (long updateCount : new long[] {0L, 5L, 100L}) {
+        connection.execute(Statement.of("set auto_batch_dml_update_count = " + updateCount));
+        try (ResultSet resultSet =
+            connection.executeQuery(Statement.of("show variable auto_batch_dml_update_count"))) {
+          assertTrue(resultSet.next());
+          assertEquals(updateCount, resultSet.getLong("AUTO_BATCH_DML_UPDATE_COUNT"));
+          assertFalse(resultSet.next());
+        }
+      }
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.execute(Statement.of("set auto_batch_dml_update_count=-1")));
+      assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+      assertEquals(
+          "INVALID_ARGUMENT: Unknown value for AUTO_BATCH_DML_UPDATE_COUNT: -1",
+          exception.getMessage());
+    }
+  }
+
+  @Test
+  public void testPostgreSQLStatements() {
+    SpannerPool.closeSpannerPool();
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.POSTGRESQL));
+    try {
+      try (Connection connection = createConnection()) {
+        for (boolean enable : new boolean[] {true, false}) {
+          connection.execute(
+              Statement.of("set spanner.auto_batch_dml to " + (enable ? "on" : "off")));
+          try (ResultSet resultSet =
+              connection.executeQuery(Statement.of("show variable spanner.auto_batch_dml"))) {
+            assertTrue(resultSet.next());
+            assertEquals(enable, resultSet.getBoolean("SPANNER.AUTO_BATCH_DML"));
+            assertFalse(resultSet.next());
+          }
+        }
+        for (boolean enable : new boolean[] {true, false}) {
+          connection.execute(
+              Statement.of("set spanner.auto_batch_dml_update_count_verification = " + enable));
+          try (ResultSet resultSet =
+              connection.executeQuery(
+                  Statement.of("show spanner.auto_batch_dml_update_count_verification"))) {
+            assertTrue(resultSet.next());
+            assertEquals(
+                enable, resultSet.getBoolean("SPANNER.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION"));
+            assertFalse(resultSet.next());
+          }
+        }
+        for (long updateCount : new long[] {0L, 5L, 100L}) {
+          connection.execute(
+              Statement.of("set spanner.auto_batch_dml_update_count to " + updateCount));
+          try (ResultSet resultSet =
+              connection.executeQuery(Statement.of("show  spanner.auto_batch_dml_update_count"))) {
+            assertTrue(resultSet.next());
+            assertEquals(updateCount, resultSet.getLong("SPANNER.AUTO_BATCH_DML_UPDATE_COUNT"));
+            assertFalse(resultSet.next());
+          }
+        }
+        SpannerException exception =
+            assertThrows(
+                SpannerException.class,
+                () ->
+                    connection.execute(Statement.of("set spanner.auto_batch_dml_update_count=-1")));
+        assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+        assertEquals(
+            "INVALID_ARGUMENT: Unknown value for SPANNER.AUTO_BATCH_DML_UPDATE_COUNT: -1",
+            exception.getMessage());
+      }
+    } finally {
+      SpannerPool.closeSpannerPool();
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+    }
   }
 }
