@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.79.0](https://github.com/googleapis/java-spanner/compare/v6.78.0...v6.79.0) (2024-10-11)
+
+
+### Features
+
+* Support DML auto-batching in Connection API ([#3386](https://github.com/googleapis/java-spanner/issues/3386)) ([a1ce267](https://github.com/googleapis/java-spanner/commit/a1ce267cbd4d4c5c638ab7fe0dd5dba24bcfab86))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.53.0 ([#3390](https://github.com/googleapis/java-spanner/issues/3390)) ([a060e92](https://github.com/googleapis/java-spanner/commit/a060e92141d3dad0db1fc5175416e24a191fa326))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.53.0 ([#3391](https://github.com/googleapis/java-spanner/issues/3391)) ([7f0927d](https://github.com/googleapis/java-spanner/commit/7f0927d495966d7a2ef9023d65545bfe1fecc20b))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.53.0 ([#3392](https://github.com/googleapis/java-spanner/issues/3392)) ([fd3e92d](https://github.com/googleapis/java-spanner/commit/fd3e92da940419cd1aed14f770186381d59a2b47))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.37.0 ([#3395](https://github.com/googleapis/java-spanner/issues/3395)) ([8ecb1a9](https://github.com/googleapis/java-spanner/commit/8ecb1a901f94d9d49efb0278516428e379803088))
+* Update dependency com.google.cloud.opentelemetry:exporter-metrics to v0.33.0 ([#3388](https://github.com/googleapis/java-spanner/issues/3388)) ([26aa51d](https://github.com/googleapis/java-spanner/commit/26aa51d561c35295dfb7e2867c3b04b79ce6efc9))
+* Update dependency com.google.cloud.opentelemetry:exporter-trace to v0.33.0 ([#3389](https://github.com/googleapis/java-spanner/issues/3389)) ([6e34c5a](https://github.com/googleapis/java-spanner/commit/6e34c5a1c20c20a2e994d112f042a59c9b93e1e6))
+* Update googleapis/sdk-platform-java action to v2.47.0 ([#3383](https://github.com/googleapis/java-spanner/issues/3383)) ([4f0d693](https://github.com/googleapis/java-spanner/commit/4f0d69316a910c23abcb2a142e59bbaf550ca89c))
+
 ## [6.78.0](https://github.com/googleapis/java-spanner/compare/v6.77.0...v6.78.0) (2024-10-11)
 
 
