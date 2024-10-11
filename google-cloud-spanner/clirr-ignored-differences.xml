@@ -758,4 +758,12 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isKeepTransactionAlive()</method>
   </difference>
+
+  <!-- Added improved executor for the async API. -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$CloseableExecutorProvider</className>
+    <method>java.util.concurrent.ExecutorService getExecutorService()</method>
+  </difference>
+  
 </differences>
