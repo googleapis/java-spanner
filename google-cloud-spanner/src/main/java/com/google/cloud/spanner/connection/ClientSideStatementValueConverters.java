@@ -19,6 +19,8 @@ package com.google.cloud.spanner.connection;
 import static com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.parseTimeUnit;
 import static com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.toChronoUnit;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerException;
@@ -31,6 +33,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.spanner.v1.DirectedReadOptions;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
@@ -73,7 +77,11 @@ class ClientSideStatementValueConverters {
 
   /** Converter from string to {@link Boolean} */
   static class BooleanConverter implements ClientSideStatementValueConverter<Boolean> {
+    static final BooleanConverter INSTANCE = new BooleanConverter();
 
+    private BooleanConverter() {}
+
+    /** Constructor that is needed for reflection. */
     public BooleanConverter(String allowedValues) {}
 
     @Override
@@ -142,7 +150,11 @@ class ClientSideStatementValueConverters {
 
   /** Converter from string to a non-negative integer. */
   static class NonNegativeIntegerConverter implements ClientSideStatementValueConverter<Integer> {
+    static final NonNegativeIntegerConverter INSTANCE = new NonNegativeIntegerConverter();
 
+    private NonNegativeIntegerConverter() {}
+
+    /** Constructor needed for reflection. */
     public NonNegativeIntegerConverter(String allowedValues) {}
 
     @Override
@@ -167,6 +179,9 @@ class ClientSideStatementValueConverters {
 
   /** Converter from string to {@link Duration}. */
   static class DurationConverter implements ClientSideStatementValueConverter<Duration> {
+    static final DurationConverter INSTANCE =
+        new DurationConverter("('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)");
+
     private final String resetValue;
 
     private final Pattern allowedValues;
@@ -227,6 +242,10 @@ class ClientSideStatementValueConverters {
   /** Converter from string to possible values for read only staleness ({@link TimestampBound}). */
   static class ReadOnlyStalenessConverter
       implements ClientSideStatementValueConverter<TimestampBound> {
+    static final ReadOnlyStalenessConverter INSTANCE =
+        new ReadOnlyStalenessConverter(
+            "'((STRONG)|(MIN_READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(MAX_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns))|(EXACT_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns)))'");
+
     private final Pattern allowedValues;
     private final CaseInsensitiveEnumMap<Mode> values = new CaseInsensitiveEnumMap<>(Mode.class);
 
@@ -337,9 +356,14 @@ class ClientSideStatementValueConverters {
   /** Converter for converting strings to {@link AutocommitDmlMode} values. */
   static class AutocommitDmlModeConverter
       implements ClientSideStatementValueConverter<AutocommitDmlMode> {
+    static final AutocommitDmlModeConverter INSTANCE = new AutocommitDmlModeConverter();
+
     private final CaseInsensitiveEnumMap<AutocommitDmlMode> values =
         new CaseInsensitiveEnumMap<>(AutocommitDmlMode.class);
 
+    private AutocommitDmlModeConverter() {}
+
+    /** Constructor needed for reflection. */
     public AutocommitDmlModeConverter(String allowedValues) {}
 
     @Override
@@ -353,7 +377,35 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  static class ConnectionStateTypeConverter
+      implements ClientSideStatementValueConverter<ConnectionState.Type> {
+    static final ConnectionStateTypeConverter INSTANCE = new ConnectionStateTypeConverter();
+
+    private final CaseInsensitiveEnumMap<ConnectionState.Type> values =
+        new CaseInsensitiveEnumMap<>(ConnectionState.Type.class);
+
+    private ConnectionStateTypeConverter() {}
+
+    /** Constructor that is needed for reflection. */
+    public ConnectionStateTypeConverter(String allowedValues) {}
+
+    @Override
+    public Class<ConnectionState.Type> getParameterClass() {
+      return ConnectionState.Type.class;
+    }
+
+    @Override
+    public ConnectionState.Type convert(String value) {
+      return values.get(value);
+    }
+  }
+
   static class StringValueConverter implements ClientSideStatementValueConverter<String> {
+    static final StringValueConverter INSTANCE = new StringValueConverter();
+
+    private StringValueConverter() {}
+
+    /** Constructor needed for reflection. */
     public StringValueConverter(String allowedValues) {}
 
     @Override
@@ -481,6 +533,8 @@ class ClientSideStatementValueConverters {
 
   /** Converter for converting strings to {@link RpcPriority} values. */
   static class RpcPriorityConverter implements ClientSideStatementValueConverter<RpcPriority> {
+    static final RpcPriorityConverter INSTANCE = new RpcPriorityConverter("(HIGH|MEDIUM|LOW|NULL)");
+
     private final CaseInsensitiveEnumMap<RpcPriority> values =
         new CaseInsensitiveEnumMap<>(RpcPriority.class);
     private final Pattern allowedValues;
@@ -512,9 +566,14 @@ class ClientSideStatementValueConverters {
   /** Converter for converting strings to {@link SavepointSupport} values. */
   static class SavepointSupportConverter
       implements ClientSideStatementValueConverter<SavepointSupport> {
+    static final SavepointSupportConverter INSTANCE = new SavepointSupportConverter();
+
     private final CaseInsensitiveEnumMap<SavepointSupport> values =
         new CaseInsensitiveEnumMap<>(SavepointSupport.class);
 
+    private SavepointSupportConverter() {}
+
+    /** Constructor needed for reflection. */
     public SavepointSupportConverter(String allowedValues) {}
 
     @Override
@@ -524,6 +583,30 @@ class ClientSideStatementValueConverters {
 
     @Override
     public SavepointSupport convert(String value) {
+      return values.get(value);
+    }
+  }
+
+  /** Converter for converting strings to {@link DdlInTransactionMode} values. */
+  static class DdlInTransactionModeConverter
+      implements ClientSideStatementValueConverter<DdlInTransactionMode> {
+    static final DdlInTransactionModeConverter INSTANCE = new DdlInTransactionModeConverter();
+
+    private final CaseInsensitiveEnumMap<DdlInTransactionMode> values =
+        new CaseInsensitiveEnumMap<>(DdlInTransactionMode.class);
+
+    private DdlInTransactionModeConverter() {}
+
+    /** Constructor needed for reflection. */
+    public DdlInTransactionModeConverter(String allowedValues) {}
+
+    @Override
+    public Class<DdlInTransactionMode> getParameterClass() {
+      return DdlInTransactionMode.class;
+    }
+
+    @Override
+    public DdlInTransactionMode convert(String value) {
       return values.get(value);
     }
   }
@@ -586,6 +669,73 @@ class ClientSideStatementValueConverters {
         return null;
       }
       return filePath;
+    }
+  }
+
+  static class CredentialsProviderConverter
+      implements ClientSideStatementValueConverter<CredentialsProvider> {
+    static final CredentialsProviderConverter INSTANCE = new CredentialsProviderConverter();
+
+    private CredentialsProviderConverter() {}
+
+    @Override
+    public Class<CredentialsProvider> getParameterClass() {
+      return CredentialsProvider.class;
+    }
+
+    @Override
+    public CredentialsProvider convert(String credentialsProviderName) {
+      if (!Strings.isNullOrEmpty(credentialsProviderName)) {
+        try {
+          Class<? extends CredentialsProvider> clazz =
+              (Class<? extends CredentialsProvider>) Class.forName(credentialsProviderName);
+          Constructor<? extends CredentialsProvider> constructor = clazz.getDeclaredConstructor();
+          return constructor.newInstance();
+        } catch (ClassNotFoundException classNotFoundException) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Unknown or invalid CredentialsProvider class name: " + credentialsProviderName,
+              classNotFoundException);
+        } catch (NoSuchMethodException noSuchMethodException) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Credentials provider "
+                  + credentialsProviderName
+                  + " does not have a public no-arg constructor.",
+              noSuchMethodException);
+        } catch (InvocationTargetException
+            | InstantiationException
+            | IllegalAccessException exception) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Failed to create an instance of "
+                  + credentialsProviderName
+                  + ": "
+                  + exception.getMessage(),
+              exception);
+        }
+      }
+      return null;
+    }
+  }
+
+  /** Converter for converting strings to {@link Dialect} values. */
+  static class DialectConverter implements ClientSideStatementValueConverter<Dialect> {
+    static final DialectConverter INSTANCE = new DialectConverter();
+
+    private final CaseInsensitiveEnumMap<Dialect> values =
+        new CaseInsensitiveEnumMap<>(Dialect.class);
+
+    private DialectConverter() {}
+
+    @Override
+    public Class<Dialect> getParameterClass() {
+      return Dialect.class;
+    }
+
+    @Override
+    public Dialect convert(String value) {
+      return values.get(value);
     }
   }
 }

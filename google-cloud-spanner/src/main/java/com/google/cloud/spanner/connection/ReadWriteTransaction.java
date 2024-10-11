@@ -78,6 +78,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Transaction that is used when a {@link Connection} is normal read/write mode (i.e. not autocommit
@@ -861,7 +862,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       };
 
   @Override
-  public ApiFuture<Void> commitAsync(CallType callType) {
+  public ApiFuture<Void> commitAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     try (Scope ignore = span.makeCurrent()) {
       checkOrCreateValidTransaction(COMMIT_STATEMENT, callType);
       cancelScheduledKeepAlivePing();
@@ -871,11 +873,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       // Check if this transaction actually needs to commit anything.
       if (txContextFuture == null) {
         // No actual transaction was started by this read/write transaction, which also means that
-        // we
-        // don't have to commit anything.
+        // we don't have to commit anything.
         commitResponseFuture.set(
             new CommitResponse(
                 Timestamp.fromProto(com.google.protobuf.Timestamp.getDefaultInstance())));
+        callback.onSuccess();
         state = UnitOfWorkState.COMMITTED;
         res = SettableApiFuture.create();
         ((SettableApiFuture<Void>) res).set(null);
@@ -887,17 +889,21 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 () -> {
                   checkTimedOut();
                   try {
-                    return runWithRetry(
-                        () -> {
-                          getStatementExecutor()
-                              .invokeInterceptors(
-                                  COMMIT_STATEMENT,
-                                  StatementExecutionStep.EXECUTE_STATEMENT,
-                                  ReadWriteTransaction.this);
-                          return commitCallable.call();
-                        });
+                    Void result =
+                        runWithRetry(
+                            () -> {
+                              getStatementExecutor()
+                                  .invokeInterceptors(
+                                      COMMIT_STATEMENT,
+                                      StatementExecutionStep.EXECUTE_STATEMENT,
+                                      ReadWriteTransaction.this);
+                              return commitCallable.call();
+                            });
+                    callback.onSuccess();
+                    return result;
                   } catch (Throwable t) {
                     commitResponseFuture.setException(t);
+                    callback.onFailure();
                     state = UnitOfWorkState.COMMIT_FAILED;
                     try {
                       txManager.close();
@@ -917,9 +923,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 () -> {
                   checkTimedOut();
                   try {
-                    return commitCallable.call();
+                    Void result = commitCallable.call();
+                    callback.onSuccess();
+                    return result;
                   } catch (Throwable t) {
                     commitResponseFuture.setException(t);
+                    callback.onFailure();
                     state = UnitOfWorkState.COMMIT_FAILED;
                     try {
                       txManager.close();
@@ -1220,9 +1229,14 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       };
 
   @Override
-  public ApiFuture<Void> rollbackAsync(CallType callType) {
+  public ApiFuture<Void> rollbackAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     try (Scope ignore = span.makeCurrent()) {
+      callback.onSuccess();
       return rollbackAsync(callType, true);
+    } catch (Throwable throwable) {
+      callback.onFailure();
+      throw throwable;
     }
   }
 
