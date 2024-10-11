@@ -78,6 +78,7 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStalene
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -210,6 +211,7 @@ public class ConnectionImplTest {
     when(mockResultSet.next()).thenReturn(true, false);
     when(mockResultSet.getLong(0)).thenReturn(1L);
     when(mockResultSet.getLong("TEST")).thenReturn(1L);
+    when(mockResultSet.getType()).thenReturn(Type.struct());
     when(mockResultSet.getColumnType(0)).thenReturn(Type.int64());
     when(mockResultSet.getColumnType("TEST")).thenReturn(Type.int64());
     return mockResultSet;
@@ -1525,6 +1527,7 @@ public class ConnectionImplTest {
   @Test
   public void testMergeQueryOptions() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.getInitialConnectionPropertyValues()).thenReturn(ImmutableMap.of());
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1635,6 +1638,7 @@ public class ConnectionImplTest {
   public void testStatementTagAlwaysAllowed() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(true);
+    when(connectionOptions.getInitialConnectionPropertyValues()).thenReturn(ImmutableMap.of());
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1680,6 +1684,7 @@ public class ConnectionImplTest {
   public void testTransactionTagAllowedInTransaction() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(false);
+    when(connectionOptions.getInitialConnectionPropertyValues()).thenReturn(ImmutableMap.of());
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1722,6 +1727,7 @@ public class ConnectionImplTest {
   public void testTransactionTagNotAllowedWithoutTransaction() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(true);
+    when(connectionOptions.getInitialConnectionPropertyValues()).thenReturn(ImmutableMap.of());
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1744,6 +1750,7 @@ public class ConnectionImplTest {
   public void testTransactionTagNotAllowedAfterTransactionStarted() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(false);
+    when(connectionOptions.getInitialConnectionPropertyValues()).thenReturn(ImmutableMap.of());
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1754,7 +1761,7 @@ public class ConnectionImplTest {
     when(unitOfWork.executeQueryAsync(
             any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
-    when(unitOfWork.rollbackAsync(any())).thenReturn(ApiFutures.immediateFuture(null));
+    when(unitOfWork.rollbackAsync(any(), any())).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
@@ -1885,37 +1892,37 @@ public class ConnectionImplTest {
                 .build())) {
       assertFalse("Read-only should be disabled by default", connection.isReadOnly());
       assertTrue("Autocommit should be enabled by default", connection.isAutocommit());
-      assertFalse(
-          "Retry aborts internally should be disabled by default on test connections",
+      assertTrue(
+          "Retry aborts internally should be enabled by default on test connections",
           connection.isRetryAbortsInternally());
 
       // It should be possible to change this value also when in auto-commit mode.
-      connection.setRetryAbortsInternally(true);
-      assertTrue(connection.isRetryAbortsInternally());
+      connection.setRetryAbortsInternally(false);
+      assertFalse(connection.isRetryAbortsInternally());
 
       // It should be possible to change this value also when in transactional mode, as long as
       // there is no active transaction.
       connection.setAutocommit(false);
-      connection.setRetryAbortsInternally(false);
-      assertFalse(connection.isRetryAbortsInternally());
+      connection.setRetryAbortsInternally(true);
+      assertTrue(connection.isRetryAbortsInternally());
 
       // It should be possible to change the value when in read-only mode.
       connection.setReadOnly(true);
-      connection.setRetryAbortsInternally(true);
-      assertTrue(connection.isRetryAbortsInternally());
+      connection.setRetryAbortsInternally(false);
+      assertFalse(connection.isRetryAbortsInternally());
 
       // It should not be possible to change the value when there is an active transaction.
       connection.setReadOnly(false);
       connection.setAutocommit(false);
       connection.execute(Statement.of(SELECT));
-      assertThrows(SpannerException.class, () -> connection.setRetryAbortsInternally(false));
+      assertThrows(SpannerException.class, () -> connection.setRetryAbortsInternally(true));
       // Verify that the value did not change.
-      assertTrue(connection.isRetryAbortsInternally());
+      assertFalse(connection.isRetryAbortsInternally());
 
       // Rolling back the connection should allow us to set the property again.
       connection.rollback();
-      connection.setRetryAbortsInternally(false);
-      assertFalse(connection.isRetryAbortsInternally());
+      connection.setRetryAbortsInternally(true);
+      assertTrue(connection.isRetryAbortsInternally());
     }
   }
 
@@ -1938,6 +1945,7 @@ public class ConnectionImplTest {
   public void testProtoDescriptorsAlwaysAllowed() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(true);
+    when(connectionOptions.getInitialConnectionPropertyValues()).thenReturn(ImmutableMap.of());
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);

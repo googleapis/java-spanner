@@ -17,7 +17,28 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
+import static com.google.cloud.spanner.connection.ConnectionOptions.isEnableTransactionalConnectionStateForPostgreSQL;
 import static com.google.cloud.spanner.connection.ConnectionPreconditions.checkValidIdentifier;
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMIT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DIRECTED_READ;
+import static com.google.cloud.spanner.connection.ConnectionProperties.KEEP_TRANSACTION_ALIVE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_COMMIT_DELAY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_PARTITIONED_PARALLELISM;
+import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_PARTITIONS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.OPTIMIZER_STATISTICS_PACKAGE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.OPTIMIZER_VERSION;
+import static com.google.cloud.spanner.connection.ConnectionProperties.READONLY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.READ_ONLY_STALENESS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.RETRY_ABORTS_INTERNALLY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.RETURN_COMMIT_STATS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.RPC_PRIORITY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.SAVEPOINT_SUPPORT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.TRACING_PREFIX;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -50,13 +71,16 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.ConnectionProperty.Context;
+import com.google.cloud.spanner.connection.ConnectionState.Type;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
+import com.google.cloud.spanner.connection.UnitOfWork.EndTransactionCallback;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -92,7 +116,6 @@ import org.threeten.bp.Instant;
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
 class ConnectionImpl implements Connection {
   private static final String INSTRUMENTATION_SCOPE = "cloud.google.com/java";
-  private static final String DEFAULT_TRACING_PREFIX = "CloudSpanner";
   private static final String SINGLE_USE_TRANSACTION = "SingleUseTransaction";
   private static final String READ_ONLY_TRANSACTION = "ReadOnlyTransaction";
   private static final String READ_WRITE_TRANSACTION = "ReadWriteTransaction";
@@ -240,16 +263,11 @@ class ConnectionImpl implements Connection {
 
   private final Spanner spanner;
   private final Tracer tracer;
-  private final String tracingPrefix;
   private final Attributes openTelemetryAttributes;
   private final DdlClient ddlClient;
   private final DatabaseClient dbClient;
   private final BatchClient batchClient;
-  private boolean autocommit;
-  private boolean readOnly;
-  private boolean returnCommitStats;
-  private boolean delayTransactionStartUntilFirstWrite;
-  private boolean keepTransactionAlive;
+  private final ConnectionState connectionState;
 
   private UnitOfWork currentUnitOfWork = null;
   /**
@@ -266,46 +284,13 @@ class ConnectionImpl implements Connection {
   private BatchMode batchMode;
   private UnitOfWorkType unitOfWorkType;
   private final Stack<UnitOfWork> transactionStack = new Stack<>();
-  private boolean retryAbortsInternally;
   private final List<TransactionRetryListener> transactionRetryListeners = new ArrayList<>();
-  private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
-  private TimestampBound readOnlyStaleness = TimestampBound.strong();
-  /**
-   * autoPartitionMode will force this connection to execute all queries as partitioned queries. If
-   * a query cannot be executed as a partitioned query, for example if it is not partitionable, then
-   * the query will fail. This mode is intended for integrations with frameworks that should always
-   * use partitioned queries, and that do not support executing custom SQL statements. This setting
-   * can be used in combination with the dataBoostEnabled flag to force all queries to use data
-   * boost.
-   */
-  private boolean autoPartitionMode;
-  /**
-   * dataBoostEnabled=true will cause all partitionedQueries to use data boost. All other queries
-   * and other statements ignore this flag.
-   */
-  private boolean dataBoostEnabled;
-  /**
-   * maxPartitions determines the maximum number of partitions that will be used for partitioned
-   * queries. All other statements ignore this variable.
-   */
-  private int maxPartitions;
-  /**
-   * maxPartitionedParallelism determines the maximum number of threads that will be used to execute
-   * partitions in parallel when executing a partitioned query on this connection.
-   */
-  private int maxPartitionedParallelism;
 
-  private DirectedReadOptions directedReadOptions = null;
-  private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
-  private RpcPriority rpcPriority = null;
-  private SavepointSupport savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
-  private DdlInTransactionMode ddlInTransactionMode;
-
+  // The following properties are not 'normal' connection properties, but transient properties that
+  // are automatically reset after executing a transaction or statement.
   private String transactionTag;
   private String statementTag;
   private boolean excludeTxnFromChangeStreams;
-
-  private Duration maxCommitDelay;
   private byte[] protoDescriptors;
   private String protoDescriptorsFilePath;
 
@@ -327,8 +312,6 @@ class ConnectionImpl implements Connection {
             .getTracer(
                 INSTRUMENTATION_SCOPE,
                 GaxProperties.getLibraryVersion(spanner.getOptions().getClass()));
-    this.tracingPrefix =
-        MoreObjects.firstNonNull(options.getTracingPrefix(), DEFAULT_TRACING_PREFIX);
     this.openTelemetryAttributes = createOpenTelemetryAttributes(options.getDatabaseId());
     if (options.isAutoConfigEmulator()) {
       EmulatorUtil.maybeCreateInstanceAndDatabase(
@@ -337,9 +320,18 @@ class ConnectionImpl implements Connection {
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.batchClient = spanner.getBatchClient(options.getDatabaseId());
     this.ddlClient = createDdlClient();
+    this.connectionState =
+        new ConnectionState(
+            options.getInitialConnectionPropertyValues(),
+            Suppliers.memoize(
+                () ->
+                    isEnableTransactionalConnectionStateForPostgreSQL()
+                            && getDialect() == Dialect.POSTGRESQL
+                        ? Type.TRANSACTIONAL
+                        : Type.NON_TRANSACTIONAL));
 
     // (Re)set the state of the connection to the default.
-    reset();
+    setDefaultTransactionOptions();
   }
 
   /** Constructor only for test purposes. */
@@ -356,14 +348,16 @@ class ConnectionImpl implements Connection {
         new StatementExecutor(options.isUseVirtualThreads(), Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
-    this.ddlInTransactionMode = options.getDdlInTransactionMode();
     this.spanner = spannerPool.getSpanner(options, this);
     this.tracer = OpenTelemetry.noop().getTracer(INSTRUMENTATION_SCOPE);
-    this.tracingPrefix = DEFAULT_TRACING_PREFIX;
     this.openTelemetryAttributes = Attributes.empty();
     this.ddlClient = Preconditions.checkNotNull(ddlClient);
     this.dbClient = Preconditions.checkNotNull(dbClient);
     this.batchClient = Preconditions.checkNotNull(batchClient);
+    this.connectionState =
+        new ConnectionState(
+            options.getInitialConnectionPropertyValues(),
+            Suppliers.ofInstance(Type.NON_TRANSACTIONAL));
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
     setReturnCommitStats(options.isReturnCommitStats());
@@ -403,6 +397,11 @@ class ConnectionImpl implements Connection {
     attributesBuilder.put("instance_id", databaseId.getInstanceId().getInstance());
     attributesBuilder.put("project_id", databaseId.getInstanceId().getProject());
     return attributesBuilder.build();
+  }
+
+  @VisibleForTesting
+  ConnectionState.Type getConnectionStateType() {
+    return this.connectionState.getType();
   }
 
   @Override
@@ -453,35 +452,45 @@ class ConnectionImpl implements Connection {
     return ApiFutures.immediateFuture(null);
   }
 
+  private Context getCurrentContext() {
+    return Context.USER;
+  }
+
   /**
    * Resets the state of this connection to the default state in the {@link ConnectionOptions} of
    * this connection.
    */
   public void reset() {
+    reset(getCurrentContext(), isInTransaction());
+  }
+
+  private void reset(Context context, boolean inTransaction) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
 
-    this.retryAbortsInternally = options.isRetryAbortsInternally();
-    this.readOnly = options.isReadOnly();
-    this.autocommit = options.isAutocommit();
-    this.queryOptions =
-        QueryOptions.getDefaultInstance().toBuilder().mergeFrom(options.getQueryOptions()).build();
-    this.rpcPriority = options.getRPCPriority();
-    this.ddlInTransactionMode = options.getDdlInTransactionMode();
-    this.returnCommitStats = options.isReturnCommitStats();
-    this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
-    this.keepTransactionAlive = options.isKeepTransactionAlive();
-    this.dataBoostEnabled = options.isDataBoostEnabled();
-    this.autoPartitionMode = options.isAutoPartitionMode();
-    this.maxPartitions = options.getMaxPartitions();
-    this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
-    this.maxCommitDelay = options.getMaxCommitDelay();
+    // TODO: Replace all of these with a resetAll in ConnectionState.
+    this.connectionState.resetValue(RETRY_ABORTS_INTERNALLY, context, inTransaction);
+    this.connectionState.resetValue(AUTOCOMMIT, context, inTransaction);
+    this.connectionState.resetValue(READONLY, context, inTransaction);
+    this.connectionState.resetValue(READ_ONLY_STALENESS, context, inTransaction);
+    this.connectionState.resetValue(OPTIMIZER_VERSION, context, inTransaction);
+    this.connectionState.resetValue(OPTIMIZER_STATISTICS_PACKAGE, context, inTransaction);
+    this.connectionState.resetValue(RPC_PRIORITY, context, inTransaction);
+    this.connectionState.resetValue(DDL_IN_TRANSACTION_MODE, context, inTransaction);
+    this.connectionState.resetValue(RETURN_COMMIT_STATS, context, inTransaction);
+    this.connectionState.resetValue(
+        DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE, context, inTransaction);
+    this.connectionState.resetValue(KEEP_TRANSACTION_ALIVE, context, inTransaction);
+    this.connectionState.resetValue(AUTO_PARTITION_MODE, context, inTransaction);
+    this.connectionState.resetValue(DATA_BOOST_ENABLED, context, inTransaction);
+    this.connectionState.resetValue(MAX_PARTITIONS, context, inTransaction);
+    this.connectionState.resetValue(MAX_PARTITIONED_PARALLELISM, context, inTransaction);
+    this.connectionState.resetValue(MAX_COMMIT_DELAY, context, inTransaction);
 
-    this.autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
-    this.readOnlyStaleness = TimestampBound.strong();
+    this.connectionState.resetValue(AUTOCOMMIT_DML_MODE, context, inTransaction);
     this.statementTag = null;
     this.statementTimeout = new StatementExecutor.StatementTimeout();
-    this.directedReadOptions = null;
-    this.savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
+    this.connectionState.resetValue(DIRECTED_READ, context, inTransaction);
+    this.connectionState.resetValue(SAVEPOINT_SUPPORT, context, inTransaction);
     this.protoDescriptors = null;
     this.protoDescriptorsFilePath = null;
 
@@ -525,6 +534,39 @@ class ConnectionImpl implements Connection {
     return closed;
   }
 
+  private <T> T getConnectionPropertyValue(
+      com.google.cloud.spanner.connection.ConnectionProperty<T> property) {
+    return this.connectionState.getValue(property).getValue();
+  }
+
+  private <T> void setConnectionPropertyValue(ConnectionProperty<T> property, T value) {
+    setConnectionPropertyValue(property, value, /* local = */ false);
+  }
+
+  private <T> void setConnectionPropertyValue(
+      ConnectionProperty<T> property, T value, boolean local) {
+    if (local) {
+      setLocalConnectionPropertyValue(property, value);
+    } else {
+      this.connectionState.setValue(property, value, getCurrentContext(), isInTransaction());
+    }
+  }
+
+  /**
+   * Sets a connection property value only for the duration of the current transaction. The effects
+   * of this will be undone once the transaction ends, regardless whether the transaction is
+   * committed or rolled back. 'Local' properties are supported for both {@link
+   * com.google.cloud.spanner.connection.ConnectionState.Type#TRANSACTIONAL} and {@link
+   * com.google.cloud.spanner.connection.ConnectionState.Type#NON_TRANSACTIONAL} connection states.
+   *
+   * <p>NOTE: This feature is not yet exposed in the public API.
+   */
+  private <T> void setLocalConnectionPropertyValue(ConnectionProperty<T> property, T value) {
+    ConnectionPreconditions.checkState(
+        isInTransaction(), "SET LOCAL statements are only supported in transactions");
+    this.connectionState.setLocalValue(property, value);
+  }
+
   @Override
   public void setAutocommit(boolean autocommit) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
@@ -539,14 +581,24 @@ class ConnectionImpl implements Connection {
         "Cannot set autocommit while in a temporary transaction");
     ConnectionPreconditions.checkState(
         !transactionBeginMarked, "Cannot set autocommit when a transaction has begun");
-    this.autocommit = autocommit;
+    setConnectionPropertyValue(AUTOCOMMIT, autocommit);
+    if (autocommit) {
+      // Commit the current transaction state if we went from autocommit=false to autocommit=true.
+      // Otherwise, we get the strange situation that autocommit=true cannot be committed, as we no
+      // longer have a transaction. Note that all the above state checks essentially mean that
+      // autocommit can only be set before a transaction has actually started, and not in the
+      // middle of a transaction.
+      this.connectionState.commit();
+    }
     clearLastTransactionAndSetDefaultTransactionOptions();
     // Reset the readOnlyStaleness value if it is no longer compatible with the new autocommit
     // value.
-    if (!autocommit
-        && (readOnlyStaleness.getMode() == Mode.MAX_STALENESS
-            || readOnlyStaleness.getMode() == Mode.MIN_READ_TIMESTAMP)) {
-      readOnlyStaleness = TimestampBound.strong();
+    if (!autocommit) {
+      TimestampBound readOnlyStaleness = getReadOnlyStaleness();
+      if (readOnlyStaleness.getMode() == Mode.MAX_STALENESS
+          || readOnlyStaleness.getMode() == Mode.MIN_READ_TIMESTAMP) {
+        setConnectionPropertyValue(READ_ONLY_STALENESS, TimestampBound.strong());
+      }
     }
   }
 
@@ -557,7 +609,7 @@ class ConnectionImpl implements Connection {
   }
 
   private boolean internalIsAutocommit() {
-    return this.autocommit;
+    return getConnectionPropertyValue(AUTOCOMMIT);
   }
 
   @Override
@@ -571,14 +623,14 @@ class ConnectionImpl implements Connection {
         "Cannot set read-only while in a temporary transaction");
     ConnectionPreconditions.checkState(
         !transactionBeginMarked, "Cannot set read-only when a transaction has begun");
-    this.readOnly = readOnly;
+    setConnectionPropertyValue(READONLY, readOnly);
     clearLastTransactionAndSetDefaultTransactionOptions();
   }
 
   @Override
   public boolean isReadOnly() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.readOnly;
+    return getConnectionPropertyValue(READONLY);
   }
 
   private void clearLastTransactionAndSetDefaultTransactionOptions() {
@@ -597,7 +649,7 @@ class ConnectionImpl implements Connection {
         "Cannot set autocommit DML mode while not in autocommit mode or while a transaction is active");
     ConnectionPreconditions.checkState(
         !isReadOnly(), "Cannot set autocommit DML mode for a read-only connection");
-    this.autocommitDmlMode = mode;
+    setConnectionPropertyValue(AUTOCOMMIT_DML_MODE, mode);
   }
 
   @Override
@@ -605,7 +657,7 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(
         !isBatchActive(), "Cannot get autocommit DML mode while in a batch");
-    return this.autocommitDmlMode;
+    return getConnectionPropertyValue(AUTOCOMMIT_DML_MODE);
   }
 
   @Override
@@ -623,14 +675,14 @@ class ConnectionImpl implements Connection {
           isAutocommit() && !inTransaction,
           "MAX_STALENESS and MIN_READ_TIMESTAMP are only allowed in autocommit mode");
     }
-    this.readOnlyStaleness = staleness;
+    setConnectionPropertyValue(READ_ONLY_STALENESS, staleness);
   }
 
   @Override
   public TimestampBound getReadOnlyStaleness() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(!isBatchActive(), "Cannot get read-only while in a batch");
-    return this.readOnlyStaleness;
+    return getConnectionPropertyValue(READ_ONLY_STALENESS);
   }
 
   @Override
@@ -639,57 +691,63 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !isTransactionStarted(),
         "Cannot set directed read options when a transaction has been started");
-    this.directedReadOptions = directedReadOptions;
+    setConnectionPropertyValue(DIRECTED_READ, directedReadOptions);
   }
 
   @Override
   public DirectedReadOptions getDirectedRead() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.directedReadOptions;
+    return getConnectionPropertyValue(DIRECTED_READ);
   }
 
   @Override
   public void setOptimizerVersion(String optimizerVersion) {
     Preconditions.checkNotNull(optimizerVersion);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    this.queryOptions = queryOptions.toBuilder().setOptimizerVersion(optimizerVersion).build();
+    setConnectionPropertyValue(OPTIMIZER_VERSION, optimizerVersion);
   }
 
   @Override
   public String getOptimizerVersion() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.queryOptions.getOptimizerVersion();
+    return getConnectionPropertyValue(OPTIMIZER_VERSION);
   }
 
   @Override
   public void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
     Preconditions.checkNotNull(optimizerStatisticsPackage);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    this.queryOptions =
-        queryOptions.toBuilder().setOptimizerStatisticsPackage(optimizerStatisticsPackage).build();
+    setConnectionPropertyValue(OPTIMIZER_STATISTICS_PACKAGE, optimizerStatisticsPackage);
   }
 
   @Override
   public String getOptimizerStatisticsPackage() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.queryOptions.getOptimizerStatisticsPackage();
+    return getConnectionPropertyValue(OPTIMIZER_STATISTICS_PACKAGE);
+  }
+
+  private QueryOptions buildQueryOptions() {
+    return QueryOptions.newBuilder()
+        .setOptimizerVersion(getConnectionPropertyValue(OPTIMIZER_VERSION))
+        .setOptimizerStatisticsPackage(getConnectionPropertyValue(OPTIMIZER_STATISTICS_PACKAGE))
+        .build();
   }
 
   @Override
   public void setRPCPriority(RpcPriority rpcPriority) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    this.rpcPriority = rpcPriority;
+    setConnectionPropertyValue(RPC_PRIORITY, rpcPriority);
   }
 
   @Override
   public RpcPriority getRPCPriority() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.rpcPriority;
+    return getConnectionPropertyValue(RPC_PRIORITY);
   }
 
   @Override
   public DdlInTransactionMode getDdlInTransactionMode() {
-    return this.ddlInTransactionMode;
+    return getConnectionPropertyValue(DDL_IN_TRANSACTION_MODE);
   }
 
   @Override
@@ -699,7 +757,7 @@ class ConnectionImpl implements Connection {
         !isBatchActive(), "Cannot set DdlInTransactionMode while in a batch");
     ConnectionPreconditions.checkState(
         !isTransactionStarted(), "Cannot set DdlInTransactionMode while a transaction is active");
-    this.ddlInTransactionMode = Preconditions.checkNotNull(ddlInTransactionMode);
+    setConnectionPropertyValue(DDL_IN_TRANSACTION_MODE, ddlInTransactionMode);
   }
 
   @Override
@@ -886,13 +944,13 @@ class ConnectionImpl implements Connection {
   @Override
   public boolean isRetryAbortsInternally() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return retryAbortsInternally;
+    return getConnectionPropertyValue(RETRY_ABORTS_INTERNALLY);
   }
 
   @Override
   public void setRetryAbortsInternally(boolean retryAbortsInternally) {
     checkSetRetryAbortsInternallyAvailable();
-    this.retryAbortsInternally = retryAbortsInternally;
+    setConnectionPropertyValue(RETRY_ABORTS_INTERNALLY, retryAbortsInternally);
   }
 
   @Override
@@ -938,6 +996,10 @@ class ConnectionImpl implements Connection {
         && this.currentUnitOfWork.getState() == UnitOfWorkState.STARTED;
   }
 
+  private boolean hasTransactionalChanges() {
+    return internalIsTransactionStarted() || this.connectionState.hasTransactionalChanges();
+  }
+
   @Override
   public Timestamp getReadTimestamp() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
@@ -981,26 +1043,31 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setReturnCommitStats(boolean returnCommitStats) {
+    setReturnCommitStats(returnCommitStats, /* local = */ false);
+  }
+
+  @VisibleForTesting
+  void setReturnCommitStats(boolean returnCommitStats, boolean local) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    this.returnCommitStats = returnCommitStats;
+    setConnectionPropertyValue(RETURN_COMMIT_STATS, returnCommitStats, local);
   }
 
   @Override
   public boolean isReturnCommitStats() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.returnCommitStats;
+    return getConnectionPropertyValue(RETURN_COMMIT_STATS);
   }
 
   @Override
   public void setMaxCommitDelay(Duration maxCommitDelay) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    this.maxCommitDelay = maxCommitDelay;
+    setConnectionPropertyValue(MAX_COMMIT_DELAY, maxCommitDelay);
   }
 
   @Override
   public Duration getMaxCommitDelay() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.maxCommitDelay;
+    return getConnectionPropertyValue(MAX_COMMIT_DELAY);
   }
 
   @Override
@@ -1010,13 +1077,14 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !isTransactionStarted(),
         "Cannot set DelayTransactionStartUntilFirstWrite while a transaction is active");
-    this.delayTransactionStartUntilFirstWrite = delayTransactionStartUntilFirstWrite;
+    setConnectionPropertyValue(
+        DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE, delayTransactionStartUntilFirstWrite);
   }
 
   @Override
   public boolean isDelayTransactionStartUntilFirstWrite() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.delayTransactionStartUntilFirstWrite;
+    return getConnectionPropertyValue(DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE);
   }
 
   @Override
@@ -1024,13 +1092,13 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(
         !isTransactionStarted(), "Cannot set KeepTransactionAlive while a transaction is active");
-    this.keepTransactionAlive = keepTransactionAlive;
+    setConnectionPropertyValue(KEEP_TRANSACTION_ALIVE, keepTransactionAlive);
   }
 
   @Override
   public boolean isKeepTransactionAlive() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.keepTransactionAlive;
+    return getConnectionPropertyValue(KEEP_TRANSACTION_ALIVE);
   }
 
   /** Resets this connection to its default transaction options. */
@@ -1076,10 +1144,22 @@ class ConnectionImpl implements Connection {
     ApiFuture<Void> endAsync(CallType callType, UnitOfWork t);
   }
 
-  private static final class Commit implements EndTransactionMethod {
+  private final class Commit implements EndTransactionMethod {
     @Override
     public ApiFuture<Void> endAsync(CallType callType, UnitOfWork t) {
-      return t.commitAsync(callType);
+      return t.commitAsync(
+          callType,
+          new EndTransactionCallback() {
+            @Override
+            public void onSuccess() {
+              ConnectionImpl.this.connectionState.commit();
+            }
+
+            @Override
+            public void onFailure() {
+              ConnectionImpl.this.connectionState.rollback();
+            }
+          });
     }
   }
 
@@ -1101,10 +1181,22 @@ class ConnectionImpl implements Connection {
     return endCurrentTransactionAsync(callType, commit, COMMIT_STATEMENT);
   }
 
-  private static final class Rollback implements EndTransactionMethod {
+  private final class Rollback implements EndTransactionMethod {
     @Override
     public ApiFuture<Void> endAsync(CallType callType, UnitOfWork t) {
-      return t.rollbackAsync(callType);
+      return t.rollbackAsync(
+          callType,
+          new EndTransactionCallback() {
+            @Override
+            public void onSuccess() {
+              ConnectionImpl.this.connectionState.rollback();
+            }
+
+            @Override
+            public void onFailure() {
+              ConnectionImpl.this.connectionState.rollback();
+            }
+          });
     }
   }
 
@@ -1136,7 +1228,7 @@ class ConnectionImpl implements Connection {
         statementTag == null, "Statement tags are not supported for COMMIT or ROLLBACK");
     ApiFuture<Void> res;
     try {
-      if (isTransactionStarted()) {
+      if (hasTransactionalChanges()) {
         res =
             endTransactionMethod.endAsync(
                 callType, getCurrentUnitOfWorkOrStartNewUnitOfWork(parsedStatement));
@@ -1156,7 +1248,7 @@ class ConnectionImpl implements Connection {
 
   @Override
   public SavepointSupport getSavepointSupport() {
-    return this.savepointSupport;
+    return getConnectionPropertyValue(SAVEPOINT_SUPPORT);
   }
 
   @Override
@@ -1166,12 +1258,13 @@ class ConnectionImpl implements Connection {
         !isBatchActive(), "Cannot set SavepointSupport while in a batch");
     ConnectionPreconditions.checkState(
         !isTransactionStarted(), "Cannot set SavepointSupport while a transaction is active");
-    this.savepointSupport = savepointSupport;
+    setConnectionPropertyValue(SAVEPOINT_SUPPORT, savepointSupport);
   }
 
   @Override
   public void savepoint(String name) {
     ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    SavepointSupport savepointSupport = getSavepointSupport();
     ConnectionPreconditions.checkState(
         savepointSupport.isSavepointCreationAllowed(),
         "This connection does not allow the creation of savepoints. Current value of SavepointSupport: "
@@ -1193,7 +1286,7 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         isTransactionStarted(), "This connection has no active transaction");
     getCurrentUnitOfWorkOrStartNewUnitOfWork(ROLLBACK_TO_STATEMENT)
-        .rollbackToSavepoint(checkValidIdentifier(name), savepointSupport);
+        .rollbackToSavepoint(checkValidIdentifier(name), getSavepointSupport());
   }
 
   @Override
@@ -1210,7 +1303,7 @@ class ConnectionImpl implements Connection {
   private StatementResult internalExecute(
       Statement statement, @Nullable Set<ResultType> allowedResultTypes) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement, buildQueryOptions());
     checkResultTypeAllowed(parsedStatement, allowedResultTypes);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
@@ -1289,7 +1382,7 @@ class ConnectionImpl implements Connection {
   public AsyncStatementResult executeAsync(Statement statement) {
     Preconditions.checkNotNull(statement);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement, buildQueryOptions());
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return AsyncStatementResultImpl.of(
@@ -1373,38 +1466,46 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setDataBoostEnabled(boolean dataBoostEnabled) {
-    this.dataBoostEnabled = dataBoostEnabled;
+    setConnectionPropertyValue(DATA_BOOST_ENABLED, dataBoostEnabled);
   }
 
   @Override
   public boolean isDataBoostEnabled() {
-    return this.dataBoostEnabled;
+    return getConnectionPropertyValue(DATA_BOOST_ENABLED);
   }
 
   @Override
   public void setAutoPartitionMode(boolean autoPartitionMode) {
-    this.autoPartitionMode = autoPartitionMode;
+    setConnectionPropertyValue(AUTO_PARTITION_MODE, autoPartitionMode);
   }
 
+  /**
+   * autoPartitionMode will force this connection to execute all queries as partitioned queries. If
+   * a query cannot be executed as a partitioned query, for example if it is not partitionable, then
+   * the query will fail. This mode is intended for integrations with frameworks that should always
+   * use partitioned queries, and that do not support executing custom SQL statements. This setting
+   * can be used in combination with the dataBoostEnabled flag to force all queries to use data
+   * boost.
+   */
   @Override
   public boolean isAutoPartitionMode() {
-    return this.autoPartitionMode;
+    return getConnectionPropertyValue(AUTO_PARTITION_MODE);
   }
 
   @Override
   public void setMaxPartitions(int maxPartitions) {
-    this.maxPartitions = maxPartitions;
+    setConnectionPropertyValue(MAX_PARTITIONS, maxPartitions);
   }
 
   @Override
   public int getMaxPartitions() {
-    return this.maxPartitions;
+    return getConnectionPropertyValue(MAX_PARTITIONS);
   }
 
   @Override
   public ResultSet partitionQuery(
       Statement query, PartitionOptions partitionOptions, QueryOption... options) {
-    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, buildQueryOptions());
     if (parsedStatement.getType() != StatementType.QUERY) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT,
@@ -1425,7 +1526,7 @@ class ConnectionImpl implements Connection {
 
   private PartitionOptions getEffectivePartitionOptions(
       PartitionOptions callSpecificPartitionOptions) {
-    if (maxPartitions == 0) {
+    if (getMaxPartitions() == 0) {
       if (callSpecificPartitionOptions == null) {
         return PartitionOptions.newBuilder().build();
       } else {
@@ -1439,11 +1540,11 @@ class ConnectionImpl implements Connection {
     if (callSpecificPartitionOptions != null
         && callSpecificPartitionOptions.getPartitionSizeBytes() > 0L) {
       return PartitionOptions.newBuilder()
-          .setMaxPartitions(maxPartitions)
+          .setMaxPartitions(getMaxPartitions())
           .setPartitionSizeBytes(callSpecificPartitionOptions.getPartitionSizeBytes())
           .build();
     }
-    return PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build();
+    return PartitionOptions.newBuilder().setMaxPartitions(getMaxPartitions()).build();
   }
 
   @Override
@@ -1458,12 +1559,12 @@ class ConnectionImpl implements Connection {
   @Override
   public void setMaxPartitionedParallelism(int maxThreads) {
     Preconditions.checkArgument(maxThreads >= 0, "maxThreads must be >=0");
-    this.maxPartitionedParallelism = maxThreads;
+    setConnectionPropertyValue(MAX_PARTITIONED_PARALLELISM, maxThreads);
   }
 
   @Override
   public int getMaxPartitionedParallelism() {
-    return this.maxPartitionedParallelism;
+    return getConnectionPropertyValue(MAX_PARTITIONED_PARALLELISM);
   }
 
   @Override
@@ -1477,7 +1578,7 @@ class ConnectionImpl implements Connection {
     }
     // parallelism=0 means 'dynamically choose based on the number of available processors and the
     // number of partitions'.
-    return new MergedResultSet(this, partitionIds, maxPartitionedParallelism);
+    return new MergedResultSet(this, partitionIds, getMaxPartitionedParallelism());
   }
 
   /**
@@ -1489,7 +1590,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(query);
     Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, buildQueryOptions());
     if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
@@ -1528,7 +1629,7 @@ class ConnectionImpl implements Connection {
       CallType callType, Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, buildQueryOptions());
     if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
@@ -1743,7 +1844,7 @@ class ConnectionImpl implements Connection {
   }
 
   private QueryOption[] mergeDataBoost(QueryOption... options) {
-    if (this.dataBoostEnabled) {
+    if (isDataBoostEnabled()) {
       options = appendQueryOption(options, Options.dataBoostEnabled(true));
     }
     return options;
@@ -1759,13 +1860,16 @@ class ConnectionImpl implements Connection {
 
   private QueryOption[] mergeQueryRequestOptions(
       ParsedStatement parsedStatement, QueryOption... options) {
-    if (this.rpcPriority != null) {
-      options = appendQueryOption(options, Options.priority(this.rpcPriority));
+    if (getConnectionPropertyValue(RPC_PRIORITY) != null) {
+      options =
+          appendQueryOption(options, Options.priority(getConnectionPropertyValue(RPC_PRIORITY)));
     }
-    if (this.directedReadOptions != null
-        && currentUnitOfWork != null
-        && currentUnitOfWork.supportsDirectedReads(parsedStatement)) {
-      options = appendQueryOption(options, Options.directedRead(this.directedReadOptions));
+    if (currentUnitOfWork != null
+        && currentUnitOfWork.supportsDirectedReads(parsedStatement)
+        && getConnectionPropertyValue(DIRECTED_READ) != null) {
+      options =
+          appendQueryOption(
+              options, Options.directedRead(getConnectionPropertyValue(DIRECTED_READ)));
     }
     return options;
   }
@@ -1795,13 +1899,13 @@ class ConnectionImpl implements Connection {
   }
 
   private UpdateOption[] mergeUpdateRequestOptions(UpdateOption... options) {
-    if (this.rpcPriority != null) {
+    if (getConnectionPropertyValue(RPC_PRIORITY) != null) {
       // Shortcut for the most common scenario.
       if (options == null || options.length == 0) {
-        options = new UpdateOption[] {Options.priority(this.rpcPriority)};
+        options = new UpdateOption[] {Options.priority(getConnectionPropertyValue(RPC_PRIORITY))};
       } else {
         options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.priority(this.rpcPriority);
+        options[options.length - 1] = Options.priority(getConnectionPropertyValue(RPC_PRIORITY));
       }
     }
     return options;
@@ -1821,7 +1925,7 @@ class ConnectionImpl implements Connection {
     QueryOption[] combinedOptions = concat(statement.getOptionsFromHints(), options);
     UnitOfWork transaction =
         getCurrentUnitOfWorkOrStartNewUnitOfWork(statement, isInternalMetadataQuery);
-    if (autoPartitionMode
+    if (isAutoPartitionMode()
         && statement.getType() == StatementType.QUERY
         && !isInternalMetadataQuery) {
       return runPartitionedQuery(
@@ -1845,7 +1949,7 @@ class ConnectionImpl implements Connection {
             || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
         "Statement must be a query or DML with returning clause.");
     ConnectionPreconditions.checkState(
-        !(autoPartitionMode && statement.getType() == StatementType.QUERY),
+        !(isAutoPartitionMode() && statement.getType() == StatementType.QUERY),
         "Partitioned queries cannot be executed asynchronously");
     boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
     QueryOption[] combinedOptions = concat(statement.getOptionsFromHints(), options);
@@ -1950,7 +2054,7 @@ class ConnectionImpl implements Connection {
           createNewUnitOfWork(
               /* isInternalMetadataQuery = */ false,
               /* forceSingleUse = */ statementType == StatementType.DDL
-                  && this.ddlInTransactionMode != DdlInTransactionMode.FAIL
+                  && getDdlInTransactionMode() != DdlInTransactionMode.FAIL
                   && !this.transactionBeginMarked,
               /* autoBatchDml = */ false,
               statementType);
@@ -1960,7 +2064,11 @@ class ConnectionImpl implements Connection {
 
   private Span createSpanForUnitOfWork(String name) {
     return tracer
-        .spanBuilder(this.tracingPrefix + "." + name)
+        .spanBuilder(
+            // We can memoize this, as it is a STARTUP property.
+            Suppliers.memoize(() -> this.connectionState.getValue(TRACING_PREFIX).getValue()).get()
+                + "."
+                + name)
         .setAllAttributes(getOpenTelemetryAttributes())
         .startSpan();
   }
@@ -1970,7 +2078,7 @@ class ConnectionImpl implements Connection {
     if (this.currentUnitOfWork instanceof ReadWriteTransaction
         && this.currentUnitOfWork.isActive()
         && statementType == StatementType.DDL
-        && this.ddlInTransactionMode == DdlInTransactionMode.AUTO_COMMIT_TRANSACTION) {
+        && getDdlInTransactionMode() == DdlInTransactionMode.AUTO_COMMIT_TRANSACTION) {
       commit();
     } else {
       maybeFlushAutoDmlBatch(parsedStatement);
@@ -2019,12 +2127,12 @@ class ConnectionImpl implements Connection {
               .setDdlClient(ddlClient)
               .setDatabaseClient(dbClient)
               .setBatchClient(batchClient)
-              .setReadOnly(isReadOnly())
-              .setReadOnlyStaleness(readOnlyStaleness)
-              .setAutocommitDmlMode(autocommitDmlMode)
-              .setReturnCommitStats(returnCommitStats)
+              .setReadOnly(getConnectionPropertyValue(READONLY))
+              .setReadOnlyStaleness(getConnectionPropertyValue(READ_ONLY_STALENESS))
+              .setAutocommitDmlMode(getConnectionPropertyValue(AUTOCOMMIT_DML_MODE))
+              .setReturnCommitStats(getConnectionPropertyValue(RETURN_COMMIT_STATS))
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
-              .setMaxCommitDelay(maxCommitDelay)
+              .setMaxCommitDelay(getConnectionPropertyValue(MAX_COMMIT_DELAY))
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setSpan(
@@ -2043,11 +2151,11 @@ class ConnectionImpl implements Connection {
           return ReadOnlyTransaction.newBuilder()
               .setDatabaseClient(dbClient)
               .setBatchClient(batchClient)
-              .setReadOnlyStaleness(readOnlyStaleness)
+              .setReadOnlyStaleness(getConnectionPropertyValue(READ_ONLY_STALENESS))
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
-              .setRpcPriority(rpcPriority)
+              .setRpcPriority(getConnectionPropertyValue(RPC_PRIORITY))
               .setSpan(createSpanForUnitOfWork(READ_ONLY_TRANSACTION))
               .build();
         case READ_WRITE_TRANSACTION:
@@ -2055,18 +2163,19 @@ class ConnectionImpl implements Connection {
               .setUsesEmulator(options.usesEmulator())
               .setUseAutoSavepointsForEmulator(options.useAutoSavepointsForEmulator())
               .setDatabaseClient(dbClient)
-              .setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite)
-              .setKeepTransactionAlive(keepTransactionAlive)
-              .setRetryAbortsInternally(retryAbortsInternally)
-              .setSavepointSupport(savepointSupport)
-              .setReturnCommitStats(returnCommitStats)
-              .setMaxCommitDelay(maxCommitDelay)
+              .setDelayTransactionStartUntilFirstWrite(
+                  getConnectionPropertyValue(DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE))
+              .setKeepTransactionAlive(getConnectionPropertyValue(KEEP_TRANSACTION_ALIVE))
+              .setRetryAbortsInternally(getConnectionPropertyValue(RETRY_ABORTS_INTERNALLY))
+              .setSavepointSupport(getConnectionPropertyValue(SAVEPOINT_SUPPORT))
+              .setReturnCommitStats(getConnectionPropertyValue(RETURN_COMMIT_STATS))
+              .setMaxCommitDelay(getConnectionPropertyValue(MAX_COMMIT_DELAY))
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
-              .setRpcPriority(rpcPriority)
+              .setRpcPriority(getConnectionPropertyValue(RPC_PRIORITY))
               .setSpan(createSpanForUnitOfWork(READ_WRITE_TRANSACTION))
               .build();
         case DML_BATCH:
@@ -2083,7 +2192,7 @@ class ConnectionImpl implements Connection {
               .withStatementExecutor(statementExecutor)
               .setStatementTag(statementTag)
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
-              .setRpcPriority(rpcPriority)
+              .setRpcPriority(getConnectionPropertyValue(RPC_PRIORITY))
               // Use the transaction Span for the DML batch.
               .setSpan(transactionStack.peek().getSpan())
               .build();

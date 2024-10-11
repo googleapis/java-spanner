@@ -54,39 +54,45 @@ public final class ResultSetProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\"google/spanner/v1/result_set.proto\022\021go"
-          + "ogle.spanner.v1\032\034google/protobuf/struct."
-          + "proto\032\"google/spanner/v1/query_plan.prot"
-          + "o\032#google/spanner/v1/transaction.proto\032\034"
-          + "google/spanner/v1/type.proto\"\237\001\n\tResultS"
-          + "et\0226\n\010metadata\030\001 \001(\0132$.google.spanner.v1"
-          + ".ResultSetMetadata\022(\n\004rows\030\002 \003(\0132\032.googl"
-          + "e.protobuf.ListValue\0220\n\005stats\030\003 \001(\0132!.go"
-          + "ogle.spanner.v1.ResultSetStats\"\321\001\n\020Parti"
-          + "alResultSet\0226\n\010metadata\030\001 \001(\0132$.google.s"
-          + "panner.v1.ResultSetMetadata\022&\n\006values\030\002 "
-          + "\003(\0132\026.google.protobuf.Value\022\025\n\rchunked_v"
-          + "alue\030\003 \001(\010\022\024\n\014resume_token\030\004 \001(\014\0220\n\005stat"
-          + "s\030\005 \001(\0132!.google.spanner.v1.ResultSetSta"
-          + "ts\"\267\001\n\021ResultSetMetadata\022/\n\010row_type\030\001 \001"
-          + "(\0132\035.google.spanner.v1.StructType\0223\n\013tra"
-          + "nsaction\030\002 \001(\0132\036.google.spanner.v1.Trans"
-          + "action\022<\n\025undeclared_parameters\030\003 \001(\0132\035."
-          + "google.spanner.v1.StructType\"\271\001\n\016ResultS"
-          + "etStats\0220\n\nquery_plan\030\001 \001(\0132\034.google.spa"
-          + "nner.v1.QueryPlan\022,\n\013query_stats\030\002 \001(\0132\027"
-          + ".google.protobuf.Struct\022\031\n\017row_count_exa"
-          + "ct\030\003 \001(\003H\000\022\037\n\025row_count_lower_bound\030\004 \001("
-          + "\003H\000B\013\n\trow_countB\264\001\n\025com.google.spanner."
-          + "v1B\016ResultSetProtoP\001Z5cloud.google.com/g"
-          + "o/spanner/apiv1/spannerpb;spannerpb\370\001\001\252\002"
-          + "\027Google.Cloud.Spanner.V1\312\002\027Google\\Cloud\\"
-          + "Spanner\\V1\352\002\032Google::Cloud::Spanner::V1b"
-          + "\006proto3"
+          + "ogle.spanner.v1\032\037google/api/field_behavi"
+          + "or.proto\032\034google/protobuf/struct.proto\032\""
+          + "google/spanner/v1/query_plan.proto\032#goog"
+          + "le/spanner/v1/transaction.proto\032\034google/"
+          + "spanner/v1/type.proto\"\362\001\n\tResultSet\0226\n\010m"
+          + "etadata\030\001 \001(\0132$.google.spanner.v1.Result"
+          + "SetMetadata\022(\n\004rows\030\002 \003(\0132\032.google.proto"
+          + "buf.ListValue\0220\n\005stats\030\003 \001(\0132!.google.sp"
+          + "anner.v1.ResultSetStats\022Q\n\017precommit_tok"
+          + "en\030\005 \001(\01323.google.spanner.v1.Multiplexed"
+          + "SessionPrecommitTokenB\003\340A\001\"\244\002\n\020PartialRe"
+          + "sultSet\0226\n\010metadata\030\001 \001(\0132$.google.spann"
+          + "er.v1.ResultSetMetadata\022&\n\006values\030\002 \003(\0132"
+          + "\026.google.protobuf.Value\022\025\n\rchunked_value"
+          + "\030\003 \001(\010\022\024\n\014resume_token\030\004 \001(\014\0220\n\005stats\030\005 "
+          + "\001(\0132!.google.spanner.v1.ResultSetStats\022Q"
+          + "\n\017precommit_token\030\010 \001(\01323.google.spanner"
+          + ".v1.MultiplexedSessionPrecommitTokenB\003\340A"
+          + "\001\"\267\001\n\021ResultSetMetadata\022/\n\010row_type\030\001 \001("
+          + "\0132\035.google.spanner.v1.StructType\0223\n\013tran"
+          + "saction\030\002 \001(\0132\036.google.spanner.v1.Transa"
+          + "ction\022<\n\025undeclared_parameters\030\003 \001(\0132\035.g"
+          + "oogle.spanner.v1.StructType\"\271\001\n\016ResultSe"
+          + "tStats\0220\n\nquery_plan\030\001 \001(\0132\034.google.span"
+          + "ner.v1.QueryPlan\022,\n\013query_stats\030\002 \001(\0132\027."
+          + "google.protobuf.Struct\022\031\n\017row_count_exac"
+          + "t\030\003 \001(\003H\000\022\037\n\025row_count_lower_bound\030\004 \001(\003"
+          + "H\000B\013\n\trow_countB\264\001\n\025com.google.spanner.v"
+          + "1B\016ResultSetProtoP\001Z5cloud.google.com/go"
+          + "/spanner/apiv1/spannerpb;spannerpb\370\001\001\252\002\027"
+          + "Google.Cloud.Spanner.V1\312\002\027Google\\Cloud\\S"
+          + "panner\\V1\352\002\032Google::Cloud::Spanner::V1b\006"
+          + "proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
+              com.google.api.FieldBehaviorProto.getDescriptor(),
               com.google.protobuf.StructProto.getDescriptor(),
               com.google.spanner.v1.QueryPlanProto.getDescriptor(),
               com.google.spanner.v1.TransactionProto.getDescriptor(),
@@ -98,7 +104,7 @@ public final class ResultSetProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ResultSet_descriptor,
             new java.lang.String[] {
-              "Metadata", "Rows", "Stats",
+              "Metadata", "Rows", "Stats", "PrecommitToken",
             });
     internal_static_google_spanner_v1_PartialResultSet_descriptor =
         getDescriptor().getMessageTypes().get(1);
@@ -106,7 +112,7 @@ public final class ResultSetProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PartialResultSet_descriptor,
             new java.lang.String[] {
-              "Metadata", "Values", "ChunkedValue", "ResumeToken", "Stats",
+              "Metadata", "Values", "ChunkedValue", "ResumeToken", "Stats", "PrecommitToken",
             });
     internal_static_google_spanner_v1_ResultSetMetadata_descriptor =
         getDescriptor().getMessageTypes().get(2);
@@ -124,6 +130,12 @@ public final class ResultSetProto {
             new java.lang.String[] {
               "QueryPlan", "QueryStats", "RowCountExact", "RowCountLowerBound", "RowCount",
             });
+    com.google.protobuf.ExtensionRegistry registry =
+        com.google.protobuf.ExtensionRegistry.newInstance();
+    registry.add(com.google.api.FieldBehaviorProto.fieldBehavior);
+    com.google.protobuf.Descriptors.FileDescriptor.internalUpdateFileDescriptor(
+        descriptor, registry);
+    com.google.api.FieldBehaviorProto.getDescriptor();
     com.google.protobuf.StructProto.getDescriptor();
     com.google.spanner.v1.QueryPlanProto.getDescriptor();
     com.google.spanner.v1.TransactionProto.getDescriptor();

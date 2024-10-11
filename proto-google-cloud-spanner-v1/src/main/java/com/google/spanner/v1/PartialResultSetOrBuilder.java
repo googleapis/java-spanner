@@ -554,4 +554,63 @@ public interface PartialResultSetOrBuilder
    * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
    */
   com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A precommit token will be included if the read-write transaction
+   * is on a multiplexed session.
+   * The precommit token with the highest sequence number from this transaction
+   * attempt should be passed to the
+   * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the precommitToken field is set.
+   */
+  boolean hasPrecommitToken();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A precommit token will be included if the read-write transaction
+   * is on a multiplexed session.
+   * The precommit token with the highest sequence number from this transaction
+   * attempt should be passed to the
+   * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The precommitToken.
+   */
+  com.google.spanner.v1.MultiplexedSessionPrecommitToken getPrecommitToken();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A precommit token will be included if the read-write transaction
+   * is on a multiplexed session.
+   * The precommit token with the highest sequence number from this transaction
+   * attempt should be passed to the
+   * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder getPrecommitTokenOrBuilder();
 }

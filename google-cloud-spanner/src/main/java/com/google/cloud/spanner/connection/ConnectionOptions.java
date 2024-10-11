@@ -16,6 +16,41 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMIT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_CONFIG_EMULATOR;
+import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.CHANNEL_PROVIDER;
+import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_PROVIDER;
+import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_URL;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DATABASE_ROLE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DIALECT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_API_TRACING;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EXTENDED_TRACING;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ENCODED_CREDENTIALS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ENDPOINT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.LENIENT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_COMMIT_DELAY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_PARTITIONED_PARALLELISM;
+import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_PARTITIONS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_SESSIONS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.MIN_SESSIONS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.NUM_CHANNELS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.OAUTH_TOKEN;
+import static com.google.cloud.spanner.connection.ConnectionProperties.READONLY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.RETRY_ABORTS_INTERNALLY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.RETURN_COMMIT_STATS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ROUTE_TO_LEADER;
+import static com.google.cloud.spanner.connection.ConnectionProperties.TRACING_PREFIX;
+import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_CONNECTION_LEAKS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_SESSION_LEAKS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.USER_AGENT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.USE_AUTO_SAVEPOINTS_FOR_EMULATOR;
+import static com.google.cloud.spanner.connection.ConnectionProperties.USE_PLAIN_TEXT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.USE_VIRTUAL_GRPC_TRANSPORT_THREADS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.USE_VIRTUAL_THREADS;
+import static com.google.cloud.spanner.connection.ConnectionPropertyValue.cast;
+
 import com.google.api.core.InternalApi;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -38,19 +73,19 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -87,7 +122,12 @@ import javax.annotation.Nullable;
  */
 @InternalApi
 public class ConnectionOptions {
-  /** Supported connection properties that can be included in the connection URI. */
+  /**
+   * Supported connection properties that can be included in the connection URI.
+   *
+   * @deprecated Replaced by {@link com.google.cloud.spanner.connection.ConnectionProperty}.
+   */
+  @Deprecated
   public static class ConnectionProperty {
     private static final String[] BOOLEAN_VALUES = new String[] {"true", "false"};
     private final String name;
@@ -167,41 +207,48 @@ public class ConnectionOptions {
     }
   }
 
+  /**
+   * Set this system property to true to enable transactional connection state by default for
+   * PostgreSQL-dialect databases. The default is currently false.
+   */
+  public static String ENABLE_TRANSACTIONAL_CONNECTION_STATE_FOR_POSTGRESQL_PROPERTY =
+      "spanner.enable_transactional_connection_state_for_postgresql";
+
   private static final LocalConnectionChecker LOCAL_CONNECTION_CHECKER =
       new LocalConnectionChecker();
-  private static final boolean DEFAULT_USE_PLAIN_TEXT = false;
+  static final boolean DEFAULT_USE_PLAIN_TEXT = false;
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
   static final boolean DEFAULT_RETRY_ABORTS_INTERNALLY = true;
   static final boolean DEFAULT_USE_VIRTUAL_THREADS = false;
   static final boolean DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS = false;
-  private static final String DEFAULT_CREDENTIALS = null;
-  private static final String DEFAULT_OAUTH_TOKEN = null;
-  private static final String DEFAULT_MIN_SESSIONS = null;
-  private static final String DEFAULT_MAX_SESSIONS = null;
-  private static final String DEFAULT_NUM_CHANNELS = null;
+  static final String DEFAULT_CREDENTIALS = null;
+  static final String DEFAULT_OAUTH_TOKEN = null;
+  static final Integer DEFAULT_MIN_SESSIONS = null;
+  static final Integer DEFAULT_MAX_SESSIONS = null;
+  static final Integer DEFAULT_NUM_CHANNELS = null;
   static final String DEFAULT_ENDPOINT = null;
-  private static final String DEFAULT_CHANNEL_PROVIDER = null;
-  private static final String DEFAULT_DATABASE_ROLE = null;
-  private static final String DEFAULT_USER_AGENT = null;
-  private static final String DEFAULT_OPTIMIZER_VERSION = "";
-  private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
-  private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
-  private static final DdlInTransactionMode DEFAULT_DDL_IN_TRANSACTION_MODE =
+  static final String DEFAULT_CHANNEL_PROVIDER = null;
+  static final String DEFAULT_DATABASE_ROLE = null;
+  static final String DEFAULT_USER_AGENT = null;
+  static final String DEFAULT_OPTIMIZER_VERSION = "";
+  static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
+  static final RpcPriority DEFAULT_RPC_PRIORITY = null;
+  static final DdlInTransactionMode DEFAULT_DDL_IN_TRANSACTION_MODE =
       DdlInTransactionMode.ALLOW_IN_EMPTY_TRANSACTION;
-  private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
-  private static final boolean DEFAULT_LENIENT = false;
-  private static final boolean DEFAULT_ROUTE_TO_LEADER = true;
-  private static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
-  private static final boolean DEFAULT_KEEP_TRANSACTION_ALIVE = false;
-  private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
-  private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
-  private static final boolean DEFAULT_DATA_BOOST_ENABLED = false;
-  private static final boolean DEFAULT_AUTO_PARTITION_MODE = false;
-  private static final int DEFAULT_MAX_PARTITIONS = 0;
-  private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
-  private static final Boolean DEFAULT_ENABLE_EXTENDED_TRACING = null;
-  private static final Boolean DEFAULT_ENABLE_API_TRACING = null;
+  static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
+  static final boolean DEFAULT_LENIENT = false;
+  static final boolean DEFAULT_ROUTE_TO_LEADER = true;
+  static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
+  static final boolean DEFAULT_KEEP_TRANSACTION_ALIVE = false;
+  static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
+  static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
+  static final boolean DEFAULT_DATA_BOOST_ENABLED = false;
+  static final boolean DEFAULT_AUTO_PARTITION_MODE = false;
+  static final int DEFAULT_MAX_PARTITIONS = 0;
+  static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
+  static final Boolean DEFAULT_ENABLE_EXTENDED_TRACING = null;
+  static final Boolean DEFAULT_ENABLE_API_TRACING = null;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -209,7 +256,7 @@ public class ConnectionOptions {
   private static final String SPANNER_EMULATOR_HOST_ENV_VAR = "SPANNER_EMULATOR_HOST";
   private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
   /** Use plain text is only for local testing purposes. */
-  private static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
+  static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
   /** Name of the 'autocommit' connection property. */
   public static final String AUTOCOMMIT_PROPERTY_NAME = "autocommit";
   /** Name of the 'readonly' connection property. */
@@ -252,12 +299,11 @@ public class ConnectionOptions {
 
   public static final String ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY = "ENABLE_CHANNEL_PROVIDER";
   /** Custom user agent string is only for other Google libraries. */
-  private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
+  static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
-  private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+  static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
   /** Query optimizer statistics package to use for a connection. */
-  private static final String OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME =
-      "optimizerStatisticsPackage";
+  static final String OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME = "optimizerStatisticsPackage";
   /** Name of the 'lenientMode' connection property. */
   public static final String LENIENT_PROPERTY_NAME = "lenient";
   /** Name of the 'rpcPriority' connection property. */
@@ -265,7 +311,7 @@ public class ConnectionOptions {
 
   public static final String DDL_IN_TRANSACTION_MODE_PROPERTY_NAME = "ddlInTransactionMode";
   /** Dialect to use for a connection. */
-  private static final String DIALECT_PROPERTY_NAME = "dialect";
+  static final String DIALECT_PROPERTY_NAME = "dialect";
   /** Name of the 'databaseRole' connection property. */
   public static final String DATABASE_ROLE_PROPERTY_NAME = "databaseRole";
   /** Name of the 'delay transaction start until first write' property. */
@@ -300,7 +346,17 @@ public class ConnectionOptions {
         systemPropertyName);
   }
 
-  /** All valid connection properties. */
+  static boolean isEnableTransactionalConnectionStateForPostgreSQL() {
+    return Boolean.parseBoolean(
+        System.getProperty(ENABLE_TRANSACTIONAL_CONNECTION_STATE_FOR_POSTGRESQL_PROPERTY, "false"));
+  }
+
+  /**
+   * All valid connection properties.
+   *
+   * @deprecated Replaced by {@link ConnectionProperties#CONNECTION_PROPERTIES}
+   */
+  @Deprecated
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
       Collections.unmodifiableSet(
           new HashSet<>(
@@ -373,7 +429,8 @@ public class ConnectionOptions {
                       "Sets the default query optimizer version to use for this connection."),
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME, ""),
-                  ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
+                  ConnectionProperty.createBooleanProperty(
+                      "returnCommitStats", "", DEFAULT_RETURN_COMMIT_STATS),
                   ConnectionProperty.createStringProperty(
                       "maxCommitDelay",
                       "The maximum commit delay in milliseconds that should be applied to commit requests from this connection."),
@@ -534,16 +591,15 @@ public class ConnectionOptions {
 
   /** Builder for {@link ConnectionOptions} instances. */
   public static class Builder {
+    private final Map<String, ConnectionPropertyValue<?>> connectionPropertyValues =
+        new HashMap<>();
     private String uri;
-    private String credentialsUrl;
-    private String oauthToken;
     private Credentials credentials;
     private SessionPoolOptions sessionPoolOptions;
     private List<StatementExecutionInterceptor> statementExecutionInterceptors =
         Collections.emptyList();
     private SpannerOptionsConfigurator configurator;
     private OpenTelemetry openTelemetry;
-    private String tracingPrefix;
 
     private Builder() {}
 
@@ -626,8 +682,17 @@ public class ConnectionOptions {
       Preconditions.checkArgument(
           isValidUri(uri),
           "The specified URI is not a valid Cloud Spanner connection URI. Please specify a URI in the format \"cloudspanner:[//host[:port]]/projects/project-id[/instances/instance-id[/databases/database-name]][\\?property-name=property-value[;property-name=property-value]*]?\"");
-      checkValidProperties(uri);
+      ConnectionPropertyValue<Boolean> value =
+          cast(ConnectionProperties.parseValues(uri).get(LENIENT.getKey()));
+      checkValidProperties(value != null && value.getValue(), uri);
       this.uri = uri;
+      return this;
+    }
+
+    <T> Builder setConnectionPropertyValue(
+        com.google.cloud.spanner.connection.ConnectionProperty<T> property, T value) {
+      this.connectionPropertyValues.put(
+          property.getKey(), new ConnectionPropertyValue<>(property, value, value));
       return this;
     }
 
@@ -655,7 +720,7 @@ public class ConnectionOptions {
      * @return this builder
      */
     public Builder setCredentialsUrl(String credentialsUrl) {
-      this.credentialsUrl = credentialsUrl;
+      setConnectionPropertyValue(CREDENTIALS_URL, credentialsUrl);
       return this;
     }
 
@@ -671,7 +736,7 @@ public class ConnectionOptions {
      * @return this builder
      */
     public Builder setOAuthToken(String oauthToken) {
-      this.oauthToken = oauthToken;
+      setConnectionPropertyValue(OAUTH_TOKEN, oauthToken);
       return this;
     }
 
@@ -699,7 +764,7 @@ public class ConnectionOptions {
     }
 
     public Builder setTracingPrefix(String tracingPrefix) {
-      this.tracingPrefix = tracingPrefix;
+      setConnectionPropertyValue(TRACING_PREFIX, tracingPrefix);
       return this;
     }
 
@@ -720,55 +785,19 @@ public class ConnectionOptions {
     return new Builder();
   }
 
+  private final ConnectionState initialConnectionState;
   private final String uri;
   private final String warnings;
-  private final String credentialsUrl;
-  private final String encodedCredentials;
-  private final CredentialsProvider credentialsProvider;
-  private final String oauthToken;
   private final Credentials fixedCredentials;
 
-  private final boolean usePlainText;
   private final String host;
   private final String projectId;
   private final String instanceId;
   private final String databaseName;
   private final Credentials credentials;
   private final SessionPoolOptions sessionPoolOptions;
-  private final Integer numChannels;
-  private final String channelProvider;
-  private final Integer minSessions;
-  private final Integer maxSessions;
-  private final String databaseRole;
-  private final String userAgent;
-  private final QueryOptions queryOptions;
-  private final boolean returnCommitStats;
-  private final Long maxCommitDelay;
-  private final boolean autoConfigEmulator;
-  private final boolean useAutoSavepointsForEmulator;
-  private final Dialect dialect;
-  private final RpcPriority rpcPriority;
-  private final DdlInTransactionMode ddlInTransactionMode;
-  private final boolean delayTransactionStartUntilFirstWrite;
-  private final boolean keepTransactionAlive;
-  private final boolean trackSessionLeaks;
-  private final boolean trackConnectionLeaks;
 
-  private final boolean dataBoostEnabled;
-  private final boolean autoPartitionMode;
-  private final int maxPartitions;
-  private final int maxPartitionedParallelism;
-
-  private final boolean autocommit;
-  private final boolean readOnly;
-  private final boolean routeToLeader;
-  private final boolean retryAbortsInternally;
-  private final boolean useVirtualThreads;
-  private final boolean useVirtualGrpcTransportThreads;
   private final OpenTelemetry openTelemetry;
-  private final String tracingPrefix;
-  private final Boolean enableExtendedTracing;
-  private final Boolean enableApiTracing;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -776,72 +805,79 @@ public class ConnectionOptions {
     Matcher matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
     Preconditions.checkArgument(
         matcher.find(), String.format("Invalid connection URI specified: %s", builder.uri));
-    this.warnings = checkValidProperties(builder.uri);
 
+    ImmutableMap<String, ConnectionPropertyValue<?>> connectionPropertyValues =
+        ImmutableMap.<String, ConnectionPropertyValue<?>>builder()
+            .putAll(ConnectionProperties.parseValues(builder.uri))
+            .putAll(builder.connectionPropertyValues)
+            .buildKeepingLast();
     this.uri = builder.uri;
-    this.credentialsUrl =
-        builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
-    this.encodedCredentials = parseEncodedCredentials(builder.uri);
-    this.credentialsProvider = parseCredentialsProvider(builder.uri);
-    this.oauthToken =
-        builder.oauthToken != null ? builder.oauthToken : parseOAuthToken(builder.uri);
+    ConnectionPropertyValue<Boolean> value = cast(connectionPropertyValues.get(LENIENT.getKey()));
+    this.warnings = checkValidProperties(value != null && value.getValue(), uri);
+    this.fixedCredentials = builder.credentials;
+
+    this.openTelemetry = builder.openTelemetry;
+    this.statementExecutionInterceptors =
+        Collections.unmodifiableList(builder.statementExecutionInterceptors);
+    this.configurator = builder.configurator;
+
+    // Create the initial connection state from the parsed properties in the connection URL.
+    this.initialConnectionState = new ConnectionState(connectionPropertyValues);
+
     // Check that at most one of credentials location, encoded credentials, credentials provider and
     // OUAuth token has been specified in the connection URI.
     Preconditions.checkArgument(
         Stream.of(
-                    this.credentialsUrl,
-                    this.encodedCredentials,
-                    this.credentialsProvider,
-                    this.oauthToken)
+                    getInitialConnectionPropertyValue(CREDENTIALS_URL),
+                    getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
+                    getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER),
+                    getInitialConnectionPropertyValue(OAUTH_TOKEN))
                 .filter(Objects::nonNull)
                 .count()
             <= 1,
         "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token");
-    this.fixedCredentials = builder.credentials;
+    checkGuardedProperty(
+        getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
+        ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY,
+        ENCODED_CREDENTIALS_PROPERTY_NAME);
+    checkGuardedProperty(
+        getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER) == null
+            ? null
+            : getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER).getClass().getName(),
+        ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY,
+        CREDENTIALS_PROVIDER_PROPERTY_NAME);
+    checkGuardedProperty(
+        getInitialConnectionPropertyValue(CHANNEL_PROVIDER),
+        ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY,
+        CHANNEL_PROVIDER_PROPERTY_NAME);
 
-    this.userAgent = parseUserAgent(this.uri);
-    QueryOptions.Builder queryOptionsBuilder = QueryOptions.newBuilder();
-    queryOptionsBuilder.setOptimizerVersion(parseOptimizerVersion(this.uri));
-    queryOptionsBuilder.setOptimizerStatisticsPackage(parseOptimizerStatisticsPackage(this.uri));
-    this.queryOptions = queryOptionsBuilder.build();
-    this.returnCommitStats = parseReturnCommitStats(this.uri);
-    this.maxCommitDelay = parseMaxCommitDelay(this.uri);
-    this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
-    this.useAutoSavepointsForEmulator = parseUseAutoSavepointsForEmulator(this.uri);
-    this.dialect = parseDialect(this.uri);
-    this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
+    boolean usePlainText =
+        getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR)
+            || getInitialConnectionPropertyValue(USE_PLAIN_TEXT);
     this.host =
         determineHost(
-            matcher, parseEndpoint(this.uri), autoConfigEmulator, usePlainText, System.getenv());
-    this.rpcPriority = parseRPCPriority(this.uri);
-    this.ddlInTransactionMode = parseDdlInTransactionMode(this.uri);
-    this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
-    this.keepTransactionAlive = parseKeepTransactionAlive(this.uri);
-    this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
-    this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
-
-    this.dataBoostEnabled = parseDataBoostEnabled(this.uri);
-    this.autoPartitionMode = parseAutoPartitionMode(this.uri);
-    this.maxPartitions = parseMaxPartitions(this.uri);
-    this.maxPartitionedParallelism = parseMaxPartitionedParallelism(this.uri);
-
-    this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
-    this.databaseName = matcher.group(Builder.DATABASE_GROUP);
+            matcher,
+            getInitialConnectionPropertyValue(ENDPOINT),
+            getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR),
+            usePlainText,
+            System.getenv());
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
     // any credentials and is using a plain text connection, we should not try to get the
     // credentials from the environment, but default to NoCredentials.
     if (this.fixedCredentials == null
-        && this.credentialsUrl == null
-        && this.encodedCredentials == null
-        && this.credentialsProvider == null
-        && this.oauthToken == null
-        && this.usePlainText) {
+        && getInitialConnectionPropertyValue(CREDENTIALS_URL) == null
+        && getInitialConnectionPropertyValue(ENCODED_CREDENTIALS) == null
+        && getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER) == null
+        && getInitialConnectionPropertyValue(OAUTH_TOKEN) == null
+        && usePlainText) {
       this.credentials = NoCredentials.getInstance();
-    } else if (this.oauthToken != null) {
-      this.credentials = new GoogleCredentials(new AccessToken(oauthToken, null));
-    } else if (this.credentialsProvider != null) {
+    } else if (getInitialConnectionPropertyValue(OAUTH_TOKEN) != null) {
+      this.credentials =
+          new GoogleCredentials(
+              new AccessToken(getInitialConnectionPropertyValue(OAUTH_TOKEN), null));
+    } else if (getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER) != null) {
       try {
-        this.credentials = this.credentialsProvider.getCredentials();
+        this.credentials = getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER).getCredentials();
       } catch (IOException exception) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
@@ -850,52 +886,31 @@ public class ConnectionOptions {
       }
     } else if (this.fixedCredentials != null) {
       this.credentials = fixedCredentials;
-    } else if (this.encodedCredentials != null) {
-      this.credentials = getCredentialsService().decodeCredentials(this.encodedCredentials);
+    } else if (getInitialConnectionPropertyValue(ENCODED_CREDENTIALS) != null) {
+      this.credentials =
+          getCredentialsService()
+              .decodeCredentials(getInitialConnectionPropertyValue(ENCODED_CREDENTIALS));
     } else {
-      this.credentials = getCredentialsService().createCredentials(this.credentialsUrl);
+      this.credentials =
+          getCredentialsService()
+              .createCredentials(getInitialConnectionPropertyValue(CREDENTIALS_URL));
     }
-    this.minSessions =
-        parseIntegerProperty(MIN_SESSIONS_PROPERTY_NAME, parseMinSessions(builder.uri));
-    this.maxSessions =
-        parseIntegerProperty(MAX_SESSIONS_PROPERTY_NAME, parseMaxSessions(builder.uri));
-    this.numChannels =
-        parseIntegerProperty(NUM_CHANNELS_PROPERTY_NAME, parseNumChannels(builder.uri));
-    this.channelProvider = parseChannelProvider(builder.uri);
-    this.databaseRole = parseDatabaseRole(this.uri);
 
-    String projectId = matcher.group(Builder.PROJECT_GROUP);
-    if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
-      projectId = getDefaultProjectId(this.credentials);
-    }
-    this.projectId = projectId;
-
-    this.autocommit = parseAutocommit(this.uri);
-    this.readOnly = parseReadOnly(this.uri);
-    this.routeToLeader = parseRouteToLeader(this.uri);
-    this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
-    this.useVirtualThreads = parseUseVirtualThreads(this.uri);
-    this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
-    this.openTelemetry = builder.openTelemetry;
-    this.tracingPrefix = builder.tracingPrefix;
-    this.enableExtendedTracing = parseEnableExtendedTracing(this.uri);
-    this.enableApiTracing = parseEnableApiTracing(this.uri);
-    this.statementExecutionInterceptors =
-        Collections.unmodifiableList(builder.statementExecutionInterceptors);
-    this.configurator = builder.configurator;
-
-    if (this.minSessions != null || this.maxSessions != null || !this.trackSessionLeaks) {
+    if (getInitialConnectionPropertyValue(MIN_SESSIONS) != null
+        || getInitialConnectionPropertyValue(MAX_SESSIONS) != null
+        || !getInitialConnectionPropertyValue(TRACK_SESSION_LEAKS)) {
       SessionPoolOptions.Builder sessionPoolOptionsBuilder =
           builder.sessionPoolOptions == null
               ? SessionPoolOptions.newBuilder()
               : builder.sessionPoolOptions.toBuilder();
-      sessionPoolOptionsBuilder.setTrackStackTraceOfSessionCheckout(this.trackSessionLeaks);
+      sessionPoolOptionsBuilder.setTrackStackTraceOfSessionCheckout(
+          getInitialConnectionPropertyValue(TRACK_SESSION_LEAKS));
       sessionPoolOptionsBuilder.setAutoDetectDialect(true);
-      if (this.minSessions != null) {
-        sessionPoolOptionsBuilder.setMinSessions(this.minSessions);
+      if (getInitialConnectionPropertyValue(MIN_SESSIONS) != null) {
+        sessionPoolOptionsBuilder.setMinSessions(getInitialConnectionPropertyValue(MIN_SESSIONS));
       }
-      if (this.maxSessions != null) {
-        sessionPoolOptionsBuilder.setMaxSessions(this.maxSessions);
+      if (getInitialConnectionPropertyValue(MAX_SESSIONS) != null) {
+        sessionPoolOptionsBuilder.setMaxSessions(getInitialConnectionPropertyValue(MAX_SESSIONS));
       }
       this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
     } else if (builder.sessionPoolOptions != null) {
@@ -903,6 +918,14 @@ public class ConnectionOptions {
     } else {
       this.sessionPoolOptions = SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build();
     }
+
+    String projectId = matcher.group(Builder.PROJECT_GROUP);
+    if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
+      projectId = getDefaultProjectId(this.credentials);
+    }
+    this.projectId = projectId;
+    this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
+    this.databaseName = matcher.group(Builder.DATABASE_GROUP);
   }
 
   @VisibleForTesting
@@ -937,35 +960,12 @@ public class ConnectionOptions {
     return HOST_PROTOCOL + host;
   }
 
-  private static Integer parseIntegerProperty(String propertyName, String value) {
-    if (value != null) {
-      try {
-        return Integer.valueOf(value);
-      } catch (NumberFormatException e) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            String.format("Invalid %s value specified: %s", propertyName, value),
-            e);
-      }
-    }
-    return null;
-  }
-
   /**
    * @return an instance of OpenTelemetry. If OpenTelemetry object is not set then <code>null</code>
    *     will be returned.
    */
   OpenTelemetry getOpenTelemetry() {
     return this.openTelemetry;
-  }
-
-  /**
-   * @return The prefix that will be added to all traces that are started by the Connection API.
-   *     This property is used by for example the JDBC driver to make sure all traces start with
-   *     CloudSpannerJdbc.
-   */
-  String getTracingPrefix() {
-    return this.tracingPrefix;
   }
 
   SpannerOptionsConfigurator getConfigurator() {
@@ -977,103 +977,6 @@ public class ConnectionOptions {
     return CredentialsService.INSTANCE;
   }
 
-  @VisibleForTesting
-  static boolean parseUsePlainText(String uri) {
-    String value = parseUriProperty(uri, USE_PLAIN_TEXT_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_PLAIN_TEXT;
-  }
-
-  @VisibleForTesting
-  static boolean parseAutocommit(String uri) {
-    String value = parseUriProperty(uri, AUTOCOMMIT_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_AUTOCOMMIT;
-  }
-
-  @VisibleForTesting
-  static boolean parseReadOnly(String uri) {
-    String value = parseUriProperty(uri, READONLY_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_READONLY;
-  }
-
-  static boolean parseRouteToLeader(String uri) {
-    String value = parseUriProperty(uri, ROUTE_TO_LEADER_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_ROUTE_TO_LEADER;
-  }
-
-  @VisibleForTesting
-  static boolean parseRetryAbortsInternally(String uri) {
-    String value = parseUriProperty(uri, RETRY_ABORTS_INTERNALLY_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
-  }
-
-  @VisibleForTesting
-  static boolean parseUseVirtualThreads(String uri) {
-    String value = parseUriProperty(uri, USE_VIRTUAL_THREADS_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_THREADS;
-  }
-
-  @VisibleForTesting
-  static boolean parseUseVirtualGrpcTransportThreads(String uri) {
-    String value = parseUriProperty(uri, USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS;
-  }
-
-  @VisibleForTesting
-  static @Nullable String parseCredentials(String uri) {
-    String value = parseUriProperty(uri, CREDENTIALS_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_CREDENTIALS;
-  }
-
-  @VisibleForTesting
-  static @Nullable String parseEncodedCredentials(String uri) {
-    String encodedCredentials = parseUriProperty(uri, ENCODED_CREDENTIALS_PROPERTY_NAME);
-    checkGuardedProperty(
-        encodedCredentials,
-        ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY,
-        ENCODED_CREDENTIALS_PROPERTY_NAME);
-    return encodedCredentials;
-  }
-
-  @VisibleForTesting
-  static @Nullable CredentialsProvider parseCredentialsProvider(String uri) {
-    String credentialsProviderName = parseUriProperty(uri, CREDENTIALS_PROVIDER_PROPERTY_NAME);
-    checkGuardedProperty(
-        credentialsProviderName,
-        ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY,
-        CREDENTIALS_PROVIDER_PROPERTY_NAME);
-    if (!Strings.isNullOrEmpty(credentialsProviderName)) {
-      try {
-        Class<? extends CredentialsProvider> clazz =
-            (Class<? extends CredentialsProvider>) Class.forName(credentialsProviderName);
-        Constructor<? extends CredentialsProvider> constructor = clazz.getDeclaredConstructor();
-        return constructor.newInstance();
-      } catch (ClassNotFoundException classNotFoundException) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Unknown or invalid CredentialsProvider class name: " + credentialsProviderName,
-            classNotFoundException);
-      } catch (NoSuchMethodException noSuchMethodException) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Credentials provider "
-                + credentialsProviderName
-                + " does not have a public no-arg constructor.",
-            noSuchMethodException);
-      } catch (InvocationTargetException
-          | InstantiationException
-          | IllegalAccessException exception) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Failed to create an instance of "
-                + credentialsProviderName
-                + ": "
-                + exception.getMessage(),
-            exception);
-      }
-    }
-    return null;
-  }
-
   private static void checkGuardedProperty(
       String value, String systemPropertyName, String connectionPropertyName) {
     if (!Strings.isNullOrEmpty(value)
@@ -1082,219 +985,6 @@ public class ConnectionOptions {
           ErrorCode.FAILED_PRECONDITION,
           generateGuardedConnectionPropertyError(systemPropertyName, connectionPropertyName));
     }
-  }
-
-  @VisibleForTesting
-  static @Nullable String parseOAuthToken(String uri) {
-    String value = parseUriProperty(uri, OAUTH_TOKEN_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_OAUTH_TOKEN;
-  }
-
-  @VisibleForTesting
-  static String parseMinSessions(String uri) {
-    String value = parseUriProperty(uri, MIN_SESSIONS_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_MIN_SESSIONS;
-  }
-
-  @VisibleForTesting
-  static String parseMaxSessions(String uri) {
-    String value = parseUriProperty(uri, MAX_SESSIONS_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_MAX_SESSIONS;
-  }
-
-  @VisibleForTesting
-  static String parseNumChannels(String uri) {
-    String value = parseUriProperty(uri, NUM_CHANNELS_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_NUM_CHANNELS;
-  }
-
-  private static String parseEndpoint(String uri) {
-    String value = parseUriProperty(uri, ENDPOINT_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_ENDPOINT;
-  }
-
-  @VisibleForTesting
-  static String parseChannelProvider(String uri) {
-    String value = parseUriProperty(uri, CHANNEL_PROVIDER_PROPERTY_NAME);
-    checkGuardedProperty(
-        value, ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY, CHANNEL_PROVIDER_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_CHANNEL_PROVIDER;
-  }
-
-  @VisibleForTesting
-  static String parseDatabaseRole(String uri) {
-    String value = parseUriProperty(uri, DATABASE_ROLE_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_DATABASE_ROLE;
-  }
-
-  @VisibleForTesting
-  static String parseUserAgent(String uri) {
-    String value = parseUriProperty(uri, USER_AGENT_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_USER_AGENT;
-  }
-
-  @VisibleForTesting
-  static String parseOptimizerVersion(String uri) {
-    String value = parseUriProperty(uri, OPTIMIZER_VERSION_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_OPTIMIZER_VERSION;
-  }
-
-  @VisibleForTesting
-  static String parseOptimizerStatisticsPackage(String uri) {
-    String value = parseUriProperty(uri, OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_OPTIMIZER_STATISTICS_PACKAGE;
-  }
-
-  @VisibleForTesting
-  static boolean parseReturnCommitStats(String uri) {
-    String value = parseUriProperty(uri, "returnCommitStats");
-    return Boolean.parseBoolean(value);
-  }
-
-  @VisibleForTesting
-  static Long parseMaxCommitDelay(String uri) {
-    String value = parseUriProperty(uri, "maxCommitDelay");
-    try {
-      Long millis = value == null ? null : Long.valueOf(value);
-      if (millis != null && millis < 0L) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, "maxCommitDelay must be >=0");
-      }
-      return millis;
-    } catch (NumberFormatException numberFormatException) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT,
-          "Invalid value for maxCommitDelay: "
-              + value
-              + "\n"
-              + "The value must be a positive integer indicating the number of "
-              + "milliseconds to use as the max delay.");
-    }
-  }
-
-  static boolean parseAutoConfigEmulator(String uri) {
-    String value = parseUriProperty(uri, "autoConfigEmulator");
-    return Boolean.parseBoolean(value);
-  }
-
-  static boolean parseUseAutoSavepointsForEmulator(String uri) {
-    String value = parseUriProperty(uri, "useAutoSavepointsForEmulator");
-    return Boolean.parseBoolean(value);
-  }
-
-  @VisibleForTesting
-  static Dialect parseDialect(String uri) {
-    String value = parseUriProperty(uri, DIALECT_PROPERTY_NAME);
-    return value != null ? Dialect.valueOf(value.toUpperCase()) : Dialect.GOOGLE_STANDARD_SQL;
-  }
-
-  @VisibleForTesting
-  static boolean parseLenient(String uri) {
-    String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_LENIENT;
-  }
-
-  @VisibleForTesting
-  static boolean parseDelayTransactionStartUntilFirstWrite(String uri) {
-    String value = parseUriProperty(uri, DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME);
-    return value != null
-        ? Boolean.parseBoolean(value)
-        : DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
-  }
-
-  @VisibleForTesting
-  static boolean parseKeepTransactionAlive(String uri) {
-    String value = parseUriProperty(uri, KEEP_TRANSACTION_ALIVE_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_KEEP_TRANSACTION_ALIVE;
-  }
-
-  @VisibleForTesting
-  static boolean parseTrackSessionLeaks(String uri) {
-    String value = parseUriProperty(uri, TRACK_SESSION_LEAKS_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_SESSION_LEAKS;
-  }
-
-  @VisibleForTesting
-  static boolean parseTrackConnectionLeaks(String uri) {
-    String value = parseUriProperty(uri, TRACK_CONNECTION_LEAKS_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_CONNECTION_LEAKS;
-  }
-
-  @VisibleForTesting
-  static boolean parseDataBoostEnabled(String uri) {
-    String value = parseUriProperty(uri, DATA_BOOST_ENABLED_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_DATA_BOOST_ENABLED;
-  }
-
-  @VisibleForTesting
-  static boolean parseAutoPartitionMode(String uri) {
-    String value = parseUriProperty(uri, AUTO_PARTITION_MODE_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_AUTO_PARTITION_MODE;
-  }
-
-  @VisibleForTesting
-  static int parseMaxPartitions(String uri) {
-    String stringValue = parseUriProperty(uri, MAX_PARTITIONS_PROPERTY_NAME);
-    if (stringValue == null) {
-      return DEFAULT_MAX_PARTITIONS;
-    }
-    try {
-      int value = Integer.parseInt(stringValue);
-      if (value < 0) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, "maxPartitions must be >=0");
-      }
-      return value;
-    } catch (NumberFormatException numberFormatException) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "Invalid value for maxPartitions: " + stringValue);
-    }
-  }
-
-  @VisibleForTesting
-  static int parseMaxPartitionedParallelism(String uri) {
-    String stringValue = parseUriProperty(uri, MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME);
-    if (stringValue == null) {
-      return DEFAULT_MAX_PARTITIONED_PARALLELISM;
-    }
-    try {
-      int value = Integer.parseInt(stringValue);
-      if (value < 0) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, "maxPartitionedParallelism must be >=0");
-      }
-      return value;
-    } catch (NumberFormatException numberFormatException) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT,
-          "Invalid value for maxPartitionedParallelism: " + stringValue);
-    }
-  }
-
-  @VisibleForTesting
-  static RpcPriority parseRPCPriority(String uri) {
-    String value = parseUriProperty(uri, RPC_PRIORITY_NAME);
-    return value != null ? RpcPriority.valueOf(value) : DEFAULT_RPC_PRIORITY;
-  }
-
-  @VisibleForTesting
-  static DdlInTransactionMode parseDdlInTransactionMode(String uri) {
-    String value = parseUriProperty(uri, DDL_IN_TRANSACTION_MODE_PROPERTY_NAME);
-    return value != null
-        ? DdlInTransactionMode.valueOf(value.toUpperCase())
-        : DEFAULT_DDL_IN_TRANSACTION_MODE;
-  }
-
-  @VisibleForTesting
-  static Boolean parseEnableExtendedTracing(String uri) {
-    String value = parseUriProperty(uri, ENABLE_EXTENDED_TRACING_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_ENABLE_EXTENDED_TRACING;
-  }
-
-  @VisibleForTesting
-  static Boolean parseEnableApiTracing(String uri) {
-    String value = parseUriProperty(uri, ENABLE_API_TRACING_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_ENABLE_API_TRACING;
   }
 
   @VisibleForTesting
@@ -1309,23 +999,23 @@ public class ConnectionOptions {
 
   /** Check that only valid properties have been specified. */
   @VisibleForTesting
-  static String checkValidProperties(String uri) {
-    String invalidProperties = "";
+  static String checkValidProperties(boolean lenient, String uri) {
+    StringBuilder invalidProperties = new StringBuilder();
     List<String> properties = parseProperties(uri);
-    boolean lenient = parseLenient(uri);
     for (String property : properties) {
-      if (!INTERNAL_VALID_PROPERTIES.contains(ConnectionProperty.createEmptyProperty(property))) {
+      if (!ConnectionProperties.CONNECTION_PROPERTIES.containsKey(
+          property.toLowerCase(Locale.ENGLISH))) {
         if (invalidProperties.length() > 0) {
-          invalidProperties = invalidProperties + ", ";
+          invalidProperties.append(", ");
         }
-        invalidProperties = invalidProperties + property;
+        invalidProperties.append(property);
       }
     }
     if (lenient) {
       return String.format("Invalid properties found in connection URI: %s", invalidProperties);
     } else {
       Preconditions.checkArgument(
-          invalidProperties.isEmpty(),
+          invalidProperties.length() == 0,
           String.format(
               "Invalid properties found in connection URI. Add lenient=true to the connection string to ignore unknown properties. Invalid properties: %s",
               invalidProperties));
@@ -1369,13 +1059,23 @@ public class ConnectionOptions {
     return uri;
   }
 
+  /** The connection properties that have been pre-set for this {@link ConnectionOptions}. */
+  Map<String, ConnectionPropertyValue<?>> getInitialConnectionPropertyValues() {
+    return this.initialConnectionState.getAllValues();
+  }
+
+  <T> T getInitialConnectionPropertyValue(
+      com.google.cloud.spanner.connection.ConnectionProperty<T> property) {
+    return this.initialConnectionState.getValue(property).getValue();
+  }
+
   /** The credentials URL of this {@link ConnectionOptions} */
   public String getCredentialsUrl() {
-    return credentialsUrl;
+    return getInitialConnectionPropertyValue(CREDENTIALS_URL);
   }
 
   String getOAuthToken() {
-    return this.oauthToken;
+    return getInitialConnectionPropertyValue(OAUTH_TOKEN);
   }
 
   Credentials getFixedCredentials() {
@@ -1383,7 +1083,7 @@ public class ConnectionOptions {
   }
 
   CredentialsProvider getCredentialsProvider() {
-    return this.credentialsProvider;
+    return getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER);
   }
 
   /** The {@link SessionPoolOptions} of this {@link ConnectionOptions}. */
@@ -1397,7 +1097,7 @@ public class ConnectionOptions {
    * database using the same connection settings.
    */
   public Integer getMinSessions() {
-    return minSessions;
+    return getInitialConnectionPropertyValue(MIN_SESSIONS);
   }
 
   /**
@@ -1406,16 +1106,17 @@ public class ConnectionOptions {
    * database using the same connection settings.
    */
   public Integer getMaxSessions() {
-    return maxSessions;
+    return getInitialConnectionPropertyValue(MAX_SESSIONS);
   }
 
   /** The number of channels to use for the connection. */
   public Integer getNumChannels() {
-    return numChannels;
+    return getInitialConnectionPropertyValue(NUM_CHANNELS);
   }
 
   /** Calls the getChannelProvider() method from the supplied class. */
   public TransportChannelProvider getChannelProvider() {
+    String channelProvider = getInitialConnectionPropertyValue(CHANNEL_PROVIDER);
     if (channelProvider == null) {
       return null;
     }
@@ -1438,7 +1139,7 @@ public class ConnectionOptions {
    * used to for example restrict the access of a connection to a specific set of tables.
    */
   public String getDatabaseRole() {
-    return databaseRole;
+    return getInitialConnectionPropertyValue(DATABASE_ROLE);
   }
 
   /** The host and port number that this {@link ConnectionOptions} will connect to */
@@ -1479,12 +1180,12 @@ public class ConnectionOptions {
 
   /** The initial autocommit value for connections created by this {@link ConnectionOptions} */
   public boolean isAutocommit() {
-    return autocommit;
+    return getInitialConnectionPropertyValue(AUTOCOMMIT);
   }
 
   /** The initial readonly value for connections created by this {@link ConnectionOptions} */
   public boolean isReadOnly() {
-    return readOnly;
+    return getInitialConnectionPropertyValue(READONLY);
   }
 
   /**
@@ -1492,7 +1193,7 @@ public class ConnectionOptions {
    * region.
    */
   public boolean isRouteToLeader() {
-    return routeToLeader;
+    return getInitialConnectionPropertyValue(ROUTE_TO_LEADER);
   }
 
   /**
@@ -1500,17 +1201,17 @@ public class ConnectionOptions {
    * ConnectionOptions}
    */
   public boolean isRetryAbortsInternally() {
-    return retryAbortsInternally;
+    return getInitialConnectionPropertyValue(RETRY_ABORTS_INTERNALLY);
   }
 
   /** Whether connections should use virtual threads for connection executors. */
   public boolean isUseVirtualThreads() {
-    return useVirtualThreads;
+    return getInitialConnectionPropertyValue(USE_VIRTUAL_THREADS);
   }
 
   /** Whether virtual threads should be used for gRPC transport. */
   public boolean isUseVirtualGrpcTransportThreads() {
-    return useVirtualGrpcTransportThreads;
+    return getInitialConnectionPropertyValue(USE_VIRTUAL_GRPC_TRANSPORT_THREADS);
   }
 
   /** Any warnings that were generated while creating the {@link ConnectionOptions} instance. */
@@ -1521,7 +1222,8 @@ public class ConnectionOptions {
 
   /** Use http instead of https. Only valid for (local) test servers. */
   boolean isUsePlainText() {
-    return usePlainText;
+    return getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR)
+        || getInitialConnectionPropertyValue(USE_PLAIN_TEXT);
   }
 
   /**
@@ -1529,28 +1231,23 @@ public class ConnectionOptions {
    * default JDBC user agent string will be used.
    */
   String getUserAgent() {
-    return userAgent;
-  }
-
-  /** The {@link QueryOptions} to use for the connection. */
-  QueryOptions getQueryOptions() {
-    return queryOptions;
+    return getInitialConnectionPropertyValue(USER_AGENT);
   }
 
   /** Whether connections created by this {@link ConnectionOptions} return commit stats. */
   public boolean isReturnCommitStats() {
-    return returnCommitStats;
+    return getInitialConnectionPropertyValue(RETURN_COMMIT_STATS);
   }
 
   /** The max_commit_delay that should be applied to commit operations on this connection. */
   public Duration getMaxCommitDelay() {
-    return maxCommitDelay == null ? null : Duration.ofMillis(maxCommitDelay);
+    return getInitialConnectionPropertyValue(MAX_COMMIT_DELAY);
   }
 
   boolean usesEmulator() {
     return Suppliers.memoize(
             () ->
-                this.autoConfigEmulator
+                isAutoConfigEmulator()
                     || !Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST")))
         .get();
   }
@@ -1562,7 +1259,7 @@ public class ConnectionOptions {
    * emulator instance.
    */
   public boolean isAutoConfigEmulator() {
-    return autoConfigEmulator;
+    return getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR);
   }
 
   /**
@@ -1572,68 +1269,39 @@ public class ConnectionOptions {
    * <p>This is no longer needed since version 1.5.23 of the emulator.
    */
   boolean useAutoSavepointsForEmulator() {
-    return useAutoSavepointsForEmulator;
+    return getInitialConnectionPropertyValue(USE_AUTO_SAVEPOINTS_FOR_EMULATOR);
   }
 
   public Dialect getDialect() {
-    return dialect;
-  }
-
-  /** The {@link RpcPriority} to use for the connection. */
-  RpcPriority getRPCPriority() {
-    return rpcPriority;
-  }
-
-  DdlInTransactionMode getDdlInTransactionMode() {
-    return this.ddlInTransactionMode;
-  }
-
-  /**
-   * Whether connections created by this {@link ConnectionOptions} should delay the actual start of
-   * a read/write transaction until the first write operation.
-   */
-  boolean isDelayTransactionStartUntilFirstWrite() {
-    return delayTransactionStartUntilFirstWrite;
-  }
-
-  /**
-   * Whether connections created by this {@link ConnectionOptions} should keep read/write
-   * transactions alive by executing a SELECT 1 once every 10 seconds if no other statements are
-   * executed. This option should be used with caution, as enabling it can keep transactions alive
-   * for a very long time, which will hold on to any locks that have been taken by the transaction.
-   * This option should typically only be enabled for CLI-type applications or other user-input
-   * applications that might wait for a longer period of time on user input.
-   */
-  boolean isKeepTransactionAlive() {
-    return keepTransactionAlive;
+    return getInitialConnectionPropertyValue(DIALECT);
   }
 
   boolean isTrackConnectionLeaks() {
-    return this.trackConnectionLeaks;
+    return getInitialConnectionPropertyValue(TRACK_CONNECTION_LEAKS);
   }
 
   boolean isDataBoostEnabled() {
-    return this.dataBoostEnabled;
+    return getInitialConnectionPropertyValue(DATA_BOOST_ENABLED);
   }
 
   boolean isAutoPartitionMode() {
-    return this.autoPartitionMode;
+    return getInitialConnectionPropertyValue(AUTO_PARTITION_MODE);
   }
 
   int getMaxPartitions() {
-    return this.maxPartitions;
+    return getInitialConnectionPropertyValue(MAX_PARTITIONS);
   }
 
   int getMaxPartitionedParallelism() {
-    return this.maxPartitionedParallelism;
+    return getInitialConnectionPropertyValue(MAX_PARTITIONED_PARALLELISM);
   }
 
   Boolean isEnableExtendedTracing() {
-    return this.enableExtendedTracing;
+    return getInitialConnectionPropertyValue(ENABLE_EXTENDED_TRACING);
   }
 
   Boolean isEnableApiTracing() {
-    return this.enableApiTracing;
+    return getInitialConnectionPropertyValue(ENABLE_API_TRACING);
   }
 
   /** Interceptors that should be executed after each statement */
