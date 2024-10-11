@@ -1166,6 +1166,45 @@ public interface Connection extends AutoCloseable {
   ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode);
 
   /**
+   * Enables or disables automatic batching of DML statements. When enabled, DML statements that are
+   * executed on this connection will be buffered in memory instead of actually being executed. The
+   * buffered DML statements are flushed to Spanner when a statement that cannot be part of a DML
+   * batch is executed on the connection. This can be a query, a DDL statement with a THEN RETURN
+   * clause, or a Commit call. The update count that is returned for DML statements that are
+   * buffered is determined by the value that has been set with {@link
+   * #setAutoBatchDmlUpdateCount(long)}. The default is 1. The connection verifies that the update
+   * counts that were returned while buffering DML statements match the actual update counts that
+   * are returned by Spanner when the batch is executed. This verification can be disabled by
+   * calling {@link #setAutoBatchDmlUpdateCountVerification(boolean)}.
+   */
+  void setAutoBatchDml(boolean autoBatchDml);
+
+  /** Returns whether automatic DML batching is enabled on this connection. */
+  boolean isAutoBatchDml();
+
+  /**
+   * Sets the update count that is returned for DML statements that are buffered during an automatic
+   * DML batch. This value is only used if {@link #isAutoBatchDml()} is enabled.
+   */
+  void setAutoBatchDmlUpdateCount(long updateCount);
+
+  /**
+   * Returns the update count that is returned for DML statements that are buffered during an
+   * automatic DML batch.
+   */
+  long getAutoBatchDmlUpdateCount();
+
+  /**
+   * Sets whether the update count that is returned by Spanner after executing an automatic DML
+   * batch should be verified against the update counts that were returned during the buffering of
+   * those statements.
+   */
+  void setAutoBatchDmlUpdateCountVerification(boolean verification);
+
+  /** Indicates whether the update counts of automatic DML batches should be verified. */
+  boolean isAutoBatchDmlUpdateCountVerification();
+
+  /**
    * Enable data boost for partitioned queries. See also {@link #partitionQuery(Statement,
    * PartitionOptions, QueryOption...)}
    */

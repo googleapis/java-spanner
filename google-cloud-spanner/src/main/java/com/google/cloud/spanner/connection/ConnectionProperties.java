@@ -17,6 +17,9 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTOCOMMIT_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_PARTITION_MODE_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CHANNEL_PROVIDER_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CREDENTIALS_PROPERTY_NAME;
@@ -25,6 +28,9 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DATABASE_ROL
 import static com.google.cloud.spanner.connection.ConnectionOptions.DATA_BOOST_ENABLED_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DDL_IN_TRANSACTION_MODE_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTOCOMMIT;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CHANNEL_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CREDENTIALS;
@@ -86,6 +92,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperty.castPropert
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.DmlBatchUpdateCountVerificationFailedException;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.AutocommitDmlModeConverter;
@@ -95,6 +102,7 @@ import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.Cr
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DdlInTransactionModeConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DialectConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DurationConverter;
+import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.LongConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.NonNegativeIntegerConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ReadOnlyStalenessConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.RpcPriorityConverter;
@@ -470,6 +478,55 @@ class ConnectionProperties {
           "The max delay that Spanner may apply to commit requests to improve throughput.",
           null,
           DurationConverter.INSTANCE,
+          Context.USER);
+  static final ConnectionProperty<Boolean> AUTO_BATCH_DML =
+      create(
+          AUTO_BATCH_DML_PROPERTY_NAME,
+          "Automatically buffer DML statements that are executed on this connection and "
+              + "execute them as one batch when a non-DML statement is executed, or when the current "
+              + "transaction is committed. The update count that is returned for DML statements that "
+              + "are buffered is by default 1. This default can be changed by setting the connection "
+              + "variable "
+              + AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME
+              + " to value other than 1. "
+              + "This setting is only in read/write transactions. DML statements in auto-commit mode "
+              + "are executed directly.",
+          DEFAULT_AUTO_BATCH_DML,
+          BooleanConverter.INSTANCE,
+          Context.USER);
+  static final ConnectionProperty<Long> AUTO_BATCH_DML_UPDATE_COUNT =
+      create(
+          AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME,
+          "DML statements that are executed when "
+              + AUTO_BATCH_DML_PROPERTY_NAME
+              + " is "
+              + "set to true, are not directly sent to Spanner, but are buffered in the client until "
+              + "the batch is flushed. This property determines the update count that is returned for "
+              + "these DML statements. The default is "
+              + DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT
+              + ", as "
+              + "that is the update count that is expected by most ORMs (e.g. Hibernate).",
+          DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT,
+          LongConverter.INSTANCE,
+          Context.USER);
+  static final ConnectionProperty<Boolean> AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION =
+      create(
+          AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME,
+          "The update count that is returned for DML statements that are buffered during "
+              + "an automatic DML batch is by default "
+              + DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT
+              + ". "
+              + "This value can be changed by setting the connection variable "
+              + AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME
+              + ". The update counts that are returned by Spanner when the DML statements are actually "
+              + "executed are verified against the update counts that were returned when they were "
+              + "buffered. If these do not match, a "
+              + DmlBatchUpdateCountVerificationFailedException.class.getName()
+              + " will be thrown. You can disable this verification by setting "
+              + AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME
+              + " to false.",
+          DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION,
+          BooleanConverter.INSTANCE,
           Context.USER);
 
   static final Map<String, ConnectionProperty<?>> CONNECTION_PROPERTIES =

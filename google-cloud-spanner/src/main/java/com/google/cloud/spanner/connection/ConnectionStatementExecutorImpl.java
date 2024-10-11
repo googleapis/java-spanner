@@ -25,6 +25,9 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML_UPDATE_COUNT;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
@@ -51,6 +54,9 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_BATCH_DML;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_BATCH_DML_UPDATE_COUNT;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
@@ -679,6 +685,49 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%sPROTO_DESCRIPTORS_FILE_PATH", getNamespace(connection.getDialect())),
         getConnection().getProtoDescriptorsFilePath(),
         SHOW_PROTO_DESCRIPTORS_FILE_PATH);
+  }
+
+  @Override
+  public StatementResult statementSetAutoBatchDml(Boolean autoBatchDml) {
+    getConnection().setAutoBatchDml(autoBatchDml);
+    return noResult(SET_AUTO_BATCH_DML);
+  }
+
+  @Override
+  public StatementResult statementShowAutoBatchDml() {
+    return resultSet(
+        String.format("%sAUTO_BATCH_DML", getNamespace(connection.getDialect())),
+        getConnection().isAutoBatchDml(),
+        SHOW_AUTO_BATCH_DML);
+  }
+
+  @Override
+  public StatementResult statementSetAutoBatchDmlUpdateCount(Long updateCount) {
+    getConnection().setAutoBatchDmlUpdateCount(updateCount);
+    return noResult(SET_AUTO_BATCH_DML_UPDATE_COUNT);
+  }
+
+  @Override
+  public StatementResult statementShowAutoBatchDmlUpdateCount() {
+    return resultSet(
+        String.format("%sAUTO_BATCH_DML_UPDATE_COUNT", getNamespace(connection.getDialect())),
+        getConnection().getAutoBatchDmlUpdateCount(),
+        SHOW_AUTO_BATCH_DML_UPDATE_COUNT);
+  }
+
+  @Override
+  public StatementResult statementSetAutoBatchDmlUpdateCountVerification(Boolean verification) {
+    getConnection().setAutoBatchDmlUpdateCountVerification(verification);
+    return noResult(SET_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
+  }
+
+  @Override
+  public StatementResult statementShowAutoBatchDmlUpdateCountVerification() {
+    return resultSet(
+        String.format(
+            "%sAUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION", getNamespace(connection.getDialect())),
+        getConnection().isAutoBatchDmlUpdateCountVerification(),
+        SHOW_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
   }
 
   private String processQueryPlan(PlanNode planNode) {
