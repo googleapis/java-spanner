@@ -38,12 +38,7 @@ class DelayedTransactionRunner implements TransactionRunner {
     try {
       return this.transactionRunnerFuture.get();
     } catch (ExecutionException executionException) {
-      // Propagate the underlying exception as a RuntimeException (SpannerException is also a
-      // RuntimeException).
-      if (executionException.getCause() instanceof RuntimeException) {
-        throw (RuntimeException) executionException.getCause();
-      }
-      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+      throw SpannerExceptionFactory.causeAsRunTimeException(executionException);
     } catch (InterruptedException interruptedException) {
       throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
     }

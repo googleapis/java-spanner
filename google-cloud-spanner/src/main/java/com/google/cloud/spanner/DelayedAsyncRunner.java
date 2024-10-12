@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 /**
@@ -43,7 +44,10 @@ public class DelayedAsyncRunner implements AsyncRunner {
           if (exception instanceof InterruptedException) {
             throw SpannerExceptionFactory.propagateInterrupt((InterruptedException) exception);
           }
-          throw SpannerExceptionFactory.asSpannerException(exception.getCause());
+          if (exception instanceof ExecutionException) {
+            throw SpannerExceptionFactory.causeAsRunTimeException((ExecutionException) exception);
+          }
+          throw exception;
         },
         MoreExecutors.directExecutor());
   }
