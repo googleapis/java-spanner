@@ -20,8 +20,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.pathtemplate.PathTemplate;
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -30,6 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Client for creating single sessions and batches of sessions. */
@@ -167,26 +169,37 @@ class SessionClient implements AutoCloseable {
   }
 
   private final SpannerImpl spanner;
-  private final ExecutorFactory<ScheduledExecutorService> executorFactory;
   private final ScheduledExecutorService executor;
   private final DatabaseId db;
 
   @GuardedBy("this")
   private volatile long sessionChannelCounter;
 
-  SessionClient(
-      SpannerImpl spanner,
-      DatabaseId db,
-      ExecutorFactory<ScheduledExecutorService> executorFactory) {
+  SessionClient(SpannerImpl spanner, DatabaseId db) {
     this.spanner = spanner;
     this.db = db;
-    this.executorFactory = executorFactory;
-    this.executor = executorFactory.get();
+    this.executor = createExecutor(spanner);
+  }
+
+  private static ScheduledThreadPoolExecutor createExecutor(Spanner spanner) {
+    ScheduledThreadPoolExecutor executor =
+        new ScheduledThreadPoolExecutor(
+            spanner.getOptions().getNumChannels(),
+            ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory("session-client", true));
+    executor.setKeepAliveTime(5L, TimeUnit.SECONDS);
+    executor.allowCoreThreadTimeOut(true);
+
+    return executor;
   }
 
   @Override
   public void close() {
-    executorFactory.release(executor);
+    this.executor.shutdown();
+  }
+
+  @VisibleForTesting
+  ScheduledExecutorService getExecutor() {
+    return this.executor;
   }
 
   SpannerImpl getSpanner() {

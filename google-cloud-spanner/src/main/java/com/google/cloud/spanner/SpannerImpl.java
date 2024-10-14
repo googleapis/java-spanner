@@ -22,7 +22,6 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.BaseService;
 import com.google.cloud.PageImpl;
 import com.google.cloud.PageImpl.NextPageFetcher;
-import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
@@ -199,11 +198,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       if (sessionClients.containsKey(db)) {
         return sessionClients.get(db);
       } else {
-        SessionClient client =
-            new SessionClient(
-                this,
-                db,
-                ((GrpcTransportOptions) getOptions().getTransportOptions()).getExecutorFactory());
+        SessionClient client = new SessionClient(this, db);
         sessionClients.put(db, client);
         return client;
       }

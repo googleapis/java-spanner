@@ -224,7 +224,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     pool =
         SessionPool.createPool(
             sessionPoolOptions,
-            new TestExecutorFactory(),
             mockSpanner.getSessionClient(db),
             clock,
             Position.RANDOM,

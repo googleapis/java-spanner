@@ -50,7 +50,7 @@ import org.mockito.Mockito;
 
 @RunWith(JUnit4.class)
 public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
-  private ExecutorService executor = Executors.newSingleThreadExecutor();
+  private final ExecutorService executor = Executors.newSingleThreadExecutor();
   private @Mock SpannerImpl client;
   private @Mock SessionClient sessionClient;
   private @Mock SpannerOptions spannerOptions;
@@ -130,7 +130,6 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     SessionPool pool =
         SessionPool.createPool(
             options,
-            new TestExecutorFactory(),
             client.getSessionClient(db),
             clock,
             Position.FIRST,
