@@ -18,15 +18,12 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -83,18 +80,6 @@ public class ITSessionPoolIntegrationTest {
     pool =
         SessionPool.createPool(
             options,
-            new ExecutorFactory<ScheduledExecutorService>() {
-
-              @Override
-              public void release(ScheduledExecutorService executor) {
-                executor.shutdown();
-              }
-
-              @Override
-              public ScheduledExecutorService get() {
-                return new ScheduledThreadPoolExecutor(2);
-              }
-            },
             ((SpannerImpl) env.getTestHelper().getClient()).getSessionClient(db.getId()),
             new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false),
             OpenTelemetry.noop());
