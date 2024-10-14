@@ -148,6 +148,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       }
     } finally {
       span.end();
+      session.onTransactionDone();
     }
   }
 

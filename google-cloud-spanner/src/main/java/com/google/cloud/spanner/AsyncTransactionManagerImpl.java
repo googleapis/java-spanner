@@ -67,6 +67,9 @@ final class AsyncTransactionManagerImpl
     if (txn != null) {
       txn.close();
     }
+    if (session != null) {
+      session.onTransactionDone();
+    }
     return MoreObjects.firstNonNull(res, ApiFutures.immediateFuture(null));
   }
 

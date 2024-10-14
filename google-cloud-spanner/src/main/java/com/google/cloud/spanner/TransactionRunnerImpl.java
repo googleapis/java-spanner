@@ -1118,6 +1118,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // was running.
       SessionImpl.hasPendingTransaction.remove();
       span.end();
+      session.onTransactionDone();
     }
   }
 

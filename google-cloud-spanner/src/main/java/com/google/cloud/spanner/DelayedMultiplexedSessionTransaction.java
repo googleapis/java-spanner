@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DelayedReadContext.DelayedReadOnlyTransaction;
 import com.google.cloud.spanner.MultiplexedSessionDatabaseClient.MultiplexedSessionTransaction;
 import com.google.cloud.spanner.Options.TransactionOption;
@@ -57,7 +58,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, true)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
                     .singleUse(),
             MoreExecutors.directExecutor()));
   }
@@ -69,7 +70,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, true)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
                     .singleUse(bound),
             MoreExecutors.directExecutor()));
   }
@@ -81,7 +82,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, true)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
                     .singleUseReadOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -93,7 +94,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, true)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
                     .singleUseReadOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }
@@ -105,7 +106,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, false)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
                     .readOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -117,7 +118,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, false)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
                     .readOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }
@@ -131,9 +132,83 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
     SessionReference sessionReference = getSessionReference();
     try (MultiplexedSessionTransaction transaction =
-        new MultiplexedSessionTransaction(client, span, sessionReference, NO_CHANNEL_HINT, true)) {
+        new MultiplexedSessionTransaction(
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)) {
       return transaction.writeAtLeastOnceWithOptions(mutations, options);
     }
+  }
+
+  // This is a blocking method, as the interface that it implements is also defined as a blocking
+  // method.
+  @Override
+  public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+    SessionReference sessionReference = getSessionReference();
+    try (MultiplexedSessionTransaction transaction =
+        new MultiplexedSessionTransaction(
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)) {
+      return transaction.write(mutations);
+    }
+  }
+
+  // This is a blocking method, as the interface that it implements is also defined as a blocking
+  // method.
+  @Override
+  public CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
+      throws SpannerException {
+    SessionReference sessionReference = getSessionReference();
+    try (MultiplexedSessionTransaction transaction =
+        new MultiplexedSessionTransaction(
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)) {
+      return transaction.writeWithOptions(mutations, options);
+    }
+  }
+
+  @Override
+  public TransactionRunner readWriteTransaction(TransactionOption... options) {
+    return new DelayedTransactionRunner(
+        ApiFutures.transform(
+            this.sessionFuture,
+            sessionReference ->
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                    .readWriteTransaction(options),
+            MoreExecutors.directExecutor()));
+  }
+
+  @Override
+  public TransactionManager transactionManager(TransactionOption... options) {
+    return new DelayedTransactionManager(
+        ApiFutures.transform(
+            this.sessionFuture,
+            sessionReference ->
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                    .transactionManager(options),
+            MoreExecutors.directExecutor()));
+  }
+
+  @Override
+  public AsyncRunner runAsync(TransactionOption... options) {
+    return new DelayedAsyncRunner(
+        ApiFutures.transform(
+            this.sessionFuture,
+            sessionReference ->
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                    .runAsync(options),
+            MoreExecutors.directExecutor()));
+  }
+
+  @Override
+  public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+    return new DelayedAsyncTransactionManager(
+        ApiFutures.transform(
+            this.sessionFuture,
+            sessionReference ->
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                    .transactionManagerAsync(options),
+            MoreExecutors.directExecutor()));
   }
 
   /**
@@ -144,12 +219,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     try {
       return this.sessionFuture.get();
     } catch (ExecutionException executionException) {
-      // Propagate the underlying exception as a RuntimeException (SpannerException is also a
-      // RuntimeException).
-      if (executionException.getCause() instanceof RuntimeException) {
-        throw (RuntimeException) executionException.getCause();
-      }
-      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+      throw SpannerExceptionFactory.causeAsRunTimeException(executionException);
     } catch (InterruptedException interruptedException) {
       throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
     }
