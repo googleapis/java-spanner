@@ -175,4 +175,16 @@ interface ConnectionStatementExecutor {
   StatementResult statementRunPartition(String partitionId);
 
   StatementResult statementRunPartitionedQuery(Statement statement);
+
+  StatementResult statementSetAutoBatchDml(Boolean autoBatchDml);
+
+  StatementResult statementShowAutoBatchDml();
+
+  StatementResult statementSetAutoBatchDmlUpdateCount(Long updateCount);
+
+  StatementResult statementShowAutoBatchDmlUpdateCount();
+
+  StatementResult statementSetAutoBatchDmlUpdateCountVerification(Boolean verification);
+
+  StatementResult statementShowAutoBatchDmlUpdateCountVerification();
 }

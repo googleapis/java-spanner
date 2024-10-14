@@ -85,7 +85,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
    */
   private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 50;
 
-  ITConnection createConnection() {
+  protected ITConnection createConnection() {
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
             .setUri(getBaseUrl() + ";trackSessionLeaks=false")
