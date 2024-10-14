@@ -752,10 +752,9 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
-  
+
   @Test
-  public void testAbortedReadWriteTxnUsesPreviousTxnIdOnRetryWithInlineBegin()
-      throws InterruptedException {
+  public void testAbortedReadWriteTxnUsesPreviousTxnIdOnRetryWithInlineBegin() {
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
@@ -763,7 +762,6 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-    Thread.sleep(10000);
     TransactionRunner runner = client.readWriteTransaction();
     AtomicReference<ByteString> validTransactionId = new AtomicReference<>();
     runner.run(
@@ -840,10 +838,9 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
             .getReadWrite()
             .getMultiplexedSessionPreviousTransactionId());
   }
-  
+
   @Test
-  public void testAbortedReadWriteTxnUsesPreviousTxnIdOnRetryWithExplicitBegin()
-      throws InterruptedException {
+  public void testAbortedReadWriteTxnUsesPreviousTxnIdOnRetryWithExplicitBegin() {
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
@@ -851,7 +848,6 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-    Thread.sleep(10000);
     TransactionRunner runner = client.readWriteTransaction();
     AtomicReference<ByteString> validTransactionId = new AtomicReference<>();
     Long updateCount =
