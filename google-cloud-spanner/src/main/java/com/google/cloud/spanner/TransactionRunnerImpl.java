@@ -429,6 +429,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             }
             requestBuilder.setRequestOptions(requestOptionsBuilder.build());
           }
+          if (session.getIsMultiplexed() && getLatestPrecommitToken() != null) {
+            // Set the precommit token in the CommitRequest for multiplexed sessions.
+            requestBuilder.setPrecommitToken(getLatestPrecommitToken());
+          }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture;
