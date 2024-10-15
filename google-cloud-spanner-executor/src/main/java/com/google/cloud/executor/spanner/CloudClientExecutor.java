@@ -907,9 +907,7 @@ public class CloudClientExecutor extends CloudExecutor {
             Thread.sleep(sleepDuration);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // Handle interruption
-            LOGGER.log(
-                Level.INFO,
-                String.format("Thread interrupted."));
+            LOGGER.log(Level.INFO, String.format("Thread interrupted."));
             return false; // Return false if interrupted
           }
           return isExportedEndToEndTraceValid(traceId);
