@@ -54,6 +54,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.ListSessionsRequest;
 import com.google.spanner.v1.ListSessionsResponse;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Partition;
 import com.google.spanner.v1.PartitionOptions;
@@ -197,10 +198,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private boolean hasNext;
     private boolean first = true;
     private int currentRow = 0;
+    private boolean isMultiplexedSession = false;
 
-    private PartialResultSetsIterator(ResultSet resultSet) {
+    private PartialResultSetsIterator(ResultSet resultSet, boolean isMultiplexedSession) {
       this.resultSet = resultSet;
       this.hasNext = true;
+      this.isMultiplexedSession = isMultiplexedSession;
     }
 
     @Override
@@ -227,6 +230,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       }
       builder.setResumeToken(ByteString.copyFromUtf8(String.format("%09d", currentRow)));
       hasNext = currentRow < resultSet.getRowsCount();
+      if (this.isMultiplexedSession) {
+        builder.setPrecommitToken(getPartialResultSetPrecommitToken());
+      }
       return builder.build();
     }
 
@@ -1020,7 +1026,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           throw result.getException();
         case RESULT_SET:
           returnResultSet(
-              result.getResultSet(), transactionId, request.getTransaction(), responseObserver);
+              result.getResultSet(),
+              transactionId,
+              request.getTransaction(),
+              responseObserver,
+              session);
           break;
         case UPDATE_COUNT:
           if (isPartitionedDmlTransaction(transactionId)) {
@@ -1033,7 +1043,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                             .build())
                     .build());
           } else {
-            responseObserver.onNext(
+            ResultSet.Builder resultSetBuilder =
                 ResultSet.newBuilder()
                     .setStats(
                         ResultSetStats.newBuilder()
@@ -1045,8 +1055,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                                 ignoreNextInlineBeginRequest.getAndSet(false)
                                     ? Transaction.getDefaultInstance()
                                     : Transaction.newBuilder().setId(transactionId).build())
-                            .build())
-                    .build());
+                            .build());
+            if (session.getMultiplexed()) {
+              resultSetBuilder.setPrecommitToken(getResultSetPrecommitToken());
+            }
+            responseObserver.onNext(resultSetBuilder.build());
           }
           break;
         default:
@@ -1064,7 +1077,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       ResultSet resultSet,
       ByteString transactionId,
       TransactionSelector transactionSelector,
-      StreamObserver<ResultSet> responseObserver) {
+      StreamObserver<ResultSet> responseObserver,
+      Session session) {
     ResultSetMetadata metadata = resultSet.getMetadata();
     if (transactionId != null) {
       metadata =
@@ -1080,6 +1094,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       metadata = metadata.toBuilder().setTransaction(transaction).build();
     }
     resultSet = resultSet.toBuilder().setMetadata(metadata).build();
+    if (session.getMultiplexed()) {
+      resultSet = resultSet.toBuilder().setPrecommitToken(getResultSetPrecommitToken()).build();
+    }
     responseObserver.onNext(resultSet);
   }
 
@@ -1174,6 +1191,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 .build());
       }
       builder.setStatus(status);
+      if (session.getMultiplexed()) {
+        builder.setPrecommitToken(getExecuteBatchDmlResponsePrecommitToken());
+      }
       responseObserver.onNext(builder.build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
@@ -1242,7 +1262,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               transactionId,
               request.getTransaction(),
               responseObserver,
-              getExecuteStreamingSqlExecutionTime());
+              getExecuteStreamingSqlExecutionTime(),
+              session.getMultiplexed());
           break;
         case UPDATE_COUNT:
           if (isPartitioned) {
@@ -1612,7 +1633,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               cols);
       StatementResult res = getResult(statement);
       returnResultSet(
-          res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
+          res.getResultSet(), transactionId, request.getTransaction(), responseObserver, session);
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
       responseObserver.onError(e);
@@ -1670,7 +1691,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           transactionId,
           request.getTransaction(),
           responseObserver,
-          getStreamingReadExecutionTime());
+          getStreamingReadExecutionTime(),
+          session.getMultiplexed());
     } catch (StatusRuntimeException e) {
       responseObserver.onError(e);
     } catch (Throwable t) {
@@ -1683,7 +1705,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       ByteString transactionId,
       TransactionSelector transactionSelector,
       StreamObserver<PartialResultSet> responseObserver,
-      SimulatedExecutionTime executionTime)
+      SimulatedExecutionTime executionTime,
+      boolean isMultiplexedSession)
       throws Exception {
     ResultSetMetadata metadata = resultSet.getMetadata();
     if (transactionId == null) {
@@ -1700,7 +1723,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               .build();
     }
     resultSet = resultSet.toBuilder().setMetadata(metadata).build();
-    PartialResultSetsIterator iterator = new PartialResultSetsIterator(resultSet);
+    PartialResultSetsIterator iterator =
+        new PartialResultSetsIterator(resultSet, isMultiplexedSession);
     long index = 0L;
     while (iterator.hasNext()) {
       SimulatedExecutionTime.checkStreamException(
@@ -2446,5 +2470,24 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       return sessions.get(name);
     }
     return null;
+  }
+
+  static MultiplexedSessionPrecommitToken getResultSetPrecommitToken() {
+    return getPrecommitToken("ResultSetPrecommitToken", 1);
+  }
+
+  static MultiplexedSessionPrecommitToken getPartialResultSetPrecommitToken() {
+    return getPrecommitToken("PartialResultSetPrecommitToken", 3);
+  }
+
+  static MultiplexedSessionPrecommitToken getExecuteBatchDmlResponsePrecommitToken() {
+    return getPrecommitToken("ExecuteBatchDmlResponsePrecommitToken", 2);
+  }
+
+  static MultiplexedSessionPrecommitToken getPrecommitToken(String value, int seqNo) {
+    return MultiplexedSessionPrecommitToken.newBuilder()
+        .setPrecommitToken(ByteString.copyFromUtf8(value))
+        .setSeqNum(seqNo)
+        .build();
   }
 }
