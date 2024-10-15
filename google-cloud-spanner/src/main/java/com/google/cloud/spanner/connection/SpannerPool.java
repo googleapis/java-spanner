@@ -156,6 +156,7 @@ public class SpannerPool {
     private final String userAgent;
     private final String databaseRole;
     private final boolean routeToLeader;
+    private final boolean enableEndToEndTracing;
     private final boolean useVirtualGrpcTransportThreads;
     private final OpenTelemetry openTelemetry;
     private final Boolean enableExtendedTracing;
@@ -186,6 +187,7 @@ public class SpannerPool {
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();
       this.routeToLeader = options.isRouteToLeader();
+      this.enableEndToEndTracing = options.enableEndToEndTracing();
       this.useVirtualGrpcTransportThreads = options.isUseVirtualGrpcTransportThreads();
       this.openTelemetry = options.getOpenTelemetry();
       this.enableExtendedTracing = options.isEnableExtendedTracing();
@@ -207,6 +209,7 @@ public class SpannerPool {
           && Objects.equals(this.usePlainText, other.usePlainText)
           && Objects.equals(this.userAgent, other.userAgent)
           && Objects.equals(this.routeToLeader, other.routeToLeader)
+          && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing)
           && Objects.equals(
               this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
           && Objects.equals(this.openTelemetry, other.openTelemetry)
@@ -226,6 +229,7 @@ public class SpannerPool {
           this.databaseRole,
           this.userAgent,
           this.routeToLeader,
+          this.enableEndToEndTracing,
           this.useVirtualGrpcTransportThreads,
           this.openTelemetry,
           this.enableExtendedTracing,
@@ -379,6 +383,9 @@ public class SpannerPool {
     }
     if (!options.isRouteToLeader()) {
       builder.disableLeaderAwareRouting();
+    }
+    if (options.enableEndToEndTracing()) {
+      builder.setEnableEndToEndTracing(true);
     }
     if (key.usePlainText) {
       // Credentials may not be sent over a plain text channel.

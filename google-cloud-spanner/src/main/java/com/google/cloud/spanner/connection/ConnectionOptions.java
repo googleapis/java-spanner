@@ -26,6 +26,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.DATABASE_
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIALECT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_API_TRACING;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_END_TO_END_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENCODED_CREDENTIALS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENDPOINT;
@@ -239,6 +240,7 @@ public class ConnectionOptions {
   static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   static final boolean DEFAULT_LENIENT = false;
   static final boolean DEFAULT_ROUTE_TO_LEADER = true;
+  static final boolean DEFAULT_ENABLE_END_TO_END_TRACING = false;
   static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
   static final boolean DEFAULT_KEEP_TRANSACTION_ALIVE = false;
   static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
@@ -267,6 +269,7 @@ public class ConnectionOptions {
   /** Name of the 'routeToLeader' connection property. */
   public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
   /** Name of the 'retry aborts internally' connection property. */
+  public static final String ENABLE_END_TO_END_TRACING_PROPERTY_NAME = "enableEndToEndTracing";
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
   /** Name of the property to enable/disable virtual threads for the statement executor. */
   public static final String USE_VIRTUAL_THREADS_PROPERTY_NAME = "useVirtualThreads";
@@ -382,6 +385,10 @@ public class ConnectionOptions {
                       ROUTE_TO_LEADER_PROPERTY_NAME,
                       "Should read/write transactions and partitioned DML be routed to leader region (true/false)",
                       DEFAULT_ROUTE_TO_LEADER),
+                  ConnectionProperty.createBooleanProperty(
+                      ENABLE_END_TO_END_TRACING_PROPERTY_NAME,
+                      "Should we enable end to end tracing (true/false)",
+                      DEFAULT_ENABLE_END_TO_END_TRACING),
                   ConnectionProperty.createBooleanProperty(
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
                       "Should the connection automatically retry Aborted errors (true/false)",
@@ -1203,6 +1210,13 @@ public class ConnectionOptions {
    */
   public boolean isRouteToLeader() {
     return getInitialConnectionPropertyValue(ROUTE_TO_LEADER);
+  }
+
+  /**
+   * Whether end-to-end tracing is enabled.
+   */
+  public boolean enableEndToEndTracing() {
+    return getInitialConnectionPropertyValue(ENABLE_END_TO_END_TRACING);
   }
 
   /**
