@@ -238,6 +238,74 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
         : requestOptions_;
   }
 
+  public static final int MUTATION_KEY_FIELD_NUMBER = 4;
+  private com.google.spanner.v1.Mutation mutationKey_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Required for read-write transactions on a multiplexed session
+   * that commit mutations but do not perform any reads or queries. Clients
+   * should randomly select one of the mutations from the mutation set and send
+   * it as a part of this request.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the mutationKey field is set.
+   */
+  @java.lang.Override
+  public boolean hasMutationKey() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Required for read-write transactions on a multiplexed session
+   * that commit mutations but do not perform any reads or queries. Clients
+   * should randomly select one of the mutations from the mutation set and send
+   * it as a part of this request.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The mutationKey.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.Mutation getMutationKey() {
+    return mutationKey_ == null
+        ? com.google.spanner.v1.Mutation.getDefaultInstance()
+        : mutationKey_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Required for read-write transactions on a multiplexed session
+   * that commit mutations but do not perform any reads or queries. Clients
+   * should randomly select one of the mutations from the mutation set and send
+   * it as a part of this request.
+   * This feature is not yet supported and will result in an UNIMPLEMENTED
+   * error.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.MutationOrBuilder getMutationKeyOrBuilder() {
+    return mutationKey_ == null
+        ? com.google.spanner.v1.Mutation.getDefaultInstance()
+        : mutationKey_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -261,6 +329,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(3, getRequestOptions());
     }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      output.writeMessage(4, getMutationKey());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -278,6 +349,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getRequestOptions());
+    }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getMutationKey());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -304,6 +378,10 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
+    if (hasMutationKey() != other.hasMutationKey()) return false;
+    if (hasMutationKey()) {
+      if (!getMutationKey().equals(other.getMutationKey())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -324,6 +402,10 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (hasRequestOptions()) {
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
+    }
+    if (hasMutationKey()) {
+      hash = (37 * hash) + MUTATION_KEY_FIELD_NUMBER;
+      hash = (53 * hash) + getMutationKey().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -468,6 +550,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
         getOptionsFieldBuilder();
         getRequestOptionsFieldBuilder();
+        getMutationKeyFieldBuilder();
       }
     }
 
@@ -485,6 +568,11 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       if (requestOptionsBuilder_ != null) {
         requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
+      }
+      mutationKey_ = null;
+      if (mutationKeyBuilder_ != null) {
+        mutationKeyBuilder_.dispose();
+        mutationKeyBuilder_ = null;
       }
       return this;
     }
@@ -534,6 +622,11 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
         result.requestOptions_ =
             requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
         to_bitField0_ |= 0x00000002;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.mutationKey_ =
+            mutationKeyBuilder_ == null ? mutationKey_ : mutationKeyBuilder_.build();
+        to_bitField0_ |= 0x00000004;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -594,6 +687,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
       }
+      if (other.hasMutationKey()) {
+        mergeMutationKey(other.getMutationKey());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -638,6 +734,12 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
                 bitField0_ |= 0x00000004;
                 break;
               } // case 26
+            case 34:
+              {
+                input.readMessage(getMutationKeyFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1195,6 +1297,245 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
         requestOptions_ = null;
       }
       return requestOptionsBuilder_;
+    }
+
+    private com.google.spanner.v1.Mutation mutationKey_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.Mutation,
+            com.google.spanner.v1.Mutation.Builder,
+            com.google.spanner.v1.MutationOrBuilder>
+        mutationKeyBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the mutationKey field is set.
+     */
+    public boolean hasMutationKey() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The mutationKey.
+     */
+    public com.google.spanner.v1.Mutation getMutationKey() {
+      if (mutationKeyBuilder_ == null) {
+        return mutationKey_ == null
+            ? com.google.spanner.v1.Mutation.getDefaultInstance()
+            : mutationKey_;
+      } else {
+        return mutationKeyBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setMutationKey(com.google.spanner.v1.Mutation value) {
+      if (mutationKeyBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        mutationKey_ = value;
+      } else {
+        mutationKeyBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setMutationKey(com.google.spanner.v1.Mutation.Builder builderForValue) {
+      if (mutationKeyBuilder_ == null) {
+        mutationKey_ = builderForValue.build();
+      } else {
+        mutationKeyBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeMutationKey(com.google.spanner.v1.Mutation value) {
+      if (mutationKeyBuilder_ == null) {
+        if (((bitField0_ & 0x00000008) != 0)
+            && mutationKey_ != null
+            && mutationKey_ != com.google.spanner.v1.Mutation.getDefaultInstance()) {
+          getMutationKeyBuilder().mergeFrom(value);
+        } else {
+          mutationKey_ = value;
+        }
+      } else {
+        mutationKeyBuilder_.mergeFrom(value);
+      }
+      if (mutationKey_ != null) {
+        bitField0_ |= 0x00000008;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearMutationKey() {
+      bitField0_ = (bitField0_ & ~0x00000008);
+      mutationKey_ = null;
+      if (mutationKeyBuilder_ != null) {
+        mutationKeyBuilder_.dispose();
+        mutationKeyBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.Mutation.Builder getMutationKeyBuilder() {
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return getMutationKeyFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.MutationOrBuilder getMutationKeyOrBuilder() {
+      if (mutationKeyBuilder_ != null) {
+        return mutationKeyBuilder_.getMessageOrBuilder();
+      } else {
+        return mutationKey_ == null
+            ? com.google.spanner.v1.Mutation.getDefaultInstance()
+            : mutationKey_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Required for read-write transactions on a multiplexed session
+     * that commit mutations but do not perform any reads or queries. Clients
+     * should randomly select one of the mutations from the mutation set and send
+     * it as a part of this request.
+     * This feature is not yet supported and will result in an UNIMPLEMENTED
+     * error.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation mutation_key = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.Mutation,
+            com.google.spanner.v1.Mutation.Builder,
+            com.google.spanner.v1.MutationOrBuilder>
+        getMutationKeyFieldBuilder() {
+      if (mutationKeyBuilder_ == null) {
+        mutationKeyBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.Mutation,
+                com.google.spanner.v1.Mutation.Builder,
+                com.google.spanner.v1.MutationOrBuilder>(
+                getMutationKey(), getParentForChildren(), isClean());
+        mutationKey_ = null;
+      }
+      return mutationKeyBuilder_;
     }
 
     @java.lang.Override

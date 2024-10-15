@@ -66,6 +66,24 @@ interface UnitOfWork {
     }
   }
 
+  /**
+   * Callback for end-of-transaction methods. This is used to commit or rollback connection state
+   * after an async commit/rollback of a database transaction.
+   */
+  interface EndTransactionCallback {
+    /**
+     * This method will be called if the end-of-transaction method (commit or rollback) finished
+     * successfully, but before the {@link ApiFuture} that is returned by the method is done.
+     */
+    void onSuccess();
+
+    /**
+     * This method will be called if the end-of-transaction method (commit or rollback) failed, but
+     * before the {@link ApiFuture} that is returned by the method is done.
+     */
+    void onFailure();
+  }
+
   /** Cancel the currently running statement (if any and the statement may be cancelled). */
   void cancel();
 
@@ -90,9 +108,10 @@ interface UnitOfWork {
    * a {@link Type#BATCH}.
    *
    * @param callType Indicates whether the top-level call is a sync or async call.
+   * @param callback Callback that should be called when the commit succeeded or failed.
    * @return An {@link ApiFuture} that is done when the commit has finished.
    */
-  ApiFuture<Void> commitAsync(CallType callType);
+  ApiFuture<Void> commitAsync(@Nonnull CallType callType, @Nonnull EndTransactionCallback callback);
 
   /**
    * Rollbacks any changes in this unit of work. For read-only transactions, this only closes the
@@ -100,9 +119,11 @@ interface UnitOfWork {
    * Type#BATCH}.
    *
    * @param callType Indicates whether the top-level call is a sync or async call.
+   * @param callback Callback that should be called when the rollback succeeded or failed.
    * @return An {@link ApiFuture} that is done when the rollback has finished.
    */
-  ApiFuture<Void> rollbackAsync(CallType callType);
+  ApiFuture<Void> rollbackAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback);
 
   /** @see Connection#savepoint(String) */
   void savepoint(@Nonnull String name, @Nonnull Dialect dialect);

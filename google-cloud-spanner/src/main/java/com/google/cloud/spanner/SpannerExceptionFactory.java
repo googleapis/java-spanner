@@ -31,6 +31,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
 
@@ -116,6 +117,13 @@ public final class SpannerExceptionFactory {
     return new SpannerBatchUpdateException(token, code, message, updateCounts);
   }
 
+  /** Constructs a specific error that */
+  public static DmlBatchUpdateCountVerificationFailedException
+      newDmlBatchUpdateCountVerificationFailedException(long[] expected, long[] actual) {
+    return new DmlBatchUpdateCountVerificationFailedException(
+        DoNotConstructDirectly.ALLOWED, expected, actual);
+  }
+
   /**
    * Constructs a specific aborted exception that should only be thrown by a connection after an
    * internal retry aborted due to concurrent modifications.
@@ -179,6 +187,15 @@ public final class SpannerExceptionFactory {
       return newSpannerExceptionForCancellation(context, cause);
     }
     return newSpannerException(ErrorCode.fromGrpcStatus(status), cause.getMessage(), cause);
+  }
+
+  public static RuntimeException causeAsRunTimeException(ExecutionException executionException) {
+    // Propagate the underlying exception as a RuntimeException (SpannerException is also a
+    // RuntimeException).
+    if (executionException.getCause() instanceof RuntimeException) {
+      throw (RuntimeException) executionException.getCause();
+    }
+    throw asSpannerException(executionException.getCause());
   }
 
   /**
