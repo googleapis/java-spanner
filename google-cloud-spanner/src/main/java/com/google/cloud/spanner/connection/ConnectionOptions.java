@@ -270,6 +270,7 @@ public class ConnectionOptions {
   public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
   /** Name of the 'retry aborts internally' connection property. */
   public static final String ENABLE_END_TO_END_TRACING_PROPERTY_NAME = "enableEndToEndTracing";
+
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
   /** Name of the property to enable/disable virtual threads for the statement executor. */
   public static final String USE_VIRTUAL_THREADS_PROPERTY_NAME = "useVirtualThreads";
@@ -1212,9 +1213,7 @@ public class ConnectionOptions {
     return getInitialConnectionPropertyValue(ROUTE_TO_LEADER);
   }
 
-  /**
-   * Whether end-to-end tracing is enabled.
-   */
+  /** Whether end-to-end tracing is enabled. */
   public boolean enableEndToEndTracing() {
     return getInitialConnectionPropertyValue(ENABLE_END_TO_END_TRACING);
   }

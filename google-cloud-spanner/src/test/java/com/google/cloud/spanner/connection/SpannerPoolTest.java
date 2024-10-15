@@ -574,13 +574,15 @@ public class SpannerPoolTest {
     SpannerPoolKey keyWithApiTracingEnabled =
         SpannerPoolKey.of(
             ConnectionOptions.newBuilder()
-                .setUri("cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=true")
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=true")
                 .setCredentials(NoCredentials.getInstance())
                 .build());
     SpannerPoolKey keyWithApiTracingDisabled =
         SpannerPoolKey.of(
             ConnectionOptions.newBuilder()
-                .setUri("cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=false")
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=false")
                 .setCredentials(NoCredentials.getInstance())
                 .build());
 
@@ -592,14 +594,16 @@ public class SpannerPoolTest {
         keyWithApiTracingEnabled,
         SpannerPoolKey.of(
             ConnectionOptions.newBuilder()
-                .setUri("cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=true")
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=true")
                 .setCredentials(NoCredentials.getInstance())
                 .build()));
     assertEquals(
         keyWithApiTracingDisabled,
         SpannerPoolKey.of(
             ConnectionOptions.newBuilder()
-                .setUri("cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=false")
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=false")
                 .setCredentials(NoCredentials.getInstance())
                 .build()));
     assertEquals(
