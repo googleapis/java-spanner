@@ -176,7 +176,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -768,7 +770,7 @@ public class CloudClientExecutor extends CloudExecutor {
           new ThreadFactoryBuilder().setNameFormat("action-pool-%d").build());
 
   // Thread pool to verify end to end traces.
-  private static final Executor endToEndTracesThreadPool =
+  private static final ExecutorService endToEndTracesThreadPool =
       Executors.newCachedThreadPool(
           new ThreadFactoryBuilder().setNameFormat("end-to-end-traces-pool-%d").build());
 
@@ -891,23 +893,27 @@ public class CloudClientExecutor extends CloudExecutor {
     return traceServiceClient;
   }
 
-  /* Handles verification of end to end traces */
-  public Status startVerificationOfEndToEndTrace(
-      String traceId, ExecutionFlowContext executionContext) {
-    endToEndTracesThreadPool.execute(
+  public Future<Boolean> getEndToEndTraceVerificationTask(String traceId) {
+    return endToEndTracesThreadPool.submit(
         () -> {
-          boolean isValidTrace = isExportedEndToEndTraceValid(traceId);
-          if (!isValidTrace) {
-            LOGGER.log(Level.WARNING, String.format("traceId:%s failed to be verified.", traceId));
-            executionContext.onError(
-                Status.INTERNAL
-                    .withDescription(
-                        String.format(
-                            "failed to verify end to end trace for trace_id: %s", traceId))
-                    .getCause());
+          try {
+            // Wait for 10 seconds before verifying to ensure traces are exported.
+            long sleepDuration = TimeUnit.SECONDS.toMillis(10);
+            LOGGER.log(
+                Level.INFO,
+                String.format(
+                    "Sleeping for %d milliseconds before verifying end to end trace",
+                    sleepDuration));
+            Thread.sleep(sleepDuration);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Handle interruption
+            LOGGER.log(
+                Level.INFO,
+                String.format("Thread interrupted."));
+            return false; // Return false if interrupted
           }
+          return isExportedEndToEndTraceValid(traceId);
         });
-    return Status.OK;
   }
 
   private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
@@ -924,7 +930,8 @@ public class CloudClientExecutor extends CloudExecutor {
       Trace trace = getTraceServiceClient().getTrace(getTraceRequest);
       boolean readWriteOrReadOnlyTxnPresent = false, spannerServerSideSpanPresent = false;
       for (TraceSpan span : trace.getSpansList()) {
-        if (span.getName() == READ_ONLY_TRANSACTION || span.getName() == READ_WRITE_TRANSACTION) {
+        if (span.getName().contains(READ_ONLY_TRANSACTION)
+            || span.getName().contains(READ_WRITE_TRANSACTION)) {
           readWriteOrReadOnlyTxnPresent = true;
         }
         if (span.getName().startsWith("Spanner.")) {
@@ -934,8 +941,8 @@ public class CloudClientExecutor extends CloudExecutor {
       if (readWriteOrReadOnlyTxnPresent && !spannerServerSideSpanPresent) {
         return false;
       }
-    } catch (IOException e) {
-      LOGGER.log(Level.WARNING, "failed to verify end to end traces.", e);
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Failed to verify end to end trace.", e);
       return false;
     }
     return true;

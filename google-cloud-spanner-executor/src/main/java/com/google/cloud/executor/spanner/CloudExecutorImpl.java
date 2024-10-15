@@ -29,6 +29,7 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -136,19 +137,44 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
 
       @Override
       public void onCompleted() {
+        // Close the scope and end the span.
+        scope.close();
+        span.end();
         if (isSampled
             && getCloudTraceCheckCount() < MAX_CLOUD_TRACE_CHECK_LIMIT
             && requestHasReadOrQueryAction.get()) {
-          LOGGER.log(
-              Level.WARNING, String.format("traceId:%s will be verified for e2e tracing", traceId));
-          incrementCloudTraceCheckCount();
-          clientExecutor.startVerificationOfEndToEndTrace(traceId, executionContext);
+          Future<Boolean> traceVerificationTask =
+              clientExecutor.getEndToEndTraceVerificationTask(traceId);
+          try {
+            LOGGER.log(
+                Level.INFO,
+                String.format("Starting end to end trace verification for trace_id:%s", traceId));
+            Boolean isValidTrace = traceVerificationTask.get();
+            incrementCloudTraceCheckCount();
+            if (!isValidTrace) {
+              executionContext.onError(
+                  Status.INTERNAL
+                      .withDescription(
+                          String.format(
+                              "failed to verify end to end trace for trace_id: %s", traceId))
+                      .getCause());
+              executionContext.cleanup();
+              return;
+            }
+          } catch (Exception e) {
+            LOGGER.log(
+                Level.WARNING,
+                String.format(
+                    "Failed to verify end to end trace with exception: %s\n", e.getMessage()),
+                e);
+            executionContext.onError(e);
+            executionContext.cleanup();
+            return;
+          }
         }
         LOGGER.log(Level.INFO, "Client called Done, half closed");
         executionContext.cleanup();
         responseObserver.onCompleted();
-        scope.close();
-        span.end();
       }
     };
   }
