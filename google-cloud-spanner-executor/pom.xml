@@ -45,7 +45,7 @@
     <dependency>
       <groupId>com.google.cloud.opentelemetry</groupId>
       <artifactId>exporter-trace</artifactId>
-      <version>0.31.0</version>
+      <version>0.32.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
@@ -54,7 +54,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-trace</artifactId>
-      <version>2.51.0</version>
+      <version>2.52.0</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
@@ -127,7 +127,7 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-trace-v1</artifactId>
-      <version>2.51.0</version>
+      <version>2.52.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
