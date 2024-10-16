@@ -610,7 +610,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
 
-  // Stores latest sequence number required for precommit token.
+  // Stores the latest sequence number needed for the precommit token.
+  // The transaction entry is created only if the transaction is read-write and executed on a
+  // multiplexed session.
   private static ConcurrentMap<ByteString, AtomicInteger> transactionSequenceNo =
       new ConcurrentHashMap<>();
   private int maxNumSessionsInOneBatch = 100;

@@ -926,7 +926,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
             .getReadWrite()
             .getMultiplexedSessionPreviousTransactionId());
   }
-  
+
   @Test
   public void testPrecommitTokenForResultSet() {
     // This test verifies that the precommit token received from the ResultSet is properly tracked
