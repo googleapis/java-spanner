@@ -564,6 +564,58 @@ public class SpannerPoolTest {
   }
 
   @Test
+  public void testEnableEndToEndTracing() {
+    SpannerPoolKey keyWithoutApiTracingConfig =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithApiTracingEnabled =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=true")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithApiTracingDisabled =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=false")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+
+    assertNotEquals(keyWithoutApiTracingConfig, keyWithApiTracingEnabled);
+    assertEquals(keyWithoutApiTracingConfig, keyWithApiTracingDisabled);
+    assertNotEquals(keyWithApiTracingEnabled, keyWithApiTracingDisabled);
+
+    assertEquals(
+        keyWithApiTracingEnabled,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=true")
+                .setCredentials(NoCredentials.getInstance())
+                .build()));
+    assertEquals(
+        keyWithApiTracingDisabled,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableEndToEndTracing=false")
+                .setCredentials(NoCredentials.getInstance())
+                .build()));
+    assertEquals(
+        keyWithoutApiTracingConfig,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+                .setCredentials(NoCredentials.getInstance())
+                .build()));
+  }
+
+  @Test
   public void testOpenTelemetry() {
     SpannerPool pool = createSubjectAndMocks();
     Spanner spanner1;

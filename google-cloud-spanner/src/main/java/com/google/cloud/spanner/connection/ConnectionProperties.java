@@ -39,6 +39,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATA
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DDL_IN_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_API_TRACING;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_END_TO_END_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENDPOINT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_KEEP_TRANSACTION_ALIVE;
@@ -65,6 +66,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_USE_
 import static com.google.cloud.spanner.connection.ConnectionOptions.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DIALECT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_API_TRACING_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_END_TO_END_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_EXTENDED_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENCODED_CREDENTIALS_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENDPOINT_PROPERTY_NAME;
@@ -255,6 +257,13 @@ class ConnectionProperties {
           ROUTE_TO_LEADER_PROPERTY_NAME,
           "Should read/write transactions and partitioned DML be routed to leader region (true/false)",
           DEFAULT_ROUTE_TO_LEADER,
+          BooleanConverter.INSTANCE,
+          Context.STARTUP);
+  static final ConnectionProperty<Boolean> ENABLE_END_TO_END_TRACING =
+      create(
+          ENABLE_END_TO_END_TRACING_PROPERTY_NAME,
+          "Should we enable end to end tracing (true/false)",
+          DEFAULT_ENABLE_END_TO_END_TRACING,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_VIRTUAL_THREADS =
