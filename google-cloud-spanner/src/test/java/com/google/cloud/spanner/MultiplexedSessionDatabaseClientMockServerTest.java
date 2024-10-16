@@ -858,12 +858,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   @Test
   public void testTxnTracksPrecommitTokenWithLatestSeqNo() {
     // This test ensures that the read-write transaction tracks the precommit token with the
-    // highest sequence number (in this case, PartialResultSetPrecommitToken) and sets it in the
-    // CommitRequest.
-    // ResultSetPrecommitToken                -> Seq no 1
-    // ExecuteBatchDmlResponsePrecommitToken  -> Seq no 2
-    // PartialResultSetPrecommitToken         -> Seq no 3
-
+    // highest sequence number and sets it in the CommitRequest.
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
@@ -871,29 +866,29 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
         .readWriteTransaction()
         .run(
             transaction -> {
-              // Returns a ResultSet containing the precommit token (ResultSetPrecommitToken) with
-              // Seq no 1
+              // Returns a ResultSet containing the precommit token (ResultSetPrecommitToken)
               transaction.executeUpdate(UPDATE_STATEMENT);
 
               // Returns a PartialResultSet containing the precommit token
-              // (PartialResultSetPrecommitToken) with Seq no 3
+              // (PartialResultSetPrecommitToken)
               ResultSet resultSet = transaction.executeQuery(STATEMENT);
               //noinspection StatementWithEmptyBody
               while (resultSet.next()) {
                 // ignore
               }
 
-              // Returns a ExecuteBatchDmlResponse containing the precommit token
-              // (ExecuteBatchDmlResponsePrecommitToken) with Seq no 2
+              // Returns an ExecuteBatchDmlResponse containing the precommit token
+              // (ExecuteBatchDmlResponsePrecommitToken).
+              // Since this is the last request received by the mock Spanner, it should be the most
+              // recent precommit token tracked by the transaction context.
               transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
 
               // Verify that the latest precommit token with highest sequence number is tracked in
-              // the
-              // transaction context.
+              // the transaction context.
               TransactionContextImpl impl = (TransactionContextImpl) transaction;
               assertNotNull(impl.getLatestPrecommitToken());
               assertEquals(
-                  ByteString.copyFromUtf8("PartialResultSetPrecommitToken"),
+                  ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
                   impl.getLatestPrecommitToken().getPrecommitToken());
               return null;
             });
@@ -904,7 +899,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
     assertNotNull(commitRequests.get(0).getPrecommitToken());
     assertEquals(
-        ByteString.copyFromUtf8("PartialResultSetPrecommitToken"),
+        ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
         commitRequests.get(0).getPrecommitToken().getPrecommitToken());
   }
 
