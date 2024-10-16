@@ -385,7 +385,7 @@ public class TransactionManagerImplTest {
     assertThrows(AbortedException.class, () -> manager.commit());
 
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
-    txn.previousTransactionId = mockTransactionId;
+    when(txn.getPreviousTransactionId()).thenReturn(mockTransactionId);
     when(session.newTransaction(Options.fromTransactionOptions(), mockTransactionId))
         .thenReturn(txn);
     when(session.getIsMultiplexed()).thenReturn(true);

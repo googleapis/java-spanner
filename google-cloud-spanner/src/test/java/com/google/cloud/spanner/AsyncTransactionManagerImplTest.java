@@ -99,7 +99,7 @@ public class AsyncTransactionManagerImplTest {
 
       // Mock the transaction object to contain transactionID=null and
       // previousTransactionId=mockPreviousTransactionId
-      transaction.previousTransactionId = mockPreviousTransactionId;
+      when(transaction.getPreviousTransactionId()).thenReturn(mockPreviousTransactionId);
       manager.resetForRetryAsync();
       // Verify that in the first retry attempt, the `previousTransactionId`
       // (mockPreviousTransactionId) is passed to the new transaction.

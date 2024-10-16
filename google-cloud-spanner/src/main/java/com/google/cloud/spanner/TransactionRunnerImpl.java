@@ -209,7 +209,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     volatile ByteString transactionId;
 
-    ByteString previousTransactionId;
+    final ByteString previousTransactionId;
 
     private CommitResponse commitResponse;
     private final Clock clock;
@@ -257,6 +257,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
+    ByteString getPreviousTransactionId() {
+      return this.previousTransactionId;
+    }
+
     @Override
     public void close() {
       // Only mark the context as closed, but do not end the tracer span, as that is done by the
@@ -295,7 +299,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       span.addAnnotation("Creating Transaction");
       final ApiFuture<ByteString> fut =
           session.beginTransactionAsync(
-              options, isRouteToLeader(), getTransactionChannelHint(), previousTransactionId);
+              options, isRouteToLeader(), getTransactionChannelHint(), getPreviousTransactionId());
       fut.addListener(
           () -> {
             try {
@@ -571,7 +575,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           if (tx == null) {
             return TransactionSelector.newBuilder()
                 .setBegin(
-                    SessionImpl.createReadWriteTransactionOptions(options, previousTransactionId))
+                    SessionImpl.createReadWriteTransactionOptions(
+                        options, getPreviousTransactionId()))
                 .build();
           } else {
             // Wait for the transaction to come available. The tx.get() call will fail with an
@@ -1138,7 +1143,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               // Use the current transactionId if available, otherwise fallback to the previous
               // transactionId.
               multiplexedSessionPreviousTransactionId =
-                  txn.transactionId != null ? txn.transactionId : txn.previousTransactionId;
+                  txn.transactionId != null ? txn.transactionId : txn.getPreviousTransactionId();
             }
 
             txn =

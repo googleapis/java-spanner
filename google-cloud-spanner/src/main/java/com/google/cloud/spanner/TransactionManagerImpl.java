@@ -110,7 +110,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
         // Use the current transactionId if available, otherwise fallback to the previous aborted
         // transactionId.
         multiplexedSessionPreviousTransactionId =
-            txn.transactionId != null ? txn.transactionId : txn.previousTransactionId;
+            txn.transactionId != null ? txn.transactionId : txn.getPreviousTransactionId();
       }
       txn =
           session.newTransaction(
