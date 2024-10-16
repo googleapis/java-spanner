@@ -148,7 +148,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
                     .build())
             // Setting this to false so that Spanner Options does not register Metrics Tracer
             // factory again.
-            .setEnableBuiltInMetrics(false)
+            .setBuiltInMetricsEnabled(false)
             .setApiTracerFactory(metricsTracerFactory)
             .build()
             .getService();

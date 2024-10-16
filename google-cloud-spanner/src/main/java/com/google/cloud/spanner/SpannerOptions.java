@@ -820,8 +820,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
-    private boolean enableBuiltInMetrics = true;
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
+    private boolean enableBuiltInMetrics = true;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1403,10 +1403,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Sets whether to enable or disable built in metrics for Data client Operations. Built in
-     * metrics are enabled as default.
+     * Sets whether to enable or disable built in metrics for Data client operations. Built in
+     * metrics are enabled by default.
      */
-    public Builder setEnableBuiltInMetrics(boolean enableBuiltInMetrics) {
+    public Builder setBuiltInMetricsEnabled(boolean enableBuiltInMetrics) {
       this.enableBuiltInMetrics = enableBuiltInMetrics;
       return this;
     }
