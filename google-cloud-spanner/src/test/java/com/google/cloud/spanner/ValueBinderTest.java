@@ -331,6 +331,10 @@ public class ValueBinderTest {
       return Date.fromYearMonthDay(2016, 9, 15);
     }
 
+    public static Interval defaultInterval() {
+      return Interval.zeroInterval();
+    }
+
     public static boolean[] defaultBooleanArray() {
       return new boolean[] {false, true};
     }
@@ -386,6 +390,41 @@ public class ValueBinderTest {
 
     public static Iterable<Date> defaultDateIterable() {
       return Arrays.asList(Date.fromYearMonthDay(2016, 9, 15), Date.fromYearMonthDay(2016, 9, 14));
+    }
+
+    public static Interval[] defaultIntervalArray() {
+      return new Interval[] {
+        Interval.builder()
+            .setMonths(-10)
+            .setDays(-100)
+            .setMicros(-1000)
+            .setNanoFractions((short) 100)
+            .build(),
+        Interval.zeroInterval(),
+        Interval.builder()
+            .setMonths(10)
+            .setDays(100)
+            .setMicros(1000)
+            .setNanoFractions((short) 100)
+            .build()
+      };
+    }
+
+    public static Iterable<Interval> defaultIntervalIterable() {
+      return Arrays.asList(
+          Interval.builder()
+              .setMonths(-10)
+              .setDays(-100)
+              .setMicros(-1000)
+              .setNanoFractions((short) 100)
+              .build(),
+          Interval.zeroInterval(),
+          Interval.builder()
+              .setMonths(10)
+              .setDays(100)
+              .setMicros(1000)
+              .setNanoFractions((short) 100)
+              .build());
     }
 
     static Object getDefault(java.lang.reflect.Type type)

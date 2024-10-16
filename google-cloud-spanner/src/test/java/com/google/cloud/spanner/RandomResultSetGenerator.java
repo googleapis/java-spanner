@@ -43,6 +43,7 @@ public class RandomResultSetGenerator {
         Type.newBuilder().setCode(TypeCode.STRING).build(),
         Type.newBuilder().setCode(TypeCode.BYTES).build(),
         Type.newBuilder().setCode(TypeCode.DATE).build(),
+        Type.newBuilder().setCode(TypeCode.INTERVAL).build(),
         Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
@@ -71,6 +72,10 @@ public class RandomResultSetGenerator {
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
             .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
+            .build(),
+        Type.newBuilder()
+            .setCode(TypeCode.ARRAY)
+            .setArrayElementType(Type.newBuilder().setCode(TypeCode.INTERVAL))
             .build(),
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
@@ -141,6 +146,16 @@ public class RandomResultSetGenerator {
               Date.fromYearMonthDay(
                   random.nextInt(2019) + 1, random.nextInt(11) + 1, random.nextInt(28) + 1);
           builder.setStringValue(date.toString());
+          break;
+        case INTERVAL:
+          Interval interval =
+              Interval.builder()
+                  .setMonths(10)
+                  .setDays(45)
+                  .setMicros(-89)
+                  .setNanoFractions((short) 45)
+                  .build();
+          builder.setStringValue(interval.ToISO8601());
           break;
         case FLOAT64:
           builder.setNumberValue(random.nextDouble());
