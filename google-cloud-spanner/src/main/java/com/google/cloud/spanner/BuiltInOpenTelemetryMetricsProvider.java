@@ -20,6 +20,7 @@ import static com.google.cloud.opentelemetry.detection.GCPPlatformDetector.Suppo
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
@@ -83,6 +84,7 @@ final class BuiltInOpenTelemetryMetricsProvider {
     clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
     clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
     // TODO: Replace this with real value.
+    clientAttributes.put(DIRECT_PATH_ENABLED_KEY.getKey(), "false");
     clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
     clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
     String clientUid = getDefaultTaskValue();
