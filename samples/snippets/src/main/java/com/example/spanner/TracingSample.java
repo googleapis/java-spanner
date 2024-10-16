@@ -16,6 +16,8 @@
 
 package com.example.spanner;
 
+import com.google.api.MonitoredResource;
+import com.google.cloud.MetadataConfig;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ResultSet;
@@ -23,6 +25,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.spi.v1.SpannerRpcViews;
+import io.opencensus.common.Duration;
 import io.opencensus.common.Scope;
 import io.opencensus.contrib.grpc.metrics.RpcViews;
 import io.opencensus.contrib.zpages.ZPageHandlers;
@@ -32,11 +35,12 @@ import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
 import java.util.Arrays;
 
-/** This sample demonstrates how to enable opencensus tracing and stats in cloud spanner client. 
+/**
+ * This sample demonstrates how to enable opencensus tracing and stats in cloud spanner client.
  *
- * @deprecated The OpenCensus project is deprecated. Use OpenTelemetry to enable metrics 
- * and stats with cloud spanner client. 
-*/
+ * @deprecated The OpenCensus project is deprecated. Use OpenTelemetry to enable metrics and stats
+ * with cloud spanner client.
+ */
 public class TracingSample {
 
   private static final String SAMPLE_SPAN = "CloudSpannerSample";
@@ -58,7 +62,13 @@ public class TracingSample {
         .registerSpanNamesForCollection(Arrays.asList(SAMPLE_SPAN));
 
     // Installs an exporter for stack driver stats.
-    StackdriverStatsExporter.createAndRegister();
+    MonitoredResource.Builder builder = MonitoredResource.newBuilder();
+    if (MetadataConfig.getProjectId() != null) {
+      builder.putLabels("project_id", options.getProjectId());
+    }
+    builder.setType("global");
+    StackdriverStatsExporter.createAndRegisterWithProjectIdAndMonitoredResource(
+        options.getProjectId(), Duration.create(60L, 0), builder.build());
     RpcViews.registerAllGrpcViews();
     // Capture GFE Latency and GFE Header missing count.
     SpannerRpcViews.registerGfeLatencyAndHeaderMissingCountViews();
@@ -87,6 +97,9 @@ public class TracingSample {
     } finally {
       // Closes the client which will free up the resources used
       spanner.close();
+      StackdriverExporter.unregister();
+      StackdriverStatsExporter.unregister();
+      System.exit(0);
     }
   }
 }
