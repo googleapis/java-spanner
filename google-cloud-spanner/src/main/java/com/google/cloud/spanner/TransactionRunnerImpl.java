@@ -642,13 +642,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      */
     @Override
     public void onPrecommitToken(MultiplexedSessionPrecommitToken token) {
-      if (token == null) return;
+      if (token == null) {
+        return;
+      }
       synchronized (precommitTokenLock) {
         if (this.latestPrecommitToken == null
             || token.getSeqNum() > this.latestPrecommitToken.getSeqNum()) {
           this.latestPrecommitToken = token;
-          System.out.println("Updating precommit token to " + this.latestPrecommitToken);
-          txnLogger.log(Level.ALL, "Updating precommit token to " + this.latestPrecommitToken);
+          txnLogger.log(Level.FINE, "Updating precommit token to " + this.latestPrecommitToken);
         }
       }
     }
@@ -981,7 +982,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             }
           }
 
-          // TODO(sriharshach): check if we need to get precommit_token from response.getResultSets
           if (response.hasPrecommitToken()) {
             onPrecommitToken(response.getPrecommitToken());
           }

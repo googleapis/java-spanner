@@ -1093,10 +1093,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       Transaction transaction = getTemporaryTransactionOrNull(transactionSelector);
       metadata = metadata.toBuilder().setTransaction(transaction).build();
     }
-    resultSet = resultSet.toBuilder().setMetadata(metadata).build();
+    ResultSet.Builder resultSetBuilder = resultSet.toBuilder();
+    resultSetBuilder.setMetadata(metadata);
     if (session.getMultiplexed()) {
-      resultSet = resultSet.toBuilder().setPrecommitToken(getResultSetPrecommitToken()).build();
+      resultSetBuilder.setPrecommitToken(getResultSetPrecommitToken());
     }
+    resultSet = resultSetBuilder.build();
     responseObserver.onNext(resultSet);
   }
 
