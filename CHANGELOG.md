@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.79.1](https://github.com/googleapis/java-spanner/compare/v6.79.0...v6.79.1) (2024-10-16)
+
+
+### Dependencies
+
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.43.0 ([#3399](https://github.com/googleapis/java-spanner/issues/3399)) ([a755c6c](https://github.com/googleapis/java-spanner/commit/a755c6c2f44cc3eb0f5a54cd58244cebc62b7a4f))
+* Update dependency io.opentelemetry:opentelemetry-sdk-testing to v1.43.0 ([#3398](https://github.com/googleapis/java-spanner/issues/3398)) ([693243a](https://github.com/googleapis/java-spanner/commit/693243afae34610441345645f627bf199e8ddb8b))
+
 ## [6.79.0](https://github.com/googleapis/java-spanner/compare/v6.78.0...v6.79.0) (2024-10-11)
 
 
