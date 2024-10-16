@@ -20,6 +20,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.ByteString;
 
 /** Implementation of {@link TransactionManager}. */
 final class TransactionManagerImpl implements TransactionManager, SessionTransaction {
@@ -53,7 +54,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   public TransactionContext begin() {
     Preconditions.checkState(txn == null, "begin can only be called once");
     try (IScope s = tracer.withSpan(span)) {
-      txn = session.newTransaction(options);
+      txn = session.newTransaction(options, /* previousTransactionId = */ ByteString.EMPTY);
       session.setActive(this);
       txnState = TransactionState.STARTED;
       return txn;
@@ -102,7 +103,18 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     }
     try (IScope s = tracer.withSpan(span)) {
       boolean useInlinedBegin = txn.transactionId != null;
-      txn = session.newTransaction(options);
+
+      // Determine the latest transactionId when using a multiplexed session.
+      ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
+      if (session.getIsMultiplexed()) {
+        // Use the current transactionId if available, otherwise fallback to the previous aborted
+        // transactionId.
+        multiplexedSessionPreviousTransactionId =
+            txn.transactionId != null ? txn.transactionId : txn.getPreviousTransactionId();
+      }
+      txn =
+          session.newTransaction(
+              options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
       if (!useInlinedBegin) {
         txn.ensureTxn();
       }

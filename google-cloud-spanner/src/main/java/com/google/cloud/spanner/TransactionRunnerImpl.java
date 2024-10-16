@@ -94,6 +94,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       private Clock clock = new Clock();
       private ByteString transactionId;
+      // This field is set only when the transaction is created during a retry and uses a
+      // multiplexed session.
+      private ByteString previousTransactionId;
       private Options options;
       private boolean trackTransactionStarter;
 
@@ -116,6 +119,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       Builder setTrackTransactionStarter(boolean trackTransactionStarter) {
         this.trackTransactionStarter = trackTransactionStarter;
+        return self();
+      }
+
+      Builder setPreviousTransactionId(ByteString previousTransactionId) {
+        this.previousTransactionId = previousTransactionId;
         return self();
       }
 
@@ -207,6 +215,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     volatile ByteString transactionId;
 
+    final ByteString previousTransactionId;
+
     private CommitResponse commitResponse;
     private final Clock clock;
 
@@ -222,6 +232,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.channelHint =
           getChannelHintOptions(
               session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
+      this.previousTransactionId = builder.previousTransactionId;
     }
 
     @Override
@@ -250,6 +261,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           finishedAsyncOperations.set(null);
         }
       }
+    }
+
+    ByteString getPreviousTransactionId() {
+      return this.previousTransactionId;
     }
 
     @Override
@@ -289,7 +304,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private void createTxnAsync(final SettableApiFuture<Void> res) {
       span.addAnnotation("Creating Transaction");
       final ApiFuture<ByteString> fut =
-          session.beginTransactionAsync(options, isRouteToLeader(), getTransactionChannelHint());
+          session.beginTransactionAsync(
+              options, isRouteToLeader(), getTransactionChannelHint(), getPreviousTransactionId());
       fut.addListener(
           () -> {
             try {
@@ -568,7 +584,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           }
           if (tx == null) {
             return TransactionSelector.newBuilder()
-                .setBegin(SessionImpl.createReadWriteTransactionOptions(options))
+                .setBegin(
+                    SessionImpl.createReadWriteTransactionOptions(
+                        options, getPreviousTransactionId()))
                 .build();
           } else {
             // Wait for the transaction to come available. The tx.get() call will fail with an
@@ -1128,7 +1146,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   TransactionRunnerImpl(SessionImpl session, TransactionOption... options) {
     this.session = session;
     this.options = Options.fromTransactionOptions(options);
-    this.txn = session.newTransaction(this.options);
+    this.txn = session.newTransaction(this.options, /* previousTransactionId = */ ByteString.EMPTY);
     this.tracer = session.getTracer();
   }
 
@@ -1167,7 +1185,19 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
             useInlinedBegin = txn.transactionId != null;
-            txn = session.newTransaction(options);
+
+            // Determine the latest transactionId when using a multiplexed session.
+            ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
+            if (session.getIsMultiplexed()) {
+              // Use the current transactionId if available, otherwise fallback to the previous
+              // transactionId.
+              multiplexedSessionPreviousTransactionId =
+                  txn.transactionId != null ? txn.transactionId : txn.getPreviousTransactionId();
+            }
+
+            txn =
+                session.newTransaction(
+                    options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
           }
           checkState(
               isValid, "TransactionRunner has been invalidated by a new operation on the session");
