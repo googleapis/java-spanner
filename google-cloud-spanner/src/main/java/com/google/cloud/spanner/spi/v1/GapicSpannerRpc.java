@@ -29,6 +29,7 @@ import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcCallSettings;
 import com.google.api.gax.grpc.GrpcStubCallableFactory;
+import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.ResultRetryAlgorithm;
@@ -63,6 +64,7 @@ import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
 import com.google.cloud.spanner.BackupId;
+import com.google.cloud.spanner.BuiltInMetricsConstant;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
@@ -396,18 +398,22 @@ public class GapicSpannerRpc implements SpannerRpc {
       final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
       try {
-        this.spannerStub =
-            GrpcSpannerStub.create(
-                options
-                    .getSpannerStubSettings()
-                    .toBuilder()
-                    .setTransportChannelProvider(channelProvider)
-                    .setCredentialsProvider(credentialsProvider)
-                    .setStreamWatchdogProvider(watchdogProvider)
-                    .setTracerFactory(
-                        options.getApiTracerFactory(
-                            /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
-                    .build());
+        SpannerStubSettings spannerStubSettings =
+            options
+                .getSpannerStubSettings()
+                .toBuilder()
+                .setTransportChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider)
+                .setStreamWatchdogProvider(watchdogProvider)
+                .setTracerFactory(
+                    options.getApiTracerFactory(
+                        /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
+                .build();
+        ClientContext clientContext = ClientContext.create(spannerStubSettings);
+        this.spannerStub = GrpcSpannerStub.create(spannerStubSettings, clientContext);
+        BuiltInMetricsConstant.DIRECT_PATH_ENABLED =
+            ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
+                && isAttemptDirectPathXds;
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
         this.readRetryableCodes =
