@@ -53,8 +53,6 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.Tuple;
-import com.google.cloud.grpc.GrpcTransportOptions;
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
@@ -102,6 +100,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -2263,7 +2262,6 @@ class SessionPool {
   private final SessionClient sessionClient;
   private final int numChannels;
   private final ScheduledExecutorService executor;
-  private final ExecutorFactory<ScheduledExecutorService> executorFactory;
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
@@ -2369,7 +2367,6 @@ class SessionPool {
     return createPool(
         sessionPoolOptions,
         spannerOptions.getDatabaseRole(),
-        ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
         poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
         Position.RANDOM,
@@ -2384,23 +2381,15 @@ class SessionPool {
 
   static SessionPool createPool(
       SessionPoolOptions poolOptions,
-      ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       TraceWrapper tracer,
       OpenTelemetry openTelemetry) {
     return createPool(
-        poolOptions,
-        executorFactory,
-        sessionClient,
-        new Clock(),
-        Position.RANDOM,
-        tracer,
-        openTelemetry);
+        poolOptions, sessionClient, new Clock(), Position.RANDOM, tracer, openTelemetry);
   }
 
   static SessionPool createPool(
       SessionPoolOptions poolOptions,
-      ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       Clock clock,
       Position initialReleasePosition,
@@ -2409,7 +2398,6 @@ class SessionPool {
     return createPool(
         poolOptions,
         null,
-        executorFactory,
         sessionClient,
         clock,
         initialReleasePosition,
@@ -2425,7 +2413,6 @@ class SessionPool {
   static SessionPool createPool(
       SessionPoolOptions poolOptions,
       String databaseRole,
-      ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       Clock clock,
       Position initialReleasePosition,
@@ -2440,8 +2427,6 @@ class SessionPool {
         new SessionPool(
             poolOptions,
             databaseRole,
-            executorFactory,
-            executorFactory.get(),
             sessionClient,
             clock,
             initialReleasePosition,
@@ -2459,8 +2444,6 @@ class SessionPool {
   private SessionPool(
       SessionPoolOptions options,
       String databaseRole,
-      ExecutorFactory<ScheduledExecutorService> executorFactory,
-      ScheduledExecutorService executor,
       SessionClient sessionClient,
       Clock clock,
       Position initialReleasePosition,
@@ -2473,8 +2456,11 @@ class SessionPool {
       AtomicLong numMultiplexedSessionsReleased) {
     this.options = options;
     this.databaseRole = databaseRole;
-    this.executorFactory = executorFactory;
-    this.executor = executor;
+    this.executor =
+        Executors.newScheduledThreadPool(
+            1,
+            ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory(
+                "session-pool-maintainer", true));
     this.sessionClient = sessionClient;
     this.numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
     this.clock = clock;
@@ -3064,6 +3050,7 @@ class SessionPool {
         pendingClosure += 1; // For pool maintenance thread
         poolMaintainer.close();
       }
+      executor.shutdown();
 
       sessions.clear();
       for (PooledSessionFuture session : checkedOutSessions) {
@@ -3097,7 +3084,6 @@ class SessionPool {
       }
     }
 
-    retFuture.addListener(() -> executorFactory.release(executor), MoreExecutors.directExecutor());
     return retFuture;
   }
 
