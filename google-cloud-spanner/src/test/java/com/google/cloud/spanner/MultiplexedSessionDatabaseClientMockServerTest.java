@@ -41,6 +41,7 @@ import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
@@ -924,6 +925,162 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
             .getOptions()
             .getReadWrite()
             .getMultiplexedSessionPreviousTransactionId());
+  }
+
+  @Test
+  public void testPrecommitTokenForResultSet() {
+    // This test verifies that the precommit token received from the ResultSet is properly tracked
+    // and set in the CommitRequest.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    Long count =
+        client
+            .readWriteTransaction()
+            .run(
+                transaction -> {
+                  long res = transaction.executeUpdate(UPDATE_STATEMENT);
+
+                  // Verify that the latest precommit token is tracked in the transaction context.
+                  TransactionContextImpl impl = (TransactionContextImpl) transaction;
+                  assertNotNull(impl.getLatestPrecommitToken());
+                  assertEquals(
+                      ByteString.copyFromUtf8("ResultSetPrecommitToken"),
+                      impl.getLatestPrecommitToken().getPrecommitToken());
+                  return res;
+                });
+
+    assertNotNull(count);
+    assertEquals(1, count.longValue());
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("ResultSetPrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testPrecommitTokenForExecuteBatchDmlResponse() {
+    // This test verifies that the precommit token received from the ExecuteBatchDmlResponse is
+    // properly tracked and set in the CommitRequest.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    long[] count =
+        client
+            .readWriteTransaction()
+            .run(
+                transaction -> {
+                  long[] res = transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
+
+                  // Verify that the latest precommit token is tracked in the transaction context.
+                  TransactionContextImpl impl = (TransactionContextImpl) transaction;
+                  assertNotNull(impl.getLatestPrecommitToken());
+                  assertEquals(
+                      ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
+                      impl.getLatestPrecommitToken().getPrecommitToken());
+                  return res;
+                });
+
+    assertNotNull(count);
+    assertEquals(1, count.length);
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testPrecommitTokenForPartialResultSet() {
+    // This test verifies that the precommit token received from the PartialResultSet is properly
+    // tracked and set in the CommitRequest.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              ResultSet resultSet = transaction.executeQuery(STATEMENT);
+              //noinspection StatementWithEmptyBody
+              while (resultSet.next()) {
+                // ignore
+              }
+
+              // Verify that the latest precommit token is tracked in the transaction context.
+              TransactionContextImpl impl = (TransactionContextImpl) transaction;
+              assertNotNull(impl.getLatestPrecommitToken());
+              assertEquals(
+                  ByteString.copyFromUtf8("PartialResultSetPrecommitToken"),
+                  impl.getLatestPrecommitToken().getPrecommitToken());
+              return null;
+            });
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("PartialResultSetPrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testTxnTracksPrecommitTokenWithLatestSeqNo() {
+    // This test ensures that the read-write transaction tracks the precommit token with the
+    // highest sequence number and sets it in the CommitRequest.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              // Returns a ResultSet containing the precommit token (ResultSetPrecommitToken)
+              transaction.executeUpdate(UPDATE_STATEMENT);
+
+              // Returns a PartialResultSet containing the precommit token
+              // (PartialResultSetPrecommitToken)
+              ResultSet resultSet = transaction.executeQuery(STATEMENT);
+              //noinspection StatementWithEmptyBody
+              while (resultSet.next()) {
+                // ignore
+              }
+
+              // Returns an ExecuteBatchDmlResponse containing the precommit token
+              // (ExecuteBatchDmlResponsePrecommitToken).
+              // Since this is the last request received by the mock Spanner, it should be the most
+              // recent precommit token tracked by the transaction context.
+              transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
+
+              // Verify that the latest precommit token with highest sequence number is tracked in
+              // the transaction context.
+              TransactionContextImpl impl = (TransactionContextImpl) transaction;
+              assertNotNull(impl.getLatestPrecommitToken());
+              assertEquals(
+                  ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
+                  impl.getLatestPrecommitToken().getPrecommitToken());
+              return null;
+            });
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {

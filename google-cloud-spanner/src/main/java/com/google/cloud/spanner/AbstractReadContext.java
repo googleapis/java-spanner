@@ -48,6 +48,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RequestOptions;
@@ -892,6 +893,13 @@ abstract class AbstractReadContext
   public void onDone(boolean withBeginTransaction) {
     this.session.onReadDone();
   }
+
+  /**
+   * For transactions other than read-write, the MultiplexedSessionPrecommitToken will not be
+   * present in the RPC response. In such cases, this method will be a no-op.
+   */
+  @Override
+  public void onPrecommitToken(MultiplexedSessionPrecommitToken token) {}
 
   private ResultSet readInternal(
       String table,

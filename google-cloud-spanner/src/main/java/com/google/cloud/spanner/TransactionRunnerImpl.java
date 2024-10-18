@@ -46,6 +46,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetStats;
@@ -178,6 +179,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @GuardedBy("committingLock")
     private volatile boolean committing;
+
+    private final Object precommitTokenLock = new Object();
+
+    @GuardedBy("precommitTokenLock")
+    private MultiplexedSessionPrecommitToken latestPrecommitToken;
 
     @GuardedBy("lock")
     private volatile SettableApiFuture<Void> finishedAsyncOperations = SettableApiFuture.create();
@@ -439,6 +445,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             }
             requestBuilder.setRequestOptions(requestOptionsBuilder.build());
           }
+          if (session.getIsMultiplexed() && getLatestPrecommitToken() != null) {
+            // Set the precommit token in the CommitRequest for multiplexed sessions.
+            requestBuilder.setPrecommitToken(getLatestPrecommitToken());
+          }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture;
@@ -643,12 +653,38 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
+    /**
+     * In read-write transactions, the precommit token with the highest sequence number from this
+     * transaction attempt will be tracked and included in the
+     * [Commit][google.spanner.v1.Spanner.Commit] request for the transaction.
+     */
+    @Override
+    public void onPrecommitToken(MultiplexedSessionPrecommitToken token) {
+      if (token == null) {
+        return;
+      }
+      synchronized (precommitTokenLock) {
+        if (this.latestPrecommitToken == null
+            || token.getSeqNum() > this.latestPrecommitToken.getSeqNum()) {
+          this.latestPrecommitToken = token;
+          txnLogger.log(Level.FINE, "Updating precommit token to " + this.latestPrecommitToken);
+        }
+      }
+    }
+
     @Nullable
     String getTransactionTag() {
       if (this.options.hasTag()) {
         return this.options.tag();
       }
       return null;
+    }
+
+    @Nullable
+    MultiplexedSessionPrecommitToken getLatestPrecommitToken() {
+      synchronized (precommitTokenLock) {
+        return this.latestPrecommitToken;
+      }
     }
 
     @Override
@@ -829,6 +865,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw new IllegalArgumentException(
               "DML response missing stats possibly due to non-DML statement as input");
         }
+        if (resultSet.hasPrecommitToken()) {
+          onPrecommitToken(resultSet.getPrecommitToken());
+        }
         return resultSet;
       } catch (Throwable t) {
         throw onError(
@@ -903,6 +942,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                       resultSet.get().getMetadata().getTransaction(),
                       builder.getTransaction().hasBegin());
                 }
+                if (resultSet.get().hasPrecommitToken()) {
+                  onPrecommitToken(resultSet.get().getPrecommitToken());
+                }
               } catch (Throwable e) {
                 // Ignore this error here as it is handled by the future that is returned by the
                 // executeUpdateAsync method.
@@ -956,6 +998,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   response.getResultSets(i).getMetadata().getTransaction(),
                   builder.getTransaction().hasBegin());
             }
+          }
+
+          if (response.hasPrecommitToken()) {
+            onPrecommitToken(response.getPrecommitToken());
           }
 
           // If one of the DML statements was aborted, we should throw an aborted exception.
@@ -1021,6 +1067,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                           batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
                           builder.getTransaction().hasBegin());
                     }
+                  }
+                  if (batchDmlResponse.hasPrecommitToken()) {
+                    onPrecommitToken(batchDmlResponse.getPrecommitToken());
                   }
                   // If one of the DML statements was aborted, we should throw an aborted exception.
                   // In all other cases, we should throw a BatchUpdateException.
