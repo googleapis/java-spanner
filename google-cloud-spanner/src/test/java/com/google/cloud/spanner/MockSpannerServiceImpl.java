@@ -2506,12 +2506,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   static MultiplexedSessionPrecommitToken getPrecommitToken(
       String value, ByteString transactionId) {
-    if (!transactionSequenceNo.containsKey(transactionId)) {
-      transactionSequenceNo.put(transactionId, new AtomicInteger(0));
-    }
+    transactionSequenceNo.putIfAbsent(transactionId, new AtomicInteger(0));
 
     // Generates an incrementing sequence number
-    int seqNum = transactionSequenceNo.get(transactionId).addAndGet(1);
+    int seqNum = transactionSequenceNo.get(transactionId).incrementAndGet();
     return MultiplexedSessionPrecommitToken.newBuilder()
         .setPrecommitToken(ByteString.copyFromUtf8(value))
         .setSeqNum(seqNum)
