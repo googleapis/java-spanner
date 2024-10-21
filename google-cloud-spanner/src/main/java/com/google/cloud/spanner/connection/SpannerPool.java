@@ -209,12 +209,12 @@ public class SpannerPool {
           && Objects.equals(this.usePlainText, other.usePlainText)
           && Objects.equals(this.userAgent, other.userAgent)
           && Objects.equals(this.routeToLeader, other.routeToLeader)
-          && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing)
           && Objects.equals(
-              this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
+          this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
           && Objects.equals(this.openTelemetry, other.openTelemetry)
           && Objects.equals(this.enableExtendedTracing, other.enableExtendedTracing)
-          && Objects.equals(this.enableApiTracing, other.enableApiTracing);
+          && Objects.equals(this.enableApiTracing, other.enableApiTracing)
+          && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing);
     }
 
     @Override
@@ -229,11 +229,11 @@ public class SpannerPool {
           this.databaseRole,
           this.userAgent,
           this.routeToLeader,
-          this.enableEndToEndTracing,
           this.useVirtualGrpcTransportThreads,
           this.openTelemetry,
           this.enableExtendedTracing,
-          this.enableApiTracing);
+          this.enableApiTracing,
+          this.enableEndToEndTracing);
     }
   }
 
