@@ -1215,9 +1215,7 @@ public class ConnectionOptions {
     return getInitialConnectionPropertyValue(ROUTE_TO_LEADER);
   }
 
-  /**
-   * Whether end-to-end tracing is enabled.
-   */
+  /** Whether end-to-end tracing is enabled. */
   public boolean isEndToEndTracingEnabled() {
     return getInitialConnectionPropertyValue(ENABLE_END_TO_END_TRACING);
   }

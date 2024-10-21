@@ -210,7 +210,7 @@ public class SpannerPool {
           && Objects.equals(this.userAgent, other.userAgent)
           && Objects.equals(this.routeToLeader, other.routeToLeader)
           && Objects.equals(
-          this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
+              this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
           && Objects.equals(this.openTelemetry, other.openTelemetry)
           && Objects.equals(this.enableExtendedTracing, other.enableExtendedTracing)
           && Objects.equals(this.enableApiTracing, other.enableApiTracing)
