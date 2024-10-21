@@ -156,11 +156,11 @@ public class SpannerPool {
     private final String userAgent;
     private final String databaseRole;
     private final boolean routeToLeader;
-    private final boolean enableEndToEndTracing;
     private final boolean useVirtualGrpcTransportThreads;
     private final OpenTelemetry openTelemetry;
     private final Boolean enableExtendedTracing;
     private final Boolean enableApiTracing;
+    private final boolean enableEndToEndTracing;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -187,11 +187,11 @@ public class SpannerPool {
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();
       this.routeToLeader = options.isRouteToLeader();
-      this.enableEndToEndTracing = options.enableEndToEndTracing();
       this.useVirtualGrpcTransportThreads = options.isUseVirtualGrpcTransportThreads();
       this.openTelemetry = options.getOpenTelemetry();
       this.enableExtendedTracing = options.isEnableExtendedTracing();
       this.enableApiTracing = options.isEnableApiTracing();
+      this.enableEndToEndTracing = options.isEndToEndTracingEnabled();
     }
 
     @Override
@@ -384,7 +384,7 @@ public class SpannerPool {
     if (!options.isRouteToLeader()) {
       builder.disableLeaderAwareRouting();
     }
-    if (options.enableEndToEndTracing()) {
+    if (options.isEndToEndTracingEnabled()) {
       builder.setEnableEndToEndTracing(true);
     }
     if (key.usePlainText) {

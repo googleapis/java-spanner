@@ -259,13 +259,6 @@ class ConnectionProperties {
           DEFAULT_ROUTE_TO_LEADER,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
-  static final ConnectionProperty<Boolean> ENABLE_END_TO_END_TRACING =
-      create(
-          ENABLE_END_TO_END_TRACING_PROPERTY_NAME,
-          "Should we enable end to end tracing (true/false)",
-          DEFAULT_ENABLE_END_TO_END_TRACING,
-          BooleanConverter.INSTANCE,
-          Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_VIRTUAL_THREADS =
       create(
           USE_VIRTUAL_THREADS_PROPERTY_NAME,
@@ -299,6 +292,16 @@ class ConnectionProperties {
               + "or if you want to debug potential latency problems caused by RPCs that are "
               + "being retried.",
           DEFAULT_ENABLE_API_TRACING,
+          BooleanConverter.INSTANCE,
+          Context.STARTUP);
+  static final ConnectionProperty<Boolean> ENABLE_END_TO_END_TRACING =
+      create(
+          ENABLE_END_TO_END_TRACING_PROPERTY_NAME,
+          "Enable end-to-end tracing (true/false) to generate traces for both the time "
+              + "that is spent in the client, as well as time that is spent in the Spanner server. "
+              + "Server side traces would always go to Google Cloud Trace so to see end to end traces, "
+              + "client should choose an exporter that exports the traces to Google Cloud Trace.",
+          DEFAULT_ENABLE_END_TO_END_TRACING,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Integer> MIN_SESSIONS =

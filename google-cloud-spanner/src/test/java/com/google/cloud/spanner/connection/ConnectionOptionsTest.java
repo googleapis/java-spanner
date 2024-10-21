@@ -334,13 +334,13 @@ public class ConnectionOptionsTest {
     assertEquals(options.getProjectId(), TEST_PROJECT);
     assertEquals(options.getInstanceId(), TEST_INSTANCE);
     assertEquals(options.getDatabaseName(), TEST_DATABASE);
-    assertTrue(options.enableEndToEndTracing());
+    assertTrue(options.isEndToEndTracingEnabled());
 
     // Test for default behavior for enableEndToEndTracing property.
     builder = ConnectionOptions.newBuilder().setUri(BASE_URI);
     builder.setCredentialsUrl(FILE_TEST_PATH);
     options = builder.build();
-    assertFalse(options.enableEndToEndTracing());
+    assertFalse(options.isEndToEndTracingEnabled());
   }
 
   @Test
