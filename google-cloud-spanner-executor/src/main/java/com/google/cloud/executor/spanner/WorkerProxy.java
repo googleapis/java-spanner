@@ -16,12 +16,29 @@
 
 package com.google.cloud.executor.spanner;
 
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.auth.Credentials;
+import com.google.auth.http.HttpTransportFactory;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.opentelemetry.trace.TraceConfiguration;
+import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.HealthStatusManager;
 import io.grpc.protobuf.services.ProtoReflectionService;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +47,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Worker proxy for Java API. This is the main entry of the Java client proxy on cloud Spanner Java
@@ -55,13 +73,48 @@ public class WorkerProxy {
   public static double multiplexedSessionOperationsRatio = 0.0;
   public static boolean usePlainTextChannel = false;
   public static boolean enableGrpcFaultInjector = false;
+  public static OpenTelemetrySdk openTelemetrySdk;
 
   public static CommandLine commandLine;
 
+  public static final String PROJECT_ID = "spanner-cloud-systest";
+  public static final String CLOUD_TRACE_ENDPOINT = "staging-cloudtrace.sandbox.googleapis.com:443";
+
   private static final int MIN_PORT = 0, MAX_PORT = 65535;
-  private static final double MIN_RATIO = 0.0, MAX_RATIO = 1.0;
+  private static final double MIN_RATIO = 0.0, MAX_RATIO = 1.0, TRACE_SAMPLING_RATE = 0.01;
+
+  public static OpenTelemetrySdk setupOpenTelemetrySdk() throws Exception {
+    // Read credentials from the serviceKeyFile.
+    HttpTransportFactory HTTP_TRANSPORT_FACTORY = NetHttpTransport::new;
+    Credentials credentials =
+        GoogleCredentials.fromStream(
+            new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(serviceKeyFile))),
+            HTTP_TRANSPORT_FACTORY);
+
+    // OpenTelemetry configuration.
+    SpanExporter spanExporter =
+        TraceExporter.createWithConfiguration(
+            TraceConfiguration.builder()
+                .setProjectId(PROJECT_ID)
+                .setCredentials(credentials)
+                .setTraceServiceEndpoint(CLOUD_TRACE_ENDPOINT)
+                .build());
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+                .setResource(Resource.getDefault())
+                .setSampler(Sampler.parentBased(Sampler.traceIdRatioBased(TRACE_SAMPLING_RATE)))
+                .build())
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
+  }
 
   public static void main(String[] args) throws Exception {
+    // Enable OpenTelemetry metrics and traces before injecting Opentelemetry.
+    SpannerOptions.enableOpenTelemetryMetrics();
+    SpannerOptions.enableOpenTelemetryTraces();
+
     commandLine = buildOptions(args);
 
     if (!commandLine.hasOption(OPTION_SPANNER_PORT)) {
@@ -117,6 +170,8 @@ public class WorkerProxy {
                 + MAX_RATIO);
       }
     }
+    // Setup the OpenTelemetry for tracing.
+    openTelemetrySdk = setupOpenTelemetrySdk();
 
     Server server;
     while (true) {
