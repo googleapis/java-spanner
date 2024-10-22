@@ -44,7 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -63,23 +62,6 @@ import org.mockito.MockitoAnnotations;
 
 @RunWith(Parameterized.class)
 public class SessionClientTests {
-  private final class TestExecutorFactory implements ExecutorFactory<ScheduledExecutorService> {
-    @Override
-    public ScheduledExecutorService get() {
-      return Executors.newScheduledThreadPool(spanner.getOptions().getNumChannels());
-    }
-
-    @Override
-    public void release(ScheduledExecutorService executor) {
-      executor.shutdown();
-      try {
-        executor.awaitTermination(10_000L, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
   @Parameters(name = "NumChannels = {0}")
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {{1}, {2}, {4}, {8}});
@@ -148,7 +130,7 @@ public class SessionClientTests {
             Mockito.eq(dbName), Mockito.eq(databaseRole), Mockito.eq(labels), options.capture()))
         .thenReturn(sessionProto);
 
-    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+    try (SessionClient client = new SessionClient(spanner, db)) {
       Session session = client.createSession();
       assertThat(session.getName()).isEqualTo(sessionName);
 
@@ -194,7 +176,7 @@ public class SessionClientTests {
           @Override
           public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {}
         };
-    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+    try (SessionClient client = new SessionClient(spanner, db)) {
       client.createMultiplexedSession(consumer);
     }
     // for multiplexed session there is no channel hint pass in the RPC options
@@ -226,7 +208,7 @@ public class SessionClientTests {
             assertTrue(t instanceof RuntimeException);
           }
         };
-    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+    try (SessionClient client = new SessionClient(spanner, db)) {
       client.createMultiplexedSession(consumer);
     }
     // for multiplexed session there is no channel hint pass in the RPC options
@@ -235,13 +217,13 @@ public class SessionClientTests {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void batchCreateAndCloseSessions() {
+  public void batchCreateAndCloseSessions() throws Exception {
     DatabaseId db = DatabaseId.of(dbName);
     final String sessionName = dbName + "/sessions/s%d";
     final Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
-    String databaseRole = new String("role");
+    String databaseRole = "role";
     when(spannerOptions.getDatabaseRole()).thenReturn(databaseRole);
     final List<Long> usedChannels = Collections.synchronizedList(new ArrayList<>());
     when(rpc.batchCreateSessions(
@@ -281,9 +263,12 @@ public class SessionClientTests {
           public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {}
         };
     final int numSessions = 10;
-    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+    ScheduledExecutorService executor;
+    try (SessionClient client = new SessionClient(spanner, db)) {
       client.asyncBatchCreateSessions(numSessions, true, consumer);
+      executor = client.getExecutor();
     }
+    assertTrue(executor.awaitTermination(5L, TimeUnit.SECONDS));
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions);
     assertThat(usedChannels.size()).isEqualTo(spannerOptions.getNumChannels());
     List<Long> expectedChannels = new ArrayList<>();
@@ -302,7 +287,7 @@ public class SessionClientTests {
    */
   @SuppressWarnings("unchecked")
   @Test
-  public void batchCreateSessionsDistributesMultipleRequestsOverChannels() {
+  public void batchCreateSessionsDistributesMultipleRequestsOverChannels() throws Exception {
     DatabaseId db = DatabaseId.of(dbName);
     final String sessionName = dbName + "/sessions/s%d";
     final Map<String, String> labels = Collections.emptyMap();
@@ -348,15 +333,18 @@ public class SessionClientTests {
         };
     final int numSessions = 10;
     final int numBatches = spannerOptions.getNumChannels() * 2;
-    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+    ScheduledExecutorService executor;
+    try (SessionClient client = new SessionClient(spanner, db)) {
       for (int batch = 0; batch < numBatches; batch++) {
         client.asyncBatchCreateSessions(numSessions, false, consumer);
       }
+      executor = client.getExecutor();
     }
+    assertTrue(executor.awaitTermination(5L, TimeUnit.SECONDS));
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions * numBatches);
     assertThat(usedChannelHints.size()).isEqualTo(spannerOptions.getNumChannels() * 2);
     List<Long> expectedChannels = new ArrayList<>();
-    for (long l = 0; l < spannerOptions.getNumChannels() * 2; l++) {
+    for (long l = 0; l < spannerOptions.getNumChannels() * 2L; l++) {
       expectedChannels.add(l);
     }
     assertThat(usedChannelHints).containsExactlyElementsIn(expectedChannels);
@@ -370,7 +358,7 @@ public class SessionClientTests {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void batchCreateSessionsWithExceptions() {
+  public void batchCreateSessionsWithExceptions() throws Exception {
     for (AddRemoveSetException behavior : AddRemoveSetException.values()) {
       final List<Long> errorOnChannels = new ArrayList<>();
       if (behavior == AddRemoveSetException.REMOVE) {
@@ -443,9 +431,12 @@ public class SessionClientTests {
               }
             };
         final int numSessions = 10;
-        try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+        ScheduledExecutorService executor;
+        try (SessionClient client = new SessionClient(spanner, db)) {
           client.asyncBatchCreateSessions(numSessions, true, consumer);
+          executor = client.getExecutor();
         }
+        assertTrue(executor.awaitTermination(5L, TimeUnit.SECONDS));
         assertThat(errorCount.get()).isEqualTo(errorOnChannels.size());
         assertThat(returnedSessionCount.get())
             .isAtLeast(
@@ -457,9 +448,8 @@ public class SessionClientTests {
     }
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  public void batchCreateSessionsServerReturnsLessSessionsPerBatch() {
+  public void batchCreateSessionsServerReturnsLessSessionsPerBatch() throws Exception {
     final int MAX_SESSIONS_PER_BATCH = 5;
     DatabaseId db = DatabaseId.of(dbName);
     final String sessionName = dbName + "/sessions/s%d";
@@ -498,9 +488,12 @@ public class SessionClientTests {
     // We want 100 sessions, but each rpc will only return 5. The consumer should still get 100
     // sessions.
     final int numSessions = 100;
-    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+    ScheduledExecutorService executor;
+    try (SessionClient client = new SessionClient(spanner, db)) {
       client.asyncBatchCreateSessions(numSessions, true, consumer);
+      executor = client.getExecutor();
     }
+    assertTrue(executor.awaitTermination(5L, TimeUnit.SECONDS));
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions);
   }
 }
