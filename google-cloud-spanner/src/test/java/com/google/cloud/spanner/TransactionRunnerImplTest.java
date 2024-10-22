@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
@@ -117,7 +118,7 @@ public class TransactionRunnerImplTest {
     tracer = new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
     firstRun = true;
     when(session.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
-    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     when(session.getTracer()).thenReturn(tracer);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
@@ -343,7 +344,8 @@ public class TransactionRunnerImplTest {
             .setTracer(session.getTracer())
             .setSpan(session.getTracer().getCurrentSpan())
             .build();
-    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(transaction);
+    when(session.newTransaction(eq(Options.fromTransactionOptions()), any()))
+        .thenReturn(transaction);
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(span);

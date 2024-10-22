@@ -1726,14 +1726,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
         this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-            getDefaultProjectId(), getCredentials());
+            this.getProjectId(), getCredentials());
 
     return openTelemetry != null
         ? new MetricsTracerFactory(
             new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
             builtInOpenTelemetryMetricsProvider.createClientAttributes(
-                getDefaultProjectId(),
-                "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
+                this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
         : null;
   }
 

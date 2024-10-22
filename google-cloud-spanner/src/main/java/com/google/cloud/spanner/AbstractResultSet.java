@@ -27,6 +27,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.Value.KindCase;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.Transaction;
 import java.io.IOException;
 import java.io.Serializable;
@@ -57,6 +58,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     /** Called when the read finishes normally. */
     void onDone(boolean withBeginTransaction);
+
+    /**
+     * Called when the RPC response contains a MultiplexedSessionPrecommitToken. A precommit token
+     * will be included if the read-write transaction is executed on a multiplexed session.
+     */
+    void onPrecommitToken(MultiplexedSessionPrecommitToken token);
   }
 
   static final class LazyByteArray implements Serializable {

@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 @AutoValue
 @Immutable
-public abstract class Interval implements Comparable<Interval>, Serializable {
+public abstract class Interval implements Serializable {
   public static final long MONTHS_PER_YEAR = 12;
   public static final long DAYS_PER_MONTH = 30;
   public static final long HOURS_PER_DAY = 24;
@@ -53,48 +53,92 @@ public abstract class Interval implements Comparable<Interval>, Serializable {
       Pattern.compile(
           "^P(?!$)(-?\\d+Y)?(-?\\d+M)?(-?\\d+D)?(T(?=-?\\d)(-?\\d+H)?(-?\\d+M)?(-?\\d+(\\.\\d{1,9})?S)?)?$");
 
-  public abstract long months();
+  /** Returns the months component of the interval. */
+  public abstract int months();
 
-  public abstract long days();
+  /** Returns the days component of the interval. */
+  public abstract int days();
 
+  /** Returns the microseconds component of the interval. */
   public abstract long micros();
 
+  /** Returns the nanoFractions component of the interval. */
   public abstract short nanoFractions();
 
   public static Builder builder() {
     return new AutoValue_Interval.Builder();
   }
 
+  /** Returns the nanoseconds component of the interval. */
   public BigInteger nanos() {
     return BigInteger.valueOf(micros())
         .multiply(BigInteger.valueOf(NANOS_PER_MICRO))
         .add(BigInteger.valueOf(nanoFractions()));
   }
 
-  /** Returns the total micros represented by the Interval. */
+  /** Returns the total microseconds represented by the interval. */
   public long getAsMicros() {
     return months() * MICROS_PER_MONTH + days() * MICROS_PER_DAY + micros();
   }
 
-  /** Returns the total nanos represented by the Interval. */
+  /** Returns the total nanoseconds represented by the interval. */
   public BigInteger getAsNanos() {
     return BigInteger.valueOf(getAsMicros())
         .multiply(BigInteger.valueOf(NANOS_PER_MICRO))
         .add(BigInteger.valueOf(nanoFractions()));
   }
 
-  /** Creates an Interval consisting of the given number of months. */
-  public static Interval ofMonths(long months) {
+  /** Creates an interval with specified number of months. */
+  public static Interval ofMonths(int months) {
     return builder().setMonths(months).setDays(0).setMicros(0).setNanoFractions((short) 0).build();
   }
 
-  /** Creates an Interval consisting of the given number of days. */
-  public static Interval ofDays(long days) {
+  /** Creates an interval with specified number of days. */
+  public static Interval ofDays(int days) {
     return builder().setMonths(0).setDays(days).setMicros(0).setNanoFractions((short) 0).build();
   }
 
-  /** Creates an Interval with specified months, days and micros. */
-  public static Interval fromMonthsDaysMicros(long months, long days, long micros) {
+  /** Creates an interval with specified number of seconds. */
+  public static Interval ofSeconds(long seconds) {
+    return builder()
+        .setMonths(0)
+        .setDays(0)
+        .setMicros(seconds * MICROS_PER_SECOND)
+        .setNanoFractions((short) 0)
+        .build();
+  }
+
+  /** Creates an interval with specified number of milliseconds. */
+  public static Interval ofMilliseconds(long milliseconds) {
+    return builder()
+        .setMonths(0)
+        .setDays(0)
+        .setMicros(milliseconds * MICROS_PER_MILLI)
+        .setNanoFractions((short) 0)
+        .build();
+  }
+
+  /** Creates an interval with specified number of microseconds. */
+  public static Interval ofMicros(long micros) {
+    return builder().months(0).days(0).micros(micros).nanoFractions((short) 0).build();
+  }
+
+  /** Creates an interval with specified number of nanoseconds. */
+  public static Interval ofNanos(@NotNull BigInteger nanos) {
+    BigInteger micros = nanos.divide(BigInteger.valueOf(NANOS_PER_MICRO));
+    BigInteger nanoFractions = nanos.subtract(micros.multiply(BigInteger.valueOf(NANOS_PER_MICRO)));
+    long microsValue = micros.longValueExact();
+    short nanoFractionsValue = nanoFractions.shortValueExact();
+    return builder()
+        .setMonths(0)
+        .setDays(0)
+        .setMicros(microsValue)
+        .setNanoFractions(nanoFractionsValue)
+        .build();
+  }
+
+  /** Creates an interval with specified number of months, days and microseconds. */
+  public static Interval fromMonthsDaysMicros(int months, int days, long micros) {
     return builder()
         .setMonths(months)
         .setDays(days)
@@ -103,13 +147,15 @@ public abstract class Interval implements Comparable<Interval>, Serializable {
         .build();
   }
 
-  /** Creates an Interval with specified months, days and nanos. */
-  public static Interval fromMonthsDaysNanos(long months, long days, BigInteger nanos) {
-    long micros = nanos.divide(BigInteger.valueOf(NANOS_PER_MICRO)).longValue();
+  /** Creates an interval with specified number of months, days and nanoseconds. */
+  public static Interval fromMonthsDaysNanos(int months, int days, BigInteger nanos) {
+    long micros = (nanos.divide(BigInteger.valueOf(NANOS_PER_MICRO))).longValueExact();
     short nanoFractions =
-        nanos
-            .subtract(BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICRO)))
+        (nanos.subtract(BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICRO))))
             .shortValue();
+
+    System.out.println("Micros: " + micros + " Nanos: " + nanoFractions);
+
     return builder()
         .setMonths(months)
         .setDays(days)
@@ -149,14 +195,14 @@ public abstract class Interval implements Comparable<Interval>, Serializable {
         totalNanos.subtract(totalMicros.multiply(BigInteger.valueOf(NANOS_PER_MICRO)));
 
     return Interval.builder()
-        .setMonths(totalMonths)
-        .setDays(days)
-        .setMicros(totalMicros.longValue())
-        .setNanoFractions(nanoFractions.shortValue())
+        .setMonths(Math.toIntExact(totalMonths))
+        .setDays(Math.toIntExact(days))
+        .setMicros(totalMicros.longValueExact())
+        .setNanoFractions(nanoFractions.shortValueExact())
         .build();
   }
 
-  /** @return the Interval in ISO801 duration format. */
+  /** Converts Interval to ISO8601 Duration Formatted String. */
   public String ToISO8601() {
     StringBuilder result = new StringBuilder();
     result.append("P");
@@ -197,7 +243,7 @@ public abstract class Interval implements Comparable<Interval>, Serializable {
       BigDecimal seconds = new BigDecimal(nanos).movePointLeft(9);
 
       if (seconds.compareTo(new BigDecimal(zero)) != 0) {
-        result.append(String.format("%sS", seconds));
+        result.append(String.format("%sS", seconds.stripTrailingZeros()));
       }
     }
 
@@ -208,47 +254,7 @@ public abstract class Interval implements Comparable<Interval>, Serializable {
     return result.toString();
   }
 
-  /** Creates an Interval consisting of the given number of seconds. */
-  public static Interval ofSeconds(long seconds) {
-    return builder()
-        .setMonths(0)
-        .setDays(0)
-        .setMicros(seconds * MICROS_PER_SECOND)
-        .setNanoFractions((short) 0)
-        .build();
-  }
-
-  /** Creates an Interval consisting of the given number of milliseconds. */
-  public static Interval ofMilliseconds(long milliseconds) {
-    return builder()
-        .setMonths(0)
-        .setDays(0)
-        .setMicros(milliseconds * MICROS_PER_MILLI)
-        .setNanoFractions((short) 0)
-        .build();
-  }
-
-  /** Creates an Interval consisting of the given number of microseconds. */
-  public static Interval ofMicros(long micros) {
-    return builder().months(0).days(0).micros(micros).nanoFractions((short) 0).build();
-  }
-
-  /** Creates an Interval consisting of the given number of nanoseconds. */
-  public static Interval ofNanos(@NotNull BigInteger nanos) {
-    BigInteger micros = nanos.divide(BigInteger.valueOf(NANOS_PER_MICRO));
-    BigInteger nanoFractions = nanos.subtract(micros.multiply(BigInteger.valueOf(NANOS_PER_MICRO)));
-
-    long microsValue = micros.longValue();
-    long nanoFractionsValue = nanoFractions.longValue();
-
-    return builder()
-        .setMonths(0)
-        .setDays(0)
-        .setMicros(microsValue)
-        .setNanoFractions((short) nanoFractionsValue)
-        .build();
-  }
-
+  /** Creates an interval which representing 0-duration. */
   public static Interval zeroInterval() {
     return builder().setMonths(0).setDays(0).setMicros(0).setNanoFractions((short) 0).build();
   }
@@ -266,14 +272,6 @@ public abstract class Interval implements Comparable<Interval>, Serializable {
   }
 
   @Override
-  public int compareTo(@NotNull Interval anotherInterval) {
-    if (equals(anotherInterval)) {
-      return 0;
-    }
-    return getAsNanos().compareTo(anotherInterval.getAsNanos());
-  }
-
-  @Override
   public int hashCode() {
     int result = 17;
     result = 31 * result + Long.valueOf(months()).hashCode();
@@ -284,19 +282,19 @@ public abstract class Interval implements Comparable<Interval>, Serializable {
 
   @AutoValue.Builder
   public abstract static class Builder {
-    abstract Builder months(long months);
+    abstract Builder months(int months);
 
-    abstract Builder days(long days);
+    abstract Builder days(int days);
 
     abstract Builder micros(long micros);
 
     abstract Builder nanoFractions(short nanoFractions);
 
-    public Builder setMonths(long months) {
+    public Builder setMonths(int months) {
       return months(months);
     }
 
-    public Builder setDays(long days) {
+    public Builder setDays(int days) {
       return days(days);
     }
 
