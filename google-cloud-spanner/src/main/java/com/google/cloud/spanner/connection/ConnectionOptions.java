@@ -545,8 +545,8 @@ public class ConnectionOptions {
                       ENABLE_END_TO_END_TRACING_PROPERTY_NAME,
                       "Enable end-to-end tracing (true/false) to generate traces for both the time "
                           + "that is spent in the client, as well as time that is spent in the Spanner server. "
-                          + "Server side traces would always go to Google Cloud Trace so to see end to end traces, "
-                          + "client should choose an exporter that exports the traces to Google Cloud Trace.",
+                          + "Server side traces can only go to Google Cloud Trace, so to see end to end traces, "
+                          + "the application should configure an exporter that exports the traces to Google Cloud Trace.",
                       DEFAULT_ENABLE_END_TO_END_TRACING))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
