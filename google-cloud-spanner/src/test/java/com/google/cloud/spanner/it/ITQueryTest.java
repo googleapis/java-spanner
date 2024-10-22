@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -37,9 +38,13 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.opentelemetry.trace.TraceConfiguration;
+import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.SpannerOptionsHelper;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
@@ -48,14 +53,33 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
+import com.google.cloud.trace.v1.TraceServiceClient;
+import com.google.cloud.trace.v1.TraceServiceClient.ListTracesPagedResponse;
+import com.google.cloud.trace.v1.TraceServiceSettings;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
+import com.google.devtools.cloudtrace.v1.ListTracesRequest;
+import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.spanner.v1.ResultSetStats;
+import io.opentelemetry.api.incubator.trace.ExtendedTracer;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -70,9 +94,16 @@ import org.junit.runners.Parameterized;
 @Category(ParallelIntegrationTest.class)
 @RunWith(Parameterized.class)
 public class ITQueryTest {
+  static {
+    SpannerOptionsHelper.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryMetrics();
+    SpannerOptions.enableOpenTelemetryTraces();
+  }
+
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static DatabaseClient googleStandardSQLClient;
   private static DatabaseClient postgreSQLClient;
+  private static OpenTelemetrySdk openTelemetry;
   private String selectValueQuery;
 
   @BeforeClass
@@ -85,6 +116,38 @@ public class ITQueryTest {
           env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
       postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     }
+  }
+
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
+
+    SpannerOptions options = env.getTestHelper().getOptions();
+    TraceConfiguration.Builder traceConfigurationBuilder = TraceConfiguration.builder();
+    if (options.getCredentials() != null) {
+      traceConfigurationBuilder.setCredentials(options.getCredentials());
+    }
+    TraceConfiguration traceConfiguration =
+        traceConfigurationBuilder.setProjectId(options.getProjectId()).build();
+    SpanExporter traceExporter = TraceExporter.createWithConfiguration(traceConfiguration);
+
+    String serviceName =
+        "java-spanner-jdbc-integration-tests-" + ThreadLocalRandom.current().nextInt();
+    openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    // Always sample in this test to ensure we know what we get.
+                    .setSampler(Sampler.alwaysOn())
+                    .setResource(Resource.builder().put("service.name", serviceName).build())
+                    .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+                    .build())
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .build();
+    options.toBuilder().setOpenTelemetry(openTelemetry).setEnableEndToEndTracing(true).build();
+    // TODO: Remove when the bug in OpenTelemetry that has SdkTracer implement ExtendedTracer,
+    //       which is only available in the incubator project.
+    ExtendedTracer ignore = (ExtendedTracer) openTelemetry.getTracer("foo");
   }
 
   @AfterClass
@@ -122,9 +185,44 @@ public class ITQueryTest {
   }
 
   @Test
-  public void simple() {
-    Struct row = execute(Statement.of("SELECT 1"), Type.int64());
+  public void simple() throws InterruptedException, IOException {
+    String sql = "SELECT 1";
+    Struct row = execute(Statement.of(sql), Type.int64());
     assertThat(row.getLong(0)).isEqualTo(1);
+  }
+
+  private void assertTrace() throws IOException, InterruptedException {
+    com.google.protobuf.Timestamp timestamp = Timestamp.now().toProto();
+    TraceServiceSettings settings =
+        env.getTestHelper().getOptions().getCredentials() == null
+            ? TraceServiceSettings.newBuilder().build()
+            : TraceServiceSettings.newBuilder()
+                .setCredentialsProvider(
+                    FixedCredentialsProvider.create(
+                        env.getTestHelper().getOptions().getCredentials()))
+                .build();
+    TraceServiceClient client = TraceServiceClient.create(settings);
+    // It can take a few seconds before the trace is visible.
+    Thread.sleep(5000L);
+    boolean foundTrace = false;
+    for (int attempts = 0; attempts < 2; attempts++) {
+      ListTracesPagedResponse response =
+          client.listTraces(
+              ListTracesRequest.newBuilder()
+                  .setProjectId(env.getTestHelper().getInstanceId().getProject())
+                  .setFilter("span:arrayOfStruct")
+                //  .setStartTime(timestamp)
+                  .build());
+      int size = Iterables.size(response.iterateAll());
+      if (size != 0) {
+        assertEquals(1, size);
+        foundTrace = true;
+        break;
+      } else {
+        Thread.sleep(5000L);
+      }
+    }
+    assertTrue(foundTrace);
   }
 
   @Test
@@ -143,7 +241,10 @@ public class ITQueryTest {
   }
 
   @Test
-  public void arrayOfStruct() {
+  public void arrayOfStruct() throws IOException, InterruptedException {
+    Tracer tracer = openTelemetry.getTracer(ITQueryTest.class.getName());
+    Span span = tracer.spanBuilder("arrayOfStruct").startSpan();
+    Scope scope = span.makeCurrent();
     assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Type structType =
         Type.struct(StructField.of("C1", Type.string()), StructField.of("C2", Type.int64()));
@@ -154,6 +255,8 @@ public class ITQueryTest {
                     + "FROM (SELECT 'a' AS C1, 1 AS C2 UNION ALL SELECT 'b' AS C1, 2 AS C2) "
                     + "ORDER BY C1 ASC)"),
             Type.array(structType));
+    scope.close();
+    span.end();
     assertThat(row.isNull(0)).isFalse();
     List<Struct> value = row.getStructList(0);
     assertThat(value.size()).isEqualTo(2);
@@ -178,6 +281,7 @@ public class ITQueryTest {
                     Struct.newBuilder().set("C1").to("b").set("C2").to(2).build()))
             .build();
     assertThat(row).isEqualTo(expectedRow);
+    assertTrace();
   }
 
   @Test
