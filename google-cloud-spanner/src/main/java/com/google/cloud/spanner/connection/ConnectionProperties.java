@@ -39,6 +39,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATA
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DDL_IN_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_API_TRACING;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_END_TO_END_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENDPOINT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_KEEP_TRANSACTION_ALIVE;
@@ -65,6 +66,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_USE_
 import static com.google.cloud.spanner.connection.ConnectionOptions.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DIALECT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_API_TRACING_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_END_TO_END_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_EXTENDED_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENCODED_CREDENTIALS_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENDPOINT_PROPERTY_NAME;
@@ -290,6 +292,16 @@ class ConnectionProperties {
               + "or if you want to debug potential latency problems caused by RPCs that are "
               + "being retried.",
           DEFAULT_ENABLE_API_TRACING,
+          BooleanConverter.INSTANCE,
+          Context.STARTUP);
+  static final ConnectionProperty<Boolean> ENABLE_END_TO_END_TRACING =
+      create(
+          ENABLE_END_TO_END_TRACING_PROPERTY_NAME,
+          "Enable end-to-end tracing (true/false) to generate traces for both the time "
+              + "that is spent in the client, as well as time that is spent in the Spanner server. "
+              + "Server side traces can only go to Google Cloud Trace, so to see end to end traces, "
+              + "the application should configure an exporter that exports the traces to Google Cloud Trace.",
+          DEFAULT_ENABLE_END_TO_END_TRACING,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Integer> MIN_SESSIONS =
