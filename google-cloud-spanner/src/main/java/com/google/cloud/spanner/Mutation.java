@@ -504,9 +504,6 @@ public final class Mutation implements Serializable {
       }
     }
 
-    System.out.println("Printing");
-    System.out.println(allMutationsExcludingInsert);
-    System.out.println(largeInsertMutation);
     // Select a random mutation based on the heuristic.
     if (allMutationsExcludingInsert.size() > 0) {
       int randomIndex = ThreadLocalRandom.current().nextInt(allMutationsExcludingInsert.size());
