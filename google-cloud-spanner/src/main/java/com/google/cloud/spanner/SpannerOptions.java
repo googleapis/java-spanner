@@ -727,6 +727,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
+    private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
 
     private SpannerEnvironmentImpl() {}
 
@@ -751,6 +752,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableApiTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_API_TRACING));
+    }
+
+    @Override
+    public boolean isEnableBuiltInMetrics() {
+      return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_BUILTIN_METRICS));
     }
 
     @Override
@@ -821,7 +827,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
-    private boolean enableBuiltInMetrics = true;
+    private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
