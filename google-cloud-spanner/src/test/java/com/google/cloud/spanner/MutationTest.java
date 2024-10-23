@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -359,7 +360,14 @@ public class MutationTest {
             Mutation.newInsertBuilder("T2").set("C").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    // Random mutation returned should be INSERT with large number of values
+    MatcherAssert.assertThat(
+        mutation,
+        matchesProto(
+            "insert { table: 'T1' columns: 'C' values { values { string_value: 'V1' } }"
+                + " values { values { string_value: 'V2' } }"
+                + " values { values { string_value: 'V3' } } }"));
 
     assertThat(proto.size()).isEqualTo(2);
     MatcherAssert.assertThat(
@@ -386,7 +394,13 @@ public class MutationTest {
             Mutation.newUpdateBuilder("T").set("C").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    // Random mutation returned should be of UPDATE operation
+    MatcherAssert.assertThat(
+        mutation,
+        matchesProto(
+            "update { table: 'T' columns: 'C' values { values { string_value: 'V4' } }"
+                + " values { values { string_value: 'V5' } } }"));
 
     assertThat(proto.size()).isEqualTo(2);
     MatcherAssert.assertThat(
@@ -413,7 +427,13 @@ public class MutationTest {
             Mutation.newInsertBuilder("T").set("C2").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    MatcherAssert.assertThat(
+        mutation,
+        matchesProto(
+            "insert { table: 'T' columns: 'C1' values { values { string_value: 'V1' } }"
+                + " values { values { string_value: 'V2' } }"
+                + " values { values { string_value: 'V3' } } }"));
 
     assertThat(proto.size()).isEqualTo(2);
     MatcherAssert.assertThat(
@@ -439,7 +459,9 @@ public class MutationTest {
             Mutation.delete("T", KeySet.range(KeyRange.closedClosed(Key.of("kc"), Key.of("kd")))));
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    // Random mutation returned should be of DELETE operation
+    assertTrue(mutation.hasDelete());
 
     assertThat(proto.size()).isEqualTo(1);
     MatcherAssert.assertThat(
@@ -470,7 +492,8 @@ public class MutationTest {
             Mutation.newInsertBuilder("T2").set("C").to("V1").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    assertTrue(mutation.hasDelete());
 
     assertThat(proto.size()).isEqualTo(4);
     MatcherAssert.assertThat(
