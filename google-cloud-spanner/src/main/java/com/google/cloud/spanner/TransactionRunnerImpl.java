@@ -289,7 +289,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     ApiFuture<Void> ensureTxnAsync() {
       final SettableApiFuture<Void> res = SettableApiFuture.create();
       if (transactionId == null || isAborted()) {
-        createTxnAsync(res);
+        createTxnAsync(res, null);
       } else {
         span.addAnnotation("Transaction Initialized", "Id", transactionId.toStringUtf8());
         txnLogger.log(
@@ -301,20 +301,29 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       return res;
     }
 
-    private void createTxnAsync(final SettableApiFuture<Void> res) {
+    private void createTxnAsync(
+        final SettableApiFuture<Void> res, com.google.spanner.v1.Mutation mutation) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut =
+      final ApiFuture<Transaction> fut =
           session.beginTransactionAsync(
-              options, isRouteToLeader(), getTransactionChannelHint(), getPreviousTransactionId());
+              options,
+              isRouteToLeader(),
+              getTransactionChannelHint(),
+              getPreviousTransactionId(),
+              mutation);
       fut.addListener(
           () -> {
             try {
-              transactionId = fut.get();
+              Transaction txn = fut.get();
+              transactionId = txn.getId();
               span.addAnnotation("Transaction Creation Done", "Id", transactionId.toStringUtf8());
               txnLogger.log(
                   Level.FINER,
                   "Started transaction {0}",
                   txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
+              if (txn.hasPrecommitToken()) {
+                onPrecommitToken(txn.getPrecommitToken());
+              }
               res.set(null);
             } catch (ExecutionException e) {
               span.addAnnotation(
@@ -357,13 +366,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       close();
 
       List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+      com.google.spanner.v1.Mutation randomMutation = null;
       synchronized (committingLock) {
         if (committing) {
           throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
         }
         committing = true;
         if (!mutations.isEmpty()) {
-          Mutation.toProto(mutations, mutationsProto);
+          randomMutation = Mutation.toProtoGetRandomMutation(mutations, mutationsProto);
         }
       }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
@@ -392,7 +402,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
-          createTxnAsync(finishOps);
+          createTxnAsync(finishOps, randomMutation);
         } else {
           finishOps = finishedAsyncOperations;
         }

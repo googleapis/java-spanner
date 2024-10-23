@@ -321,7 +321,7 @@ public class MutationTest {
         com.google.spanner.v1.Mutation.getDefaultInstance();
     proto.add(existingProto);
 
-    Mutation.toProto(mutations, proto);
+    Mutation.toProtoGetRandomMutation(mutations, proto);
 
     assertThat(proto.size()).isAtLeast(1);
     assertThat(proto.get(0)).isSameInstanceAs(existingProto);
@@ -359,7 +359,7 @@ public class MutationTest {
             Mutation.newInsertBuilder("T2").set("C").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProto(mutations, proto);
+    Mutation.toProtoGetRandomMutation(mutations, proto);
 
     assertThat(proto.size()).isEqualTo(2);
     MatcherAssert.assertThat(
@@ -386,7 +386,7 @@ public class MutationTest {
             Mutation.newUpdateBuilder("T").set("C").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProto(mutations, proto);
+    Mutation.toProtoGetRandomMutation(mutations, proto);
 
     assertThat(proto.size()).isEqualTo(2);
     MatcherAssert.assertThat(
@@ -413,7 +413,7 @@ public class MutationTest {
             Mutation.newInsertBuilder("T").set("C2").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProto(mutations, proto);
+    Mutation.toProtoGetRandomMutation(mutations, proto);
 
     assertThat(proto.size()).isEqualTo(2);
     MatcherAssert.assertThat(
@@ -439,7 +439,7 @@ public class MutationTest {
             Mutation.delete("T", KeySet.range(KeyRange.closedClosed(Key.of("kc"), Key.of("kd")))));
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProto(mutations, proto);
+    Mutation.toProtoGetRandomMutation(mutations, proto);
 
     assertThat(proto.size()).isEqualTo(1);
     MatcherAssert.assertThat(
@@ -470,7 +470,7 @@ public class MutationTest {
             Mutation.newInsertBuilder("T2").set("C").to("V1").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    Mutation.toProto(mutations, proto);
+    Mutation.toProtoGetRandomMutation(mutations, proto);
 
     assertThat(proto.size()).isEqualTo(4);
     MatcherAssert.assertThat(
