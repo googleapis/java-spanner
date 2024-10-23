@@ -493,6 +493,7 @@ public class MutationTest {
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
     com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    System.out.println(mutation);
     assertTrue(mutation.hasDelete());
 
     assertThat(proto.size()).isEqualTo(4);
