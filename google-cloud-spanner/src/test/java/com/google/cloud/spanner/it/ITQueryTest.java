@@ -61,6 +61,7 @@ import com.google.common.collect.Iterables;
 import com.google.devtools.cloudtrace.v1.ListTracesRequest;
 import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.spanner.v1.ResultSetStats;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -80,6 +81,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -116,12 +118,12 @@ public class ITQueryTest {
           env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
       postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     }
+    setupOpenTelemetry();
   }
 
-  @BeforeClass
   public static void setupOpenTelemetry() {
     assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
-
+   // GlobalOpenTelemetry.set(openTelemetry);
     SpannerOptions options = env.getTestHelper().getOptions();
     TraceConfiguration.Builder traceConfigurationBuilder = TraceConfiguration.builder();
     if (options.getCredentials() != null) {
@@ -144,15 +146,26 @@ public class ITQueryTest {
                     .build())
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .build();
-    options.toBuilder().setOpenTelemetry(openTelemetry).setEnableEndToEndTracing(true).build();
+    SpannerOptions.enableOpenTelemetryTraces();
+    options.toBuilder()
+        .setOpenTelemetry(openTelemetry)
+        .setEnableApiTracing(true)
+        .setEnableEndToEndTracing(true).build();
     // TODO: Remove when the bug in OpenTelemetry that has SdkTracer implement ExtendedTracer,
     //       which is only available in the incubator project.
     ExtendedTracer ignore = (ExtendedTracer) openTelemetry.getTracer("foo");
   }
 
+  public static void closeOpenTelemetry() {
+    if (openTelemetry != null) {
+      openTelemetry.close();
+    }
+  }
+
   @AfterClass
   public static void teardown() {
     ConnectionOptions.closeSpanner();
+    closeOpenTelemetry();
   }
 
   @Before
@@ -192,7 +205,7 @@ public class ITQueryTest {
   }
 
   private void assertTrace() throws IOException, InterruptedException {
-    com.google.protobuf.Timestamp timestamp = Timestamp.now().toProto();
+    openTelemetry.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     TraceServiceSettings settings =
         env.getTestHelper().getOptions().getCredentials() == null
             ? TraceServiceSettings.newBuilder().build()
