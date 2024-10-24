@@ -51,7 +51,7 @@ public abstract class Interval implements Serializable {
 
   private static final Pattern INTERVAL_PATTERN =
       Pattern.compile(
-          "^P(?!$)(-?\\d+Y)?(-?\\d+M)?(-?\\d+D)?(T(?=-?\\d)(-?\\d+H)?(-?\\d+M)?(-?\\d+(\\.\\d{1,9})?S)?)?$");
+          "^P(?!$)(-?\\d+Y)?(-?\\d+M)?(-?\\d+D)?(T(?=-?.?\\d)(-?\\d+H)?(-?\\d+M)?(-?((\\d+(\\.\\d{1,9})?)|(\\.\\d{1,9}))S)?)?$");
 
   /** Returns the months component of the interval. */
   public abstract int months();
@@ -153,8 +153,6 @@ public abstract class Interval implements Serializable {
     short nanoFractions =
         (nanos.subtract(BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICRO))))
             .shortValue();
-
-    System.out.println("Micros: " + micros + " Nanos: " + nanoFractions);
 
     return builder()
         .setMonths(months)

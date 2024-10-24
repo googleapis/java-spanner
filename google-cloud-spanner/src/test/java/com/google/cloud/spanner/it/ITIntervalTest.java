@@ -95,6 +95,7 @@ public class ITIntervalTest {
   public static void setUpDatabase()
       throws ExecutionException, InterruptedException, TimeoutException {
     assumeTrue("Interval is supported only in Cloud-Devel for now", isUsingCloudDevel());
+    System.out.println("---Running Interval Integration Tests.---");
     assumeFalse("Emulator does not support Interval yet", isUsingEmulator());
 
     Database googleStandardSQLDatabase =
@@ -168,6 +169,39 @@ public class ITIntervalTest {
             .executeQuery(Statement.of("SELECT INTERVAL '1' DAY + INTERVAL '1' MONTH AS Col1"))) {
       assertTrue(resultSet.next());
       assertTrue(resultSet.getInterval(0).equals(Interval.fromMonthsDaysMicros(1, 1, 0)));
+    }
+  }
+
+  @Test
+  public void queryWithIntervalParam() {
+
+    write(
+        baseInsert()
+            .set("slo_days")
+            .to(5)
+            .set("update_time")
+            .to(Timestamp.parseTimestamp("2004-10-19 10:23:54+0530"))
+            .build());
+
+    String query;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      query =
+          "SELECT COUNT(*) FROM IntervalTable WHERE update_time < TIMESTAMP '2004-11-30 10:23:54+0530' - $1";
+    } else {
+      query =
+          "SELECT SELECT COUNT(*) FROM IntervalTable WHERE update_time < TIMESTAMP('2004-11-30 10:23:54+0530') - @p1";
+    }
+
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder(query)
+                    .bind("p1")
+                    .to(Value.interval(Interval.ofDays(30)))
+                    .build())) {
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getLong(0), 1L);
     }
   }
 
