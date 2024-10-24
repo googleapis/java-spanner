@@ -655,4 +655,50 @@ public interface InstanceOrBuilder
    * @return The edition.
    */
   com.google.spanner.admin.instance.v1.Instance.Edition getEdition();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Controls the default backup behavior for new databases within the
+   * instance.
+   *
+   * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+   * backup schedules are not allowed for free instances.
+   *
+   * In the `GetInstance` or `ListInstances` response, if the value of
+   * default_backup_schedule_type is unset or NONE, no default backup
+   * schedule will be created for new databases within the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for defaultBackupScheduleType.
+   */
+  int getDefaultBackupScheduleTypeValue();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Controls the default backup behavior for new databases within the
+   * instance.
+   *
+   * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+   * backup schedules are not allowed for free instances.
+   *
+   * In the `GetInstance` or `ListInstances` response, if the value of
+   * default_backup_schedule_type is unset or NONE, no default backup
+   * schedule will be created for new databases within the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The defaultBackupScheduleType.
+   */
+  com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+      getDefaultBackupScheduleType();
 }
