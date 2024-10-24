@@ -1855,7 +1855,7 @@ public class ValueTest {
                     .addAllValues(
                         Arrays.asList(
                             com.google.protobuf.Value.newBuilder()
-                                .setStringValue("P1Y2M3DT5H6M2.456787800S")
+                                .setStringValue("P1Y2M3DT5H6M2.4567878S")
                                 .build(),
                             com.google.protobuf.Value.newBuilder()
                                 .setNullValue(NullValue.NULL_VALUE)

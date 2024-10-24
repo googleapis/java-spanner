@@ -17,9 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
@@ -30,6 +28,7 @@ import com.google.cloud.spanner.connection.ConnectionOptions;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.junit.AfterClass;
@@ -63,32 +62,30 @@ public class ITIntervalTest {
       new String[] {
         "CREATE TABLE IntervalTable (\n"
             + "  key STRING(MAX),\n"
-            + "  slo_days INT64,\n"
-            + "  update_time TIMESTAMP,\n"
-            + "  expiry_days INT64 AS (EXTRACT(DAY FROM make_interval(day => GREATEST(LEAST(slo_days, 365), 1)))),\n"
-            + "  interval_array_len bigint AS (ARRAY_LENGTH(ARRAY<INTERVAL>[INTERVAL '1-2 3 4:5:6' YEAR TO SECOND]))\n"
-            + ") PRIMARY KEY (key);"
+            + "  create_time TIMESTAMP,\n"
+            + "  expiry_time TIMESTAMP,\n"
+            + "  expiry_within_month bool AS (expiry_time - create_time < INTERVAL 30 DAY),\n"
+            + "  interval_array_len INT64 AS (ARRAY_LENGTH(ARRAY<INTERVAL>[INTERVAL '1-2 3 4:5:6' YEAR TO SECOND]))\n"
+            + ") PRIMARY KEY (key)"
       };
 
   private static final String[] POSTGRESQL_SCHEMA =
       new String[] {
         "CREATE TABLE IntervalTable (\n"
             + "  key text primary key,\n"
-            + "  slo_days bigint,\n"
-            + "  update_time timestamptz,\n"
-            + "  expiry_days bigint GENERATED ALWAYS AS (EXTRACT(DAY FROM make_interval(days =>GREATEST(LEAST(slo_days, 365), 1)))) STORED,\n"
+            + "  create_time timestamptz,\n"
+            + "  expiry_time timestamptz,\n"
+            + "  expiry_within_month bool GENERATED ALWAYS AS (INTERVAL '1' DAY < INTERVAL '30' DAY) STORED,\n"
             + "  interval_array_len bigint GENERATED ALWAYS AS (ARRAY_LENGTH(ARRAY[INTERVAL '1-2 3 4:5:6'], 1)) STORED\n"
-            + ");"
+            + ")"
       };
 
   private static DatabaseClient client;
 
   private static boolean isUsingCloudDevel() {
-    String jobType = System.getenv("JOB_TYPE");
-
-    // Assumes that the jobType contains the string "cloud-devel" to signal that
-    // the environment is cloud-devel.
-    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
+    return Objects.equals(
+        System.getProperty("spanner.gce.config.server_url"),
+        "https://staging-wrenchworks.sandbox.googleapis.com");
   }
 
   @BeforeClass
@@ -131,7 +128,9 @@ public class ITIntervalTest {
   }
 
   private Mutation.WriteBuilder baseInsert() {
-    return Mutation.newInsertOrUpdateBuilder("T").set("Key").to(lastKey = uniqueString());
+    return Mutation.newInsertOrUpdateBuilder("IntervalTable")
+        .set("Key")
+        .to(lastKey = uniqueString());
   }
 
   private Struct readRow(String table, String key, String... columns) {
@@ -141,23 +140,30 @@ public class ITIntervalTest {
   }
 
   private Struct readLastRow(String... columns) {
-    return readRow("T", lastKey, columns);
+    return readRow("IntervalTable", lastKey, columns);
   }
 
   @Test
   public void writeToTableWithIntervalExpressions() {
     write(
         baseInsert()
-            .set("slo_days")
-            .to(5)
-            .set("update_time")
-            .to(Timestamp.ofTimeMicroseconds(12345678L))
+            .set("create_time")
+            .to(Timestamp.parseTimestamp("2004-11-30T04:53:54Z"))
+            .set("expiry_time")
+            .to(Timestamp.parseTimestamp("2004-12-15T04:53:54Z"))
             .build());
-    Struct row = readLastRow("expiryDays", "interval_array_len");
-    assertFalse(row.isNull(0));
-    assertEquals(5, row.getLong(0));
-    assertFalse(row.isNull(1));
-    assertEquals(1, row.getLong(1));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "SELECT expiry_within_month, interval_array_len FROM IntervalTable WHERE key='"
+                        + lastKey
+                        + "'"))) {
+      assertTrue(resultSet.next());
+      assertTrue(resultSet.getBoolean(0));
+      assertEquals(1, resultSet.getLong(1));
+    }
   }
 
   @Test
@@ -167,7 +173,39 @@ public class ITIntervalTest {
             .singleUse()
             .executeQuery(Statement.of("SELECT INTERVAL '1' DAY + INTERVAL '1' MONTH AS Col1"))) {
       assertTrue(resultSet.next());
-      assertTrue(resultSet.getInterval(0).equals(Interval.fromMonthsDaysMicros(1, 1, 0)));
+      assertEquals(resultSet.getInterval(0), Interval.fromMonthsDaysMicros(1, 1, 0));
+    }
+  }
+
+  @Test
+  public void queryWithIntervalParam() {
+    write(
+        baseInsert()
+            .set("create_time")
+            .to(Timestamp.parseTimestamp("2004-08-30T04:53:54Z"))
+            .set("expiry_time")
+            .to(Timestamp.parseTimestamp("2004-12-15T04:53:54Z"))
+            .build());
+
+    String query;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      query =
+          "SELECT COUNT(*) FROM IntervalTable WHERE create_time < TIMESTAMPTZ '2004-11-30T10:23:54+0530' - $1";
+    } else {
+      query =
+          "SELECT COUNT(*) FROM IntervalTable WHERE create_time < TIMESTAMP('2004-11-30T10:23:54+0530') - @p1";
+    }
+
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder(query)
+                    .bind("p1")
+                    .to(Value.interval(Interval.ofDays(30)))
+                    .build())) {
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getLong(0), 1L);
     }
   }
 
@@ -203,12 +241,12 @@ public class ITIntervalTest {
         "SELECT ARRAY[CAST('P1Y2M3DT4H5M6.789123S' AS INTERVAL), null, CAST('P-1Y-2M-3DT-4H-5M-6.789123S' AS INTERVAL)] AS Col1";
     try (ResultSet resultSet = client.singleUse().executeQuery(Statement.of(query))) {
       assertTrue(resultSet.next());
-      assertTrue(
+      assertEquals(
           Arrays.asList(
-                  Interval.parseFromString("P1Y2M3DT4H5M6.789123S"),
-                  null,
-                  Interval.parseFromString("P-1Y-2M-3DT-4H-5M-6.789123S"))
-              .equals(resultSet.getIntervalList(0)));
+              Interval.parseFromString("P1Y2M3DT4H5M6.789123S"),
+              null,
+              Interval.parseFromString("P-1Y-2M-3DT-4H-5M-6.789123S")),
+          resultSet.getIntervalList(0));
     }
   }
 }
