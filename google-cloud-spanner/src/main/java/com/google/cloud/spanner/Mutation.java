@@ -440,9 +440,7 @@ public final class Mutation implements Serializable {
             if (checkIfInsertMutationWithLargeValue(builtMutation, largestInsertMutation)) {
               largestInsertMutation = builtMutation;
             }
-            if (!builtMutation.hasInsert()) {
-              allMutationsExcludingInsert.add(builtMutation);
-            }
+            addMutationsExcludingInsert(builtMutation, allMutationsExcludingInsert);
           }
           proto = com.google.spanner.v1.Mutation.newBuilder();
           com.google.spanner.v1.Mutation.Delete.Builder delete =
@@ -469,9 +467,7 @@ public final class Mutation implements Serializable {
             if (checkIfInsertMutationWithLargeValue(builtMutation, largestInsertMutation)) {
               largestInsertMutation = builtMutation;
             }
-            if (!builtMutation.hasInsert()) {
-              allMutationsExcludingInsert.add(builtMutation);
-            }
+            addMutationsExcludingInsert(builtMutation, allMutationsExcludingInsert);
           }
           proto = com.google.spanner.v1.Mutation.newBuilder();
           switch (mutation.operation) {
@@ -503,9 +499,7 @@ public final class Mutation implements Serializable {
       if (checkIfInsertMutationWithLargeValue(builtMutation, largestInsertMutation)) {
         largestInsertMutation = builtMutation;
       }
-      if (!builtMutation.hasInsert()) {
-        allMutationsExcludingInsert.add(builtMutation);
-      }
+      addMutationsExcludingInsert(builtMutation, allMutationsExcludingInsert);
     }
 
     // Select a random mutation based on the heuristic.
@@ -530,5 +524,14 @@ public final class Mutation implements Serializable {
     return mutation.hasInsert()
         && mutation.getInsert().getValuesCount()
             > largestInsertMutation.getInsert().getValuesCount();
+  }
+
+  // Stores all mutations that are not of type INSERT.
+  private static void addMutationsExcludingInsert(
+      com.google.spanner.v1.Mutation mutation,
+      List<com.google.spanner.v1.Mutation> allMutationsExcludingInsert) {
+    if (!mutation.hasInsert()) {
+      allMutationsExcludingInsert.add(mutation);
+    }
   }
 }
