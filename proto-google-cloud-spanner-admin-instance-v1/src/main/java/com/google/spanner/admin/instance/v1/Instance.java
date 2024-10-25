@@ -46,6 +46,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     state_ = 0;
     endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
     edition_ = 0;
+    defaultBackupScheduleType_ = 0;
   }
 
   @java.lang.Override
@@ -422,6 +423,177 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
 
     // @@protoc_insertion_point(enum_scope:google.spanner.admin.instance.v1.Instance.Edition)
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Indicates the default backup behavior for new databases within the
+   * instance.
+   * </pre>
+   *
+   * Protobuf enum {@code google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType}
+   */
+  public enum DefaultBackupScheduleType implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     *
+     *
+     * <pre>
+     * Not specified.
+     * </pre>
+     *
+     * <code>DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED = 0;</code>
+     */
+    DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED(0),
+    /**
+     *
+     *
+     * <pre>
+     * No default backup schedule will be created automatically on creation of a
+     * database within the instance.
+     * </pre>
+     *
+     * <code>NONE = 1;</code>
+     */
+    NONE(1),
+    /**
+     *
+     *
+     * <pre>
+     * A default backup schedule will be created automatically on creation of a
+     * database within the instance. The default backup schedule creates a full
+     * backup every 24 hours and retains the backup for a period of 7 days. Once
+     * created, the default backup schedule can be edited/deleted similar to any
+     * other backup schedule.
+     * </pre>
+     *
+     * <code>AUTOMATIC = 2;</code>
+     */
+    AUTOMATIC(2),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     *
+     *
+     * <pre>
+     * Not specified.
+     * </pre>
+     *
+     * <code>DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED = 0;</code>
+     */
+    public static final int DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED_VALUE = 0;
+    /**
+     *
+     *
+     * <pre>
+     * No default backup schedule will be created automatically on creation of a
+     * database within the instance.
+     * </pre>
+     *
+     * <code>NONE = 1;</code>
+     */
+    public static final int NONE_VALUE = 1;
+    /**
+     *
+     *
+     * <pre>
+     * A default backup schedule will be created automatically on creation of a
+     * database within the instance. The default backup schedule creates a full
+     * backup every 24 hours and retains the backup for a period of 7 days. Once
+     * created, the default backup schedule can be edited/deleted similar to any
+     * other backup schedule.
+     * </pre>
+     *
+     * <code>AUTOMATIC = 2;</code>
+     */
+    public static final int AUTOMATIC_VALUE = 2;
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static DefaultBackupScheduleType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static DefaultBackupScheduleType forNumber(int value) {
+      switch (value) {
+        case 0:
+          return DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED;
+        case 1:
+          return NONE;
+        case 2:
+          return AUTOMATIC;
+        default:
+          return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<DefaultBackupScheduleType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+
+    private static final com.google.protobuf.Internal.EnumLiteMap<DefaultBackupScheduleType>
+        internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<DefaultBackupScheduleType>() {
+              public DefaultBackupScheduleType findValueByNumber(int number) {
+                return DefaultBackupScheduleType.forNumber(number);
+              }
+            };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+      return getDescriptor();
+    }
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+      return com.google.spanner.admin.instance.v1.Instance.getDescriptor().getEnumTypes().get(2);
+    }
+
+    private static final DefaultBackupScheduleType[] VALUES = values();
+
+    public static DefaultBackupScheduleType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private DefaultBackupScheduleType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType)
   }
 
   private int bitField0_;
@@ -1266,6 +1438,65 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         : result;
   }
 
+  public static final int DEFAULT_BACKUP_SCHEDULE_TYPE_FIELD_NUMBER = 23;
+  private int defaultBackupScheduleType_ = 0;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Controls the default backup behavior for new databases within the
+   * instance.
+   *
+   * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+   * backup schedules are not allowed for free instances.
+   *
+   * In the `GetInstance` or `ListInstances` response, if the value of
+   * default_backup_schedule_type is unset or NONE, no default backup
+   * schedule will be created for new databases within the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for defaultBackupScheduleType.
+   */
+  @java.lang.Override
+  public int getDefaultBackupScheduleTypeValue() {
+    return defaultBackupScheduleType_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Controls the default backup behavior for new databases within the
+   * instance.
+   *
+   * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+   * backup schedules are not allowed for free instances.
+   *
+   * In the `GetInstance` or `ListInstances` response, if the value of
+   * default_backup_schedule_type is unset or NONE, no default backup
+   * schedule will be created for new databases within the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The defaultBackupScheduleType.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+      getDefaultBackupScheduleType() {
+    com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType result =
+        com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.forNumber(
+            defaultBackupScheduleType_);
+    return result == null
+        ? com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.UNRECOGNIZED
+        : result;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1319,6 +1550,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (edition_
         != com.google.spanner.admin.instance.v1.Instance.Edition.EDITION_UNSPECIFIED.getNumber()) {
       output.writeEnum(20, edition_);
+    }
+    if (defaultBackupScheduleType_
+        != com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+            .DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED
+            .getNumber()) {
+      output.writeEnum(23, defaultBackupScheduleType_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -1384,6 +1621,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.admin.instance.v1.Instance.Edition.EDITION_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(20, edition_);
     }
+    if (defaultBackupScheduleType_
+        != com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+            .DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED
+            .getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(23, defaultBackupScheduleType_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1423,6 +1666,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (!getUpdateTime().equals(other.getUpdateTime())) return false;
     }
     if (edition_ != other.edition_) return false;
+    if (defaultBackupScheduleType_ != other.defaultBackupScheduleType_) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -1472,6 +1716,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
     hash = (37 * hash) + EDITION_FIELD_NUMBER;
     hash = (53 * hash) + edition_;
+    hash = (37 * hash) + DEFAULT_BACKUP_SCHEDULE_TYPE_FIELD_NUMBER;
+    hash = (53 * hash) + defaultBackupScheduleType_;
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1676,6 +1922,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         updateTimeBuilder_ = null;
       }
       edition_ = 0;
+      defaultBackupScheduleType_ = 0;
       return this;
     }
 
@@ -1769,6 +2016,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       if (((from_bitField0_ & 0x00001000) != 0)) {
         result.edition_ = edition_;
+      }
+      if (((from_bitField0_ & 0x00002000) != 0)) {
+        result.defaultBackupScheduleType_ = defaultBackupScheduleType_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1893,6 +2143,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (other.edition_ != 0) {
         setEditionValue(other.getEditionValue());
       }
+      if (other.defaultBackupScheduleType_ != 0) {
+        setDefaultBackupScheduleTypeValue(other.getDefaultBackupScheduleTypeValue());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -2013,6 +2266,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00001000;
                 break;
               } // case 160
+            case 184:
+              {
+                defaultBackupScheduleType_ = input.readEnum();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 184
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -4397,6 +4656,151 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public Builder clearEdition() {
       bitField0_ = (bitField0_ & ~0x00001000);
       edition_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int defaultBackupScheduleType_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup behavior for new databases within the
+     * instance.
+     *
+     * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+     * backup schedules are not allowed for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * default_backup_schedule_type is unset or NONE, no default backup
+     * schedule will be created for new databases within the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The enum numeric value on the wire for defaultBackupScheduleType.
+     */
+    @java.lang.Override
+    public int getDefaultBackupScheduleTypeValue() {
+      return defaultBackupScheduleType_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup behavior for new databases within the
+     * instance.
+     *
+     * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+     * backup schedules are not allowed for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * default_backup_schedule_type is unset or NONE, no default backup
+     * schedule will be created for new databases within the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The enum numeric value on the wire for defaultBackupScheduleType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultBackupScheduleTypeValue(int value) {
+      defaultBackupScheduleType_ = value;
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup behavior for new databases within the
+     * instance.
+     *
+     * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+     * backup schedules are not allowed for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * default_backup_schedule_type is unset or NONE, no default backup
+     * schedule will be created for new databases within the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The defaultBackupScheduleType.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+        getDefaultBackupScheduleType() {
+      com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType result =
+          com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.forNumber(
+              defaultBackupScheduleType_);
+      return result == null
+          ? com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.UNRECOGNIZED
+          : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup behavior for new databases within the
+     * instance.
+     *
+     * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+     * backup schedules are not allowed for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * default_backup_schedule_type is unset or NONE, no default backup
+     * schedule will be created for new databases within the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The defaultBackupScheduleType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultBackupScheduleType(
+        com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00002000;
+      defaultBackupScheduleType_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup behavior for new databases within the
+     * instance.
+     *
+     * Note that `AUTOMATIC` is not permitted for free instances, as backups and
+     * backup schedules are not allowed for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * default_backup_schedule_type is unset or NONE, no default backup
+     * schedule will be created for new databases within the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDefaultBackupScheduleType() {
+      bitField0_ = (bitField0_ & ~0x00002000);
+      defaultBackupScheduleType_ = 0;
       onChanged();
       return this;
     }
