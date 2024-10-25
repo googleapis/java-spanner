@@ -39,7 +39,9 @@ import java.util.Arrays;
  * This sample demonstrates how to enable opencensus tracing and stats in cloud spanner client.
  *
  * @deprecated The OpenCensus project is deprecated. Use OpenTelemetry to enable metrics and stats
- * with cloud spanner client.
+ *     with cloud spanner client.
+ *     <p>Note: This sample uses System.exit(0) to ensure clean termination due to OpenCensus
+ *     background threads.
  */
 public class TracingSample {
 
@@ -95,10 +97,18 @@ public class TracingSample {
         }
       }
     } finally {
-      // Closes the client which will free up the resources used
-      spanner.close();
-      StackdriverExporter.unregister();
+      // First, shutdown the stats/metrics exporters
       StackdriverStatsExporter.unregister();
+
+      // Shutdown tracing components
+      StackdriverExporter.unregister();
+      Tracing.getExportComponent().shutdown();
+
+      // Close the spanner client
+      spanner.close();
+
+      // Force immediate exit since this is a sample application and OpenCensus
+      // background threads might prevent clean shutdown
       System.exit(0);
     }
   }
