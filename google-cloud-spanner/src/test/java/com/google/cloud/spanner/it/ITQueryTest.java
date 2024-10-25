@@ -30,22 +30,9 @@ import static org.junit.Assume.assumeTrue;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
-import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Joiner;
@@ -420,6 +407,22 @@ public class ITQueryTest {
   public void bindDateNull() {
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Date) null), Type.date());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindInterval() {
+    Interval d = Interval.parseFromString("P1Y2M3DT4H5M6.789123S");
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(d), Type.interval());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getInterval(0)).isEqualTo(d);
+  }
+
+  @Test
+  public void bindIntervalNull() {
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").to((Interval) null), Type.interval());
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -818,6 +821,39 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindIntervalArray() {
+    Interval d1 = Interval.parseFromString("P-1Y-2M-3DT4H5M6.789123S");
+    Interval d2 = Interval.parseFromString("P1Y2M3DT-4H-5M-6.789123S");
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toIntervalArray(asList(d1, d2, null)),
+            Type.array(Type.interval()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getIntervalList(0)).containsExactly(d1, d2, null).inOrder();
+  }
+
+  @Test
+  public void bindIntervalArrayEmpty() {
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toIntervalArray(Collections.emptyList()),
+            Type.array(Type.interval()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getIntervalList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindIntervalArrayNull() {
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toIntervalArray(null),
+            Type.array(Type.interval()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
   public void bindNumericArrayGoogleStandardSQL() {
     assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
@@ -981,6 +1017,8 @@ public class ITQueryTest {
         .to(Date.fromYearMonthDay(1, 3, 1))
         .set("f_string")
         .to("hello")
+        .set("f_interval")
+        .to(Interval.fromMonthsDaysMicros(100, 200, 5000))
         .set("f_bytes")
         .to(ByteArray.copyFrom("bytes"))
         .build();
@@ -998,6 +1036,7 @@ public class ITQueryTest {
             + "@p.f_timestamp,"
             + "@p.f_date,"
             + "@p.f_string,"
+            + "@p.f_interval,"
             + "@p.f_bytes";
 
     Struct row =
