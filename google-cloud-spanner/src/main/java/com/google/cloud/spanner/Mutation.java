@@ -426,7 +426,7 @@ public final class Mutation implements Serializable {
     // Stores all the mutations excluding INSERT mutations.
     List<com.google.spanner.v1.Mutation> allMutationsExcludingInsert = new ArrayList<>();
     // Stores the INSERT mutation with largest number of values.
-    com.google.spanner.v1.Mutation largeInsertMutation =
+    com.google.spanner.v1.Mutation largestInsertMutation =
         com.google.spanner.v1.Mutation.getDefaultInstance();
 
     for (Mutation mutation : mutations) {
@@ -437,8 +437,8 @@ public final class Mutation implements Serializable {
           if (proto != null) {
             com.google.spanner.v1.Mutation builtMutation = proto.build();
             out.add(builtMutation);
-            if (checkIfInsertMutationWithLargeValue(builtMutation, largeInsertMutation)) {
-              largeInsertMutation = builtMutation;
+            if (checkIfInsertMutationWithLargeValue(builtMutation, largestInsertMutation)) {
+              largestInsertMutation = builtMutation;
             }
             if (!builtMutation.hasInsert()) {
               allMutationsExcludingInsert.add(builtMutation);
@@ -466,8 +466,8 @@ public final class Mutation implements Serializable {
           if (proto != null) {
             com.google.spanner.v1.Mutation builtMutation = proto.build();
             out.add(builtMutation);
-            if (checkIfInsertMutationWithLargeValue(builtMutation, largeInsertMutation)) {
-              largeInsertMutation = builtMutation;
+            if (checkIfInsertMutationWithLargeValue(builtMutation, largestInsertMutation)) {
+              largestInsertMutation = builtMutation;
             }
             if (!builtMutation.hasInsert()) {
               allMutationsExcludingInsert.add(builtMutation);
@@ -500,8 +500,8 @@ public final class Mutation implements Serializable {
     if (proto != null) {
       com.google.spanner.v1.Mutation builtMutation = proto.build();
       out.add(proto.build());
-      if (checkIfInsertMutationWithLargeValue(builtMutation, largeInsertMutation)) {
-        largeInsertMutation = builtMutation;
+      if (checkIfInsertMutationWithLargeValue(builtMutation, largestInsertMutation)) {
+        largestInsertMutation = builtMutation;
       }
       if (!builtMutation.hasInsert()) {
         allMutationsExcludingInsert.add(builtMutation);
@@ -513,7 +513,7 @@ public final class Mutation implements Serializable {
       return allMutationsExcludingInsert.get(
           ThreadLocalRandom.current().nextInt(allMutationsExcludingInsert.size()));
     } else {
-      return largeInsertMutation;
+      return largestInsertMutation;
     }
   }
 
@@ -522,6 +522,11 @@ public final class Mutation implements Serializable {
   private static boolean checkIfInsertMutationWithLargeValue(
       com.google.spanner.v1.Mutation mutation,
       com.google.spanner.v1.Mutation largestInsertMutation) {
+    // If largestInsertMutation is a default instance of Mutation, replace it with the current
+    // INSERT mutation, even if it contains zero values.
+    if (!largestInsertMutation.hasInsert()) {
+      return true;
+    }
     return mutation.hasInsert()
         && mutation.getInsert().getValuesCount()
             > largestInsertMutation.getInsert().getValuesCount();

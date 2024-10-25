@@ -522,6 +522,23 @@ public class MutationTest {
   }
 
   @Test
+  public void toProtoWithEmptyInsertMutations() {
+    List<Mutation> mutations =
+        Arrays.asList(
+            Mutation.newInsertBuilder("T").build(), Mutation.newInsertBuilder("A").build());
+
+    List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
+    com.google.spanner.v1.Mutation mutation =
+        Mutation.toProtoAndReturnRandomMutation(mutations, proto);
+    System.out.println(mutation);
+
+    // Random mutation returned should be of INSERT operation with empty values
+    MatcherAssert.assertThat(mutation, matchesProto("insert { table: 'T' values { } }"));
+
+    assertThat(proto.size()).isEqualTo(2);
+  }
+
+  @Test
   public void javaSerialization() {
     reserializeAndAssert(appendAllTypes(Mutation.newInsertBuilder("test")).build());
     reserializeAndAssert(appendAllTypes(Mutation.newUpdateBuilder("test")).build());
