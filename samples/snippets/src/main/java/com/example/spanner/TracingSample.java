@@ -40,8 +40,9 @@ import java.util.Arrays;
  *
  * @deprecated The OpenCensus project is deprecated. Use OpenTelemetry to enable metrics and stats
  *     with cloud spanner client.
- *     <p>Note: This sample uses System.exit(0) to ensure clean termination due to OpenCensus
- *     background threads.
+ *     <p>Note: This sample uses System.exit(0) to ensure clean termination because the
+ *     ZPageHandlers HTTP server (localhost:8080/tracez) uses non-daemon threads and does not
+ *     provide a public stop() method.
  */
 public class TracingSample {
 
@@ -107,8 +108,8 @@ public class TracingSample {
       // Close the spanner client
       spanner.close();
 
-      // Force immediate exit since this is a sample application and OpenCensus
-      // background threads might prevent clean shutdown
+      // Force immediate exit since ZPageHandlers.startHttpServerAndRegisterAll(8080)
+      // starts a non-daemon HTTP server thread that cannot be stopped gracefully
       System.exit(0);
     }
   }
