@@ -322,7 +322,7 @@ public class MutationTest {
         com.google.spanner.v1.Mutation.getDefaultInstance();
     proto.add(existingProto);
 
-    Mutation.toProtoGetRandomMutation(mutations, proto);
+    Mutation.toProtoAndReturnRandomMutation(mutations, proto);
 
     assertThat(proto.size()).isAtLeast(1);
     assertThat(proto.get(0)).isSameInstanceAs(existingProto);
@@ -360,7 +360,8 @@ public class MutationTest {
             Mutation.newInsertBuilder("T2").set("C").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation =
+        Mutation.toProtoAndReturnRandomMutation(mutations, proto);
     // Random mutation returned should be INSERT with large number of values
     MatcherAssert.assertThat(
         mutation,
@@ -394,7 +395,8 @@ public class MutationTest {
             Mutation.newUpdateBuilder("T").set("C").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation =
+        Mutation.toProtoAndReturnRandomMutation(mutations, proto);
     // Random mutation returned should be of UPDATE operation
     MatcherAssert.assertThat(
         mutation,
@@ -427,7 +429,8 @@ public class MutationTest {
             Mutation.newInsertBuilder("T").set("C2").to("V5").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation =
+        Mutation.toProtoAndReturnRandomMutation(mutations, proto);
     MatcherAssert.assertThat(
         mutation,
         matchesProto(
@@ -459,7 +462,8 @@ public class MutationTest {
             Mutation.delete("T", KeySet.range(KeyRange.closedClosed(Key.of("kc"), Key.of("kd")))));
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation =
+        Mutation.toProtoAndReturnRandomMutation(mutations, proto);
     // Random mutation returned should be of DELETE operation
     assertTrue(mutation.hasDelete());
 
@@ -492,7 +496,8 @@ public class MutationTest {
             Mutation.newInsertBuilder("T2").set("C").to("V1").build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
-    com.google.spanner.v1.Mutation mutation = Mutation.toProtoGetRandomMutation(mutations, proto);
+    com.google.spanner.v1.Mutation mutation =
+        Mutation.toProtoAndReturnRandomMutation(mutations, proto);
     assertTrue(mutation.hasDelete());
 
     assertThat(proto.size()).isEqualTo(4);

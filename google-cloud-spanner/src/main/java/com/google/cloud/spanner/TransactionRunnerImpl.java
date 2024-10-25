@@ -373,7 +373,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         committing = true;
         if (!mutations.isEmpty()) {
-          randomMutation = Mutation.toProtoGetRandomMutation(mutations, mutationsProto);
+          randomMutation = Mutation.toProtoAndReturnRandomMutation(mutations, mutationsProto);
         }
       }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();

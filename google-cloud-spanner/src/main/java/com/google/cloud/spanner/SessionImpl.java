@@ -238,7 +238,7 @@ class SessionImpl implements Session {
       throws SpannerException {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-    Mutation.toProtoGetRandomMutation(mutations, mutationsProto);
+    Mutation.toProtoAndReturnRandomMutation(mutations, mutationsProto);
     Options options = Options.fromTransactionOptions(transactionOptions);
     final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
