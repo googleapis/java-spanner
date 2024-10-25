@@ -319,7 +319,7 @@ public class PgNumericTest {
                 .toStringArray(null)
                 .build());
     final List<com.google.spanner.v1.Mutation> expectedMutations = new ArrayList<>();
-    Mutation.toProto(mutations, expectedMutations);
+    Mutation.toProtoGetRandomMutation(mutations, expectedMutations);
 
     databaseClient
         .readWriteTransaction()

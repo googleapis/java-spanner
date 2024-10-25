@@ -44,7 +44,7 @@ public class MutationGroupTest {
 
   private BatchWriteRequest.MutationGroup getMutationGroupProto(ImmutableList<Mutation> mutations) {
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-    Mutation.toProto(mutations, mutationsProto);
+    Mutation.toProtoGetRandomMutation(mutations, mutationsProto);
     return BatchWriteRequest.MutationGroup.newBuilder().addAllMutations(mutationsProto).build();
   }
 
