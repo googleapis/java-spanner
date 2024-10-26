@@ -530,7 +530,6 @@ public class MutationTest {
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
     com.google.spanner.v1.Mutation mutation =
         Mutation.toProtoAndReturnRandomMutation(mutations, proto);
-    System.out.println(mutation);
 
     // Random mutation returned should be of INSERT operation with empty values
     MatcherAssert.assertThat(mutation, matchesProto("insert { table: 'T' values { } }"));
