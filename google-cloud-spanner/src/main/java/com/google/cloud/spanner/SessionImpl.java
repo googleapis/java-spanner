@@ -238,7 +238,7 @@ class SessionImpl implements Session {
       throws SpannerException {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-    Mutation.toProto(mutations, mutationsProto);
+    Mutation.toProtoAndReturnRandomMutation(mutations, mutationsProto);
     Options options = Options.fromTransactionOptions(transactionOptions);
     final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
@@ -431,19 +431,23 @@ class SessionImpl implements Session {
     }
   }
 
-  ApiFuture<ByteString> beginTransactionAsync(
+  ApiFuture<Transaction> beginTransactionAsync(
       Options transactionOptions,
       boolean routeToLeader,
       Map<SpannerRpc.Option, ?> channelHint,
-      ByteString previousTransactionId) {
-    final SettableApiFuture<ByteString> res = SettableApiFuture.create();
+      ByteString previousTransactionId,
+      com.google.spanner.v1.Mutation mutation) {
+    final SettableApiFuture<Transaction> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
-    final BeginTransactionRequest request =
+    BeginTransactionRequest.Builder requestBuilder =
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(
-                createReadWriteTransactionOptions(transactionOptions, previousTransactionId))
-            .build();
+                createReadWriteTransactionOptions(transactionOptions, previousTransactionId));
+    if (sessionReference.getIsMultiplexed() && mutation != null) {
+      requestBuilder.setMutationKey(mutation);
+    }
+    final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
       requestFuture = spanner.getRpc().beginTransactionAsync(request, channelHint, routeToLeader);
@@ -457,7 +461,7 @@ class SessionImpl implements Session {
                   ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
             }
             span.end();
-            res.set(txn.getId());
+            res.set(txn);
           } catch (ExecutionException e) {
             span.setStatus(e);
             span.end();

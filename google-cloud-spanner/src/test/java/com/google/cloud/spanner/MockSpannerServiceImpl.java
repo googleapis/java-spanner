@@ -1828,7 +1828,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         transactionId = null;
         break;
       case BEGIN:
-        transactionId = beginTransaction(session, tx.getBegin()).getId();
+        transactionId = beginTransaction(session, tx.getBegin(), null).getId();
         break;
       case ID:
         Transaction transaction = transactions.get(tx.getId());
@@ -1883,7 +1883,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     try {
       beginTransactionExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
-      Transaction transaction = beginTransaction(session, request.getOptions());
+      Transaction transaction =
+          beginTransaction(session, request.getOptions(), request.getMutationKey());
       responseObserver.onNext(transaction);
       responseObserver.onCompleted();
     } catch (StatusRuntimeException t) {
@@ -1893,11 +1894,18 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
-  private Transaction beginTransaction(Session session, TransactionOptions options) {
-    Transaction.Builder builder =
-        Transaction.newBuilder().setId(generateTransactionName(session.getName()));
+  private Transaction beginTransaction(
+      Session session, TransactionOptions options, com.google.spanner.v1.Mutation mutationKey) {
+    ByteString transactionId = generateTransactionName(session.getName());
+    Transaction.Builder builder = Transaction.newBuilder().setId(transactionId);
     if (options != null && options.getModeCase() == ModeCase.READ_ONLY) {
       setReadTimestamp(options, builder);
+    }
+    if (session.getMultiplexed()
+        && options.getModeCase() == ModeCase.READ_WRITE
+        && mutationKey != null) {
+      // Mutation only case in a read-write transaction.
+      builder.setPrecommitToken(getTransactionPrecommitToken(transactionId));
     }
     Transaction transaction = builder.build();
     transactions.put(transaction.getId(), transaction);
@@ -2005,7 +2013,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 session,
                 TransactionOptions.newBuilder()
                     .setReadWrite(ReadWrite.getDefaultInstance())
-                    .build());
+                    .build(),
+                null);
       } else if (request.getTransactionId() != null) {
         transaction = transactions.get(request.getTransactionId());
         Optional<Boolean> aborted =
@@ -2488,6 +2497,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       return sessions.get(name);
     }
     return null;
+  }
+
+  static MultiplexedSessionPrecommitToken getTransactionPrecommitToken(ByteString transactionId) {
+    return getPrecommitToken("TransactionPrecommitToken", transactionId);
   }
 
   static MultiplexedSessionPrecommitToken getResultSetPrecommitToken(ByteString transactionId) {
