@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.80.1](https://github.com/googleapis/java-spanner/compare/v6.80.0...v6.80.1) (2024-10-28)
+
+
+### Dependencies
+
+* Update googleapis/sdk-platform-java action to v2.49.0 ([#3430](https://github.com/googleapis/java-spanner/issues/3430)) ([beb788c](https://github.com/googleapis/java-spanner/commit/beb788c05d099a0c5edeabb7ed63f4a6a7a24c16))
+* Update sdk platform java dependencies ([#3431](https://github.com/googleapis/java-spanner/issues/3431)) ([eef03e9](https://github.com/googleapis/java-spanner/commit/eef03e9e5a5ce9d4fcf9728d6b14630bbb99afce))
+
 ## [6.80.0](https://github.com/googleapis/java-spanner/compare/v6.79.0...v6.80.0) (2024-10-25)
 
 
