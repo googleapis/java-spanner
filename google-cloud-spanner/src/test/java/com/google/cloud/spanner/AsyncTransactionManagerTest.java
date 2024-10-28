@@ -46,7 +46,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Message;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -346,7 +346,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    ImmutableList<Class<? extends GeneratedMessageV3>> expectedRequests =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             // The first update that fails. This will cause a transaction retry.
@@ -671,7 +671,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    ImmutableList<Class<? extends GeneratedMessageV3>> expectedRequests =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -714,7 +714,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(attempt.get()).isEqualTo(2);
     // There should only be 1 CommitRequest, as the first attempt should abort already after the
     // ExecuteBatchDmlRequest.
-    ImmutableList<Class<? extends GeneratedMessageV3>> expectedRequests =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -756,7 +756,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(attempt.get()).isEqualTo(2);
     // There should only be 1 CommitRequest, as the first attempt should abort already after the
     // ExecuteBatchDmlRequest.
-    ImmutableList<Class<? extends GeneratedMessageV3>> expectedRequests =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -816,7 +816,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     } finally {
       mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     }
-    ImmutableList<Class<? extends GeneratedMessageV3>> expectedRequests =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -914,7 +914,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
-    ImmutableList<Class<? extends GeneratedMessageV3>> expectedRequests =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
     if (isMultiplexedSessionsEnabled()) {
@@ -945,7 +945,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    ImmutableList<Class<? extends GeneratedMessageV3>> expectedRequests =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
     if (isMultiplexedSessionsEnabled()) {
