@@ -293,8 +293,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private void maybeMarkUnimplementedForRW(SpannerException spannerException) {
     if (spannerException.getErrorCode() == ErrorCode.UNIMPLEMENTED
-    // && spannerException.getReason().equalsIgnoreCase("Transaction type read_write not supported
-    // with multiplexed sessions")
+    // && spannerException.getCause().getMessage().contains("Transaction type read_write not
+    // supported with multiplexed sessions")
     ) {
       unimplementedForRW.set(true);
     }
