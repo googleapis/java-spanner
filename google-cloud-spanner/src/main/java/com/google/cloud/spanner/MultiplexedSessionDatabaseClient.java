@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
+import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -27,6 +28,9 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.Transaction;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -92,6 +96,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         // synchronizing, as it does not really matter exactly which error is set.
         this.client.resourceNotFoundException.set((ResourceNotFoundException) spannerException);
       }
+      // Mark multiplexed sessions for RW as unimplemented and fall back to regular sessions if
+      // UNIMPLEMENTED is returned.
+      this.client.maybeMarkUnimplementedForRW(spannerException);
     }
 
     @Override
@@ -164,6 +171,13 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   /** The current multiplexed session that is used by this client. */
   private final AtomicReference<ApiFuture<SessionReference>> multiplexedSessionReference;
 
+  @VisibleForTesting
+  /**
+   * The Transaction response returned by the BeginTransaction request with read-write when a
+   * multiplexed session is created during client initialization.
+   */
+  private final SettableApiFuture<Transaction> readWriteBeginTransactionReferenceFuture;
+
   /** The expiration date/time of the current multiplexed session. */
   private final AtomicReference<Instant> expirationDate;
 
@@ -189,6 +203,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    * session. TODO: Remove once this is guaranteed to be available.
    */
   private final AtomicBoolean unimplemented = new AtomicBoolean(false);
+
+  /**
+   * This flag is set to true if the server return UNIMPLEMENTED when a read-write transaction is
+   * executed on a multiplexed session. TODO: Remove once this is guaranteed to be available.
+   */
+  @VisibleForTesting final AtomicBoolean unimplementedForRW = new AtomicBoolean(false);
 
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
     this(sessionClient, Clock.systemUTC());
@@ -217,6 +237,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     this.tracer = sessionClient.getSpanner().getTracer();
     final SettableApiFuture<SessionReference> initialSessionReferenceFuture =
         SettableApiFuture.create();
+    this.readWriteBeginTransactionReferenceFuture = SettableApiFuture.create();
     this.multiplexedSessionReference = new AtomicReference<>(initialSessionReferenceFuture);
     this.sessionClient.asyncCreateMultiplexedSession(
         new SessionConsumer() {
@@ -226,6 +247,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
             // only start the maintainer if we actually managed to create a session in the first
             // place.
             maintainer.start();
+            // initiate a begin transaction request to verify if read-write transactions are
+            // supported using multiplexed sessions.
+            verifyBeginTransactionWithRWOnMultiplexedSession(session.getName());
           }
 
           @Override
@@ -267,6 +291,51 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
+  private void maybeMarkUnimplementedForRW(SpannerException spannerException) {
+    if (spannerException.getErrorCode() == ErrorCode.UNIMPLEMENTED
+    // && spannerException.getReason().equalsIgnoreCase("Transaction type read_write not supported
+    // with multiplexed sessions")
+    ) {
+      unimplementedForRW.set(true);
+    }
+  }
+
+  // TODO:
+  private void verifyBeginTransactionWithRWOnMultiplexedSession(String sessionName) {
+    BeginTransactionRequest.Builder requestBuilder =
+        BeginTransactionRequest.newBuilder()
+            .setSession(sessionName)
+            .setOptions(
+                SessionImpl.createReadWriteTransactionOptions(
+                    Options.fromTransactionOptions(), /* previousTransactionId = */ null));
+    final BeginTransactionRequest request = requestBuilder.build();
+    final ApiFuture<Transaction> requestFuture;
+    requestFuture =
+        sessionClient
+            .getSpanner()
+            .getRpc()
+            .beginTransactionAsync(request, /* options = */ null, /* routeToLeader = */ true);
+    requestFuture.addListener(
+        () -> {
+          try {
+            Transaction txn = requestFuture.get();
+            if (txn.getId().isEmpty()) {
+              throw newSpannerException(
+                  ErrorCode.INTERNAL, "Missing id in transaction\n" + sessionName);
+            }
+            readWriteBeginTransactionReferenceFuture.set(txn);
+          } catch (Exception e) {
+            SpannerException spannerException = SpannerExceptionFactory.newSpannerException(e);
+            // Mark multiplexed sessions for RW as unimplemented and fall back to regular sessions
+            // if
+            // UNIMPLEMENTED is returned.
+            maybeMarkUnimplementedForRW(spannerException);
+            readWriteBeginTransactionReferenceFuture.setException(e);
+          }
+        },
+        MoreExecutors.directExecutor());
+  }
+
   boolean isValid() {
     return resourceNotFoundException.get() == null;
   }
@@ -281,6 +350,10 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   boolean isMultiplexedSessionsSupported() {
     return !this.unimplemented.get();
+  }
+
+  boolean isMultiplexedSessionsForRWSupported() {
+    return !this.unimplementedForRW.get();
   }
 
   void close() {
@@ -301,6 +374,17 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   SessionReference getCurrentSessionReference() {
     try {
       return this.multiplexedSessionReference.get().get();
+    } catch (ExecutionException executionException) {
+      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+    } catch (InterruptedException interruptedException) {
+      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+    }
+  }
+
+  @VisibleForTesting
+  Transaction getReadWriteBeginTransactionReference() {
+    try {
+      return this.readWriteBeginTransactionReferenceFuture.get();
     } catch (ExecutionException executionException) {
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
     } catch (InterruptedException interruptedException) {

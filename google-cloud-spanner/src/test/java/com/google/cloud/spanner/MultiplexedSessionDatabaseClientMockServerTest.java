@@ -50,6 +50,7 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.Session;
+import com.google.spanner.v1.Transaction;
 import io.grpc.Status;
 import java.time.Duration;
 import java.util.Collections;
@@ -1288,6 +1289,239 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(
         ByteString.copyFromUtf8("TransactionPrecommitToken"),
         request.getPrecommitToken().getPrecommitToken());
+  }
+
+  // Tests the behavior of the server-side kill switch for read-write multiplexed sessions..
+  @Test
+  public void testInitialBeginTransactionWithRW_receivesUnimplemented_fallsBackToRegularSession() {
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription(
+                    "Transaction type read_write not supported with multiplexed sessions")
+                .asRuntimeException()));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+
+    // Wait until the client sees that MultiplexedSessions are not supported for read-write.
+    // Get the begin transaction reference. This will block until the BeginTransaction RPC with
+    // read-write has failed.
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            client.multiplexedSessionDatabaseClient::getReadWriteBeginTransactionReference);
+    assertEquals(ErrorCode.UNIMPLEMENTED, spannerException.getErrorCode());
+    assertTrue(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
+
+    // read-write transaction should fallback to regular sessions
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+                //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {
+                  // ignore
+                }
+              }
+              return null;
+            });
+
+    // Verify that we received one explicit BeginTransaction, and it uses a multiplexed session.
+    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    List<BeginTransactionRequest> beginTxnRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    Session session1 = mockSpanner.getSession(beginTxnRequests.get(0).getSession());
+    assertNotNull(session1);
+    assertTrue(session1.getMultiplexed());
+
+    // Verify that we received one ExecuteSqlRequest, and it uses a regular session due to fallback.
+    List<ExecuteSqlRequest> executeSqlRequests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1, executeSqlRequests.size());
+    // Verify the requests are not executed using multiplexed sessions
+    Session session2 = mockSpanner.getSession(executeSqlRequests.get(0).getSession());
+    assertNotNull(session2);
+    assertFalse(session2.getMultiplexed());
+  }
+
+  @Test
+  public void
+      testReadWriteUnimplementedErrorDuringInitialBeginTransactionRPC_firstReceivesError_secondFallsBackToRegularSessions() {
+    // This test simulates the following scenario,
+    // 1. The server-side flag for RW multiplexed sessions is disabled.
+    // 2. Application starts. The initial BeginTransaction RPC during client initialization will
+    // fail with UNIMPLEMENTED error.
+    // 3. Read-write transaction initialized before the BeginTransaction RPC response will fail with
+    // UNIMPLEMENTED error.
+    // 4. Read-write transaction initialized after the BeginTransaction RPC response will fallback
+    // to regular sessions.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription(
+                    "Transaction type read_write not supported with multiplexed sessions")
+                .asRuntimeException()));
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription(
+                    "Transaction type read_write not supported with multiplexed sessions")
+                .asRuntimeException()));
+    // Freeze the mock server to ensure that the BeginTransaction with read-write on multiplexed
+    // session RPC does not return an error or any
+    // other result just yet.
+    mockSpanner.freeze();
+    // Get a database client using multiplexed sessions. The BeginTransaction RPC to validation
+    // read-write on multiplexed session will be blocked as
+    // long as the mock server is frozen.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // Get the runner so that the read-write transaction is executed via multiplexed session.
+    TransactionRunner runner = client.readWriteTransaction();
+
+    // Unfreeze the mock server to get the error from the backend. The above read-write transaction
+    // will then fail.
+    mockSpanner.unfreeze();
+
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction -> {
+                      ResultSet resultSet = transaction.executeQuery(STATEMENT);
+                      //noinspection StatementWithEmptyBody
+                      while (resultSet.next()) {
+                        // ignore
+                      }
+                      return null;
+                    }));
+    assertEquals(ErrorCode.UNIMPLEMENTED, e.getErrorCode());
+
+    // Wait until the client sees that MultiplexedSessions are not supported for read-write.
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            client.multiplexedSessionDatabaseClient::getReadWriteBeginTransactionReference);
+    assertEquals(ErrorCode.UNIMPLEMENTED, spannerException.getErrorCode());
+    assertTrue(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
+
+    // The next read-write transaction will fall back to regular sessions and succeed.
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+                //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {
+                  // ignore
+                }
+              }
+              return null;
+            });
+
+    // Verify that two ExecuteSqlRequests were received: the first using a multiplexed session and
+    // the second using a regular session.
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+
+    Session session1 = mockSpanner.getSession(requests.get(0).getSession());
+    assertNotNull(session1);
+    assertTrue(session1.getMultiplexed());
+
+    Session session2 = mockSpanner.getSession(requests.get(1).getSession());
+    assertNotNull(session2);
+    assertFalse(session2.getMultiplexed());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
+  @Test
+  public void testReadWriteUnimplemented_firstReceivesError_secondFallsBackToRegularSessions() {
+    // This test simulates the following scenario,
+    // 1. The server side flag for read-write multiplexed session is not disabled. When an
+    // application starts, the initial BeginTransaction RPC with read-write will succeed.
+    // 2. After time t, the server side flag for read-write multiplexed session is disabled. After
+    // this a read-write transaction executed with multiplexed sessions should fail with
+    // UNIMPLEMENTED error.
+    // 3. All read-write transactions in the application after the initial failure should fallback
+    // to using regular sessions.
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription(
+                    "Transaction type read_write not supported with multiplexed sessions")
+                .asRuntimeException()));
+
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // Wait until the initial BeginTransaction RPC with read-write is complete.
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    Transaction txn =
+        client.multiplexedSessionDatabaseClient.getReadWriteBeginTransactionReference();
+    assertNotNull(txn);
+    assertNotNull(txn.getId());
+    assertFalse(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
+
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                client
+                    .readWriteTransaction()
+                    .run(
+                        transaction -> {
+                          ResultSet resultSet = transaction.executeQuery(STATEMENT);
+                          //noinspection StatementWithEmptyBody
+                          while (resultSet.next()) {
+                            // ignore
+                          }
+                          return null;
+                        }));
+    assertEquals(ErrorCode.UNIMPLEMENTED, e.getErrorCode());
+
+    // Verify that the previous failed transaction has marked multiplexed session client to be
+    // unimplemented for read-write.
+    assertTrue(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
+
+    // The next read-write transaction will fall back to regular sessions and succeed.
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+                //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {
+                  // ignore
+                }
+              }
+              return null;
+            });
+
+    // Verify that two ExecuteSqlRequests were received: the first using a multiplexed session and
+    // the second using a regular session.
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+
+    Session session1 = mockSpanner.getSession(requests.get(0).getSession());
+    assertNotNull(session1);
+    assertTrue(session1.getMultiplexed());
+
+    Session session2 = mockSpanner.getSession(requests.get(1).getSession());
+    assertNotNull(session2);
+    assertFalse(session2.getMultiplexed());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
