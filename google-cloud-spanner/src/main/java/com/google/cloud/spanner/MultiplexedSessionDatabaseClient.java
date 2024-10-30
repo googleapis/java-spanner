@@ -300,7 +300,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
-  // TODO:
   private void verifyBeginTransactionWithRWOnMultiplexedSession(String sessionName) {
     BeginTransactionRequest.Builder requestBuilder =
         BeginTransactionRequest.newBuilder()
@@ -327,8 +326,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
           } catch (Exception e) {
             SpannerException spannerException = SpannerExceptionFactory.newSpannerException(e);
             // Mark multiplexed sessions for RW as unimplemented and fall back to regular sessions
-            // if
-            // UNIMPLEMENTED is returned.
+            // if UNIMPLEMENTED is returned.
             maybeMarkUnimplementedForRW(spannerException);
             readWriteBeginTransactionReferenceFuture.setException(e);
           }
