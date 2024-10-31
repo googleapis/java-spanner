@@ -143,8 +143,10 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
                 transaction.buffer(Mutation.newInsertBuilder("foo").set("id").to(1L).build());
                 return null;
               });
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(spanner, 2),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
-    assertEquals(2, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     List<BeginTransactionRequest> requests =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
     assertNotEquals(requests.get(0).getSession(), requests.get(1).getSession());
@@ -180,7 +182,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
 
       int numChannels = spanner.getOptions().getNumChannels();
-      assertEquals(numChannels, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(spanner, numChannels),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
       List<BeginTransactionRequest> requests =
           mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
       Set<String> sessions =
@@ -241,7 +245,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
       int numChannels = spanner.getOptions().getNumChannels();
       // We should have numChannels BeginTransactionRequests from the first transaction, and 2 from
       // the second transaction.
-      assertEquals(numChannels + 2, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(spanner, numChannels + 2),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
       List<BeginTransactionRequest> requests =
           mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
       // The requests should all use different sessions, as deny-listing a session will bring it to
@@ -352,11 +358,14 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
                                     return null;
                                   })));
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+      // A gRPC context deadline will still cause the underlying error handler to try to retry the
+      // transaction on a new channel, but as the deadline has been exceeded even before those RPCs
+      // are being executed, the RPC invocation will be skipped, and the error will eventually
+      // bubble
+      // up.
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(spanner, 1),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
-    // A gRPC context deadline will still cause the underlying error handler to try to retry the
-    // transaction on a new channel, but as the deadline has been exceeded even before those RPCs
-    // are being executed, the RPC invocation will be skipped, and the error will eventually bubble
-    // up.
-    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
   }
 }

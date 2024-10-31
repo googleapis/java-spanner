@@ -98,7 +98,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 2), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 2),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(2, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -125,7 +127,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(2, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -160,7 +164,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 4), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 4),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     // The above will start two transactions:
     // 1. The initial 'normal' read-only transaction.
@@ -233,7 +239,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
               expectedCreateSessionsRPC,
               mockSpanner.countRequestsOfType(CreateSessionRequest.class));
         }
-        assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+        assertEquals(
+            mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+            mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
         assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
         assertEquals(maxPartitions, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
         assertFalse(
@@ -333,7 +341,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
                 expectedCreateSessionsRPC,
                 mockSpanner.countRequestsOfType(CreateSessionRequest.class));
           }
-          assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+          assertEquals(
+              mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+              mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
           assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
           assertEquals(maxPartitions, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
           assertFalse(
@@ -379,7 +389,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -412,7 +424,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -447,7 +461,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
 
         assertFalse(resultSet.next());
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -476,7 +492,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
 
         assertFalse(resultSet.next());
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -500,7 +518,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
         assertThrows(SpannerException.class, resultSet::getMetadata);
         assertThrows(SpannerException.class, resultSet::getType);
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -575,7 +595,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 2), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 2),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     // We have 2 requests of each, as we run the query with data boost both enabled and disabled.
     assertEquals(2, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
@@ -637,7 +659,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -684,7 +708,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(5, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 5), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 5),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(5, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
@@ -763,7 +789,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       } else {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
-      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 2), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(
+          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 2),
+          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
     assertEquals(2, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
