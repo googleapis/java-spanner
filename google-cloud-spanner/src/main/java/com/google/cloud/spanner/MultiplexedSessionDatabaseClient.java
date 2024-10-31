@@ -30,6 +30,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import java.time.Clock;
 import java.time.Duration;
@@ -313,7 +314,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
             .setSession(sessionName)
             .setOptions(
                 SessionImpl.createReadWriteTransactionOptions(
-                    Options.fromTransactionOptions(), /* previousTransactionId = */ null));
+                    Options.fromTransactionOptions(), /* previousTransactionId = */ null))
+            .setRequestOptions(
+                RequestOptions.newBuilder().setTransactionTag("multiplexed-rw-background-begin-txn").build());
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
     requestFuture =

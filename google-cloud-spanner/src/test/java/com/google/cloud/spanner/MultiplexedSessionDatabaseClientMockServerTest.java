@@ -598,6 +598,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     List<BeginTransactionRequest> beginTransactionRequests =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2, beginTransactionRequests.size());
     assertEquals(
         mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 2),
         beginTransactionRequests.size());

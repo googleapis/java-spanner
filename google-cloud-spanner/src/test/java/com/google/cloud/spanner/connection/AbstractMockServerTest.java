@@ -334,6 +334,6 @@ public abstract class AbstractMockServerTest {
   // This is due to the explicit BeginTransaction RPC that is executed once during multiplexed
   // session creation.
   protected int mayBeIncrementBeginTransactionRequestsCount(Spanner spanner, int count) {
-    return isMultiplexedSessionsEnabledForRW(spanner) ? count + 1 : count;
+    return isMultiplexedSessionsEnabledForRW(spanner) ? count + 0 : count;
   }
 }
