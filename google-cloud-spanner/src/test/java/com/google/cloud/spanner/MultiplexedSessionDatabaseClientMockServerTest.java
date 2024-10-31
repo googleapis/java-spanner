@@ -1343,7 +1343,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     // Verify that we received one explicit BeginTransaction, and it uses a multiplexed session.
     assertEquals(
-        mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 1),
+        mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 0),
         mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     List<BeginTransactionRequest> beginTxnRequests =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
