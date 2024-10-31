@@ -247,9 +247,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
             // only start the maintainer if we actually managed to create a session in the first
             // place.
             maintainer.start();
+
             // initiate a begin transaction request to verify if read-write transactions are
             // supported using multiplexed sessions.
-            verifyBeginTransactionWithRWOnMultiplexedSession(session.getName());
+            if (sessionClient.getSpanner().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+              verifyBeginTransactionWithRWOnMultiplexedSession(session.getName());
+            }
           }
 
           @Override

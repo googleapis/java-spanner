@@ -362,7 +362,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
       ExecuteSqlRequest queryRequest =
           mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
       assertFalse(queryRequest.hasTransaction());
-      assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
       assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
     }
   }
@@ -382,7 +382,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
       ExecuteSqlRequest queryRequest =
           mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
       assertFalse(queryRequest.hasTransaction());
-      assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), /* count = */ 1), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
       assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
     }
   }
