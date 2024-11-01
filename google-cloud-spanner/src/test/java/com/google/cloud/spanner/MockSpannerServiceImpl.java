@@ -1872,7 +1872,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void beginTransaction(
       BeginTransactionRequest request, StreamObserver<Transaction> responseObserver) {
-    if (!request.getRequestOptions().getTransactionTag().equals("multiplexed-rw-background-begin-txn")) {
+    if (!request
+        .getRequestOptions()
+        .getTransactionTag()
+        .equals("multiplexed-rw-background-begin-txn")) {
       requests.add(request);
     }
     Preconditions.checkNotNull(request.getSession());

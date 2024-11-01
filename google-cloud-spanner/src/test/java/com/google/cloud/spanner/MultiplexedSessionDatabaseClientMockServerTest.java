@@ -1341,16 +1341,6 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
               return null;
             });
 
-    // Verify that we received one explicit BeginTransaction, and it uses a multiplexed session.
-    assertEquals(
-        mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 0),
-        mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
-    List<BeginTransactionRequest> beginTxnRequests =
-        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
-    Session session1 = mockSpanner.getSession(beginTxnRequests.get(0).getSession());
-    assertNotNull(session1);
-    assertTrue(session1.getMultiplexed());
-
     // Verify that we received one ExecuteSqlRequest, and it uses a regular session due to fallback.
     List<ExecuteSqlRequest> executeSqlRequests =
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);

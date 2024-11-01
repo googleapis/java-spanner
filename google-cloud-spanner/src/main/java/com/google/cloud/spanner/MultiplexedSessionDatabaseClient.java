@@ -316,7 +316,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
                 SessionImpl.createReadWriteTransactionOptions(
                     Options.fromTransactionOptions(), /* previousTransactionId = */ null))
             .setRequestOptions(
-                RequestOptions.newBuilder().setTransactionTag("multiplexed-rw-background-begin-txn").build());
+                RequestOptions.newBuilder()
+                    .setTransactionTag("multiplexed-rw-background-begin-txn")
+                    .build());
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
     requestFuture =
