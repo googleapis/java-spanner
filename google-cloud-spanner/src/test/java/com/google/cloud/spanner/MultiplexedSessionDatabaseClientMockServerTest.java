@@ -1516,6 +1516,65 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
+  @Test
+  public void testOtherUnimplementedError_ReadWriteTransactionStillUsesMultiplexedSession() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription("Multiplexed sessions are not supported.")
+                .asRuntimeException()));
+
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // Wait until the initial BeginTransaction RPC with read-write is complete.
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    Transaction txn =
+        client.multiplexedSessionDatabaseClient.getReadWriteBeginTransactionReference();
+    assertNotNull(txn);
+    assertNotNull(txn.getId());
+    assertFalse(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
+
+    // Try to execute a query using single use transaction.
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      SpannerException spannerException = assertThrows(SpannerException.class, resultSet::next);
+      assertEquals(ErrorCode.UNIMPLEMENTED, spannerException.getErrorCode());
+    }
+    // Verify other UNIMPLEMENTED errors does not turn off read-write transactions to use
+    // multiplexed sessions.
+    assertFalse(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
+
+    // The read-write transaction should use multiplexed sessions and succeed.
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              // Returns a ResultSet containing the precommit token (ResultSetPrecommitToken)
+              transaction.executeUpdate(UPDATE_STATEMENT);
+
+              // Verify that a precommit token is received. This guarantees that the read-write
+              // transaction was executed on a multiplexed session.
+              TransactionContextImpl impl = (TransactionContextImpl) transaction;
+              assertNotNull(impl.getLatestPrecommitToken());
+              assertEquals(
+                  ByteString.copyFromUtf8("ResultSetPrecommitToken"),
+                  impl.getLatestPrecommitToken().getPrecommitToken());
+              return null;
+            });
+
+    // Verify that two ExecuteSqlRequests were received and second one uses a multiplexed session.
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+
+    Session session2 = mockSpanner.getSession(requests.get(1).getSession());
+    assertNotNull(session2);
+    assertTrue(session2.getMultiplexed());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
     assertNotNull(client.multiplexedSessionDatabaseClient);
     SessionReference sessionReference =

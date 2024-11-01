@@ -98,7 +98,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         this.client.resourceNotFoundException.set((ResourceNotFoundException) spannerException);
       }
       // Mark multiplexed sessions for RW as unimplemented and fall back to regular sessions if
-      // UNIMPLEMENTED is returned.
+      // UNIMPLEMENTED with error message "Transaction type read_write not supported with
+      // multiplexed sessions" is returned.
       this.client.maybeMarkUnimplementedForRW(spannerException);
     }
 
@@ -172,7 +173,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   /** The current multiplexed session that is used by this client. */
   private final AtomicReference<ApiFuture<SessionReference>> multiplexedSessionReference;
 
-  @VisibleForTesting
   /**
    * The Transaction response returned by the BeginTransaction request with read-write when a
    * multiplexed session is created during client initialization.
@@ -256,7 +256,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
                 .getOptions()
                 .getSessionPoolOptions()
                 .getUseMultiplexedSessionForRW()) {
-              verifyBeginTransactionWithRWOnMultiplexedSession(session.getName());
+              verifyBeginTransactionWithRWOnMultiplexedSessionAsync(session.getName());
             }
           }
 
@@ -301,14 +301,25 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private void maybeMarkUnimplementedForRW(SpannerException spannerException) {
     if (spannerException.getErrorCode() == ErrorCode.UNIMPLEMENTED
-    // && spannerException.getCause().getMessage().contains("Transaction type read_write not
-    // supported with multiplexed sessions")
-    ) {
+        && verifyErrorMessage(
+            spannerException,
+            "Transaction type read_write not supported with multiplexed sessions")) {
       unimplementedForRW.set(true);
     }
   }
 
-  private void verifyBeginTransactionWithRWOnMultiplexedSession(String sessionName) {
+  private boolean verifyErrorMessage(SpannerException spannerException, String message) {
+    if (spannerException.getCause() == null) {
+      return false;
+    }
+    if (spannerException.getCause().getMessage() == null) {
+      return false;
+    }
+    return spannerException.getCause().getMessage().contains(message);
+  }
+
+  private void verifyBeginTransactionWithRWOnMultiplexedSessionAsync(String sessionName) {
+    // TODO: Remove once this is guaranteed to be available.
     // annotate the explict BeginTransactionRequest with a transaction tag
     // "multiplexed-rw-background-begin-txn" to avoid storing this request on mock spanner.
     // this is to safeguard other mock spanner tests whose BeginTransaction request count will

@@ -1872,6 +1872,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void beginTransaction(
       BeginTransactionRequest request, StreamObserver<Transaction> responseObserver) {
+    // TODO: Remove once this is guaranteed to be available.
     // Skip storing the explicit BeginTransactionRequest used to verify read-write transaction
     // server availability on multiplexed sessions.
     // This code will be removed once read-write multiplexed sessions are stable on the backend,
