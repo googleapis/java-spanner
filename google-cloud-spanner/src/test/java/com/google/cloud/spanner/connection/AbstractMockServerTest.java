@@ -321,19 +321,4 @@ public abstract class AbstractMockServerTest {
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
-
-  boolean isMultiplexedSessionsEnabledForRW(Spanner spanner) {
-    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
-      return false;
-    }
-    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
-  }
-
-  // Increment the total request count by 1 when multiplexed session is enabled for read-write
-  // transactions..
-  // This is due to the explicit BeginTransaction RPC that is executed once during multiplexed
-  // session creation.
-  protected int mayBeIncrementBeginTransactionRequestsCount(Spanner spanner, int count) {
-    return isMultiplexedSessionsEnabledForRW(spanner) ? count + 0 : count;
-  }
 }

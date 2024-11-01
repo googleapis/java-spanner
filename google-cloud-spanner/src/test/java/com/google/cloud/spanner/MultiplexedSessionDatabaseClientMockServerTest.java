@@ -599,9 +599,6 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     List<BeginTransactionRequest> beginTransactionRequests =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
     assertEquals(2, beginTransactionRequests.size());
-    assertEquals(
-        mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 2),
-        beginTransactionRequests.size());
     for (BeginTransactionRequest request : beginTransactionRequests) {
       // Verify that mutation key is set for mutations-only case in read-write transaction.
       assertTrue(request.hasMutationKey());
@@ -893,9 +890,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertThat(updateCount).isEqualTo(1L);
     List<BeginTransactionRequest> beginTransactionRequests =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
-    assertEquals(
-        mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 2),
-        beginTransactionRequests.size());
+    assertEquals(2, beginTransactionRequests.size());
 
     // Verify the requests are executed using multiplexed sessions
     for (BeginTransactionRequest request : beginTransactionRequests) {
@@ -1127,9 +1122,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
     List<BeginTransactionRequest> beginTxnRequest =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
-    assertEquals(
-        mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 1),
-        beginTxnRequest.size());
+    assertEquals(1, beginTxnRequest.size());
     assertTrue(mockSpanner.getSession(beginTxnRequest.get(0).getSession()).getMultiplexed());
     assertTrue(beginTxnRequest.get(0).hasMutationKey());
     assertTrue(beginTxnRequest.get(0).getMutationKey().hasInsert());
@@ -1169,9 +1162,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
     List<BeginTransactionRequest> beginTransactionRequests =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
-    assertEquals(
-        mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 2),
-        beginTransactionRequests.size());
+    assertEquals(2, beginTransactionRequests.size());
     // Verify the requests are executed using multiplexed sessions
     for (BeginTransactionRequest request : beginTransactionRequests) {
       assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
@@ -1216,8 +1207,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
     List<BeginTransactionRequest> beginTransactionRequests =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
-    assertThat(beginTransactionRequests)
-        .hasSize(mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 1));
+    assertThat(beginTransactionRequests).hasSize(1);
     BeginTransactionRequest beginTransaction = beginTransactionRequests.get(0);
     assertTrue(mockSpanner.getSession(beginTransaction.getSession()).getMultiplexed());
     assertTrue(beginTransaction.hasMutationKey());
@@ -1250,8 +1240,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Verify that the mutation key is set in BeginTransactionRequest
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
-    assertThat(beginTransactions)
-        .hasSize(mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 1));
+    assertThat(beginTransactions).hasSize(1);
     BeginTransactionRequest beginTransaction = beginTransactions.get(0);
     assertTrue(beginTransaction.hasMutationKey());
     assertTrue(beginTransaction.getMutationKey().hasDelete());
@@ -1287,8 +1276,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Verify that the mutation key is set in BeginTransactionRequest
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
-    assertThat(beginTransactions)
-        .hasSize(mayBeIncrementBeginTransactionRequestsCount(spanner, /* count = */ 1));
+    assertThat(beginTransactions).hasSize(1);
     BeginTransactionRequest beginTransaction = beginTransactions.get(0);
     assertTrue(beginTransaction.hasMutationKey());
     assertTrue(beginTransaction.getMutationKey().hasDelete());

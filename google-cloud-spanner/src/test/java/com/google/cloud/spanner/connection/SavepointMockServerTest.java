@@ -231,9 +231,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
         // It is a no-op on Cloud Spanner.
         connection.commit();
 
-        assertEquals(
-            mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), 1),
-            mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+        assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
         BeginTransactionRequest beginRequest =
             mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
         assertTrue(beginRequest.getOptions().hasReadOnly());
@@ -268,9 +266,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
       connection.commit();
 
       // Read/write transactions are started with inlined Begin transaction options.
-      assertEquals(
-          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), 0),
-          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
       assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
       assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
       assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
@@ -316,9 +312,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
       connection.commit();
 
       // Read/write transactions are started with inlined Begin transaction options.
-      assertEquals(
-          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), 0),
-          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
       assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
       assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
       assertEquals(5, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
@@ -374,9 +368,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
       assertThrows(AbortedDueToConcurrentModificationException.class, connection::commit);
 
       // Read/write transactions are started with inlined Begin transaction options.
-      assertEquals(
-          mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), 0),
-          mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
       assertEquals(2, mockSpanner.countRequestsOfType(RollbackRequest.class));
       assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
       assertEquals(4, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
@@ -464,9 +456,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
         connection.rollback();
 
         // Read/write transactions are started with inlined Begin transaction options.
-        assertEquals(
-            mayBeIncrementBeginTransactionRequestsCount(connection.getSpanner(), 0),
-            mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+        assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
         assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
         assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
         assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));

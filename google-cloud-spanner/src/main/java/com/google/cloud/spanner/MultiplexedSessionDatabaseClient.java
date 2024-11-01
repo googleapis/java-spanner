@@ -309,6 +309,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   }
 
   private void verifyBeginTransactionWithRWOnMultiplexedSession(String sessionName) {
+    // annotate the explict BeginTransactionRequest with a transaction tag
+    // "multiplexed-rw-background-begin-txn" to avoid storing this request on mock spanner.
+    // this is to safeguard other mock spanner tests whose BeginTransaction request count will
+    // otherwise increase by 1. Modifying the unit tests do not seem valid since this code is
+    // temporary and will be removed once the read-write on multiplexed session looks stable at
+    // backend.
     BeginTransactionRequest.Builder requestBuilder =
         BeginTransactionRequest.newBuilder()
             .setSession(sessionName)
