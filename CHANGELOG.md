@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.81.0](https://github.com/googleapis/java-spanner/compare/v6.80.1...v6.81.0) (2024-11-01)
+
+
+### Features
+
+* Client built in metrics ([#3408](https://github.com/googleapis/java-spanner/issues/3408)) ([6a36103](https://github.com/googleapis/java-spanner/commit/6a3610379d1d0eee741d5ef4b30e811ff5a67bc0))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.54.0 ([#3439](https://github.com/googleapis/java-spanner/issues/3439)) ([cdec63f](https://github.com/googleapis/java-spanner/commit/cdec63f84ef9b615adf19e4611b2dc223eec687b))
+
 ## [6.80.1](https://github.com/googleapis/java-spanner/compare/v6.80.0...v6.80.1) (2024-10-28)
 
 
