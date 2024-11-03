@@ -82,4 +82,12 @@ public interface ResultSet extends AutoCloseable, StructReader {
   default ResultSetMetadata getMetadata() {
     throw new UnsupportedOperationException("Method should be overridden");
   }
+
+  /**
+   * Returns the {@link boolean} for this {@link ResultSet}. This method will be used by
+   * AsyncResultSet to initiate gRPC streaming
+   */
+  default boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
+    return false;
+  }
 }

@@ -22,8 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
@@ -32,6 +32,9 @@ import com.google.cloud.spanner.AsyncResultSet.CursorState;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Range;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Value;
+import com.google.spanner.v1.PartialResultSet;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountDownLatch;
@@ -48,6 +51,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -388,6 +392,13 @@ public class AsyncResultSetImplTest {
 
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
+
+      when(delegate.initiateStreaming(any(AsyncResultSet.StreamMessageListener.class)))
+          .thenAnswer(
+              answer -> {
+                rs.onStreamMessage(PartialResultSet.newBuilder().build(), 4, 1, null);
+                return null;
+              });
       callbackResult =
           rs.setCallback(
               executor,
@@ -496,6 +507,83 @@ public class AsyncResultSetImplTest {
           // Instead the callback indicates that it does not want any more rows.
           ignored -> CallbackResponse.DONE);
       rs.getResult().get(10L, TimeUnit.SECONDS);
+    }
+  }
+
+  @Test
+  public void testOnStreamMessageWhenResumeTokenIsPresent() {
+    ResultSet delegate = mock(ResultSet.class);
+    try (AsyncResultSetImpl rs =
+        new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
+      AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
+          Mockito.mock(AsyncResultSet.StreamMessageRequestor.class);
+      // Marking Streaming as supported
+      Mockito.when(
+              delegate.initiateStreaming(Mockito.any(AsyncResultSet.StreamMessageListener.class)))
+          .thenReturn(true);
+
+      rs.setCallback(Executors.newSingleThreadExecutor(), ignored -> CallbackResponse.DONE);
+      rs.onStreamMessage(
+          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
+          4,
+          1,
+          streamMessageRequestor);
+      Mockito.verify(streamMessageRequestor, times(1)).requestMessages(Mockito.eq(1));
+
+      rs.onStreamMessage(
+          PartialResultSet.newBuilder().setResumeToken(ByteString.copyFromUtf8("test")).build(),
+          4,
+          2,
+          streamMessageRequestor);
+      Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
+      Mockito.verify(streamMessageRequestor, times(1)).requestMessages(Mockito.eq(1));
+    }
+  }
+
+  @Test
+  public void testOnStreamMessageWhenCurrentBufferSizeReachedPrefetchChunkSize() {
+    ResultSet delegate = mock(ResultSet.class);
+    try (AsyncResultSetImpl rs =
+        new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
+      AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
+          Mockito.mock(AsyncResultSet.StreamMessageRequestor.class);
+      // Marking Streaming as supported
+      Mockito.when(
+              delegate.initiateStreaming(Mockito.any(AsyncResultSet.StreamMessageListener.class)))
+          .thenReturn(true);
+
+      rs.setCallback(Executors.newSingleThreadExecutor(), ignored -> CallbackResponse.DONE);
+      rs.onStreamMessage(
+          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
+          4,
+          4,
+          streamMessageRequestor);
+      Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
+      Mockito.verify(streamMessageRequestor, times(0)).requestMessages(Mockito.eq(1));
+    }
+  }
+
+  @Test
+  public void testOnStreamMessageWhenAsyncResultIsCancelled() {
+    ResultSet delegate = mock(ResultSet.class);
+    try (AsyncResultSetImpl rs =
+        new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
+      AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
+          Mockito.mock(AsyncResultSet.StreamMessageRequestor.class);
+      // Marking Streaming as supported
+      Mockito.when(
+              delegate.initiateStreaming(Mockito.any(AsyncResultSet.StreamMessageListener.class)))
+          .thenReturn(true);
+
+      rs.setCallback(Executors.newSingleThreadExecutor(), ignored -> CallbackResponse.DONE);
+      rs.cancel();
+      rs.onStreamMessage(
+          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
+          1,
+          4,
+          streamMessageRequestor);
+      Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
+      Mockito.verify(streamMessageRequestor, times(0)).requestMessages(Mockito.eq(1));
     }
   }
 }

@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.common.base.Function;
+import com.google.spanner.v1.PartialResultSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -223,4 +224,24 @@ public interface AsyncResultSet extends ResultSet {
    * @param transformer function which will be used to transform the row. It should not return null.
    */
   <T> List<T> toList(Function<StructReader, T> transformer) throws SpannerException;
+
+  /**
+   * An interface to register the listener for streaming gRPC request. It will be called when a
+   * chunk is received from gRPC streaming call.
+   */
+  interface StreamMessageListener {
+    void onStreamMessage(
+        PartialResultSet partialResultSet,
+        int prefetchChunks,
+        int currentBufferSize,
+        StreamMessageRequestor streamMessageRequestor);
+  }
+
+  /**
+   * An interface to request more messages from the gRPC streaming call. It will be implemented by
+   * the class which has access to SpannerRpc.StreamingCall object
+   */
+  interface StreamMessageRequestor {
+    void requestMessages(int numOfMessages);
+  }
 }

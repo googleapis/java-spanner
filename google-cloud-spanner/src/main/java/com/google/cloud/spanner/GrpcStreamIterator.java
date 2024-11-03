@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.spanner.v1.PartialResultSet;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -34,13 +35,15 @@ import org.threeten.bp.Duration;
 /** Adapts a streaming read/query call into an iterator over partial result sets. */
 @VisibleForTesting
 class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
-    implements CloseableIterator<PartialResultSet> {
+    implements CloseableIterator<PartialResultSet>, AsyncResultSet.StreamMessageRequestor {
   private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
-  private static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
+  public static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
+  private AsyncResultSet.StreamMessageListener streamMessageListener;
 
   private final ConsumerImpl consumer;
   private final BlockingQueue<PartialResultSet> stream;
   private final Statement statement;
+  private final int prefetchChunks;
 
   private SpannerRpc.StreamingCall call;
   private volatile boolean withBeginTransaction;
@@ -57,13 +60,18 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   GrpcStreamIterator(
       Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
     this.statement = statement;
+    this.prefetchChunks = prefetchChunks;
     this.consumer = new ConsumerImpl(cancelQueryWhenClientIsClosed);
     // One extra to allow for END_OF_STREAM message.
-    this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
+    this.stream = new LinkedBlockingQueue<>((prefetchChunks * 2) + 1);
   }
 
   protected final SpannerRpc.ResultStreamConsumer consumer() {
     return consumer;
+  }
+
+  public void registerListener(AsyncResultSet.StreamMessageListener streamMessageListener) {
+    this.streamMessageListener = streamMessageListener;
   }
 
   public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
@@ -135,6 +143,12 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private void addToStream(PartialResultSet results) {
     // We assume that nothing from the user will interrupt gRPC event threads.
     Uninterruptibles.putUninterruptibly(stream, results);
+    onStreamMessage(results);
+  }
+
+  @Override
+  public void requestMessages(int numOfMessages) {
+    call.request(numOfMessages);
   }
 
   private class ConsumerImpl implements SpannerRpc.ResultStreamConsumer {
@@ -181,5 +195,10 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     public boolean cancelQueryWhenClientIsClosed() {
       return this.cancelQueryWhenClientIsClosed;
     }
+  }
+
+  private void onStreamMessage(PartialResultSet partialResultSet) {
+    Optional.ofNullable(streamMessageListener)
+        .ifPresent(sl -> sl.onStreamMessage(partialResultSet, prefetchChunks, stream.size(), this));
   }
 }

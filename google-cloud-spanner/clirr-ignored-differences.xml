@@ -790,5 +790,9 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isAutoBatchDmlUpdateCountVerification()</method>
   </difference>
-  
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/ResultSet</className>
+    <method>boolean initiateStreaming(com.google.cloud.spanner.AsyncResultSet$StreamMessageListener)</method>
+  </difference>
 </differences>
