@@ -46,6 +46,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetStats;
@@ -93,6 +94,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       private Clock clock = new Clock();
       private ByteString transactionId;
+      // This field is set only when the transaction is created during a retry and uses a
+      // multiplexed session.
+      private ByteString previousTransactionId;
       private Options options;
       private boolean trackTransactionStarter;
 
@@ -115,6 +119,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       Builder setTrackTransactionStarter(boolean trackTransactionStarter) {
         this.trackTransactionStarter = trackTransactionStarter;
+        return self();
+      }
+
+      Builder setPreviousTransactionId(ByteString previousTransactionId) {
+        this.previousTransactionId = previousTransactionId;
         return self();
       }
 
@@ -171,6 +180,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("committingLock")
     private volatile boolean committing;
 
+    private final Object precommitTokenLock = new Object();
+
+    @GuardedBy("precommitTokenLock")
+    private MultiplexedSessionPrecommitToken latestPrecommitToken;
+
     @GuardedBy("lock")
     private volatile SettableApiFuture<Void> finishedAsyncOperations = SettableApiFuture.create();
 
@@ -201,6 +215,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     volatile ByteString transactionId;
 
+    final ByteString previousTransactionId;
+
     private CommitResponse commitResponse;
     private final Clock clock;
 
@@ -216,6 +232,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.channelHint =
           getChannelHintOptions(
               session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
+      this.previousTransactionId = builder.previousTransactionId;
     }
 
     @Override
@@ -246,6 +263,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
+    ByteString getPreviousTransactionId() {
+      return this.previousTransactionId;
+    }
+
     @Override
     public void close() {
       // Only mark the context as closed, but do not end the tracer span, as that is done by the
@@ -268,7 +289,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     ApiFuture<Void> ensureTxnAsync() {
       final SettableApiFuture<Void> res = SettableApiFuture.create();
       if (transactionId == null || isAborted()) {
-        createTxnAsync(res);
+        createTxnAsync(res, null);
       } else {
         span.addAnnotation("Transaction Initialized", "Id", transactionId.toStringUtf8());
         txnLogger.log(
@@ -280,19 +301,29 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       return res;
     }
 
-    private void createTxnAsync(final SettableApiFuture<Void> res) {
+    private void createTxnAsync(
+        final SettableApiFuture<Void> res, com.google.spanner.v1.Mutation mutation) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut =
-          session.beginTransactionAsync(options, isRouteToLeader(), getTransactionChannelHint());
+      final ApiFuture<Transaction> fut =
+          session.beginTransactionAsync(
+              options,
+              isRouteToLeader(),
+              getTransactionChannelHint(),
+              getPreviousTransactionId(),
+              mutation);
       fut.addListener(
           () -> {
             try {
-              transactionId = fut.get();
+              Transaction txn = fut.get();
+              transactionId = txn.getId();
               span.addAnnotation("Transaction Creation Done", "Id", transactionId.toStringUtf8());
               txnLogger.log(
                   Level.FINER,
                   "Started transaction {0}",
                   txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
+              if (txn.hasPrecommitToken()) {
+                onPrecommitToken(txn.getPrecommitToken());
+              }
               res.set(null);
             } catch (ExecutionException e) {
               span.addAnnotation(
@@ -335,13 +366,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       close();
 
       List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+      com.google.spanner.v1.Mutation randomMutation = null;
       synchronized (committingLock) {
         if (committing) {
           throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
         }
         committing = true;
         if (!mutations.isEmpty()) {
-          Mutation.toProto(mutations, mutationsProto);
+          randomMutation = Mutation.toProtoAndReturnRandomMutation(mutations, mutationsProto);
         }
       }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
@@ -370,7 +402,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
-          createTxnAsync(finishOps);
+          createTxnAsync(finishOps, randomMutation);
         } else {
           finishOps = finishedAsyncOperations;
         }
@@ -422,6 +454,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               requestOptionsBuilder.setTransactionTag(getTransactionTag());
             }
             requestBuilder.setRequestOptions(requestOptionsBuilder.build());
+          }
+          if (session.getIsMultiplexed() && getLatestPrecommitToken() != null) {
+            // Set the precommit token in the CommitRequest for multiplexed sessions.
+            requestBuilder.setPrecommitToken(getLatestPrecommitToken());
           }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
@@ -558,7 +594,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           }
           if (tx == null) {
             return TransactionSelector.newBuilder()
-                .setBegin(SessionImpl.createReadWriteTransactionOptions(options))
+                .setBegin(
+                    SessionImpl.createReadWriteTransactionOptions(
+                        options, getPreviousTransactionId()))
                 .build();
           } else {
             // Wait for the transaction to come available. The tx.get() call will fail with an
@@ -625,12 +663,38 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
+    /**
+     * In read-write transactions, the precommit token with the highest sequence number from this
+     * transaction attempt will be tracked and included in the
+     * [Commit][google.spanner.v1.Spanner.Commit] request for the transaction.
+     */
+    @Override
+    public void onPrecommitToken(MultiplexedSessionPrecommitToken token) {
+      if (token == null) {
+        return;
+      }
+      synchronized (precommitTokenLock) {
+        if (this.latestPrecommitToken == null
+            || token.getSeqNum() > this.latestPrecommitToken.getSeqNum()) {
+          this.latestPrecommitToken = token;
+          txnLogger.log(Level.FINE, "Updating precommit token to " + this.latestPrecommitToken);
+        }
+      }
+    }
+
     @Nullable
     String getTransactionTag() {
       if (this.options.hasTag()) {
         return this.options.tag();
       }
       return null;
+    }
+
+    @Nullable
+    MultiplexedSessionPrecommitToken getLatestPrecommitToken() {
+      synchronized (precommitTokenLock) {
+        return this.latestPrecommitToken;
+      }
     }
 
     @Override
@@ -811,6 +875,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw new IllegalArgumentException(
               "DML response missing stats possibly due to non-DML statement as input");
         }
+        if (resultSet.hasPrecommitToken()) {
+          onPrecommitToken(resultSet.getPrecommitToken());
+        }
         return resultSet;
       } catch (Throwable t) {
         throw onError(
@@ -885,6 +952,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                       resultSet.get().getMetadata().getTransaction(),
                       builder.getTransaction().hasBegin());
                 }
+                if (resultSet.get().hasPrecommitToken()) {
+                  onPrecommitToken(resultSet.get().getPrecommitToken());
+                }
               } catch (Throwable e) {
                 // Ignore this error here as it is handled by the future that is returned by the
                 // executeUpdateAsync method.
@@ -938,6 +1008,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   response.getResultSets(i).getMetadata().getTransaction(),
                   builder.getTransaction().hasBegin());
             }
+          }
+
+          if (response.hasPrecommitToken()) {
+            onPrecommitToken(response.getPrecommitToken());
           }
 
           // If one of the DML statements was aborted, we should throw an aborted exception.
@@ -1003,6 +1077,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                           batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
                           builder.getTransaction().hasBegin());
                     }
+                  }
+                  if (batchDmlResponse.hasPrecommitToken()) {
+                    onPrecommitToken(batchDmlResponse.getPrecommitToken());
                   }
                   // If one of the DML statements was aborted, we should throw an aborted exception.
                   // In all other cases, we should throw a BatchUpdateException.
@@ -1079,7 +1156,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   TransactionRunnerImpl(SessionImpl session, TransactionOption... options) {
     this.session = session;
     this.options = Options.fromTransactionOptions(options);
-    this.txn = session.newTransaction(this.options);
+    this.txn = session.newTransaction(this.options, /* previousTransactionId = */ ByteString.EMPTY);
     this.tracer = session.getTracer();
   }
 
@@ -1118,7 +1195,19 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
             useInlinedBegin = txn.transactionId != null;
-            txn = session.newTransaction(options);
+
+            // Determine the latest transactionId when using a multiplexed session.
+            ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
+            if (session.getIsMultiplexed()) {
+              // Use the current transactionId if available, otherwise fallback to the previous
+              // transactionId.
+              multiplexedSessionPreviousTransactionId =
+                  txn.transactionId != null ? txn.transactionId : txn.getPreviousTransactionId();
+            }
+
+            txn =
+                session.newTransaction(
+                    options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
           }
           checkState(
               isValid, "TransactionRunner has been invalidated by a new operation on the session");

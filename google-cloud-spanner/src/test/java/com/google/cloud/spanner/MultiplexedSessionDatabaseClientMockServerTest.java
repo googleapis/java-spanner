@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MockSpannerTestUtil.INVALID_UPDATE_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,11 +38,14 @@ import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RequestOptions.Priority;
@@ -54,6 +59,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -70,6 +76,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     mockSpanner.putStatementResults(
         StatementResult.query(STATEMENT, new RandomResultSetGenerator(1).generate()));
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+    mockSpanner.putStatementResult(
+        StatementResult.exception(
+            INVALID_UPDATE_STATEMENT,
+            Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
   }
 
   @Before
@@ -585,10 +595,23 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
 
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2, beginTransactionRequests.size());
+    for (BeginTransactionRequest request : beginTransactionRequests) {
+      // Verify that mutation key is set for mutations-only case in read-write transaction.
+      assertTrue(request.hasMutationKey());
+    }
+
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(2, commitRequests.size());
     for (CommitRequest request : commitRequests) {
       assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      // Verify that the precommit token is set in CommitRequest
+      assertTrue(request.hasPrecommitToken());
+      assertEquals(
+          ByteString.copyFromUtf8("TransactionPrecommitToken"),
+          request.getPrecommitToken().getPrecommitToken());
     }
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
@@ -743,6 +766,528 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
+  @Test
+  public void testAbortedReadWriteTxnUsesPreviousTxnIdOnRetryWithInlineBegin() {
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    TransactionRunner runner = client.readWriteTransaction();
+    AtomicReference<ByteString> validTransactionId = new AtomicReference<>();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+            while (resultSet.next()) {}
+          }
+
+          TransactionContextImpl impl = (TransactionContextImpl) transaction;
+          if (validTransactionId.get() == null) {
+            // Track the first not-null transactionId. This transaction gets ABORTED during commit
+            // operation and gets retried.
+            validTransactionId.set(impl.transactionId);
+          }
+          return null;
+        });
+
+    List<ExecuteSqlRequest> executeSqlRequests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(2, executeSqlRequests.size());
+
+    // Verify the requests are executed using multiplexed sessions
+    for (ExecuteSqlRequest request : executeSqlRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+    }
+
+    // Verify that the first request uses inline begin, and the previous transaction ID is set to
+    // ByteString.EMPTY
+    assertTrue(executeSqlRequests.get(0).hasTransaction());
+    assertTrue(executeSqlRequests.get(0).getTransaction().hasBegin());
+    assertTrue(executeSqlRequests.get(0).getTransaction().getBegin().hasReadWrite());
+    assertNotNull(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        ByteString.EMPTY,
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+
+    // Verify that the second request uses inline begin, and the previous transaction ID is set
+    // appropriately
+    assertTrue(executeSqlRequests.get(1).hasTransaction());
+    assertTrue(executeSqlRequests.get(1).getTransaction().hasBegin());
+    assertTrue(executeSqlRequests.get(1).getTransaction().getBegin().hasReadWrite());
+    assertNotNull(
+        executeSqlRequests
+            .get(1)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertNotEquals(
+        ByteString.EMPTY,
+        executeSqlRequests
+            .get(1)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        validTransactionId.get(),
+        executeSqlRequests
+            .get(1)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+  }
+
+  @Test
+  public void testAbortedReadWriteTxnUsesPreviousTxnIdOnRetryWithExplicitBegin() {
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    TransactionRunner runner = client.readWriteTransaction();
+    AtomicReference<ByteString> validTransactionId = new AtomicReference<>();
+    Long updateCount =
+        runner.run(
+            transaction -> {
+              // This update statement carries the BeginTransaction, but fails. This will
+              // cause the entire transaction to be retried with an explicit
+              // BeginTransaction RPC to ensure all statements in the transaction are
+              // actually executed against the same transaction.
+              TransactionContextImpl impl = (TransactionContextImpl) transaction;
+              if (validTransactionId.get() == null) {
+                // Track the first not-null transactionId. This transaction gets ABORTED during
+                // commit operation and gets retried.
+                validTransactionId.set(impl.transactionId);
+              }
+              SpannerException e =
+                  assertThrows(
+                      SpannerException.class,
+                      () -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
+              assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+              return transaction.executeUpdate(UPDATE_STATEMENT);
+            });
+
+    assertThat(updateCount).isEqualTo(1L);
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2, beginTransactionRequests.size());
+
+    // Verify the requests are executed using multiplexed sessions
+    for (BeginTransactionRequest request : beginTransactionRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+    }
+
+    // Verify that explicit begin transaction is called during retry, and the previous transaction
+    // ID is set to ByteString.EMPTY
+    assertTrue(beginTransactionRequests.get(0).hasOptions());
+    assertTrue(beginTransactionRequests.get(0).getOptions().hasReadWrite());
+    assertNotNull(
+        beginTransactionRequests
+            .get(0)
+            .getOptions()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        ByteString.EMPTY,
+        beginTransactionRequests
+            .get(0)
+            .getOptions()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+
+    // The previous transaction with id (txn1) fails during commit operation with ABORTED error.
+    // Verify that explicit begin transaction is called during retry, and the previous transaction
+    // ID is not ByteString.EMPTY (should be set to txn1)
+    assertTrue(beginTransactionRequests.get(1).hasOptions());
+    assertTrue(beginTransactionRequests.get(1).getOptions().hasReadWrite());
+    assertNotNull(
+        beginTransactionRequests
+            .get(1)
+            .getOptions()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertNotEquals(
+        ByteString.EMPTY,
+        beginTransactionRequests
+            .get(1)
+            .getOptions()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        validTransactionId.get(),
+        beginTransactionRequests
+            .get(1)
+            .getOptions()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+  }
+
+  @Test
+  public void testPrecommitTokenForResultSet() {
+    // This test verifies that the precommit token received from the ResultSet is properly tracked
+    // and set in the CommitRequest.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    Long count =
+        client
+            .readWriteTransaction()
+            .run(
+                transaction -> {
+                  long res = transaction.executeUpdate(UPDATE_STATEMENT);
+
+                  // Verify that the latest precommit token is tracked in the transaction context.
+                  TransactionContextImpl impl = (TransactionContextImpl) transaction;
+                  assertNotNull(impl.getLatestPrecommitToken());
+                  assertEquals(
+                      ByteString.copyFromUtf8("ResultSetPrecommitToken"),
+                      impl.getLatestPrecommitToken().getPrecommitToken());
+                  return res;
+                });
+
+    assertNotNull(count);
+    assertEquals(1, count.longValue());
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("ResultSetPrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testPrecommitTokenForExecuteBatchDmlResponse() {
+    // This test verifies that the precommit token received from the ExecuteBatchDmlResponse is
+    // properly tracked and set in the CommitRequest.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    long[] count =
+        client
+            .readWriteTransaction()
+            .run(
+                transaction -> {
+                  long[] res = transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
+
+                  // Verify that the latest precommit token is tracked in the transaction context.
+                  TransactionContextImpl impl = (TransactionContextImpl) transaction;
+                  assertNotNull(impl.getLatestPrecommitToken());
+                  assertEquals(
+                      ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
+                      impl.getLatestPrecommitToken().getPrecommitToken());
+                  return res;
+                });
+
+    assertNotNull(count);
+    assertEquals(1, count.length);
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testPrecommitTokenForPartialResultSet() {
+    // This test verifies that the precommit token received from the PartialResultSet is properly
+    // tracked and set in the CommitRequest.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              ResultSet resultSet = transaction.executeQuery(STATEMENT);
+              //noinspection StatementWithEmptyBody
+              while (resultSet.next()) {
+                // ignore
+              }
+
+              // Verify that the latest precommit token is tracked in the transaction context.
+              TransactionContextImpl impl = (TransactionContextImpl) transaction;
+              assertNotNull(impl.getLatestPrecommitToken());
+              assertEquals(
+                  ByteString.copyFromUtf8("PartialResultSetPrecommitToken"),
+                  impl.getLatestPrecommitToken().getPrecommitToken());
+              return null;
+            });
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("PartialResultSetPrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testTxnTracksPrecommitTokenWithLatestSeqNo() {
+    // This test ensures that the read-write transaction tracks the precommit token with the
+    // highest sequence number and sets it in the CommitRequest.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              // Returns a ResultSet containing the precommit token (ResultSetPrecommitToken)
+              transaction.executeUpdate(UPDATE_STATEMENT);
+
+              // Returns a PartialResultSet containing the precommit token
+              // (PartialResultSetPrecommitToken)
+              ResultSet resultSet = transaction.executeQuery(STATEMENT);
+              //noinspection StatementWithEmptyBody
+              while (resultSet.next()) {
+                // ignore
+              }
+
+              // Returns an ExecuteBatchDmlResponse containing the precommit token
+              // (ExecuteBatchDmlResponsePrecommitToken).
+              // Since this is the last request received by the mock Spanner, it should be the most
+              // recent precommit token tracked by the transaction context.
+              transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
+
+              // Verify that the latest precommit token with highest sequence number is tracked in
+              // the transaction context.
+              TransactionContextImpl impl = (TransactionContextImpl) transaction;
+              assertNotNull(impl.getLatestPrecommitToken());
+              assertEquals(
+                  ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
+                  impl.getLatestPrecommitToken().getPrecommitToken());
+              return null;
+            });
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("ExecuteBatchDmlResponsePrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testPrecommitTokenForTransactionResponse() {
+    // This test verifies that
+    // 1. A random mutation from the list is set in BeginTransactionRequest.
+    // 2. The precommit token from the Transaction response is correctly tracked
+    // and applied in the CommitRequest. The Transaction response includes a precommit token
+    // only when the read-write transaction consists solely of mutations.
+
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              Mutation mutation =
+                  Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build();
+              transaction.buffer(mutation);
+              return null;
+            });
+
+    // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
+    List<BeginTransactionRequest> beginTxnRequest =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(1L, beginTxnRequest.size());
+    assertTrue(mockSpanner.getSession(beginTxnRequest.get(0).getSession()).getMultiplexed());
+    assertTrue(beginTxnRequest.get(0).hasMutationKey());
+    assertTrue(beginTxnRequest.get(0).getMutationKey().hasInsert());
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1L, commitRequests.size());
+    assertTrue(mockSpanner.getSession(commitRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("TransactionPrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testMutationOnlyCaseAborted() {
+    // This test verifies that in the case of mutations-only, when a transaction is retried after an
+    // ABORT, the mutation key is correctly set in the BeginTransaction request.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              Mutation mutation =
+                  Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build();
+              transaction.buffer(mutation);
+              return null;
+            });
+
+    // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2L, beginTransactionRequests.size());
+    // Verify the requests are executed using multiplexed sessions
+    for (BeginTransactionRequest request : beginTransactionRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertTrue(request.hasMutationKey());
+      assertTrue(request.getMutationKey().hasInsert());
+    }
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(2L, commitRequests.size());
+    for (CommitRequest request : commitRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertNotNull(request.getPrecommitToken());
+      assertEquals(
+          ByteString.copyFromUtf8("TransactionPrecommitToken"),
+          request.getPrecommitToken().getPrecommitToken());
+    }
+  }
+
+  @Test
+  public void testMutationOnlyUsingTransactionManager() {
+    // Test verifies mutation-only case within a R/W transaction via TransactionManager.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
+      while (true) {
+        try {
+          Mutation mutation =
+              Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build();
+          transaction.buffer(mutation);
+          manager.commit();
+          assertNotNull(manager.getCommitTimestamp());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetry();
+        }
+      }
+    }
+
+    // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactionRequests).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactionRequests.get(0);
+    assertTrue(mockSpanner.getSession(beginTransaction.getSession()).getMultiplexed());
+    assertTrue(beginTransaction.hasMutationKey());
+    assertTrue(beginTransaction.getMutationKey().hasInsert());
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commitRequest = commitRequests.get(0);
+    assertNotNull(commitRequest.getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("TransactionPrecommitToken"),
+        commitRequest.getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testMutationOnlyUsingAsyncRunner() {
+    // Test verifies mutation-only case within a R/W transaction via AsyncRunner.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    AsyncRunner runner = client.runAsync();
+    get(
+        runner.runAsync(
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
+            },
+            MoreExecutors.directExecutor()));
+
+    // Verify that the mutation key is set in BeginTransactionRequest
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertTrue(beginTransaction.hasMutationKey());
+    assertTrue(beginTransaction.getMutationKey().hasDelete());
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commitRequest = commitRequests.get(0);
+    assertNotNull(commitRequest.getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("TransactionPrecommitToken"),
+        commitRequest.getPrecommitToken().getPrecommitToken());
+  }
+
+  @Test
+  public void testMutationOnlyUsingAsyncTransactionManager() {
+    // Test verifies mutation-only case within a R/W transaction via AsyncTransactionManager.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      get(
+          transaction
+              .then(
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
+                  },
+                  MoreExecutors.directExecutor())
+              .commitAsync());
+    }
+
+    // Verify that the mutation key is set in BeginTransactionRequest
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertTrue(beginTransaction.hasMutationKey());
+    assertTrue(beginTransaction.getMutationKey().hasDelete());
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("TransactionPrecommitToken"),
+        request.getPrecommitToken().getPrecommitToken());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {

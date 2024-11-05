@@ -1,5 +1,45 @@
 # Changelog
 
+## [6.81.0](https://github.com/googleapis/java-spanner/compare/v6.80.1...v6.81.0) (2024-11-01)
+
+
+### Features
+
+* Client built in metrics ([#3408](https://github.com/googleapis/java-spanner/issues/3408)) ([6a36103](https://github.com/googleapis/java-spanner/commit/6a3610379d1d0eee741d5ef4b30e811ff5a67bc0))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.54.0 ([#3439](https://github.com/googleapis/java-spanner/issues/3439)) ([cdec63f](https://github.com/googleapis/java-spanner/commit/cdec63f84ef9b615adf19e4611b2dc223eec687b))
+
+## [6.80.1](https://github.com/googleapis/java-spanner/compare/v6.80.0...v6.80.1) (2024-10-28)
+
+
+### Dependencies
+
+* Update googleapis/sdk-platform-java action to v2.49.0 ([#3430](https://github.com/googleapis/java-spanner/issues/3430)) ([beb788c](https://github.com/googleapis/java-spanner/commit/beb788c05d099a0c5edeabb7ed63f4a6a7a24c16))
+* Update sdk platform java dependencies ([#3431](https://github.com/googleapis/java-spanner/issues/3431)) ([eef03e9](https://github.com/googleapis/java-spanner/commit/eef03e9e5a5ce9d4fcf9728d6b14630bbb99afce))
+
+## [6.80.0](https://github.com/googleapis/java-spanner/compare/v6.79.0...v6.80.0) (2024-10-25)
+
+
+### Features
+
+* Enabling endToEndTracing support in Connection API ([#3412](https://github.com/googleapis/java-spanner/issues/3412)) ([16cc6ee](https://github.com/googleapis/java-spanner/commit/16cc6eed58cf735026d7757a28f61f29821a14bf))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.38.0 ([#3424](https://github.com/googleapis/java-spanner/issues/3424)) ([b727453](https://github.com/googleapis/java-spanner/commit/b727453b93d1089f76e1b908255610cc2796da43))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.43.0 ([#3399](https://github.com/googleapis/java-spanner/issues/3399)) ([a755c6c](https://github.com/googleapis/java-spanner/commit/a755c6c2f44cc3eb0f5a54cd58244cebc62b7a4f))
+* Update dependency io.opentelemetry:opentelemetry-sdk-testing to v1.43.0 ([#3398](https://github.com/googleapis/java-spanner/issues/3398)) ([693243a](https://github.com/googleapis/java-spanner/commit/693243afae34610441345645f627bf199e8ddb8b))
+* Update googleapis/sdk-platform-java action to v2.48.0 ([#3422](https://github.com/googleapis/java-spanner/issues/3422)) ([d5d1f55](https://github.com/googleapis/java-spanner/commit/d5d1f55d7e8e8f9aa89b7ab9e5f5bd0464bf0e1a))
+
+
+### Documentation
+
+* Fix tracing sample to exit when completed, and use custom monitored resource for export ([#3287](https://github.com/googleapis/java-spanner/issues/3287)) ([ddb65b1](https://github.com/googleapis/java-spanner/commit/ddb65b197a6f311c2bb8ec9856ea968f3a31d62a))
+
 ## [6.79.0](https://github.com/googleapis/java-spanner/compare/v6.78.0...v6.79.0) (2024-10-11)
 
 

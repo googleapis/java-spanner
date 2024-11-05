@@ -706,7 +706,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     default boolean isEnableBuiltInMetrics() {
-      return false;
+      return true;
     }
 
     default boolean isEnableEndToEndTracing() {
@@ -725,9 +725,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
-    private static final String SPANNER_ENABLE_BUILTIN_METRICS = "SPANNER_ENABLE_BUILTIN_METRICS";
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
+    private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
 
     private SpannerEnvironmentImpl() {}
 
@@ -756,9 +756,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @Override
     public boolean isEnableBuiltInMetrics() {
-      // The environment variable SPANNER_ENABLE_BUILTIN_METRICS is used for testing and will be
-      // removed in the future.
-      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_BUILTIN_METRICS));
+      return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_BUILTIN_METRICS));
     }
 
     @Override
@@ -828,8 +826,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
-    private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
+    private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1410,8 +1408,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /** Enabling this will enable built in metrics for each individual RPC execution. */
-    Builder setEnableBuiltInMetrics(boolean enableBuiltInMetrics) {
+    /**
+     * Sets whether to enable or disable built in metrics for Data client operations. Built in
+     * metrics are enabled by default.
+     */
+    public Builder setBuiltInMetricsEnabled(boolean enableBuiltInMetrics) {
       this.enableBuiltInMetrics = enableBuiltInMetrics;
       return this;
     }
@@ -1726,14 +1727,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
         this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-            getDefaultProjectId(), getCredentials());
+            this.getProjectId(), getCredentials());
 
     return openTelemetry != null
         ? new MetricsTracerFactory(
             new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
             builtInOpenTelemetryMetricsProvider.createClientAttributes(
-                getDefaultProjectId(),
-                "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
+                this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
         : null;
   }
 
@@ -1750,7 +1750,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Returns true if an {@link com.google.api.gax.tracing.MetricsTracer} should be created and set
    * on the Spanner client.
    */
-  boolean isEnableBuiltInMetrics() {
+  public boolean isEnableBuiltInMetrics() {
     return enableBuiltInMetrics;
   }
 

@@ -26,6 +26,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.DATABASE_
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIALECT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_API_TRACING;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_END_TO_END_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENCODED_CREDENTIALS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENDPOINT;
@@ -249,6 +250,7 @@ public class ConnectionOptions {
   static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
   static final Boolean DEFAULT_ENABLE_EXTENDED_TRACING = null;
   static final Boolean DEFAULT_ENABLE_API_TRACING = null;
+  static final boolean DEFAULT_ENABLE_END_TO_END_TRACING = false;
   static final boolean DEFAULT_AUTO_BATCH_DML = false;
   static final long DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT = 1L;
   static final boolean DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION = true;
@@ -335,6 +337,7 @@ public class ConnectionOptions {
 
   public static final String ENABLE_EXTENDED_TRACING_PROPERTY_NAME = "enableExtendedTracing";
   public static final String ENABLE_API_TRACING_PROPERTY_NAME = "enableApiTracing";
+  public static final String ENABLE_END_TO_END_TRACING_PROPERTY_NAME = "enableEndToEndTracing";
 
   public static final String AUTO_BATCH_DML_PROPERTY_NAME = "auto_batch_dml";
   public static final String AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME =
@@ -537,7 +540,14 @@ public class ConnectionOptions {
                           + "to get a detailed view of each RPC that is being executed by your application, "
                           + "or if you want to debug potential latency problems caused by RPCs that are "
                           + "being retried.",
-                      DEFAULT_ENABLE_API_TRACING))));
+                      DEFAULT_ENABLE_API_TRACING),
+                  ConnectionProperty.createBooleanProperty(
+                      ENABLE_END_TO_END_TRACING_PROPERTY_NAME,
+                      "Enable end-to-end tracing (true/false) to generate traces for both the time "
+                          + "that is spent in the client, as well as time that is spent in the Spanner server. "
+                          + "Server side traces can only go to Google Cloud Trace, so to see end to end traces, "
+                          + "the application should configure an exporter that exports the traces to Google Cloud Trace.",
+                      DEFAULT_ENABLE_END_TO_END_TRACING))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -1203,6 +1213,11 @@ public class ConnectionOptions {
    */
   public boolean isRouteToLeader() {
     return getInitialConnectionPropertyValue(ROUTE_TO_LEADER);
+  }
+
+  /** Whether end-to-end tracing is enabled. */
+  public boolean isEndToEndTracingEnabled() {
+    return getInitialConnectionPropertyValue(ENABLE_END_TO_END_TRACING);
   }
 
   /**
