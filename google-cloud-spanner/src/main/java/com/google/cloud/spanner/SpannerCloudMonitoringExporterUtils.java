@@ -23,6 +23,7 @@ import static com.google.api.MetricDescriptor.ValueType.DISTRIBUTION;
 import static com.google.api.MetricDescriptor.ValueType.DOUBLE;
 import static com.google.api.MetricDescriptor.ValueType.INT64;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.GAX_METER_NAME;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_PROMOTED_RESOURCE_LABELS;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_RESOURCE_TYPE;
@@ -64,6 +65,10 @@ class SpannerCloudMonitoringExporterUtils {
 
   static String getProjectId(PointData pointData) {
     return pointData.getAttributes().get(PROJECT_ID_KEY);
+  }
+
+  static String getInstanceId(PointData pointData) {
+    return pointData.getAttributes().get(INSTANCE_ID_KEY);
   }
 
   static List<TimeSeries> convertToSpannerTimeSeries(List<MetricData> collection) {
