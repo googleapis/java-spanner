@@ -23,7 +23,8 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 
 /** Forwarding implementation of ResultSet that forwards all calls to a delegate. */
-public class ForwardingResultSet extends ForwardingStructReader implements ProtobufResultSet {
+public class ForwardingResultSet extends ForwardingStructReader
+    implements ProtobufResultSet, StreamingResultSet {
 
   private Supplier<? extends ResultSet> delegate;
 
@@ -105,6 +106,6 @@ public class ForwardingResultSet extends ForwardingStructReader implements Proto
 
   @Override
   public boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
-    return delegate.get().initiateStreaming(streamMessageListener);
+    return StreamingUtil.initiateStreaming(delegate.get(), streamMessageListener);
   }
 }

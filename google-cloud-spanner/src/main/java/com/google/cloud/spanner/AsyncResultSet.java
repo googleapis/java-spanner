@@ -232,8 +232,7 @@ public interface AsyncResultSet extends ResultSet {
   interface StreamMessageListener {
     void onStreamMessage(
         PartialResultSet partialResultSet,
-        int prefetchChunks,
-        int currentBufferSize,
+        boolean bufferIsFull,
         StreamMessageRequestor streamMessageRequestor);
   }
 

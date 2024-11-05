@@ -292,18 +292,17 @@ class SessionPool {
         public boolean initiateStreaming(
             AsyncResultSet.StreamMessageListener streamMessageListener) {
           try {
-            boolean ret = super.initiateStreaming(streamMessageListener);
-            if (beforeFirst) {
+            boolean streamInitiated = super.initiateStreaming(streamMessageListener);
+            if (!streamInitiated) {
               synchronized (lock) {
                 session.get().markUsed();
-                beforeFirst = false;
                 sessionUsedForQuery = true;
               }
             }
-            if (!ret && isSingleUse) {
+            if (!streamInitiated && isSingleUse) {
               close();
             }
-            return ret;
+            return streamInitiated;
           } catch (SessionNotFoundException e) {
             throw e;
           } catch (SpannerException e) {

@@ -199,6 +199,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
 
   private void onStreamMessage(PartialResultSet partialResultSet) {
     Optional.ofNullable(streamMessageListener)
-        .ifPresent(sl -> sl.onStreamMessage(partialResultSet, prefetchChunks, stream.size(), this));
+        .ifPresent(
+            sl -> sl.onStreamMessage(partialResultSet, prefetchChunks >= stream.size(), this));
   }
 }

@@ -34,7 +34,12 @@ import com.google.spanner.v1.ResultSetStats;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +51,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
   /** State of an {@link AsyncResultSetImpl}. */
   private enum State {
     INITIALIZED,
-    IN_PROGRESS,
+    STREAMING_INITIALIZED,
     /** SYNC indicates that the {@link ResultSet} is used in sync pattern. */
     SYNC,
     CONSUMING,
@@ -400,7 +405,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
             synchronized (monitor) {
               stop = cursorReturnedDoneOrException;
             }
-          } catch (InterruptedException e) {
+          } catch (Throwable e) {
             result.setException(e);
             return;
           }
@@ -415,15 +420,13 @@ class AsyncResultSetImpl extends ForwardingStructReader
         synchronized (monitor) {
           if (executionException != null) {
             result.setException(executionException);
-            throw executionException;
-          }
-          if (state == State.CANCELLED) {
+          } else if (state == State.CANCELLED) {
             result.setException(CANCELLED_EXCEPTION);
-            throw CANCELLED_EXCEPTION;
+          } else {
+            result.set(null);
           }
         }
       }
-      result.set(null);
     }
 
     private void waitIfPaused() throws InterruptedException {
@@ -460,6 +463,12 @@ class AsyncResultSetImpl extends ForwardingStructReader
     @Override
     public void run() {
       try {
+        // This method returns true if the underlying result set is a streaming result set (e.g. a
+        // GrpcResultSet).
+        // Those result sets will trigger initiateProduceRows() when the first results are received.
+        // Non-streaming result sets do not trigger this callback, and for those result sets, we
+        // need to eagerly
+        // start the ProduceRowsRunnable.
         if (!initiateStreaming(AsyncResultSetImpl.this)) {
           initiateProduceRows();
         }
@@ -480,7 +489,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
 
       // Start to fetch data and buffer these.
       this.result = SettableApiFuture.create();
-      this.state = State.IN_PROGRESS;
+      this.state = State.STREAMING_INITIALIZED;
       this.service.execute(new InitiateStreamingRunnable());
       this.executor = MoreExecutors.newSequentialExecutor(Preconditions.checkNotNull(exec));
       this.callback = Preconditions.checkNotNull(cb);
@@ -491,7 +500,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
 
   private void initiateProduceRows() {
     this.service.execute(new ProduceRowsRunnable());
-    if (this.state == State.IN_PROGRESS) {
+    if (this.state == State.STREAMING_INITIALIZED) {
       this.state = State.RUNNING;
     }
     produceRowsInitiated = true;
@@ -607,9 +616,8 @@ class AsyncResultSetImpl extends ForwardingStructReader
     return delegateResultSet.get().getMetadata();
   }
 
-  @Override
   public boolean initiateStreaming(StreamMessageListener streamMessageListener) {
-    return delegateResultSet.get().initiateStreaming(streamMessageListener);
+    return StreamingUtil.initiateStreaming(delegateResultSet.get(), streamMessageListener);
   }
 
   @Override
@@ -631,20 +639,19 @@ class AsyncResultSetImpl extends ForwardingStructReader
   @Override
   public void onStreamMessage(
       PartialResultSet partialResultSet,
-      int prefetchChunks,
-      int currentBufferSize,
+      boolean bufferIsFull,
       StreamMessageRequestor streamMessageRequestor) {
     synchronized (monitor) {
       if (produceRowsInitiated) {
         return;
       }
-      // if PartialResultSet contains resume token or buffer size is more than configured size or
+      // if PartialResultSet contains resume token or buffer size is ful or
       // we have reached end of stream, we can start the thread
       boolean startJobThread =
           !partialResultSet.getResumeToken().isEmpty()
-              || currentBufferSize >= prefetchChunks
+              || bufferIsFull
               || partialResultSet == GrpcStreamIterator.END_OF_STREAM;
-      if (startJobThread || state != State.IN_PROGRESS) {
+      if (startJobThread || state != State.STREAMING_INITIALIZED) {
         initiateProduceRows();
       } else {
         streamMessageRequestor.requestMessages(1);

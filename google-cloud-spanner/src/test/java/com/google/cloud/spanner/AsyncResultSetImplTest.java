@@ -23,7 +23,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
@@ -385,7 +387,7 @@ public class AsyncResultSetImplTest {
   public void testCallbackIsNotCalledWhilePausedAndCanceled()
       throws InterruptedException, ExecutionException {
     Executor executor = Executors.newSingleThreadExecutor();
-    ResultSet delegate = mock(ResultSet.class);
+    StreamingResultSet delegate = mock(StreamingResultSet.class);
 
     final AtomicInteger callbackCounter = new AtomicInteger();
     ApiFuture<Void> callbackResult;
@@ -396,7 +398,7 @@ public class AsyncResultSetImplTest {
       when(delegate.initiateStreaming(any(AsyncResultSet.StreamMessageListener.class)))
           .thenAnswer(
               answer -> {
-                rs.onStreamMessage(PartialResultSet.newBuilder().build(), 4, 1, null);
+                rs.onStreamMessage(PartialResultSet.newBuilder().build(), false, null);
                 return null;
               });
       callbackResult =
@@ -512,7 +514,7 @@ public class AsyncResultSetImplTest {
 
   @Test
   public void testOnStreamMessageWhenResumeTokenIsPresent() {
-    ResultSet delegate = mock(ResultSet.class);
+    StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
@@ -525,15 +527,13 @@ public class AsyncResultSetImplTest {
       rs.setCallback(Executors.newSingleThreadExecutor(), ignored -> CallbackResponse.DONE);
       rs.onStreamMessage(
           PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
-          4,
-          1,
+          false,
           streamMessageRequestor);
       Mockito.verify(streamMessageRequestor, times(1)).requestMessages(Mockito.eq(1));
 
       rs.onStreamMessage(
           PartialResultSet.newBuilder().setResumeToken(ByteString.copyFromUtf8("test")).build(),
-          4,
-          2,
+          false,
           streamMessageRequestor);
       Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
       Mockito.verify(streamMessageRequestor, times(1)).requestMessages(Mockito.eq(1));
@@ -542,7 +542,7 @@ public class AsyncResultSetImplTest {
 
   @Test
   public void testOnStreamMessageWhenCurrentBufferSizeReachedPrefetchChunkSize() {
-    ResultSet delegate = mock(ResultSet.class);
+    StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
@@ -555,8 +555,7 @@ public class AsyncResultSetImplTest {
       rs.setCallback(Executors.newSingleThreadExecutor(), ignored -> CallbackResponse.DONE);
       rs.onStreamMessage(
           PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
-          4,
-          4,
+          true,
           streamMessageRequestor);
       Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
       Mockito.verify(streamMessageRequestor, times(0)).requestMessages(Mockito.eq(1));
@@ -565,7 +564,7 @@ public class AsyncResultSetImplTest {
 
   @Test
   public void testOnStreamMessageWhenAsyncResultIsCancelled() {
-    ResultSet delegate = mock(ResultSet.class);
+    StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
@@ -579,8 +578,7 @@ public class AsyncResultSetImplTest {
       rs.cancel();
       rs.onStreamMessage(
           PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
-          1,
-          4,
+          false,
           streamMessageRequestor);
       Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
       Mockito.verify(streamMessageRequestor, times(0)).requestMessages(Mockito.eq(1));
