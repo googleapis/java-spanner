@@ -92,7 +92,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @VisibleForTesting
   DatabaseClient getMultiplexedSessionForRW() {
-    if (this.useMultiplexedSessionForRW) {
+    if (canUseMultiplexedSessionsForRW()) {
       return getMultiplexedSession();
     }
     return getSession();
@@ -105,6 +105,12 @@ class DatabaseClientImpl implements DatabaseClient {
   private boolean canUseMultiplexedSessions() {
     return this.multiplexedSessionDatabaseClient != null
         && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported();
+  }
+
+  private boolean canUseMultiplexedSessionsForRW() {
+    return this.useMultiplexedSessionForRW
+        && this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsForRWSupported();
   }
 
   @Override
@@ -129,7 +135,7 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      if (this.useMultiplexedSessionForRW && getMultiplexedSessionDatabaseClient() != null) {
+      if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient().writeWithOptions(mutations, options);
       }
       return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));

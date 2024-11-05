@@ -1872,7 +1872,17 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void beginTransaction(
       BeginTransactionRequest request, StreamObserver<Transaction> responseObserver) {
-    requests.add(request);
+    // TODO: Remove once this is guaranteed to be available.
+    // Skip storing the explicit BeginTransactionRequest used to verify read-write transaction
+    // server availability on multiplexed sessions.
+    // This code will be removed once read-write multiplexed sessions are stable on the backend,
+    // hence the temporary trade-off.
+    if (!request
+        .getRequestOptions()
+        .getTransactionTag()
+        .equals("multiplexed-rw-background-begin-txn")) {
+      requests.add(request);
+    }
     Preconditions.checkNotNull(request.getSession());
     Session session = getSession(request.getSession());
     if (session == null) {
