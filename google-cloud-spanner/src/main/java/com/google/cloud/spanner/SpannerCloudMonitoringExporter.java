@@ -141,7 +141,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     // Verifies if metrics data has missing instance id.
     if (!spannerMetricData.stream()
         .flatMap(metricData -> metricData.getData().getPoints().stream())
-        .noneMatch(pd -> SpannerCloudMonitoringExporterUtils.getInstanceId(pd) == null)) {
+        .anyMatch(pd -> SpannerCloudMonitoringExporterUtils.getInstanceId(pd) == null)) {
       logger.log(Level.WARNING, "Metric data has missing instanceId. Skipping export.");
       return CompletableResultCode.ofFailure();
     }
