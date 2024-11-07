@@ -1575,6 +1575,62 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
+  @Test
+  public void testReadWriteTransactionWithCommitRetryProtocolExtensionSet() {
+    // This test simulates the commit retry protocol extension which occurs when a read-write
+    // transaction contains read/query + mutation operations.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+                //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {
+                  // ignore
+                }
+              }
+
+              Mutation mutation =
+                  Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build();
+              transaction.buffer(mutation);
+
+              TransactionContextImpl impl = (TransactionContextImpl) transaction;
+              // Force the Commit RPC to return a CommitResponse with MultiplexedSessionRetry field
+              // set.
+              // This scenario is only possible when a read-write transaction contains read/query +
+              // mutation operations.
+              mockSpanner.markCommitRetryOnTransaction(impl.transactionId);
+              return null;
+            });
+
+    List<ExecuteSqlRequest> executeSqlRequests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1, executeSqlRequests.size());
+    // Verify the request is executed using multiplexed sessions
+    assertTrue(mockSpanner.getSession(executeSqlRequests.get(0).getSession()).getMultiplexed());
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(2, commitRequests.size());
+    assertNotNull(commitRequests.get(0).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("PartialResultSetPrecommitToken"),
+        commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+
+    // Second CommitRequest should contain the latest precommit token received via the
+    // CommitResponse in previous attempt.
+    assertNotNull(commitRequests.get(1).getPrecommitToken());
+    assertEquals(
+        ByteString.copyFromUtf8("CommitResponsePrecommitToken"),
+        commitRequests.get(1).getPrecommitToken().getPrecommitToken());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
     assertNotNull(client.multiplexedSessionDatabaseClient);
     SessionReference sessionReference =
