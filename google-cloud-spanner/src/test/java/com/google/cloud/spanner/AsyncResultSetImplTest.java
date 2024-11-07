@@ -398,7 +398,7 @@ public class AsyncResultSetImplTest {
       when(delegate.initiateStreaming(any(AsyncResultSet.StreamMessageListener.class)))
           .thenAnswer(
               answer -> {
-                rs.onStreamMessage(PartialResultSet.newBuilder().build(), false, null);
+                rs.onStreamMessage(PartialResultSet.newBuilder().build(), false);
                 return null;
               });
       callbackResult =
@@ -517,8 +517,6 @@ public class AsyncResultSetImplTest {
     StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
-          Mockito.mock(AsyncResultSet.StreamMessageRequestor.class);
       // Marking Streaming as supported
       Mockito.when(
               delegate.initiateStreaming(Mockito.any(AsyncResultSet.StreamMessageListener.class)))
@@ -526,17 +524,12 @@ public class AsyncResultSetImplTest {
 
       rs.setCallback(Executors.newSingleThreadExecutor(), ignored -> CallbackResponse.DONE);
       rs.onStreamMessage(
-          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
-          false,
-          streamMessageRequestor);
-      Mockito.verify(streamMessageRequestor, times(1)).requestMessages(Mockito.eq(1));
+          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(), false);
 
       rs.onStreamMessage(
           PartialResultSet.newBuilder().setResumeToken(ByteString.copyFromUtf8("test")).build(),
-          false,
-          streamMessageRequestor);
+          false);
       Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
-      Mockito.verify(streamMessageRequestor, times(1)).requestMessages(Mockito.eq(1));
     }
   }
 
@@ -545,8 +538,6 @@ public class AsyncResultSetImplTest {
     StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
-          Mockito.mock(AsyncResultSet.StreamMessageRequestor.class);
       // Marking Streaming as supported
       Mockito.when(
               delegate.initiateStreaming(Mockito.any(AsyncResultSet.StreamMessageListener.class)))
@@ -554,11 +545,8 @@ public class AsyncResultSetImplTest {
 
       rs.setCallback(Executors.newSingleThreadExecutor(), ignored -> CallbackResponse.DONE);
       rs.onStreamMessage(
-          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
-          true,
-          streamMessageRequestor);
+          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(), true);
       Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
-      Mockito.verify(streamMessageRequestor, times(0)).requestMessages(Mockito.eq(1));
     }
   }
 
@@ -567,8 +555,6 @@ public class AsyncResultSetImplTest {
     StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(mockedProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      AsyncResultSet.StreamMessageRequestor streamMessageRequestor =
-          Mockito.mock(AsyncResultSet.StreamMessageRequestor.class);
       // Marking Streaming as supported
       Mockito.when(
               delegate.initiateStreaming(Mockito.any(AsyncResultSet.StreamMessageListener.class)))
@@ -577,11 +563,8 @@ public class AsyncResultSetImplTest {
       rs.setCallback(Executors.newSingleThreadExecutor(), ignored -> CallbackResponse.DONE);
       rs.cancel();
       rs.onStreamMessage(
-          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(),
-          false,
-          streamMessageRequestor);
+          PartialResultSet.newBuilder().addValues(Value.newBuilder().build()).build(), false);
       Mockito.verify(mockedProvider.getExecutor(), times(2)).execute(Mockito.any());
-      Mockito.verify(streamMessageRequestor, times(0)).requestMessages(Mockito.eq(1));
     }
   }
 }

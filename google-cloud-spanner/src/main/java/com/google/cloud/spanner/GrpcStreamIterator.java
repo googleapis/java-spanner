@@ -35,7 +35,7 @@ import org.threeten.bp.Duration;
 /** Adapts a streaming read/query call into an iterator over partial result sets. */
 @VisibleForTesting
 class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
-    implements CloseableIterator<PartialResultSet>, AsyncResultSet.StreamMessageRequestor {
+    implements CloseableIterator<PartialResultSet> {
   private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
   public static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
   private AsyncResultSet.StreamMessageListener streamMessageListener;
@@ -146,11 +146,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     onStreamMessage(results);
   }
 
-  @Override
-  public void requestMessages(int numOfMessages) {
-    call.request(numOfMessages);
-  }
-
   private class ConsumerImpl implements SpannerRpc.ResultStreamConsumer {
     private final boolean cancelQueryWhenClientIsClosed;
 
@@ -199,7 +194,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
 
   private void onStreamMessage(PartialResultSet partialResultSet) {
     Optional.ofNullable(streamMessageListener)
-        .ifPresent(
-            sl -> sl.onStreamMessage(partialResultSet, prefetchChunks >= stream.size(), this));
+        .ifPresent(sl -> sl.onStreamMessage(partialResultSet, prefetchChunks >= stream.size()));
   }
 }

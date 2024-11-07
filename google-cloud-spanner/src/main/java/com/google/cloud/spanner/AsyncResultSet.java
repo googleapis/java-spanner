@@ -230,17 +230,6 @@ public interface AsyncResultSet extends ResultSet {
    * chunk is received from gRPC streaming call.
    */
   interface StreamMessageListener {
-    void onStreamMessage(
-        PartialResultSet partialResultSet,
-        boolean bufferIsFull,
-        StreamMessageRequestor streamMessageRequestor);
-  }
-
-  /**
-   * An interface to request more messages from the gRPC streaming call. It will be implemented by
-   * the class which has access to SpannerRpc.StreamingCall object
-   */
-  interface StreamMessageRequestor {
-    void requestMessages(int numOfMessages);
+    void onStreamMessage(PartialResultSet partialResultSet, boolean bufferIsFull);
   }
 }

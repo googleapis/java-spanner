@@ -637,10 +637,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
   }
 
   @Override
-  public void onStreamMessage(
-      PartialResultSet partialResultSet,
-      boolean bufferIsFull,
-      StreamMessageRequestor streamMessageRequestor) {
+  public void onStreamMessage(PartialResultSet partialResultSet, boolean bufferIsFull) {
     synchronized (monitor) {
       if (produceRowsInitiated) {
         return;
@@ -653,8 +650,6 @@ class AsyncResultSetImpl extends ForwardingStructReader
               || partialResultSet == GrpcStreamIterator.END_OF_STREAM;
       if (startJobThread || state != State.STREAMING_INITIALIZED) {
         initiateProduceRows();
-      } else {
-        streamMessageRequestor.requestMessages(1);
       }
     }
   }
