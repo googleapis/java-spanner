@@ -702,8 +702,8 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
         runSampleRunnable(
             () -> {
               try {
-                CreateInstanceWithoutDefaultBackupScheduleExample
-                    .createInstanceWithoutDefaultBackupSchedule(
+                CreateInstanceWithoutDefaultBackupSchedulesExample
+                    .createInstanceWithoutDefaultBackupSchedules(
                         dbId.getInstanceId().getProject(), instanceId);
                 UpdateInstanceDefaultBackupScheduleTypeExample
                     .updateInstanceDefaultBackupScheduleType(

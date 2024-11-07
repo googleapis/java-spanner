@@ -27,16 +27,16 @@ import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.ProjectName;
 import java.util.concurrent.ExecutionException;
 
-class CreateInstanceWithoutDefaultBackupScheduleExample {
+class CreateInstanceWithoutDefaultBackupSchedulesExample {
 
-  static void createInstanceWithoutDefaultBackupSchedule() {
+  static void createInstanceWithoutDefaultBackupSchedules() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
-    createInstanceWithoutDefaultBackupSchedule(projectId, instanceId);
+    createInstanceWithoutDefaultBackupSchedules(projectId, instanceId);
   }
 
-  static void createInstanceWithoutDefaultBackupSchedule(String projectId, String instanceId) {
+  static void createInstanceWithoutDefaultBackupSchedules(String projectId, String instanceId) {
     // Set Instance configuration.
     int nodeCount = 2;
     String displayName = "Descriptive name";
