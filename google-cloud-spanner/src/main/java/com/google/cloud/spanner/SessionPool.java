@@ -288,34 +288,6 @@ class SessionPool {
           }
         }
 
-        @Override
-        public boolean initiateStreaming(
-            AsyncResultSet.StreamMessageListener streamMessageListener) {
-          try {
-            boolean streamInitiated = super.initiateStreaming(streamMessageListener);
-            if (!streamInitiated) {
-              synchronized (lock) {
-                session.get().markUsed();
-                sessionUsedForQuery = true;
-              }
-            }
-            if (!streamInitiated && isSingleUse) {
-              close();
-            }
-            return streamInitiated;
-          } catch (SessionNotFoundException e) {
-            throw e;
-          } catch (SpannerException e) {
-            synchronized (lock) {
-              if (!closed && isSingleUse) {
-                session.get().setLastException(e);
-                AutoClosingReadContext.this.close();
-              }
-            }
-            throw e;
-          }
-        }
-
         private boolean internalNext() {
           try {
             boolean ret = super.next();

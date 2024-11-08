@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 /** Streaming implementation of ResultSet that supports streaming of chunks */
-public interface StreamingResultSet extends ResultSet {
+interface StreamingResultSet extends ResultSet {
 
   /**
    * Returns the {@link boolean} for this {@link ResultSet}. This method will be used by

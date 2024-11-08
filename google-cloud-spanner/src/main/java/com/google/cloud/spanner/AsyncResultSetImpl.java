@@ -467,13 +467,12 @@ class AsyncResultSetImpl extends ForwardingStructReader
         // GrpcResultSet).
         // Those result sets will trigger initiateProduceRows() when the first results are received.
         // Non-streaming result sets do not trigger this callback, and for those result sets, we
-        // need to eagerly
-        // start the ProduceRowsRunnable.
+        // need to eagerly start the ProduceRowsRunnable.
         if (!initiateStreaming(AsyncResultSetImpl.this)) {
           initiateProduceRows();
         }
-      } catch (SpannerException e) {
-        executionException = e;
+      } catch (Throwable exception) {
+        executionException = SpannerExceptionFactory.asSpannerException(exception);
         initiateProduceRows();
       }
     }
@@ -499,11 +498,11 @@ class AsyncResultSetImpl extends ForwardingStructReader
   }
 
   private void initiateProduceRows() {
-    this.service.execute(new ProduceRowsRunnable());
     if (this.state == State.STREAMING_INITIALIZED) {
       this.state = State.RUNNING;
     }
     produceRowsInitiated = true;
+    this.service.execute(new ProduceRowsRunnable());
   }
 
   Future<Void> getResult() {
@@ -642,8 +641,8 @@ class AsyncResultSetImpl extends ForwardingStructReader
       if (produceRowsInitiated) {
         return;
       }
-      // if PartialResultSet contains resume token or buffer size is ful or
-      // we have reached end of stream, we can start the thread
+      // if PartialResultSet contains a resume token or buffer size is full, or
+      // we have reached the end of the stream, we can start the thread.
       boolean startJobThread =
           !partialResultSet.getResumeToken().isEmpty()
               || bufferIsFull

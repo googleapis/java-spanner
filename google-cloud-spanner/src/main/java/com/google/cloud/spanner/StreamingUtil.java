@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner;
 
-public class StreamingUtil {
-  public static boolean initiateStreaming(
+class StreamingUtil {
+  static boolean initiateStreaming(
       ResultSet resultSet, AsyncResultSet.StreamMessageListener streamMessageListener) {
     if (resultSet instanceof StreamingResultSet) {
       return ((StreamingResultSet) resultSet).initiateStreaming(streamMessageListener);
