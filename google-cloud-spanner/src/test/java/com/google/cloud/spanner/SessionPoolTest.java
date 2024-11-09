@@ -164,22 +164,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   private SessionPool createPool() {
     return SessionPool.createPool(
-        options,
-        new TestExecutorFactory(),
-        client.getSessionClient(db),
-        tracer,
-        OpenTelemetry.noop());
+        options, client.getSessionClient(db), tracer, OpenTelemetry.noop());
   }
 
   private SessionPool createPool(Clock clock) {
     return SessionPool.createPool(
-        options,
-        new TestExecutorFactory(),
-        client.getSessionClient(db),
-        clock,
-        Position.RANDOM,
-        tracer,
-        OpenTelemetry.noop());
+        options, client.getSessionClient(db), clock, Position.RANDOM, tracer, OpenTelemetry.noop());
   }
 
   private SessionPool createPool(
@@ -187,7 +177,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     return SessionPool.createPool(
         options,
         TEST_DATABASE_ROLE,
-        new TestExecutorFactory(),
         client.getSessionClient(db),
         clock,
         Position.RANDOM,
@@ -209,7 +198,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     return SessionPool.createPool(
         options,
         TEST_DATABASE_ROLE,
-        new TestExecutorFactory(),
         client.getSessionClient(db),
         clock,
         Position.RANDOM,
@@ -1574,11 +1562,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(spanner.getOptions()).thenReturn(spannerOptions);
       SessionPool pool =
           SessionPool.createPool(
-              options,
-              new TestExecutorFactory(),
-              spanner.getSessionClient(db),
-              tracer,
-              OpenTelemetry.noop());
+              options, spanner.getSessionClient(db), tracer, OpenTelemetry.noop());
       try (PooledSessionFuture readWriteSession = pool.getSession()) {
         TransactionRunner runner = readWriteSession.readWriteTransaction();
         try {
