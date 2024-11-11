@@ -603,6 +603,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<ByteString, Boolean> isPartitionedDmlTransaction =
       new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Boolean> abortedTransactions = new ConcurrentHashMap<>();
+  private ConcurrentMap<ByteString, Boolean> commitRetryTransactions = new ConcurrentHashMap<>();
   private final AtomicBoolean abortNextTransaction = new AtomicBoolean();
   private final AtomicBoolean abortNextStatement = new AtomicBoolean();
   private final AtomicBoolean ignoreNextInlineBeginRequest = new AtomicBoolean();
@@ -2045,15 +2046,23 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         return;
       }
       simulateAbort(session, request.getTransactionId());
-      commitTransaction(transaction.getId());
-      CommitResponse.Builder responseBuilder =
-          CommitResponse.newBuilder().setCommitTimestamp(getCurrentGoogleTimestamp());
-      if (request.getReturnCommitStats()) {
-        responseBuilder.setCommitStats(
-            com.google.spanner.v1.CommitResponse.CommitStats.newBuilder()
-                // This is not really always equal, but at least it returns a value.
-                .setMutationCount(request.getMutationsCount())
-                .build());
+      CommitResponse.Builder responseBuilder = CommitResponse.newBuilder();
+      Optional<Boolean> commitRetry =
+          Optional.fromNullable(commitRetryTransactions.get(request.getTransactionId()));
+      if (commitRetry.or(Boolean.FALSE) && session.getMultiplexed()) {
+        responseBuilder.setPrecommitToken(
+            getCommitResponsePrecommitToken(request.getTransactionId()));
+        commitRetryTransactions.remove(request.getTransactionId());
+      } else {
+        commitTransaction(transaction.getId());
+        responseBuilder.setCommitTimestamp(getCurrentGoogleTimestamp());
+        if (request.getReturnCommitStats()) {
+          responseBuilder.setCommitStats(
+              com.google.spanner.v1.CommitResponse.CommitStats.newBuilder()
+                  // This is not really always equal, but at least it returns a value.
+                  .setMutationCount(request.getMutationsCount())
+                  .build());
+        }
       }
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
@@ -2132,6 +2141,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     isPartitionedDmlTransaction.remove(transactionId);
     transactionLastUsed.remove(transactionId);
     transactionSequenceNo.remove(transactionId);
+  }
+
+  public void markCommitRetryOnTransaction(ByteString transactionId) {
+    Transaction transaction = transactions.get(transactionId);
+    if (transaction == null || !isReadWriteTransaction(transactionId)) {
+      return;
+    }
+    commitRetryTransactions.putIfAbsent(transactionId, Boolean.TRUE);
   }
 
   @Override
@@ -2525,6 +2542,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   static MultiplexedSessionPrecommitToken getExecuteBatchDmlResponsePrecommitToken(
       ByteString transactionId) {
     return getPrecommitToken("ExecuteBatchDmlResponsePrecommitToken", transactionId);
+  }
+
+  static MultiplexedSessionPrecommitToken getCommitResponsePrecommitToken(
+      ByteString transactionId) {
+    return getPrecommitToken("CommitResponsePrecommitToken", transactionId);
   }
 
   static MultiplexedSessionPrecommitToken getPrecommitToken(

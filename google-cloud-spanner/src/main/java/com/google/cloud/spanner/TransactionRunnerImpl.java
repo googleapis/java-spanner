@@ -409,7 +409,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
       builder.addAllMutations(mutationsProto);
       finishOps.addListener(
-          new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
+          new CommitRunnable(
+              res, finishOps, builder, /* retryAttemptDueToCommitProtocolExtension = */ false),
+          MoreExecutors.directExecutor());
       return res;
     }
 
@@ -418,14 +420,17 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       private final SettableApiFuture<CommitResponse> res;
       private final ApiFuture<Void> prev;
       private final CommitRequest.Builder requestBuilder;
+      private final boolean retryAttemptDueToCommitProtocolExtension;
 
       CommitRunnable(
           SettableApiFuture<CommitResponse> res,
           ApiFuture<Void> prev,
-          CommitRequest.Builder requestBuilder) {
+          CommitRequest.Builder requestBuilder,
+          boolean retryAttemptDueToCommitProtocolExtension) {
         this.res = res;
         this.prev = prev;
         this.requestBuilder = requestBuilder;
+        this.retryAttemptDueToCommitProtocolExtension = retryAttemptDueToCommitProtocolExtension;
       }
 
       @Override
@@ -459,6 +464,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // Set the precommit token in the CommitRequest for multiplexed sessions.
             requestBuilder.setPrecommitToken(getLatestPrecommitToken());
           }
+          if (retryAttemptDueToCommitProtocolExtension) {
+            // When a retry occurs due to the commit protocol extension, clear all mutations because
+            // they were already buffered in SpanFE during the previous attempt.
+            requestBuilder.clearMutations();
+            span.addAnnotation(
+                "Retrying commit operation with a new precommit token obtained from the previous CommitResponse");
+          }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture;
@@ -479,6 +491,29 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     return;
                   }
                   com.google.spanner.v1.CommitResponse proto = commitFuture.get();
+
+                  // If the CommitResponse includes a precommit token, the client will retry the
+                  // commit RPC once with the new token and clear any existing mutations.
+                  // This case is applicable only when the read-write transaction uses multiplexed
+                  // session.
+                  if (proto.hasPrecommitToken() && !retryAttemptDueToCommitProtocolExtension) {
+                    // track the latest pre commit token
+                    onPrecommitToken(proto.getPrecommitToken());
+                    span.addAnnotation(
+                        "Commit operation will be retried with new precommit token as the CommitResponse includes a MultiplexedSessionRetry field");
+                    opSpan.end();
+
+                    // Retry the commit RPC with the latest precommit token from CommitResponse.
+                    new CommitRunnable(
+                            res,
+                            prev,
+                            requestBuilder,
+                            /* retryAttemptDueToCommitProtocolExtension = */ true)
+                        .run();
+
+                    // Exit to prevent further processing in this attempt.
+                    return;
+                  }
                   if (!proto.hasCommitTimestamp()) {
                     throw newSpannerException(
                         ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
