@@ -501,8 +501,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     onPrecommitToken(proto.getPrecommitToken());
                     span.addAnnotation(
                         "Commit operation will be retried with new precommit token as the CommitResponse includes a MultiplexedSessionRetry field");
-                    opSpan.addAnnotation(
-                        "Commit operation will be retried with new precommit token as the CommitResponse includes a MultiplexedSessionRetry field");
                     opSpan.end();
 
                     // Retry the commit RPC with the latest precommit token from CommitResponse.

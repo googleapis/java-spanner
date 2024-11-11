@@ -1618,6 +1618,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(
         ByteString.copyFromUtf8("PartialResultSetPrecommitToken"),
         commitRequests.get(0).getPrecommitToken().getPrecommitToken());
+    // Verify that the first request has mutations set
+    assertTrue(commitRequests.get(0).getMutationsCount() > 0);
 
     // Second CommitRequest should contain the latest precommit token received via the
     // CommitResponse in previous attempt.
@@ -1625,6 +1627,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(
         ByteString.copyFromUtf8("CommitResponsePrecommitToken"),
         commitRequests.get(1).getPrecommitToken().getPrecommitToken());
+    // Verify that the commit retry request does not have any mutations set
+    assertEquals(0, commitRequests.get(1).getMutationsCount());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
