@@ -506,13 +506,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     opSpan.end();
 
                     // Retry the commit RPC with the latest precommit token from CommitResponse.
-                    MoreExecutors.directExecutor()
-                        .execute(
-                            new CommitRunnable(
-                                res,
-                                prev,
-                                requestBuilder,
-                                /* retryAttemptDueToCommitProtocolExtension = */ true));
+                    new CommitRunnable(
+                            res,
+                            prev,
+                            requestBuilder,
+                            /* retryAttemptDueToCommitProtocolExtension = */ true)
+                        .run();
 
                     // Exit to prevent further processing in this attempt.
                     return;
