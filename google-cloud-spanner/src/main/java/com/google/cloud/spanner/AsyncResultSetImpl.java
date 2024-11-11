@@ -615,7 +615,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
     return delegateResultSet.get().getMetadata();
   }
 
-  public boolean initiateStreaming(StreamMessageListener streamMessageListener) {
+  boolean initiateStreaming(StreamMessageListener streamMessageListener) {
     return StreamingUtil.initiateStreaming(delegateResultSet.get(), streamMessageListener);
   }
 

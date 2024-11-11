@@ -16,12 +16,16 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
+
 /** Streaming implementation of ResultSet that supports streaming of chunks */
 interface StreamingResultSet extends ResultSet {
 
   /**
    * Returns the {@link boolean} for this {@link ResultSet}. This method will be used by
-   * AsyncResultSet to initiate gRPC streaming
+   * AsyncResultSet internally to initiate gRPC streaming. This method should not be called by the
+   * users.
    */
+  @InternalApi
   boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener);
 }

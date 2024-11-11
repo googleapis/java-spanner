@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -105,6 +106,7 @@ public class ForwardingResultSet extends ForwardingStructReader
   }
 
   @Override
+  @InternalApi
   public boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
     return StreamingUtil.initiateStreaming(delegate.get(), streamMessageListener);
   }

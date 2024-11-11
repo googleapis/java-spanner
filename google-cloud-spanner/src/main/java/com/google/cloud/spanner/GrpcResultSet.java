@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.core.InternalApi;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.PartialResultSet;
@@ -125,6 +126,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>>
   }
 
   @Override
+  @InternalApi
   public boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
     return iterator.initiateStreaming(streamMessageListener);
   }

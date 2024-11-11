@@ -20,6 +20,7 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.spanner.v1.PartialResultSet;
@@ -68,8 +69,8 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     return consumer;
   }
 
-  public void registerListener(AsyncResultSet.StreamMessageListener streamMessageListener) {
-    this.streamMessageListener = streamMessageListener;
+  void registerListener(AsyncResultSet.StreamMessageListener streamMessageListener) {
+    this.streamMessageListener = Preconditions.checkNotNull(streamMessageListener);
   }
 
   public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {

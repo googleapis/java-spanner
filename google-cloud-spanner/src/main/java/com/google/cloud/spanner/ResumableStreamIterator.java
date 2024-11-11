@@ -23,6 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.client.util.BackOff;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.core.InternalApi;
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.StatusCode.Code;
@@ -223,6 +224,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
   }
 
   @Override
+  @InternalApi
   public boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
     this.streamMessageListener = streamMessageListener;
     startGrpcStreaming();
