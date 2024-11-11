@@ -773,7 +773,9 @@ abstract class AbstractReadContext
               AsyncResultSet.StreamMessageListener streamListener) {
             GrpcStreamIterator stream =
                 new GrpcStreamIterator(statement, prefetchChunks, cancelQueryWhenClientIsClosed);
-            stream.registerListener(streamListener);
+            if (streamListener != null) {
+              stream.registerListener(streamListener);
+            }
             if (partitionToken != null) {
               request.setPartitionToken(partitionToken);
             }
@@ -967,7 +969,9 @@ abstract class AbstractReadContext
               AsyncResultSet.StreamMessageListener streamListener) {
             GrpcStreamIterator stream =
                 new GrpcStreamIterator(prefetchChunks, cancelQueryWhenClientIsClosed);
-            stream.registerListener(streamListener);
+            if (streamListener != null) {
+              stream.registerListener(streamListener);
+            }
             TransactionSelector selector = null;
             if (resumeToken != null) {
               builder.setResumeToken(resumeToken);
