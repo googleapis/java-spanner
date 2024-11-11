@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.core.InternalApi;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.PartialResultSet;
@@ -31,8 +30,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 @VisibleForTesting
-class GrpcResultSet extends AbstractResultSet<List<Object>>
-    implements ProtobufResultSet, StreamingResultSet {
+class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufResultSet {
   private final GrpcValueIterator iterator;
   private final Listener listener;
   private final DecodeMode decodeMode;
@@ -123,12 +121,6 @@ class GrpcResultSet extends AbstractResultSet<List<Object>>
   public ResultSetMetadata getMetadata() {
     checkState(metadata != null, "next() call required");
     return metadata;
-  }
-
-  @Override
-  @InternalApi
-  public boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
-    return iterator.initiateStreaming(streamMessageListener);
   }
 
   @Override

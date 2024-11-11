@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.core.ListenableFutureToApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.AbstractReadContext.ListenableAsyncResultSet;
@@ -28,13 +29,13 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -44,14 +45,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Default implementation for {@link AsyncResultSet}. */
-class AsyncResultSetImpl extends ForwardingStructReader
-    implements ListenableAsyncResultSet, AsyncResultSet.StreamMessageListener {
+class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsyncResultSet {
   private static final Logger log = Logger.getLogger(AsyncResultSetImpl.class.getName());
 
   /** State of an {@link AsyncResultSetImpl}. */
   private enum State {
     INITIALIZED,
-    STREAMING_INITIALIZED,
     /** SYNC indicates that the {@link ResultSet} is used in sync pattern. */
     SYNC,
     CONSUMING,
@@ -116,15 +115,12 @@ class AsyncResultSetImpl extends ForwardingStructReader
 
   private State state = State.INITIALIZED;
 
-  /** This variable indicates that produce rows thread is initiated */
-  private volatile boolean produceRowsInitiated;
-
   /**
    * This variable indicates whether all the results from the underlying result set have been read.
    */
   private volatile boolean finished;
 
-  private volatile SettableApiFuture<Void> result;
+  private volatile ApiFuture<Void> result;
 
   /**
    * This variable indicates whether {@link #tryNext()} has returned {@link CursorState#DONE} or a
@@ -333,12 +329,12 @@ class AsyncResultSetImpl extends ForwardingStructReader
   private final CallbackRunnable callbackRunnable = new CallbackRunnable();
 
   /**
-   * {@link ProduceRowsRunnable} reads data from the underlying {@link ResultSet}, places these in
+   * {@link ProduceRowsCallable} reads data from the underlying {@link ResultSet}, places these in
    * the buffer and dispatches the {@link CallbackRunnable} when data is ready to be consumed.
    */
-  private class ProduceRowsRunnable implements Runnable {
+  private class ProduceRowsCallable implements Callable<Void> {
     @Override
-    public void run() {
+    public Void call() throws Exception {
       boolean stop = false;
       boolean hasNext = false;
       try {
@@ -397,17 +393,12 @@ class AsyncResultSetImpl extends ForwardingStructReader
         }
         // Call the callback if there are still rows in the buffer that need to be processed.
         while (!stop) {
-          try {
-            waitIfPaused();
-            startCallbackIfNecessary();
-            // Make sure we wait until the callback runner has actually finished.
-            consumingLatch.await();
-            synchronized (monitor) {
-              stop = cursorReturnedDoneOrException;
-            }
-          } catch (Throwable e) {
-            result.setException(e);
-            return;
+          waitIfPaused();
+          startCallbackIfNecessary();
+          // Make sure we wait until the callback runner has actually finished.
+          consumingLatch.await();
+          synchronized (monitor) {
+            stop = cursorReturnedDoneOrException;
           }
         }
       } finally {
@@ -419,14 +410,14 @@ class AsyncResultSetImpl extends ForwardingStructReader
         }
         synchronized (monitor) {
           if (executionException != null) {
-            result.setException(executionException);
-          } else if (state == State.CANCELLED) {
-            result.setException(CANCELLED_EXCEPTION);
-          } else {
-            result.set(null);
+            throw executionException;
+          }
+          if (state == State.CANCELLED) {
+            throw CANCELLED_EXCEPTION;
           }
         }
       }
+      return null;
     }
 
     private void waitIfPaused() throws InterruptedException {
@@ -458,26 +449,6 @@ class AsyncResultSetImpl extends ForwardingStructReader
     }
   }
 
-  private class InitiateStreamingRunnable implements Runnable {
-
-    @Override
-    public void run() {
-      try {
-        // This method returns true if the underlying result set is a streaming result set (e.g. a
-        // GrpcResultSet).
-        // Those result sets will trigger initiateProduceRows() when the first results are received.
-        // Non-streaming result sets do not trigger this callback, and for those result sets, we
-        // need to eagerly start the ProduceRowsRunnable.
-        if (!initiateStreaming(AsyncResultSetImpl.this)) {
-          initiateProduceRows();
-        }
-      } catch (Throwable exception) {
-        executionException = SpannerExceptionFactory.asSpannerException(exception);
-        initiateProduceRows();
-      }
-    }
-  }
-
   /** Sets the callback for this {@link AsyncResultSet}. */
   @Override
   public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
@@ -487,22 +458,14 @@ class AsyncResultSetImpl extends ForwardingStructReader
           this.state == State.INITIALIZED, "callback may not be set multiple times");
 
       // Start to fetch data and buffer these.
-      this.result = SettableApiFuture.create();
-      this.state = State.STREAMING_INITIALIZED;
-      this.service.execute(new InitiateStreamingRunnable());
+      this.result =
+          new ListenableFutureToApiFuture<>(this.service.submit(new ProduceRowsCallable()));
       this.executor = MoreExecutors.newSequentialExecutor(Preconditions.checkNotNull(exec));
       this.callback = Preconditions.checkNotNull(cb);
+      this.state = State.RUNNING;
       pausedLatch.countDown();
       return result;
     }
-  }
-
-  private void initiateProduceRows() {
-    if (this.state == State.STREAMING_INITIALIZED) {
-      this.state = State.RUNNING;
-    }
-    produceRowsInitiated = true;
-    this.service.execute(new ProduceRowsRunnable());
   }
 
   Future<Void> getResult() {
@@ -615,10 +578,6 @@ class AsyncResultSetImpl extends ForwardingStructReader
     return delegateResultSet.get().getMetadata();
   }
 
-  boolean initiateStreaming(StreamMessageListener streamMessageListener) {
-    return StreamingUtil.initiateStreaming(delegateResultSet.get(), streamMessageListener);
-  }
-
   @Override
   protected void checkValidState() {
     synchronized (monitor) {
@@ -633,23 +592,5 @@ class AsyncResultSetImpl extends ForwardingStructReader
   public Struct getCurrentRowAsStruct() {
     checkValidState();
     return currentRow;
-  }
-
-  @Override
-  public void onStreamMessage(PartialResultSet partialResultSet, boolean bufferIsFull) {
-    synchronized (monitor) {
-      if (produceRowsInitiated) {
-        return;
-      }
-      // if PartialResultSet contains a resume token or buffer size is full, or
-      // we have reached the end of the stream, we can start the thread.
-      boolean startJobThread =
-          !partialResultSet.getResumeToken().isEmpty()
-              || bufferIsFull
-              || partialResultSet == GrpcStreamIterator.END_OF_STREAM;
-      if (startJobThread || state != State.STREAMING_INITIALIZED) {
-        initiateProduceRows();
-      }
-    }
   }
 }

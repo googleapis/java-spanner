@@ -150,14 +150,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     void close(@Nullable String message);
 
     boolean isWithBeginTransaction();
-
-    /**
-     * @param streamMessageListener A class object which implements StreamMessageListener
-     * @return true if streaming is supported by the iterator, otherwise false
-     */
-    default boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
-      return false;
-    }
   }
 
   static double valueProtoToFloat64(com.google.protobuf.Value proto) {

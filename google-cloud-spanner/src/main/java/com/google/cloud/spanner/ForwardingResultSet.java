@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.InternalApi;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -24,8 +23,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 
 /** Forwarding implementation of ResultSet that forwards all calls to a delegate. */
-public class ForwardingResultSet extends ForwardingStructReader
-    implements ProtobufResultSet, StreamingResultSet {
+public class ForwardingResultSet extends ForwardingStructReader implements ProtobufResultSet {
 
   private Supplier<? extends ResultSet> delegate;
 
@@ -103,11 +101,5 @@ public class ForwardingResultSet extends ForwardingStructReader
   @Override
   public ResultSetMetadata getMetadata() {
     return delegate.get().getMetadata();
-  }
-
-  @Override
-  @InternalApi
-  public boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
-    return StreamingUtil.initiateStreaming(delegate.get(), streamMessageListener);
   }
 }

@@ -20,11 +20,9 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.spanner.v1.PartialResultSet;
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -38,8 +36,7 @@ import org.threeten.bp.Duration;
 class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     implements CloseableIterator<PartialResultSet> {
   private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
-  static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
-  private AsyncResultSet.StreamMessageListener streamMessageListener;
+  private static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
 
   private final ConsumerImpl consumer;
   private final BlockingQueue<PartialResultSet> stream;
@@ -67,10 +64,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
 
   protected final SpannerRpc.ResultStreamConsumer consumer() {
     return consumer;
-  }
-
-  void registerListener(AsyncResultSet.StreamMessageListener streamMessageListener) {
-    this.streamMessageListener = Preconditions.checkNotNull(streamMessageListener);
   }
 
   public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
@@ -142,7 +135,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private void addToStream(PartialResultSet results) {
     // We assume that nothing from the user will interrupt gRPC event threads.
     Uninterruptibles.putUninterruptibly(stream, results);
-    onStreamMessage(results);
   }
 
   private class ConsumerImpl implements SpannerRpc.ResultStreamConsumer {
@@ -189,10 +181,5 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     public boolean cancelQueryWhenClientIsClosed() {
       return this.cancelQueryWhenClientIsClosed;
     }
-  }
-
-  private void onStreamMessage(PartialResultSet partialResultSet) {
-    Optional.ofNullable(streamMessageListener)
-        .ifPresent(sl -> sl.onStreamMessage(partialResultSet, stream.remainingCapacity() <= 1));
   }
 }
