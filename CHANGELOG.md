@@ -1,5 +1,27 @@
 # Changelog
 
+## [6.81.1](https://github.com/googleapis/java-spanner/compare/v6.81.0...v6.81.1) (2024-11-11)
+
+
+### Bug Fixes
+
+* Client built in metrics. Skip export if instance id is null ([#3447](https://github.com/googleapis/java-spanner/issues/3447)) ([8b2e5ef](https://github.com/googleapis/java-spanner/commit/8b2e5ef5bb391e5a4d4df3cb45d6a3f722a8cfbe))
+* **spanner:** Avoid blocking thread in AsyncResultSet ([#3446](https://github.com/googleapis/java-spanner/issues/3446)) ([7c82f1c](https://github.com/googleapis/java-spanner/commit/7c82f1c7823d4d529a70c0da231d2593f00b638b))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.54.0 ([#3437](https://github.com/googleapis/java-spanner/issues/3437)) ([7e28326](https://github.com/googleapis/java-spanner/commit/7e283261961d6435488ed668133dc3bdd238d402))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.54.0 ([#3438](https://github.com/googleapis/java-spanner/issues/3438)) ([fa18894](https://github.com/googleapis/java-spanner/commit/fa188942c506c85f4c628a8b442b0ee2e6cb845f))
+* Update dependency com.google.cloud:google-cloud-trace to v2.53.0 ([#3440](https://github.com/googleapis/java-spanner/issues/3440)) ([314eeb8](https://github.com/googleapis/java-spanner/commit/314eeb823e14c386ea6e65caae8c80e908e05600))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.44.1 ([#3452](https://github.com/googleapis/java-spanner/issues/3452)) ([6518eea](https://github.com/googleapis/java-spanner/commit/6518eea2921006f1aa431e02754118e3d3d3b620))
+* Update opentelemetry.version to v1.44.1 ([#3451](https://github.com/googleapis/java-spanner/issues/3451)) ([d9b0271](https://github.com/googleapis/java-spanner/commit/d9b0271603dd14c51954532054b134419150625a))
+
+
+### Documentation
+
+* Update samples' README.md to ensure given ([#3420](https://github.com/googleapis/java-spanner/issues/3420)) ([663a974](https://github.com/googleapis/java-spanner/commit/663a974dc2a52d773deb620b0bc65f0049f63693))
+
 ## [6.81.0](https://github.com/googleapis/java-spanner/compare/v6.80.1...v6.81.0) (2024-11-01)
 
 
