@@ -150,12 +150,12 @@ public class RandomResultSetGenerator {
         case INTERVAL:
           Interval interval =
               Interval.builder()
-                  .setMonths(10)
-                  .setDays(45)
-                  .setMicros(-89)
-                  .setNanoFractions((short) 45)
+                  .setMonths(random.nextInt(200) - 100)
+                  .setDays(random.nextInt(200) - 100)
+                  .setMicroseconds(random.nextInt(20000000) - 10000000)
+                  .setNanoFractions((short) (random.nextInt(200) - 100))
                   .build();
-          builder.setStringValue(interval.ToISO8601());
+          builder.setStringValue(interval.toISO8601());
           break;
         case FLOAT64:
           builder.setNumberValue(random.nextDouble());

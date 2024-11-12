@@ -332,7 +332,7 @@ public class ValueBinderTest {
     }
 
     public static Interval defaultInterval() {
-      return Interval.zeroInterval();
+      return Interval.ZERO;
     }
 
     public static boolean[] defaultBooleanArray() {
@@ -397,14 +397,14 @@ public class ValueBinderTest {
         Interval.builder()
             .setMonths(-10)
             .setDays(-100)
-            .setMicros(-1000)
+            .setMicroseconds(-1000)
             .setNanoFractions((short) 100)
             .build(),
-        Interval.zeroInterval(),
+        Interval.ZERO,
         Interval.builder()
             .setMonths(10)
             .setDays(100)
-            .setMicros(1000)
+            .setMicroseconds(1000)
             .setNanoFractions((short) 100)
             .build()
       };
@@ -415,14 +415,14 @@ public class ValueBinderTest {
           Interval.builder()
               .setMonths(-10)
               .setDays(-100)
-              .setMicros(-1000)
+              .setMicroseconds(-1000)
               .setNanoFractions((short) 100)
               .build(),
-          Interval.zeroInterval(),
+          Interval.ZERO,
           Interval.builder()
               .setMonths(10)
               .setDays(100)
-              .setMicros(1000)
+              .setMicroseconds(1000)
               .setNanoFractions((short) 100)
               .build());
     }

@@ -93,9 +93,7 @@ public class ResultSetsTest {
     Date[] dateArray = {
       Date.fromYearMonthDay(1, 2, 3), Date.fromYearMonthDay(4, 5, 6), Date.fromYearMonthDay(7, 8, 9)
     };
-    Interval[] intervalArray = {
-      Interval.zeroInterval(), Interval.parseFromString("P1Y2M3DT-5H-7M8.9675S")
-    };
+    Interval[] intervalArray = {Interval.ZERO, Interval.parseFromString("P1Y2M3DT-5H-7M8.9675S")};
     String[] stringArray = {"abc", "def", "ghi"};
     String[] jsonArray = {"{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"};
     AbstractMessage[] protoMessageArray = {

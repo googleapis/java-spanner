@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents a value to be consumed by the Cloud Spanner API. A value can be {@code NULL} or
@@ -1853,12 +1854,17 @@ public abstract class Value implements Serializable {
 
     @Override
     void valueToString(StringBuilder b) {
-      b.append(value.ToISO8601());
+      b.append(value.toISO8601());
     }
 
     @Override
     com.google.protobuf.Value valueToProto() {
-      return com.google.protobuf.Value.newBuilder().setStringValue(value.ToISO8601()).build();
+      return com.google.protobuf.Value.newBuilder().setStringValue(value.toISO8601()).build();
+    }
+
+    @Override
+    public @NotNull String getAsString() {
+      return isNull() ? NULL_STRING : value.toISO8601();
     }
   }
 
@@ -2878,12 +2884,12 @@ public abstract class Value implements Serializable {
 
     @Override
     void appendElement(StringBuilder b, Interval element) {
-      b.append(element.ToISO8601());
+      b.append(element.toISO8601());
     }
 
     @Override
-    String elementToString(Interval element) {
-      return element.ToISO8601();
+    String elementToString(@NotNull Interval element) {
+      return element.toISO8601();
     }
   }
 

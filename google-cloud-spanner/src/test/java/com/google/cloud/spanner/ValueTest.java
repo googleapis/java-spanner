@@ -1392,9 +1392,9 @@ public class ValueTest {
     assertThat(v.isNull()).isFalse();
     assertThat(v.getIntervalArray()).containsExactly(interval1, null, interval2).inOrder();
     assertThat(v.toString())
-        .isEqualTo("[" + interval1.ToISO8601() + ",NULL," + interval2.ToISO8601() + "]");
+        .isEqualTo("[" + interval1.toISO8601() + ",NULL," + interval2.toISO8601() + "]");
     assertEquals(
-        String.format("[%s,NULL,%s]", interval1.ToISO8601(), interval2.ToISO8601()),
+        String.format("[%s,NULL,%s]", interval1.toISO8601(), interval2.toISO8601()),
         v.getAsString());
   }
 

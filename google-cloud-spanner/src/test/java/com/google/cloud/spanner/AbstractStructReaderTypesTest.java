@@ -445,7 +445,7 @@ public class AbstractStructReaderTypesTest {
             "getIntervalListInternal",
             Arrays.asList(
                 Interval.parseFromString("P1Y2M3DT4H5M6.78912345S"),
-                Interval.zeroInterval(),
+                Interval.ZERO,
                 Interval.parseFromString("P-1Y2M-3DT-4H5M6.78912345S")),
             "getIntervalList",
             Collections.singletonList("getValue")

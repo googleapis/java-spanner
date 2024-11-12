@@ -513,6 +513,7 @@ class GrpcStruct extends Struct implements Serializable {
     return (Date) rowData.get(columnIndex);
   }
 
+  @Override
   protected Interval getIntervalInternal(int columnIndex) {
     ensureDecoded(columnIndex);
     return (Interval) rowData.get(columnIndex);

@@ -555,9 +555,9 @@ public class GrpcResultSetTest {
         Value.date(null),
         Value.interval(
             Interval.builder()
-                .setDays(10)
                 .setMonths(100)
-                .setMicros(1000)
+                .setDays(10)
+                .setMicroseconds(1000)
                 .setNanoFractions((short) 10)
                 .build()),
         Value.interval(null),
@@ -584,7 +584,7 @@ public class GrpcResultSetTest {
                 Date.fromYearMonthDay(2017, 4, 17), Date.fromYearMonthDay(2017, 5, 18))),
         Value.dateArray(null),
         Value.intervalArray(
-            ImmutableList.of(Interval.zeroInterval(), Interval.fromMonthsDaysMicros(10, 20, 30))),
+            ImmutableList.of(Interval.ZERO, Interval.fromMonthsDaysMicros(10, 20, 30))),
         Value.intervalArray(null),
         Value.struct(s(null, 30)),
         Value.struct(structType, null),

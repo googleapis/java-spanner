@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 
 import java.math.BigInteger;
 import org.junit.Test;
@@ -29,95 +28,95 @@ import org.junit.runners.JUnit4;
 public class IntervalTest {
 
   @Test
-  public void testOfMonths() {
+  public void testOfGetMonths() {
     Interval interval = Interval.ofMonths(10);
-    assertEquals(10, interval.months());
-    assertEquals(0, interval.days());
-    assertEquals(0, interval.micros());
-    assertEquals(0, interval.nanoFractions());
+    assertEquals(10, interval.getMonths());
+    assertEquals(0, interval.getDays());
+    assertEquals(0, interval.getMicroseconds());
+    assertEquals(0, interval.getNanoFractions());
   }
 
   @Test
-  public void testOfDays() {
+  public void testOfGetDays() {
     Interval interval = Interval.ofDays(10);
-    assertEquals(0, interval.months());
-    assertEquals(10, interval.days());
-    assertEquals(0, interval.micros());
-    assertEquals(0, interval.nanoFractions());
+    assertEquals(0, interval.getMonths());
+    assertEquals(10, interval.getDays());
+    assertEquals(0, interval.getMicroseconds());
+    assertEquals(0, interval.getNanoFractions());
   }
 
   @Test
   public void testOfSeconds() {
     Interval interval = Interval.ofSeconds(10);
-    assertEquals(0, interval.months());
-    assertEquals(0, interval.days());
-    assertEquals(10 * Interval.MICROS_PER_SECOND, interval.micros());
-    assertEquals(0, interval.nanoFractions());
+    assertEquals(0, interval.getMonths());
+    assertEquals(0, interval.getDays());
+    assertEquals(10 * Interval.MICROS_PER_SECOND, interval.getMicroseconds());
+    assertEquals(0, interval.getNanoFractions());
   }
 
   @Test
   public void testOfMilliseconds() {
     Interval interval = Interval.ofMilliseconds(10);
-    assertEquals(0, interval.months());
-    assertEquals(0, interval.days());
-    assertEquals(10 * Interval.MICROS_PER_MILLI, interval.micros());
-    assertEquals(0, interval.nanoFractions());
+    assertEquals(0, interval.getMonths());
+    assertEquals(0, interval.getDays());
+    assertEquals(10 * Interval.MICROS_PER_MILLI, interval.getMicroseconds());
+    assertEquals(0, interval.getNanoFractions());
   }
 
   @Test
-  public void testOfMicros() {
-    Interval interval = Interval.ofMicros(10);
-    assertEquals(0, interval.months());
-    assertEquals(0, interval.days());
-    assertEquals(10, interval.micros());
-    assertEquals(0, interval.nanoFractions());
+  public void testOfGetMicroseconds() {
+    Interval interval = Interval.ofMicroseconds(10);
+    assertEquals(0, interval.getMonths());
+    assertEquals(0, interval.getDays());
+    assertEquals(10, interval.getMicroseconds());
+    assertEquals(0, interval.getNanoFractions());
   }
 
   @Test
-  public void testOfNanos() {
-    Interval interval = Interval.ofNanos(BigInteger.valueOf(10));
-    assertEquals(0, interval.months());
-    assertEquals(0, interval.days());
-    assertEquals(0, interval.micros());
-    assertEquals(10, interval.nanoFractions());
+  public void testOfGetNanoseconds() {
+    Interval interval = Interval.ofNanoseconds(BigInteger.valueOf(10));
+    assertEquals(0, interval.getMonths());
+    assertEquals(0, interval.getDays());
+    assertEquals(0, interval.getMicroseconds());
+    assertEquals(10, interval.getNanoFractions());
   }
 
   @Test
-  public void testFromMonthsDaysMicros() {
+  public void testFromGetMonthsGetDaysGetMicroseconds() {
     Interval interval = Interval.fromMonthsDaysMicros(10, 20, 30);
-    assertEquals(10, interval.months());
-    assertEquals(20, interval.days());
-    assertEquals(30, interval.micros());
-    assertEquals(0, interval.nanoFractions());
+    assertEquals(10, interval.getMonths());
+    assertEquals(20, interval.getDays());
+    assertEquals(30, interval.getMicroseconds());
+    assertEquals(0, interval.getNanoFractions());
   }
 
   @Test
-  public void testFromMonthsDaysNanos() {
+  public void testFromGetMonthsGetDaysGetNanoseconds() {
     Interval interval = Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(1030));
-    assertEquals(10, interval.months());
-    assertEquals(20, interval.days());
-    assertEquals(1, interval.micros());
-    assertEquals(30, interval.nanoFractions());
+    assertEquals(10, interval.getMonths());
+    assertEquals(20, interval.getDays());
+    assertEquals(1, interval.getMicroseconds());
+    assertEquals(30, interval.getNanoFractions());
 
     Interval interval2 = Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(-1030));
-    assertEquals(10, interval2.months());
-    assertEquals(20, interval2.days());
-    assertEquals(-1, interval2.micros());
-    assertEquals(-30, interval2.nanoFractions());
+    assertEquals(10, interval2.getMonths());
+    assertEquals(20, interval2.getDays());
+    assertEquals(-1, interval2.getMicroseconds());
+    assertEquals(-30, interval2.getNanoFractions());
   }
 
   @Test
   public void testParseFromString() {
     Interval interval = Interval.parseFromString("P1Y2M3DT4H5M6.789000123S");
-    assertEquals(14, interval.months());
-    assertEquals(3, interval.days());
+    assertEquals(14, interval.getMonths());
+    assertEquals(3, interval.getDays());
     assertEquals(
         4 * Interval.MICROS_PER_HOUR
             + 5 * Interval.MICROS_PER_MINUTE
             + 6 * Interval.MICROS_PER_SECOND
             + 789000,
-        interval.micros());
-    assertEquals(123, interval.nanoFractions());
+        interval.getMicroseconds());
+    assertEquals(123, interval.getNanoFractions());
   }
 
   @Test
@@ -142,17 +141,11 @@ public class IntervalTest {
                 + 5 * Interval.MICROS_PER_MINUTE
                 + 6 * Interval.MICROS_PER_SECOND
                 + 789000);
-    assertEquals("P1Y2M3DT4H5M6.789S", interval.ToISO8601());
+    assertEquals("P1Y2M3DT4H5M6.789S", interval.toISO8601());
   }
 
   @Test
-  public void testToISO8601_ZeroInterval() {
-    Interval interval = Interval.zeroInterval();
-    assertEquals("P0Y", interval.ToISO8601());
-  }
-
-  @Test
-  public void testToISO8601WithNanos() {
+  public void testToISO8601WithGetNanoseconds() {
     Interval interval =
         Interval.fromMonthsDaysNanos(
             14,
@@ -162,13 +155,13 @@ public class IntervalTest {
                 .add(BigInteger.valueOf(5).multiply(Interval.NANOS_PER_MINUTE))
                 .add(BigInteger.valueOf(6).multiply(Interval.NANOS_PER_SECOND))
                 .add(BigInteger.valueOf(789123456)));
-    assertEquals("P1Y2M3DT4H5M6.789123456S", interval.ToISO8601());
+    assertEquals("P1Y2M3DT4H5M6.789123456S", interval.toISO8601());
   }
 
   @Test
-  public void testToISO8601WithOnlyNanos() {
-    Interval interval = Interval.ofNanos(BigInteger.valueOf(123456789));
-    assertEquals("PT0.123456789S", interval.ToISO8601());
+  public void testToISO8601WithOnlyGetNanoseconds() {
+    Interval interval = Interval.ofNanoseconds(BigInteger.valueOf(123456789));
+    assertEquals("PT0.123456789S", interval.toISO8601());
   }
 
   @Test
@@ -179,87 +172,127 @@ public class IntervalTest {
   }
 
   @Test
-  public void testHashCode() {
+  public void testHashCode_equalObjects() {
     Interval interval1 = Interval.fromMonthsDaysMicros(10, 20, 30);
     Interval interval2 = Interval.fromMonthsDaysMicros(10, 20, 30);
     assertEquals(interval1.hashCode(), interval2.hashCode());
   }
 
   @Test
-  public void testGetAsMicros() {
-    Interval interval = Interval.fromMonthsDaysMicros(10, 20, 30);
-    long expectedMicros = 10 * Interval.MICROS_PER_MONTH + 20 * Interval.MICROS_PER_DAY + 30;
-    assertEquals(expectedMicros, interval.getAsMicros());
+  public void testHashCode_differentMonths() {
+    Interval interval1 = Interval.fromMonthsDaysMicros(10, 20, 30);
+    Interval interval2 = Interval.fromMonthsDaysMicros(11, 20, 30);
+    assertNotEquals(interval1.hashCode(), interval2.hashCode());
   }
 
   @Test
-  public void testGetAsNanos() {
+  public void testHashCode_differentDays() {
+    Interval interval1 = Interval.fromMonthsDaysMicros(10, 20, 30);
+    Interval interval2 = Interval.fromMonthsDaysMicros(10, 21, 30);
+    assertNotEquals(interval1.hashCode(), interval2.hashCode());
+  }
+
+  @Test
+  public void testHashCode_differentMicros() {
+    Interval interval1 = Interval.fromMonthsDaysMicros(10, 20, 30);
+    Interval interval2 = Interval.fromMonthsDaysMicros(10, 20, 31);
+    assertNotEquals(interval1.hashCode(), interval2.hashCode());
+  }
+
+  @Test
+  public void testHashCode_differentNanoFractions() {
+    Interval interval1 =
+        Interval.builder()
+            .setMonths(10)
+            .setDays(20)
+            .setMicroseconds(30)
+            .setNanoFractions((short) 10)
+            .build();
+    Interval interval2 =
+        Interval.builder()
+            .setMonths(10)
+            .setDays(20)
+            .setMicroseconds(30)
+            .setNanoFractions((short) -10)
+            .build();
+    assertNotEquals(interval1.hashCode(), interval2.hashCode());
+  }
+
+  @Test
+  public void testGetAsGetMicroseconds() {
+    Interval interval = Interval.fromMonthsDaysMicros(10, 20, 30);
+    long expectedMicros = 10 * Interval.MICROS_PER_MONTH + 20 * Interval.MICROS_PER_DAY + 30;
+    assertEquals(expectedMicros, interval.getAsMicroseconds());
+  }
+
+  @Test
+  public void testGetAsGetNanoseconds() {
     Interval interval = Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(30));
     BigInteger expectedNanos =
         BigInteger.valueOf(10 * Interval.MICROS_PER_MONTH + 20 * Interval.MICROS_PER_DAY)
             .multiply(BigInteger.valueOf(Interval.NANOS_PER_MICRO))
             .add(BigInteger.valueOf(30));
-    assertEquals(expectedNanos, interval.getAsNanos());
+    assertEquals(expectedNanos, interval.getAsNanoseconds());
   }
 
   @Test
-  public void testNanos() {
+  public void testGetNanoseconds() {
     Interval interval =
         Interval.fromMonthsDaysNanos(
             10, 20, BigInteger.valueOf(30 * Interval.NANOS_PER_MICRO + 40));
-    assertEquals(30 * Interval.NANOS_PER_MICRO + 40, interval.nanos().longValueExact());
+    assertEquals(30 * Interval.NANOS_PER_MICRO + 40, interval.getNanoseconds().longValueExact());
   }
 
   @Test
-  public void testParseFromStringWithNanos() {
+  public void testParseFromStringWithGetNanoseconds() {
     Interval interval = Interval.parseFromString("P1Y2M3DT4H5M6.789123456S");
-    assertEquals(14, interval.months());
-    assertEquals(3, interval.days());
+    assertEquals(14, interval.getMonths());
+    assertEquals(3, interval.getDays());
     assertEquals(
         4 * Interval.MICROS_PER_HOUR
             + 5 * Interval.MICROS_PER_MINUTE
             + 6 * Interval.MICROS_PER_SECOND
             + 789123,
-        interval.micros());
-    assertEquals(456, interval.nanoFractions());
+        interval.getMicroseconds());
+    assertEquals(456, interval.getNanoFractions());
   }
 
   @Test
-  public void testParseFromStringWithOnlyNanos() {
+  public void testParseFromStringWithOnlyGetNanoseconds() {
     Interval interval = Interval.parseFromString("PT.123456789S");
-    assertEquals(0, interval.months());
-    assertEquals(0, interval.days());
-    assertEquals(123456, interval.micros());
-    assertEquals(789, interval.nanoFractions());
+    assertEquals(0, interval.getMonths());
+    assertEquals(0, interval.getDays());
+    assertEquals(123456, interval.getMicroseconds());
+    assertEquals(789, interval.getNanoFractions());
   }
 
   @Test
   public void testParseFromStringWithZeroes() {
     Interval interval = Interval.parseFromString("P0Y0M0DT0H0M0.0S");
-    assertEquals(0, interval.months());
-    assertEquals(0, interval.days());
-    assertEquals(0, interval.micros());
-    assertEquals(0, interval.nanoFractions());
+    assertEquals(0, interval.getMonths());
+    assertEquals(0, interval.getDays());
+    assertEquals(0, interval.getMicroseconds());
+    assertEquals(0, interval.getNanoFractions());
   }
 
   @Test
   public void testToISO8601WithZeroes() {
-    Interval interval = Interval.zeroInterval();
-    assertEquals("P0Y", interval.ToISO8601());
+    Interval interval = Interval.ZERO;
+    assertEquals("P0Y", interval.toISO8601());
   }
 
   @Test
   public void testParseFromStringWithNegativeValues() {
     Interval interval = Interval.parseFromString("P-1Y-2M-3DT-4H-5M-6.789S");
-    assertEquals(-14, interval.months());
-    assertEquals(-3, interval.days());
+    assertEquals(-14, interval.getMonths());
+    assertEquals(-3, interval.getDays());
     assertEquals(
         -4 * Interval.MICROS_PER_HOUR
             - 5 * Interval.MICROS_PER_MINUTE
             - 6 * Interval.MICROS_PER_SECOND
             - 789000,
-        interval.micros());
-    assertEquals(0, interval.nanoFractions());
+        interval.getMicroseconds());
+    assertEquals(0, interval.getNanoFractions());
   }
 
   @Test
@@ -272,11 +305,11 @@ public class IntervalTest {
                 - 5 * Interval.MICROS_PER_MINUTE
                 - 6 * Interval.MICROS_PER_SECOND
                 - 789000);
-    assertEquals("P-1Y-2M-3DT-4H-5M-6.789S", interval.ToISO8601());
+    assertEquals("P-1Y-2M-3DT-4H-5M-6.789S", interval.toISO8601());
   }
 
   @Test
-  public void testEqualsWithNanos() {
+  public void testEqualsWithGetNanoseconds() {
     Interval interval1 = Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(30));
     Interval interval2 = Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(30));
     assertEquals(interval1, interval2);
