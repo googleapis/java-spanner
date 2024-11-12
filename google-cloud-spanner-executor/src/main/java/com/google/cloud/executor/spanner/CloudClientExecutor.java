@@ -623,10 +623,12 @@ public class CloudClientExecutor extends CloudExecutor {
       } catch (SpannerException e) {
         return sender.finishWithError(toStatus(e));
       } catch (Exception e) {
+        LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
         return sender.finishWithError(
             toStatus(
                 SpannerExceptionFactory.newSpannerException(
-                    ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                    ErrorCode.INVALID_ARGUMENT,
+                    CloudClientExecutor.unexpectedExceptionResponse(e))));
       }
     }
 
@@ -730,7 +732,8 @@ public class CloudClientExecutor extends CloudExecutor {
           return sender.finishWithError(
               toStatus(
                   SpannerExceptionFactory.newSpannerException(
-                      ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                      ErrorCode.INVALID_ARGUMENT,
+                      CloudClientExecutor.unexpectedExceptionResponse(e))));
         }
         return sender.sendOutcome(outcomeBuilder.build());
       } else if (batchTxn != null) {
@@ -1075,7 +1078,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return outcomeSender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     } finally {
       scope.close();
       span.end();
@@ -1171,7 +1174,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return outcomeSender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1260,7 +1263,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1282,7 +1285,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1330,7 +1333,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1374,7 +1377,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1405,7 +1408,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1436,7 +1439,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1466,7 +1469,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1486,7 +1489,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1515,7 +1518,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1550,7 +1553,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1584,7 +1587,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1605,7 +1608,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1642,7 +1645,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1678,7 +1681,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1709,7 +1712,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1743,7 +1746,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1763,7 +1766,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1803,7 +1806,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1840,7 +1843,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1879,7 +1882,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1918,7 +1921,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1952,7 +1955,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1983,7 +1986,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2011,7 +2014,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2030,7 +2033,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2120,10 +2123,11 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(Level.WARNING, String.format("GenerateDbPartitionsRead failed for %s", action));
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2166,10 +2170,11 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(Level.WARNING, String.format("GenerateDbPartitionsQuery failed for %s", action));
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2198,10 +2203,11 @@ public class CloudClientExecutor extends CloudExecutor {
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2225,10 +2231,11 @@ public class CloudClientExecutor extends CloudExecutor {
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2478,10 +2485,11 @@ public class CloudClientExecutor extends CloudExecutor {
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
