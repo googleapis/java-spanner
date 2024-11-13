@@ -692,6 +692,38 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
                 InstanceId.of(dbId.getInstanceId().getProject(), instanceId)));
   }
 
+  @Test
+  public void testCreateAndUpdateInstanceDefaultBackupScheduleTypeSample() {
+    String databaseId = idGenerator.generateDatabaseId();
+    DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
+
+    String instanceId = formatForTest("sample-inst");
+    String out =
+        runSampleRunnable(
+            () -> {
+              try {
+                CreateInstanceWithoutDefaultBackupSchedulesExample
+                    .createInstanceWithoutDefaultBackupSchedules(
+                        dbId.getInstanceId().getProject(), instanceId);
+                UpdateInstanceDefaultBackupScheduleTypeExample
+                    .updateInstanceDefaultBackupScheduleType(
+                        dbId.getInstanceId().getProject(), instanceId);
+              } finally {
+                spanner.getInstanceAdminClient().deleteInstance(instanceId);
+              }
+            });
+    assertThat(out)
+        .contains(
+            String.format(
+                "Instance %s was successfully created",
+                InstanceId.of(dbId.getInstanceId().getProject(), instanceId)));
+    assertThat(out)
+        .contains(
+            String.format(
+                "Instance %s was successfully updated",
+                InstanceId.of(dbId.getInstanceId().getProject(), instanceId)));
+  }
+
   private static int countOccurrences(String input, String search) {
     return input.split(search).length - 1;
   }
