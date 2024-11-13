@@ -39,6 +39,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value.KindCase;
+import com.google.protobuf.ValueOrBuilder;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -375,6 +376,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case NUMERIC:
             builder.set(fieldName).to((BigDecimal) value);
             break;
+          case JSON:
+            builder.set(fieldName).to((String) value);
+            break;
           case STRING:
             builder.set(fieldName).to((String) value);
             break;
@@ -400,6 +404,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 break;
               case NUMERIC:
                 builder.set(fieldName).toNumericArray((Iterable<BigDecimal>) value);
+                break;
+              case JSON:
+                builder.set(fieldName).toJsonArray((Iterable<String>) value);
                 break;
               case STRING:
                 builder.set(fieldName).toStringArray((Iterable<String>) value);
@@ -479,6 +486,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return valueProtoToFloat64(proto);
         case NUMERIC:
           return new BigDecimal(proto.getStringValue());
+        case JSON:
+          checkType(fieldType, proto, KindCase.STRING_VALUE);
+          return proto.getStringValue();
         case STRING:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return proto.getStringValue();
@@ -539,6 +549,16 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                   value.getKindCase() == KindCase.NULL_VALUE
                       ? null
                       : new BigDecimal(value.getStringValue()));
+            }
+            return list;
+          }
+        case JSON:
+          {
+            // Materialize list: element conversion is expensive and should happen only once.
+            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
+            for (com.google.protobuf.Value value : listValue.getValuesList()) {
+              list.add(
+                  value.getKindCase() == KindCase.NULL_VALUE ? null : value.getStringValue());
             }
             return list;
           }
@@ -650,6 +670,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    protected String getJsonInternal(int columnIndex) {
+      return (String) rowData.get(columnIndex);
+    }
+
+    @Override
     protected String getStringInternal(int columnIndex) {
       return (String) rowData.get(columnIndex);
     }
@@ -682,6 +707,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.int64(isNull ? null : getLongInternal(columnIndex));
         case NUMERIC:
           return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
+        case JSON:
+          return Value.json(isNull ? null : getJsonInternal(columnIndex));
+
         case FLOAT64:
           return Value.float64(isNull ? null : getDoubleInternal(columnIndex));
         case STRING:
@@ -702,6 +730,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return Value.int64Array(isNull ? null : getLongListInternal(columnIndex));
             case NUMERIC:
               return Value.numericArray(isNull ? null : getBigDecimalListInternal(columnIndex));
+            case JSON:
+              return Value.jsonArray(isNull ? null : getJsonListInternal(columnIndex));
             case FLOAT64:
               return Value.float64Array(isNull ? null : getDoubleListInternal(columnIndex));
             case STRING:
@@ -768,6 +798,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     protected Float64Array getDoubleListInternal(int columnIndex) {
       return (Float64Array) rowData.get(columnIndex);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<JSON> produces a List<String>.
+    protected List<String> getJsonListInternal(int columnIndex) {
+      return (List<String>) rowData.get(columnIndex);
     }
 
     @Override
@@ -1304,6 +1340,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
+  protected String getJsonInternal(int columnIndex) {
+    return currRow().getJsonInternal(columnIndex);
+  }
+
+  @Override
   protected String getStringInternal(int columnIndex) {
     return currRow().getStringInternal(columnIndex);
   }
@@ -1356,6 +1397,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected List<Double> getDoubleListInternal(int columnIndex) {
     return currRow().getDoubleListInternal(columnIndex);
+  }
+
+  @Override
+  protected List<String> getJsonListInternal(int columnIndex) {
+    return currRow().getJsonListInternal(columnIndex);
   }
 
   @Override

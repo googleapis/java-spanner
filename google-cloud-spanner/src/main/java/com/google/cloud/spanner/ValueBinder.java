@@ -174,6 +174,16 @@ public abstract class ValueBinder<R> {
   }
 
   /** Binds to {@code Value.stringArray(values)} */
+  public R toStringArray(@Nullable String[] values) {
+    return handle(Value.stringArray(values));
+  }
+
+  /** Binds to {@code Value.stringArray(values, pos, length)} */
+  public R toStringArray(@Nullable String[] values, int pos, int length) {
+    return handle(Value.stringArray(values, pos, length));
+  }
+
+  /** Binds to {@code Value.stringArray(values)} */
   public R toStringArray(@Nullable Iterable<String> values) {
     return handle(Value.stringArray(values));
   }

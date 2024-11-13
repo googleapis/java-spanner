@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Json;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -233,6 +234,20 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public String getJson(int columnIndex) {
+    checkClosed();
+    return delegate.getJson(columnIndex);
+  }
+
+  @Override
+  public String getJson(String columnName) {
+    checkClosed();
+    return delegate.getJson(columnName);
+  }
+
+
+
+  @Override
   public Value getValue(int columnIndex) {
     checkClosed();
     return delegate.getValue(columnIndex);
@@ -374,6 +389,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<Date> getDateList(String columnName) {
     checkClosed();
     return delegate.getDateList(columnName);
+  }
+
+  @Override
+  public List<String> getJsonList(int columnIndex) {
+    checkClosed();
+    return delegate.getJsonList(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(String columnName) {
+    checkClosed();
+    return delegate.getJsonList(columnName);
   }
 
   @Override

@@ -169,6 +169,20 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
+  public String getJSON(int columnIndex) {
+    checkValidState();
+    return delegate.get().getJSON(columnIndex);
+  }
+
+  @Override
+  public String getJSON(String columnName) {
+    checkValidState();
+    return delegate.get().getJSON(columnName);
+  }
+
+
+
+  @Override
   public Timestamp getTimestamp(int columnIndex) {
     checkValidState();
     return delegate.get().getTimestamp(columnIndex);
@@ -296,6 +310,18 @@ public class ForwardingStructReader implements StructReader {
   public List<ByteArray> getBytesList(String columnName) {
     checkValidState();
     return delegate.get().getBytesList(columnName);
+  }
+
+  @Override
+  public List<String> getJSONList(int columnIndex) {
+    checkValidState();
+    return delegate.get().getJSONList(columnIndex);
+  }
+
+  @Override
+  public List<String> getJSONList(String columnName) {
+    checkValidState();
+    return delegate.get().getJSONList(columnName);
   }
 
   @Override

@@ -270,6 +270,9 @@ public final class Mutation implements Serializable {
     LinkedHashMap<String, Value> map = new LinkedHashMap<>();
     for (int i = 0; i < columns.size(); ++i) {
       Value existing = map.put(columns.get(i), values.get(i));
+      if (existing != null) {
+        throw new IllegalStateException("Duplicate column: " + columns.get(i));
+      }
     }
     return Collections.unmodifiableMap(map);
   }

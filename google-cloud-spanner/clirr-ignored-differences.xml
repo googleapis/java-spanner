@@ -278,6 +278,27 @@
     <method>com.google.api.gax.rpc.ServerStream executeStreamingPartitionedDml(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map, org.threeten.bp.Duration)</method>
   </difference>
 
+  <!-- Add support for JSON data type -->
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/AbstractStructReader</className>
+    <method>java.lang.String getJSONInternal(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/AbstractStructReader</className>
+    <method>java.util.List getJSONListInternal(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getJSON(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getJSON(java.lang.String)</method>
+  </difference>
   <!-- Add support for NUMERIC data type -->
   <difference>
     <differenceType>7013</differenceType>

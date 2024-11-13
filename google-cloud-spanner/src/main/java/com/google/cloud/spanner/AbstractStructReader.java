@@ -47,6 +47,8 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Timestamp getTimestampInternal(int columnIndex);
 
+  protected abstract String getJsonInternal(int columnIndex);
+
   protected abstract Date getDateInternal(int columnIndex);
 
   protected Value getValueInternal(int columnIndex) {
@@ -74,6 +76,8 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract List<Timestamp> getTimestampListInternal(int columnIndex);
 
   protected abstract List<Date> getDateListInternal(int columnIndex);
+
+  protected abstract List<String> getJsonListInternal(int columnIndex);
 
   protected abstract List<Struct> getStructListInternal(int columnIndex);
 
@@ -199,6 +203,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.date(), columnName);
     return getDateInternal(columnIndex);
+  }
+
+  @Override
+  public String getJson(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.json(), columnIndex);
+    return getJsonInternal(columnIndex);
+  }
+
+  @Override
+  public String getJson(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.json(), columnName);
+    return getJsonInternal(columnIndex);
   }
 
   @Override
@@ -354,6 +371,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.array(Type.date()), columnName);
     return getDateListInternal(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.json()), columnIndex);
+    return getJsonListInternal(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.json()), columnName);
+    return getJsonListInternal(columnIndex);
   }
 
   @Override

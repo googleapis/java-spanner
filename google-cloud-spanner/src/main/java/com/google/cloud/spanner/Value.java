@@ -167,6 +167,15 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns a {@code JSON} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value json(@Nullable String v) {
+    return new JsonImpl(v == null, v);
+  }
+
+  /**
    * Returns a {@code BYTES} value.
    *
    * @param v the value, which may be null
@@ -340,6 +349,16 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<JSON>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value jsonArray(@Nullable Iterable<String> v) {
+    return new JsonArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
    * Returns an {@code ARRAY<BYTES>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
@@ -442,6 +461,13 @@ public abstract class Value implements Serializable {
   public abstract String getString();
 
   /**
+   * Returns the value of a {@code JSON}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract String getJson();
+
+  /**
    * Returns the value of a {@code BYTES}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -512,6 +538,14 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract List<String> getStringArray();
+
+  /**
+   * Returns the value of an {@code ARRAY<JSON>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<String> getJsonArray();
 
   /**
    * Returns the value of an {@code ARRAY<BYTES>}-typed instance. While the returned list itself
@@ -721,6 +755,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public String getJson() {
+      throw defaultGetter(Type.json());
+    }
+
+    @Override
     public ByteArray getBytes() {
       throw defaultGetter(Type.bytes());
     }
@@ -767,6 +806,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<String> getStringArray() {
       throw defaultGetter(Type.array(Type.string()));
+    }
+
+    @Override
+    public List<String> getJsonArray() {
+      throw defaultGetter(Type.array(Type.json()));
     }
 
     @Override
@@ -1053,6 +1097,42 @@ public abstract class Value implements Serializable {
       } else {
         b.append(value);
       }
+    }
+  }
+
+  private static class JsonImpl extends AbstractObjectValue<String> {
+
+    private JsonImpl(boolean isNull, @Nullable String value) {
+      super(isNull, Type.json(), value);
+    }
+
+    @Override
+    public String getJson() {
+      checkType(Type.json());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      if (value.length() > MAX_DEBUG_STRING_LENGTH) {
+        b.append(value, 0, MAX_DEBUG_STRING_LENGTH - ELLIPSIS.length()).append(ELLIPSIS);
+      } else {
+        b.append(value);
+      }
+    }
+  }
+
+  private static class JsonArrayImpl extends StringArrayImpl {
+    private JsonArrayImpl(boolean isNull, @Nullable List<String> values) {
+      super(isNull, values);
+    }
+
+    @Override
+    public List<String> getJsonArray() {
+      checkType(getType());
+      checkNotNull();
+      return getValue();
     }
   }
 
@@ -1566,6 +1646,8 @@ public abstract class Value implements Serializable {
               case TIMESTAMP:
                 return Value.timestampArray(value.getTimestampList(fieldIndex));
               case STRUCT:
+                return Value.structArray(elementType, value.getStructList(fieldIndex));
+              case JSON:
                 return Value.structArray(elementType, value.getStructList(fieldIndex));
               case ARRAY:
                 throw new UnsupportedOperationException(

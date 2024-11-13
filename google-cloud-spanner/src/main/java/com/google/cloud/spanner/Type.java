@@ -49,6 +49,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_BYTES = new Type(Code.BYTES, null, null);
   private static final Type TYPE_TIMESTAMP = new Type(Code.TIMESTAMP, null, null);
   private static final Type TYPE_DATE = new Type(Code.DATE, null, null);
+  private static final Type TYPE_JSON = new Type(Code.JSON, null, null);
   private static final Type TYPE_ARRAY_BOOL = new Type(Code.ARRAY, TYPE_BOOL, null);
   private static final Type TYPE_ARRAY_INT64 = new Type(Code.ARRAY, TYPE_INT64, null);
   private static final Type TYPE_ARRAY_FLOAT64 = new Type(Code.ARRAY, TYPE_FLOAT64, null);
@@ -58,6 +59,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_ARRAY_TIMESTAMP = new Type(Code.ARRAY, TYPE_TIMESTAMP, null);
   private static final Type TYPE_ARRAY_DATE = new Type(Code.ARRAY, TYPE_DATE, null);
 
+  private static final Type TYPE_ARRAY_JSON = new Type(Code.ARRAY, TYPE_JSON, null);
   private static final int AMBIGUOUS_FIELD = -1;
   private static final long serialVersionUID = -3076152125004114582L;
 
@@ -115,6 +117,13 @@ public final class Type implements Serializable {
     return TYPE_DATE;
   }
 
+  /**
+   * Returns the descriptor for the {@code JSON} type: a variable-length JSON document.
+   */
+  public static Type json() {
+    return TYPE_JSON;
+  }
+
   /** Returns a descriptor for an array of {@code elementType}. */
   public static Type array(Type elementType) {
     Preconditions.checkNotNull(elementType);
@@ -135,6 +144,8 @@ public final class Type implements Serializable {
         return TYPE_ARRAY_TIMESTAMP;
       case DATE:
         return TYPE_ARRAY_DATE;
+      case JSON:
+        return TYPE_ARRAY_JSON;
       default:
         return new Type(Code.ARRAY, elementType, null);
     }
@@ -187,6 +198,7 @@ public final class Type implements Serializable {
     DATE(TypeCode.DATE),
     ARRAY(TypeCode.ARRAY),
     STRUCT(TypeCode.STRUCT);
+    JSON(TypeCode.JSON);
 
     private static final Map<TypeCode, Code> protoToCode;
 
@@ -400,6 +412,8 @@ public final class Type implements Serializable {
         return timestamp();
       case DATE:
         return date();
+      case JSON:
+        return json();
       case ARRAY:
         checkArgument(
             proto.hasArrayElementType(),

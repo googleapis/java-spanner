@@ -203,6 +203,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected String getJsonInternal(int columnIndex) {
+      return values.get(columnIndex).getJson();
+    }
+
+    @Override
     protected Date getDateInternal(int columnIndex) {
       return values.get(columnIndex).getDate();
     }
@@ -270,6 +275,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     @Override
     protected List<Date> getDateListInternal(int columnIndex) {
       return values.get(columnIndex).getDateArray();
+    }
+
+    @Override
+    protected List<String> getJsonListInternal(int columnIndex) {
+      return values.get(columnIndex).getJsonArray();
     }
 
     @Override
@@ -347,6 +357,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getTimestampInternal(columnIndex);
       case DATE:
         return getDateInternal(columnIndex);
+      case JSON:
+        return getJsonInternal(columnIndex);
       case STRUCT:
         return getStructInternal(columnIndex);
       case ARRAY:
@@ -367,6 +379,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
             return getTimestampListInternal(columnIndex);
           case DATE:
             return getDateListInternal(columnIndex);
+          case JSON:
+            return getJsonListInternal(columnIndex);
           case STRUCT:
             return getStructListInternal(columnIndex);
           default:

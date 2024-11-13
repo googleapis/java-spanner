@@ -22,6 +22,7 @@ import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Value.json;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.Type.StructField;
@@ -274,6 +275,26 @@ public final class ResultSets {
     }
 
     @Override
+    public String getJSON(int columnIndex) {
+      return getCurrentRowAsStruct().getJSON(columnIndex);
+    }
+
+    @Override
+    public String getJSON(String columnName) {
+      return getCurrentRowAsStruct().getJSON(columnName);
+    }
+
+    @Override
+    public String[] getJSONArray(int columnIndex) {
+      return getCurrentRowAsStruct().getJSONArray(columnIndex);
+    }
+
+    @Override
+    public String[] getJSONArray(String columnName) {
+      return getCurrentRowAsStruct().getJSONArray(columnName);
+    }
+
+    @Override
     public Value getValue(int columnIndex) {
       return getCurrentRowAsStruct().getValue(columnIndex);
     }
@@ -391,6 +412,16 @@ public final class ResultSets {
     @Override
     public List<Date> getDateList(String columnName) {
       return getCurrentRowAsStruct().getDateList(columnName);
+    }
+
+    @Override
+    public List<String> getJSONList(int columnIndex) {
+      return getCurrentRowAsStruct().getList(columnIndex, json.class);
+    }
+
+    @Override
+    public List<String> getJSONList(String columnName) {
+      return getCurrentRowAsStruct().getList(columnName, json.class);
     }
 
     @Override
