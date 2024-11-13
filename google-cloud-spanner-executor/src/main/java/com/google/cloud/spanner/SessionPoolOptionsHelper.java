@@ -41,9 +41,7 @@ public class SessionPoolOptionsHelper {
 
   // TODO: Remove when multiplexed session for read write is released.
   public static SessionPoolOptions.Builder setUseMultiplexedSessionForRW(
-      SessionPoolOptions.Builder sessionPoolOptionsBuilder,
-      boolean useMultiplexedSessionForRW) {
-    return sessionPoolOptionsBuilder.setUseMultiplexedSessionForRW(
-        useMultiplexedSessionForRW);
+      SessionPoolOptions.Builder sessionPoolOptionsBuilder, boolean useMultiplexedSessionForRW) {
+    return sessionPoolOptionsBuilder.setUseMultiplexedSessionForRW(useMultiplexedSessionForRW);
   }
 }
