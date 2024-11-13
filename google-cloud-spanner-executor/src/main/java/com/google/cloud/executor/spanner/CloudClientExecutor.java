@@ -829,10 +829,15 @@ public class CloudClientExecutor extends CloudExecutor {
 
     com.google.cloud.spanner.SessionPoolOptions.Builder poolOptionsBuilder =
         com.google.cloud.spanner.SessionPoolOptions.newBuilder();
-    SessionPoolOptionsHelper.setUseMultiplexedSession(
-        com.google.cloud.spanner.SessionPoolOptions.newBuilder(), useMultiplexedSession);
+    SessionPoolOptionsHelper.setUseMultiplexedSession(poolOptionsBuilder, useMultiplexedSession);
     SessionPoolOptionsHelper.setUseMultiplexedSessionBlindWrite(
-        com.google.cloud.spanner.SessionPoolOptions.newBuilder(), useMultiplexedSession);
+        poolOptionsBuilder, useMultiplexedSession);
+    SessionPoolOptionsHelper.setUseMultiplexedSessionForRW(
+        poolOptionsBuilder, useMultiplexedSession);
+    LOGGER.log(
+        Level.INFO,
+        String.format(
+            "Using multiplexed sessions for read-write transactions: %s", useMultiplexedSession));
     com.google.cloud.spanner.SessionPoolOptions sessionPoolOptions = poolOptionsBuilder.build();
     // Cloud Spanner Client does not support global retry settings,
     // Thus, we need to add retry settings to each individual stub.
