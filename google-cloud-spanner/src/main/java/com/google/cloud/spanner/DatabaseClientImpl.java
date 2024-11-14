@@ -309,9 +309,21 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
+    return executePartitionedUpdateWithOptions(stmt, null, options);
+  }
+
+  @Override
+  public long executePartitionedUpdate(
+      final Statement stmt, @Nullable String transactionTag, final UpdateOption... options) {
+    return executePartitionedUpdateWithOptions(stmt, transactionTag, options);
+  }
+
+  private long executePartitionedUpdateWithOptions(
+      final Statement stmt, @Nullable String transactionTag, final UpdateOption... options) {
     ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
+      return runWithSessionRetry(
+          session -> session.executePartitionedUpdate(stmt, transactionTag, options));
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();

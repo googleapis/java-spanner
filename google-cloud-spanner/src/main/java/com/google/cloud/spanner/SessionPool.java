@@ -1273,6 +1273,11 @@ class SessionPool {
     default long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
       return get().executePartitionedUpdate(stmt, options);
     }
+
+    default long executePartitionedUpdate(
+        Statement stmt, @Nullable String transactionTag, UpdateOption... options) {
+      return get().executePartitionedUpdate(stmt, transactionTag, options);
+    }
   }
 
   class PooledSessionFutureWrapper implements SessionFutureWrapper<PooledSessionFuture> {
@@ -1495,6 +1500,16 @@ class SessionPool {
     }
 
     @Override
+    public long executePartitionedUpdate(
+        Statement stmt, @Nullable String transactionTag, UpdateOption... options) {
+      try {
+        return get(true).executePartitionedUpdate(stmt, transactionTag, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
     public String getName() {
       return get().getName();
     }
@@ -1704,6 +1719,18 @@ class SessionPool {
       try {
         markUsed();
         return delegate.executePartitionedUpdate(stmt, options);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public long executePartitionedUpdate(
+        Statement stmt, @Nullable String transactionTag, UpdateOption... options)
+        throws SpannerException {
+      try {
+        markUsed();
+        return delegate.executePartitionedUpdate(stmt, transactionTag, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }

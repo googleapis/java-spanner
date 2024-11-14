@@ -790,5 +790,9 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isAutoBatchDmlUpdateCountVerification()</method>
   </difference>
-  
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>long executePartitionedUpdate(com.google.cloud.spanner.Statement, java.lang.String, com.google.cloud.spanner.Options$UpdateOption[])</method>
+  </difference>
 </differences>

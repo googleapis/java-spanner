@@ -1945,6 +1945,30 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testPartitionedDMLWithTransactionTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.executePartitionedUpdate(
+        UPDATE_STATEMENT, "testTransactionTag", Options.tag("app=spanner,env=test,action=dml"));
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasPartitionedDml());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo("testTransactionTag");
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=dml");
+  }
+
+  @Test
   public void testCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));

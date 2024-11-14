@@ -22,6 +22,7 @@ import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.spanner.v1.BatchWriteResponse;
+import javax.annotation.Nullable;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
@@ -601,4 +602,21 @@ public interface DatabaseClient {
    * idempotent, such as deleting old rows from a very large table.
    */
   long executePartitionedUpdate(Statement stmt, UpdateOption... options);
+
+  /**
+   * Executes a Partitioned DML statement with the specified transaction tag.
+   *
+   * <p>This method has the same behavior as {@link #executePartitionedUpdate(Statement,
+   * UpdateOption...)} but allows specifying a transaction tag that will be applied to all
+   * partitioned operations.
+   *
+   * @param stmt The Partitioned DML statement to execute
+   * @param transactionTag The transaction tag to apply to all partitioned operations. The tag must
+   *     be a printable string (ASCII 32-126) with maximum length of 50 characters.
+   * @param options The options to use for the update operation
+   * @return The total number of rows modified by the statement
+   * @throws SpannerException if the operation failed
+   */
+  long executePartitionedUpdate(
+      Statement stmt, @Nullable String transactionTag, UpdateOption... options);
 }
