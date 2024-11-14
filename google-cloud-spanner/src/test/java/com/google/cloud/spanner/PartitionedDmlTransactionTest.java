@@ -101,7 +101,7 @@ public class PartitionedDmlTransactionTest {
     when(rpc.beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true)))
         .thenReturn(Transaction.newBuilder().setId(txId).build());
 
-    tx = new PartitionedDmlTransaction(session, rpc, ticker, null);
+    tx = new PartitionedDmlTransaction(session, rpc, ticker);
   }
 
   @Test
@@ -332,7 +332,7 @@ public class PartitionedDmlTransactionTest {
             Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class)))
         .thenReturn(stream2);
 
-    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker, null);
+    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
     long count = tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
 
     assertThat(count).isEqualTo(1000L);
@@ -371,7 +371,7 @@ public class PartitionedDmlTransactionTest {
             Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class)))
         .thenReturn(stream2);
 
-    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker, null);
+    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
     long count = tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
 
     assertThat(count).isEqualTo(1000L);
@@ -400,7 +400,7 @@ public class PartitionedDmlTransactionTest {
             Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
         .thenReturn(stream1);
 
-    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker, null);
+    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
     SpannerException e =
         assertThrows(
             SpannerException.class,

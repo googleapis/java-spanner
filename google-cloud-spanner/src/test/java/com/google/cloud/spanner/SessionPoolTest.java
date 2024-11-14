@@ -1729,13 +1729,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE 1=1");
     final SessionImpl closedSession = mockSession();
-    when(closedSession.executePartitionedUpdate(any(Statement.class))).thenThrow(sessionNotFound);
-    when(closedSession.executePartitionedUpdate(any(Statement.class), any(), any()))
-        .thenThrow(sessionNotFound);
+    when(closedSession.executePartitionedUpdate(statement)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-    when(openSession.executePartitionedUpdate(any(Statement.class))).thenReturn(1L);
-    when(openSession.executePartitionedUpdate(any(Statement.class), any(), any())).thenReturn(1L);
+    when(openSession.executePartitionedUpdate(statement)).thenReturn(1L);
     doAnswer(
             invocation -> {
               executor.submit(

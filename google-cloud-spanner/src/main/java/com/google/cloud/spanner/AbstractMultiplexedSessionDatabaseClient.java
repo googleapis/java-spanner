@@ -21,7 +21,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.spanner.v1.BatchWriteResponse;
-import javax.annotation.Nullable;
 
 /**
  * Base class for the Multiplexed Session {@link DatabaseClient} implementation. Throws {@link
@@ -55,12 +54,6 @@ abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClien
 
   @Override
   public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public long executePartitionedUpdate(
-      Statement stmt, @Nullable String transactionTag, UpdateOption... options) {
     throw new UnsupportedOperationException();
   }
 }

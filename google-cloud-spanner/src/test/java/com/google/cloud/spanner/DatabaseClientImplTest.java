@@ -1949,7 +1949,9 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.executePartitionedUpdate(
-        UPDATE_STATEMENT, "testTransactionTag", Options.tag("app=spanner,env=test,action=dml"));
+        UPDATE_STATEMENT,
+        Options.transactionTag("testTransactionTag"),
+        Options.tag("app=spanner,env=test,action=dml"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);

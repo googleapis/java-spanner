@@ -197,6 +197,10 @@ public final class Options implements Serializable {
     return new TagOption(name);
   }
 
+  public static ReadQueryUpdateTransactionOption transactionTag(String name) {
+    return new TransactionTagOption(name);
+  }
+
   /**
    * Specifying this will cause the list operations to fetch at most this many records in a page.
    */
@@ -394,6 +398,24 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class TransactionTagOption extends InternalOption
+      implements ReadQueryUpdateTransactionOption {
+    private final String transactionTag;
+
+    TransactionTagOption(String transactionTag) {
+      this.transactionTag = transactionTag;
+    }
+
+    String getTransactionTag() {
+      return transactionTag;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.transactionTag = transactionTag;
+    }
+  }
+
   static final class EtagOption extends InternalOption implements DeleteAdminApiOption {
     private final String etag;
 
@@ -462,6 +484,7 @@ public final class Options implements Serializable {
   private RpcPriority priority;
   private String tag;
   private String etag;
+  private String transactionTag;
   private Boolean validateOnly;
   private Boolean withOptimisticLock;
   private Boolean withExcludeTxnFromChangeStreams;
@@ -543,6 +566,14 @@ public final class Options implements Serializable {
 
   boolean hasTag() {
     return tag != null;
+  }
+
+  boolean hasTransactionTag() {
+    return transactionTag != null;
+  }
+
+  String transactionTag() {
+    return transactionTag;
   }
 
   String tag() {
@@ -661,6 +692,9 @@ public final class Options implements Serializable {
     if (orderBy != null) {
       b.append("orderBy: ").append(orderBy).append(' ');
     }
+    if (transactionTag != null) {
+      b.append("transactionTag: ").append(transactionTag).append(' ');
+    }
     return b.toString();
   }
 
@@ -694,6 +728,7 @@ public final class Options implements Serializable {
         && Objects.equals(filter(), that.filter())
         && Objects.equals(priority(), that.priority())
         && Objects.equals(tag(), that.tag())
+        && Objects.equals(transactionTag, that.transactionTag)
         && Objects.equals(etag(), that.etag())
         && Objects.equals(validateOnly(), that.validateOnly())
         && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
@@ -759,6 +794,9 @@ public final class Options implements Serializable {
     }
     if (orderBy != null) {
       result = 31 * result + orderBy.hashCode();
+    }
+    if (transactionTag != null) {
+      result = 31 * result + transactionTag.hashCode();
     }
     return result;
   }

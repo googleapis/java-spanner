@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 import org.threeten.bp.temporal.ChronoUnit;
 
@@ -55,16 +54,13 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
   private final SessionImpl session;
   private final SpannerRpc rpc;
   private final Ticker ticker;
-  private final @Nullable String transactionTag;
   private final IsRetryableInternalError isRetryableInternalErrorPredicate;
   private volatile boolean isValid = true;
 
-  PartitionedDmlTransaction(
-      SessionImpl session, SpannerRpc rpc, Ticker ticker, @Nullable String transactionTag) {
+  PartitionedDmlTransaction(SessionImpl session, SpannerRpc rpc, Ticker ticker) {
     this.session = session;
     this.rpc = rpc;
     this.ticker = ticker;
-    this.transactionTag = transactionTag;
     this.isRetryableInternalErrorPredicate = new IsRetryableInternalError();
   }
 
@@ -198,8 +194,8 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
       if (options.hasTag()) {
         requestOptionsBuilder.setRequestTag(options.tag());
       }
-      if (transactionTag != null) {
-        requestOptionsBuilder.setTransactionTag(transactionTag);
+      if (options.hasTransactionTag()) {
+        requestOptionsBuilder.setTransactionTag(options.transactionTag());
       }
       builder.setRequestOptions(requestOptionsBuilder.build());
     }
@@ -216,9 +212,9 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
                     .setExcludeTxnFromChangeStreams(
                         options.withExcludeTxnFromChangeStreams() == Boolean.TRUE));
 
-    if (transactionTag != null) {
+    if (options.hasTransactionTag()) {
       builder.setRequestOptions(
-          RequestOptions.newBuilder().setTransactionTag(transactionTag).build());
+          RequestOptions.newBuilder().setTransactionTag(options.transactionTag()).build());
     }
     Transaction tx = rpc.beginTransaction(builder.build(), session.getOptions(), true);
     if (tx.getId().isEmpty()) {

@@ -201,18 +201,7 @@ class SessionImpl implements Session {
   public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
     setActive(null);
     PartitionedDmlTransaction txn =
-        new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker(), null);
-    return txn.executeStreamingPartitionedUpdate(
-        stmt, spanner.getOptions().getPartitionedDmlTimeout(), options);
-  }
-
-  @Override
-  public long executePartitionedUpdate(
-      Statement stmt, @Nullable String transactionTag, UpdateOption... options) {
-    setActive(null);
-    PartitionedDmlTransaction txn =
-        new PartitionedDmlTransaction(
-            this, spanner.getRpc(), Ticker.systemTicker(), transactionTag);
+        new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker());
     return txn.executeStreamingPartitionedUpdate(
         stmt, spanner.getOptions().getPartitionedDmlTimeout(), options);
   }
