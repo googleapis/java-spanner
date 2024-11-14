@@ -94,6 +94,11 @@ public final class DatabaseId {
     return new DatabaseId(new InstanceId(project, instance), database);
   }
 
+  /** Creates a {@code DatabaseId} given instance and database IDs. */
+  public static DatabaseId of(String instance, String database) {
+    return new DatabaseId(new InstanceId("default", instance), database);
+  }
+
   /** Creates a {@code DatabaseId} given the instance identity and database id. */
   public static DatabaseId of(InstanceId instanceId, String database) {
     return new DatabaseId(instanceId, database);
