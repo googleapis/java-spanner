@@ -14,20 +14,27 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.v1.stub;
+package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.gax.rpc.ClientContext;
+import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import java.io.IOException;
 
-public class GrpcSpannerStubWrapper extends GrpcSpannerStub {
+/**
+ * Wrapper around {@link GrpcSpannerStub} to make the constructor available inside this package.
+ * This makes it possible to create a {@link GrpcSpannerStub} with a {@link SpannerStubSettings} and
+ * a {@link ClientContext}.
+ */
+class GrpcSpannerStubWithStubSettingsAndClientContext extends GrpcSpannerStub {
 
-  public static final GrpcSpannerStubWrapper create(
+  public static final GrpcSpannerStubWithStubSettingsAndClientContext create(
       SpannerStubSettings settings, ClientContext clientContext) throws IOException {
-    return new GrpcSpannerStubWrapper(settings, clientContext);
+    return new GrpcSpannerStubWithStubSettingsAndClientContext(settings, clientContext);
   }
 
-  protected GrpcSpannerStubWrapper(SpannerStubSettings settings, ClientContext clientContext)
-      throws IOException {
+  protected GrpcSpannerStubWithStubSettingsAndClientContext(
+      SpannerStubSettings settings, ClientContext clientContext) throws IOException {
     super(settings, clientContext);
   }
 }
