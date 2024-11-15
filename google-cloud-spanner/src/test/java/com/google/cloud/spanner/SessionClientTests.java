@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -30,6 +31,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.collect.ImmutableMap;
@@ -502,5 +504,22 @@ public class SessionClientTests {
       client.asyncBatchCreateSessions(numSessions, true, consumer);
     }
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testSessionNamePatterns() {
+    // Valid pattern for host session name
+    String host =
+        "projects/spanner-project/instances/spanner-instance/databases/test-db/sessions/abcd1234";
+    // Valid pattern for external host session name
+    String externalHost = "instances/default/databases/test-db/sessions/abcd1234";
+    try {
+      SessionId.of(host);
+      SessionId.of(externalHost);
+      // If no exceptions are thrown, the test will pass
+    } catch (IllegalArgumentException e) {
+      fail("Expected no exception to be thrown, but got: " + e.getMessage());
+    }
   }
 }
