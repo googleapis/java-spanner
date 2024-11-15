@@ -515,8 +515,10 @@ public class SessionClientTests {
     // Valid pattern for external host session name
     String externalHost = "instances/default/databases/test-db/sessions/abcd1234";
     try {
-      SessionId.of(host);
-      SessionId.of(externalHost);
+      SessionId hostSession = SessionId.of(host);
+      assertEquals("abcd1234", hostSession.getName());
+      SessionId externalHostSession = SessionId.of(externalHost);
+      assertEquals("abcd1234", externalHostSession.getName());
       // If no exceptions are thrown, the test will pass
     } catch (IllegalArgumentException e) {
       fail("Expected no exception to be thrown, but got: " + e.getMessage());
