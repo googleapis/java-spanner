@@ -248,11 +248,6 @@ public class GrpcSpannerStub extends SpannerStub {
   }
 
   public static final GrpcSpannerStub create(
-      SpannerStubSettings settings, ClientContext clientContext) throws IOException {
-    return new GrpcSpannerStub(settings, clientContext);
-  }
-
-  public static final GrpcSpannerStub create(
       ClientContext clientContext, GrpcStubCallableFactory callableFactory) throws IOException {
     return new GrpcSpannerStub(
         SpannerStubSettings.newBuilder().build(), clientContext, callableFactory);

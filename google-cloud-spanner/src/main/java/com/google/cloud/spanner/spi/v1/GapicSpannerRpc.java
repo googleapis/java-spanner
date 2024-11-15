@@ -80,7 +80,7 @@ import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.encryption.EncryptionConfigProtoMapper;
-import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
+import com.google.cloud.spanner.v1.stub.GrpcSpannerStubWrapper;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
@@ -410,7 +410,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                         /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         ClientContext clientContext = ClientContext.create(spannerStubSettings);
-        this.spannerStub = GrpcSpannerStub.create(spannerStubSettings, clientContext);
+        this.spannerStub = GrpcSpannerStubWrapper.create(spannerStubSettings, clientContext);
         BuiltInMetricsConstant.DIRECT_PATH_ENABLED =
             ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
                 && isAttemptDirectPathXds;
@@ -461,7 +461,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                   .getStreamWatchdogProvider()
                   .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
         }
-        this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
+        this.partitionedDmlStub = GrpcSpannerStubWrapper.create(pdmlSettings.build());
         this.instanceAdminStubSettings =
             options
                 .getInstanceAdminStubSettings()
