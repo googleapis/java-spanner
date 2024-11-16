@@ -69,6 +69,13 @@ public class Interval implements Serializable {
   private Interval(int months, int days, long microseconds, short nanoFractions) {
     this.months = months;
     this.days = days;
+
+    // Keep nanoFractions between [0, 1000).
+    if (nanoFractions < 0) {
+      nanoFractions += (short) NANOS_PER_MICRO;
+      microseconds -= 1;
+    }
+
     this.microseconds = microseconds;
     this.nanoFractions = nanoFractions;
   }
@@ -199,7 +206,7 @@ public class Interval implements Serializable {
     long minutes = Long.parseLong(getNullOrDefault(matcher, 6).replace("M", ""));
     BigDecimal seconds = new BigDecimal(getNullOrDefault(matcher, 7).replace("S", ""));
 
-    long totalMonths = years * MONTHS_PER_YEAR + months;
+    long totalMonths = Math.addExact(Math.multiplyExact(years, MONTHS_PER_YEAR), months);
     BigInteger totalNanos = seconds.movePointRight(9).toBigInteger();
     totalNanos =
         totalNanos.add(BigInteger.valueOf(minutes * SECONDS_PER_MINUTE).multiply(NANOS_PER_SECOND));
@@ -227,16 +234,16 @@ public class Interval implements Serializable {
     StringBuilder result = new StringBuilder();
     result.append("P");
 
-    long months = this.getMonths();
-    long years = months / MONTHS_PER_YEAR;
-    months = months - years * MONTHS_PER_YEAR;
+    long months_part = this.getMonths();
+    long years_part = months_part / MONTHS_PER_YEAR;
+    months_part = months_part - years_part * MONTHS_PER_YEAR;
 
-    if (years != 0) {
-      result.append(String.format("%dY", years));
+    if (years_part != 0) {
+      result.append(String.format("%dY", years_part));
     }
 
-    if (months != 0) {
-      result.append(String.format("%dM", months));
+    if (months_part != 0) {
+      result.append(String.format("%dM", months_part));
     }
 
     if (this.getDays() != 0) {
@@ -247,23 +254,33 @@ public class Interval implements Serializable {
     BigInteger zero = BigInteger.valueOf(0);
     if (nanos.compareTo(zero) != 0) {
       result.append("T");
-      BigInteger hours = nanos.divide(NANOS_PER_HOUR);
-
-      if (hours.compareTo(zero) != 0) {
-        result.append(String.format("%sH", hours));
+      BigInteger hours_part = nanos.divide(NANOS_PER_HOUR);
+      nanos = nanos.subtract(hours_part.multiply(NANOS_PER_HOUR));
+      if (hours_part.compareTo(zero) != 0) {
+        result.append(String.format("%sH", hours_part));
       }
 
-      nanos = nanos.subtract(hours.multiply(NANOS_PER_HOUR));
-      BigInteger minutes = nanos.divide(NANOS_PER_MINUTE);
-      if (minutes.compareTo(zero) != 0) {
-        result.append(String.format("%sM", minutes));
+      BigInteger minutes_part = nanos.divide(NANOS_PER_MINUTE);
+      nanos = nanos.subtract(minutes_part.multiply(NANOS_PER_MINUTE));
+      if (minutes_part.compareTo(zero) != 0) {
+        result.append(String.format("%sM", minutes_part));
       }
 
-      nanos = nanos.subtract(minutes.multiply(NANOS_PER_MINUTE));
-      BigDecimal seconds = new BigDecimal(nanos).movePointLeft(9);
+      if (!nanos.equals(zero)) {
+        String seconds_sign = "";
+        if (nanos.signum() == -1) {
+          seconds_sign = "-";
+          nanos = nanos.negate();
+        }
 
-      if (seconds.compareTo(new BigDecimal(zero)) != 0) {
-        result.append(String.format("%sS", seconds.stripTrailingZeros()));
+        BigInteger seconds_part = nanos.divide(NANOS_PER_SECOND);
+        nanos = nanos.subtract(seconds_part.multiply(NANOS_PER_SECOND));
+        result.append(String.format("%s%s", seconds_sign, seconds_part));
+
+        if (!nanos.equals(zero)) {
+          result.append(String.format(".%09d", nanos).replaceAll("0+$", ""));
+        }
+        result.append("S");
       }
     }
 

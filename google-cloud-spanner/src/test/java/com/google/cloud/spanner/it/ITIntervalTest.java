@@ -75,7 +75,7 @@ public class ITIntervalTest {
             + "  key text primary key,\n"
             + "  create_time timestamptz,\n"
             + "  expiry_time timestamptz,\n"
-            + "  expiry_within_month bool GENERATED ALWAYS AS (INTERVAL '1' DAY < INTERVAL '30' DAY) STORED,\n"
+            + "  expiry_within_month bool GENERATED ALWAYS AS (expiry_time - create_time < INTERVAL '30' DAY) STORED,\n"
             + "  interval_array_len bigint GENERATED ALWAYS AS (ARRAY_LENGTH(ARRAY[INTERVAL '1-2 3 4:5:6'], 1)) STORED\n"
             + ")"
       };
@@ -206,6 +206,35 @@ public class ITIntervalTest {
                     .build())) {
       assertTrue(resultSet.next());
       assertEquals(resultSet.getLong(0), 1L);
+    }
+  }
+
+  @Test
+  public void queryWithIntervalArrayParam() {
+    String query;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      query = "SELECT $1";
+    } else {
+      query = "SELECT @p1";
+    }
+
+    List<Interval> intervalList =
+        Arrays.asList(
+            Interval.parseFromString("P1Y2M3DT4H5M6.789123S"),
+            null,
+            Interval.parseFromString("P-1Y-2M-3DT-4H-5M-6.789123S"),
+            null);
+
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder(query)
+                    .bind("p1")
+                    .to(Value.intervalArray(intervalList))
+                    .build())) {
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getIntervalList(0), intervalList);
     }
   }
 
