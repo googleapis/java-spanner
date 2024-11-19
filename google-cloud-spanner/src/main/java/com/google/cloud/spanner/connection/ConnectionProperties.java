@@ -361,6 +361,15 @@ class ConnectionProperties {
           AutocommitDmlMode.TRANSACTIONAL,
           AutocommitDmlModeConverter.INSTANCE,
           Context.USER);
+  static final ConnectionProperty<Boolean> FALLBACK_TO_PARTITIONED_DML =
+      create(
+          "fallback_to_partitioned_dml",
+          "Automatically retry DML statements as Partitioned DML if the atomic DML "
+              + "statement failed due to exceeding the Spanner transaction mutation limit. "
+              + "This option only affects DML statements that are executed in auto-commit mode.",
+          false,
+          BooleanConverter.INSTANCE,
+          Context.USER);
   static final ConnectionProperty<Boolean> RETRY_ABORTS_INTERNALLY =
       create(
           // TODO: Add support for synonyms for connection properties.

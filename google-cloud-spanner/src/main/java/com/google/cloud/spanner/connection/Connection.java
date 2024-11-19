@@ -524,6 +524,14 @@ public interface Connection extends AutoCloseable {
    */
   AutocommitDmlMode getAutocommitDmlMode();
 
+  default void setFallbackToPartitionedDml(boolean fallbackToPartitionedDml) {
+    throw new UnsupportedOperationException();
+  }
+
+  default boolean isFallbackToPartitionedDml() {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * Sets the staleness to use for the current read-only transaction. This method may only be called
    * when the transaction mode of the current transaction is {@link

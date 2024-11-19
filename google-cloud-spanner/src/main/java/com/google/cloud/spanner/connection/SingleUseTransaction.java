@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.connection.AbstractStatementParser.COMMIT
 import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -42,11 +43,10 @@ import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.TransactionMutationLimitExceededException;
 import com.google.cloud.spanner.TransactionRunner;
-import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
-import com.google.cloud.spanner.connection.ReadWriteTransaction.Builder;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -56,6 +56,7 @@ import com.google.spanner.v1.SpannerGrpc;
 import io.opentelemetry.context.Scope;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
 
@@ -82,6 +83,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final BatchClient batchClient;
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
+  private final boolean retryDmlAsPartitionedDml;
   private final boolean returnCommitStats;
   private final Duration maxCommitDelay;
   private final boolean internalMetdataQuery;
@@ -98,6 +100,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     private boolean readOnly;
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
+    private boolean retryDmlAsPartitionedDml;
     private boolean returnCommitStats;
     private Duration maxCommitDelay;
     private boolean internalMetadataQuery;
@@ -136,6 +139,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Builder setAutocommitDmlMode(AutocommitDmlMode dmlMode) {
       Preconditions.checkNotNull(dmlMode);
       this.autocommitDmlMode = dmlMode;
+      return this;
+    }
+
+    Builder setRetryDmlAsPartitionedDml(boolean retryDmlAsPartitionedDml) {
+      this.retryDmlAsPartitionedDml = retryDmlAsPartitionedDml;
       return this;
     }
 
@@ -182,6 +190,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     this.readOnly = builder.readOnly;
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
+    this.retryDmlAsPartitionedDml = builder.retryDmlAsPartitionedDml;
     this.returnCommitStats = builder.returnCommitStats;
     this.maxCommitDelay = builder.maxCommitDelay;
     this.internalMetdataQuery = builder.internalMetadataQuery;
@@ -561,11 +570,89 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             throw t;
           }
         };
-    return executeStatementAsync(
-        callType,
-        update,
-        callable,
-        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+    ApiFuture<Tuple<Long, ResultSet>> transactionalResult =
+        executeStatementAsync(
+            callType,
+            update,
+            callable,
+            ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+    // Retry as Partitioned DML if the statement fails due to exceeding the mutation limit if that
+    // option has been enabled.
+    if (this.retryDmlAsPartitionedDml) {
+      return addRetryUpdateAsPartitionedDmlCallback(transactionalResult, callType, update, options);
+    }
+    return transactionalResult;
+  }
+
+  /**
+   * Adds a callback to the given future that retries the update statement using Partitioned DML if
+   * the original statement fails with a {@link TransactionMutationLimitExceededException}.
+   */
+  private ApiFuture<Tuple<Long, ResultSet>> addRetryUpdateAsPartitionedDmlCallback(
+      ApiFuture<Tuple<Long, ResultSet>> transactionalResult,
+      CallType callType,
+      final ParsedStatement update,
+      final UpdateOption... options) {
+    // Catch TransactionMutationLimitExceededException and retry as Partitioned DML. All other
+    // exceptions are just propagated.
+    return ApiFutures.catchingAsync(
+        transactionalResult,
+        TransactionMutationLimitExceededException.class,
+        mutationLimitExceededException -> {
+          UUID executionId = UUID.randomUUID();
+          // Invoke the retryDmlAsPartitionedDmlStarting method for the TransactionRetryListeners
+          // that have been registered for the connection.
+          for (TransactionRetryListener listener : this.transactionRetryListeners) {
+            listener.retryDmlAsPartitionedDmlStarting(
+                executionId, update.getStatement(), mutationLimitExceededException);
+          }
+          // Try to execute the DML statement as Partitioned DML.
+          ApiFuture<Tuple<Long, ResultSet>> partitionedResult =
+              ApiFutures.transform(
+                  executePartitionedUpdateAsync(callType, update, options),
+                  lowerBoundUpdateCount -> Tuple.of(lowerBoundUpdateCount, null),
+                  MoreExecutors.directExecutor());
+
+          // Add a callback to the future that invokes the TransactionRetryListeners after the
+          // Partitioned DML statement finished. This will invoke either the Finished or Failed
+          // method on the listeners.
+          ApiFutures.addCallback(
+              partitionedResult,
+              new ApiFutureCallback<Tuple<Long, ResultSet>>() {
+                @Override
+                public void onFailure(Throwable throwable) {
+                  for (TransactionRetryListener listener :
+                      SingleUseTransaction.this.transactionRetryListeners) {
+                    listener.retryDmlAsPartitionedDmlFailed(
+                        executionId, update.getStatement(), throwable);
+                  }
+                }
+
+                @Override
+                public void onSuccess(Tuple<Long, ResultSet> result) {
+                  for (TransactionRetryListener listener :
+                      SingleUseTransaction.this.transactionRetryListeners) {
+                    listener.retryDmlAsPartitionedDmlFinished(
+                        executionId, update.getStatement(), result.x());
+                  }
+                }
+              },
+              MoreExecutors.directExecutor());
+
+          // Catch any exception from the Partitioned DML execution and throw the original
+          // TransactionMutationLimitExceededException instead.
+          // The exception that is returned for the Partitioned DML statement is added to the
+          // exception as a suppressed exception.
+          return ApiFutures.catching(
+              partitionedResult,
+              Throwable.class,
+              input -> {
+                mutationLimitExceededException.addSuppressed(input);
+                throw mutationLimitExceededException;
+              },
+              MoreExecutors.directExecutor());
+        },
+        MoreExecutors.directExecutor());
   }
 
   private ApiFuture<ResultSet> analyzeTransactionalUpdateAsync(

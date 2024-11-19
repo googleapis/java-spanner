@@ -10343,6 +10343,403 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-spanner.auto_batch_dml_update_count_verification;
 NEW_CONNECTION;
+show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+SHOW SPANNER.FALLBACK_TO_PARTITIONED_DML;
+NEW_CONNECTION;
+show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+   show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+			show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+
+
+
+show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+show spanner.fallback_to_partitioned_dml  ;
+NEW_CONNECTION;
+show spanner.fallback_to_partitioned_dml		;
+NEW_CONNECTION;
+show spanner.fallback_to_partitioned_dml
+
+;
+NEW_CONNECTION;
+show   spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+show	spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+show
+spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.fallback_to_partitioned_dml/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.FALLBACK_TO_PARTITIONED_DML;
+NEW_CONNECTION;
+show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+   show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+			show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+
+
+
+show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+show variable spanner.fallback_to_partitioned_dml  ;
+NEW_CONNECTION;
+show variable spanner.fallback_to_partitioned_dml		;
+NEW_CONNECTION;
+show variable spanner.fallback_to_partitioned_dml
+
+;
+NEW_CONNECTION;
+show   variable   spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+show	variable	spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+show
+variable
+spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.fallback_to_partitioned_dml/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.fallback_to_partitioned_dml;
+NEW_CONNECTION;
 show transaction isolation level;
 NEW_CONNECTION;
 SHOW TRANSACTION ISOLATION LEVEL;
@@ -81356,6 +81753,1006 @@ set spanner.auto_batch_dml to off/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.auto_batch_dml to/-off;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+SET SPANNER.FALLBACK_TO_PARTITIONED_DML = TRUE;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+   set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+			set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+
+
+
+set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = true  ;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = true		;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = true
+
+;
+NEW_CONNECTION;
+set   spanner.fallback_to_partitioned_dml   =   true;
+NEW_CONNECTION;
+set	spanner.fallback_to_partitioned_dml	=	true;
+NEW_CONNECTION;
+set
+spanner.fallback_to_partitioned_dml
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.fallback_to_partitioned_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =/-true;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+SET SPANNER.FALLBACK_TO_PARTITIONED_DML = FALSE;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+   set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+			set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+
+
+
+set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = false  ;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = false		;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml = false
+
+;
+NEW_CONNECTION;
+set   spanner.fallback_to_partitioned_dml   =   false;
+NEW_CONNECTION;
+set	spanner.fallback_to_partitioned_dml	=	false;
+NEW_CONNECTION;
+set
+spanner.fallback_to_partitioned_dml
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.fallback_to_partitioned_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml =/-false;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+SET SPANNER.FALLBACK_TO_PARTITIONED_DML TO TRUE;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+   set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+			set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+
+
+
+set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to true  ;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to true		;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to true
+
+;
+NEW_CONNECTION;
+set   spanner.fallback_to_partitioned_dml   to   true;
+NEW_CONNECTION;
+set	spanner.fallback_to_partitioned_dml	to	true;
+NEW_CONNECTION;
+set
+spanner.fallback_to_partitioned_dml
+to
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.fallback_to_partitioned_dml to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/-true;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+SET SPANNER.FALLBACK_TO_PARTITIONED_DML TO FALSE;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+   set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+			set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+
+
+
+set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to false  ;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to false		;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to false
+
+;
+NEW_CONNECTION;
+set   spanner.fallback_to_partitioned_dml   to   false;
+NEW_CONNECTION;
+set	spanner.fallback_to_partitioned_dml	to	false;
+NEW_CONNECTION;
+set
+spanner.fallback_to_partitioned_dml
+to
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.fallback_to_partitioned_dml to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/-false;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+SET SPANNER.FALLBACK_TO_PARTITIONED_DML TO OFF;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+   set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+			set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+
+
+
+set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to off  ;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to off		;
+NEW_CONNECTION;
+set spanner.fallback_to_partitioned_dml to off
+
+;
+NEW_CONNECTION;
+set   spanner.fallback_to_partitioned_dml   to   off;
+NEW_CONNECTION;
+set	spanner.fallback_to_partitioned_dml	to	off;
+NEW_CONNECTION;
+set
+spanner.fallback_to_partitioned_dml
+to
+off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to%off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to_off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to&off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to$off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to@off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to!off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to*off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to(off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to)off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to+off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-#off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to\off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to?off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to-/off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/#off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.fallback_to_partitioned_dml to off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to off/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.fallback_to_partitioned_dml to/-off;
 NEW_CONNECTION;
 set spanner.auto_batch_dml_update_count = 0;
 NEW_CONNECTION;
