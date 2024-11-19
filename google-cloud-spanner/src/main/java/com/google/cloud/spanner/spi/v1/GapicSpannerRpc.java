@@ -278,10 +278,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
 
-  private Supplier<Boolean> directPathEnabledSupplier =
-      () -> {
-        return false;
-      };;
+  private Supplier<Boolean> directPathEnabledSupplier = () -> false;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);

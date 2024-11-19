@@ -28,7 +28,7 @@ import java.io.IOException;
  */
 class GrpcSpannerStubWithStubSettingsAndClientContext extends GrpcSpannerStub {
 
-  public static final GrpcSpannerStubWithStubSettingsAndClientContext create(
+  static final GrpcSpannerStubWithStubSettingsAndClientContext create(
       SpannerStubSettings settings, ClientContext clientContext) throws IOException {
     return new GrpcSpannerStubWithStubSettingsAndClientContext(settings, clientContext);
   }
