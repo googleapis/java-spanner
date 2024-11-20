@@ -28,6 +28,7 @@ import com.google.cloud.spanner.BuiltInMetricsConstant;
 import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
+import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.spanner.admin.database.v1.DatabaseName;
@@ -93,8 +94,12 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
-  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
+  private final Supplier<Boolean> directPathEnabledSupplier;
+
+  HeaderInterceptor(
+      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
     this.spannerRpcMetrics = spannerRpcMetrics;
+    this.directPathEnabledSupplier = directPathEnabledSupplier;
   }
 
   @Override
@@ -228,6 +233,9 @@ class HeaderInterceptor implements ClientInterceptor {
           attributes.put(BuiltInMetricsConstant.DATABASE_KEY.getKey(), databaseName.getDatabase());
           attributes.put(
               BuiltInMetricsConstant.INSTANCE_ID_KEY.getKey(), databaseName.getInstance());
+          attributes.put(
+              BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY.getKey(),
+              String.valueOf(this.directPathEnabledSupplier.get()));
           return attributes;
         });
   }

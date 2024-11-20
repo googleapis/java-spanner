@@ -94,7 +94,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
         Attributes.builder()
             .put(BuiltInMetricsConstant.PROJECT_ID_KEY, "test-project")
             .put(BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY, "unknown")
-            .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
             .put(
                 BuiltInMetricsConstant.LOCATION_ID_KEY,
                 BuiltInOpenTelemetryMetricsProvider.detectClientLocation())
