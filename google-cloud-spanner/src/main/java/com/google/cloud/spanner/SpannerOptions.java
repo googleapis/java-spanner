@@ -1864,6 +1864,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
   }
 
+  /** Returns an instance of OpenTelemetry object for Built-in Client metrics. */
+  public OpenTelemetry getBuiltInMetricsOpenTelemetry() {
+    return this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
+        this.getProjectId(), getCredentials());
+  }
+
+  /** Returns attributes for an instance of Built-in Client metrics. */
+  public Map<String, String> getBuiltInMetricsClientAttributes() {
+    return builtInOpenTelemetryMetricsProvider.createOrGetClientAttributes(
+        this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass()));
+  }
+
   @Override
   public ApiTracerFactory getApiTracerFactory() {
     return createApiTracerFactory(false, false);
@@ -1913,11 +1925,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
             this.getProjectId(), getCredentials(), this.monitoringHost);
 
-    return openTelemetry != null
+    Map<String, String> clientAttributes =
+        builtInOpenTelemetryMetricsProvider.createOrGetClientAttributes(
+            this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass()));
+    return openTelemetry != null && clientAttributes != null
         ? new MetricsTracerFactory(
             new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            builtInOpenTelemetryMetricsProvider.createClientAttributes(
-                this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
+            clientAttributes)
         : null;
   }
 

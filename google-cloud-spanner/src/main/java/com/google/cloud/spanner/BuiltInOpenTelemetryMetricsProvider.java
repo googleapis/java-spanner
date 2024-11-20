@@ -28,6 +28,8 @@ import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.opentelemetry.api.OpenTelemetry;
@@ -42,6 +44,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -56,6 +59,9 @@ final class BuiltInOpenTelemetryMetricsProvider {
   private static String taskId;
 
   private OpenTelemetry openTelemetry;
+
+  private final Cache<String, Map<String, String>> clientAttributesCache =
+      CacheBuilder.newBuilder().maximumSize(1000).build();
 
   private BuiltInOpenTelemetryMetricsProvider() {}
 
@@ -81,16 +87,29 @@ final class BuiltInOpenTelemetryMetricsProvider {
     }
   }
 
-  Map<String, String> createClientAttributes(String projectId, String client_name) {
-    Map<String, String> clientAttributes = new HashMap<>();
-    clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
-    clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
-    clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
-    clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
-    String clientUid = getDefaultTaskValue();
-    clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
-    clientAttributes.put(CLIENT_HASH_KEY.getKey(), generateClientHash(clientUid));
-    return clientAttributes;
+  Map<String, String> createOrGetClientAttributes(String projectId, String client_name) {
+    try {
+      String key = projectId + client_name;
+      return clientAttributesCache.get(
+          key,
+          () -> {
+            Map<String, String> clientAttributes = new HashMap<>();
+            clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
+            clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
+            clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
+            clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
+            String clientUid = getDefaultTaskValue();
+            clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
+            clientAttributes.put(CLIENT_HASH_KEY.getKey(), generateClientHash(clientUid));
+            return clientAttributes;
+          });
+    } catch (ExecutionException executionException) {
+      logger.log(
+          Level.WARNING,
+          "Unable to get Client Attributes for client side metrics, will skip exporting client side metrics",
+          executionException);
+      return null;
+    }
   }
 
   /**

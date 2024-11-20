@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENC
 
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.cloud.spanner.BuiltInMetricsConstant;
+import com.google.cloud.spanner.BuiltInOpenTelemetryMetricsRecorder;
 import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
@@ -94,12 +95,17 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
+  private final BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder;
+
   private final Supplier<Boolean> directPathEnabledSupplier;
 
   HeaderInterceptor(
-      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
+      SpannerRpcMetrics spannerRpcMetrics,
+      BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder,
+      Supplier<Boolean> directPathEnabledSupplier) {
     this.spannerRpcMetrics = spannerRpcMetrics;
     this.directPathEnabledSupplier = directPathEnabledSupplier;
+    this.builtInOpenTelemetryMetricsRecorder = builtInOpenTelemetryMetricsRecorder;
   }
 
   @Override
@@ -128,7 +134,12 @@ class HeaderInterceptor implements ClientInterceptor {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
-                  processHeader(metadata, tagContext, attributes, span);
+                  processHeader(
+                      metadata,
+                      tagContext,
+                      attributes,
+                      span,
+                      builtInMetricsAttributes , isDirectPathUsed);
                   super.onHeaders(metadata);
                 }
               },
@@ -142,7 +153,12 @@ class HeaderInterceptor implements ClientInterceptor {
   }
 
   private void processHeader(
-      Metadata metadata, TagContext tagContext, Attributes attributes, Span span) {
+      Metadata metadata,
+      TagContext tagContext,
+      Attributes attributes,
+      Span span,
+      Map<String, String> builtInMetricsAttributes, 
+      Boolean isDirectPathUsed) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
     if (serverTiming != null && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
@@ -154,6 +170,8 @@ class HeaderInterceptor implements ClientInterceptor {
 
         spannerRpcMetrics.recordGfeLatency(latency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
+        // TODO: Also pass directpath used
+        builtInOpenTelemetryMetricsRecorder.recordGFELatency(latency, builtInMetricsAttributes);
 
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(latency));
