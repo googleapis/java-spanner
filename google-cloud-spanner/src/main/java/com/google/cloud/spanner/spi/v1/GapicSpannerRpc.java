@@ -357,6 +357,8 @@ public class GapicSpannerRpc implements SpannerRpc {
                               options.getInterceptorProvider(),
                               SpannerInterceptorProvider.createDefault(
                                   options.getOpenTelemetry(),
+                                  options.getBuiltInMetricsOpenTelemetry(),
+                                  options.getBuiltInMetricsClientAttributes(),
                                   (() -> directPathEnabledSupplier.get()))))
                       // This sets the trace context headers.
                       .withTraceContext(endToEndTracingEnabled, options.getOpenTelemetry())

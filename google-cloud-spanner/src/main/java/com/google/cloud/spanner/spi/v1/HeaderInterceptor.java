@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENC
 
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.cloud.spanner.BuiltInMetricsConstant;
+import com.google.cloud.spanner.BuiltInOpenTelemetryMetricsRecorder;
 import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
@@ -94,12 +95,17 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
+  private final BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder;
+
   private final Supplier<Boolean> directPathEnabledSupplier;
 
   HeaderInterceptor(
-      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
+      SpannerRpcMetrics spannerRpcMetrics,
+      BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder,
+      Supplier<Boolean> directPathEnabledSupplier) {
     this.spannerRpcMetrics = spannerRpcMetrics;
     this.directPathEnabledSupplier = directPathEnabledSupplier;
+    this.builtInOpenTelemetryMetricsRecorder = builtInOpenTelemetryMetricsRecorder;
   }
 
   @Override
@@ -118,8 +124,8 @@ class HeaderInterceptor implements ClientInterceptor {
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
-          Map<String, String> builtInMetricsAttributes =
-              getBuiltInMetricAttributes(key, databaseName);
+          Map<String, String> commonBuiltInMetricAttributes =
+              getCommonBuiltInMetricAttributes(key, databaseName);
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
@@ -127,8 +133,13 @@ class HeaderInterceptor implements ClientInterceptor {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addBuiltInMetricAttributes(
-                      compositeTracer, builtInMetricsAttributes, isDirectPathUsed);
-                  processHeader(metadata, tagContext, attributes, span);
+                      compositeTracer, commonBuiltInMetricAttributes, isDirectPathUsed);
+                  processHeader(
+                      metadata,
+                      tagContext,
+                      attributes,
+                      span,
+                      getBuiltInMetricAttributes(commonBuiltInMetricAttributes, isDirectPathUsed));
                   super.onHeaders(metadata);
                 }
               },
@@ -142,7 +153,11 @@ class HeaderInterceptor implements ClientInterceptor {
   }
 
   private void processHeader(
-      Metadata metadata, TagContext tagContext, Attributes attributes, Span span) {
+      Metadata metadata,
+      TagContext tagContext,
+      Attributes attributes,
+      Span span,
+      Map<String, String> builtInMetricsAttributes) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
     if (serverTiming != null && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
@@ -154,6 +169,7 @@ class HeaderInterceptor implements ClientInterceptor {
 
         spannerRpcMetrics.recordGfeLatency(latency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
+        builtInOpenTelemetryMetricsRecorder.recordGFELatency(latency, builtInMetricsAttributes);
 
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(latency));
@@ -224,8 +240,8 @@ class HeaderInterceptor implements ClientInterceptor {
         });
   }
 
-  private Map<String, String> getBuiltInMetricAttributes(String key, DatabaseName databaseName)
-      throws ExecutionException {
+  private Map<String, String> getCommonBuiltInMetricAttributes(
+      String key, DatabaseName databaseName) throws ExecutionException {
     return builtInAttributesCache.get(
         key,
         () -> {
@@ -240,17 +256,21 @@ class HeaderInterceptor implements ClientInterceptor {
         });
   }
 
+  private Map<String, String> getBuiltInMetricAttributes(
+      Map<String, String> commonBuiltInMetricsAttributes, Boolean isDirectPathUsed) {
+    Map<String, String> builtInMetricAttributes = new HashMap<>(commonBuiltInMetricsAttributes);
+    builtInMetricAttributes.put(
+        BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
+    return builtInMetricAttributes;
+  }
+
   private void addBuiltInMetricAttributes(
       CompositeTracer compositeTracer,
-      Map<String, String> builtInMetricsAttributes,
+      Map<String, String> commonBuiltInMetricsAttributes,
       Boolean isDirectPathUsed) {
     if (compositeTracer != null) {
-      // Direct Path used attribute
-      Map<String, String> attributes = new HashMap<>(builtInMetricsAttributes);
-      attributes.put(
-          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
-
-      compositeTracer.addAttributes(attributes);
+      compositeTracer.addAttributes(
+          getBuiltInMetricAttributes(commonBuiltInMetricsAttributes, isDirectPathUsed));
     }
   }
 
