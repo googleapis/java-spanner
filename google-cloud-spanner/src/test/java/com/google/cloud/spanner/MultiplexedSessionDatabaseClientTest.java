@@ -60,7 +60,7 @@ public class MultiplexedSessionDatabaseClientTest {
     when(spanner.getOptions()).thenReturn(spannerOptions);
     when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(sessionPoolOptions.getMultiplexedSessionMaintenanceDuration())
-        .thenReturn(org.threeten.bp.Duration.ofDays(7));
+        .thenReturn(java.time.Duration.ofDays(7));
     when(sessionPoolOptions.getMultiplexedSessionMaintenanceLoopFrequency())
         .thenReturn(Duration.ofMinutes(10));
 

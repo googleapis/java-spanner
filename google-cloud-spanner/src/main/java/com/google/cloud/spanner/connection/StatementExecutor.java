@@ -29,6 +29,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Duration;
 import io.opentelemetry.context.Context;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -37,7 +38,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.threeten.bp.temporal.ChronoUnit;
 
 /**
  * {@link StatementExecutor} is responsible for executing statements on a {@link Connection}.
@@ -106,26 +106,26 @@ class StatementExecutor {
           });
     }
 
-    org.threeten.bp.Duration asDuration() {
+    java.time.Duration asDuration() {
       if (!hasTimeout()) {
-        return org.threeten.bp.Duration.ZERO;
+        return java.time.Duration.ZERO;
       }
       TimeUnit unit = getAppropriateTimeUnit();
       switch (unit) {
         case DAYS:
-          return org.threeten.bp.Duration.ofDays(getTimeoutValue(unit));
+          return java.time.Duration.ofDays(getTimeoutValue(unit));
         case HOURS:
-          return org.threeten.bp.Duration.ofHours(getTimeoutValue(unit));
+          return java.time.Duration.ofHours(getTimeoutValue(unit));
         case MICROSECONDS:
-          return org.threeten.bp.Duration.of(getTimeoutValue(unit), ChronoUnit.MICROS);
+          return java.time.Duration.of(getTimeoutValue(unit), ChronoUnit.MICROS);
         case MILLISECONDS:
-          return org.threeten.bp.Duration.ofMillis(getTimeoutValue(unit));
+          return java.time.Duration.ofMillis(getTimeoutValue(unit));
         case MINUTES:
-          return org.threeten.bp.Duration.ofMinutes(getTimeoutValue(unit));
+          return java.time.Duration.ofMinutes(getTimeoutValue(unit));
         case NANOSECONDS:
-          return org.threeten.bp.Duration.ofNanos(getTimeoutValue(unit));
+          return java.time.Duration.ofNanos(getTimeoutValue(unit));
         case SECONDS:
-          return org.threeten.bp.Duration.ofSeconds(getTimeoutValue(unit));
+          return java.time.Duration.ofSeconds(getTimeoutValue(unit));
         default:
           throw new IllegalStateException("invalid time unit: " + unit);
       }

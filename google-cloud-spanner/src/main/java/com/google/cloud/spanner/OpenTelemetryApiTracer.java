@@ -16,6 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.ApiTracerFactory.OperationType;
 import com.google.common.base.Preconditions;
@@ -27,7 +30,6 @@ import io.opentelemetry.api.trace.StatusCode;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /**
  * {@link com.google.api.gax.tracing.ApiTracer} for use with OpenTelemetry. Based on {@link
@@ -163,8 +165,18 @@ class OpenTelemetryApiTracer implements ApiTracer {
     lastConnectionId = null;
   }
 
+  /**
+   * This method is obsolete. Use {@link #attemptFailedDuration(Throwable, java.time.Duration)}
+   * instead.
+   */
   @Override
-  public void attemptFailed(Throwable error, Duration delay) {
+  @ObsoleteApi("Use attemptFailedDuration(Throwable, java.time.Duration) instead")
+  public void attemptFailed(Throwable error, org.threeten.bp.Duration delay) {
+    attemptFailedDuration(error, toJavaTimeDuration(delay));
+  }
+
+  @Override
+  public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
     AttributesBuilder builder = baseAttemptAttributesBuilder();
     if (delay != null) {
       builder.put(RETRY_DELAY_KEY, delay.toMillis());

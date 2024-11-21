@@ -92,7 +92,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
                   SessionPoolOptions.newBuilder()
                       .setMinSessions(minSessions)
                       .setMaxSessions(maxSessions)
-                      .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20))
+                      .setWaitForMinSessionsDuration(java.time.Duration.ofSeconds(20))
                       .build())
               .setHost(SERVER_URL)
               .setNumChannels(NUM_GRPC_CHANNELS)

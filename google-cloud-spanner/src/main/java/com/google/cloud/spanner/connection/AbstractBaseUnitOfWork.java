@@ -354,7 +354,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
                   if (statementTimeout.hasTimeout()
                       && applyStatementTimeoutToMethods.contains(method)) {
                     return GrpcCallContext.createDefault()
-                        .withTimeout(statementTimeout.asDuration());
+                        .withTimeoutDuration(statementTimeout.asDuration());
                   }
                   return null;
                 }

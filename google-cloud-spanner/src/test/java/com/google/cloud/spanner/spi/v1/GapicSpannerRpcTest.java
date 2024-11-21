@@ -85,6 +85,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -96,7 +97,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.threeten.bp.Duration;
 
 @RunWith(Parameterized.class)
 public class GapicSpannerRpcTest {
@@ -386,7 +386,7 @@ public class GapicSpannerRpcTest {
               // Sequence numbers are only assigned for DML statements, which means that
               // this is an update statement.
               if (sqlRequest.getSeqno() > 0L) {
-                return context.withTimeout(timeoutHolder.timeout);
+                return context.withTimeoutDuration(timeoutHolder.timeout);
               }
             }
             return null;

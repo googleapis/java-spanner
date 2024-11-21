@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.threeten.bp.Duration;
 
 @InternalApi
 public class CompositeTracer extends BaseApiTracer {
@@ -109,7 +108,7 @@ public class CompositeTracer extends BaseApiTracer {
   }
 
   @Override
-  public void attemptFailed(Throwable error, Duration delay) {
+  public void attemptFailed(Throwable error, org.threeten.bp.Duration delay) {
     for (ApiTracer child : children) {
       child.attemptFailed(error, delay);
     }
