@@ -194,7 +194,6 @@ public class BatchCreateSessionsSlowTest {
       List<ListenableFuture<Void>> futures = new ArrayList<>(5000);
       AtomicInteger counter = new AtomicInteger();
       for (int i = 0; i < 5000; i++) {
-        final int index = i;
         futures.add(
             service.submit(
                 () -> {

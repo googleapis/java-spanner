@@ -919,7 +919,7 @@ public class SpannerOptionsTest {
                     inputCallContext,
                     CommitRequest.getDefaultInstance(),
                     SpannerGrpc.getCommitMethod())
-                .getTimeout())
+                .getTimeoutDuration())
         .isEqualTo(Duration.ofSeconds(2L));
     assertThat(
             configurator
@@ -927,7 +927,7 @@ public class SpannerOptionsTest {
                     inputCallContext,
                     RollbackRequest.getDefaultInstance(),
                     SpannerGrpc.getRollbackMethod())
-                .getTimeout())
+                .getTimeoutDuration())
         .isEqualTo(Duration.ofSeconds(8L));
 
     assertNull(
@@ -941,7 +941,7 @@ public class SpannerOptionsTest {
                     inputCallContext,
                     ExecuteSqlRequest.getDefaultInstance(),
                     SpannerGrpc.getExecuteStreamingSqlMethod())
-                .getTimeout())
+                .getTimeoutDuration())
         .isEqualTo(Duration.ofSeconds(3L));
     assertThat(
             configurator
@@ -949,7 +949,7 @@ public class SpannerOptionsTest {
                     inputCallContext,
                     ExecuteBatchDmlRequest.getDefaultInstance(),
                     SpannerGrpc.getExecuteBatchDmlMethod())
-                .getTimeout())
+                .getTimeoutDuration())
         .isEqualTo(Duration.ofSeconds(1L));
     assertNull(
         configurator.configure(
@@ -960,7 +960,7 @@ public class SpannerOptionsTest {
                     inputCallContext,
                     ReadRequest.getDefaultInstance(),
                     SpannerGrpc.getStreamingReadMethod())
-                .getTimeout())
+                .getTimeoutDuration())
         .isEqualTo(Duration.ofSeconds(7L));
 
     assertThat(
@@ -969,7 +969,7 @@ public class SpannerOptionsTest {
                     inputCallContext,
                     PartitionQueryRequest.getDefaultInstance(),
                     SpannerGrpc.getPartitionQueryMethod())
-                .getTimeout())
+                .getTimeoutDuration())
         .isEqualTo(Duration.ofSeconds(5L));
     assertThat(
             configurator
@@ -977,7 +977,7 @@ public class SpannerOptionsTest {
                     inputCallContext,
                     PartitionReadRequest.getDefaultInstance(),
                     SpannerGrpc.getPartitionReadMethod())
-                .getTimeout())
+                .getTimeoutDuration())
         .isEqualTo(Duration.ofSeconds(6L));
   }
 
