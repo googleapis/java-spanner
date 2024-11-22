@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
+import com.google.cloud.spanner.AbstractResultSet.Listener;
 import com.google.common.collect.AbstractIterator;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value.KindCase;
@@ -44,9 +45,11 @@ class GrpcValueIterator extends AbstractIterator<com.google.protobuf.Value> {
   private PartialResultSet current;
   private int pos;
   private ResultSetStats statistics;
+  private final Listener listener;
 
-  GrpcValueIterator(CloseableIterator<PartialResultSet> stream) {
+  GrpcValueIterator(CloseableIterator<PartialResultSet> stream, Listener listener) {
     this.stream = stream;
+    this.listener = listener;
   }
 
   @SuppressWarnings("unchecked")
@@ -124,6 +127,10 @@ class GrpcValueIterator extends AbstractIterator<com.google.protobuf.Value> {
     return statistics;
   }
 
+  boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
+    return stream.initiateStreaming(streamMessageListener);
+  }
+
   Type type() {
     checkState(type != null, "metadata has not been received");
     return type;
@@ -153,6 +160,10 @@ class GrpcValueIterator extends AbstractIterator<com.google.protobuf.Value> {
           throw newSpannerException(
               ErrorCode.INTERNAL, "Invalid type metadata: " + e.getMessage(), e);
         }
+      }
+      // collect the precommit token from each PartialResultSet
+      if (current.hasPrecommitToken()) {
+        listener.onPrecommitToken(current.getPrecommitToken());
       }
       if (current.hasStats()) {
         statistics = current.getStats();

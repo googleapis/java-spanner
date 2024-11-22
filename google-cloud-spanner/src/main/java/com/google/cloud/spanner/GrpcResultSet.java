@@ -19,22 +19,26 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.core.InternalApi;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
 @VisibleForTesting
-class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufResultSet {
+class GrpcResultSet extends AbstractResultSet<List<Object>>
+    implements ProtobufResultSet, StreamingResultSet {
   private final GrpcValueIterator iterator;
   private final Listener listener;
   private final DecodeMode decodeMode;
   private ResultSetMetadata metadata;
   private GrpcStruct currRow;
+  private List<Object> rowData;
   private SpannerException error;
   private ResultSetStats statistics;
   private boolean closed;
@@ -45,7 +49,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufR
 
   GrpcResultSet(
       CloseableIterator<PartialResultSet> iterator, Listener listener, DecodeMode decodeMode) {
-    this.iterator = new GrpcValueIterator(iterator);
+    this.iterator = new GrpcValueIterator(iterator, listener);
     this.listener = listener;
     this.decodeMode = decodeMode;
   }
@@ -85,7 +89,15 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufR
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
         }
-        currRow = new GrpcStruct(iterator.type(), new ArrayList<>(), decodeMode);
+        if (rowData == null) {
+          rowData = new ArrayList<>(metadata.getRowType().getFieldsCount());
+          if (decodeMode != DecodeMode.DIRECT) {
+            rowData = Collections.synchronizedList(rowData);
+          }
+        } else {
+          rowData.clear();
+        }
+        currRow = new GrpcStruct(iterator.type(), rowData, decodeMode);
       }
       boolean hasNext = currRow.consumeRow(iterator);
       if (!hasNext) {
@@ -111,6 +123,12 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufR
   public ResultSetMetadata getMetadata() {
     checkState(metadata != null, "next() call required");
     return metadata;
+  }
+
+  @Override
+  @InternalApi
+  public boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
+    return iterator.initiateStreaming(streamMessageListener);
   }
 
   @Override

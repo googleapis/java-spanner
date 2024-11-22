@@ -29,7 +29,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
-import com.google.protobuf.Duration;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;

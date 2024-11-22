@@ -19,6 +19,8 @@ import com.google.api.core.InternalApi;
 import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.cloud.spanner.SpannerRpcMetrics;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import io.grpc.ClientInterceptor;
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -46,11 +48,22 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
   }
 
   public static SpannerInterceptorProvider createDefault(OpenTelemetry openTelemetry) {
+    return createDefault(
+        openTelemetry,
+        Suppliers.memoize(
+            () -> {
+              return false;
+            }));
+  }
+
+  public static SpannerInterceptorProvider createDefault(
+      OpenTelemetry openTelemetry, Supplier<Boolean> directPathEnabledSupplier) {
     List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
     defaultInterceptorList.add(new SpannerErrorInterceptor());
     defaultInterceptorList.add(
         new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
-    defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(openTelemetry)));
+    defaultInterceptorList.add(
+        new HeaderInterceptor(new SpannerRpcMetrics(openTelemetry), directPathEnabledSupplier));
     return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
   }
 
@@ -70,6 +83,14 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
   SpannerInterceptorProvider withEncoding(String encoding) {
     if (encoding != null) {
       return with(new EncodingInterceptor(encoding));
+    }
+    return this;
+  }
+
+  SpannerInterceptorProvider withTraceContext(
+      boolean endToEndTracingEnabled, OpenTelemetry openTelemetry) {
+    if (endToEndTracingEnabled) {
+      return with(new TraceContextInterceptor(openTelemetry));
     }
     return this;
   }

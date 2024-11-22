@@ -16,6 +16,11 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.parseTimeUnit;
+import static com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.toChronoUnit;
+
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerException;
@@ -27,16 +32,16 @@ import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.protobuf.Duration;
-import com.google.protobuf.util.Durations;
 import com.google.spanner.v1.DirectedReadOptions;
-import com.google.spanner.v1.RequestOptions.Priority;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,7 +77,11 @@ class ClientSideStatementValueConverters {
 
   /** Converter from string to {@link Boolean} */
   static class BooleanConverter implements ClientSideStatementValueConverter<Boolean> {
+    static final BooleanConverter INSTANCE = new BooleanConverter();
 
+    private BooleanConverter() {}
+
+    /** Constructor that is needed for reflection. */
     public BooleanConverter(String allowedValues) {}
 
     @Override
@@ -141,7 +150,11 @@ class ClientSideStatementValueConverters {
 
   /** Converter from string to a non-negative integer. */
   static class NonNegativeIntegerConverter implements ClientSideStatementValueConverter<Integer> {
+    static final NonNegativeIntegerConverter INSTANCE = new NonNegativeIntegerConverter();
 
+    private NonNegativeIntegerConverter() {}
+
+    /** Constructor needed for reflection. */
     public NonNegativeIntegerConverter(String allowedValues) {}
 
     @Override
@@ -164,11 +177,50 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  /** Converter from string to a long. */
+  static class LongConverter implements ClientSideStatementValueConverter<Long> {
+    static final LongConverter INSTANCE = new LongConverter();
+
+    private LongConverter() {}
+
+    /** Constructor needed for reflection. */
+    public LongConverter(String allowedValues) {}
+
+    @Override
+    public Class<Long> getParameterClass() {
+      return Long.class;
+    }
+
+    @Override
+    public Long convert(String value) {
+      try {
+        long res = Long.parseLong(value);
+        if (res < 0) {
+          // The conventions for these converters is to return null if the value is invalid.
+          return null;
+        }
+        return res;
+      } catch (Exception ignore) {
+        return null;
+      }
+    }
+  }
+
   /** Converter from string to {@link Duration}. */
   static class DurationConverter implements ClientSideStatementValueConverter<Duration> {
+    static final DurationConverter INSTANCE =
+        new DurationConverter("('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)");
+
+    private final String resetValue;
+
     private final Pattern allowedValues;
 
     public DurationConverter(String allowedValues) {
+      this("NULL", allowedValues);
+    }
+
+    DurationConverter(String resetValue, String allowedValues) {
+      this.resetValue = Preconditions.checkNotNull(resetValue);
       // Remove the parentheses from the beginning and end.
       this.allowedValues =
           Pattern.compile(
@@ -184,17 +236,25 @@ class ClientSideStatementValueConverters {
     public Duration convert(String value) {
       Matcher matcher = allowedValues.matcher(value);
       if (matcher.find()) {
-        if (matcher.group(0).equalsIgnoreCase("null")) {
-          return Durations.fromNanos(0L);
+        if (value.trim().equalsIgnoreCase(resetValue)) {
+          return Duration.ZERO;
         } else {
-          Duration duration =
-              ReadOnlyStalenessUtil.createDuration(
-                  Long.parseLong(matcher.group(1)),
-                  ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(2)));
-          if (duration.getSeconds() == 0L && duration.getNanos() == 0) {
+          try {
+            Duration duration;
+            if (matcher.group(1) != null && matcher.group(2) != null) {
+              ChronoUnit unit = toChronoUnit(parseTimeUnit(matcher.group(2)));
+              duration = Duration.of(Long.parseLong(matcher.group(1)), unit);
+            } else {
+              duration = Duration.ofMillis(Long.parseLong(value.trim()));
+            }
+            if (duration.isZero()) {
+              return null;
+            }
+            return duration;
+          } catch (NumberFormatException exception) {
+            // Converters should return null for invalid values.
             return null;
           }
-          return duration;
         }
       }
       return null;
@@ -202,50 +262,19 @@ class ClientSideStatementValueConverters {
   }
 
   /** Converter from string to {@link Duration}. */
-  static class PgDurationConverter implements ClientSideStatementValueConverter<Duration> {
-    private final Pattern allowedValues;
-
+  static class PgDurationConverter extends DurationConverter {
     public PgDurationConverter(String allowedValues) {
-      // Remove the parentheses from the beginning and end.
-      this.allowedValues =
-          Pattern.compile(
-              "(?is)\\A" + allowedValues.substring(1, allowedValues.length() - 1) + "\\z");
-    }
-
-    @Override
-    public Class<Duration> getParameterClass() {
-      return Duration.class;
-    }
-
-    @Override
-    public Duration convert(String value) {
-      Matcher matcher = allowedValues.matcher(value);
-      if (matcher.find()) {
-        Duration duration;
-        if (matcher.group(0).equalsIgnoreCase("default")) {
-          return Durations.fromNanos(0L);
-        } else if (matcher.group(2) == null) {
-          duration =
-              ReadOnlyStalenessUtil.createDuration(
-                  Long.parseLong(matcher.group(0)), TimeUnit.MILLISECONDS);
-        } else {
-          duration =
-              ReadOnlyStalenessUtil.createDuration(
-                  Long.parseLong(matcher.group(1)),
-                  ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(2)));
-        }
-        if (duration.getSeconds() == 0L && duration.getNanos() == 0) {
-          return null;
-        }
-        return duration;
-      }
-      return null;
+      super("DEFAULT", allowedValues);
     }
   }
 
   /** Converter from string to possible values for read only staleness ({@link TimestampBound}). */
   static class ReadOnlyStalenessConverter
       implements ClientSideStatementValueConverter<TimestampBound> {
+    static final ReadOnlyStalenessConverter INSTANCE =
+        new ReadOnlyStalenessConverter(
+            "'((STRONG)|(MIN_READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(MAX_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns))|(EXACT_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns)))'");
+
     private final Pattern allowedValues;
     private final CaseInsensitiveEnumMap<Mode> values = new CaseInsensitiveEnumMap<>(Mode.class);
 
@@ -289,7 +318,7 @@ class ClientSideStatementValueConverters {
             try {
               return TimestampBound.ofExactStaleness(
                   Long.parseLong(matcher.group(groupIndex + 2)),
-                  ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(groupIndex + 3)));
+                  parseTimeUnit(matcher.group(groupIndex + 3)));
             } catch (IllegalArgumentException e) {
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.INVALID_ARGUMENT, e.getMessage());
@@ -298,7 +327,7 @@ class ClientSideStatementValueConverters {
             try {
               return TimestampBound.ofMaxStaleness(
                   Long.parseLong(matcher.group(groupIndex + 2)),
-                  ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(groupIndex + 3)));
+                  parseTimeUnit(matcher.group(groupIndex + 3)));
             } catch (IllegalArgumentException e) {
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.INVALID_ARGUMENT, e.getMessage());
@@ -356,9 +385,14 @@ class ClientSideStatementValueConverters {
   /** Converter for converting strings to {@link AutocommitDmlMode} values. */
   static class AutocommitDmlModeConverter
       implements ClientSideStatementValueConverter<AutocommitDmlMode> {
+    static final AutocommitDmlModeConverter INSTANCE = new AutocommitDmlModeConverter();
+
     private final CaseInsensitiveEnumMap<AutocommitDmlMode> values =
         new CaseInsensitiveEnumMap<>(AutocommitDmlMode.class);
 
+    private AutocommitDmlModeConverter() {}
+
+    /** Constructor needed for reflection. */
     public AutocommitDmlModeConverter(String allowedValues) {}
 
     @Override
@@ -372,7 +406,35 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  static class ConnectionStateTypeConverter
+      implements ClientSideStatementValueConverter<ConnectionState.Type> {
+    static final ConnectionStateTypeConverter INSTANCE = new ConnectionStateTypeConverter();
+
+    private final CaseInsensitiveEnumMap<ConnectionState.Type> values =
+        new CaseInsensitiveEnumMap<>(ConnectionState.Type.class);
+
+    private ConnectionStateTypeConverter() {}
+
+    /** Constructor that is needed for reflection. */
+    public ConnectionStateTypeConverter(String allowedValues) {}
+
+    @Override
+    public Class<ConnectionState.Type> getParameterClass() {
+      return ConnectionState.Type.class;
+    }
+
+    @Override
+    public ConnectionState.Type convert(String value) {
+      return values.get(value);
+    }
+  }
+
   static class StringValueConverter implements ClientSideStatementValueConverter<String> {
+    static final StringValueConverter INSTANCE = new StringValueConverter();
+
+    private StringValueConverter() {}
+
+    /** Constructor needed for reflection. */
     public StringValueConverter(String allowedValues) {}
 
     @Override
@@ -499,9 +561,11 @@ class ClientSideStatementValueConverters {
   }
 
   /** Converter for converting strings to {@link RpcPriority} values. */
-  static class RpcPriorityConverter implements ClientSideStatementValueConverter<Priority> {
-    private final CaseInsensitiveEnumMap<Priority> values =
-        new CaseInsensitiveEnumMap<>(Priority.class);
+  static class RpcPriorityConverter implements ClientSideStatementValueConverter<RpcPriority> {
+    static final RpcPriorityConverter INSTANCE = new RpcPriorityConverter("(HIGH|MEDIUM|LOW|NULL)");
+
+    private final CaseInsensitiveEnumMap<RpcPriority> values =
+        new CaseInsensitiveEnumMap<>(RpcPriority.class);
     private final Pattern allowedValues;
 
     public RpcPriorityConverter(String allowedValues) {
@@ -512,28 +576,33 @@ class ClientSideStatementValueConverters {
     }
 
     @Override
-    public Class<Priority> getParameterClass() {
-      return Priority.class;
+    public Class<RpcPriority> getParameterClass() {
+      return RpcPriority.class;
     }
 
     @Override
-    public Priority convert(String value) {
+    public RpcPriority convert(String value) {
       Matcher matcher = allowedValues.matcher(value);
       if (matcher.find()) {
         if (matcher.group(0).equalsIgnoreCase("null")) {
-          return Priority.PRIORITY_UNSPECIFIED;
+          return RpcPriority.UNSPECIFIED;
         }
       }
-      return values.get("PRIORITY_" + value);
+      return values.get(value);
     }
   }
 
   /** Converter for converting strings to {@link SavepointSupport} values. */
   static class SavepointSupportConverter
       implements ClientSideStatementValueConverter<SavepointSupport> {
+    static final SavepointSupportConverter INSTANCE = new SavepointSupportConverter();
+
     private final CaseInsensitiveEnumMap<SavepointSupport> values =
         new CaseInsensitiveEnumMap<>(SavepointSupport.class);
 
+    private SavepointSupportConverter() {}
+
+    /** Constructor needed for reflection. */
     public SavepointSupportConverter(String allowedValues) {}
 
     @Override
@@ -543,6 +612,30 @@ class ClientSideStatementValueConverters {
 
     @Override
     public SavepointSupport convert(String value) {
+      return values.get(value);
+    }
+  }
+
+  /** Converter for converting strings to {@link DdlInTransactionMode} values. */
+  static class DdlInTransactionModeConverter
+      implements ClientSideStatementValueConverter<DdlInTransactionMode> {
+    static final DdlInTransactionModeConverter INSTANCE = new DdlInTransactionModeConverter();
+
+    private final CaseInsensitiveEnumMap<DdlInTransactionMode> values =
+        new CaseInsensitiveEnumMap<>(DdlInTransactionMode.class);
+
+    private DdlInTransactionModeConverter() {}
+
+    /** Constructor needed for reflection. */
+    public DdlInTransactionModeConverter(String allowedValues) {}
+
+    @Override
+    public Class<DdlInTransactionMode> getParameterClass() {
+      return DdlInTransactionMode.class;
+    }
+
+    @Override
+    public DdlInTransactionMode convert(String value) {
       return values.get(value);
     }
   }
@@ -605,6 +698,73 @@ class ClientSideStatementValueConverters {
         return null;
       }
       return filePath;
+    }
+  }
+
+  static class CredentialsProviderConverter
+      implements ClientSideStatementValueConverter<CredentialsProvider> {
+    static final CredentialsProviderConverter INSTANCE = new CredentialsProviderConverter();
+
+    private CredentialsProviderConverter() {}
+
+    @Override
+    public Class<CredentialsProvider> getParameterClass() {
+      return CredentialsProvider.class;
+    }
+
+    @Override
+    public CredentialsProvider convert(String credentialsProviderName) {
+      if (!Strings.isNullOrEmpty(credentialsProviderName)) {
+        try {
+          Class<? extends CredentialsProvider> clazz =
+              (Class<? extends CredentialsProvider>) Class.forName(credentialsProviderName);
+          Constructor<? extends CredentialsProvider> constructor = clazz.getDeclaredConstructor();
+          return constructor.newInstance();
+        } catch (ClassNotFoundException classNotFoundException) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Unknown or invalid CredentialsProvider class name: " + credentialsProviderName,
+              classNotFoundException);
+        } catch (NoSuchMethodException noSuchMethodException) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Credentials provider "
+                  + credentialsProviderName
+                  + " does not have a public no-arg constructor.",
+              noSuchMethodException);
+        } catch (InvocationTargetException
+            | InstantiationException
+            | IllegalAccessException exception) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Failed to create an instance of "
+                  + credentialsProviderName
+                  + ": "
+                  + exception.getMessage(),
+              exception);
+        }
+      }
+      return null;
+    }
+  }
+
+  /** Converter for converting strings to {@link Dialect} values. */
+  static class DialectConverter implements ClientSideStatementValueConverter<Dialect> {
+    static final DialectConverter INSTANCE = new DialectConverter();
+
+    private final CaseInsensitiveEnumMap<Dialect> values =
+        new CaseInsensitiveEnumMap<>(Dialect.class);
+
+    private DialectConverter() {}
+
+    @Override
+    public Class<Dialect> getParameterClass() {
+      return Dialect.class;
+    }
+
+    @Override
+    public Dialect convert(String value) {
+      return values.get(value);
     }
   }
 }

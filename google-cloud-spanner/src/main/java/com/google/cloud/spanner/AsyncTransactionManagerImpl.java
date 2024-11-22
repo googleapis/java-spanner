@@ -28,6 +28,7 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.protobuf.ByteString;
 
 /** Implementation of {@link AsyncTransactionManager}. */
 final class AsyncTransactionManagerImpl
@@ -66,6 +67,9 @@ final class AsyncTransactionManagerImpl
     if (txn != null) {
       txn.close();
     }
+    if (session != null) {
+      session.onTransactionDone();
+    }
     return MoreObjects.firstNonNull(res, ApiFutures.immediateFuture(null));
   }
 
@@ -77,7 +81,19 @@ final class AsyncTransactionManagerImpl
 
   private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
     txnState = TransactionState.STARTED;
-    txn = session.newTransaction(options);
+
+    // Determine the latest transactionId when using a multiplexed session.
+    ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
+    if (txn != null && session.getIsMultiplexed() && !firstAttempt) {
+      // Use the current transactionId if available, otherwise fallback to the previous aborted
+      // transactionId.
+      multiplexedSessionPreviousTransactionId =
+          txn.transactionId != null ? txn.transactionId : txn.getPreviousTransactionId();
+    }
+
+    txn =
+        session.newTransaction(
+            options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
     if (firstAttempt) {
       session.setActive(this);
     }

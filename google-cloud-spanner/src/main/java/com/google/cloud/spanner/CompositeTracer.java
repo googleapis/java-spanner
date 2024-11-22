@@ -23,6 +23,7 @@ import com.google.api.gax.tracing.MetricsTracer;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.threeten.bp.Duration;
 
 @InternalApi
@@ -115,6 +116,13 @@ public class CompositeTracer extends BaseApiTracer {
   }
 
   @Override
+  public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
+    for (ApiTracer child : children) {
+      child.attemptFailedDuration(error, delay);
+    }
+  }
+
+  @Override
   public void attemptFailedRetriesExhausted(Throwable error) {
     for (ApiTracer child : children) {
       child.attemptFailedRetriesExhausted(error);
@@ -170,5 +178,14 @@ public class CompositeTracer extends BaseApiTracer {
         metricsTracer.addAttributes(key, value);
       }
     }
-  };
+  }
+
+  public void addAttributes(Map<String, String> attributes) {
+    for (ApiTracer child : children) {
+      if (child instanceof MetricsTracer) {
+        MetricsTracer metricsTracer = (MetricsTracer) child;
+        metricsTracer.addAttributes(attributes);
+      }
+    }
+  }
 }

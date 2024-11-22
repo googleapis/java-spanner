@@ -32,10 +32,15 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 
 /**
  * {@link UnitOfWork} that is used when a DML batch is started. These batches only accept DML
@@ -43,16 +48,38 @@ import java.util.List;
  * called.
  */
 class DmlBatch extends AbstractBaseUnitOfWork {
+  private final boolean autoBatch;
+  private final Supplier<Long> autoBatchUpdateCountSupplier;
+  private final Supplier<Boolean> verifyUpdateCountsSupplier;
   private final UnitOfWork transaction;
   private final String statementTag;
   private final List<ParsedStatement> statements = new ArrayList<>();
+  private long[] updateCounts = new long[0];
   private UnitOfWorkState state = UnitOfWorkState.STARTED;
 
   static class Builder extends AbstractBaseUnitOfWork.Builder<Builder, DmlBatch> {
+    private boolean autoBatch;
+    private Supplier<Long> autoBatchUpdateCountSupplier = Suppliers.ofInstance(1L);
+    private Supplier<Boolean> verifyUpdateCountsSupplier = Suppliers.ofInstance(Boolean.FALSE);
     private UnitOfWork transaction;
     private String statementTag;
 
     private Builder() {}
+
+    Builder setAutoBatch(boolean autoBatch) {
+      this.autoBatch = autoBatch;
+      return this;
+    }
+
+    Builder setAutoBatchUpdateCountSupplier(Supplier<Long> updateCountSupplier) {
+      this.autoBatchUpdateCountSupplier = Preconditions.checkNotNull(updateCountSupplier);
+      return this;
+    }
+
+    Builder setAutoBatchUpdateCountVerificationSupplier(Supplier<Boolean> verificationSupplier) {
+      this.verifyUpdateCountsSupplier = verificationSupplier;
+      return this;
+    }
 
     Builder setTransaction(UnitOfWork transaction) {
       Preconditions.checkNotNull(transaction);
@@ -78,8 +105,15 @@ class DmlBatch extends AbstractBaseUnitOfWork {
 
   private DmlBatch(Builder builder) {
     super(builder);
+    this.autoBatch = builder.autoBatch;
+    this.autoBatchUpdateCountSupplier = builder.autoBatchUpdateCountSupplier;
+    this.verifyUpdateCountsSupplier = builder.verifyUpdateCountsSupplier;
     this.transaction = Preconditions.checkNotNull(builder.transaction);
     this.statementTag = builder.statementTag;
+  }
+
+  boolean isAutoBatch() {
+    return this.autoBatch;
   }
 
   @Override
@@ -156,6 +190,12 @@ class DmlBatch extends AbstractBaseUnitOfWork {
         ErrorCode.FAILED_PRECONDITION, "Executing DDL statements is not allowed for DML batches.");
   }
 
+  long getUpdateCount() {
+    // Auto-batching returns update count 1 by default, as this is what ORMs normally expect.
+    // Standard batches return -1 by default, to indicate that the update count is unknown.
+    return isAutoBatch() ? autoBatchUpdateCountSupplier.get() : -1L;
+  }
+
   @Override
   public ApiFuture<Long> executeUpdateAsync(
       CallType callType, ParsedStatement update, UpdateOption... options) {
@@ -167,8 +207,11 @@ class DmlBatch extends AbstractBaseUnitOfWork {
         "Only DML statements are allowed. \""
             + update.getSqlWithoutComments()
             + "\" is not a DML-statement.");
-    statements.add(update);
-    return ApiFutures.immediateFuture(-1L);
+    long updateCount = getUpdateCount();
+    this.statements.add(update);
+    this.updateCounts = Arrays.copyOf(this.updateCounts, this.updateCounts.length + 1);
+    this.updateCounts[this.updateCounts.length - 1] = updateCount;
+    return ApiFutures.immediateFuture(updateCount);
   }
 
   @Override
@@ -184,8 +227,29 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
       CallType callType, Iterable<ParsedStatement> updates, UpdateOption... options) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DML batches.");
+    ConnectionPreconditions.checkState(
+        state == UnitOfWorkState.STARTED,
+        "The batch is no longer active and cannot be used for further statements");
+    for (ParsedStatement update : updates) {
+      Preconditions.checkArgument(
+          update.getType() == StatementType.UPDATE,
+          "Only DML statements are allowed. \""
+              + update.getSqlWithoutComments()
+              + "\" is not a DML-statement.");
+    }
+    long[] updateCountArray = new long[Iterables.size(updates)];
+    Arrays.fill(updateCountArray, getUpdateCount());
+    Iterables.addAll(this.statements, updates);
+    this.updateCounts =
+        Arrays.copyOf(this.updateCounts, this.updateCounts.length + updateCountArray.length);
+    System.arraycopy(
+        updateCountArray,
+        0,
+        this.updateCounts,
+        this.updateCounts.length - updateCountArray.length,
+        updateCountArray.length);
+
+    return ApiFutures.immediateFuture(updateCountArray);
   }
 
   @Override
@@ -239,13 +303,28 @@ class DmlBatch extends AbstractBaseUnitOfWork {
             @Override
             public void onSuccess(long[] result) {
               state = UnitOfWorkState.RAN;
-              res.set(result);
+              if (!verifyUpdateCounts(result)) {
+                res.setException(
+                    SpannerExceptionFactory.newDmlBatchUpdateCountVerificationFailedException(
+                        DmlBatch.this.updateCounts, result));
+              } else {
+                res.set(result);
+              }
             }
           },
           MoreExecutors.directExecutor());
       asyncEndUnitOfWorkSpan();
       return res;
     }
+  }
+
+  private boolean verifyUpdateCounts(long[] actualUpdateCounts) {
+    if (!this.autoBatch || !this.verifyUpdateCountsSupplier.get()) {
+      // We only need to do an actual verification if the batch was an auto-batch and verification
+      // is enabled.
+      return true;
+    }
+    return Arrays.equals(this.updateCounts, actualUpdateCounts);
   }
 
   @Override
@@ -257,13 +336,15 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Void> commitAsync(CallType callType) {
+  public ApiFuture<Void> commitAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not allowed for DML batches.");
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync(CallType callType) {
+  public ApiFuture<Void> rollbackAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not allowed for DML batches.");
   }

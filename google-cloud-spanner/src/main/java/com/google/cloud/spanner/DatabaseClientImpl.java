@@ -35,17 +35,22 @@ class DatabaseClientImpl implements DatabaseClient {
   private final TraceWrapper tracer;
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
-  final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
+    final boolean useMultiplexedSessionPartitionedOps;
+  @VisibleForTesting final boolean useMultiplexedSessionForRW;
+
+  final boolean useMultiplexedSessionBlindWrite;
 
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
     this(
         "",
         pool,
-        /* multiplexedSessionDatabaseClient= */ null,
-        /* useMultiplexedSessionPartitionedOps= */ false,
-        tracer);
+        /* useMultiplexedSessionBlindWrite = */ false,
+        /* multiplexedSessionDatabaseClient = */ null,
+            /* useMultiplexedSessionPartitionedOps= */ false,
+        tracer,
+        /* useMultiplexedSessionForRW = */ false);
   }
 
   @VisibleForTesting
@@ -53,22 +58,28 @@ class DatabaseClientImpl implements DatabaseClient {
     this(
         clientId,
         pool,
-        /* multiplexedSessionDatabaseClient= */ null,
-        /* useMultiplexedSessionPartitionedOps= */ false,
-        tracer);
+        /* useMultiplexedSessionBlindWrite = */ false,
+        /* multiplexedSessionDatabaseClient = */ null,
+            /* useMultiplexedSessionPartitionedOps= */ false,
+        tracer,
+        /* useMultiplexedSessionForRW = */ false);
   }
 
   DatabaseClientImpl(
       String clientId,
       SessionPool pool,
+      boolean useMultiplexedSessionBlindWrite,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
       boolean useMultiplexedSessionPartitionedOps,
-      TraceWrapper tracer) {
+      TraceWrapper tracer,
+      boolean useMultiplexedSessionForRW) {
     this.clientId = clientId;
     this.pool = pool;
+    this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
     this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
     this.tracer = tracer;
+    this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
   }
 
   @VisibleForTesting
@@ -78,11 +89,33 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @VisibleForTesting
   DatabaseClient getMultiplexedSession() {
-    if (this.multiplexedSessionDatabaseClient != null
-        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported()) {
+    if (canUseMultiplexedSessions()) {
       return this.multiplexedSessionDatabaseClient;
     }
     return pool.getMultiplexedSessionWithFallback();
+  }
+
+  @VisibleForTesting
+  DatabaseClient getMultiplexedSessionForRW() {
+    if (canUseMultiplexedSessionsForRW()) {
+      return getMultiplexedSession();
+    }
+    return getSession();
+  }
+
+  private MultiplexedSessionDatabaseClient getMultiplexedSessionDatabaseClient() {
+    return canUseMultiplexedSessions() ? this.multiplexedSessionDatabaseClient : null;
+  }
+
+  private boolean canUseMultiplexedSessions() {
+    return this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported();
+  }
+
+  private boolean canUseMultiplexedSessionsForRW() {
+    return this.useMultiplexedSessionForRW
+        && this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsForRWSupported();
   }
 
   @Override
@@ -107,6 +140,9 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
+      if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
+        return getMultiplexedSessionDatabaseClient().writeWithOptions(mutations, options);
+      }
       return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -127,6 +163,10 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
+      if (useMultiplexedSessionBlindWrite && getMultiplexedSessionDatabaseClient() != null) {
+        return getMultiplexedSessionDatabaseClient()
+            .writeAtLeastOnceWithOptions(mutations, options);
+      }
       return runWithSessionRetry(
           session -> session.writeAtLeastOnceWithOptions(mutations, options));
     } catch (RuntimeException e) {
@@ -228,7 +268,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().readWriteTransaction(options);
+      return getMultiplexedSessionForRW().readWriteTransaction(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -240,7 +280,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public TransactionManager transactionManager(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().transactionManager(options);
+      return getMultiplexedSessionForRW().transactionManager(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -252,7 +292,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public AsyncRunner runAsync(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().runAsync(options);
+      return getMultiplexedSessionForRW().runAsync(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -264,7 +304,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().transactionManagerAsync(options);
+      return getMultiplexedSessionForRW().transactionManagerAsync(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();

@@ -4586,6 +4586,603 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-keep_transaction_alive;
 NEW_CONNECTION;
+show variable auto_batch_dml;
+NEW_CONNECTION;
+SHOW VARIABLE AUTO_BATCH_DML;
+NEW_CONNECTION;
+show variable auto_batch_dml;
+NEW_CONNECTION;
+   show variable auto_batch_dml;
+NEW_CONNECTION;
+			show variable auto_batch_dml;
+NEW_CONNECTION;
+
+
+
+show variable auto_batch_dml;
+NEW_CONNECTION;
+show variable auto_batch_dml  ;
+NEW_CONNECTION;
+show variable auto_batch_dml		;
+NEW_CONNECTION;
+show variable auto_batch_dml
+
+;
+NEW_CONNECTION;
+show   variable   auto_batch_dml;
+NEW_CONNECTION;
+show	variable	auto_batch_dml;
+NEW_CONNECTION;
+show
+variable
+auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable auto_batch_dml;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-auto_batch_dml;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+SHOW VARIABLE AUTO_BATCH_DML_UPDATE_COUNT;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+   show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+			show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+
+
+
+show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count  ;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count		;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count
+
+;
+NEW_CONNECTION;
+show   variable   auto_batch_dml_update_count;
+NEW_CONNECTION;
+show	variable	auto_batch_dml_update_count;
+NEW_CONNECTION;
+show
+variable
+auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable auto_batch_dml_update_count;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-auto_batch_dml_update_count;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+SHOW VARIABLE AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+   show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+			show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+
+
+
+show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count_verification  ;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count_verification		;
+NEW_CONNECTION;
+show variable auto_batch_dml_update_count_verification
+
+;
+NEW_CONNECTION;
+show   variable   auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+show	variable	auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+show
+variable
+auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_batch_dml_update_count_verification/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-auto_batch_dml_update_count_verification;
+NEW_CONNECTION;
 partition select col1, col2 from my_table;
 NEW_CONNECTION;
 PARTITION SELECT COL1, COL2 FROM MY_TABLE;
@@ -9892,6 +10489,207 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-statement_timeout=null;
 NEW_CONNECTION;
+set statement_timeout = null ;
+NEW_CONNECTION;
+SET STATEMENT_TIMEOUT = NULL ;
+NEW_CONNECTION;
+set statement_timeout = null ;
+NEW_CONNECTION;
+   set statement_timeout = null ;
+NEW_CONNECTION;
+			set statement_timeout = null ;
+NEW_CONNECTION;
+
+
+
+set statement_timeout = null ;
+NEW_CONNECTION;
+set statement_timeout = null   ;
+NEW_CONNECTION;
+set statement_timeout = null 		;
+NEW_CONNECTION;
+set statement_timeout = null 
+
+;
+NEW_CONNECTION;
+set   statement_timeout   =   null   ;
+NEW_CONNECTION;
+set	statement_timeout	=	null	;
+NEW_CONNECTION;
+set
+statement_timeout
+=
+null
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set statement_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = null/-;
+NEW_CONNECTION;
 set statement_timeout='1s';
 NEW_CONNECTION;
 SET STATEMENT_TIMEOUT='1S';
@@ -10089,6 +10887,606 @@ set statement_timeout='1s'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-statement_timeout='1s';
+NEW_CONNECTION;
+set statement_timeout = '1s' ;
+NEW_CONNECTION;
+SET STATEMENT_TIMEOUT = '1S' ;
+NEW_CONNECTION;
+set statement_timeout = '1s' ;
+NEW_CONNECTION;
+   set statement_timeout = '1s' ;
+NEW_CONNECTION;
+			set statement_timeout = '1s' ;
+NEW_CONNECTION;
+
+
+
+set statement_timeout = '1s' ;
+NEW_CONNECTION;
+set statement_timeout = '1s'   ;
+NEW_CONNECTION;
+set statement_timeout = '1s' 		;
+NEW_CONNECTION;
+set statement_timeout = '1s' 
+
+;
+NEW_CONNECTION;
+set   statement_timeout   =   '1s'   ;
+NEW_CONNECTION;
+set	statement_timeout	=	'1s'	;
+NEW_CONNECTION;
+set
+statement_timeout
+=
+'1s'
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set statement_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s' /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = '1s'/-;
+NEW_CONNECTION;
+set statement_timeout=100;
+NEW_CONNECTION;
+SET STATEMENT_TIMEOUT=100;
+NEW_CONNECTION;
+set statement_timeout=100;
+NEW_CONNECTION;
+   set statement_timeout=100;
+NEW_CONNECTION;
+			set statement_timeout=100;
+NEW_CONNECTION;
+
+
+
+set statement_timeout=100;
+NEW_CONNECTION;
+set statement_timeout=100  ;
+NEW_CONNECTION;
+set statement_timeout=100		;
+NEW_CONNECTION;
+set statement_timeout=100
+
+;
+NEW_CONNECTION;
+set   statement_timeout=100;
+NEW_CONNECTION;
+set	statement_timeout=100;
+NEW_CONNECTION;
+set
+statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set statement_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout=100/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-statement_timeout=100;
+NEW_CONNECTION;
+set statement_timeout = 100 ;
+NEW_CONNECTION;
+SET STATEMENT_TIMEOUT = 100 ;
+NEW_CONNECTION;
+set statement_timeout = 100 ;
+NEW_CONNECTION;
+   set statement_timeout = 100 ;
+NEW_CONNECTION;
+			set statement_timeout = 100 ;
+NEW_CONNECTION;
+
+
+
+set statement_timeout = 100 ;
+NEW_CONNECTION;
+set statement_timeout = 100   ;
+NEW_CONNECTION;
+set statement_timeout = 100 		;
+NEW_CONNECTION;
+set statement_timeout = 100 
+
+;
+NEW_CONNECTION;
+set   statement_timeout   =   100   ;
+NEW_CONNECTION;
+set	statement_timeout	=	100	;
+NEW_CONNECTION;
+set
+statement_timeout
+=
+100
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set statement_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100 /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_timeout = 100/-;
 NEW_CONNECTION;
 set statement_timeout='100ms';
 NEW_CONNECTION;
@@ -16364,6 +17762,1006 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-max_commit_delay=null;
 NEW_CONNECTION;
+set max_commit_delay = null;
+NEW_CONNECTION;
+SET MAX_COMMIT_DELAY = NULL;
+NEW_CONNECTION;
+set max_commit_delay = null;
+NEW_CONNECTION;
+   set max_commit_delay = null;
+NEW_CONNECTION;
+			set max_commit_delay = null;
+NEW_CONNECTION;
+
+
+
+set max_commit_delay = null;
+NEW_CONNECTION;
+set max_commit_delay = null  ;
+NEW_CONNECTION;
+set max_commit_delay = null		;
+NEW_CONNECTION;
+set max_commit_delay = null
+
+;
+NEW_CONNECTION;
+set   max_commit_delay   =   null;
+NEW_CONNECTION;
+set	max_commit_delay	=	null;
+NEW_CONNECTION;
+set
+max_commit_delay
+=
+null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =%null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =_null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =&null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =$null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =@null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =!null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =*null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =(null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =)null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =+null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-#null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =\null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =?null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-/null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/#null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_commit_delay = null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/-null;
+NEW_CONNECTION;
+set max_commit_delay = null ;
+NEW_CONNECTION;
+SET MAX_COMMIT_DELAY = NULL ;
+NEW_CONNECTION;
+set max_commit_delay = null ;
+NEW_CONNECTION;
+   set max_commit_delay = null ;
+NEW_CONNECTION;
+			set max_commit_delay = null ;
+NEW_CONNECTION;
+
+
+
+set max_commit_delay = null ;
+NEW_CONNECTION;
+set max_commit_delay = null   ;
+NEW_CONNECTION;
+set max_commit_delay = null 		;
+NEW_CONNECTION;
+set max_commit_delay = null 
+
+;
+NEW_CONNECTION;
+set   max_commit_delay   =   null   ;
+NEW_CONNECTION;
+set	max_commit_delay	=	null	;
+NEW_CONNECTION;
+set
+max_commit_delay
+=
+null
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_commit_delay = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = null/-;
+NEW_CONNECTION;
+set max_commit_delay=1000;
+NEW_CONNECTION;
+SET MAX_COMMIT_DELAY=1000;
+NEW_CONNECTION;
+set max_commit_delay=1000;
+NEW_CONNECTION;
+   set max_commit_delay=1000;
+NEW_CONNECTION;
+			set max_commit_delay=1000;
+NEW_CONNECTION;
+
+
+
+set max_commit_delay=1000;
+NEW_CONNECTION;
+set max_commit_delay=1000  ;
+NEW_CONNECTION;
+set max_commit_delay=1000		;
+NEW_CONNECTION;
+set max_commit_delay=1000
+
+;
+NEW_CONNECTION;
+set   max_commit_delay=1000;
+NEW_CONNECTION;
+set	max_commit_delay=1000;
+NEW_CONNECTION;
+set
+max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_commit_delay=1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay=1000/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-max_commit_delay=1000;
+NEW_CONNECTION;
+set max_commit_delay = 1000;
+NEW_CONNECTION;
+SET MAX_COMMIT_DELAY = 1000;
+NEW_CONNECTION;
+set max_commit_delay = 1000;
+NEW_CONNECTION;
+   set max_commit_delay = 1000;
+NEW_CONNECTION;
+			set max_commit_delay = 1000;
+NEW_CONNECTION;
+
+
+
+set max_commit_delay = 1000;
+NEW_CONNECTION;
+set max_commit_delay = 1000  ;
+NEW_CONNECTION;
+set max_commit_delay = 1000		;
+NEW_CONNECTION;
+set max_commit_delay = 1000
+
+;
+NEW_CONNECTION;
+set   max_commit_delay   =   1000;
+NEW_CONNECTION;
+set	max_commit_delay	=	1000;
+NEW_CONNECTION;
+set
+max_commit_delay
+=
+1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =%1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =_1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =&1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =$1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =@1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =!1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =*1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =(1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =)1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =+1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-#1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =\1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =?1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-/1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/#1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_commit_delay = 1000;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/-1000;
+NEW_CONNECTION;
+set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+SET MAX_COMMIT_DELAY = 1000 ;
+NEW_CONNECTION;
+set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+   set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+			set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+
+
+
+set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+set max_commit_delay = 1000   ;
+NEW_CONNECTION;
+set max_commit_delay = 1000 		;
+NEW_CONNECTION;
+set max_commit_delay = 1000 
+
+;
+NEW_CONNECTION;
+set   max_commit_delay   =   1000   ;
+NEW_CONNECTION;
+set	max_commit_delay	=	1000	;
+NEW_CONNECTION;
+set
+max_commit_delay
+=
+1000
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_commit_delay = 1000 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000 /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = 1000/-;
+NEW_CONNECTION;
 set max_commit_delay='1s';
 NEW_CONNECTION;
 SET MAX_COMMIT_DELAY='1S';
@@ -16561,6 +18959,407 @@ set max_commit_delay='1s'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-max_commit_delay='1s';
+NEW_CONNECTION;
+set max_commit_delay = '1s';
+NEW_CONNECTION;
+SET MAX_COMMIT_DELAY = '1S';
+NEW_CONNECTION;
+set max_commit_delay = '1s';
+NEW_CONNECTION;
+   set max_commit_delay = '1s';
+NEW_CONNECTION;
+			set max_commit_delay = '1s';
+NEW_CONNECTION;
+
+
+
+set max_commit_delay = '1s';
+NEW_CONNECTION;
+set max_commit_delay = '1s'  ;
+NEW_CONNECTION;
+set max_commit_delay = '1s'		;
+NEW_CONNECTION;
+set max_commit_delay = '1s'
+
+;
+NEW_CONNECTION;
+set   max_commit_delay   =   '1s';
+NEW_CONNECTION;
+set	max_commit_delay	=	'1s';
+NEW_CONNECTION;
+set
+max_commit_delay
+=
+'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =%'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =_'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =&'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =$'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =@'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =!'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =*'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =('1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =)'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =+'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-#'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =\'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =?'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =-/'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/#'1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_commit_delay = '1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay =/-'1s';
+NEW_CONNECTION;
+set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+SET MAX_COMMIT_DELAY = '1S' ;
+NEW_CONNECTION;
+set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+   set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+			set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+
+
+
+set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+set max_commit_delay = '1s'   ;
+NEW_CONNECTION;
+set max_commit_delay = '1s' 		;
+NEW_CONNECTION;
+set max_commit_delay = '1s' 
+
+;
+NEW_CONNECTION;
+set   max_commit_delay   =   '1s'   ;
+NEW_CONNECTION;
+set	max_commit_delay	=	'1s'	;
+NEW_CONNECTION;
+set
+max_commit_delay
+=
+'1s'
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_commit_delay = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s' /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_commit_delay = '1s'/-;
 NEW_CONNECTION;
 set max_commit_delay='100ms';
 NEW_CONNECTION;
@@ -21597,6 +24396,1206 @@ set keep_transaction_alive = false/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set keep_transaction_alive =/-false;
+NEW_CONNECTION;
+set auto_batch_dml = true;
+NEW_CONNECTION;
+SET AUTO_BATCH_DML = TRUE;
+NEW_CONNECTION;
+set auto_batch_dml = true;
+NEW_CONNECTION;
+   set auto_batch_dml = true;
+NEW_CONNECTION;
+			set auto_batch_dml = true;
+NEW_CONNECTION;
+
+
+
+set auto_batch_dml = true;
+NEW_CONNECTION;
+set auto_batch_dml = true  ;
+NEW_CONNECTION;
+set auto_batch_dml = true		;
+NEW_CONNECTION;
+set auto_batch_dml = true
+
+;
+NEW_CONNECTION;
+set   auto_batch_dml   =   true;
+NEW_CONNECTION;
+set	auto_batch_dml	=	true;
+NEW_CONNECTION;
+set
+auto_batch_dml
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set auto_batch_dml = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =/-true;
+NEW_CONNECTION;
+set auto_batch_dml = false;
+NEW_CONNECTION;
+SET AUTO_BATCH_DML = FALSE;
+NEW_CONNECTION;
+set auto_batch_dml = false;
+NEW_CONNECTION;
+   set auto_batch_dml = false;
+NEW_CONNECTION;
+			set auto_batch_dml = false;
+NEW_CONNECTION;
+
+
+
+set auto_batch_dml = false;
+NEW_CONNECTION;
+set auto_batch_dml = false  ;
+NEW_CONNECTION;
+set auto_batch_dml = false		;
+NEW_CONNECTION;
+set auto_batch_dml = false
+
+;
+NEW_CONNECTION;
+set   auto_batch_dml   =   false;
+NEW_CONNECTION;
+set	auto_batch_dml	=	false;
+NEW_CONNECTION;
+set
+auto_batch_dml
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set auto_batch_dml = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml =/-false;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+SET AUTO_BATCH_DML_UPDATE_COUNT = 0;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+   set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+			set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+
+
+
+set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 0  ;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 0		;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 0
+
+;
+NEW_CONNECTION;
+set   auto_batch_dml_update_count   =   0;
+NEW_CONNECTION;
+set	auto_batch_dml_update_count	=	0;
+NEW_CONNECTION;
+set
+auto_batch_dml_update_count
+=
+0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =%0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =_0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =&0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =$0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =@0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =!0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =*0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =(0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =)0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =-0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =+0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =-#0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =/0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =\0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =?0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =-/0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =/#0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set auto_batch_dml_update_count = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 0/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =/-0;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+SET AUTO_BATCH_DML_UPDATE_COUNT = 100;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+   set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+			set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+
+
+
+set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 100  ;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 100		;
+NEW_CONNECTION;
+set auto_batch_dml_update_count = 100
+
+;
+NEW_CONNECTION;
+set   auto_batch_dml_update_count   =   100;
+NEW_CONNECTION;
+set	auto_batch_dml_update_count	=	100;
+NEW_CONNECTION;
+set
+auto_batch_dml_update_count
+=
+100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =%100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =_100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =&100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =$100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =@100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =!100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =*100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =(100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =)100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =-100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =+100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =-#100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =/100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =\100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =?100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =-/100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =/#100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set auto_batch_dml_update_count = 100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count = 100/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count =/-100;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+SET AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION = TRUE;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+   set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+			set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+
+
+
+set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = true  ;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = true		;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = true
+
+;
+NEW_CONNECTION;
+set   auto_batch_dml_update_count_verification   =   true;
+NEW_CONNECTION;
+set	auto_batch_dml_update_count_verification	=	true;
+NEW_CONNECTION;
+set
+auto_batch_dml_update_count_verification
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set auto_batch_dml_update_count_verification = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =/-true;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+SET AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION = FALSE;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+   set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+			set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+
+
+
+set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = false  ;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = false		;
+NEW_CONNECTION;
+set auto_batch_dml_update_count_verification = false
+
+;
+NEW_CONNECTION;
+set   auto_batch_dml_update_count_verification   =   false;
+NEW_CONNECTION;
+set	auto_batch_dml_update_count_verification	=	false;
+NEW_CONNECTION;
+set
+auto_batch_dml_update_count_verification
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set auto_batch_dml_update_count_verification = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_batch_dml_update_count_verification =/-false;
 NEW_CONNECTION;
 show variable data_boost_enabled;
 NEW_CONNECTION;

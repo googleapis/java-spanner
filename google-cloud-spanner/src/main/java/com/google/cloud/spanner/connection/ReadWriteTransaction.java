@@ -78,6 +78,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Transaction that is used when a {@link Connection} is normal read/write mode (i.e. not autocommit
@@ -120,6 +121,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    * aborting the current active transaction on the emulator is enabled.
    */
   private static final String AUTO_SAVEPOINT_NAME = "_auto_savepoint";
+
+  private final boolean usesEmulator;
 
   /**
    * Indicates whether an automatic savepoint should be generated after each statement, so the
@@ -191,6 +194,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
+    private boolean usesEmulator;
     private boolean useAutoSavepointsForEmulator;
     private DatabaseClient dbClient;
     private Boolean retryAbortsInternally;
@@ -202,6 +206,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private List<TransactionRetryListener> transactionRetryListeners;
 
     private Builder() {}
+
+    Builder setUsesEmulator(boolean usesEmulator) {
+      this.usesEmulator = usesEmulator;
+      return this;
+    }
 
     Builder setUseAutoSavepointsForEmulator(boolean useAutoSavepoints) {
       this.useAutoSavepointsForEmulator = useAutoSavepoints;
@@ -269,14 +278,14 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private ReadWriteTransaction(Builder builder) {
     super(builder);
     this.transactionId = ID_GENERATOR.incrementAndGet();
-    this.useAutoSavepointsForEmulator =
-        builder.useAutoSavepointsForEmulator && builder.retryAbortsInternally;
+    this.usesEmulator = builder.usesEmulator;
+    this.useAutoSavepointsForEmulator = builder.useAutoSavepointsForEmulator;
     // Use a higher max for internal retries if auto-savepoints have been enabled for the emulator.
     // This can cause a larger number of transactions to be aborted and retried, and retrying on the
     // emulator is fast, so increasing the limit is reasonable.
     this.maxInternalRetries =
-        this.useAutoSavepointsForEmulator
-            ? DEFAULT_MAX_INTERNAL_RETRIES * 10
+        builder.usesEmulator && builder.retryAbortsInternally
+            ? DEFAULT_MAX_INTERNAL_RETRIES * 50
             : DEFAULT_MAX_INTERNAL_RETRIES;
     this.dbClient = builder.dbClient;
     this.delayTransactionStartUntilFirstWrite = builder.delayTransactionStartUntilFirstWrite;
@@ -461,7 +470,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 CallType.SYNC,
                 SELECT1_STATEMENT,
                 AnalyzeMode.NONE,
-                Options.tag("connection.transaction-keep-alive"));
+                Options.tag(
+                    System.getProperty(
+                        "spanner.connection.keep_alive_query_tag",
+                        "connection.transaction-keep-alive")));
         future.addListener(
             ReadWriteTransaction.this::maybeScheduleKeepAlivePing, MoreExecutors.directExecutor());
       }
@@ -850,7 +862,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       };
 
   @Override
-  public ApiFuture<Void> commitAsync(CallType callType) {
+  public ApiFuture<Void> commitAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     try (Scope ignore = span.makeCurrent()) {
       checkOrCreateValidTransaction(COMMIT_STATEMENT, callType);
       cancelScheduledKeepAlivePing();
@@ -860,11 +873,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       // Check if this transaction actually needs to commit anything.
       if (txContextFuture == null) {
         // No actual transaction was started by this read/write transaction, which also means that
-        // we
-        // don't have to commit anything.
+        // we don't have to commit anything.
         commitResponseFuture.set(
             new CommitResponse(
                 Timestamp.fromProto(com.google.protobuf.Timestamp.getDefaultInstance())));
+        callback.onSuccess();
         state = UnitOfWorkState.COMMITTED;
         res = SettableApiFuture.create();
         ((SettableApiFuture<Void>) res).set(null);
@@ -876,17 +889,21 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 () -> {
                   checkTimedOut();
                   try {
-                    return runWithRetry(
-                        () -> {
-                          getStatementExecutor()
-                              .invokeInterceptors(
-                                  COMMIT_STATEMENT,
-                                  StatementExecutionStep.EXECUTE_STATEMENT,
-                                  ReadWriteTransaction.this);
-                          return commitCallable.call();
-                        });
+                    Void result =
+                        runWithRetry(
+                            () -> {
+                              getStatementExecutor()
+                                  .invokeInterceptors(
+                                      COMMIT_STATEMENT,
+                                      StatementExecutionStep.EXECUTE_STATEMENT,
+                                      ReadWriteTransaction.this);
+                              return commitCallable.call();
+                            });
+                    callback.onSuccess();
+                    return result;
                   } catch (Throwable t) {
                     commitResponseFuture.setException(t);
+                    callback.onFailure();
                     state = UnitOfWorkState.COMMIT_FAILED;
                     try {
                       txManager.close();
@@ -906,9 +923,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 () -> {
                   checkTimedOut();
                   try {
-                    return commitCallable.call();
+                    Void result = commitCallable.call();
+                    callback.onSuccess();
+                    return result;
                   } catch (Throwable t) {
                     commitResponseFuture.setException(t);
+                    callback.onFailure();
                     state = UnitOfWorkState.COMMIT_FAILED;
                     try {
                       txManager.close();
@@ -1073,7 +1093,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             Thread.sleep(delay);
           } else if (aborted.isEmulatorOnlySupportsOneTransactionException()) {
             //noinspection BusyWait
-            Thread.sleep(ThreadLocalRandom.current().nextInt(50));
+            Thread.sleep(ThreadLocalRandom.current().nextInt(1, 5));
           }
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
@@ -1082,6 +1102,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         }
         try {
           if (aborted.getCause() instanceof RollbackToSavepointException) {
+            if (txManager != null) {
+              txManager.close();
+            }
             txManager = dbClient.transactionManager(transactionOptions);
             txContextFuture = ApiFutures.immediateFuture(txManager.begin());
           } else {
@@ -1209,9 +1232,14 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       };
 
   @Override
-  public ApiFuture<Void> rollbackAsync(CallType callType) {
+  public ApiFuture<Void> rollbackAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     try (Scope ignore = span.makeCurrent()) {
+      callback.onSuccess();
       return rollbackAsync(callType, true);
+    } catch (Throwable throwable) {
+      callback.onFailure();
+      throw throwable;
     }
   }
 

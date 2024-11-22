@@ -15,6 +15,7 @@
  */
 package com.google.cloud.spanner.spi.v1;
 
+import static com.google.api.gax.grpc.GrpcCallContext.TRACER_KEY;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.DATABASE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.INSTANCE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.METHOD;
@@ -22,8 +23,12 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
+import com.google.api.gax.tracing.ApiTracer;
+import com.google.cloud.spanner.BuiltInMetricsConstant;
+import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
+import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.spanner.admin.database.v1.DatabaseName;
@@ -33,6 +38,7 @@ import io.grpc.ClientCall;
 import io.grpc.ClientInterceptor;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
+import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.opencensus.stats.MeasureMap;
@@ -45,6 +51,11 @@ import io.opencensus.tags.Tags;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,6 +83,8 @@ class HeaderInterceptor implements ClientInterceptor {
       CacheBuilder.newBuilder().maximumSize(1000).build();
   private final Cache<String, Attributes> attributesCache =
       CacheBuilder.newBuilder().maximumSize(1000).build();
+  private final Cache<String, Map<String, String>> builtInAttributesCache =
+      CacheBuilder.newBuilder().maximumSize(1000).build();
 
   // Get the global singleton Tagger object.
   private static final Tagger TAGGER = Tags.getTagger();
@@ -81,13 +94,20 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
-  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
+  private final Supplier<Boolean> directPathEnabledSupplier;
+
+  HeaderInterceptor(
+      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
     this.spannerRpcMetrics = spannerRpcMetrics;
+    this.directPathEnabledSupplier = directPathEnabledSupplier;
   }
 
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
       MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+    ApiTracer tracer = callOptions.getOption(TRACER_KEY);
+    CompositeTracer compositeTracer =
+        tracer instanceof CompositeTracer ? (CompositeTracer) tracer : null;
     return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
@@ -98,10 +118,16 @@ class HeaderInterceptor implements ClientInterceptor {
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
+          Map<String, String> builtInMetricsAttributes =
+              getBuiltInMetricAttributes(key, databaseName);
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
+                  Boolean isDirectPathUsed =
+                      isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
+                  addBuiltInMetricAttributes(
+                      compositeTracer, builtInMetricsAttributes, isDirectPathUsed);
                   processHeader(metadata, tagContext, attributes, span);
                   super.onHeaders(metadata);
                 }
@@ -196,5 +222,45 @@ class HeaderInterceptor implements ClientInterceptor {
 
           return attributesBuilder.build();
         });
+  }
+
+  private Map<String, String> getBuiltInMetricAttributes(String key, DatabaseName databaseName)
+      throws ExecutionException {
+    return builtInAttributesCache.get(
+        key,
+        () -> {
+          Map<String, String> attributes = new HashMap<>();
+          attributes.put(BuiltInMetricsConstant.DATABASE_KEY.getKey(), databaseName.getDatabase());
+          attributes.put(
+              BuiltInMetricsConstant.INSTANCE_ID_KEY.getKey(), databaseName.getInstance());
+          attributes.put(
+              BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY.getKey(),
+              String.valueOf(this.directPathEnabledSupplier.get()));
+          return attributes;
+        });
+  }
+
+  private void addBuiltInMetricAttributes(
+      CompositeTracer compositeTracer,
+      Map<String, String> builtInMetricsAttributes,
+      Boolean isDirectPathUsed) {
+    if (compositeTracer != null) {
+      // Direct Path used attribute
+      Map<String, String> attributes = new HashMap<>(builtInMetricsAttributes);
+      attributes.put(
+          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
+
+      compositeTracer.addAttributes(attributes);
+    }
+  }
+
+  private Boolean isDirectPathUsed(SocketAddress remoteAddr) {
+    if (remoteAddr instanceof InetSocketAddress) {
+      InetAddress inetAddress = ((InetSocketAddress) remoteAddr).getAddress();
+      String addr = inetAddress.getHostAddress();
+      return addr.startsWith(BuiltInMetricsConstant.DP_IPV4_PREFIX)
+          || addr.startsWith(BuiltInMetricsConstant.DP_IPV6_PREFIX);
+    }
+    return false;
   }
 }

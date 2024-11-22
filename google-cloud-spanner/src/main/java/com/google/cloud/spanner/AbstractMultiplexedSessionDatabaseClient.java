@@ -40,51 +40,14 @@ abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClien
   }
 
   @Override
-  public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
-      throws SpannerException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public CommitResponse writeAtLeastOnceWithOptions(
-      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-    throw new UnsupportedOperationException();
+    return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
   }
 
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       Iterable<MutationGroup> mutationGroups, TransactionOption... options)
       throws SpannerException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public TransactionManager transactionManager(TransactionOption... options) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AsyncRunner runAsync(TransactionOption... options) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
     throw new UnsupportedOperationException();
   }
 }

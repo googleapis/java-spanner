@@ -31,6 +31,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
 
@@ -116,6 +117,13 @@ public final class SpannerExceptionFactory {
     return new SpannerBatchUpdateException(token, code, message, updateCounts);
   }
 
+  /** Constructs a specific error that */
+  public static DmlBatchUpdateCountVerificationFailedException
+      newDmlBatchUpdateCountVerificationFailedException(long[] expected, long[] actual) {
+    return new DmlBatchUpdateCountVerificationFailedException(
+        DoNotConstructDirectly.ALLOWED, expected, actual);
+  }
+
   /**
    * Constructs a specific aborted exception that should only be thrown by a connection after an
    * internal retry aborted due to concurrent modifications.
@@ -179,6 +187,26 @@ public final class SpannerExceptionFactory {
       return newSpannerExceptionForCancellation(context, cause);
     }
     return newSpannerException(ErrorCode.fromGrpcStatus(status), cause.getMessage(), cause);
+  }
+
+  public static RuntimeException causeAsRunTimeException(ExecutionException executionException) {
+    // Propagate the underlying exception as a RuntimeException (SpannerException is also a
+    // RuntimeException).
+    if (executionException.getCause() instanceof RuntimeException) {
+      throw (RuntimeException) executionException.getCause();
+    }
+    throw asSpannerException(executionException.getCause());
+  }
+
+  /**
+   * Creates a new SpannerException that indicates that the RPC or transaction should be retried on
+   * a different gRPC channel. This is an experimental feature that can be removed in the future.
+   * The exception should not be surfaced to the client application, and should instead be caught
+   * and handled in the client library.
+   */
+  static SpannerException newRetryOnDifferentGrpcChannelException(
+      String message, int channel, Throwable cause) {
+    return new RetryOnDifferentGrpcChannelException(message, channel, cause);
   }
 
   static SpannerException newSpannerExceptionForCancellation(
@@ -322,7 +350,9 @@ public final class SpannerExceptionFactory {
       case UNAVAILABLE:
         // SSLHandshakeException is (probably) not retryable, as it is an indication that the server
         // certificate was not accepted by the client.
-        return !hasCauseMatching(cause, Matchers.isSSLHandshakeException);
+        // Channel shutdown is also not a retryable exception.
+        return !(hasCauseMatching(cause, Matchers.isSSLHandshakeException)
+            || hasCauseMatching(cause, Matchers.IS_CHANNEL_SHUTDOWN_EXCEPTION));
       case RESOURCE_EXHAUSTED:
         return SpannerException.extractRetryDelay(cause) > 0;
       default:
@@ -345,5 +375,8 @@ public final class SpannerExceptionFactory {
 
     static final Predicate<Throwable> isRetryableInternalError = new IsRetryableInternalError();
     static final Predicate<Throwable> isSSLHandshakeException = new IsSslHandshakeException();
+
+    static final Predicate<Throwable> IS_CHANNEL_SHUTDOWN_EXCEPTION =
+        new IsChannelShutdownException();
   }
 }

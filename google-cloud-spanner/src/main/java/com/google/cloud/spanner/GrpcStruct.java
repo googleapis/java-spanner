@@ -49,6 +49,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -60,7 +61,7 @@ class GrpcStruct extends Struct implements Serializable {
   private final List<Object> rowData;
   private final DecodeMode decodeMode;
   private final BitSet colDecoded;
-  private boolean rowDecoded;
+  private final AtomicBoolean rowDecoded;
 
   /**
    * Builds an immutable version of this struct using {@link Struct#newBuilder()} which is used as a
@@ -224,7 +225,7 @@ class GrpcStruct extends Struct implements Serializable {
     this.type = type;
     this.rowData = rowData;
     this.decodeMode = decodeMode;
-    this.rowDecoded = rowDecoded;
+    this.rowDecoded = new AtomicBoolean(rowDecoded);
     this.colDecoded = colDecoded;
   }
 
@@ -234,29 +235,31 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   boolean consumeRow(Iterator<com.google.protobuf.Value> iterator) {
-    rowData.clear();
-    if (decodeMode == DecodeMode.LAZY_PER_ROW) {
-      rowDecoded = false;
-    } else if (decodeMode == DecodeMode.LAZY_PER_COL) {
-      colDecoded.clear();
-    }
-    if (!iterator.hasNext()) {
-      return false;
-    }
-    for (Type.StructField fieldType : getType().getStructFields()) {
+    synchronized (rowData) {
+      rowData.clear();
+      if (decodeMode == DecodeMode.LAZY_PER_ROW) {
+        rowDecoded.set(false);
+      } else if (decodeMode == DecodeMode.LAZY_PER_COL) {
+        colDecoded.clear();
+      }
       if (!iterator.hasNext()) {
-        throw newSpannerException(
-            ErrorCode.INTERNAL,
-            "Invalid value stream: end of stream reached before row is complete");
+        return false;
       }
-      com.google.protobuf.Value value = iterator.next();
-      if (decodeMode == DecodeMode.DIRECT) {
-        rowData.add(decodeValue(fieldType.getType(), value));
-      } else {
-        rowData.add(value);
+      for (Type.StructField fieldType : getType().getStructFields()) {
+        if (!iterator.hasNext()) {
+          throw newSpannerException(
+              ErrorCode.INTERNAL,
+              "Invalid value stream: end of stream reached before row is complete");
+        }
+        com.google.protobuf.Value value = iterator.next();
+        if (decodeMode == DecodeMode.DIRECT) {
+          rowData.add(decodeValue(fieldType.getType(), value));
+        } else {
+          rowData.add(value);
+        }
       }
+      return true;
     }
-    return true;
   }
 
   private static Object decodeValue(Type fieldType, com.google.protobuf.Value proto) {
@@ -367,12 +370,16 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   Struct immutableCopy() {
-    return new GrpcStruct(
-        type,
-        new ArrayList<>(rowData),
-        this.decodeMode,
-        this.rowDecoded,
-        this.colDecoded == null ? null : (BitSet) this.colDecoded.clone());
+    synchronized (rowData) {
+      return new GrpcStruct(
+          type,
+          this.decodeMode == DecodeMode.DIRECT
+              ? new ArrayList<>(rowData)
+              : Collections.synchronizedList(new ArrayList<>(rowData)),
+          this.decodeMode,
+          this.rowDecoded.get(),
+          this.colDecoded == null ? null : (BitSet) this.colDecoded.clone());
+    }
   }
 
   @Override
@@ -382,9 +389,14 @@ class GrpcStruct extends Struct implements Serializable {
 
   @Override
   public boolean isNull(int columnIndex) {
-    if ((decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded)
-        || (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex))) {
-      return ((com.google.protobuf.Value) rowData.get(columnIndex)).hasNullValue();
+    if (decodeMode == DecodeMode.LAZY_PER_ROW || decodeMode == DecodeMode.LAZY_PER_COL) {
+      synchronized (rowData) {
+        if ((decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded.get())
+            || (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex))) {
+          return ((com.google.protobuf.Value) rowData.get(columnIndex)).hasNullValue();
+        }
+        return rowData.get(columnIndex) == null;
+      }
     }
     return rowData.get(columnIndex) == null;
   }
@@ -496,14 +508,18 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   boolean canGetProtoValue(int columnIndex) {
-    return isUnrecognizedType(columnIndex)
-        || (decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded)
-        || (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex));
+    synchronized (rowData) {
+      return isUnrecognizedType(columnIndex)
+          || (decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded.get())
+          || (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex));
+    }
   }
 
   protected com.google.protobuf.Value getProtoValueInternal(int columnIndex) {
-    checkProtoValueSupported(columnIndex);
-    return (com.google.protobuf.Value) rowData.get(columnIndex);
+    synchronized (rowData) {
+      checkProtoValueSupported(columnIndex);
+      return (com.google.protobuf.Value) rowData.get(columnIndex);
+    }
   }
 
   private void checkProtoValueSupported(int columnIndex) {
@@ -515,7 +531,7 @@ class GrpcStruct extends Struct implements Serializable {
         decodeMode != DecodeMode.DIRECT,
         "Getting proto value is not supported when DecodeMode#DIRECT is used.");
     Preconditions.checkState(
-        !(decodeMode == DecodeMode.LAZY_PER_ROW && rowDecoded),
+        !(decodeMode == DecodeMode.LAZY_PER_ROW && rowDecoded.get()),
         "Getting proto value after the row has been decoded is not supported.");
     Preconditions.checkState(
         !(decodeMode == DecodeMode.LAZY_PER_COL && colDecoded.get(columnIndex)),
@@ -523,22 +539,48 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   private void ensureDecoded(int columnIndex) {
-    if (decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded) {
-      for (int i = 0; i < rowData.size(); i++) {
-        rowData.set(
-            i,
-            decodeValue(
-                type.getStructFields().get(i).getType(),
-                (com.google.protobuf.Value) rowData.get(i)));
+    if (decodeMode == DecodeMode.LAZY_PER_ROW) {
+      synchronized (rowData) {
+        if (!rowDecoded.get()) {
+          for (int i = 0; i < rowData.size(); i++) {
+            rowData.set(
+                i,
+                decodeValue(
+                    type.getStructFields().get(i).getType(),
+                    (com.google.protobuf.Value) rowData.get(i)));
+          }
+        }
+        rowDecoded.set(true);
       }
-      rowDecoded = true;
-    } else if (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex)) {
-      rowData.set(
-          columnIndex,
-          decodeValue(
-              type.getStructFields().get(columnIndex).getType(),
-              (com.google.protobuf.Value) rowData.get(columnIndex)));
-      colDecoded.set(columnIndex);
+    } else if (decodeMode == DecodeMode.LAZY_PER_COL) {
+      boolean decoded;
+      Object value;
+      synchronized (rowData) {
+        decoded = colDecoded.get(columnIndex);
+        value = rowData.get(columnIndex);
+      }
+      if (!decoded) {
+        // Use the column as a lock during decoding to ensure that we decode once (mostly), but also
+        // that multiple different columns can be decoded in parallel if requested.
+        synchronized (type.getStructFields().get(columnIndex)) {
+          // Note: It can be that we decode the value twice if two threads request this at the same
+          // time, but the synchronization on rowData above and below makes sure that we always get
+          // and set a consistent value (and only set it once).
+          if (!colDecoded.get(columnIndex)) {
+            value =
+                decodeValue(
+                    type.getStructFields().get(columnIndex).getType(),
+                    (com.google.protobuf.Value) value);
+            decoded = true;
+          }
+        }
+        if (decoded) {
+          synchronized (rowData) {
+            rowData.set(columnIndex, value);
+            colDecoded.set(columnIndex);
+          }
+        }
+      }
     }
   }
 

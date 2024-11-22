@@ -25,6 +25,9 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML_UPDATE_COUNT;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
@@ -51,6 +54,9 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_BATCH_DML;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_BATCH_DML_UPDATE_COUNT;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
@@ -102,16 +108,13 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGe
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.Duration;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.PlanNode;
 import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
-import com.google.spanner.v1.RequestOptions.Priority;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -137,16 +140,6 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     public boolean hasDuration() {
       return connection.hasStatementTimeout();
     }
-  }
-
-  private static final Map<Priority, RpcPriority> validRPCPriorityValues;
-
-  static {
-    ImmutableMap.Builder<Priority, RpcPriority> builder = ImmutableMap.builder();
-    builder.put(Priority.PRIORITY_HIGH, RpcPriority.HIGH);
-    builder.put(Priority.PRIORITY_MEDIUM, RpcPriority.MEDIUM);
-    builder.put(Priority.PRIORITY_LOW, RpcPriority.LOW);
-    validRPCPriorityValues = builder.build();
   }
 
   /** The connection to execute the statements on. */
@@ -218,14 +211,19 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetStatementTimeout(Duration duration) {
-    if (duration.getSeconds() == 0L && duration.getNanos() == 0) {
+    if (duration == null || duration.isZero()) {
       getConnection().clearStatementTimeout();
     } else {
+      com.google.protobuf.Duration protoDuration =
+          com.google.protobuf.Duration.newBuilder()
+              .setSeconds(duration.getSeconds())
+              .setNanos(duration.getNano())
+              .build();
       TimeUnit unit =
           ReadOnlyStalenessUtil.getAppropriateTimeUnit(
-              new ReadOnlyStalenessUtil.DurationGetter(duration));
+              new ReadOnlyStalenessUtil.DurationGetter(protoDuration));
       getConnection()
-          .setStatementTimeout(ReadOnlyStalenessUtil.durationToUnits(duration, unit), unit);
+          .setStatementTimeout(ReadOnlyStalenessUtil.durationToUnits(protoDuration, unit), unit);
     }
     return noResult(SET_STATEMENT_TIMEOUT);
   }
@@ -356,11 +354,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetMaxCommitDelay(Duration duration) {
-    getConnection()
-        .setMaxCommitDelay(
-            duration == null || duration.equals(Duration.getDefaultInstance())
-                ? null
-                : java.time.Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
+    getConnection().setMaxCommitDelay(duration == null || duration.isZero() ? null : duration);
     return noResult(SET_MAX_COMMIT_DELAY);
   }
 
@@ -552,9 +546,8 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementSetRPCPriority(Priority priority) {
-    RpcPriority value = validRPCPriorityValues.get(priority);
-    getConnection().setRPCPriority(value);
+  public StatementResult statementSetRPCPriority(RpcPriority priority) {
+    getConnection().setRPCPriority(priority);
     return noResult(SET_RPC_PRIORITY);
   }
 
@@ -692,6 +685,49 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%sPROTO_DESCRIPTORS_FILE_PATH", getNamespace(connection.getDialect())),
         getConnection().getProtoDescriptorsFilePath(),
         SHOW_PROTO_DESCRIPTORS_FILE_PATH);
+  }
+
+  @Override
+  public StatementResult statementSetAutoBatchDml(Boolean autoBatchDml) {
+    getConnection().setAutoBatchDml(autoBatchDml);
+    return noResult(SET_AUTO_BATCH_DML);
+  }
+
+  @Override
+  public StatementResult statementShowAutoBatchDml() {
+    return resultSet(
+        String.format("%sAUTO_BATCH_DML", getNamespace(connection.getDialect())),
+        getConnection().isAutoBatchDml(),
+        SHOW_AUTO_BATCH_DML);
+  }
+
+  @Override
+  public StatementResult statementSetAutoBatchDmlUpdateCount(Long updateCount) {
+    getConnection().setAutoBatchDmlUpdateCount(updateCount);
+    return noResult(SET_AUTO_BATCH_DML_UPDATE_COUNT);
+  }
+
+  @Override
+  public StatementResult statementShowAutoBatchDmlUpdateCount() {
+    return resultSet(
+        String.format("%sAUTO_BATCH_DML_UPDATE_COUNT", getNamespace(connection.getDialect())),
+        getConnection().getAutoBatchDmlUpdateCount(),
+        SHOW_AUTO_BATCH_DML_UPDATE_COUNT);
+  }
+
+  @Override
+  public StatementResult statementSetAutoBatchDmlUpdateCountVerification(Boolean verification) {
+    getConnection().setAutoBatchDmlUpdateCountVerification(verification);
+    return noResult(SET_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
+  }
+
+  @Override
+  public StatementResult statementShowAutoBatchDmlUpdateCountVerification() {
+    return resultSet(
+        String.format(
+            "%sAUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION", getNamespace(connection.getDialect())),
+        getConnection().isAutoBatchDmlUpdateCountVerification(),
+        SHOW_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
   }
 
   private String processQueryPlan(PlanNode planNode) {

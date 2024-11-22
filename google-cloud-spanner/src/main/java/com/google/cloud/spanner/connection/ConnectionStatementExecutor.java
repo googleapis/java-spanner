@@ -16,12 +16,12 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
-import com.google.protobuf.Duration;
 import com.google.spanner.v1.DirectedReadOptions;
-import com.google.spanner.v1.RequestOptions.Priority;
+import java.time.Duration;
 
 /**
  * The Cloud Spanner JDBC driver supports a number of client side statements that are interpreted by
@@ -134,7 +134,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementResetAll();
 
-  StatementResult statementSetRPCPriority(Priority priority);
+  StatementResult statementSetRPCPriority(RpcPriority priority);
 
   StatementResult statementShowRPCPriority();
 
@@ -175,4 +175,16 @@ interface ConnectionStatementExecutor {
   StatementResult statementRunPartition(String partitionId);
 
   StatementResult statementRunPartitionedQuery(Statement statement);
+
+  StatementResult statementSetAutoBatchDml(Boolean autoBatchDml);
+
+  StatementResult statementShowAutoBatchDml();
+
+  StatementResult statementSetAutoBatchDmlUpdateCount(Long updateCount);
+
+  StatementResult statementShowAutoBatchDmlUpdateCount();
+
+  StatementResult statementSetAutoBatchDmlUpdateCountVerification(Boolean verification);
+
+  StatementResult statementShowAutoBatchDmlUpdateCountVerification();
 }

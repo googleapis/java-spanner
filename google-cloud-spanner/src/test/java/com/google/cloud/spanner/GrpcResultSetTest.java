@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -77,11 +78,14 @@ public class GrpcResultSetTest {
 
     @Override
     public void onDone(boolean withBeginTransaction) {}
+
+    @Override
+    public void onPrecommitToken(MultiplexedSessionPrecommitToken token) {}
   }
 
   @Before
   public void setUp() {
-    stream = new GrpcStreamIterator(10);
+    stream = new GrpcStreamIterator(10, /*cancelQueryWhenClientIsClosed=*/ false);
     stream.setCall(
         new SpannerRpc.StreamingCall() {
           @Override

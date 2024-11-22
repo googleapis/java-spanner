@@ -26,6 +26,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
+import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionOption;
@@ -68,7 +69,8 @@ class SessionImpl implements Session {
     }
   }
 
-  static TransactionOptions createReadWriteTransactionOptions(Options options) {
+  static TransactionOptions createReadWriteTransactionOptions(
+      Options options, ByteString previousTransactionId) {
     TransactionOptions.Builder transactionOptions = TransactionOptions.newBuilder();
     if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       transactionOptions.setExcludeTxnFromChangeStreams(true);
@@ -76,6 +78,10 @@ class SessionImpl implements Session {
     TransactionOptions.ReadWrite.Builder readWrite = TransactionOptions.ReadWrite.newBuilder();
     if (options.withOptimisticLock() == Boolean.TRUE) {
       readWrite.setReadLockMode(TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
+    }
+    if (previousTransactionId != null
+        && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
+      readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
     }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
@@ -116,6 +122,7 @@ class SessionImpl implements Session {
   private ISpan currentSpan;
   private final Clock clock;
   private final Map<SpannerRpc.Option, ?> options;
+  private final ErrorHandler errorHandler;
 
   SessionImpl(SpannerImpl spanner, SessionReference sessionReference) {
     this(spanner, sessionReference, NO_CHANNEL_HINT);
@@ -127,6 +134,7 @@ class SessionImpl implements Session {
     this.sessionReference = sessionReference;
     this.clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
     this.options = createOptions(sessionReference, channelHint);
+    this.errorHandler = createErrorHandler(spanner.getOptions());
   }
 
   static Map<SpannerRpc.Option, ?> createOptions(
@@ -137,6 +145,13 @@ class SessionImpl implements Session {
     return CHANNEL_HINT_OPTIONS[channelHint % CHANNEL_HINT_OPTIONS.length];
   }
 
+  private ErrorHandler createErrorHandler(SpannerOptions options) {
+    if (RetryOnDifferentGrpcChannelErrorHandler.isEnabled()) {
+      return new RetryOnDifferentGrpcChannelErrorHandler(options.getNumChannels(), this);
+    }
+    return DefaultErrorHandler.INSTANCE;
+  }
+
   @Override
   public String getName() {
     return sessionReference.getName();
@@ -144,6 +159,10 @@ class SessionImpl implements Session {
 
   Map<SpannerRpc.Option, ?> getOptions() {
     return options;
+  }
+
+  ErrorHandler getErrorHandler() {
+    return this.errorHandler;
   }
 
   void setCurrentSpan(ISpan span) {
@@ -219,7 +238,7 @@ class SessionImpl implements Session {
       throws SpannerException {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-    Mutation.toProto(mutations, mutationsProto);
+    Mutation.toProtoAndReturnRandomMutation(mutations, mutationsProto);
     Options options = Options.fromTransactionOptions(transactionOptions);
     final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
@@ -412,17 +431,26 @@ class SessionImpl implements Session {
     }
   }
 
-  ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
-    final SettableApiFuture<ByteString> res = SettableApiFuture.create();
+  ApiFuture<Transaction> beginTransactionAsync(
+      Options transactionOptions,
+      boolean routeToLeader,
+      Map<SpannerRpc.Option, ?> channelHint,
+      ByteString previousTransactionId,
+      com.google.spanner.v1.Mutation mutation) {
+    final SettableApiFuture<Transaction> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
-    final BeginTransactionRequest request =
+    BeginTransactionRequest.Builder requestBuilder =
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
-            .setOptions(createReadWriteTransactionOptions(transactionOptions))
-            .build();
+            .setOptions(
+                createReadWriteTransactionOptions(transactionOptions, previousTransactionId));
+    if (sessionReference.getIsMultiplexed() && mutation != null) {
+      requestBuilder.setMutationKey(mutation);
+    }
+    final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
-      requestFuture = spanner.getRpc().beginTransactionAsync(request, getOptions(), routeToLeader);
+      requestFuture = spanner.getRpc().beginTransactionAsync(request, channelHint, routeToLeader);
     }
     requestFuture.addListener(
         () -> {
@@ -433,7 +461,7 @@ class SessionImpl implements Session {
                   ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
             }
             span.end();
-            res.set(txn.getId());
+            res.set(txn);
           } catch (ExecutionException e) {
             span.setStatus(e);
             span.end();
@@ -454,11 +482,12 @@ class SessionImpl implements Session {
     return res;
   }
 
-  TransactionContextImpl newTransaction(Options options) {
+  TransactionContextImpl newTransaction(Options options, ByteString previousTransactionId) {
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
         .setTransactionId(null)
+        .setPreviousTransactionId(previousTransactionId)
         .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
