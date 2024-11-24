@@ -645,13 +645,13 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return String.format("%s/sessions/%s", database, UUID.randomUUID().toString());
   }
 
-  private ByteString generateTransactionName(String session) {
+  private ByteString generateTransactionName(String session, com.google.spanner.v1.Mutation mutation) {
     AtomicLong counter = transactionCounters.get(session);
     if (counter == null) {
       counter = new AtomicLong();
       transactionCounters.put(session, counter);
     }
-    transactionToTrace.put(session, Arrays.toString(Thread.currentThread().getStackTrace()));
+    transactionToTrace.put(session, String.format("%s %s", mutation.toString(), Arrays.toString(Thread.currentThread().getStackTrace())));
     return ByteString.copyFromUtf8(
         String.format("%s/transactions/%d", session, counter.incrementAndGet()));
   }
@@ -1910,7 +1910,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   private Transaction beginTransaction(
       Session session, TransactionOptions options, com.google.spanner.v1.Mutation mutationKey) {
-    ByteString transactionId = generateTransactionName(session.getName());
+    ByteString transactionId = generateTransactionName(session.getName(), mutationKey);
     Transaction.Builder builder = Transaction.newBuilder().setId(transactionId);
     if (options != null && options.getModeCase() == ModeCase.READ_ONLY) {
       setReadTimestamp(options, builder);
