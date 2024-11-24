@@ -608,6 +608,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private final AtomicBoolean abortNextStatement = new AtomicBoolean();
   private final AtomicBoolean ignoreNextInlineBeginRequest = new AtomicBoolean();
   private ConcurrentMap<String, AtomicLong> transactionCounters = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, String> transactionToTrace = new ConcurrentHashMap<>();
   private ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
 
@@ -650,6 +651,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       counter = new AtomicLong();
       transactionCounters.put(session, counter);
     }
+    transactionToTrace.put(session, Arrays.toString(Thread.currentThread().getStackTrace()));
     return ByteString.copyFromUtf8(
         String.format("%s/transactions/%d", session, counter.incrementAndGet()));
   }
@@ -1012,6 +1014,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     removeSession(session.getName());
     transactionCounters.remove(session.getName());
     sessionLastUsed.remove(session.getName());
+    transactionToTrace.remove(session.getName());
   }
 
   @Override
@@ -1989,6 +1992,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       if (index > -1) {
         long id = Long.parseLong(transactionId.toStringUtf8().substring(index + 1));
         if (id != counter.get()) {
+          System.out.println(transactionId.toStringUtf8());
+          System.out.println(session.getName());
+          System.out.println(transactionToTrace.get(session.getName()));
           throw Status.FAILED_PRECONDITION
               .withDescription(
                   String.format(
@@ -2351,6 +2357,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     isPartitionedDmlTransaction = new ConcurrentHashMap<>();
     abortedTransactions = new ConcurrentHashMap<>();
     transactionCounters = new ConcurrentHashMap<>();
+    transactionToTrace = new ConcurrentHashMap<>();
     partitionTokens = new ConcurrentHashMap<>();
     transactionLastUsed = new ConcurrentHashMap<>();
     transactionSequenceNo = new ConcurrentHashMap<>();
