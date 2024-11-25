@@ -65,8 +65,8 @@ public class BatchTransactionId implements Serializable {
   @Override
   public String toString() {
     return String.format(
-        "transactionId: %s, sessionId: %s, timestamp: %s",
-        transactionId.toStringUtf8(), sessionId, timestamp);
+        "transactionId: %s, sessionId: %s, timestamp: %s, isMultiplexedSession: %s",
+        transactionId.toStringUtf8(), sessionId, timestamp, isMultiplexedSession);
   }
 
   @Override
