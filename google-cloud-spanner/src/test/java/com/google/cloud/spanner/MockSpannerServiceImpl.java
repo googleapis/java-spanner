@@ -645,17 +645,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return String.format("%s/sessions/%s", database, UUID.randomUUID().toString());
   }
 
-  private ByteString generateTransactionName(
-      String session) {
+  private ByteString generateTransactionName(String session) {
     AtomicLong counter = transactionCounters.get(session);
     if (counter == null) {
       counter = new AtomicLong();
       transactionCounters.put(session, counter);
     }
     transactionToTrace.put(
-        session,
-        String.format(
-            "%s", Arrays.toString(Thread.currentThread().getStackTrace())));
+        session, String.format("%s", Arrays.toString(Thread.currentThread().getStackTrace())));
     return ByteString.copyFromUtf8(
         String.format("%s/transactions/%d", session, counter.incrementAndGet()));
   }
