@@ -36,7 +36,7 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
-    final boolean useMultiplexedSessionPartitionedOps;
+  @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
 
   final boolean useMultiplexedSessionBlindWrite;
@@ -48,7 +48,7 @@ class DatabaseClientImpl implements DatabaseClient {
         pool,
         /* useMultiplexedSessionBlindWrite = */ false,
         /* multiplexedSessionDatabaseClient = */ null,
-            /* useMultiplexedSessionPartitionedOps= */ false,
+        /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
         /* useMultiplexedSessionForRW = */ false);
   }
@@ -60,7 +60,7 @@ class DatabaseClientImpl implements DatabaseClient {
         pool,
         /* useMultiplexedSessionBlindWrite = */ false,
         /* multiplexedSessionDatabaseClient = */ null,
-            /* useMultiplexedSessionPartitionedOps= */ false,
+        /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
         /* useMultiplexedSessionForRW = */ false);
   }

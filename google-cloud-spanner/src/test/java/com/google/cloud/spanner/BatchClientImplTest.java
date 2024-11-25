@@ -56,6 +56,7 @@ public final class BatchClientImplTest {
   private static final String SESSION_NAME = DB_NAME + "/sessions/s1";
   private static final ByteString TXN_ID = ByteString.copyFromUtf8("my-txn");
   private static final String TIMESTAMP = "2017-11-15T10:54:20Z";
+  private static boolean isMultiplexedSession = false;
 
   @Mock private SpannerRpc gapicRpc;
   @Mock private SpannerOptions spannerOptions;
@@ -68,6 +69,11 @@ public final class BatchClientImplTest {
   public static void setupOpenTelemetry() {
     SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
+    Boolean useMultiplexedSessionFromEnvVariablePartitionedOps =
+        SessionPoolOptions.getUseMultiplexedSessionFromEnvVariablePartitionedOps();
+    isMultiplexedSession =
+        useMultiplexedSessionFromEnvVariablePartitionedOps != null
+            && useMultiplexedSessionFromEnvVariablePartitionedOps;
   }
 
   @SuppressWarnings("unchecked")
@@ -88,18 +94,31 @@ public final class BatchClientImplTest {
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
     SessionPoolOptions sessionPoolOptions = mock(SessionPoolOptions.class);
     when(sessionPoolOptions.getPoolMaintainerClock()).thenReturn(Clock.INSTANCE);
+    when(sessionPoolOptions.getUseMultiplexedSessionPartitionedOps())
+        .thenReturn(isMultiplexedSession);
     when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(gapicRpc, spannerOptions);
-    client = new BatchClientImpl(spanner.getSessionClient(db), false);
+    client = new BatchClientImpl(spanner.getSessionClient(db), isMultiplexedSession);
   }
 
   @SuppressWarnings("unchecked")
   @Test
   public void testBatchReadOnlyTxnWithBound() throws Exception {
-    Session sessionProto = Session.newBuilder().setName(SESSION_NAME).build();
-    when(gapicRpc.createSession(eq(DB_NAME), anyString(), anyMap(), optionsCaptor.capture()))
-        .thenReturn(sessionProto);
+    Session sessionProto =
+        Session.newBuilder().setName(SESSION_NAME).setMultiplexed(isMultiplexedSession).build();
+    if (isMultiplexedSession) {
+      when(gapicRpc.createSession(
+              eq(DB_NAME),
+              anyString(),
+              anyMap(),
+              optionsCaptor.capture(),
+              eq(isMultiplexedSession)))
+          .thenReturn(sessionProto);
+    } else {
+      when(gapicRpc.createSession(eq(DB_NAME), anyString(), anyMap(), optionsCaptor.capture()))
+          .thenReturn(sessionProto);
+    }
     com.google.protobuf.Timestamp timestamp = Timestamps.parse(TIMESTAMP);
     Transaction txnMetadata =
         Transaction.newBuilder().setId(TXN_ID).setReadTimestamp(timestamp).build();
@@ -113,12 +132,14 @@ public final class BatchClientImplTest {
     assertThat(batchTxn.getReadTimestamp()).isEqualTo(t);
     assertThat(batchTxn.getReadTimestamp())
         .isEqualTo(batchTxn.getBatchTransactionId().getTimestamp());
+    assertEquals(batchTxn.getBatchTransactionId().isMultiplexedSession(), isMultiplexedSession);
   }
 
   @Test
   public void testBatchReadOnlyTxnWithTxnId() {
     when(txnID.getSessionId()).thenReturn(SESSION_NAME);
     when(txnID.getTransactionId()).thenReturn(TXN_ID);
+    when(txnID.isMultiplexedSession()).thenReturn(isMultiplexedSession);
     Timestamp t = Timestamp.parseTimestamp(TIMESTAMP);
     when(txnID.getTimestamp()).thenReturn(t);
 
@@ -128,6 +149,8 @@ public final class BatchClientImplTest {
     assertThat(batchTxn.getReadTimestamp()).isEqualTo(t);
     assertThat(batchTxn.getReadTimestamp())
         .isEqualTo(batchTxn.getBatchTransactionId().getTimestamp());
+    assertThat(batchTxn.getBatchTransactionId().isMultiplexedSession())
+        .isEqualTo(isMultiplexedSession);
   }
 
   @Test

@@ -360,7 +360,9 @@ public class SessionPoolOptions {
     return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
   }
 
-  private static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
+  @VisibleForTesting
+  @InternalApi
+  protected static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
     return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS");
   }
 
