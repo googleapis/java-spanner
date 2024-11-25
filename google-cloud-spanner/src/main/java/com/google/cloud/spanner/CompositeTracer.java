@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+
 import com.google.api.core.InternalApi;
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.BaseApiTracer;
@@ -110,7 +112,7 @@ public class CompositeTracer extends BaseApiTracer {
   @Override
   public void attemptFailed(Throwable error, org.threeten.bp.Duration delay) {
     for (ApiTracer child : children) {
-      child.attemptFailed(error, delay);
+      child.attemptFailedDuration(error, toJavaTimeDuration(delay));
     }
   }
 
