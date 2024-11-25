@@ -29,7 +29,6 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOS
 import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIRECTED_READ;
-import static com.google.cloud.spanner.connection.ConnectionProperties.FALLBACK_TO_PARTITIONED_DML;
 import static com.google.cloud.spanner.connection.ConnectionProperties.KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_PARTITIONED_PARALLELISM;
@@ -662,18 +661,6 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !isBatchActive(), "Cannot get autocommit DML mode while in a batch");
     return getConnectionPropertyValue(AUTOCOMMIT_DML_MODE);
-  }
-
-  @Override
-  public void setFallbackToPartitionedDml(boolean fallbackToPartitionedDml) {
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    setConnectionPropertyValue(FALLBACK_TO_PARTITIONED_DML, fallbackToPartitionedDml);
-  }
-
-  @Override
-  public boolean isFallbackToPartitionedDml() {
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return getConnectionPropertyValue(FALLBACK_TO_PARTITIONED_DML);
   }
 
   @Override
@@ -2138,7 +2125,6 @@ class ConnectionImpl implements Connection {
               .setReadOnly(getConnectionPropertyValue(READONLY))
               .setReadOnlyStaleness(getConnectionPropertyValue(READ_ONLY_STALENESS))
               .setAutocommitDmlMode(getConnectionPropertyValue(AUTOCOMMIT_DML_MODE))
-              .setRetryDmlAsPartitionedDml(getConnectionPropertyValue(FALLBACK_TO_PARTITIONED_DML))
               .setTransactionRetryListeners(transactionRetryListeners)
               .setReturnCommitStats(getConnectionPropertyValue(RETURN_COMMIT_STATS))
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)

@@ -5183,205 +5183,6 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-auto_batch_dml_update_count_verification;
 NEW_CONNECTION;
-show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-SHOW VARIABLE FALLBACK_TO_PARTITIONED_DML;
-NEW_CONNECTION;
-show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-   show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-			show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-
-
-
-show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-show variable fallback_to_partitioned_dml  ;
-NEW_CONNECTION;
-show variable fallback_to_partitioned_dml		;
-NEW_CONNECTION;
-show variable fallback_to_partitioned_dml
-
-;
-NEW_CONNECTION;
-show   variable   fallback_to_partitioned_dml;
-NEW_CONNECTION;
-show	variable	fallback_to_partitioned_dml;
-NEW_CONNECTION;
-show
-variable
-fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-foo show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml bar;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-%show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml%;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable%fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-_show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml_;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable_fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-&show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml&;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable&fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-$show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml$;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable$fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-@show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml@;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable@fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-!show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml!;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable!fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-*show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml*;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable*fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-(show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml(;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable(fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-)show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml);
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable)fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml-;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable-fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-+show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml+;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable+fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--#show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml-#;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable-#fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml/;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable/fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-\show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml\;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable\fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-?show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml?;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable?fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--/show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml-/;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable-/fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/#show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml/#;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable/#fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/-show variable fallback_to_partitioned_dml;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable fallback_to_partitioned_dml/-;
-NEW_CONNECTION;
-@EXPECT EXCEPTION UNIMPLEMENTED
-show variable/-fallback_to_partitioned_dml;
-NEW_CONNECTION;
 partition select col1, col2 from my_table;
 NEW_CONNECTION;
 PARTITION SELECT COL1, COL2 FROM MY_TABLE;
@@ -10489,6 +10290,204 @@ set autocommit_dml_mode='TRANSACTIONAL'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-autocommit_dml_mode='TRANSACTIONAL';
+NEW_CONNECTION;
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+SET AUTOCOMMIT_DML_MODE='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+set autocommit_dml_mode='transactional_with_fallback_to_partitioned_non_atomic';
+NEW_CONNECTION;
+   set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+			set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+
+
+
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'  ;
+NEW_CONNECTION;
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'		;
+NEW_CONNECTION;
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'
+
+;
+NEW_CONNECTION;
+set   autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+set	autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+set
+autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
 NEW_CONNECTION;
 set statement_timeout=null;
 NEW_CONNECTION;
@@ -25795,406 +25794,6 @@ set auto_batch_dml_update_count_verification = false/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set auto_batch_dml_update_count_verification =/-false;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-SET FALLBACK_TO_PARTITIONED_DML = TRUE;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-   set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-			set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-
-
-
-set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = true  ;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = true		;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = true
-
-;
-NEW_CONNECTION;
-set   fallback_to_partitioned_dml   =   true;
-NEW_CONNECTION;
-set	fallback_to_partitioned_dml	=	true;
-NEW_CONNECTION;
-set
-fallback_to_partitioned_dml
-=
-true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-foo set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true bar;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-%set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true%;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =%true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-_set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true_;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =_true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-&set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true&;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =&true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-$set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true$;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =$true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-@set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true@;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =@true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-!set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true!;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =!true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-*set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true*;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =*true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-(set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true(;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =(true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-)set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true);
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =)true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true-;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =-true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-+set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true+;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =+true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--#set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true-#;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =-#true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true/;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =/true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-\set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true\;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =\true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-?set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true?;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =?true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--/set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true-/;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =-/true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/#set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true/#;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =/#true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/-set fallback_to_partitioned_dml = true;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = true/-;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =/-true;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-SET FALLBACK_TO_PARTITIONED_DML = FALSE;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-   set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-			set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-
-
-
-set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = false  ;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = false		;
-NEW_CONNECTION;
-set fallback_to_partitioned_dml = false
-
-;
-NEW_CONNECTION;
-set   fallback_to_partitioned_dml   =   false;
-NEW_CONNECTION;
-set	fallback_to_partitioned_dml	=	false;
-NEW_CONNECTION;
-set
-fallback_to_partitioned_dml
-=
-false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-foo set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false bar;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-%set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false%;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =%false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-_set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false_;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =_false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-&set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false&;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =&false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-$set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false$;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =$false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-@set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false@;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =@false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-!set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false!;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =!false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-*set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false*;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =*false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-(set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false(;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =(false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-)set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false);
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =)false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false-;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =-false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-+set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false+;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =+false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--#set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false-#;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =-#false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false/;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =/false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-\set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false\;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =\false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-?set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false?;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =?false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
--/set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false-/;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =-/false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/#set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false/#;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =/#false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-/-set fallback_to_partitioned_dml = false;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml = false/-;
-NEW_CONNECTION;
-@EXPECT EXCEPTION INVALID_ARGUMENT
-set fallback_to_partitioned_dml =/-false;
 NEW_CONNECTION;
 show variable data_boost_enabled;
 NEW_CONNECTION;

@@ -18,8 +18,18 @@ package com.google.cloud.spanner.connection;
 
 /** Enum used to define the behavior of DML statements in autocommit mode */
 public enum AutocommitDmlMode {
+  /** TRANSACTIONAL: DML statements use a standard atomic transaction. */
   TRANSACTIONAL,
-  PARTITIONED_NON_ATOMIC;
+  /** PARTITIONED_NON_ATOMIC: DML statements use a Partitioned DML transaction. */
+  PARTITIONED_NON_ATOMIC,
+  /**
+   * TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC: DML statements are first executed with a
+   * standard atomic transaction. If that fails due to the mutation limit being exceeded, the
+   * statement will automatically be retried using a Partitioned DML transaction. These statements
+   * are not guaranteed to be atomic. The corresponding {@link TransactionRetryListener} methods
+   * will be invoked when a DML statement falls back to Partitioned DML.
+   */
+  TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC;
 
   private final String statementString;
 

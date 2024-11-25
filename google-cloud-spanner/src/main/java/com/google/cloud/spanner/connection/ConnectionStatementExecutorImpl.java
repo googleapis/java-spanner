@@ -34,7 +34,6 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DIRECTED_READ;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
-import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_FALLBACK_TO_PARTITIONED_DML;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONED_PARALLELISM;
@@ -65,7 +64,6 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DIRECTED_READ;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
-import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_FALLBACK_TO_PARTITIONED_DML;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONED_PARALLELISM;
@@ -730,20 +728,6 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
             "%sAUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION", getNamespace(connection.getDialect())),
         getConnection().isAutoBatchDmlUpdateCountVerification(),
         SHOW_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
-  }
-
-  @Override
-  public StatementResult statementSetFallbackToPartitionedDml(Boolean fallbackToPartitionedDml) {
-    getConnection().setFallbackToPartitionedDml(fallbackToPartitionedDml);
-    return noResult(SET_FALLBACK_TO_PARTITIONED_DML);
-  }
-
-  @Override
-  public StatementResult statementShowFallbackToPartitionedDml() {
-    return resultSet(
-        String.format("%sFALLBACK_TO_PARTITIONED_DML", getNamespace(connection.getDialect())),
-        getConnection().isFallbackToPartitionedDml(),
-        SHOW_FALLBACK_TO_PARTITIONED_DML);
   }
 
   private String processQueryPlan(PlanNode planNode) {

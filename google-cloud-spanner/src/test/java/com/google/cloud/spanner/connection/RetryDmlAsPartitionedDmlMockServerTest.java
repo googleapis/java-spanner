@@ -74,7 +74,7 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
 
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
-      assertFalse(connection.isFallbackToPartitionedDml());
+      assertEquals(AutocommitDmlMode.TRANSACTIONAL, connection.getAutocommitDmlMode());
 
       TransactionMutationLimitExceededException exception =
           assertThrows(
@@ -96,7 +96,8 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
 
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
-      connection.setFallbackToPartitionedDml(true);
+      connection.setAutocommitDmlMode(
+          AutocommitDmlMode.TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC);
 
       long updateCount = connection.executeUpdate(statement);
       assertEquals(100000L, updateCount);
@@ -136,7 +137,8 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
 
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
-      connection.setFallbackToPartitionedDml(true);
+      connection.setAutocommitDmlMode(
+          AutocommitDmlMode.TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC);
 
       // The connection throws TransactionMutationLimitExceededException if the retry using
       // partitioned DML fails. The exception from the failed retry is returned as a suppressed
@@ -184,22 +186,28 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
       String prefix = dialect == Dialect.POSTGRESQL ? "SPANNER." : "";
 
       try (Connection connection = createConnection()) {
+        connection.setAutocommit(true);
         try (ResultSet resultSet =
             connection.executeQuery(
-                Statement.of(
-                    String.format("show variable %sfallback_to_partitioned_dml", prefix)))) {
+                Statement.of(String.format("show variable %sautocommit_dml_mode", prefix)))) {
           assertTrue(resultSet.next());
-          assertFalse(resultSet.getBoolean(String.format("%sFALLBACK_TO_PARTITIONED_DML", prefix)));
+          assertEquals(
+              AutocommitDmlMode.TRANSACTIONAL.name(),
+              resultSet.getString(String.format("%sAUTOCOMMIT_DML_MODE", prefix)));
           assertFalse(resultSet.next());
         }
         connection.execute(
-            Statement.of(String.format("set %sfallback_to_partitioned_dml = true", prefix)));
+            Statement.of(
+                String.format(
+                    "set %sautocommit_dml_mode = 'transactional_with_fallback_to_partitioned_non_atomic'",
+                    prefix)));
         try (ResultSet resultSet =
             connection.executeQuery(
-                Statement.of(
-                    String.format("show variable %sfallback_to_partitioned_dml", prefix)))) {
+                Statement.of(String.format("show variable %sautocommit_dml_mode", prefix)))) {
           assertTrue(resultSet.next());
-          assertTrue(resultSet.getBoolean(String.format("%sFALLBACK_TO_PARTITIONED_DML", prefix)));
+          assertEquals(
+              AutocommitDmlMode.TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC.name(),
+              resultSet.getString(String.format("%sAUTOCOMMIT_DML_MODE", prefix)));
           assertFalse(resultSet.next());
         }
       }

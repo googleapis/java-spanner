@@ -187,8 +187,4 @@ interface ConnectionStatementExecutor {
   StatementResult statementSetAutoBatchDmlUpdateCountVerification(Boolean verification);
 
   StatementResult statementShowAutoBatchDmlUpdateCountVerification();
-
-  StatementResult statementSetFallbackToPartitionedDml(Boolean fallbackToPartitionedDml);
-
-  StatementResult statementShowFallbackToPartitionedDml();
 }

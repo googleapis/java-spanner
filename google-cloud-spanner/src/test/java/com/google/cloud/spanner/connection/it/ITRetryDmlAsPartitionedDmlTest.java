@@ -31,6 +31,7 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionMutationLimitExceededException;
+import com.google.cloud.spanner.connection.AutocommitDmlMode;
 import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.TransactionRetryListenerImpl;
@@ -98,7 +99,8 @@ public class ITRetryDmlAsPartitionedDmlTest extends ITAbstractSpannerTest {
   public void testRetryDmlAsPartitionedDml() throws Exception {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
-      connection.setFallbackToPartitionedDml(true);
+      connection.setAutocommitDmlMode(
+          AutocommitDmlMode.TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC);
 
       // Set up a listener that gets a callback when a DML statement is retried as Partitioned DML.
       SettableApiFuture<UUID> startExecutionIdFuture = SettableApiFuture.create();
@@ -137,7 +139,8 @@ public class ITRetryDmlAsPartitionedDmlTest extends ITAbstractSpannerTest {
   public void testRetryDmlAsPartitionedDml_failsForLargeInserts() throws Exception {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
-      connection.setFallbackToPartitionedDml(true);
+      connection.setAutocommitDmlMode(
+          AutocommitDmlMode.TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC);
 
       // Set up a listener that gets a callback when a DML statement is retried as Partitioned DML.
       SettableApiFuture<UUID> startExecutionIdFuture = SettableApiFuture.create();

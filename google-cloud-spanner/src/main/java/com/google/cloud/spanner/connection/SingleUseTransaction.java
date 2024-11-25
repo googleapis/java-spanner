@@ -83,7 +83,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final BatchClient batchClient;
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
-  private final boolean retryDmlAsPartitionedDml;
   private final boolean returnCommitStats;
   private final Duration maxCommitDelay;
   private final boolean internalMetdataQuery;
@@ -100,7 +99,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     private boolean readOnly;
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
-    private boolean retryDmlAsPartitionedDml;
     private boolean returnCommitStats;
     private Duration maxCommitDelay;
     private boolean internalMetadataQuery;
@@ -139,11 +137,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Builder setAutocommitDmlMode(AutocommitDmlMode dmlMode) {
       Preconditions.checkNotNull(dmlMode);
       this.autocommitDmlMode = dmlMode;
-      return this;
-    }
-
-    Builder setRetryDmlAsPartitionedDml(boolean retryDmlAsPartitionedDml) {
-      this.retryDmlAsPartitionedDml = retryDmlAsPartitionedDml;
       return this;
     }
 
@@ -190,7 +183,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     this.readOnly = builder.readOnly;
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
-    this.retryDmlAsPartitionedDml = builder.retryDmlAsPartitionedDml;
     this.returnCommitStats = builder.returnCommitStats;
     this.maxCommitDelay = builder.maxCommitDelay;
     this.internalMetdataQuery = builder.internalMetadataQuery;
@@ -226,6 +218,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   @Override
   public boolean supportsDirectedReads(ParsedStatement parsedStatement) {
     return parsedStatement.isQuery();
+  }
+
+  private boolean isRetryDmlAsPartitionedDml() {
+    return this.autocommitDmlMode
+        == AutocommitDmlMode.TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC;
   }
 
   private void checkAndMarkUsed() {
@@ -443,6 +440,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       ApiFuture<Long> res;
       switch (autocommitDmlMode) {
         case TRANSACTIONAL:
+        case TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC:
           res =
               ApiFutures.transform(
                   executeTransactionalUpdateAsync(callType, update, AnalyzeMode.NONE, options),
@@ -578,7 +576,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
     // Retry as Partitioned DML if the statement fails due to exceeding the mutation limit if that
     // option has been enabled.
-    if (this.retryDmlAsPartitionedDml) {
+    if (isRetryDmlAsPartitionedDml()) {
       return addRetryUpdateAsPartitionedDmlCallback(transactionalResult, callType, update, options);
     }
     return transactionalResult;

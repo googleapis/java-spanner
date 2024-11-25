@@ -222,15 +222,6 @@
 	  "exampleStatements": ["show variable auto_batch_dml_update_count_verification"]
 	},
 	{
-		"name": "SHOW VARIABLE FALLBACK_TO_PARTITIONED_DML",
-		"executorName": "ClientSideStatementNoParamExecutor",
-		"resultType": "RESULT_SET",
-		"statementType": "SHOW_FALLBACK_TO_PARTITIONED_DML",
-		"regex": "(?is)\\A\\s*show\\s+variable\\s+fallback_to_partitioned_dml\\s*\\z",
-		"method": "statementShowFallbackToPartitionedDml",
-		"exampleStatements": ["show variable fallback_to_partitioned_dml"]
-	},
-	{
 		"name": "PARTITION <sql>",
 		"executorName": "ClientSideStatementPartitionExecutor",
 		"resultType": "RESULT_SET",
@@ -380,17 +371,17 @@
 	  }
 	},
 	{
-	  "name": "SET AUTOCOMMIT_DML_MODE = 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'",
+	  "name": "SET AUTOCOMMIT_DML_MODE = 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'|'TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
 	  "statementType": "SET_AUTOCOMMIT_DML_MODE",
 	  "regex": "(?is)\\A\\s*set\\s+autocommit_dml_mode\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetAutocommitDmlMode",
-	  "exampleStatements": ["set autocommit_dml_mode='PARTITIONED_NON_ATOMIC'", "set autocommit_dml_mode='TRANSACTIONAL'"],
+	  "exampleStatements": ["set autocommit_dml_mode='PARTITIONED_NON_ATOMIC'", "set autocommit_dml_mode='TRANSACTIONAL'", "set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'"],
 	  "setStatement": {
 	    "propertyName": "AUTOCOMMIT_DML_MODE",
 	    "separator": "=",
-	    "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL)'",
+	    "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL|TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC)'",
 	    "converterName": "ClientSideStatementValueConverters$AutocommitDmlModeConverter"
 	  }
 	},
@@ -709,21 +700,6 @@
 	    "allowedValues": "(TRUE|FALSE)",
 	    "converterName": "ClientSideStatementValueConverters$BooleanConverter"
 	  }
-	},
-	{
-		"name": "SET FALLBACK_TO_PARTITIONED_DML = TRUE|FALSE",
-		"executorName": "ClientSideStatementSetExecutor",
-		"resultType": "NO_RESULT",
-		"statementType": "SET_FALLBACK_TO_PARTITIONED_DML",
-		"regex": "(?is)\\A\\s*set\\s+fallback_to_partitioned_dml\\s*(?:=)\\s*(.*)\\z",
-		"method": "statementSetFallbackToPartitionedDml",
-		"exampleStatements": ["set fallback_to_partitioned_dml = true", "set fallback_to_partitioned_dml = false"],
-		"setStatement": {
-			"propertyName": "FALLBACK_TO_PARTITIONED_DML",
-			"separator": "=",
-			"allowedValues": "(TRUE|FALSE)",
-			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
-		}
 	},
 	{
 		"name": "SHOW VARIABLE DATA_BOOST_ENABLED",
