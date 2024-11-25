@@ -39,9 +39,9 @@ public class BatchTransactionIdTest {
                 "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE, false))
         .addEqualityGroup(
             new BatchTransactionId(
-                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MAX_VALUE, false),
+                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MAX_VALUE, true),
             new BatchTransactionId(
-                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MAX_VALUE, false))
+                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MAX_VALUE, true))
         .testEquals();
   }
 
@@ -50,5 +50,8 @@ public class BatchTransactionIdTest {
     reserializeAndAssert(
         new BatchTransactionId(
             "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE, false));
+    reserializeAndAssert(
+        new BatchTransactionId(
+            "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE, true));
   }
 }

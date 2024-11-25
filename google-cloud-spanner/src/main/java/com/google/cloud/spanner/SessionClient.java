@@ -414,7 +414,7 @@ class SessionClient implements AutoCloseable {
 
   /** Returns a {@link SessionImpl} that references the existing session with the given name. */
   SessionImpl sessionWithId(String name) {
-    return sessionWithId(name, false);
+    return sessionWithId(name, /*isMultiplexedSession= */ false);
   }
 
   /** Returns a {@link SessionImpl} that references the existing session with the given name. */

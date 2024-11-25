@@ -599,8 +599,10 @@ public class SessionPoolOptions {
     // default.
     private boolean useMultiplexedSessionForRW = false;
 
-    // This field controls the default behavior of session management in Java client.
-    // Set useMultiplexedSessionPartitionedOps to true to make multiplexed session the default.
+    // This field controls the default behavior of session management for Partitioned operations in
+    // Java client.
+    // Set useMultiplexedSessionPartitionedOps to true to make multiplexed session for Partitioned
+    // operations the default.
     private boolean useMultiplexedSessionPartitionedOps = false;
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
@@ -857,15 +859,8 @@ public class SessionPoolOptions {
     }
 
     /**
-     * Sets whether the client should use multiplexed session or not. If set to true, the client
-     * optimises and runs multiple applicable requests concurrently on a single session. A single
-     * multiplexed session is sufficient to handle all concurrent traffic.
-     *
-     * <p>When set to false, the client uses the regular session cached in the session pool for
-     * running 1 concurrent transaction per session. We require to provision sufficient sessions by
-     * making use of {@link SessionPoolOptions#minSessions} and {@link
-     * SessionPoolOptions#maxSessions} based on the traffic load. Failing to do so will result in
-     * higher latencies.
+     * Sets whether the client should use multiplexed session for Partitioned operations or not.
+     * This method is intentionally package-private and intended for internal use.
      */
     Builder setUseMultiplexedSessionPartitionedOps(boolean useMultiplexedSessionPartitionedOps) {
       this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
