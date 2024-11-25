@@ -55,6 +55,7 @@ import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.ListSessionsRequest;
 import com.google.spanner.v1.ListSessionsResponse;
 import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
+import com.google.spanner.v1.Mutation;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Partition;
 import com.google.spanner.v1.PartitionOptions;
@@ -645,14 +646,16 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return String.format("%s/sessions/%s", database, UUID.randomUUID().toString());
   }
 
-  private ByteString generateTransactionName(String session) {
+  private ByteString generateTransactionName(String session, String mutationString) {
     AtomicLong counter = transactionCounters.get(session);
     if (counter == null) {
       counter = new AtomicLong();
       transactionCounters.put(session, counter);
     }
     transactionToTrace.put(
-        session, String.format("%s", Arrays.toString(Thread.currentThread().getStackTrace())));
+        session,
+        String.format(
+            "%s %s", mutationString, Arrays.toString(Thread.currentThread().getStackTrace())));
     return ByteString.copyFromUtf8(
         String.format("%s/transactions/%d", session, counter.incrementAndGet()));
   }
@@ -1909,9 +1912,34 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  private String getMutationString(Mutation mutation) {
+    StringBuilder sb = new StringBuilder();
+    try {
+      if (mutation.hasInsert()) {
+        for (ListValue listValue : mutation.getInsert().getValuesList()) {
+          sb.append(listValue.toString());
+        }
+      }
+      if (mutation.hasUpdate()) {
+        for (ListValue listValue : mutation.getUpdate().getValuesList()) {
+          sb.append(listValue.toString());
+        }
+      }
+      if (mutation.hasReplace()) {
+        for (ListValue listValue : mutation.getReplace().getValuesList()) {
+          sb.append(listValue.toString());
+        }
+      }
+    } catch (Exception e) {
+      sb.append(e.getMessage());
+    }
+    return sb.toString();
+  }
+
   private Transaction beginTransaction(
       Session session, TransactionOptions options, com.google.spanner.v1.Mutation mutationKey) {
-    ByteString transactionId = generateTransactionName(session.getName());
+    ByteString transactionId =
+        generateTransactionName(session.getName(), getMutationString(mutationKey));
     Transaction.Builder builder = Transaction.newBuilder().setId(transactionId);
     if (options != null && options.getModeCase() == ModeCase.READ_ONLY) {
       setReadTimestamp(options, builder);
