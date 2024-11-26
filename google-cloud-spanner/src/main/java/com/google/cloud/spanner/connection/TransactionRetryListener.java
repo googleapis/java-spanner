@@ -20,6 +20,9 @@ import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TransactionMutationLimitExceededException;
+import java.util.UUID;
 
 /**
  * Cloud Spanner can abort any read/write transaction because of potential deadlocks or other
@@ -87,4 +90,42 @@ public interface TransactionRetryListener {
       long transactionId,
       int retryAttempt,
       TransactionRetryListener.RetryResult result);
+
+  /**
+   * This method is called when an atomic DML statement is retried as a Partitioned DML statement.
+   *
+   * @param executionId a generated, unique ID for this execution. The same ID is passed in to the
+   *     methods {@link #retryDmlAsPartitionedDmlFinished(UUID, Statement, long)} and {@link
+   *     #retryDmlAsPartitionedDmlFailed(UUID, Statement, Throwable)} when the execution finishes or
+   *     fails.
+   * @param statement the statement that is being retried as Partitioned DML
+   * @param exception the mutation-limit-exceeded exception that was returned by Spanner during the
+   *     initial execution.
+   */
+  default void retryDmlAsPartitionedDmlStarting(
+      UUID executionId, Statement statement, TransactionMutationLimitExceededException exception) {}
+
+  /**
+   * This method is called when an atomic DML statement has been successfully retried as a
+   * Partitioned DML statement.
+   *
+   * @param executionId the unique ID of this statement execution
+   * @param statement the statement that was successfully retried as Partitioned DML
+   * @param lowerBoundUpdateCount the lower-bound update count returned by Spanner after executing
+   *     the statement as Partitioned DML
+   */
+  default void retryDmlAsPartitionedDmlFinished(
+      UUID executionId, Statement statement, long lowerBoundUpdateCount) {}
+
+  /**
+   * This method is called when an atomic DML statement failed to be retried as a Partitioned DML
+   * statement.
+   *
+   * @param executionId the unique ID of this statement execution
+   * @param statement the statement that failed to be retried as Partitioned DML
+   * @param exception the exception that was returned when the statement was executed as Partitioned
+   *     DML
+   */
+  default void retryDmlAsPartitionedDmlFailed(
+      UUID executionId, Statement statement, Throwable exception) {}
 }
