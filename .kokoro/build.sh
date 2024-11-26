@@ -15,6 +15,8 @@
 
 set -eo pipefail
 
+set -x
+
 ## Get the directory of the build script
 scriptDir=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 ## cd to the parent directory, i.e. the root of the git repo
@@ -33,9 +35,16 @@ fi
 mvn -version
 echo ${JOB_TYPE}
 
+# Enable airlock only for Kokoro jobs
+INSTALL_OPTS=""
+if [[ ! -z "${KOKORO_JOB_TYPE}" && ${KOKORO_JOB_TYPE} =~ ^.*presubmit.*$ ]]; then
+  INSTALL_OPTS="-Pairlock-trusted"
+fi
+
 # attempt to install 3 times with exponential backoff (starting with 10 seconds)
 retry_with_backoff 3 10 \
   mvn install -B -V -ntp \
+    ${INSTALL_OPTS} \
     -DskipTests=true \
     -Dclirr.skip=true \
     -Denforcer.skip=true \

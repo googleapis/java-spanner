@@ -53,9 +53,16 @@ if [ ! -z "${JAVA11_HOME}" ]; then
   setJava "${JAVA11_HOME}"
 fi
 
+# Enable airlock only for Kokoro jobs
+INSTALL_OPTS=""
+if [[ ! -z "${KOKORO_JOB_TYPE}" ]]; then
+  INSTALL_OPTS="-Pairlock-trusted"
+fi
+
 # this should run maven enforcer
 retry_with_backoff 3 10 \
   mvn install -B -V -ntp \
+    ${INSTALL_OPTS} \
     -DskipTests=true \
     -Dmaven.javadoc.skip=true \
     -Dclirr.skip=true
