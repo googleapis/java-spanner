@@ -246,8 +246,8 @@ class SessionClient implements AutoCloseable {
   }
 
   /**
-   * Create a multiplexed session and returns it. A multiplexed session is not affiliated with any
-   * GRPC channel. In case of an error on the gRPC calls, the error will be returned.
+   * Creates a multiplexed session and returns it. A multiplexed session is not affiliated with any
+   * GRPC channel. In case of an error during the gRPC calls, an exception will be thrown.
    */
   SessionImpl createMultiplexedSession() {
     ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION);
