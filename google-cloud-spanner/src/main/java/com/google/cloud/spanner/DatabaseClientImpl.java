@@ -317,7 +317,7 @@ class DatabaseClientImpl implements DatabaseClient {
     if (useMultiplexedSessionPartitionedOps) {
       return getMultiplexedSession().executePartitionedUpdate(stmt, options);
     }
-    return executePartitionedUpdateSession(stmt, options);
+    return executePartitionedUpdateWithPooledSession(stmt, options);
   }
 
   private long executePartitionedUpdateWithPooledSession(

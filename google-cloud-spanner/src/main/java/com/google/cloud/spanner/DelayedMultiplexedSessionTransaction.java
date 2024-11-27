@@ -232,15 +232,9 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
    */
   @Override
   public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
-    try {
-      SessionReference sessionReference = getSessionReference();
-      return new MultiplexedSessionTransaction(
-              client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
-          .executePartitionedUpdate(stmt, options);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (ExecutionException e) {
-      throw new RuntimeException(e);
-    }
+    SessionReference sessionReference = getSessionReference();
+    return new MultiplexedSessionTransaction(
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
+        .executePartitionedUpdate(stmt, options);
   }
 }
