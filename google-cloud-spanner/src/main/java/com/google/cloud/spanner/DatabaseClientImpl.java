@@ -320,7 +320,7 @@ class DatabaseClientImpl implements DatabaseClient {
     return executePartitionedUpdateSession(stmt, options);
   }
 
-  private long executePartitionedUpdateSession(
+  private long executePartitionedUpdateWithPooledSession(
       final Statement stmt, final UpdateOption... options) {
     ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
