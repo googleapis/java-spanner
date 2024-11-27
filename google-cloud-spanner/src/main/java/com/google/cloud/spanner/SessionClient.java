@@ -414,16 +414,10 @@ class SessionClient implements AutoCloseable {
 
   /** Returns a {@link SessionImpl} that references the existing session with the given name. */
   SessionImpl sessionWithId(String name) {
-    return sessionWithId(name, /*isMultiplexedSession= */ false);
-  }
-
-  /** Returns a {@link SessionImpl} that references the existing session with the given name. */
-  SessionImpl sessionWithId(String name, boolean isMultiplexedSession) {
     final Map<SpannerRpc.Option, ?> options;
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    return new SessionImpl(
-        spanner, new SessionReference(name, /*createTime= */ null, isMultiplexedSession, options));
+    return new SessionImpl(spanner, new SessionReference(name, options));
   }
 }

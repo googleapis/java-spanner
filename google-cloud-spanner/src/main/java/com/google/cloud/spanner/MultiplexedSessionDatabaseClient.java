@@ -556,7 +556,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   @Override
   public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
-    return createMultiplexedSessionTransaction(/* singleUse = */ true).executePartitionedUpdate(stmt, options);
+    return createMultiplexedSessionTransaction(/* singleUse = */ true)
+        .executePartitionedUpdate(stmt, options);
   }
 
   /**

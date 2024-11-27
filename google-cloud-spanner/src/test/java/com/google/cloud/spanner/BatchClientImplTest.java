@@ -132,14 +132,12 @@ public final class BatchClientImplTest {
     assertThat(batchTxn.getReadTimestamp()).isEqualTo(t);
     assertThat(batchTxn.getReadTimestamp())
         .isEqualTo(batchTxn.getBatchTransactionId().getTimestamp());
-    assertEquals(batchTxn.getBatchTransactionId().isMultiplexedSession(), isMultiplexedSession);
   }
 
   @Test
   public void testBatchReadOnlyTxnWithTxnId() {
     when(txnID.getSessionId()).thenReturn(SESSION_NAME);
     when(txnID.getTransactionId()).thenReturn(TXN_ID);
-    when(txnID.isMultiplexedSession()).thenReturn(isMultiplexedSession);
     Timestamp t = Timestamp.parseTimestamp(TIMESTAMP);
     when(txnID.getTimestamp()).thenReturn(t);
 
@@ -149,8 +147,6 @@ public final class BatchClientImplTest {
     assertThat(batchTxn.getReadTimestamp()).isEqualTo(t);
     assertThat(batchTxn.getReadTimestamp())
         .isEqualTo(batchTxn.getBatchTransactionId().getTimestamp());
-    assertThat(batchTxn.getBatchTransactionId().isMultiplexedSession())
-        .isEqualTo(isMultiplexedSession);
   }
 
   @Test
