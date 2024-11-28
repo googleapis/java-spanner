@@ -21,6 +21,7 @@ branchProtectionRules:
       - compile (11)
       - units-with-multiplexed-session (8)
       - units-with-multiplexed-session (11)
+      - unmanaged_dependency_check
   - pattern: 3.3.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
