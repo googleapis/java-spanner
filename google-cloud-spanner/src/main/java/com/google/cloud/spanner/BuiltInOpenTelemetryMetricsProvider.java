@@ -42,7 +42,6 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -68,12 +67,7 @@ final class BuiltInOpenTelemetryMetricsProvider {
             SpannerCloudMonitoringExporter.create(projectId, credentials), sdkMeterProviderBuilder);
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
         this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
-        Runtime.getRuntime()
-            .addShutdownHook(
-                new Thread(
-                    () -> {
-                      sdkMeterProvider.shutdown().join(5, TimeUnit.SECONDS);
-                    }));
+        Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
       }
       return this.openTelemetry;
     } catch (IOException ex) {
