@@ -29,7 +29,6 @@ import com.google.auth.Credentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.monitoring.v3.CreateTimeSeriesRequest;
@@ -63,13 +62,6 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   private static final Logger logger =
       Logger.getLogger(SpannerCloudMonitoringExporter.class.getName());
 
-  // This system property can be used to override the monitoring endpoint
-  // to a different environment. It's meant for internal testing only.
-  private static final String MONITORING_ENDPOINT =
-      MoreObjects.firstNonNull(
-          System.getProperty("spanner.test-monitoring-endpoint"),
-          MetricServiceSettings.getDefaultEndpoint());
-
   // This the quota limit from Cloud Monitoring. More details in
   // https://cloud.google.com/monitoring/quotas#custom_metrics_quotas.
   private static final int EXPORT_BATCH_SIZE_LIMIT = 200;
@@ -78,7 +70,8 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   private final MetricServiceClient client;
   private final String spannerProjectId;
 
-  static SpannerCloudMonitoringExporter create(String projectId, @Nullable Credentials credentials)
+  static SpannerCloudMonitoringExporter create(
+      String projectId, @Nullable Credentials credentials, @Nullable String metricsHost)
       throws IOException {
     MetricServiceSettings.Builder settingsBuilder = MetricServiceSettings.newBuilder();
     CredentialsProvider credentialsProvider;
@@ -88,7 +81,9 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
       credentialsProvider = FixedCredentialsProvider.create(credentials);
     }
     settingsBuilder.setCredentialsProvider(credentialsProvider);
-    settingsBuilder.setEndpoint(MONITORING_ENDPOINT);
+    if (metricsHost != null) {
+      settingsBuilder.setEndpoint(metricsHost);
+    }
 
     org.threeten.bp.Duration timeout = Duration.ofMinutes(1);
     // TODO: createServiceTimeSeries needs special handling if the request failed. Leaving
