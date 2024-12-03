@@ -77,6 +77,7 @@ import io.opentelemetry.api.common.Attributes;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -132,7 +133,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final SpannerStubSettings spannerStubSettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
-  private final java.time.Duration partitionedDmlTimeout;
+  private final Duration partitionedDmlTimeout;
   private final boolean grpcGcpExtensionEnabled;
   private final GcpManagedChannelOptions grpcGcpOptions;
   private final boolean autoThrottleAdministrativeRequests;
@@ -353,16 +354,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * }</pre>
    */
   public static class SpannerCallContextTimeoutConfigurator implements CallContextConfigurator {
-    private java.time.Duration commitTimeout;
-    private java.time.Duration rollbackTimeout;
+    private Duration commitTimeout;
+    private Duration rollbackTimeout;
 
-    private java.time.Duration executeQueryTimeout;
-    private java.time.Duration executeUpdateTimeout;
-    private java.time.Duration batchUpdateTimeout;
-    private java.time.Duration readTimeout;
+    private Duration executeQueryTimeout;
+    private Duration executeUpdateTimeout;
+    private Duration batchUpdateTimeout;
+    private Duration readTimeout;
 
-    private java.time.Duration partitionQueryTimeout;
-    private java.time.Duration partitionReadTimeout;
+    private Duration partitionQueryTimeout;
+    private Duration partitionReadTimeout;
 
     public static SpannerCallContextTimeoutConfigurator create() {
       return new SpannerCallContextTimeoutConfigurator();
@@ -425,21 +426,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return toThreetenDuration(getCommitTimeoutDuration());
     }
 
-    public java.time.Duration getCommitTimeoutDuration() {
+    public Duration getCommitTimeoutDuration() {
       return commitTimeout;
     }
 
-    /**
-     * This method is obsolete. Use {@link #withCommitTimeoutDuration(java.time.Duration)} instead.
-     */
+    /** This method is obsolete. Use {@link #withCommitTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use withCommitTimeoutDuration() instead.")
     public SpannerCallContextTimeoutConfigurator withCommitTimeout(
         org.threeten.bp.Duration commitTimeout) {
       return withCommitTimeoutDuration(toJavaTimeDuration(commitTimeout));
     }
 
-    public SpannerCallContextTimeoutConfigurator withCommitTimeoutDuration(
-        java.time.Duration commitTimeout) {
+    public SpannerCallContextTimeoutConfigurator withCommitTimeoutDuration(Duration commitTimeout) {
       this.commitTimeout = commitTimeout;
       return this;
     }
@@ -450,14 +448,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return toThreetenDuration(getRollbackTimeoutDuration());
     }
 
-    public java.time.Duration getRollbackTimeoutDuration() {
+    public Duration getRollbackTimeoutDuration() {
       return rollbackTimeout;
     }
 
-    /**
-     * This method is obsolete. Use {@link #withRollbackTimeoutDuration(java.time.Duration)}
-     * instead.
-     */
+    /** This method is obsolete. Use {@link #withRollbackTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use withRollbackTimeoutDuration() instead.")
     public SpannerCallContextTimeoutConfigurator withRollbackTimeout(
         org.threeten.bp.Duration rollbackTimeout) {
@@ -465,7 +460,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     public SpannerCallContextTimeoutConfigurator withRollbackTimeoutDuration(
-        java.time.Duration rollbackTimeout) {
+        Duration rollbackTimeout) {
       this.rollbackTimeout = rollbackTimeout;
       return this;
     }
@@ -476,14 +471,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return toThreetenDuration(getExecuteQueryTimeoutDuration());
     }
 
-    public java.time.Duration getExecuteQueryTimeoutDuration() {
+    public Duration getExecuteQueryTimeoutDuration() {
       return executeQueryTimeout;
     }
 
-    /**
-     * This method is obsolete. Use {@link #withExecuteQueryTimeoutDuration(java.time.Duration)}
-     * instead.
-     */
+    /** This method is obsolete. Use {@link #withExecuteQueryTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use withExecuteQueryTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withExecuteQueryTimeout(
         org.threeten.bp.Duration executeQueryTimeout) {
@@ -491,7 +483,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     public SpannerCallContextTimeoutConfigurator withExecuteQueryTimeoutDuration(
-        java.time.Duration executeQueryTimeout) {
+        Duration executeQueryTimeout) {
       this.executeQueryTimeout = executeQueryTimeout;
       return this;
     }
@@ -502,14 +494,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return toThreetenDuration(getExecuteUpdateTimeoutDuration());
     }
 
-    public java.time.Duration getExecuteUpdateTimeoutDuration() {
+    public Duration getExecuteUpdateTimeoutDuration() {
       return executeUpdateTimeout;
     }
 
-    /**
-     * This method is obsolete. Use {@link #withExecuteUpdateTimeoutDuration(java.time.Duration)}
-     * instead.
-     */
+    /** This method is obsolete. Use {@link #withExecuteUpdateTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use withExecuteUpdateTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withExecuteUpdateTimeout(
         org.threeten.bp.Duration executeUpdateTimeout) {
@@ -517,7 +506,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     public SpannerCallContextTimeoutConfigurator withExecuteUpdateTimeoutDuration(
-        java.time.Duration executeUpdateTimeout) {
+        Duration executeUpdateTimeout) {
       this.executeUpdateTimeout = executeUpdateTimeout;
       return this;
     }
@@ -528,14 +517,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return toThreetenDuration(getBatchUpdateTimeoutDuration());
     }
 
-    public java.time.Duration getBatchUpdateTimeoutDuration() {
+    public Duration getBatchUpdateTimeoutDuration() {
       return batchUpdateTimeout;
     }
 
-    /**
-     * This method is obsolete. Use {@link #withBatchUpdateTimeoutDuration(java.time.Duration)}
-     * instead.
-     */
+    /** This method is obsolete. Use {@link #withBatchUpdateTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use withBatchUpdateTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withBatchUpdateTimeout(
         org.threeten.bp.Duration batchUpdateTimeout) {
@@ -543,7 +529,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     public SpannerCallContextTimeoutConfigurator withBatchUpdateTimeoutDuration(
-        java.time.Duration batchUpdateTimeout) {
+        Duration batchUpdateTimeout) {
       this.batchUpdateTimeout = batchUpdateTimeout;
       return this;
     }
@@ -554,21 +540,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return toThreetenDuration(getReadTimeoutDuration());
     }
 
-    public java.time.Duration getReadTimeoutDuration() {
+    public Duration getReadTimeoutDuration() {
       return readTimeout;
     }
 
-    /**
-     * This method is obsolete. Use {@link #withReadTimeoutDuration(java.time.Duration)} instead.
-     */
+    /** This method is obsolete. Use {@link #withReadTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use withReadTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withReadTimeout(
         org.threeten.bp.Duration readTimeout) {
       return withReadTimeoutDuration(toJavaTimeDuration(readTimeout));
     }
 
-    public SpannerCallContextTimeoutConfigurator withReadTimeoutDuration(
-        java.time.Duration readTimeout) {
+    public SpannerCallContextTimeoutConfigurator withReadTimeoutDuration(Duration readTimeout) {
       this.readTimeout = readTimeout;
       return this;
     }
@@ -579,13 +562,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return toThreetenDuration(getPartitionQueryTimeoutDuration());
     }
 
-    public java.time.Duration getPartitionQueryTimeoutDuration() {
+    public Duration getPartitionQueryTimeoutDuration() {
       return partitionQueryTimeout;
     }
 
     /**
-     * This method is obsolete. Use {@link #withPartitionQueryTimeoutDuration(java.time.Duration)}
-     * instead.
+     * This method is obsolete. Use {@link #withPartitionQueryTimeoutDuration(Duration)} instead.
      */
     @ObsoleteApi("Use withPartitionQueryTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withPartitionQueryTimeout(
@@ -594,7 +576,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     public SpannerCallContextTimeoutConfigurator withPartitionQueryTimeoutDuration(
-        java.time.Duration partitionQueryTimeout) {
+        Duration partitionQueryTimeout) {
       this.partitionQueryTimeout = partitionQueryTimeout;
       return this;
     }
@@ -605,14 +587,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return toThreetenDuration(getPartitionReadTimeoutDuration());
     }
 
-    public java.time.Duration getPartitionReadTimeoutDuration() {
+    public Duration getPartitionReadTimeoutDuration() {
       return partitionReadTimeout;
     }
 
-    /**
-     * This method is obsolete. Use {@link #withPartitionReadTimeoutDuration(java.time.Duration)}
-     * instead.
-     */
+    /** This method is obsolete. Use {@link #withPartitionReadTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use withPartitionReadTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withPartitionReadTimeout(
         org.threeten.bp.Duration partitionReadTimeout) {
@@ -620,7 +599,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     public SpannerCallContextTimeoutConfigurator withPartitionReadTimeoutDuration(
-        java.time.Duration partitionReadTimeout) {
+        Duration partitionReadTimeout) {
       this.partitionReadTimeout = partitionReadTimeout;
       return this;
     }
@@ -904,9 +883,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.DIRECT;
     static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
         RetrySettings.newBuilder()
-            .setInitialRetryDelayDuration(java.time.Duration.ofSeconds(5L))
+            .setInitialRetryDelayDuration(Duration.ofSeconds(5L))
             .setRetryDelayMultiplier(2.0)
-            .setMaxRetryDelayDuration(java.time.Duration.ofSeconds(60L))
+            .setMaxRetryDelayDuration(Duration.ofSeconds(60L))
             .setMaxAttempts(10)
             .build();
     private final ImmutableSet<String> allowedClientLibTokens =
@@ -938,7 +917,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         InstanceAdminStubSettings.newBuilder();
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
-    private java.time.Duration partitionedDmlTimeout = java.time.Duration.ofHours(2L);
+    private Duration partitionedDmlTimeout = Duration.ofHours(2L);
     private boolean grpcGcpExtensionEnabled = false;
     private GcpManagedChannelOptions grpcGcpOptions;
     private RetrySettings retryAdministrativeRequestsSettings =
@@ -969,13 +948,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       OperationTimedPollAlgorithm longRunningPollingAlgorithm =
           OperationTimedPollAlgorithm.create(
               RetrySettings.newBuilder()
-                  .setInitialRpcTimeoutDuration(java.time.Duration.ofSeconds(60L))
-                  .setMaxRpcTimeoutDuration(java.time.Duration.ofSeconds(600L))
-                  .setInitialRetryDelayDuration(java.time.Duration.ofSeconds(20L))
-                  .setMaxRetryDelayDuration(java.time.Duration.ofSeconds(45L))
+                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
+                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
                   .setRetryDelayMultiplier(1.5)
                   .setRpcTimeoutMultiplier(1.5)
-                  .setTotalTimeoutDuration(java.time.Duration.ofHours(48L))
+                  .setTotalTimeoutDuration(Duration.ofHours(48L))
                   .build());
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
@@ -1243,11 +1222,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return databaseAdminStubSettingsBuilder;
     }
 
-    /**
-     * This method is obsolete. Use {@link #setPartitionedDmlTimeoutDuration(java.time.Duration)}
-     * instead.
-     */
-    @ObsoleteApi("Use setPartitionedDmlTimeoutDuration(java.time.Duration) instead")
+    /** This method is obsolete. Use {@link #setPartitionedDmlTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use setPartitionedDmlTimeoutDuration(Duration) instead")
     public Builder setPartitionedDmlTimeout(org.threeten.bp.Duration timeout) {
       return setPartitionedDmlTimeoutDuration(toJavaTimeDuration(timeout));
     }
@@ -1256,7 +1232,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * Sets a timeout specifically for Partitioned DML statements executed through {@link
      * DatabaseClient#executePartitionedUpdate(Statement, UpdateOption...)}. The default is 2 hours.
      */
-    public Builder setPartitionedDmlTimeoutDuration(java.time.Duration timeout) {
+    public Builder setPartitionedDmlTimeoutDuration(Duration timeout) {
       this.partitionedDmlTimeout = timeout;
       return this;
     }
@@ -1767,7 +1743,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return toThreetenDuration(getPartitionedDmlTimeoutDuration());
   }
 
-  public java.time.Duration getPartitionedDmlTimeoutDuration() {
+  public Duration getPartitionedDmlTimeoutDuration() {
     return partitionedDmlTimeout;
   }
 

@@ -24,6 +24,7 @@ import com.google.api.core.ObsoleteApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -51,9 +52,9 @@ public class SessionPoolOptions {
 
   private final ActionOnExhaustion actionOnExhaustion;
   private final long loopFrequency;
-  private final java.time.Duration multiplexedSessionMaintenanceLoopFrequency;
+  private final Duration multiplexedSessionMaintenanceLoopFrequency;
   private final int keepAliveIntervalMinutes;
-  private final java.time.Duration removeInactiveSessionAfter;
+  private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final boolean trackStackTraceOfSessionCheckout;
@@ -66,8 +67,8 @@ public class SessionPoolOptions {
   @Deprecated private final long initialWaitForSessionTimeoutMillis;
 
   private final boolean autoDetectDialect;
-  private final java.time.Duration waitForMinSessions;
-  private final java.time.Duration acquireSessionTimeout;
+  private final Duration waitForMinSessions;
+  private final Duration acquireSessionTimeout;
   private final Position releaseToPosition;
   private final long randomizePositionQPSThreshold;
 
@@ -84,7 +85,7 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSessionForRW;
 
-  private final java.time.Duration multiplexedSessionMaintenanceDuration;
+  private final Duration multiplexedSessionMaintenanceDuration;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -238,7 +239,7 @@ public class SessionPoolOptions {
     return loopFrequency;
   }
 
-  java.time.Duration getMultiplexedSessionMaintenanceLoopFrequency() {
+  Duration getMultiplexedSessionMaintenanceLoopFrequency() {
     return this.multiplexedSessionMaintenanceLoopFrequency;
   }
 
@@ -252,7 +253,7 @@ public class SessionPoolOptions {
     return toThreetenDuration(getRemoveInactiveSessionAfterDuration());
   }
 
-  public java.time.Duration getRemoveInactiveSessionAfterDuration() {
+  public Duration getRemoveInactiveSessionAfterDuration() {
     return removeInactiveSessionAfter;
   }
 
@@ -311,12 +312,12 @@ public class SessionPoolOptions {
     return trackStackTraceOfSessionCheckout;
   }
 
-  java.time.Duration getWaitForMinSessions() {
+  Duration getWaitForMinSessions() {
     return waitForMinSessions;
   }
 
   @VisibleForTesting
-  java.time.Duration getAcquireSessionTimeout() {
+  Duration getAcquireSessionTimeout() {
     return acquireSessionTimeout;
   }
 
@@ -370,7 +371,7 @@ public class SessionPoolOptions {
     return null;
   }
 
-  java.time.Duration getMultiplexedSessionMaintenanceDuration() {
+  Duration getMultiplexedSessionMaintenanceDuration() {
     return multiplexedSessionMaintenanceDuration;
   }
 
@@ -410,7 +411,7 @@ public class SessionPoolOptions {
      * Frequency for closing inactive transactions. Between two consecutive task executions, it's
      * ensured that the duration is greater or equal to this duration.
      */
-    private final java.time.Duration executionFrequency;
+    private final Duration executionFrequency;
 
     /**
      * Long-running transactions will be cleaned up if utilisation is greater than the below value.
@@ -421,7 +422,7 @@ public class SessionPoolOptions {
      * A transaction is considered to be idle if it has not been used for a duration greater than
      * the below value.
      */
-    private final java.time.Duration idleTimeThreshold;
+    private final Duration idleTimeThreshold;
 
     InactiveTransactionRemovalOptions(final Builder builder) {
       this.actionOnInactiveTransaction = builder.actionOnInactiveTransaction;
@@ -451,7 +452,7 @@ public class SessionPoolOptions {
           this.usedSessionsRatioThreshold);
     }
 
-    java.time.Duration getExecutionFrequency() {
+    Duration getExecutionFrequency() {
       return executionFrequency;
     }
 
@@ -459,7 +460,7 @@ public class SessionPoolOptions {
       return usedSessionsRatioThreshold;
     }
 
-    java.time.Duration getIdleTimeThreshold() {
+    Duration getIdleTimeThreshold() {
       return idleTimeThreshold;
     }
 
@@ -470,9 +471,9 @@ public class SessionPoolOptions {
     static class Builder {
       private ActionOnInactiveTransaction actionOnInactiveTransaction =
           ActionOnInactiveTransaction.WARN;
-      private java.time.Duration executionFrequency = java.time.Duration.ofMinutes(2);
+      private Duration executionFrequency = Duration.ofMinutes(2);
       private double usedSessionsRatioThreshold = 0.95;
-      private java.time.Duration idleTimeThreshold = java.time.Duration.ofMinutes(60L);
+      private Duration idleTimeThreshold = Duration.ofMinutes(60L);
 
       public Builder() {}
 
@@ -501,7 +502,7 @@ public class SessionPoolOptions {
 
       @VisibleForTesting
       InactiveTransactionRemovalOptions.Builder setExecutionFrequency(
-          final java.time.Duration executionFrequency) {
+          final Duration executionFrequency) {
         this.executionFrequency = executionFrequency;
         return this;
       }
@@ -515,7 +516,7 @@ public class SessionPoolOptions {
 
       @VisibleForTesting
       InactiveTransactionRemovalOptions.Builder setIdleTimeThreshold(
-          final java.time.Duration idleTimeThreshold) {
+          final Duration idleTimeThreshold) {
         this.idleTimeThreshold = idleTimeThreshold;
         return this;
       }
@@ -556,13 +557,12 @@ public class SessionPoolOptions {
     private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
-    private java.time.Duration multiplexedSessionMaintenanceLoopFrequency =
-        java.time.Duration.ofMinutes(10);
+    private Duration multiplexedSessionMaintenanceLoopFrequency = Duration.ofMinutes(10);
     private int keepAliveIntervalMinutes = 30;
-    private java.time.Duration removeInactiveSessionAfter = java.time.Duration.ofMinutes(55L);
+    private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
-    private java.time.Duration waitForMinSessions = java.time.Duration.ZERO;
-    private java.time.Duration acquireSessionTimeout = java.time.Duration.ofSeconds(60);
+    private Duration waitForMinSessions = Duration.ZERO;
+    private Duration acquireSessionTimeout = Duration.ofSeconds(60);
     private final Position releaseToPosition = getReleaseToPositionFromSystemProperty();
     /**
      * The session pool will randomize the position of a session that is being returned when this
@@ -585,7 +585,7 @@ public class SessionPoolOptions {
     // default.
     private boolean useMultiplexedSessionForRW = false;
 
-    private java.time.Duration multiplexedSessionMaintenanceDuration = java.time.Duration.ofDays(7);
+    private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
 
     private static Position getReleaseToPositionFromSystemProperty() {
@@ -686,7 +686,7 @@ public class SessionPoolOptions {
       return this;
     }
 
-    Builder setMultiplexedSessionMaintenanceLoopFrequency(java.time.Duration frequency) {
+    Builder setMultiplexedSessionMaintenanceLoopFrequency(Duration frequency) {
       this.multiplexedSessionMaintenanceLoopFrequency = frequency;
       return this;
     }
@@ -698,15 +698,15 @@ public class SessionPoolOptions {
     }
 
     /**
-     * This method is obsolete. Use {@link
-     * #setRemoveInactiveSessionAfterDuration(java.time.Duration)} instead.
+     * This method is obsolete. Use {@link #setRemoveInactiveSessionAfterDuration(Duration)}
+     * instead.
      */
-    @ObsoleteApi("Use setRemoveInactiveSessionAfterDuration(java.time.Duration) instead")
+    @ObsoleteApi("Use setRemoveInactiveSessionAfterDuration(Duration) instead")
     public Builder setRemoveInactiveSessionAfter(org.threeten.bp.Duration duration) {
       return setRemoveInactiveSessionAfterDuration(toJavaTimeDuration(duration));
     }
 
-    public Builder setRemoveInactiveSessionAfterDuration(java.time.Duration duration) {
+    public Builder setRemoveInactiveSessionAfterDuration(Duration duration) {
       this.removeInactiveSessionAfter = duration;
       return this;
     }
@@ -737,8 +737,8 @@ public class SessionPoolOptions {
      *
      * <p>By default the requests are blocked for 60s and will fail with a `SpannerException` with
      * error code `ResourceExhausted` if this timeout is exceeded. If you wish to block for a
-     * different period use the option {@link
-     * Builder#setAcquireSessionTimeoutDuration(java.time.Duration)} ()}
+     * different period use the option {@link Builder#setAcquireSessionTimeoutDuration(Duration)}
+     * ()}
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
@@ -849,7 +849,7 @@ public class SessionPoolOptions {
 
     @VisibleForTesting
     Builder setMultiplexedSessionMaintenanceDuration(
-        java.time.Duration multiplexedSessionMaintenanceDuration) {
+        Duration multiplexedSessionMaintenanceDuration) {
       this.multiplexedSessionMaintenanceDuration = multiplexedSessionMaintenanceDuration;
       return this;
     }
@@ -926,11 +926,8 @@ public class SessionPoolOptions {
       return this;
     }
 
-    /**
-     * This method is obsolete. Use {@link #setWaitForMinSessionsDuration(java.time.Duration)}
-     * instead.
-     */
-    @ObsoleteApi("Use setWaitForMinSessionsDuration(java.time.Duration) instead")
+    /** This method is obsolete. Use {@link #setWaitForMinSessionsDuration(Duration)} instead. */
+    @ObsoleteApi("Use setWaitForMinSessionsDuration(Duration) instead")
     public Builder setWaitForMinSessions(org.threeten.bp.Duration waitForMinSessions) {
       return setWaitForMinSessionsDuration(toJavaTimeDuration(waitForMinSessions));
     }
@@ -945,16 +942,13 @@ public class SessionPoolOptions {
      *
      * <p>Defaults to zero (initialization is done asynchronously).
      */
-    public Builder setWaitForMinSessionsDuration(java.time.Duration waitForMinSessions) {
+    public Builder setWaitForMinSessionsDuration(Duration waitForMinSessions) {
       this.waitForMinSessions = waitForMinSessions;
       return this;
     }
 
-    /**
-     * This method is obsolete. Use {@link #setAcquireSessionTimeoutDuration(java.time.Duration)}
-     * instead.
-     */
-    @ObsoleteApi("Use setAcquireSessionTimeoutDuration(java.time.Duration) instead")
+    /** This method is obsolete. Use {@link #setAcquireSessionTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use setAcquireSessionTimeoutDuration(Duration) instead")
     public Builder setAcquireSessionTimeout(org.threeten.bp.Duration acquireSessionTimeout) {
       return setAcquireSessionTimeoutDuration(toJavaTimeDuration(acquireSessionTimeout));
     }
@@ -963,7 +957,7 @@ public class SessionPoolOptions {
      * If greater than zero, we wait for said duration when no sessions are available in the {@link
      * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
      */
-    public Builder setAcquireSessionTimeoutDuration(java.time.Duration acquireSessionTimeout) {
+    public Builder setAcquireSessionTimeoutDuration(Duration acquireSessionTimeout) {
       try {
         if (acquireSessionTimeout != null) {
           Preconditions.checkArgument(

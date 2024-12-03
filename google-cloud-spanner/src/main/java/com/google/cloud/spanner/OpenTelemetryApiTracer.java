@@ -27,6 +27,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -165,18 +166,15 @@ class OpenTelemetryApiTracer implements ApiTracer {
     lastConnectionId = null;
   }
 
-  /**
-   * This method is obsolete. Use {@link #attemptFailedDuration(Throwable, java.time.Duration)}
-   * instead.
-   */
+  /** This method is obsolete. Use {@link #attemptFailedDuration(Throwable, Duration)} instead. */
   @Override
-  @ObsoleteApi("Use attemptFailedDuration(Throwable, java.time.Duration) instead")
+  @ObsoleteApi("Use attemptFailedDuration(Throwable, Duration) instead")
   public void attemptFailed(Throwable error, org.threeten.bp.Duration delay) {
     attemptFailedDuration(error, toJavaTimeDuration(delay));
   }
 
   @Override
-  public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
+  public void attemptFailedDuration(Throwable error, Duration delay) {
     AttributesBuilder builder = baseAttemptAttributesBuilder();
     if (delay != null) {
       builder.put(RETRY_DELAY_KEY, delay.toMillis());

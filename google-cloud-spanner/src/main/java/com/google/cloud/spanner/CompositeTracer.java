@@ -23,6 +23,7 @@ import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.BaseApiTracer;
 import com.google.api.gax.tracing.MetricsTracer;
 import com.google.common.collect.ImmutableList;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -117,7 +118,7 @@ public class CompositeTracer extends BaseApiTracer {
   }
 
   @Override
-  public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
+  public void attemptFailedDuration(Throwable error, Duration delay) {
     for (ApiTracer child : children) {
       child.attemptFailedDuration(error, delay);
     }

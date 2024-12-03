@@ -98,7 +98,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
                     // Set the maintainer to loop once every 1ms
                     .setMultiplexedSessionMaintenanceLoopFrequency(Duration.ofMillis(1L))
                     // Set multiplexed sessions to be replaced once every 1ms
-                    .setMultiplexedSessionMaintenanceDuration(java.time.Duration.ofMillis(1L))
+                    .setMultiplexedSessionMaintenanceDuration(Duration.ofMillis(1L))
                     .setFailOnSessionLeak()
                     .build())
             .build()
