@@ -1,5 +1,25 @@
 # Changelog
 
+## [6.82.0](https://github.com/googleapis/java-spanner/compare/v6.81.2...v6.82.0) (2024-12-03)
+
+
+### Features
+
+* Add option for retrying DML as PDML ([#3480](https://github.com/googleapis/java-spanner/issues/3480)) ([b545557](https://github.com/googleapis/java-spanner/commit/b545557b1a27868aeb5115b3947d42db015cc00e))
+* Add the last statement option to ExecuteSqlRequest and ExecuteBatchDmlRequest ([76ab801](https://github.com/googleapis/java-spanner/commit/76ab8011b0aa03e5bb98e375595358732cde31b7))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.50.0 ([76ab801](https://github.com/googleapis/java-spanner/commit/76ab8011b0aa03e5bb98e375595358732cde31b7))
+* Shutdown built in metrics meter provider ([#3518](https://github.com/googleapis/java-spanner/issues/3518)) ([c935e2e](https://github.com/googleapis/java-spanner/commit/c935e2eff780100273bc35c11458485c9bb05230))
+* **spanner:** GetEdition() is returning null for Instance ([#3496](https://github.com/googleapis/java-spanner/issues/3496)) ([77cb585](https://github.com/googleapis/java-spanner/commit/77cb585d57fd30f953b0ffb80be124e3cb1c6f39))
+
+
+### Dependencies
+
+* Update dependency commons-io:commons-io to v2.18.0 ([#3492](https://github.com/googleapis/java-spanner/issues/3492)) ([5c8b3ad](https://github.com/googleapis/java-spanner/commit/5c8b3ade163b4cdb81a53f5dcf777ebba48ef265))
+
 ## [6.81.2](https://github.com/googleapis/java-spanner/compare/v6.81.1...v6.81.2) (2024-11-20)
 
 
