@@ -140,6 +140,7 @@ public class SampleTestBaseV2 {
       }
     }
 
+    spanner.close();
     databaseAdminClient.close();
     instanceAdminClient.close();
 

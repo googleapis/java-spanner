@@ -53,6 +53,7 @@ public class AddAndDropDatabaseRole {
               databaseId,
               ImmutableList.of(
                   "CREATE ROLE " + parentRole,
+                  "GRANT SELECT ON TABLE Singers TO ROLE " + parentRole,
                   "GRANT SELECT ON TABLE Albums TO ROLE " + parentRole,
                   "CREATE ROLE " + childRole,
                   "GRANT ROLE " + parentRole + " TO ROLE " + childRole),

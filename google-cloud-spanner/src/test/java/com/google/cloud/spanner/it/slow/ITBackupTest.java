@@ -717,7 +717,7 @@ public class ITBackupTest {
     Page<Backup> page = dbAdminClient.listBackups(instanceId, Options.pageSize(1));
     assertEquals(1, Iterables.size(page.getValues()));
     numBackups++;
-    assertTrue(page.hasNextPage());
+    assertFalse(page.hasNextPage());
     Set<String> seenPageTokens = new HashSet<>();
     seenPageTokens.add("");
     while (page.hasNextPage()) {
