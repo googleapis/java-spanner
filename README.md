@@ -56,13 +56,13 @@ implementation 'com.google.cloud:google-cloud-spanner'
 If you are using Gradle without BOM, add this to your dependencies:
 
 ```Groovy
-implementation 'com.google.cloud:google-cloud-spanner:6.81.1'
+implementation 'com.google.cloud:google-cloud-spanner:6.82.0'
 ```
 
 If you are using SBT, add this to your dependencies:
 
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.81.1"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.82.0"
 ```
 
 ## Authentication
@@ -91,7 +91,7 @@ to add `google-cloud-spanner` as a dependency in your code.
 ## About Cloud Spanner
 
 
-[Cloud Spanner][product-docs] is a fully managed, mission-critical,  relational database service that offers transactional consistency at global scale, \nschemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication \nfor high availability.\n\nBe sure to activate the Cloud Spanner API on the Developer's Console to\nuse Cloud Spanner from your project.
+[Cloud Spanner][product-docs] is a fully managed, mission-critical,  relational database service that offers transactional consistency at global scale, schemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication for high availability. Be sure to activate the Cloud Spanner API on the Developer's Console to use Cloud Spanner from your project.
 
 See the [Cloud Spanner client library docs][javadocs] to learn how to
 use this Cloud Spanner Client Library.
@@ -721,7 +721,7 @@ Java is a registered trademark of Oracle and/or its affiliates.
 [kokoro-badge-link-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java11.html
 [stability-image]: https://img.shields.io/badge/stability-stable-green
 [maven-version-image]: https://img.shields.io/maven-central/v/com.google.cloud/google-cloud-spanner.svg
-[maven-version-link]: https://central.sonatype.com/artifact/com.google.cloud/google-cloud-spanner/6.81.1
+[maven-version-link]: https://central.sonatype.com/artifact/com.google.cloud/google-cloud-spanner/6.82.0
 [authentication]: https://github.com/googleapis/google-cloud-java#authentication
 [auth-scopes]: https://developers.google.com/identity/protocols/oauth2/scopes
 [predefined-iam-roles]: https://cloud.google.com/iam/docs/understanding-roles#predefined_roles
