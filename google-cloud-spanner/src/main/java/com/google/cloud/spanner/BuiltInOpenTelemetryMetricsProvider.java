@@ -65,8 +65,9 @@ final class BuiltInOpenTelemetryMetricsProvider {
         SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
         BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
             SpannerCloudMonitoringExporter.create(projectId, credentials), sdkMeterProviderBuilder);
-        this.openTelemetry =
-            OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProviderBuilder.build()).build();
+        SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+        this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
+        Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
       }
       return this.openTelemetry;
     } catch (IOException ex) {

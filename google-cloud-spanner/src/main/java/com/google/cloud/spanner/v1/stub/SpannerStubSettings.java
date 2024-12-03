@@ -75,9 +75,9 @@ import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import javax.annotation.Generated;
-import org.threeten.bp.Duration;
 
 // AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
@@ -484,43 +484,43 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       RetrySettings settings = null;
       settings =
           RetrySettings.newBuilder()
-              .setInitialRetryDelay(Duration.ofMillis(250L))
+              .setInitialRetryDelayDuration(Duration.ofMillis(250L))
               .setRetryDelayMultiplier(1.3)
-              .setMaxRetryDelay(Duration.ofMillis(32000L))
-              .setInitialRpcTimeout(Duration.ofMillis(30000L))
+              .setMaxRetryDelayDuration(Duration.ofMillis(32000L))
+              .setInitialRpcTimeoutDuration(Duration.ofMillis(30000L))
               .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(30000L))
-              .setTotalTimeout(Duration.ofMillis(30000L))
+              .setMaxRpcTimeoutDuration(Duration.ofMillis(30000L))
+              .setTotalTimeoutDuration(Duration.ofMillis(30000L))
               .build();
       definitions.put("retry_policy_3_params", settings);
       settings =
           RetrySettings.newBuilder()
-              .setInitialRetryDelay(Duration.ofMillis(250L))
+              .setInitialRetryDelayDuration(Duration.ofMillis(250L))
               .setRetryDelayMultiplier(1.3)
-              .setMaxRetryDelay(Duration.ofMillis(32000L))
-              .setInitialRpcTimeout(Duration.ofMillis(60000L))
+              .setMaxRetryDelayDuration(Duration.ofMillis(32000L))
+              .setInitialRpcTimeoutDuration(Duration.ofMillis(60000L))
               .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(60000L))
-              .setTotalTimeout(Duration.ofMillis(60000L))
+              .setMaxRpcTimeoutDuration(Duration.ofMillis(60000L))
+              .setTotalTimeoutDuration(Duration.ofMillis(60000L))
               .build();
       definitions.put("retry_policy_2_params", settings);
       settings =
           RetrySettings.newBuilder()
-              .setInitialRetryDelay(Duration.ofMillis(250L))
+              .setInitialRetryDelayDuration(Duration.ofMillis(250L))
               .setRetryDelayMultiplier(1.3)
-              .setMaxRetryDelay(Duration.ofMillis(32000L))
-              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+              .setMaxRetryDelayDuration(Duration.ofMillis(32000L))
+              .setInitialRpcTimeoutDuration(Duration.ofMillis(3600000L))
               .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-              .setTotalTimeout(Duration.ofMillis(3600000L))
+              .setMaxRpcTimeoutDuration(Duration.ofMillis(3600000L))
+              .setTotalTimeoutDuration(Duration.ofMillis(3600000L))
               .build();
       definitions.put("retry_policy_1_params", settings);
       settings =
           RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+              .setInitialRpcTimeoutDuration(Duration.ofMillis(3600000L))
               .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-              .setTotalTimeout(Duration.ofMillis(3600000L))
+              .setMaxRpcTimeoutDuration(Duration.ofMillis(3600000L))
+              .setTotalTimeoutDuration(Duration.ofMillis(3600000L))
               .build();
       definitions.put("no_retry_0_params", settings);
       RETRY_PARAM_DEFINITIONS = definitions.build();

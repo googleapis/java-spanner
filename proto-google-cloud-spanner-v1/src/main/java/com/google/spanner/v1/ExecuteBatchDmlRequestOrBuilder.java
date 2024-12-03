@@ -247,4 +247,25 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * <code>.google.spanner.v1.RequestOptions request_options = 5;</code>
    */
   com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If set to true, this request marks the end of the transaction.
+   * The transaction should be committed or aborted after these statements
+   * execute, and attempts to execute any other requests against this
+   * transaction (including reads and queries) will be rejected.
+   *
+   * Setting this option may cause some error reporting to be deferred until
+   * commit time (e.g. validation of unique constraints). Given this, successful
+   * execution of statements should not be assumed until a subsequent Commit
+   * call completes successfully.
+   * </pre>
+   *
+   * <code>bool last_statements = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
+   *
+   * @return The lastStatements.
+   */
+  boolean getLastStatements();
 }
