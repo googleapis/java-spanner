@@ -25,7 +25,11 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.admin.database.v1.*;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.InstanceName;
+import com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import java.util.concurrent.ExecutionException;
 
 public class RestoreBackupWithMultiRegionEncryptionKey {
