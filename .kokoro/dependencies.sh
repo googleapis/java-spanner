@@ -16,6 +16,8 @@
 set -eo pipefail
 shopt -s nullglob
 
+set -x
+
 ## Get the directory of the build script
 scriptDir=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 ## cd to the parent directory, i.e. the root of the git repo
@@ -53,9 +55,8 @@ if [ ! -z "${JAVA11_HOME}" ]; then
   setJava "${JAVA11_HOME}"
 fi
 
-# Enable airlock only for Kokoro jobs
 INSTALL_OPTS=""
-if [[ ! -z "${KOKORO_JOB_TYPE}" ]]; then
+if [[ $ENABLE_AIRLOCK = 'true' ]]; then
   INSTALL_OPTS="-Pairlock-trusted"
 fi
 
