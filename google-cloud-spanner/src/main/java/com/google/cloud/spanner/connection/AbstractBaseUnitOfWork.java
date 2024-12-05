@@ -39,6 +39,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.ReadWriteTransaction.Builder;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -75,6 +76,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
   protected final String transactionTag;
+  protected final List<TransactionRetryListener> transactionRetryListeners;
   protected final boolean excludeTxnFromChangeStreams;
   protected final RpcPriority rpcPriority;
   protected final Span span;
@@ -110,6 +112,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     private StatementExecutor statementExecutor;
     private StatementTimeout statementTimeout = new StatementTimeout();
     private String transactionTag;
+    private List<TransactionRetryListener> transactionRetryListeners;
 
     private boolean excludeTxnFromChangeStreams;
     private RpcPriority rpcPriority;
@@ -132,6 +135,16 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       Preconditions.checkNotNull(timeout);
       this.statementTimeout = timeout;
       return self();
+    }
+
+    B setTransactionRetryListeners(List<TransactionRetryListener> listeners) {
+      Preconditions.checkNotNull(listeners);
+      this.transactionRetryListeners = listeners;
+      return self();
+    }
+
+    boolean hasTransactionRetryListeners() {
+      return this.transactionRetryListeners != null;
     }
 
     B setTransactionTag(@Nullable String tag) {
@@ -162,6 +175,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.statementExecutor = builder.statementExecutor;
     this.statementTimeout = builder.statementTimeout;
     this.transactionTag = builder.transactionTag;
+    this.transactionRetryListeners = builder.transactionRetryListeners;
     this.excludeTxnFromChangeStreams = builder.excludeTxnFromChangeStreams;
     this.rpcPriority = builder.rpcPriority;
     this.span = Preconditions.checkNotNull(builder.span);

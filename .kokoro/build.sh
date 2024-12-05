@@ -113,8 +113,8 @@ integration-directpath-enabled)
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
-      -Dspanner.gce.config.project_id=gcloud-devel \
-      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-directpath \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-java-client-directpath \
+      -Dspanner.gce.config.project_id=span-cloud-testing \
       -fae \
       verify
     RETURN_CODE=$?

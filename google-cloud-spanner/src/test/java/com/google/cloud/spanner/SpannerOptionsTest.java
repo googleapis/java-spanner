@@ -755,6 +755,19 @@ public class SpannerOptionsTest {
   }
 
   @Test
+  public void testmonitoringHost() {
+    String metricsEndpoint = "test-endpoint:443";
+    assertNull(SpannerOptions.newBuilder().setProjectId("p").build().getMonitoringHost());
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setMonitoringHost(metricsEndpoint)
+                .build()
+                .getMonitoringHost())
+        .isEqualTo(metricsEndpoint);
+  }
+
+  @Test
   public void testSetDirectedReadOptions() {
     final DirectedReadOptions directedReadOptions =
         DirectedReadOptions.newBuilder()

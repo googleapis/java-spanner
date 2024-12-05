@@ -371,17 +371,17 @@
 	  }
 	},
 	{
-	  "name": "SET AUTOCOMMIT_DML_MODE = 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'",
+	  "name": "SET AUTOCOMMIT_DML_MODE = 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'|'TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
 	  "statementType": "SET_AUTOCOMMIT_DML_MODE",
 	  "regex": "(?is)\\A\\s*set\\s+autocommit_dml_mode\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetAutocommitDmlMode",
-	  "exampleStatements": ["set autocommit_dml_mode='PARTITIONED_NON_ATOMIC'", "set autocommit_dml_mode='TRANSACTIONAL'"],
+	  "exampleStatements": ["set autocommit_dml_mode='PARTITIONED_NON_ATOMIC'", "set autocommit_dml_mode='TRANSACTIONAL'", "set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'"],
 	  "setStatement": {
 	    "propertyName": "AUTOCOMMIT_DML_MODE",
 	    "separator": "=",
-	    "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL)'",
+	    "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL|TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC)'",
 	    "converterName": "ClientSideStatementValueConverters$AutocommitDmlModeConverter"
 	  }
 	},

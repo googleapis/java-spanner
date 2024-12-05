@@ -2125,6 +2125,7 @@ class ConnectionImpl implements Connection {
               .setReadOnly(getConnectionPropertyValue(READONLY))
               .setReadOnlyStaleness(getConnectionPropertyValue(READ_ONLY_STALENESS))
               .setAutocommitDmlMode(getConnectionPropertyValue(AUTOCOMMIT_DML_MODE))
+              .setTransactionRetryListeners(transactionRetryListeners)
               .setReturnCommitStats(getConnectionPropertyValue(RETURN_COMMIT_STATS))
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
               .setMaxCommitDelay(getConnectionPropertyValue(MAX_COMMIT_DELAY))
