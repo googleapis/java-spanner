@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.spanner.v1.PartialResultSet;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -31,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /** Adapts a streaming read/query call into an iterator over partial result sets. */
 @VisibleForTesting
@@ -77,7 +77,8 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     this.call = call;
     this.withBeginTransaction = withBeginTransaction;
     ApiCallContext callContext = call.getCallContext();
-    Duration streamWaitTimeout = callContext == null ? null : callContext.getStreamWaitTimeout();
+    Duration streamWaitTimeout =
+        callContext == null ? null : callContext.getStreamWaitTimeoutDuration();
     if (streamWaitTimeout != null) {
       // Determine the timeout unit to use. This reduces the precision to seconds if the timeout
       // value is more than 1 second, which is lower than the precision that would normally be

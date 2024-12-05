@@ -275,7 +275,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private static void maybeWaitForSessionCreation(
       SessionPoolOptions sessionPoolOptions, ApiFuture<SessionReference> future) {
-    org.threeten.bp.Duration waitDuration = sessionPoolOptions.getWaitForMinSessions();
+    Duration waitDuration = sessionPoolOptions.getWaitForMinSessions();
     if (waitDuration != null && !waitDuration.isZero()) {
       long timeoutMillis = waitDuration.toMillis();
       try {

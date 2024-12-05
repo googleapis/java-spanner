@@ -97,6 +97,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -114,7 +115,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
 class ConnectionImpl implements Connection {
