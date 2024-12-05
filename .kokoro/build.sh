@@ -43,7 +43,7 @@ fi
 
 # attempt to install 3 times with exponential backoff (starting with 10 seconds)
 retry_with_backoff 3 10 \
-  mvn install -B -V -ntp \
+  mvn install -B -V \
     ${INSTALL_OPTS} \
     -DskipTests=true \
     -Dclirr.skip=true \
