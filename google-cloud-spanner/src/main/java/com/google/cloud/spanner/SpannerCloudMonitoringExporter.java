@@ -71,7 +71,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   private final String spannerProjectId;
 
   static SpannerCloudMonitoringExporter create(
-      String projectId, @Nullable Credentials credentials, @Nullable String metricsHost)
+      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost)
       throws IOException {
     MetricServiceSettings.Builder settingsBuilder = MetricServiceSettings.newBuilder();
     CredentialsProvider credentialsProvider;
@@ -81,8 +81,8 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
       credentialsProvider = FixedCredentialsProvider.create(credentials);
     }
     settingsBuilder.setCredentialsProvider(credentialsProvider);
-    if (metricsHost != null) {
-      settingsBuilder.setEndpoint(metricsHost);
+    if (monitoringHost != null) {
+      settingsBuilder.setEndpoint(monitoringHost);
     }
 
     org.threeten.bp.Duration timeout = Duration.ofMinutes(1);

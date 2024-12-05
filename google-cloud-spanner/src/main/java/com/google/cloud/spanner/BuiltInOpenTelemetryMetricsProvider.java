@@ -60,12 +60,12 @@ final class BuiltInOpenTelemetryMetricsProvider {
   private BuiltInOpenTelemetryMetricsProvider() {}
 
   OpenTelemetry getOrCreateOpenTelemetry(
-      String projectId, @Nullable Credentials credentials, @Nullable String metricsHost) {
+      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost) {
     try {
       if (this.openTelemetry == null) {
         SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
         BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
-            SpannerCloudMonitoringExporter.create(projectId, credentials, metricsHost),
+            SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
             sdkMeterProviderBuilder);
         this.openTelemetry =
             OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProviderBuilder.build()).build();

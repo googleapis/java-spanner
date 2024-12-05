@@ -755,15 +755,15 @@ public class SpannerOptionsTest {
   }
 
   @Test
-  public void testMetricsHost() {
+  public void testmonitoringHost() {
     String metricsEndpoint = "test-endpoint:443";
-    assertNull(SpannerOptions.newBuilder().setProjectId("p").build().getMetricsHost());
+    assertNull(SpannerOptions.newBuilder().setProjectId("p").build().getMonitoringHost());
     assertThat(
             SpannerOptions.newBuilder()
                 .setProjectId("p")
-                .setMetricsHost(metricsEndpoint)
+                .setMonitoringHost(metricsEndpoint)
                 .build()
-                .getMetricsHost())
+                .getMonitoringHost())
         .isEqualTo(metricsEndpoint);
   }
 

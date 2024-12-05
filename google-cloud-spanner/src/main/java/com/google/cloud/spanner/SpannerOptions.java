@@ -164,7 +164,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableBuiltInMetrics;
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
-  private final String metricsHost;
+  private final String monitoringHost;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -673,7 +673,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableExtendedTracing = builder.enableExtendedTracing;
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
-    metricsHost = builder.metricsHost;
+    monitoringHost = builder.monitoringHost;
   }
 
   /**
@@ -715,7 +715,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
-    default String getMetricsHost() {
+    default String getMonitoringHost() {
       return null;
     }
   }
@@ -734,7 +734,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
-    private static final String SPANNER_METRICS_HOST = "SPANNER_METRICS_HOST";
+    private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
 
     private SpannerEnvironmentImpl() {}
 
@@ -772,8 +772,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
-    public String getMetricsHost() {
-      return System.getenv(SPANNER_METRICS_HOST);
+    public String getMonitoringHost() {
+      return System.getenv(SPANNER_MONITORING_HOST);
     }
   }
 
@@ -840,7 +840,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
-    private String metricsHost = SpannerOptions.environment.getMetricsHost();
+    private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -908,7 +908,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableExtendedTracing = options.enableExtendedTracing;
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
-      this.metricsHost = options.metricsHost;
+      this.monitoringHost = options.monitoringHost;
     }
 
     @Override
@@ -1431,9 +1431,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /** Sets the metrics host to be used for Built-in client side metrics */
-    public Builder setMetricsHost(String metricsHost) {
-      this.metricsHost = metricsHost;
+    /** Sets the monitoring host to be used for Built-in client side metrics */
+    public Builder setMonitoringHost(String monitoringHost) {
+      this.monitoringHost = monitoringHost;
       return this;
     }
 
@@ -1747,7 +1747,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
         this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-            this.getProjectId(), getCredentials(), this.metricsHost);
+            this.getProjectId(), getCredentials(), this.monitoringHost);
 
     return openTelemetry != null
         ? new MetricsTracerFactory(
@@ -1775,8 +1775,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   /** Returns the override metrics Host. */
-  String getMetricsHost() {
-    return metricsHost;
+  String getMonitoringHost() {
+    return monitoringHost;
   }
 
   @BetaApi
