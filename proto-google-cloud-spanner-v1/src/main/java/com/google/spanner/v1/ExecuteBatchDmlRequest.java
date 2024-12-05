@@ -2100,6 +2100,32 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         : requestOptions_;
   }
 
+  public static final int LAST_STATEMENTS_FIELD_NUMBER = 6;
+  private boolean lastStatements_ = false;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If set to true, this request marks the end of the transaction.
+   * The transaction should be committed or aborted after these statements
+   * execute, and attempts to execute any other requests against this
+   * transaction (including reads and queries) will be rejected.
+   *
+   * Setting this option may cause some error reporting to be deferred until
+   * commit time (e.g. validation of unique constraints). Given this, successful
+   * execution of statements should not be assumed until a subsequent Commit
+   * call completes successfully.
+   * </pre>
+   *
+   * <code>bool last_statements = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
+   *
+   * @return The lastStatements.
+   */
+  @java.lang.Override
+  public boolean getLastStatements() {
+    return lastStatements_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -2129,6 +2155,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(5, getRequestOptions());
     }
+    if (lastStatements_ != false) {
+      output.writeBool(6, lastStatements_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -2152,6 +2181,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, getRequestOptions());
+    }
+    if (lastStatements_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(6, lastStatements_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -2180,6 +2212,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
+    if (getLastStatements() != other.getLastStatements()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -2207,6 +2240,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
+    hash = (37 * hash) + LAST_STATEMENTS_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getLastStatements());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -2376,6 +2411,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
+      lastStatements_ = false;
       return this;
     }
 
@@ -2441,6 +2477,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         result.requestOptions_ =
             requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
         to_bitField0_ |= 0x00000002;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.lastStatements_ = lastStatements_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -2531,6 +2570,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
       }
+      if (other.getLastStatements() != false) {
+        setLastStatements(other.getLastStatements());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -2595,6 +2637,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
                 bitField0_ |= 0x00000010;
                 break;
               } // case 42
+            case 48:
+              {
+                lastStatements_ = input.readBool();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 48
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -3713,6 +3761,83 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         requestOptions_ = null;
       }
       return requestOptionsBuilder_;
+    }
+
+    private boolean lastStatements_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If set to true, this request marks the end of the transaction.
+     * The transaction should be committed or aborted after these statements
+     * execute, and attempts to execute any other requests against this
+     * transaction (including reads and queries) will be rejected.
+     *
+     * Setting this option may cause some error reporting to be deferred until
+     * commit time (e.g. validation of unique constraints). Given this, successful
+     * execution of statements should not be assumed until a subsequent Commit
+     * call completes successfully.
+     * </pre>
+     *
+     * <code>bool last_statements = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @return The lastStatements.
+     */
+    @java.lang.Override
+    public boolean getLastStatements() {
+      return lastStatements_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If set to true, this request marks the end of the transaction.
+     * The transaction should be committed or aborted after these statements
+     * execute, and attempts to execute any other requests against this
+     * transaction (including reads and queries) will be rejected.
+     *
+     * Setting this option may cause some error reporting to be deferred until
+     * commit time (e.g. validation of unique constraints). Given this, successful
+     * execution of statements should not be assumed until a subsequent Commit
+     * call completes successfully.
+     * </pre>
+     *
+     * <code>bool last_statements = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @param value The lastStatements to set.
+     * @return This builder for chaining.
+     */
+    public Builder setLastStatements(boolean value) {
+
+      lastStatements_ = value;
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If set to true, this request marks the end of the transaction.
+     * The transaction should be committed or aborted after these statements
+     * execute, and attempts to execute any other requests against this
+     * transaction (including reads and queries) will be rejected.
+     *
+     * Setting this option may cause some error reporting to be deferred until
+     * commit time (e.g. validation of unique constraints). Given this, successful
+     * execution of statements should not be assumed until a subsequent Commit
+     * call completes successfully.
+     * </pre>
+     *
+     * <code>bool last_statements = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearLastStatements() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      lastStatements_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

@@ -1210,6 +1210,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setLastStatement(true)
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
    * }
@@ -1259,6 +1260,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setLastStatement(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
    *   // Do something.
@@ -1301,6 +1303,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setLastStatement(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream =
    *       spannerClient.executeStreamingSqlCallable().call(request);
@@ -1345,6 +1348,7 @@ public class SpannerClient implements BackgroundResource {
    *           .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
    *           .setSeqno(109325920)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setLastStatements(true)
    *           .build();
    *   ExecuteBatchDmlResponse response = spannerClient.executeBatchDml(request);
    * }
@@ -1387,6 +1391,7 @@ public class SpannerClient implements BackgroundResource {
    *           .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
    *           .setSeqno(109325920)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setLastStatements(true)
    *           .build();
    *   ApiFuture<ExecuteBatchDmlResponse> future =
    *       spannerClient.executeBatchDmlCallable().futureCall(request);
