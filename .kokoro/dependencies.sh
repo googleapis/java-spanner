@@ -62,7 +62,7 @@ fi
 
 # this should run maven enforcer
 retry_with_backoff 3 10 \
-  mvn install -B -V -ntp \
+  mvn install -B -V \
     ${INSTALL_OPTS} \
     -DskipTests=true \
     -Dmaven.javadoc.skip=true \
