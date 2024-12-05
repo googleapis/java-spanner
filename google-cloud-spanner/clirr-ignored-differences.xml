@@ -791,4 +791,22 @@
     <method>boolean isAutoBatchDmlUpdateCountVerification()</method>
   </difference>
   
+  <!-- Retry DML as Partitioned DML -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/TransactionRetryListener</className>
+    <method>void retryDmlAsPartitionedDmlStarting(java.util.UUID, com.google.cloud.spanner.Statement, com.google.cloud.spanner.TransactionMutationLimitExceededException)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/TransactionRetryListener</className>
+    <method>void retryDmlAsPartitionedDmlFinished(java.util.UUID, com.google.cloud.spanner.Statement, long)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/TransactionRetryListener</className>
+    <method>void retryDmlAsPartitionedDmlFailed(java.util.UUID, com.google.cloud.spanner.Statement, java.lang.Throwable)</method>
+  </difference>
+  
+  
 </differences>

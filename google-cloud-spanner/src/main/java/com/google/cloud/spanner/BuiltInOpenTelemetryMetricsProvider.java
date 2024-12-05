@@ -69,6 +69,7 @@ final class BuiltInOpenTelemetryMetricsProvider {
             sdkMeterProviderBuilder);
         this.openTelemetry =
             OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProviderBuilder.build()).build();
+        Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
       }
       return this.openTelemetry;
     } catch (IOException ex) {
