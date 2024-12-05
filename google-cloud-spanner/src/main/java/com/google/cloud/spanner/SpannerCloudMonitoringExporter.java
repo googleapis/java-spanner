@@ -41,6 +41,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /**
  * Spanner Cloud Monitoring OpenTelemetry Exporter.
@@ -85,10 +85,10 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
       settingsBuilder.setEndpoint(monitoringHost);
     }
 
-    org.threeten.bp.Duration timeout = Duration.ofMinutes(1);
+    Duration timeout = Duration.ofMinutes(1);
     // TODO: createServiceTimeSeries needs special handling if the request failed. Leaving
     // it as not retried for now.
-    settingsBuilder.createServiceTimeSeriesSettings().setSimpleTimeoutNoRetries(timeout);
+    settingsBuilder.createServiceTimeSeriesSettings().setSimpleTimeoutNoRetriesDuration(timeout);
 
     return new SpannerCloudMonitoringExporter(
         projectId, MetricServiceClient.create(settingsBuilder.build()));

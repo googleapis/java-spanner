@@ -16,13 +16,17 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+
 import com.google.api.core.InternalApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
-import org.threeten.bp.Duration;
 
 /** Options for the session pool used by {@code DatabaseClient}. */
 public class SessionPoolOptions {
@@ -48,7 +52,7 @@ public class SessionPoolOptions {
 
   private final ActionOnExhaustion actionOnExhaustion;
   private final long loopFrequency;
-  private final java.time.Duration multiplexedSessionMaintenanceLoopFrequency;
+  private final Duration multiplexedSessionMaintenanceLoopFrequency;
   private final int keepAliveIntervalMinutes;
   private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
@@ -81,7 +85,6 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSessionForRW;
 
-  // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
 
   private SessionPoolOptions(Builder builder) {
@@ -236,7 +239,7 @@ public class SessionPoolOptions {
     return loopFrequency;
   }
 
-  java.time.Duration getMultiplexedSessionMaintenanceLoopFrequency() {
+  Duration getMultiplexedSessionMaintenanceLoopFrequency() {
     return this.multiplexedSessionMaintenanceLoopFrequency;
   }
 
@@ -244,7 +247,13 @@ public class SessionPoolOptions {
     return keepAliveIntervalMinutes;
   }
 
-  public Duration getRemoveInactiveSessionAfter() {
+  /** This method is obsolete. Use {@link #getRemoveInactiveSessionAfterDuration()} instead. */
+  @ObsoleteApi("Use getRemoveInactiveSessionAfterDuration() instead")
+  public org.threeten.bp.Duration getRemoveInactiveSessionAfter() {
+    return toThreetenDuration(getRemoveInactiveSessionAfterDuration());
+  }
+
+  public Duration getRemoveInactiveSessionAfterDuration() {
     return removeInactiveSessionAfter;
   }
 
@@ -548,8 +557,7 @@ public class SessionPoolOptions {
     private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
-    private java.time.Duration multiplexedSessionMaintenanceLoopFrequency =
-        java.time.Duration.ofMinutes(10);
+    private Duration multiplexedSessionMaintenanceLoopFrequency = Duration.ofMinutes(10);
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
@@ -678,7 +686,7 @@ public class SessionPoolOptions {
       return this;
     }
 
-    Builder setMultiplexedSessionMaintenanceLoopFrequency(java.time.Duration frequency) {
+    Builder setMultiplexedSessionMaintenanceLoopFrequency(Duration frequency) {
       this.multiplexedSessionMaintenanceLoopFrequency = frequency;
       return this;
     }
@@ -689,7 +697,16 @@ public class SessionPoolOptions {
       return this;
     }
 
-    public Builder setRemoveInactiveSessionAfter(Duration duration) {
+    /**
+     * This method is obsolete. Use {@link #setRemoveInactiveSessionAfterDuration(Duration)}
+     * instead.
+     */
+    @ObsoleteApi("Use setRemoveInactiveSessionAfterDuration(Duration) instead")
+    public Builder setRemoveInactiveSessionAfter(org.threeten.bp.Duration duration) {
+      return setRemoveInactiveSessionAfterDuration(toJavaTimeDuration(duration));
+    }
+
+    public Builder setRemoveInactiveSessionAfterDuration(Duration duration) {
       this.removeInactiveSessionAfter = duration;
       return this;
     }
@@ -720,7 +737,8 @@ public class SessionPoolOptions {
      *
      * <p>By default the requests are blocked for 60s and will fail with a `SpannerException` with
      * error code `ResourceExhausted` if this timeout is exceeded. If you wish to block for a
-     * different period use the option {@link Builder#setAcquireSessionTimeout(Duration)} ()}
+     * different period use the option {@link Builder#setAcquireSessionTimeoutDuration(Duration)}
+     * ()}
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
@@ -908,6 +926,12 @@ public class SessionPoolOptions {
       return this;
     }
 
+    /** This method is obsolete. Use {@link #setWaitForMinSessionsDuration(Duration)} instead. */
+    @ObsoleteApi("Use setWaitForMinSessionsDuration(Duration) instead")
+    public Builder setWaitForMinSessions(org.threeten.bp.Duration waitForMinSessions) {
+      return setWaitForMinSessionsDuration(toJavaTimeDuration(waitForMinSessions));
+    }
+
     /**
      * If greater than zero, waits for the session pool to have at least {@link
      * SessionPoolOptions#minSessions} before returning the database client to the caller. Note that
@@ -918,16 +942,22 @@ public class SessionPoolOptions {
      *
      * <p>Defaults to zero (initialization is done asynchronously).
      */
-    public Builder setWaitForMinSessions(Duration waitForMinSessions) {
+    public Builder setWaitForMinSessionsDuration(Duration waitForMinSessions) {
       this.waitForMinSessions = waitForMinSessions;
       return this;
+    }
+
+    /** This method is obsolete. Use {@link #setAcquireSessionTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use setAcquireSessionTimeoutDuration(Duration) instead")
+    public Builder setAcquireSessionTimeout(org.threeten.bp.Duration acquireSessionTimeout) {
+      return setAcquireSessionTimeoutDuration(toJavaTimeDuration(acquireSessionTimeout));
     }
 
     /**
      * If greater than zero, we wait for said duration when no sessions are available in the {@link
      * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
      */
-    public Builder setAcquireSessionTimeout(Duration acquireSessionTimeout) {
+    public Builder setAcquireSessionTimeoutDuration(Duration acquireSessionTimeout) {
       try {
         if (acquireSessionTimeout != null) {
           Preconditions.checkArgument(
