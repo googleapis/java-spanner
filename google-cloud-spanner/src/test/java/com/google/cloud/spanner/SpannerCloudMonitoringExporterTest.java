@@ -337,7 +337,7 @@ public class SpannerCloudMonitoringExporterTest {
   @Test
   public void getAggregationTemporality() throws IOException {
     SpannerCloudMonitoringExporter actualExporter =
-        SpannerCloudMonitoringExporter.create(projectId, null);
+        SpannerCloudMonitoringExporter.create(projectId, null, null);
     assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
@@ -348,7 +348,7 @@ public class SpannerCloudMonitoringExporterTest {
         Attributes.builder().putAll(attributes).remove(INSTANCE_ID_KEY).build();
 
     SpannerCloudMonitoringExporter actualExporter =
-        SpannerCloudMonitoringExporter.create(projectId, null);
+        SpannerCloudMonitoringExporter.create(projectId, null, null);
     assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     ArgumentCaptor<CreateTimeSeriesRequest> argumentCaptor =
