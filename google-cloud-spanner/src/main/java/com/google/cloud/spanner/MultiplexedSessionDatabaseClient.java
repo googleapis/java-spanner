@@ -24,6 +24,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
@@ -551,6 +552,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
     return createMultiplexedSessionTransaction(/* singleUse = */ false)
         .transactionManagerAsync(options);
+  }
+
+  @Override
+  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+    return createMultiplexedSessionTransaction(/* singleUse = */ true)
+        .executePartitionedUpdate(stmt, options);
   }
 
   /**
