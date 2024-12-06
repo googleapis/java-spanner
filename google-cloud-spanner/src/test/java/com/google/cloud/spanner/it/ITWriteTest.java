@@ -211,7 +211,8 @@ public class ITWriteTest {
   }
 
   private Mutation.WriteBuilder baseInsert() {
-    return Mutation.newInsertOrUpdateBuilder("T").set("K").to(lastKey = uniqueString());
+    String table = dialect.dialect == Dialect.POSTGRESQL ? "public.T" : "T";
+    return Mutation.newInsertOrUpdateBuilder(table).set("K").to(lastKey = uniqueString());
   }
 
   private Struct readLastRow(String... columns) {
