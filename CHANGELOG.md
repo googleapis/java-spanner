@@ -1,5 +1,47 @@
 # Changelog
 
+## [6.82.0](https://github.com/googleapis/java-spanner/compare/v6.81.2...v6.82.0) (2024-12-04)
+
+
+### Features
+
+* Add option for retrying DML as PDML ([#3480](https://github.com/googleapis/java-spanner/issues/3480)) ([b545557](https://github.com/googleapis/java-spanner/commit/b545557b1a27868aeb5115b3947d42db015cc00e))
+* Add the last statement option to ExecuteSqlRequest and ExecuteBatchDmlRequest ([76ab801](https://github.com/googleapis/java-spanner/commit/76ab8011b0aa03e5bb98e375595358732cde31b7))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.50.0 ([76ab801](https://github.com/googleapis/java-spanner/commit/76ab8011b0aa03e5bb98e375595358732cde31b7))
+* Shutdown built in metrics meter provider ([#3518](https://github.com/googleapis/java-spanner/issues/3518)) ([c935e2e](https://github.com/googleapis/java-spanner/commit/c935e2eff780100273bc35c11458485c9bb05230))
+* **spanner:** GetEdition() is returning null for Instance ([#3496](https://github.com/googleapis/java-spanner/issues/3496)) ([77cb585](https://github.com/googleapis/java-spanner/commit/77cb585d57fd30f953b0ffb80be124e3cb1c6f39))
+
+
+### Dependencies
+
+* Update dependency commons-io:commons-io to v2.18.0 ([#3492](https://github.com/googleapis/java-spanner/issues/3492)) ([5c8b3ad](https://github.com/googleapis/java-spanner/commit/5c8b3ade163b4cdb81a53f5dcf777ebba48ef265))
+
+
+### Documentation
+
+* Add Multi Region Encryption samples ([#3524](https://github.com/googleapis/java-spanner/issues/3524)) ([316f971](https://github.com/googleapis/java-spanner/commit/316f97146a1fb9f120b642421ec1196be9abddf0))
+
+## [6.81.2](https://github.com/googleapis/java-spanner/compare/v6.81.1...v6.81.2) (2024-11-20)
+
+
+### Bug Fixes
+
+* Directpath enabled attribute ([#3477](https://github.com/googleapis/java-spanner/issues/3477)) ([ea1ebad](https://github.com/googleapis/java-spanner/commit/ea1ebadd1ef5d2a343e7117828cae71a798c38eb))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.55.0 ([#3482](https://github.com/googleapis/java-spanner/issues/3482)) ([bf350b0](https://github.com/googleapis/java-spanner/commit/bf350b024592312b0a00a04c2ab6d3d2312ea686))
+* Update dependency com.google.api.grpc:proto-google-cloud-trace-v1 to v2.53.0 ([#3454](https://github.com/googleapis/java-spanner/issues/3454)) ([8729b30](https://github.com/googleapis/java-spanner/commit/8729b30a1043a7e77b0277036c70c7c2616d0b47))
+* Update dependency com.google.cloud:google-cloud-trace to v2.53.0 ([#3464](https://github.com/googleapis/java-spanner/issues/3464)) ([a507e4c](https://github.com/googleapis/java-spanner/commit/a507e4c89bb59d154881812f10cab02d68325a08))
+* Update dependency com.google.cloud:google-cloud-trace to v2.54.0 ([#3488](https://github.com/googleapis/java-spanner/issues/3488)) ([1d1fecf](https://github.com/googleapis/java-spanner/commit/1d1fecf04a4e800c9b756324914cb1feed7c9866))
+* Update googleapis/sdk-platform-java action to v2.50.0 ([#3475](https://github.com/googleapis/java-spanner/issues/3475)) ([e992f18](https://github.com/googleapis/java-spanner/commit/e992f18a651ec034b89aa214cb87ec43f33f2f79))
+* Update sdk platform java dependencies ([#3476](https://github.com/googleapis/java-spanner/issues/3476)) ([acb6446](https://github.com/googleapis/java-spanner/commit/acb6446cb952bdbc54ca1b6c53dc466c72cb55b0))
+
 ## [6.81.1](https://github.com/googleapis/java-spanner/compare/v6.81.0...v6.81.1) (2024-11-11)
 
 

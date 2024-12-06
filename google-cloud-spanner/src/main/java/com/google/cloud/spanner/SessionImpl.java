@@ -45,13 +45,13 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
-import org.threeten.bp.Instant;
 
 /**
  * Implementation of {@link Session}. Sessions are managed internally by the client library, and
@@ -203,7 +203,7 @@ class SessionImpl implements Session {
     PartitionedDmlTransaction txn =
         new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker());
     return txn.executeStreamingPartitionedUpdate(
-        stmt, spanner.getOptions().getPartitionedDmlTimeout(), options);
+        stmt, spanner.getOptions().getPartitionedDmlTimeoutDuration(), options);
   }
 
   @Override

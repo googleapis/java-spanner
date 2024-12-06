@@ -45,6 +45,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.lang.reflect.Modifier;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -58,7 +59,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @Category(TracerTest.class)
 @RunWith(JUnit4.class)
@@ -202,7 +202,7 @@ public class SpanTest {
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(2)
-                    .setWaitForMinSessions(Duration.ofSeconds(10))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(10))
                     .build());
 
     spanner = builder.build().getService();
@@ -211,21 +211,21 @@ public class SpanTest {
 
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofMillis(1L))
-            .setMaxRetryDelay(Duration.ofMillis(1L))
-            .setInitialRpcTimeout(Duration.ofMillis(75L))
-            .setMaxRpcTimeout(Duration.ofMillis(75L))
+            .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+            .setMaxRetryDelayDuration(Duration.ofMillis(1L))
+            .setInitialRpcTimeoutDuration(Duration.ofMillis(75L))
+            .setMaxRpcTimeoutDuration(Duration.ofMillis(75L))
             .setMaxAttempts(3)
-            .setTotalTimeout(Duration.ofMillis(200L))
+            .setTotalTimeoutDuration(Duration.ofMillis(200L))
             .build();
     RetrySettings commitRetrySettings =
         RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofMillis(1L))
-            .setMaxRetryDelay(Duration.ofMillis(1L))
-            .setInitialRpcTimeout(Duration.ofMillis(5000L))
-            .setMaxRpcTimeout(Duration.ofMillis(10000L))
+            .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+            .setMaxRetryDelayDuration(Duration.ofMillis(1L))
+            .setInitialRpcTimeoutDuration(Duration.ofMillis(5000L))
+            .setMaxRpcTimeoutDuration(Duration.ofMillis(10000L))
             .setMaxAttempts(1)
-            .setTotalTimeout(Duration.ofMillis(20000L))
+            .setTotalTimeoutDuration(Duration.ofMillis(20000L))
             .build();
     builder
         .getSpannerStubSettingsBuilder()

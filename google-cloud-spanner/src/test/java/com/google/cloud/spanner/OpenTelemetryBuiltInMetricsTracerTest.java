@@ -43,6 +43,7 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -55,7 +56,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTest {
@@ -94,7 +94,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
         Attributes.builder()
             .put(BuiltInMetricsConstant.PROJECT_ID_KEY, "test-project")
             .put(BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY, "unknown")
-            .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
             .put(
                 BuiltInMetricsConstant.LOCATION_ID_KEY,
                 BuiltInOpenTelemetryMetricsProvider.detectClientLocation())
@@ -131,10 +130,10 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
-                    .setInitialRetryDelay(Duration.ofNanos(1L))
-                    .setMaxRetryDelay(Duration.ofNanos(1L))
+                    .setInitialRetryDelayDuration(Duration.ofNanos(1L))
+                    .setMaxRetryDelayDuration(Duration.ofNanos(1L))
                     .setRetryDelayMultiplier(1.0)
-                    .setTotalTimeout(Duration.ofMinutes(10L))
+                    .setTotalTimeoutDuration(Duration.ofMinutes(10L))
                     .build()));
     spanner =
         builder
@@ -143,7 +142,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
-                    .setWaitForMinSessions(Duration.ofSeconds(5L))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
                     .setFailOnSessionLeak()
                     .build())
             // Setting this to false so that Spanner Options does not register Metrics Tracer

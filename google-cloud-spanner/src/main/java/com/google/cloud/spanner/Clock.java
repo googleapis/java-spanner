@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import org.threeten.bp.Instant;
+import java.time.Instant;
 
 /**
  * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8

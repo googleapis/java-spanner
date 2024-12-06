@@ -2234,6 +2234,32 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     return dataBoostEnabled_;
   }
 
+  public static final int LAST_STATEMENT_FIELD_NUMBER = 17;
+  private boolean lastStatement_ = false;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If set to true, this statement marks the end of the transaction.
+   * The transaction should be committed or aborted after this statement
+   * executes, and attempts to execute any other requests against this
+   * transaction (including reads and queries) will be rejected.
+   *
+   * For DML statements, setting this option may cause some error reporting to
+   * be deferred until commit time (e.g. validation of unique constraints).
+   * Given this, successful execution of a DML statement should not be assumed
+   * until a subsequent Commit call completes successfully.
+   * </pre>
+   *
+   * <code>bool last_statement = 17 [(.google.api.field_behavior) = OPTIONAL];</code>
+   *
+   * @return The lastStatement.
+   */
+  @java.lang.Override
+  public boolean getLastStatement() {
+    return lastStatement_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -2285,6 +2311,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     if (dataBoostEnabled_ != false) {
       output.writeBool(16, dataBoostEnabled_);
+    }
+    if (lastStatement_ != false) {
+      output.writeBool(17, lastStatement_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -2342,6 +2371,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (dataBoostEnabled_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(16, dataBoostEnabled_);
     }
+    if (lastStatement_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(17, lastStatement_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -2385,6 +2417,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       if (!getDirectedReadOptions().equals(other.getDirectedReadOptions())) return false;
     }
     if (getDataBoostEnabled() != other.getDataBoostEnabled()) return false;
+    if (getLastStatement() != other.getLastStatement()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -2434,6 +2467,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     hash = (37 * hash) + DATA_BOOST_ENABLED_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getDataBoostEnabled());
+    hash = (37 * hash) + LAST_STATEMENT_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getLastStatement());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -2642,6 +2677,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         directedReadOptionsBuilder_ = null;
       }
       dataBoostEnabled_ = false;
+      lastStatement_ = false;
       return this;
     }
 
@@ -2729,6 +2765,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       if (((from_bitField0_ & 0x00001000) != 0)) {
         result.dataBoostEnabled_ = dataBoostEnabled_;
+      }
+      if (((from_bitField0_ & 0x00002000) != 0)) {
+        result.lastStatement_ = lastStatement_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -2819,6 +2858,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       if (other.getDataBoostEnabled() != false) {
         setDataBoostEnabled(other.getDataBoostEnabled());
+      }
+      if (other.getLastStatement() != false) {
+        setLastStatement(other.getLastStatement());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -2932,6 +2974,12 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
                 bitField0_ |= 0x00001000;
                 break;
               } // case 128
+            case 136:
+              {
+                lastStatement_ = input.readBool();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 136
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -4971,6 +5019,83 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public Builder clearDataBoostEnabled() {
       bitField0_ = (bitField0_ & ~0x00001000);
       dataBoostEnabled_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean lastStatement_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If set to true, this statement marks the end of the transaction.
+     * The transaction should be committed or aborted after this statement
+     * executes, and attempts to execute any other requests against this
+     * transaction (including reads and queries) will be rejected.
+     *
+     * For DML statements, setting this option may cause some error reporting to
+     * be deferred until commit time (e.g. validation of unique constraints).
+     * Given this, successful execution of a DML statement should not be assumed
+     * until a subsequent Commit call completes successfully.
+     * </pre>
+     *
+     * <code>bool last_statement = 17 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @return The lastStatement.
+     */
+    @java.lang.Override
+    public boolean getLastStatement() {
+      return lastStatement_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If set to true, this statement marks the end of the transaction.
+     * The transaction should be committed or aborted after this statement
+     * executes, and attempts to execute any other requests against this
+     * transaction (including reads and queries) will be rejected.
+     *
+     * For DML statements, setting this option may cause some error reporting to
+     * be deferred until commit time (e.g. validation of unique constraints).
+     * Given this, successful execution of a DML statement should not be assumed
+     * until a subsequent Commit call completes successfully.
+     * </pre>
+     *
+     * <code>bool last_statement = 17 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @param value The lastStatement to set.
+     * @return This builder for chaining.
+     */
+    public Builder setLastStatement(boolean value) {
+
+      lastStatement_ = value;
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If set to true, this statement marks the end of the transaction.
+     * The transaction should be committed or aborted after this statement
+     * executes, and attempts to execute any other requests against this
+     * transaction (including reads and queries) will be rejected.
+     *
+     * For DML statements, setting this option may cause some error reporting to
+     * be deferred until commit time (e.g. validation of unique constraints).
+     * Given this, successful execution of a DML statement should not be assumed
+     * until a subsequent Commit call completes successfully.
+     * </pre>
+     *
+     * <code>bool last_statement = 17 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearLastStatement() {
+      bitField0_ = (bitField0_ & ~0x00002000);
+      lastStatement_ = false;
       onChanged();
       return this;
     }

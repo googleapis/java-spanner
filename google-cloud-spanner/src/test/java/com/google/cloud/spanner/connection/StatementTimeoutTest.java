@@ -46,6 +46,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -58,7 +59,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class StatementTimeoutTest extends AbstractMockServerTest {
@@ -97,10 +97,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
                         .setPollingAlgorithm(
                             OperationTimedPollAlgorithm.create(
                                 RetrySettings.newBuilder()
-                                    .setInitialRetryDelay(Duration.ofMillis(1L))
-                                    .setMaxRetryDelay(Duration.ofMillis(1L))
+                                    .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+                                    .setMaxRetryDelayDuration(Duration.ofMillis(1L))
                                     .setRetryDelayMultiplier(1.0)
-                                    .setTotalTimeout(Duration.ofMinutes(10L))
+                                    .setTotalTimeoutDuration(Duration.ofMinutes(10L))
                                     .build())))
             .build();
     return createITConnection(options);
