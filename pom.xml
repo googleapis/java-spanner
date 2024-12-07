@@ -252,6 +252,19 @@
             <enabled>true</enabled>
           </snapshots>
         </pluginRepository>
+        <!-- Adding a fallback to airlock 3p staging till all the license verification issues are resolved -->
+<!--        <pluginRepository>-->
+<!--          <id>airlock-staging</id>-->
+<!--          <name>Airlock</name>-->
+<!--          <url>artifactregistry://us-maven.pkg.dev/artifact-foundry-prod/ah-3p-staging-maven</url>-->
+<!--          <layout>default</layout>-->
+<!--          <releases>-->
+<!--            <enabled>true</enabled>-->
+<!--          </releases>-->
+<!--          <snapshots>-->
+<!--            <enabled>true</enabled>-->
+<!--          </snapshots>-->
+<!--        </pluginRepository>-->
         <pluginRepository>
           <id>central</id>
           <!-- Disable default Maven Central -->
@@ -292,6 +305,19 @@
             <enabled>true</enabled>
           </snapshots>
         </repository>
+        <!-- Adding a fallback to airlock 3p staging till all the license verification issues are resolved -->
+<!--        <repository>-->
+<!--          <id>airlock-staging</id>-->
+<!--          <name>Airlock</name>-->
+<!--          <url>artifactregistry://us-maven.pkg.dev/artifact-foundry-prod/ah-3p-staging-maven</url>-->
+<!--          <layout>default</layout>-->
+<!--          <releases>-->
+<!--            <enabled>true</enabled>-->
+<!--          </releases>-->
+<!--          <snapshots>-->
+<!--            <enabled>true</enabled>-->
+<!--          </snapshots>-->
+<!--        </repository>-->
         <repository>
           <id>central</id>
           <!-- Disable default Maven Central -->
