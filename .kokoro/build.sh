@@ -35,9 +35,8 @@ fi
 mvn -version
 echo ${JOB_TYPE}
 
-# Enable airlock only for Kokoro jobs
 INSTALL_OPTS=""
-if [[ ! -z "${KOKORO_JOB_TYPE}" && ${KOKORO_JOB_TYPE} =~ ^.*presubmit.*$ ]]; then
+if [[ $ENABLE_AIRLOCK = 'true' ]]; then
   INSTALL_OPTS="-Pairlock-trusted"
 fi
 

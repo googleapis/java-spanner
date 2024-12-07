@@ -72,4 +72,4 @@ if [ ! -z "${JAVA8_HOME}" ]; then
   setJava "${JAVA8_HOME}"
 fi
 
-mvn -B dependency:analyze -DfailOnWarning=true
+mvn -B ${INSTALL_OPTS} dependency:analyze -DfailOnWarning=true
