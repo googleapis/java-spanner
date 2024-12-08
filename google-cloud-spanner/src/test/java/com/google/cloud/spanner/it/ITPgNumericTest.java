@@ -18,7 +18,6 @@ package com.google.cloud.spanner.it;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -31,7 +30,6 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
@@ -67,8 +65,6 @@ public class ITPgNumericTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     testHelper = env.getTestHelper();
     databaseAdminClient = testHelper.getClient().getDatabaseAdminClient();
     databasesToDrop = new ArrayList<>();
@@ -116,8 +112,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testLiteralPgNumeric() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -134,7 +128,9 @@ public class ITPgNumericTest {
             });
 
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + tableName))) {
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + tableName + " ORDER BY id"))) {
 
       resultSet.next();
       assertEquals("1.23", resultSet.getString("col1"));
@@ -151,8 +147,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testParameterizedWithPgNumericAsValue() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -176,7 +170,9 @@ public class ITPgNumericTest {
             });
 
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + tableName))) {
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + tableName + " ORDER BY id"))) {
 
       resultSet.next();
       assertEquals("1.23", resultSet.getString("col1"));
@@ -193,8 +189,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testParameterizedWithPgNumericAsDouble() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -218,7 +212,9 @@ public class ITPgNumericTest {
             });
 
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + tableName))) {
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + tableName + " ORDER BY id"))) {
 
       resultSet.next();
       assertEquals("1.23", resultSet.getString("col1"));
@@ -235,8 +231,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testParameterizedWithPgNumericAsInt() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -260,8 +254,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testParameterizedWithPgNumericAsLong() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -285,8 +277,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsString() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -315,7 +305,9 @@ public class ITPgNumericTest {
             });
 
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + tableName))) {
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + tableName + " ORDER BY id"))) {
 
       resultSet.next();
       assertEquals("1.23", resultSet.getString("col1"));
@@ -332,8 +324,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsInt() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -360,8 +350,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsLong() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -388,8 +376,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsBigDecimal() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -412,7 +398,9 @@ public class ITPgNumericTest {
             });
 
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + tableName))) {
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + tableName + " ORDER BY id"))) {
 
       resultSet.next();
       assertEquals("1.23", resultSet.getString("col1"));
@@ -425,8 +413,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsValue() {
-    assumeFalse(
-        "PgNumeric is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -455,7 +441,9 @@ public class ITPgNumericTest {
             });
 
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + tableName))) {
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + tableName + " ORDER BY id"))) {
 
       resultSet.next();
       assertEquals("1.23", resultSet.getString("col1"));

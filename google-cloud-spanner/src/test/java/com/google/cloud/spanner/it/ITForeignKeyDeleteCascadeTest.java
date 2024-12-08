@@ -15,11 +15,11 @@
  */
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -33,7 +33,6 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,46 +67,44 @@ public class ITForeignKeyDeleteCascadeTest {
 
   private static Database GOOGLE_STANDARD_SQL_DATABASE;
   private static Database POSTGRESQL_DATABASE;
-  private static List<Database> dbs = new ArrayList<>();
+  private static final List<Database> dbs = new ArrayList<>();
 
   @Parameterized.Parameter(0)
   public DialectTestParameter dialect;
 
   @BeforeClass
   public static void setUpDatabase() {
-    if (!EmulatorSpannerHelper.isUsingEmulator()) {
-      GOOGLE_STANDARD_SQL_DATABASE =
-          env.getTestHelper()
-              .createTestDatabase(
-                  ImmutableList.of(
-                      "CREATE TABLE Singer (\n"
-                          + "  singer_id   INT64 NOT NULL,\n"
-                          + "  first_name  STRING(1024),\n"
-                          + ") PRIMARY KEY(singer_id)\n",
-                      "CREATE TABLE Concert (\n"
-                          + "  venue_id      INT64 NOT NULL,\n"
-                          + "  singer_id     INT64 NOT NULL,\n"
-                          + "  CONSTRAINT Fk_Concert_Singer FOREIGN KEY (singer_id) REFERENCES Singer (singer_id) ON DELETE CASCADE"
-                          + ") PRIMARY KEY(venue_id, singer_id)"));
-      POSTGRESQL_DATABASE =
-          env.getTestHelper()
-              .createTestDatabase(
-                  Dialect.POSTGRESQL,
-                  ImmutableList.of(
-                      "CREATE TABLE Singer (\n"
-                          + "  singer_id   BIGINT PRIMARY KEY,\n"
-                          + "  first_name  VARCHAR\n"
-                          + ")",
-                      "CREATE TABLE Concert (\n"
-                          + "      venue_id      BIGINT NOT NULL,\n"
-                          + "      singer_id     BIGINT NOT NULL,\n"
-                          + "      PRIMARY KEY (venue_id, singer_id),\n"
-                          + "      CONSTRAINT Fk_Concert_Singer FOREIGN KEY (singer_id) REFERENCES Singer (singer_id) ON DELETE CASCADE\n"
-                          + "      )"));
+    GOOGLE_STANDARD_SQL_DATABASE =
+        env.getTestHelper()
+            .createTestDatabase(
+                ImmutableList.of(
+                    "CREATE TABLE Singer (\n"
+                        + "  singer_id   INT64 NOT NULL,\n"
+                        + "  first_name  STRING(1024),\n"
+                        + ") PRIMARY KEY(singer_id)\n",
+                    "CREATE TABLE Concert (\n"
+                        + "  venue_id      INT64 NOT NULL,\n"
+                        + "  singer_id     INT64 NOT NULL,\n"
+                        + "  CONSTRAINT Fk_Concert_Singer FOREIGN KEY (singer_id) REFERENCES Singer (singer_id) ON DELETE CASCADE\n"
+                        + ") PRIMARY KEY(venue_id, singer_id)"));
+    POSTGRESQL_DATABASE =
+        env.getTestHelper()
+            .createTestDatabase(
+                Dialect.POSTGRESQL,
+                ImmutableList.of(
+                    "CREATE TABLE Singer (\n"
+                        + "  singer_id   BIGINT PRIMARY KEY,\n"
+                        + "  first_name  VARCHAR\n"
+                        + ")",
+                    "CREATE TABLE Concert (\n"
+                        + "      venue_id      BIGINT NOT NULL,\n"
+                        + "      singer_id     BIGINT NOT NULL,\n"
+                        + "      PRIMARY KEY (venue_id, singer_id),\n"
+                        + "      CONSTRAINT \"Fk_Concert_Singer\" FOREIGN KEY (singer_id) REFERENCES Singer (singer_id) ON DELETE CASCADE\n"
+                        + "      )"));
 
-      dbs.add(GOOGLE_STANDARD_SQL_DATABASE);
-      dbs.add(POSTGRESQL_DATABASE);
-    }
+    dbs.add(GOOGLE_STANDARD_SQL_DATABASE);
+    dbs.add(POSTGRESQL_DATABASE);
   }
 
   @AfterClass
@@ -120,10 +117,6 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_withCreateDDLStatements() {
-    assumeFalse(
-        "Emulator does not yet support foreign key delete cascade",
-        EmulatorSpannerHelper.isUsingEmulator());
-
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
     try (final ResultSet rs =
         databaseClient
@@ -133,17 +126,17 @@ public class ITForeignKeyDeleteCascadeTest {
                     "SELECT DELETE_RULE\n"
                         + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
                         + "WHERE CONSTRAINT_NAME ='Fk_Concert_Singer'"))) {
-      while (rs.next()) {
-        assertEquals(rs.getString(DELETE_RULE_COLUMN_NAME), "CASCADE");
+      assertTrue(rs.next());
+      // TODO: Enable for the emulator when it returns the correct value for DELETE_RULE.
+      if (!isUsingEmulator()) {
+        assertEquals("CASCADE", rs.getString(0));
       }
+      assertFalse(rs.next());
     }
   }
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_withAlterDDLStatements() throws Exception {
-    assumeFalse(
-        "Emulator does not yet support foreign key delete cascade",
-        EmulatorSpannerHelper.isUsingEmulator());
     // Creating new tables within this test to ensure we don't pollute tables used by other tests in
     // this class.
     List<String> createStatements;
@@ -160,7 +153,7 @@ public class ITForeignKeyDeleteCascadeTest {
                   + "      PRIMARY KEY (venue_id, singer_id)\n"
                   + "      )",
               "ALTER TABLE ConcertV2 "
-                  + "ADD CONSTRAINT Fk_Concert_Singer_V2 FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) "
+                  + "ADD CONSTRAINT \"Fk_Concert_Singer_V2\" FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) "
                   + "ON DELETE CASCADE");
     } else {
       createStatements =
@@ -181,7 +174,7 @@ public class ITForeignKeyDeleteCascadeTest {
         env.getTestHelper().createTestDatabase(dialect.dialect, createStatements);
     dbs.add(createdDatabase);
 
-    final DatabaseClient databaseClient = getCreatedDatabaseClient();
+    final DatabaseClient databaseClient = env.getTestHelper().getDatabaseClient(createdDatabase);
 
     try (final ResultSet rs =
         databaseClient
@@ -190,10 +183,13 @@ public class ITForeignKeyDeleteCascadeTest {
                 Statement.of(
                     "SELECT DELETE_RULE\n"
                         + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
-                        + "WHERE CONSTRAINT_NAME ='Fk_Concert_Singer'"))) {
-      while (rs.next()) {
-        assertEquals(rs.getString(DELETE_RULE_COLUMN_NAME), "CASCADE");
+                        + "WHERE CONSTRAINT_NAME ='Fk_Concert_Singer_V2'"))) {
+      assertTrue(rs.next());
+      // TODO: Enable when the emulator returns the correct value for this column.
+      if (!isUsingEmulator()) {
+        assertEquals("CASCADE", rs.getString(0));
       }
+      assertFalse(rs.next());
     }
 
     // remove the foreign key delete cascade constraint
@@ -215,19 +211,15 @@ public class ITForeignKeyDeleteCascadeTest {
                 Statement.of(
                     "SELECT DELETE_RULE\n"
                         + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
-                        + "WHERE CONSTRAINT_NAME ='Fk_Concert_Singer_V2'"))) {
-      while (rs.next()) {
-        assertEquals(rs.getString(DELETE_RULE_COLUMN_NAME), "NO ACTION");
-      }
+                        + "WHERE LOWER(CONSTRAINT_NAME) ='fk_concert_singer_v2'"))) {
+      assertTrue(rs.next());
+      assertEquals("NO ACTION", rs.getString(0));
+      assertFalse(rs.next());
     }
   }
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_verifyValidInsertions() {
-    assumeFalse(
-        "Emulator does not yet support foreign key delete cascade",
-        EmulatorSpannerHelper.isUsingEmulator());
-
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
     final String singerInsertStatement =
         "INSERT INTO Singer (singer_id, first_name) VALUES (" + generateQueryParameters(2) + ")";
@@ -289,10 +281,6 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_verifyInvalidInsertions() {
-    assumeFalse(
-        "Emulator does not yet support foreign key delete cascade",
-        EmulatorSpannerHelper.isUsingEmulator());
-
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
 
     // unsuccessful inserts into referencing tables when foreign key is not inserted into referenced
@@ -319,16 +307,12 @@ public class ITForeignKeyDeleteCascadeTest {
                           transaction.executeUpdate(concertInsertStatementWithInvalidValues);
                           return null;
                         }));
-    assertEquals(ex.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-    assertTrue(ex.getMessage().contains("Cannot find referenced values"));
+    assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    assertTrue(ex.getMessage(), ex.getMessage().contains("Cannot find referenced"));
   }
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_forDeletions() {
-    assumeFalse(
-        "Emulator does not yet support foreign key delete cascade",
-        EmulatorSpannerHelper.isUsingEmulator());
-
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
 
     final String singerInsertStatement =
@@ -396,10 +380,6 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_forMutations_onConflictDueToParentTable() {
-    assumeFalse(
-        "Emulator does not yet support foreign key delete cascade",
-        EmulatorSpannerHelper.isUsingEmulator());
-
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
 
     // inserting and deleting the referenced key within the same mutation are considered
@@ -423,15 +403,11 @@ public class ITForeignKeyDeleteCascadeTest {
                                   Mutation.delete("Singer", Key.of(4L))));
                           return null;
                         }));
-    assertEquals(ex.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
+    assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
   }
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_forMutations_onConflictsDueToChildTable() {
-    assumeFalse(
-        "Emulator does not yet support foreign key delete cascade",
-        EmulatorSpannerHelper.isUsingEmulator());
-
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
 
     // referencing a foreign key in child table and deleting the referenced key in parent table
@@ -454,25 +430,24 @@ public class ITForeignKeyDeleteCascadeTest {
               transaction.executeUpdate(singerInsertStatementWithValues);
               return null;
             });
-    SpannerException ex =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                databaseClient
-                    .readWriteTransaction()
-                    .run(
-                        transaction -> {
-                          transaction.buffer(
-                              Arrays.asList(
-                                  Mutation.newInsertBuilder("Concert")
-                                      .set("first_name")
-                                      .to(5L)
-                                      .set("singer_id")
-                                      .to(5L)
-                                      .build(),
-                                  Mutation.delete("Singer", Key.of(5L))));
-                          return null;
-                        }));
+    assertThrows(
+        SpannerException.class,
+        () ->
+            databaseClient
+                .readWriteTransaction()
+                .run(
+                    transaction -> {
+                      transaction.buffer(
+                          Arrays.asList(
+                              Mutation.newInsertBuilder("Concert")
+                                  .set("first_name")
+                                  .to(5L)
+                                  .set("singer_id")
+                                  .to(5L)
+                                  .build(),
+                              Mutation.delete("Singer", Key.of(5L))));
+                      return null;
+                    }));
   }
 
   private DatabaseAdminClient getDatabaseAdminClient() {
@@ -481,16 +456,13 @@ public class ITForeignKeyDeleteCascadeTest {
 
   private DatabaseClient getCreatedDatabaseClient() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      return env.getTestHelper().getDatabaseClient(this.POSTGRESQL_DATABASE);
+      return env.getTestHelper().getDatabaseClient(POSTGRESQL_DATABASE);
     }
-    return env.getTestHelper().getDatabaseClient(this.GOOGLE_STANDARD_SQL_DATABASE);
+    return env.getTestHelper().getDatabaseClient(GOOGLE_STANDARD_SQL_DATABASE);
   }
 
   /**
    * Returns '@p1, @p2, ..., @pNumParams' for GoogleSQL and $1, $2, ..., $NumParams' for PostgreSQL
-   *
-   * @param numParams
-   * @return
    */
   private String generateQueryParameters(final int numParams) {
     final List<String> params;
