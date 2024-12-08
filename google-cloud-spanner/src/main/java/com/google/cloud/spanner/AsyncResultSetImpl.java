@@ -338,11 +338,6 @@ class AsyncResultSetImpl extends ForwardingStructReader
    */
   private class ProduceRowsRunnable implements Runnable {
 
-    public ProduceRowsRunnable(StackTraceElement[] stackTrace) {
-      ThreadLocal<StackTraceElement[]> threadLocal = new ThreadLocal<>();
-      threadLocal.set(stackTrace);
-    }
-
     @Override
     public void run() {
       boolean stop = false;
@@ -495,7 +490,8 @@ class AsyncResultSetImpl extends ForwardingStructReader
       // Start to fetch data and buffer these.
       this.result = SettableApiFuture.create();
       this.state = State.STREAMING_INITIALIZED;
-      this.service.execute(new InitiateStreamingRunnable());
+//      this.service.execute(new InitiateStreamingRunnable());
+      initiateProduceRows();
       this.executor = MoreExecutors.newSequentialExecutor(Preconditions.checkNotNull(exec));
       this.callback = Preconditions.checkNotNull(cb);
       pausedLatch.countDown();
@@ -508,7 +504,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
       this.state = State.RUNNING;
     }
     produceRowsInitiated = true;
-    this.service.execute(new ProduceRowsRunnable(Thread.currentThread().getStackTrace()));
+    this.service.execute(new ProduceRowsRunnable());
   }
 
   Future<Void> getResult() {
