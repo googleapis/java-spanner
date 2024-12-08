@@ -234,4 +234,117 @@
       </plugin>
     </plugins>
   </reporting>
+
+  <profiles>
+    <profile>
+      <!-- Profile to use Airlock (go/airlock/howto_maven). Disabled by default. -->
+      <id>airlock-trusted</id>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>airlock</id>
+          <name>Airlock</name>
+          <url>artifactregistry://us-maven.pkg.dev/artifact-foundry-prod/maven-3p-trusted</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </pluginRepository>
+        <!-- Adding a fallback to airlock 3p staging till all the license verification issues are resolved -->
+        <pluginRepository>
+          <id>airlock-staging</id>
+          <name>Airlock</name>
+          <url>artifactregistry://us-maven.pkg.dev/artifact-foundry-prod/ah-3p-staging-maven</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+          <id>central</id>
+          <!-- Disable default Maven Central -->
+          <name>Maven Central remote repository</name>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+          <id>rso-public-grid</id>
+          <!-- Disable default sonatype public grid -->
+          <name>Maven Central Sonatype repository</name>
+          <url>https://repository.sonatype.org/content/groups/sonatype-public-grid</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+      <repositories>
+        <repository>
+          <id>airlock</id>
+          <name>Airlock</name>
+          <url>artifactregistry://us-maven.pkg.dev/artifact-foundry-prod/maven-3p-trusted</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+        <!-- Adding a fallback to airlock 3p staging till all the license verification issues are resolved -->
+        <repository>
+          <id>airlock-staging</id>
+          <name>Airlock</name>
+          <url>artifactregistry://us-maven.pkg.dev/artifact-foundry-prod/ah-3p-staging-maven</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+        <repository>
+          <id>central</id>
+          <!-- Disable default Maven Central -->
+          <name>Maven Central remote repository</name>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+        <repository>
+          <id>rso-public-grid</id>
+          <!-- Disable default sonatype public grid -->
+          <name>Maven Central Sonatype repository</name>
+          <url>https://repository.sonatype.org/content/groups/sonatype-public-grid</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
 </project>
