@@ -16,7 +16,20 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.MockSpannerTestUtil.*;
+import static com.google.cloud.spanner.MockSpannerTestUtil.EMPTY_KEY_VALUE_RESULTSET;
+import static com.google.cloud.spanner.MockSpannerTestUtil.EMPTY_READ_TABLE_NAME;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_COLUMN_NAMES;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_MULTIPLE_KEY_VALUE_RESULTSET;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_MULTIPLE_KEY_VALUE_STATEMENT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_EMPTY_KEY_VALUE_STATEMENT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RESULTSET;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_TYPE;
+import static com.google.cloud.spanner.MockSpannerTestUtil.TEST_DATABASE;
+import static com.google.cloud.spanner.MockSpannerTestUtil.TEST_INSTANCE;
+import static com.google.cloud.spanner.MockSpannerTestUtil.TEST_PROJECT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.generateKeyValueResultSet;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -314,6 +327,8 @@ public class ReadAsyncTest {
 
     ApiFuture<List<List<String>>> allValuesAsList =
         ApiFutures.allAsList(Arrays.asList(values1, values2));
+    System.out.println("Values 1 " + String.join(",", values1.get()));
+    System.out.println("Values 2 " + String.join(",", values2.get()));
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
             allValuesAsList,

@@ -55,6 +55,7 @@ import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.ListSessionsRequest;
 import com.google.spanner.v1.ListSessionsResponse;
 import com.google.spanner.v1.MultiplexedSessionPrecommitToken;
+import com.google.spanner.v1.Mutation;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Partition;
 import com.google.spanner.v1.PartitionOptions;
@@ -608,6 +609,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private final AtomicBoolean abortNextStatement = new AtomicBoolean();
   private final AtomicBoolean ignoreNextInlineBeginRequest = new AtomicBoolean();
   private ConcurrentMap<String, AtomicLong> transactionCounters = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, String> transactionToTrace = new ConcurrentHashMap<>();
   private ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
 
@@ -644,12 +646,20 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return String.format("%s/sessions/%s", database, UUID.randomUUID().toString());
   }
 
-  private ByteString generateTransactionName(String session) {
+  private ByteString generateTransactionName(String session, String mutationString) {
     AtomicLong counter = transactionCounters.get(session);
     if (counter == null) {
       counter = new AtomicLong();
       transactionCounters.put(session, counter);
     }
+    ThreadLocal<StackTraceElement[]> threadLocal = new ThreadLocal<>();
+    transactionToTrace.put(
+        session,
+        String.format(
+            "%s %s",
+            mutationString,
+            Arrays.toString(threadLocal.get())
+                + Arrays.toString(Thread.currentThread().getStackTrace())));
     return ByteString.copyFromUtf8(
         String.format("%s/transactions/%d", session, counter.incrementAndGet()));
   }
@@ -1012,6 +1022,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     removeSession(session.getName());
     transactionCounters.remove(session.getName());
     sessionLastUsed.remove(session.getName());
+    transactionToTrace.remove(session.getName());
   }
 
   @Override
@@ -1905,9 +1916,37 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  private String getMutationString(Mutation mutation) {
+    StringBuilder sb = new StringBuilder();
+    if (mutation == null) {
+      return "";
+    }
+    try {
+      if (mutation.hasInsert()) {
+        for (ListValue listValue : mutation.getInsert().getValuesList()) {
+          sb.append(listValue.toString());
+        }
+      }
+      if (mutation.hasUpdate()) {
+        for (ListValue listValue : mutation.getUpdate().getValuesList()) {
+          sb.append(listValue.toString());
+        }
+      }
+      if (mutation.hasReplace()) {
+        for (ListValue listValue : mutation.getReplace().getValuesList()) {
+          sb.append(listValue.toString());
+        }
+      }
+    } catch (Exception e) {
+      sb.append(e.getMessage());
+    }
+    return sb.toString();
+  }
+
   private Transaction beginTransaction(
       Session session, TransactionOptions options, com.google.spanner.v1.Mutation mutationKey) {
-    ByteString transactionId = generateTransactionName(session.getName());
+    ByteString transactionId =
+        generateTransactionName(session.getName(), getMutationString(mutationKey));
     Transaction.Builder builder = Transaction.newBuilder().setId(transactionId);
     if (options != null && options.getModeCase() == ModeCase.READ_ONLY) {
       setReadTimestamp(options, builder);
@@ -1989,6 +2028,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       if (index > -1) {
         long id = Long.parseLong(transactionId.toStringUtf8().substring(index + 1));
         if (id != counter.get()) {
+          System.out.println(transactionId.toStringUtf8());
+          System.out.println(session.getName());
+          System.out.println(transactionToTrace.get(session.getName()));
           throw Status.FAILED_PRECONDITION
               .withDescription(
                   String.format(
@@ -2351,6 +2393,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     isPartitionedDmlTransaction = new ConcurrentHashMap<>();
     abortedTransactions = new ConcurrentHashMap<>();
     transactionCounters = new ConcurrentHashMap<>();
+    transactionToTrace = new ConcurrentHashMap<>();
     partitionTokens = new ConcurrentHashMap<>();
     transactionLastUsed = new ConcurrentHashMap<>();
     transactionSequenceNo = new ConcurrentHashMap<>();

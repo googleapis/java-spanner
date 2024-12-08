@@ -337,6 +337,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
    * the buffer and dispatches the {@link CallbackRunnable} when data is ready to be consumed.
    */
   private class ProduceRowsRunnable implements Runnable {
+
     @Override
     public void run() {
       boolean stop = false;
