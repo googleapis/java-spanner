@@ -512,7 +512,7 @@ public class AsyncResultSetImplTest {
     }
   }
 
-//  @Test
+  //  @Test
   public void testOnStreamMessageWhenResumeTokenIsPresent() {
     StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =
@@ -533,7 +533,7 @@ public class AsyncResultSetImplTest {
     }
   }
 
-//  @Test
+  //  @Test
   public void testOnStreamMessageWhenCurrentBufferSizeReachedPrefetchChunkSize() {
     StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =
@@ -550,7 +550,7 @@ public class AsyncResultSetImplTest {
     }
   }
 
-//  @Test
+  //  @Test
   public void testOnStreamMessageWhenAsyncResultIsCancelled() {
     StreamingResultSet delegate = mock(StreamingResultSet.class);
     try (AsyncResultSetImpl rs =

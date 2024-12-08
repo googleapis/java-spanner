@@ -656,7 +656,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     transactionToTrace.put(
         session,
         String.format(
-            "%s %s", mutationString, Arrays.toString(threadLocal.get()) + Arrays.toString(Thread.currentThread().getStackTrace())));
+            "%s %s",
+            mutationString,
+            Arrays.toString(threadLocal.get())
+                + Arrays.toString(Thread.currentThread().getStackTrace())));
     return ByteString.copyFromUtf8(
         String.format("%s/transactions/%d", session, counter.incrementAndGet()));
   }
@@ -1915,7 +1918,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   private String getMutationString(Mutation mutation) {
     StringBuilder sb = new StringBuilder();
-    if(mutation == null) {
+    if (mutation == null) {
       return "";
     }
     try {

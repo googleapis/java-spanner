@@ -490,7 +490,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
       // Start to fetch data and buffer these.
       this.result = SettableApiFuture.create();
       this.state = State.STREAMING_INITIALIZED;
-//      this.service.execute(new InitiateStreamingRunnable());
+      //      this.service.execute(new InitiateStreamingRunnable());
       initiateProduceRows();
       this.executor = MoreExecutors.newSequentialExecutor(Preconditions.checkNotNull(exec));
       this.callback = Preconditions.checkNotNull(cb);
