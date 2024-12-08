@@ -337,6 +337,12 @@ class AsyncResultSetImpl extends ForwardingStructReader
    * the buffer and dispatches the {@link CallbackRunnable} when data is ready to be consumed.
    */
   private class ProduceRowsRunnable implements Runnable {
+
+    public ProduceRowsRunnable(StackTraceElement[] stackTrace) {
+      ThreadLocal<StackTraceElement[]> threadLocal = new ThreadLocal<>();
+      threadLocal.set(stackTrace);
+    }
+
     @Override
     public void run() {
       boolean stop = false;
@@ -502,7 +508,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
       this.state = State.RUNNING;
     }
     produceRowsInitiated = true;
-    this.service.execute(new ProduceRowsRunnable());
+    this.service.execute(new ProduceRowsRunnable(Thread.currentThread().getStackTrace()));
   }
 
   Future<Void> getResult() {

@@ -652,10 +652,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       counter = new AtomicLong();
       transactionCounters.put(session, counter);
     }
+    ThreadLocal<StackTraceElement[]> threadLocal = new ThreadLocal<>();
     transactionToTrace.put(
         session,
         String.format(
-            "%s %s", mutationString, Arrays.toString(Thread.currentThread().getStackTrace())));
+            "%s %s", mutationString, Arrays.toString(threadLocal.get()) + Arrays.toString(Thread.currentThread().getStackTrace())));
     return ByteString.copyFromUtf8(
         String.format("%s/transactions/%d", session, counter.incrementAndGet()));
   }
