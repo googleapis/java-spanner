@@ -1914,6 +1914,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   private String getMutationString(Mutation mutation) {
     StringBuilder sb = new StringBuilder();
+    if(mutation == null) {
+      return "";
+    }
     try {
       if (mutation.hasInsert()) {
         for (ListValue listValue : mutation.getInsert().getValuesList()) {
