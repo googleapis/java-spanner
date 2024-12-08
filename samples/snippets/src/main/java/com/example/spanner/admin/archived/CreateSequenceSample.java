@@ -58,7 +58,7 @@ public class CreateSequenceSample {
           .get(5, TimeUnit.MINUTES);
 
       System.out.println(
-          "Created Seq sequence and Customers table, where the key column CustomerId "
+          "Created Seq sequence and Customers table, where its key column CustomerId "
               + "uses the sequence as a default value");
 
       final DatabaseClient dbClient =

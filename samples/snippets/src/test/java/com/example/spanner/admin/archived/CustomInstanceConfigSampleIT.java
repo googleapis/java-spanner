@@ -41,7 +41,7 @@ public class CustomInstanceConfigSampleIT extends SampleTestBase {
         SampleRunner.runSample(
             () ->
                 ListInstanceConfigOperationsSample.listInstanceConfigOperations(projectId));
-    assertTrue(out2.contains("List instance config operation"));
+    assertTrue(out2.contains("Create instance config operation"));
 
     // Update display name to a randomly generated instance config id.
     final String out3 =

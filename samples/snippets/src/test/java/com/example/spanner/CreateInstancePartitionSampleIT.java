@@ -22,6 +22,7 @@ import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
+import com.google.spanner.admin.instance.v1.Instance.Edition;
 import com.google.spanner.admin.instance.v1.InstancePartitionName;
 import org.junit.Test;
 
@@ -34,6 +35,7 @@ public class CreateInstancePartitionSampleIT extends SampleTestBaseV2 {
     instanceAdminClient
         .createInstance(
             InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
+                .setEdition(Edition.ENTERPRISE_PLUS)
                 .setDisplayName("Geo-partitioning test instance")
                 .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
                 .setNodeCount(1)
