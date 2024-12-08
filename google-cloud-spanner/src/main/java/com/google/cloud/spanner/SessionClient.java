@@ -38,6 +38,8 @@ class SessionClient implements AutoCloseable {
     private static final PathTemplate NAME_TEMPLATE =
         PathTemplate.create(
             "projects/{project}/instances/{instance}/databases/{database}/sessions/{session}");
+    private static final PathTemplate EXTERNAL_HOST_NAME_TEMPLATE =
+        PathTemplate.create("instances/{instance}/databases/{database}/sessions/{session}");
     private final DatabaseId db;
     private final String name;
 
@@ -49,10 +51,16 @@ class SessionClient implements AutoCloseable {
     static SessionId of(String name) {
       Preconditions.checkNotNull(name);
       Map<String, String> parts = NAME_TEMPLATE.match(name);
+      if (parts == null) {
+        parts = EXTERNAL_HOST_NAME_TEMPLATE.match(name);
+      }
       Preconditions.checkArgument(
           parts != null, "Name should conform to pattern %s: %s", NAME_TEMPLATE, name);
       return of(
-          parts.get("project"), parts.get("instance"), parts.get("database"), parts.get("session"));
+          parts.containsKey("project") ? parts.get("project") : "default",
+          parts.get("instance"),
+          parts.get("database"),
+          parts.get("session"));
     }
 
     /** Creates a {@code SessionId} given project, instance, database and session IDs. */

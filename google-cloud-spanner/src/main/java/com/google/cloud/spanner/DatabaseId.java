@@ -94,6 +94,15 @@ public final class DatabaseId {
     return new DatabaseId(new InstanceId(project, instance), database);
   }
 
+  /** Creates a {@code DatabaseId} with "default" as project id, given instance and database IDs. */
+  public static DatabaseId of(String instance, String database) {
+    String projectId = SpannerOptions.getDefaultProjectId();
+    if (projectId == null) {
+      projectId = "default";
+    }
+    return new DatabaseId(new InstanceId(projectId, instance), database);
+  }
+
   /** Creates a {@code DatabaseId} given the instance identity and database id. */
   public static DatabaseId of(InstanceId instanceId, String database) {
     return new DatabaseId(instanceId, database);
