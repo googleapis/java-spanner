@@ -36,6 +36,8 @@ import com.google.protobuf.util.Timestamps;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opentelemetry.api.OpenTelemetry;
+
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Before;
@@ -47,7 +49,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
 
 /** Unit tests for {@link com.google.cloud.spanner.BatchClientImpl}. */
 @RunWith(JUnit4.class)

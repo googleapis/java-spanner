@@ -170,6 +170,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -186,8 +188,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
-import org.threeten.bp.Duration;
-import org.threeten.bp.LocalDate;
 
 /**
  * Implementation of the SpannerExecutorProxy gRPC service that proxies action request through the
@@ -818,21 +818,26 @@ public class CloudClientExecutor extends CloudExecutor {
     }
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofSeconds(1))
+            .setInitialRetryDelayDuration(Duration.ofSeconds(1))
             .setRetryDelayMultiplier(1.3)
-            .setMaxRetryDelay(Duration.ofSeconds(32))
-            .setInitialRpcTimeout(rpcTimeout)
+            .setMaxRetryDelayDuration(Duration.ofSeconds(32))
+            .setInitialRpcTimeoutDuration(rpcTimeout)
             .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(rpcTimeout)
-            .setTotalTimeout(rpcTimeout)
+            .setMaxRpcTimeoutDuration(rpcTimeout)
+            .setTotalTimeoutDuration(rpcTimeout)
             .build();
 
     com.google.cloud.spanner.SessionPoolOptions.Builder poolOptionsBuilder =
         com.google.cloud.spanner.SessionPoolOptions.newBuilder();
-    SessionPoolOptionsHelper.setUseMultiplexedSession(
-        com.google.cloud.spanner.SessionPoolOptions.newBuilder(), useMultiplexedSession);
+    SessionPoolOptionsHelper.setUseMultiplexedSession(poolOptionsBuilder, useMultiplexedSession);
     SessionPoolOptionsHelper.setUseMultiplexedSessionBlindWrite(
-        com.google.cloud.spanner.SessionPoolOptions.newBuilder(), useMultiplexedSession);
+        poolOptionsBuilder, useMultiplexedSession);
+    SessionPoolOptionsHelper.setUseMultiplexedSessionForRW(
+        poolOptionsBuilder, useMultiplexedSession);
+    LOGGER.log(
+        Level.INFO,
+        String.format(
+            "Using multiplexed sessions for read-write transactions: %s", useMultiplexedSession));
     com.google.cloud.spanner.SessionPoolOptions sessionPoolOptions = poolOptionsBuilder.build();
     // Cloud Spanner Client does not support global retry settings,
     // Thus, we need to add retry settings to each individual stub.

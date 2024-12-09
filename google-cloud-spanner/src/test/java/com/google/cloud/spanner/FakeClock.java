@@ -15,8 +15,8 @@
  */
 package com.google.cloud.spanner;
 
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
-import org.threeten.bp.Instant;
 
 /**
  * Class which allows to mock {@link Clock} in unit tests and return custom time values within the

@@ -56,11 +56,11 @@ import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.v1.*;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /**
  * Abstracts remote calls to the Cloud Spanner service. Typically end-consumer code will never use
