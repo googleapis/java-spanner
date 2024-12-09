@@ -44,4 +44,12 @@ public class SessionPoolOptionsHelper {
       SessionPoolOptions.Builder sessionPoolOptionsBuilder, boolean useMultiplexedSessionForRW) {
     return sessionPoolOptionsBuilder.setUseMultiplexedSessionForRW(useMultiplexedSessionForRW);
   }
+
+  // TODO: Remove when multiplexed session for partitioned operations are released.
+  public static SessionPoolOptions.Builder setUseMultiplexedSessionForPartitionedOperations(
+      SessionPoolOptions.Builder sessionPoolOptionsBuilder,
+      boolean useMultiplexedSessionForPartitionedOps) {
+    return sessionPoolOptionsBuilder.setUseMultiplexedSessionPartitionedOps(
+        useMultiplexedSessionForPartitionedOps);
+  }
 }
