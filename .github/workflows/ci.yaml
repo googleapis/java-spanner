@@ -53,6 +53,7 @@ jobs:
       env:
         JOB_TYPE: test
         GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS: true
+        GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS: true
   units-java8:
     # Building using Java 17 and run the tests with Java 8 runtime
     name: "units (8)"
@@ -92,6 +93,7 @@ jobs:
         env:
           JOB_TYPE: test
           GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS: true
+          GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS: true
   windows:
     runs-on: windows-latest
     steps:

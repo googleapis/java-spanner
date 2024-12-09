@@ -85,6 +85,9 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSessionForRW;
 
+  private final boolean useMultiplexedSessionForPartitionedOps;
+
+  // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
 
   private SessionPoolOptions(Builder builder) {
@@ -127,6 +130,14 @@ public class SessionPoolOptions {
         (useMultiplexedSessionForRWFromEnvVariable != null)
             ? useMultiplexedSessionForRWFromEnvVariable
             : builder.useMultiplexedSessionForRW;
+    // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client
+    // default
+    Boolean useMultiplexedSessionFromEnvVariablePartitionedOps =
+        getUseMultiplexedSessionFromEnvVariablePartitionedOps();
+    this.useMultiplexedSessionForPartitionedOps =
+        (useMultiplexedSessionFromEnvVariablePartitionedOps != null)
+            ? useMultiplexedSessionFromEnvVariablePartitionedOps
+            : builder.useMultiplexedSessionPartitionedOps;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
@@ -349,17 +360,31 @@ public class SessionPoolOptions {
     return getUseMultiplexedSession() && useMultiplexedSessionForRW;
   }
 
+  @VisibleForTesting
+  @InternalApi
+  public boolean getUseMultiplexedSessionPartitionedOps() {
+    return useMultiplexedSessionForPartitionedOps;
+  }
+
   private static Boolean getUseMultiplexedSessionFromEnvVariable() {
-    String useMultiplexedSessionFromEnvVariable =
-        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
-    if (useMultiplexedSessionFromEnvVariable != null
-        && useMultiplexedSessionFromEnvVariable.length() > 0) {
-      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)
-          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)) {
-        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+  }
+
+  @VisibleForTesting
+  @InternalApi
+  protected static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
+    // Checks the value of env, GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS
+    // This returns null until Partitioned Operations is supported.
+    return null;
+  }
+
+  private static Boolean parseBooleanEnvVariable(String variableName) {
+    String envVariable = System.getenv(variableName);
+    if (envVariable != null && envVariable.length() > 0) {
+      if ("true".equalsIgnoreCase(envVariable) || "false".equalsIgnoreCase(envVariable)) {
+        return Boolean.parseBoolean(envVariable);
       } else {
-        throw new IllegalArgumentException(
-            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS should be either true or false.");
+        throw new IllegalArgumentException(variableName + " should be either true or false.");
       }
     }
     return null;
@@ -585,6 +610,12 @@ public class SessionPoolOptions {
     // default.
     private boolean useMultiplexedSessionForRW = false;
 
+    // This field controls the default behavior of session management for Partitioned operations in
+    // Java client.
+    // Set useMultiplexedSessionPartitionedOps to true to make multiplexed session for Partitioned
+    // operations the default.
+    private boolean useMultiplexedSessionPartitionedOps = false;
+
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
 
@@ -628,6 +659,7 @@ public class SessionPoolOptions {
       this.useMultiplexedSession = options.useMultiplexedSession;
       this.useMultiplexedSessionBlindWrite = options.useMultiplexedSessionBlindWrite;
       this.useMultiplexedSessionForRW = options.useMultiplexedSessionForRW;
+      this.useMultiplexedSessionPartitionedOps = options.useMultiplexedSessionForPartitionedOps;
       this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
@@ -844,6 +876,15 @@ public class SessionPoolOptions {
     @VisibleForTesting
     Builder setUseMultiplexedSessionForRW(boolean useMultiplexedSessionForRW) {
       this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
+      return this;
+    }
+
+    /**
+     * Sets whether the client should use multiplexed session for Partitioned operations or not.
+     * This method is intentionally package-private and intended for internal use.
+     */
+    Builder setUseMultiplexedSessionPartitionedOps(boolean useMultiplexedSessionPartitionedOps) {
+      this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
       return this;
     }
 
