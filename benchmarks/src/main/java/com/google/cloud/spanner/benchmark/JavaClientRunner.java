@@ -102,7 +102,7 @@ class JavaClientRunner extends AbstractRunner {
             .setOpenTelemetry(openTelemetry)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
-            .setHost(SERVER_URL)
+            .setHost("https://spanner.googleapis.com")
             .build();
     // Register query stats metric.
     // This should be done once before start recording the data.
