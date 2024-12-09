@@ -30,18 +30,53 @@ import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.PartitionResponse;
 import com.google.spanner.v1.TransactionSelector;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 
 /** Default implementation for Batch Client interface. */
 public class BatchClientImpl implements BatchClient {
   private final SessionClient sessionClient;
+
   private final boolean isMultiplexedSessionEnabled;
+
+  /** Lock to protect the multiplexed session. */
+  private final ReentrantLock multiplexedSessionLock = new ReentrantLock();
+
+  /** The duration before we try to replace the multiplexed session. The default is 7 days. */
+  private final Duration sessionExpirationDuration;
+
+  /** The expiration date/time of the current multiplexed session. */
+  @GuardedBy("multiplexedSessionLock")
+  private final AtomicReference<Instant> expirationDate;
+
+  @GuardedBy("multiplexedSessionLock")
+  private final AtomicReference<SessionImpl> multiplexedSessionReference;
+
+  private final Clock clock;
 
   BatchClientImpl(SessionClient sessionClient, boolean isMultiplexedSessionEnabled) {
     this.sessionClient = checkNotNull(sessionClient);
     this.isMultiplexedSessionEnabled = isMultiplexedSessionEnabled;
+    this.sessionExpirationDuration =
+        Duration.ofMillis(
+            sessionClient
+                .getSpanner()
+                .getOptions()
+                .getSessionPoolOptions()
+                .getMultiplexedSessionMaintenanceDuration()
+                .toMillis());
+    // Initialize the expiration date to the start of time to avoid unnecessary null checks.
+    // This also ensured that a new session is created on first request.
+    this.expirationDate = new AtomicReference<>(Instant.MIN);
+    this.multiplexedSessionReference = new AtomicReference<>();
+    clock = Clock.systemUTC();
   }
 
   @Override
@@ -54,7 +89,7 @@ public class BatchClientImpl implements BatchClient {
   public BatchReadOnlyTransaction batchReadOnlyTransaction(TimestampBound bound) {
     SessionImpl session;
     if (isMultiplexedSessionEnabled) {
-      session = sessionClient.createMultiplexedSession();
+      session = getMultiplexedSession();
     } else {
       session = sessionClient.createSession();
     }
@@ -97,6 +132,20 @@ public class BatchClientImpl implements BatchClient {
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
         batchTransactionId);
+  }
+
+  private SessionImpl getMultiplexedSession() {
+    this.multiplexedSessionLock.lock();
+    try {
+      if (this.clock.instant().isAfter(this.expirationDate.get())
+          || this.multiplexedSessionReference.get() == null) {
+        this.multiplexedSessionReference.set(this.sessionClient.createMultiplexedSession());
+        this.expirationDate.set(this.clock.instant().plus(this.sessionExpirationDuration));
+      }
+      return this.multiplexedSessionReference.get();
+    } finally {
+      this.multiplexedSessionLock.unlock();
+    }
   }
 
   private static class BatchReadOnlyTransactionImpl extends MultiUseReadOnlyTransaction

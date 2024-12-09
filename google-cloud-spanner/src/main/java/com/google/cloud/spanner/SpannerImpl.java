@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -106,6 +107,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @GuardedBy("this")
   private final Map<DatabaseId, DatabaseClientImpl> dbClients = new HashMap<>();
+
+  @GuardedBy("dbBatchClientLock")
+  private final Map<DatabaseId, BatchClientImpl> dbBatchClients = new HashMap<>();
+
+  private final ReentrantLock dbBatchClientLock = new ReentrantLock();
 
   private final CloseableExecutorProvider asyncExecutorProvider;
 
@@ -336,9 +342,23 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public BatchClient getBatchClient(DatabaseId db) {
+    if (getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps()) {
+      this.dbBatchClientLock.lock();
+      try {
+        if (this.dbBatchClients.containsKey(db)) {
+          return this.dbBatchClients.get(db);
+        }
+        BatchClientImpl batchClient =
+            new BatchClientImpl(
+                getSessionClient(db), /*useMultiplexedSessionPartitionedOps=*/ true);
+        this.dbBatchClients.put(db, batchClient);
+        return batchClient;
+      } finally {
+        this.dbBatchClientLock.unlock();
+      }
+    }
     return new BatchClientImpl(
-        getSessionClient(db),
-        getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());
+        getSessionClient(db), /*useMultiplexedSessionPartitionedOps=*/ false);
   }
 
   @Override

@@ -47,6 +47,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.threeten.bp.Duration;
 
 /** Unit tests for {@link com.google.cloud.spanner.BatchClientImpl}. */
 @RunWith(JUnit4.class)
@@ -96,6 +97,7 @@ public final class BatchClientImplTest {
     when(sessionPoolOptions.getPoolMaintainerClock()).thenReturn(Clock.INSTANCE);
     when(sessionPoolOptions.getUseMultiplexedSessionPartitionedOps())
         .thenReturn(isMultiplexedSession);
+    when(sessionPoolOptions.getMultiplexedSessionMaintenanceDuration()).thenReturn(Duration.ZERO);
     when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(gapicRpc, spannerOptions);
