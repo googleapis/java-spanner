@@ -373,7 +373,9 @@ public class SessionPoolOptions {
   @VisibleForTesting
   @InternalApi
   protected static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
-    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS");
+    // Checks the value of env, GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS
+    // This returns null until Partitioned Operations is supported.
+    return null;
   }
 
   private static Boolean parseBooleanEnvVariable(String variableName) {

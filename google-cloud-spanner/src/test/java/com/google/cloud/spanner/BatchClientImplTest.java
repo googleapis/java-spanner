@@ -36,7 +36,6 @@ import com.google.protobuf.util.Timestamps;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opentelemetry.api.OpenTelemetry;
-
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
