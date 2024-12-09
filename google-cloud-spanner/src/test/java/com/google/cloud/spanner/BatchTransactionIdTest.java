@@ -34,14 +34,14 @@ public class BatchTransactionIdTest {
     new EqualsTester()
         .addEqualityGroup(
             new BatchTransactionId(
-                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE, false),
+                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE),
             new BatchTransactionId(
-                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE, false))
+                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE))
         .addEqualityGroup(
             new BatchTransactionId(
-                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MAX_VALUE, true),
+                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MAX_VALUE),
             new BatchTransactionId(
-                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MAX_VALUE, true))
+                "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MAX_VALUE))
         .testEquals();
   }
 
@@ -49,9 +49,9 @@ public class BatchTransactionIdTest {
   public void serialization() {
     reserializeAndAssert(
         new BatchTransactionId(
-            "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE, false));
+            "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE));
     reserializeAndAssert(
         new BatchTransactionId(
-            "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE, true));
+            "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE));
   }
 }

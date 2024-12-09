@@ -59,8 +59,6 @@ public class BatchClientImpl implements BatchClient {
   @GuardedBy("multiplexedSessionLock")
   private final AtomicReference<SessionImpl> multiplexedSessionReference;
 
-  private final Clock clock;
-
   BatchClientImpl(SessionClient sessionClient, boolean isMultiplexedSessionEnabled) {
     this.sessionClient = checkNotNull(sessionClient);
     this.isMultiplexedSessionEnabled = isMultiplexedSessionEnabled;
@@ -76,7 +74,6 @@ public class BatchClientImpl implements BatchClient {
     // This also ensured that a new session is created on first request.
     this.expirationDate = new AtomicReference<>(Instant.MIN);
     this.multiplexedSessionReference = new AtomicReference<>();
-    clock = Clock.systemUTC();
   }
 
   @Override
@@ -137,10 +134,10 @@ public class BatchClientImpl implements BatchClient {
   private SessionImpl getMultiplexedSession() {
     this.multiplexedSessionLock.lock();
     try {
-      if (this.clock.instant().isAfter(this.expirationDate.get())
+      if (Clock.systemUTC().instant().isAfter(this.expirationDate.get())
           || this.multiplexedSessionReference.get() == null) {
         this.multiplexedSessionReference.set(this.sessionClient.createMultiplexedSession());
-        this.expirationDate.set(this.clock.instant().plus(this.sessionExpirationDuration));
+        this.expirationDate.set(Clock.systemUTC().instant().plus(this.sessionExpirationDuration));
       }
       return this.multiplexedSessionReference.get();
     } finally {
@@ -151,14 +148,12 @@ public class BatchClientImpl implements BatchClient {
   private static class BatchReadOnlyTransactionImpl extends MultiUseReadOnlyTransaction
       implements BatchReadOnlyTransaction {
     private final String sessionName;
-    private final boolean isMultiplexedSession;
     private final Map<SpannerRpc.Option, ?> options;
 
     BatchReadOnlyTransactionImpl(
         MultiUseReadOnlyTransaction.Builder builder, TimestampBound bound) {
       super(builder.setTimestampBound(bound));
       this.sessionName = session.getName();
-      this.isMultiplexedSession = session.getIsMultiplexed();
       this.options = session.getOptions();
       initTransaction();
     }
@@ -168,13 +163,11 @@ public class BatchClientImpl implements BatchClient {
       super(builder.setTransactionId(batchTransactionId.getTransactionId()));
       this.sessionName = session.getName();
       this.options = session.getOptions();
-      this.isMultiplexedSession = session.getIsMultiplexed();
     }
 
     @Override
     public BatchTransactionId getBatchTransactionId() {
-      return new BatchTransactionId(
-          sessionName, getTransactionId(), getReadTimestamp(), session.getIsMultiplexed());
+      return new BatchTransactionId(sessionName, getTransactionId(), getReadTimestamp());
     }
 
     @Override
