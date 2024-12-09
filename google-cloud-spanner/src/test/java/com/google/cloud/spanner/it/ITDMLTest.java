@@ -16,14 +16,12 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
@@ -90,15 +88,13 @@ public final class ITDMLTest {
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
-    if (!isUsingEmulator()) {
-      Database postgreSQLDatabase =
-          env.getTestHelper()
-              .createTestDatabase(
-                  Dialect.POSTGRESQL,
-                  Arrays.asList(
-                      "CREATE TABLE T (" + "  K    VARCHAR PRIMARY KEY," + "  V    BIGINT" + ")"));
-      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
-    }
+    Database postgreSQLDatabase =
+        env.getTestHelper()
+            .createTestDatabase(
+                Dialect.POSTGRESQL,
+                Arrays.asList(
+                    "CREATE TABLE T (" + "  K    VARCHAR PRIMARY KEY," + "  V    BIGINT" + ")"));
+    postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
   }
 
   @AfterClass
@@ -122,10 +118,7 @@ public final class ITDMLTest {
   public static List<DialectTestParameter> data() {
     List<DialectTestParameter> params = new ArrayList<>();
     params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
-    // "PG dialect tests are not supported by the emulator"
-    if (!isUsingEmulator()) {
-      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
-    }
+    params.add(new DialectTestParameter(Dialect.POSTGRESQL));
     return params;
   }
 
@@ -389,10 +382,6 @@ public final class ITDMLTest {
 
   @Test
   public void testUntypedNullValues() {
-    assumeFalse(
-        "Spanner PostgreSQL does not yet support untyped null values",
-        dialect.dialect == Dialect.POSTGRESQL);
-
     DatabaseClient client = getClient(dialect.dialect);
     String sql;
     if (dialect.dialect == Dialect.POSTGRESQL) {
