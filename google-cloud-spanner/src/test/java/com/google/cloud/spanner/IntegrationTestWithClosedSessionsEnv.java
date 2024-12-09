@@ -51,6 +51,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
         SessionPool pool,
         boolean useMultiplexedSessionBlindWriteIgnore,
         MultiplexedSessionDatabaseClient ignore,
+        boolean useMultiplexedSessionPartitionedOpsIgnore,
         boolean useMultiplexedSessionForRWIgnore) {
       return new DatabaseClientWithClosedSessionImpl(clientId, pool, tracer);
     }

@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
-import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.spanner.v1.BatchWriteResponse;
 
 /**
@@ -49,11 +48,6 @@ abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClien
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       Iterable<MutationGroup> mutationGroups, TransactionOption... options)
       throws SpannerException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
     throw new UnsupportedOperationException();
   }
 }
