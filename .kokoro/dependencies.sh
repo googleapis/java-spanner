@@ -16,6 +16,8 @@
 set -eo pipefail
 shopt -s nullglob
 
+set -x
+
 ## Get the directory of the build script
 scriptDir=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 ## cd to the parent directory, i.e. the root of the git repo
@@ -53,9 +55,15 @@ if [ ! -z "${JAVA11_HOME}" ]; then
   setJava "${JAVA11_HOME}"
 fi
 
+INSTALL_OPTS=""
+if [[ $ENABLE_AIRLOCK = 'true' ]]; then
+  INSTALL_OPTS="-Pairlock-trusted"
+fi
+
 # this should run maven enforcer
 retry_with_backoff 3 10 \
-  mvn install -B -V -ntp \
+  mvn install -B -V \
+    ${INSTALL_OPTS} \
     -DskipTests=true \
     -Dmaven.javadoc.skip=true \
     -Dclirr.skip=true
@@ -64,4 +72,4 @@ if [ ! -z "${JAVA8_HOME}" ]; then
   setJava "${JAVA8_HOME}"
 fi
 
-mvn -B dependency:analyze -DfailOnWarning=true
+mvn -B ${INSTALL_OPTS} dependency:analyze -DfailOnWarning=true
