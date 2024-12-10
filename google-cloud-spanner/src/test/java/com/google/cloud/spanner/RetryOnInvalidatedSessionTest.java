@@ -1288,6 +1288,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void writeAtLeastOnce() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
             client.writeAtLeastOnce(
