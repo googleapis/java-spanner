@@ -177,6 +177,9 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
+          <parallel>classes</parallel>
+          <forkCount>5</forkCount>
+          <reuseForks>true</reuseForks>
           <systemPropertyVariables>
             <spanner.test.instance>java-sample-integration-tests</spanner.test.instance>
             <spanner.test.instance.mr>java-client-mr-integration-tests</spanner.test.instance.mr>
