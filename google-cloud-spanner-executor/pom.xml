@@ -48,6 +48,11 @@
       <version>0.33.0</version>
     </dependency>
     <dependency>
+      <groupId>com.google.cloud.opentelemetry</groupId>
+      <artifactId>shared-resourcemapping</artifactId>
+      <version>0.33.0</version>
+    </dependency>
+    <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
     </dependency>
