@@ -31,12 +31,15 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
 
 /** Integration tests for FGAC samples for GoogleStandardSql dialect. */
 @RunWith(JUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DatabaseRolesIT extends SampleTestBase {
 
   private static DatabaseId databaseId;
@@ -105,7 +108,7 @@ public class DatabaseRolesIT extends SampleTestBase {
         SampleRunner.runSample(
             () ->
                 AddAndDropDatabaseRole.addAndDropDatabaseRole(
-                    projectId, instanceId, databaseId.getDatabase(), "new-parent", "new-child"));
+                    projectId, instanceId, databaseId.getDatabase(), "new_parent", "new_child"));
     assertTrue(out.contains("Created roles new_parent and new_child and granted privileges"));
     assertTrue(out.contains("Revoked privileges and dropped role new_child"));
   }
