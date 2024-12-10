@@ -203,7 +203,6 @@ public class PgSpannerSample {
       // Initiate the request which returns an OperationFuture.
       Database db = op.get();
       System.out.println("Created database [" + db.getId() + "]");
-      createTableUsingDdl(dbAdminClient, id);
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
@@ -633,7 +632,7 @@ public class PgSpannerSample {
             Statement updateStatement =
                 Statement.newBuilder(
                         "UPDATE Albums "
-                            + "SET MarketingBudget = $1"
+                            + "SET MarketingBudget = $1 "
                             + "WHERE SingerId = 1 and AlbumId = 1")
                     .bind("p1")
                     .to(album1Budget)
@@ -642,7 +641,7 @@ public class PgSpannerSample {
             Statement updateStatement2 =
                 Statement.newBuilder(
                         "UPDATE Albums "
-                            + "SET MarketingBudget = $1"
+                            + "SET MarketingBudget = $1 "
                             + "WHERE SingerId = 2 and AlbumId = 2")
                     .bind("p1")
                     .to(album2Budget)

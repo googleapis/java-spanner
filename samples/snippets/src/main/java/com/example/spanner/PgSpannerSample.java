@@ -631,7 +631,7 @@ public class PgSpannerSample {
             Statement updateStatement =
                 Statement.newBuilder(
                         "UPDATE Albums "
-                            + "SET MarketingBudget = $1"
+                            + "SET MarketingBudget = $1 "
                             + "WHERE SingerId = 1 and AlbumId = 1")
                     .bind("p1")
                     .to(album1Budget)
@@ -640,7 +640,7 @@ public class PgSpannerSample {
             Statement updateStatement2 =
                 Statement.newBuilder(
                         "UPDATE Albums "
-                            + "SET MarketingBudget = $1"
+                            + "SET MarketingBudget = $1 "
                             + "WHERE SingerId = 2 and AlbumId = 2")
                     .bind("p1")
                     .to(album2Budget)
