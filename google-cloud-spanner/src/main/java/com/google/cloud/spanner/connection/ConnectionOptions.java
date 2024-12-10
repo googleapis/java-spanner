@@ -70,6 +70,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -614,6 +615,7 @@ public class ConnectionOptions {
         new HashMap<>();
     private String uri;
     private Credentials credentials;
+    private StatementExecutorType statementExecutorType;
     private SessionPoolOptions sessionPoolOptions;
     private List<StatementExecutionInterceptor> statementExecutionInterceptors =
         Collections.emptyList();
@@ -777,6 +779,11 @@ public class ConnectionOptions {
       return this;
     }
 
+    Builder setStatementExecutorType(StatementExecutorType statementExecutorType) {
+      this.statementExecutorType = statementExecutorType;
+      return this;
+    }
+
     public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
       this.openTelemetry = openTelemetry;
       return this;
@@ -814,6 +821,7 @@ public class ConnectionOptions {
   private final String instanceId;
   private final String databaseName;
   private final Credentials credentials;
+  private final StatementExecutorType statementExecutorType;
   private final SessionPoolOptions sessionPoolOptions;
 
   private final OpenTelemetry openTelemetry;
@@ -834,6 +842,7 @@ public class ConnectionOptions {
     ConnectionPropertyValue<Boolean> value = cast(connectionPropertyValues.get(LENIENT.getKey()));
     this.warnings = checkValidProperties(value != null && value.getValue(), uri);
     this.fixedCredentials = builder.credentials;
+    this.statementExecutorType = builder.statementExecutorType;
 
     this.openTelemetry = builder.openTelemetry;
     this.statementExecutionInterceptors =
@@ -1103,6 +1112,10 @@ public class ConnectionOptions {
 
   CredentialsProvider getCredentialsProvider() {
     return getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER);
+  }
+
+  StatementExecutorType getStatementExecutorType() {
+    return this.statementExecutorType;
   }
 
   /** The {@link SessionPoolOptions} of this {@link ConnectionOptions}. */
