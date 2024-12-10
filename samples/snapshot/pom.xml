@@ -147,9 +147,7 @@
         <version>3.5.2</version>
         <configuration>
           <parallel>classes</parallel>
-          <forkCount>3</forkCount>
-          <reuseForks>true</reuseForks>
-          <threadCount>10</threadCount>
+          <threadCount>5</threadCount>
           <systemPropertyVariables>
             <spanner.test.instance>java-sample-integration-tests</spanner.test.instance>
             <spanner.test.instance.mr>java-client-mr-integration-tests</spanner.test.instance.mr>
