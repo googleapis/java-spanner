@@ -252,19 +252,19 @@
             <enabled>true</enabled>
           </snapshots>
         </pluginRepository>
-        <pluginRepository>
-          <id>central</id>
-          <!-- Disable default Maven Central -->
-          <name>Maven Central remote repository</name>
-          <url>https://repo.maven.apache.org/maven2</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </pluginRepository>
+<!--        <pluginRepository>-->
+<!--          <id>central</id>-->
+<!--          &lt;!&ndash; Disable default Maven Central &ndash;&gt;-->
+<!--          <name>Maven Central remote repository</name>-->
+<!--          <url>https://repo.maven.apache.org/maven2</url>-->
+<!--          <layout>default</layout>-->
+<!--          <releases>-->
+<!--            <enabled>false</enabled>-->
+<!--          </releases>-->
+<!--          <snapshots>-->
+<!--            <enabled>false</enabled>-->
+<!--          </snapshots>-->
+<!--        </pluginRepository>-->
         <pluginRepository>
           <id>rso-public-grid</id>
           <!-- Disable default sonatype public grid -->
@@ -292,19 +292,19 @@
             <enabled>true</enabled>
           </snapshots>
         </repository>
-        <repository>
-          <id>central</id>
-          <!-- Disable default Maven Central -->
-          <name>Maven Central remote repository</name>
-          <url>https://repo.maven.apache.org/maven2</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </repository>
+<!--        <repository>-->
+<!--          <id>central</id>-->
+<!--          &lt;!&ndash; Disable default Maven Central &ndash;&gt;-->
+<!--          <name>Maven Central remote repository</name>-->
+<!--          <url>https://repo.maven.apache.org/maven2</url>-->
+<!--          <layout>default</layout>-->
+<!--          <releases>-->
+<!--            <enabled>false</enabled>-->
+<!--          </releases>-->
+<!--          <snapshots>-->
+<!--            <enabled>false</enabled>-->
+<!--          </snapshots>-->
+<!--        </repository>-->
         <repository>
           <id>rso-public-grid</id>
           <!-- Disable default sonatype public grid -->
