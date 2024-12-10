@@ -67,6 +67,7 @@ public class SampleTestBaseV2 {
 
   @BeforeClass
   public static void beforeClass() throws IOException {
+    System.out.println("Starting beforeClass");
     final String serverUrl = "";
     final SpannerOptions.Builder optionsBuilder =
         SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests();
@@ -87,6 +88,7 @@ public class SampleTestBaseV2 {
     instanceAdminClient = InstanceAdminClient.create(instanceAdminSettingBuilder.build());
     idGenerator = new SampleIdGenerator(
         BASE_DATABASE_ID, BASE_BACKUP_ID, BASE_INSTANCE_CONFIG_ID, BASE_INSTANCE_ID);
+    System.out.println("Done beforeClass");
   }
 
   @AfterClass

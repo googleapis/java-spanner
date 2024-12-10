@@ -99,6 +99,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
 
   @BeforeClass
   public static void setUp() throws Exception {
+    System.out.println("Starting setup");
     SpannerOptions options =
         SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     spanner = options.getService();
@@ -115,6 +116,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
      * Backups needed to be deleted from the instance first, as the instance can only be
      * deleted once all backups have been deleted.
      * */
+    System.out.println("Deleting encrypted test instances");
     deleteStaleEncryptedTestInstances();
   }
 
@@ -134,6 +136,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
             .iterateAll()) {
       if ((now.getSeconds() - instance.getCreateTime().getSeconds())
           > STALE_INSTANCE_THRESHOLD_SECS) {
+        System.out.printf("Deleting instance of %s\n", instance.getDisplayName());
         deleteAllBackups(instance.getId().getInstance());
         instance.delete();
       }
