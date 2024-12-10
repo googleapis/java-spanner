@@ -76,6 +76,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.ConnectionProperty.Context;
 import com.google.cloud.spanner.connection.ConnectionState.Type;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
@@ -284,9 +285,17 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(options);
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
+    StatementExecutorType statementExecutorType;
+    if (options.getStatementExecutorType() != null) {
+      statementExecutorType = options.getStatementExecutorType();
+    } else {
+      statementExecutorType =
+          options.isUseVirtualThreads()
+              ? StatementExecutorType.VIRTUAL_THREAD
+              : StatementExecutorType.DIRECT_EXECUTOR;
+    }
     this.statementExecutor =
-        new StatementExecutor(
-            options.isUseVirtualThreads(), options.getStatementExecutionInterceptors());
+        new StatementExecutor(statementExecutorType, options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
@@ -330,7 +339,11 @@ class ConnectionImpl implements Connection {
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
     this.statementExecutor =
-        new StatementExecutor(options.isUseVirtualThreads(), Collections.emptyList());
+        new StatementExecutor(
+            options.isUseVirtualThreads()
+                ? StatementExecutorType.VIRTUAL_THREAD
+                : StatementExecutorType.DIRECT_EXECUTOR,
+            Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
     this.spanner = spannerPool.getSpanner(options, this);

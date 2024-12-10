@@ -146,7 +146,10 @@ class StatementExecutor {
       ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory("connection-executor", false);
 
   /** Creates an {@link ExecutorService} for a {@link StatementExecutor}. */
-  private static ListeningExecutorService createExecutorService(boolean useVirtualThreads) {
+  private static ListeningExecutorService createExecutorService(StatementExecutorType type) {
+    if (type == StatementExecutorType.DIRECT_EXECUTOR) {
+      return MoreExecutors.newDirectExecutorService();
+    }
     return MoreExecutors.listeningDecorator(
         Context.taskWrapping(
             new ThreadPoolExecutor(
@@ -155,7 +158,7 @@ class StatementExecutor {
                 0L,
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(),
-                useVirtualThreads
+                type == StatementExecutorType.VIRTUAL_THREAD
                     ? DEFAULT_VIRTUAL_THREAD_FACTORY
                     : DEFAULT_DAEMON_THREAD_FACTORY)));
   }
@@ -168,13 +171,23 @@ class StatementExecutor {
    */
   private final List<StatementExecutionInterceptor> interceptors;
 
-  @VisibleForTesting
-  StatementExecutor() {
-    this(DEFAULT_USE_VIRTUAL_THREADS, Collections.emptyList());
+  enum StatementExecutorType {
+    PLATFORM_THREAD,
+    VIRTUAL_THREAD,
+    DIRECT_EXECUTOR,
   }
 
-  StatementExecutor(boolean useVirtualThreads, List<StatementExecutionInterceptor> interceptors) {
-    this.executor = createExecutorService(useVirtualThreads);
+  @VisibleForTesting
+  StatementExecutor() {
+    this(
+        DEFAULT_USE_VIRTUAL_THREADS
+            ? StatementExecutorType.VIRTUAL_THREAD
+            : StatementExecutorType.PLATFORM_THREAD,
+        Collections.emptyList());
+  }
+
+  StatementExecutor(StatementExecutorType type, List<StatementExecutionInterceptor> interceptors) {
+    this.executor = createExecutorService(type);
     this.interceptors = Collections.unmodifiableList(interceptors);
   }
 
