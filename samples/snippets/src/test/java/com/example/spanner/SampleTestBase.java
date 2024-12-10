@@ -22,6 +22,10 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 /** Base class for sample integration tests. */
 public class SampleTestBase {
@@ -42,6 +46,13 @@ public class SampleTestBase {
   protected static final String instanceConfigName = System
       .getProperty("spanner.test.instance.config");
   protected static SampleIdGenerator idGenerator;
+
+  @Rule
+  public TestRule watcher = new TestWatcher() {
+    protected void starting(Description description) {
+      System.out.println("Starting test: " + description.getMethodName());
+    }
+  };
 
   @BeforeClass
   public static void beforeClass() {
