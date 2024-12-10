@@ -49892,6 +49892,2702 @@ set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.retry_aborts_internally to/-false;
 NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+SET LOCAL SPANNER.RETRY_ABORTS_INTERNALLY = TRUE;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+   set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+			set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+
+
+
+set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = true  ;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = true		;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = true
+
+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set   local   spanner.retry_aborts_internally   =   true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set	local	spanner.retry_aborts_internally	=	true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set
+local
+spanner.retry_aborts_internally
+=
+true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true bar;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true%;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =%true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true_;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =_true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true&;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =&true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true$;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =$true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true@;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =@true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true!;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =!true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true*;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =*true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true(;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =(true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true);
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =)true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =-true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =+true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true-#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =-#true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =/true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true\;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =\true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true?;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =?true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true-/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =-/true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true/#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =/#true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set local spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = true/-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =/-true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+SET LOCAL SPANNER.RETRY_ABORTS_INTERNALLY = FALSE;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+   set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+			set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+
+
+
+set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = false  ;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = false		;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally = false
+
+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set   local   spanner.retry_aborts_internally   =   false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set	local	spanner.retry_aborts_internally	=	false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set
+local
+spanner.retry_aborts_internally
+=
+false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false bar;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false%;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =%false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false_;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =_false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false&;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =&false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false$;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =$false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false@;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =@false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false!;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =!false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false*;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =*false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false(;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =(false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false);
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =)false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =-false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =+false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false-#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =-#false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =/false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false\;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =\false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false?;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =?false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false-/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =-/false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false/#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =/#false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set local spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally = false/-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally =/-false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+SET LOCAL SPANNER.RETRY_ABORTS_INTERNALLY TO TRUE;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+   set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+			set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+
+
+
+set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to true  ;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to true		;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to true
+
+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set   local   spanner.retry_aborts_internally   to   true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set	local	spanner.retry_aborts_internally	to	true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set
+local
+spanner.retry_aborts_internally
+to
+true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true bar;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true%;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to%true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true_;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to_true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true&;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to&true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true$;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to$true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true@;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to@true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true!;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to!true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true*;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to*true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true(;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to(true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true);
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to)true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to-true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to+true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true-#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to-#true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to/true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true\;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to\true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true?;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to?true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true-/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to-/true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true/#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to/#true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set local spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to true/-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to/-true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+SET LOCAL SPANNER.RETRY_ABORTS_INTERNALLY TO FALSE;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+   set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+			set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+
+
+
+set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to false  ;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to false		;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set local spanner.retry_aborts_internally to false
+
+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set   local   spanner.retry_aborts_internally   to   false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set	local	spanner.retry_aborts_internally	to	false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set
+local
+spanner.retry_aborts_internally
+to
+false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false bar;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false%;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to%false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false_;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to_false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false&;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to&false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false$;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to$false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false@;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to@false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false!;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to!false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false*;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to*false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false(;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to(false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false);
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to)false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to-false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to+false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false-#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to-#false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to/false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false\;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to\false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false?;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to?false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false-/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to-/false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false/#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to/#false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set local spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to false/-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local spanner.retry_aborts_internally to/-false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+SET SESSION SPANNER.RETRY_ABORTS_INTERNALLY = TRUE;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+   set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+			set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+
+
+
+set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = true  ;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = true		;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = true
+
+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set   session   spanner.retry_aborts_internally   =   true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set	session	spanner.retry_aborts_internally	=	true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set
+session
+spanner.retry_aborts_internally
+=
+true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true bar;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true%;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =%true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true_;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =_true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true&;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =&true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true$;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =$true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true@;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =@true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true!;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =!true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true*;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =*true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true(;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =(true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true);
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =)true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =-true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =+true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true-#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =-#true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =/true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true\;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =\true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true?;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =?true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true-/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =-/true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true/#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =/#true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session spanner.retry_aborts_internally = true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = true/-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =/-true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+SET SESSION SPANNER.RETRY_ABORTS_INTERNALLY = FALSE;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+   set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+			set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+
+
+
+set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = false  ;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = false		;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally = false
+
+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set   session   spanner.retry_aborts_internally   =   false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set	session	spanner.retry_aborts_internally	=	false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set
+session
+spanner.retry_aborts_internally
+=
+false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false bar;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false%;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =%false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false_;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =_false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false&;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =&false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false$;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =$false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false@;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =@false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false!;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =!false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false*;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =*false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false(;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =(false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false);
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =)false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =-false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =+false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false-#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =-#false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =/false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false\;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =\false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false?;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =?false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false-/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =-/false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false/#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =/#false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session spanner.retry_aborts_internally = false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally = false/-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally =/-false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+SET SESSION SPANNER.RETRY_ABORTS_INTERNALLY TO TRUE;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+   set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+			set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+
+
+
+set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to true  ;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to true		;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to true
+
+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set   session   spanner.retry_aborts_internally   to   true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set	session	spanner.retry_aborts_internally	to	true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set
+session
+spanner.retry_aborts_internally
+to
+true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true bar;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true%;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to%true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true_;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to_true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true&;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to&true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true$;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to$true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true@;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to@true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true!;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to!true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true*;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to*true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true(;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to(true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true);
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to)true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to-true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to+true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true-#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to-#true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to/true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true\;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to\true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true?;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to?true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true-/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to-/true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true/#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to/#true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session spanner.retry_aborts_internally to true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to true/-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to/-true;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+SET SESSION SPANNER.RETRY_ABORTS_INTERNALLY TO FALSE;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+   set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+			set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+
+
+
+set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to false  ;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to false		;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set session spanner.retry_aborts_internally to false
+
+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set   session   spanner.retry_aborts_internally   to   false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set	session	spanner.retry_aborts_internally	to	false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+set
+session
+spanner.retry_aborts_internally
+to
+false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false bar;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false%;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to%false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false_;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to_false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false&;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to&false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false$;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to$false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false@;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to@false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false!;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to!false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false*;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to*false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false(;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to(false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false);
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to)false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to-false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false+;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to+false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false-#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to-#false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to/false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false\;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to\false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false?;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to?false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false-/;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to-/false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false/#;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to/#false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session spanner.retry_aborts_internally to false;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to false/-;
+NEW_CONNECTION;
+set spanner.readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session spanner.retry_aborts_internally to/-false;
+NEW_CONNECTION;
 set spanner.autocommit_dml_mode='PARTITIONED_NON_ATOMIC';
 NEW_CONNECTION;
 SET SPANNER.AUTOCOMMIT_DML_MODE='PARTITIONED_NON_ATOMIC';
