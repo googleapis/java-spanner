@@ -942,8 +942,12 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setRetryAbortsInternally(boolean retryAbortsInternally) {
+    setRetryAbortsInternally(retryAbortsInternally, /* local = */ false);
+  }
+
+  void setRetryAbortsInternally(boolean retryAbortsInternally, boolean local) {
     checkSetRetryAbortsInternallyAvailable();
-    setConnectionPropertyValue(RETRY_ABORTS_INTERNALLY, retryAbortsInternally);
+    setConnectionPropertyValue(RETRY_ABORTS_INTERNALLY, retryAbortsInternally, local);
   }
 
   @Override
