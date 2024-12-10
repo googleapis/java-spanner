@@ -830,8 +830,6 @@ public class CloudClientExecutor extends CloudExecutor {
     com.google.cloud.spanner.SessionPoolOptions.Builder poolOptionsBuilder =
         com.google.cloud.spanner.SessionPoolOptions.newBuilder();
     SessionPoolOptionsHelper.setUseMultiplexedSession(poolOptionsBuilder, useMultiplexedSession);
-    SessionPoolOptionsHelper.setUseMultiplexedSessionBlindWrite(
-        poolOptionsBuilder, useMultiplexedSession);
     SessionPoolOptionsHelper.setUseMultiplexedSessionForRW(
         poolOptionsBuilder, useMultiplexedSession);
     LOGGER.log(
