@@ -3117,7 +3117,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   }
                   value.setArrayValue(builder.build());
                   value.setArrayType(
-                          com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.JSON).build());
+                          com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.STRUCT).build());
                 }
                 break;
               default:
