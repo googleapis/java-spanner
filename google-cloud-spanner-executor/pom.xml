@@ -45,7 +45,12 @@
     <dependency>
       <groupId>com.google.cloud.opentelemetry</groupId>
       <artifactId>exporter-trace</artifactId>
-      <version>0.32.0</version>
+      <version>0.33.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud.opentelemetry</groupId>
+      <artifactId>shared-resourcemapping</artifactId>
+      <version>0.33.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
@@ -266,7 +271,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <ignoredDependencies> com.google.api:gax,org.apache.maven.surefire:surefire-junit4 </ignoredDependencies>
+            <ignoredDependencies> com.google.api:gax,org.apache.maven.surefire:surefire-junit4,com.google.cloud.opentelemetry:shared-resourcemapping</ignoredDependencies>
           </configuration>
         </plugin>
       </plugins>
