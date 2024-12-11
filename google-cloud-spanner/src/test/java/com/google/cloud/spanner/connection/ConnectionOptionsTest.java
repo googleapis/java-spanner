@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionOptions.Builder.EXTERNAL_HOST_PATTERN;
 import static com.google.cloud.spanner.connection.ConnectionOptions.Builder.SPANNER_URI_PATTERN;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENDPOINT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.determineHost;
@@ -1210,5 +1211,41 @@ public class ConnectionOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .build()
             .isEnableApiTracing());
+  }
+
+  @Test
+  public void testExternalHostPatterns() {
+    Matcher matcherWithoutInstance =
+        EXTERNAL_HOST_PATTERN.matcher("cloudspanner://localhost:15000/databases/test-db");
+    assertTrue(matcherWithoutInstance.matches());
+    assertNull(matcherWithoutInstance.group("INSTANCEGROUP"));
+    assertEquals("test-db", matcherWithoutInstance.group("DATABASEGROUP"));
+    Matcher matcherWithProperty =
+        EXTERNAL_HOST_PATTERN.matcher(
+            "cloudspanner://localhost:15000/instances/default/databases/singers-db?usePlainText=true");
+    assertTrue(matcherWithProperty.matches());
+    assertEquals("default", matcherWithProperty.group("INSTANCEGROUP"));
+    assertEquals("singers-db", matcherWithProperty.group("DATABASEGROUP"));
+    Matcher matcherWithoutPort =
+        EXTERNAL_HOST_PATTERN.matcher(
+            "cloudspanner://localhost/instances/default/databases/test-db");
+    assertTrue(matcherWithoutPort.matches());
+    assertEquals("default", matcherWithoutPort.group("INSTANCEGROUP"));
+    assertEquals("test-db", matcherWithoutPort.group("DATABASEGROUP"));
+    assertEquals(
+        "http://localhost:15000",
+        determineHost(
+            matcherWithoutPort,
+            DEFAULT_ENDPOINT,
+            /* autoConfigEmulator= */ true,
+            /* usePlainText= */ true,
+            ImmutableMap.of()));
+    Matcher matcherWithProject =
+        EXTERNAL_HOST_PATTERN.matcher(
+            "cloudspanner://localhost:15000/projects/default/instances/default/databases/singers-db");
+    assertFalse(matcherWithProject.matches());
+    Matcher matcherWithoutHost =
+        EXTERNAL_HOST_PATTERN.matcher("cloudspanner:/instances/default/databases/singers-db");
+    assertFalse(matcherWithoutHost.matches());
   }
 }
