@@ -1005,7 +1005,7 @@ public class ConnectionOptions {
       // The leading '//' is already included in the regex for the connection URL, so we don't need
       // to add the leading '//' to the host name here.
       host = matcher.group(Builder.HOST_GROUP);
-      if (ConnectionOptions.Builder.EXTERNAL_HOST_FORMAT.equals(matcher.pattern().pattern())
+      if (Builder.EXTERNAL_HOST_FORMAT.equals(matcher.pattern().pattern())
           && !host.matches(".*:\\d+$")) {
         host = String.format("%s:15000", host);
       }
