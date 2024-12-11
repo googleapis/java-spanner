@@ -635,6 +635,7 @@ public class ConnectionOptions {
     @VisibleForTesting
     static final Pattern SPANNER_URI_PATTERN = Pattern.compile(SPANNER_URI_REGEX);
 
+    @VisibleForTesting
     static final Pattern EXTERNAL_HOST_PATTERN = Pattern.compile(EXTERNAL_HOST_FORMAT);
 
     private static final String HOST_GROUP = "HOSTGROUP";
@@ -1004,6 +1005,10 @@ public class ConnectionOptions {
       // The leading '//' is already included in the regex for the connection URL, so we don't need
       // to add the leading '//' to the host name here.
       host = matcher.group(Builder.HOST_GROUP);
+      if (ConnectionOptions.Builder.EXTERNAL_HOST_FORMAT.equals(matcher.pattern().pattern())
+          && !host.matches(".*:\\d+$")) {
+        host = String.format("%s:15000", host);
+      }
     }
     if (usePlainText) {
       return PLAIN_TEXT_PROTOCOL + host;
