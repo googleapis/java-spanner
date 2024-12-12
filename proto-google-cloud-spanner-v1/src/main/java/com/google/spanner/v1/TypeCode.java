@@ -228,6 +228,17 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>INTERVAL = 16;</code>
    */
   INTERVAL(16),
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in lower-case hexa-decimal format, as described
+   * in RFC 9562, section 4.
+   * </pre>
+   *
+   * <code>UUID = 17;</code>
+   */
+  UUID(17),
   UNRECOGNIZED(-1),
   ;
 
@@ -424,6 +435,17 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>INTERVAL = 16;</code>
    */
   public static final int INTERVAL_VALUE = 16;
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in lower-case hexa-decimal format, as described
+   * in RFC 9562, section 4.
+   * </pre>
+   *
+   * <code>UUID = 17;</code>
+   */
+  public static final int UUID_VALUE = 17;
 
   public final int getNumber() {
     if (this == UNRECOGNIZED) {
@@ -481,6 +503,8 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
         return ENUM;
       case 16:
         return INTERVAL;
+      case 17:
+        return UUID;
       default:
         return null;
     }
