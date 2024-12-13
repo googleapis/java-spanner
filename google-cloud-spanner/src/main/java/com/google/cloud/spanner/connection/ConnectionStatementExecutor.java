@@ -44,7 +44,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowReadOnly();
 
-  StatementResult statementSetRetryAbortsInternally(Boolean retryAbortsInternally);
+  StatementResult statementSetRetryAbortsInternally(Boolean retryAbortsInternally, Boolean local);
 
   StatementResult statementShowRetryAbortsInternally();
 

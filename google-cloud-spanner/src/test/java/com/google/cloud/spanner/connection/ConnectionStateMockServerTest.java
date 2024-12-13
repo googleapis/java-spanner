@@ -19,10 +19,15 @@ package com.google.cloud.spanner.connection;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CONNECTION_STATE_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ConnectionState.Type;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import org.junit.After;
@@ -82,6 +87,10 @@ public class ConnectionStateMockServerTest extends AbstractMockServerTest {
 
   ITConnection createConnection(ConnectionState.Type type) {
     return createConnection(";" + CONNECTION_STATE_TYPE.getKey() + "=" + type.name());
+  }
+
+  String getPrefix() {
+    return dialect == Dialect.POSTGRESQL ? "SPANNER." : "";
   }
 
   @Test
@@ -226,6 +235,60 @@ public class ConnectionStateMockServerTest extends AbstractMockServerTest {
           assertFalse(connection.isReturnCommitStats());
         }
       }
+    }
+  }
+
+  @Test
+  public void testSetLocalWithSqlStatement() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+
+      assertTrue(connection.isRetryAbortsInternally());
+      connection.execute(
+          Statement.of(String.format("set local %sretry_aborts_internally=false", getPrefix())));
+      assertFalse(connection.isRetryAbortsInternally());
+      connection.commit();
+      assertTrue(connection.isRetryAbortsInternally());
+    }
+  }
+
+  @Test
+  public void testSetSessionWithSqlStatement() {
+    assumeTrue("Only PostgreSQL supports the 'session' keyword", dialect == Dialect.POSTGRESQL);
+
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+
+      assertTrue(connection.isRetryAbortsInternally());
+      connection.execute(
+          Statement.of(String.format("set session %sretry_aborts_internally=false", getPrefix())));
+      assertFalse(connection.isRetryAbortsInternally());
+      connection.commit();
+      assertFalse(connection.isRetryAbortsInternally());
+    }
+  }
+
+  @Test
+  public void testSetLocalInvalidValue() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+
+      assertTrue(connection.isRetryAbortsInternally());
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  connection.execute(
+                      Statement.of(
+                          String.format("set local %sretry_aborts_internally=foo", getPrefix()))));
+      assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+      assertTrue(
+          exception.getMessage(),
+          exception
+              .getMessage()
+              .endsWith(
+                  String.format("Unknown value for %sRETRY_ABORTS_INTERNALLY: foo", getPrefix())));
+      assertTrue(connection.isRetryAbortsInternally());
     }
   }
 }

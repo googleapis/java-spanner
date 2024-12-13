@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
@@ -35,6 +36,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Collections2;
 import com.google.longrunning.Operation;
@@ -58,9 +60,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class StatementTimeoutTest extends AbstractMockServerTest {
 
   private static final String SLOW_SELECT = "SELECT foo FROM bar";
@@ -85,10 +89,18 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
    */
   private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 50;
 
+  @Parameters(name = "statementExecutorType = {0}")
+  public static Object[] parameters() {
+    return StatementExecutorType.values();
+  }
+
+  @Parameter public StatementExecutorType statementExecutorType;
+
   protected ITConnection createConnection() {
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
             .setUri(getBaseUrl() + ";trackSessionLeaks=false")
+            .setStatementExecutorType(statementExecutorType)
             .setConfigurator(
                 optionsConfigurator ->
                     optionsConfigurator
@@ -618,6 +630,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadOnlyAutocommit() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -643,6 +659,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadOnlyAutocommitMultipleStatements() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -675,6 +695,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadOnlyTransactional() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -700,6 +724,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadOnlyTransactionalMultipleStatements() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -737,6 +765,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteAutocommit() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -761,6 +793,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteAutocommitMultipleStatements() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -792,6 +828,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteAutocommitSlowUpdate() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -815,6 +855,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteAutocommitSlowCommit() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -838,6 +882,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteTransactional() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -862,6 +910,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteTransactionalMultipleStatements() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -928,6 +980,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelDdlBatch() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     addSlowMockDdlOperation();
 
     try (Connection connection = createConnection()) {
@@ -951,6 +1007,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelDdlAutocommit() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     addSlowMockDdlOperation();
 
     try (Connection connection = createConnection()) {

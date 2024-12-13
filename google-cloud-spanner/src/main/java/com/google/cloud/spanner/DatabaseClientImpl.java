@@ -36,6 +36,7 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
+  @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
 
   final boolean useMultiplexedSessionBlindWrite;
@@ -47,6 +48,7 @@ class DatabaseClientImpl implements DatabaseClient {
         pool,
         /* useMultiplexedSessionBlindWrite = */ false,
         /* multiplexedSessionDatabaseClient = */ null,
+        /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
         /* useMultiplexedSessionForRW = */ false);
   }
@@ -58,6 +60,7 @@ class DatabaseClientImpl implements DatabaseClient {
         pool,
         /* useMultiplexedSessionBlindWrite = */ false,
         /* multiplexedSessionDatabaseClient = */ null,
+        /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
         /* useMultiplexedSessionForRW = */ false);
   }
@@ -67,12 +70,14 @@ class DatabaseClientImpl implements DatabaseClient {
       SessionPool pool,
       boolean useMultiplexedSessionBlindWrite,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
+      boolean useMultiplexedSessionPartitionedOps,
       TraceWrapper tracer,
       boolean useMultiplexedSessionForRW) {
     this.clientId = clientId;
     this.pool = pool;
     this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
+    this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
     this.tracer = tracer;
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
   }
@@ -309,6 +314,14 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
+    if (useMultiplexedSessionPartitionedOps) {
+      return getMultiplexedSession().executePartitionedUpdate(stmt, options);
+    }
+    return executePartitionedUpdateWithPooledSession(stmt, options);
+  }
+
+  private long executePartitionedUpdateWithPooledSession(
+      final Statement stmt, final UpdateOption... options) {
     ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
       return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
