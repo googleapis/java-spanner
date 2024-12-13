@@ -33,6 +33,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.Server;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -46,7 +47,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @Category(SlowTest.class)
 @RunWith(JUnit4.class)
@@ -127,7 +127,7 @@ public class BatchCreateSessionsSlowTest {
     builder
         .getSpannerStubSettingsBuilder()
         .batchCreateSessionsSettings()
-        .setSimpleTimeoutNoRetries(Duration.ofMillis(100));
+        .setSimpleTimeoutNoRetriesDuration(Duration.ofMillis(100));
 
     try (Spanner spanner = builder.build().getService()) {
       DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
@@ -168,7 +168,9 @@ public class BatchCreateSessionsSlowTest {
     // Add a timeout for the max amount of time (60ms) that a request waits when a session is
     // unavailable.
     SessionPoolOptions sessionPoolOptions =
-        SessionPoolOptions.newBuilder().setAcquireSessionTimeout(Duration.ofMillis(60)).build();
+        SessionPoolOptions.newBuilder()
+            .setAcquireSessionTimeoutDuration(Duration.ofMillis(60))
+            .build();
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId("my-project")
@@ -181,7 +183,7 @@ public class BatchCreateSessionsSlowTest {
     builder
         .getSpannerStubSettingsBuilder()
         .batchCreateSessionsSettings()
-        .setSimpleTimeoutNoRetries(Duration.ofMillis(1000));
+        .setSimpleTimeoutNoRetriesDuration(Duration.ofMillis(1000));
 
     try (Spanner spanner = builder.build().getService()) {
       DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
@@ -192,7 +194,6 @@ public class BatchCreateSessionsSlowTest {
       List<ListenableFuture<Void>> futures = new ArrayList<>(5000);
       AtomicInteger counter = new AtomicInteger();
       for (int i = 0; i < 5000; i++) {
-        final int index = i;
         futures.add(
             service.submit(
                 () -> {

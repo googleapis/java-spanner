@@ -50,5 +50,8 @@ public class BatchTransactionIdTest {
     reserializeAndAssert(
         new BatchTransactionId(
             "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE));
+    reserializeAndAssert(
+        new BatchTransactionId(
+            "testSession", ByteString.copyFromUtf8("testTxn"), Timestamp.MIN_VALUE));
   }
 }

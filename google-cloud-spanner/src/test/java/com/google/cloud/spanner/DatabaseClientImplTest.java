@@ -111,6 +111,8 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -135,8 +137,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
-import org.threeten.bp.Instant;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
@@ -2852,10 +2852,10 @@ public class DatabaseClientImplTest {
     mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(20, 0));
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRpcTimeout(Duration.ofMillis(1L))
-            .setMaxRpcTimeout(Duration.ofMillis(1L))
+            .setInitialRpcTimeoutDuration(Duration.ofMillis(1L))
+            .setMaxRpcTimeoutDuration(Duration.ofMillis(1L))
             .setMaxAttempts(1)
-            .setTotalTimeout(Duration.ofMillis(1L))
+            .setTotalTimeoutDuration(Duration.ofMillis(1L))
             .build();
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
@@ -2868,7 +2868,8 @@ public class DatabaseClientImplTest {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
-      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofHours(2L));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeoutDuration())
+          .isEqualTo(Duration.ofHours(2L));
 
       // PDML should not timeout with these settings.
       long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
@@ -2900,11 +2901,12 @@ public class DatabaseClientImplTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value.
-    builder.setPartitionedDmlTimeout(Duration.ofMillis(10L));
+    builder.setPartitionedDmlTimeoutDuration(Duration.ofMillis(10L));
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofMillis(10L));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeoutDuration())
+          .isEqualTo(Duration.ofMillis(10L));
       // PDML should time out with these settings.
       mockSpanner.setExecuteSqlExecutionTime(
           SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
@@ -2933,7 +2935,7 @@ public class DatabaseClientImplTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value to a value that should allow the statement to be executed.
-    builder.setPartitionedDmlTimeout(Duration.ofMillis(5000L));
+    builder.setPartitionedDmlTimeoutDuration(Duration.ofMillis(5000L));
     // Set the ExecuteSql RPC timeout value to a value lower than the time needed to execute the
     // statement. The higher timeout value that is set above should be respected, and the value for
     // the ExecuteSQL RPC should be ignored specifically for Partitioned DML.
@@ -2946,10 +2948,10 @@ public class DatabaseClientImplTest {
                 .executeSqlSettings()
                 .getRetrySettings()
                 .toBuilder()
-                .setInitialRpcTimeout(Duration.ofMillis(10L))
-                .setMaxRpcTimeout(Duration.ofMillis(10L))
-                .setInitialRetryDelay(Duration.ofMillis(1L))
-                .setMaxRetryDelay(Duration.ofMillis(1L))
+                .setInitialRpcTimeoutDuration(Duration.ofMillis(10L))
+                .setMaxRpcTimeoutDuration(Duration.ofMillis(10L))
+                .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+                .setMaxRetryDelayDuration(Duration.ofMillis(1L))
                 .build());
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
@@ -3051,7 +3053,7 @@ public class DatabaseClientImplTest {
                 .setSessionPoolOption(
                     SessionPoolOptions.newBuilder()
                         .setMinSessions(0)
-                        .setWaitForMinSessions(waitForMinSessions)
+                        .setWaitForMinSessionsDuration(waitForMinSessions)
                         .build())
                 .build()
                 .getService()) {
@@ -3737,7 +3739,9 @@ public class DatabaseClientImplTest {
               .setChannelProvider(channelProvider)
               .setCredentials(NoCredentials.getInstance())
               .setSessionPoolOption(
-                  SessionPoolOptions.newBuilder().setWaitForMinSessions(waitForMinSessions).build())
+                  SessionPoolOptions.newBuilder()
+                      .setWaitForMinSessionsDuration(waitForMinSessions)
+                      .build())
               .build()
               .getService()) {
         DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
@@ -3836,7 +3840,7 @@ public class DatabaseClientImplTest {
         .withValue(
             SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY,
             SpannerCallContextTimeoutConfigurator.create()
-                .withExecuteQueryTimeout(Duration.ofNanos(1L)))
+                .withExecuteQueryTimeoutDuration(Duration.ofNanos(1L)))
         .run(
             () -> {
               // Query should fail with a timeout.
@@ -4956,7 +4960,7 @@ public class DatabaseClientImplTest {
           @Override
           public <ReqT, RespT> ApiCallContext configure(
               ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
-            return context.withStreamWaitTimeout(Duration.ofNanos(1L));
+            return context.withStreamWaitTimeoutDuration(Duration.ofNanos(1L));
           }
         };
     Context context =
@@ -4983,7 +4987,7 @@ public class DatabaseClientImplTest {
           @Override
           public <ReqT, RespT> ApiCallContext configure(
               ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
-            return context.withStreamWaitTimeout(Duration.ZERO);
+            return context.withStreamWaitTimeoutDuration(Duration.ZERO);
           }
         };
     Context context =
@@ -5002,12 +5006,12 @@ public class DatabaseClientImplTest {
   public void testRetryOnResourceExhausted() {
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRpcTimeout(Duration.ofSeconds(60L))
-            .setMaxRpcTimeout(Duration.ofSeconds(60L))
-            .setTotalTimeout(Duration.ofSeconds(60L))
+            .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+            .setMaxRpcTimeoutDuration(Duration.ofSeconds(60L))
+            .setTotalTimeoutDuration(Duration.ofSeconds(60L))
             .setRpcTimeoutMultiplier(1.0d)
-            .setInitialRetryDelay(Duration.ZERO)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setInitialRetryDelayDuration(Duration.ZERO)
+            .setMaxRetryDelayDuration(Duration.ZERO)
             .setMaxAttempts(100)
             .build();
     SpannerOptions.Builder builder =
@@ -5096,7 +5100,7 @@ public class DatabaseClientImplTest {
                     .setFailIfPoolExhausted()
                     .setMinSessions(2)
                     .setMaxSessions(4)
-                    .setWaitForMinSessions(Duration.ofSeconds(10L))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
                     .build())
             .build()
             .getService()) {

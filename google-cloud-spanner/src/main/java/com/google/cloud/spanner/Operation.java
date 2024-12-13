@@ -28,9 +28,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.longrunning.Operation.ResultCase;
 import com.google.protobuf.Any;
 import com.google.rpc.Status;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /**
  * Represents a long-running operation.
@@ -43,11 +43,11 @@ public class Operation<R, M> {
 
   private final RetrySettings DEFAULT_OPERATION_WAIT_SETTINGS =
       RetrySettings.newBuilder()
-          .setTotalTimeout(Duration.ofHours(12L))
-          .setInitialRetryDelay(Duration.ofMillis(500L))
+          .setTotalTimeoutDuration(Duration.ofHours(12L))
+          .setInitialRetryDelayDuration(Duration.ofMillis(500L))
           .setRetryDelayMultiplier(1.0)
           .setJittered(false)
-          .setMaxRetryDelay(Duration.ofMinutes(500L))
+          .setMaxRetryDelayDuration(Duration.ofMinutes(500L))
           .build();
 
   interface Parser<R, M> {

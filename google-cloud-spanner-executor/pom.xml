@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-executor</artifactId>
-  <version>6.81.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
+  <version>6.82.0</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Executor</name>
 
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.81.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.82.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -146,10 +146,6 @@
       <artifactId>gax-grpc</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.threeten</groupId>
-      <artifactId>threetenbp</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
     </dependency>
@@ -190,6 +186,13 @@
       <groupId>com.google.api</groupId>
       <artifactId>gax-grpc</artifactId>
       <classifier>testlib</classifier>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-junit4</artifactId>
+      <version>3.5.2</version>
       <scope>test</scope>
     </dependency>
 
@@ -263,7 +266,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <ignoredDependencies> com.google.api:gax</ignoredDependencies>
+            <ignoredDependencies> com.google.api:gax,org.apache.maven.surefire:surefire-junit4 </ignoredDependencies>
           </configuration>
         </plugin>
       </plugins>

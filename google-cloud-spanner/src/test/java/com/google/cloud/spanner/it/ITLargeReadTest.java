@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.ByteArray;
@@ -31,6 +30,7 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ConnectionOptions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import java.util.ArrayList;
@@ -88,20 +88,18 @@ public class ITLargeReadTest {
                     + "  Size          INT64,"
                     + ") PRIMARY KEY (Key)");
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
-    if (!isUsingEmulator()) {
-      Database postgreSQLDatabase =
-          env.getTestHelper()
-              .createTestDatabase(
-                  Dialect.POSTGRESQL,
-                  Arrays.asList(
-                      "CREATE TABLE TestTable ("
-                          + "  Key           BIGINT PRIMARY KEY,"
-                          + "  Data          BYTEA,"
-                          + "  Fingerprint   BIGINT,"
-                          + "  Size          BIGINT"
-                          + ")"));
-      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
-    }
+    Database postgreSQLDatabase =
+        env.getTestHelper()
+            .createTestDatabase(
+                Dialect.POSTGRESQL,
+                ImmutableList.of(
+                    "CREATE TABLE TestTable ("
+                        + "  Key           BIGINT PRIMARY KEY,"
+                        + "  Data          BYTEA,"
+                        + "  Fingerprint   BIGINT,"
+                        + "  Size          BIGINT"
+                        + ")"));
+    postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     hasher = Hashing.goodFastHash(64);
 
     List<Mutation> mutations = new ArrayList<>();
@@ -127,17 +125,13 @@ public class ITLargeReadTest {
       i++;
       if (totalSize >= WRITE_BATCH_SIZE) {
         googleStandardSQLClient.write(mutations);
-        if (!isUsingEmulator()) {
-          postgreSQLClient.write(mutations);
-        }
+        postgreSQLClient.write(mutations);
         mutations.clear();
         totalSize = 0;
       }
     }
     googleStandardSQLClient.write(mutations);
-    if (!isUsingEmulator()) {
-      postgreSQLClient.write(mutations);
-    }
+    postgreSQLClient.write(mutations);
   }
 
   @AfterClass
@@ -149,10 +143,7 @@ public class ITLargeReadTest {
   public static List<DialectTestParameter> data() {
     List<DialectTestParameter> params = new ArrayList<>();
     params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
-    // "PG dialect tests are not supported by the emulator"
-    if (!isUsingEmulator()) {
-      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
-    }
+    params.add(new DialectTestParameter(Dialect.POSTGRESQL));
     return params;
   }
 
