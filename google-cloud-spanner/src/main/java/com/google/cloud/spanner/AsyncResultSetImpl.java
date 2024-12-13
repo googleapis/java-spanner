@@ -498,10 +498,12 @@ class AsyncResultSetImpl extends ForwardingStructReader
   }
 
   private void initiateProduceRows() {
-    if (this.state == State.STREAMING_INITIALIZED) {
-      this.state = State.RUNNING;
+    synchronized (monitor) {
+      if (this.state == State.STREAMING_INITIALIZED) {
+        this.state = State.RUNNING;
+      }
+      produceRowsInitiated = true;
     }
-    produceRowsInitiated = true;
     this.service.execute(new ProduceRowsRunnable());
   }
 
