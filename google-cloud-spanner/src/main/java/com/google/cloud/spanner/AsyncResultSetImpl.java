@@ -112,9 +112,9 @@ class AsyncResultSetImpl extends ForwardingStructReader
    * Listeners that will be called when the {@link AsyncResultSetImpl} has finished fetching all
    * rows and any underlying transaction or session can be closed.
    */
-  private Collection<Runnable> listeners = new LinkedList<>();
+  private final Collection<Runnable> listeners = new LinkedList<>();
 
-  private State state = State.INITIALIZED;
+  private volatile State state = State.INITIALIZED;
 
   /** This variable indicates that produce rows thread is initiated */
   private volatile boolean produceRowsInitiated;
