@@ -42,6 +42,7 @@ import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,7 +59,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServerTest {
@@ -125,7 +125,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
   public void testReadWriteTransaction_retriesOnNewChannel() {
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
-        SessionPoolOptions.newBuilder().setWaitForMinSessions(Duration.ofSeconds(5L)).build());
+        SessionPoolOptions.newBuilder()
+            .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
+            .build());
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofStickyException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
     AtomicInteger attempts = new AtomicInteger();
@@ -159,7 +161,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
   public void testReadWriteTransaction_stopsRetrying() {
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
-        SessionPoolOptions.newBuilder().setWaitForMinSessions(Duration.ofSeconds(5L)).build());
+        SessionPoolOptions.newBuilder()
+            .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
+            .build());
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofStickyException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
 
@@ -200,7 +204,7 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
         SessionPoolOptions.newBuilder()
-            .setWaitForMinSessions(Duration.ofSeconds(5))
+            .setWaitForMinSessionsDuration(Duration.ofSeconds(5))
             .setPoolMaintainerClock(clock)
             .build());
     mockSpanner.setBeginTransactionExecutionTime(
@@ -328,7 +332,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
   public void testReadWriteTransaction_withGrpcContextDeadline_doesNotRetry() {
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
-        SessionPoolOptions.newBuilder().setWaitForMinSessions(Duration.ofSeconds(5L)).build());
+        SessionPoolOptions.newBuilder()
+            .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
+            .build());
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(500, 500));
 

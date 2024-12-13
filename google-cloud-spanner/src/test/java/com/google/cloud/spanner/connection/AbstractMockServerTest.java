@@ -283,12 +283,18 @@ public abstract class AbstractMockServerTest {
         ConnectionOptions.newBuilder()
             .setUri(getBaseUrl() + additionalUrlOptions)
             .setStatementExecutionInterceptors(interceptors);
+    configureConnectionOptions(builder);
     ConnectionOptions options = builder.build();
     ITConnection connection = createITConnection(options);
     for (TransactionRetryListener listener : transactionRetryListeners) {
       connection.addTransactionRetryListener(listener);
     }
     return connection;
+  }
+
+  protected ConnectionOptions.Builder configureConnectionOptions(
+      ConnectionOptions.Builder builder) {
+    return builder;
   }
 
   protected String getBaseUrl() {

@@ -709,6 +709,13 @@
     <method>boolean isEnableBuiltInMetrics()</method>
   </difference>
 
+  <!-- Added Monitoring host option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>java.lang.String getMonitoringHost()</method>
+  </difference>
+
   <!-- Added ExcludeTxnFromChangeStreams -->
   <difference>
     <differenceType>7012</differenceType>

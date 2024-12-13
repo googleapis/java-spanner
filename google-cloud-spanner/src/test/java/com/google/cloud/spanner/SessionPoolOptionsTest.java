@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +35,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.threeten.bp.Duration;
 
 /** Unit tests for {@link com.google.cloud.spanner.SessionPoolOptions} */
 @RunWith(Parameterized.class)
@@ -223,10 +223,12 @@ public class SessionPoolOptionsTest {
   @Test
   public void setAcquireSessionTimeout() {
     SessionPoolOptions sessionPoolOptions1 =
-        SessionPoolOptions.newBuilder().setAcquireSessionTimeout(Duration.ofSeconds(20)).build();
+        SessionPoolOptions.newBuilder()
+            .setAcquireSessionTimeoutDuration(Duration.ofSeconds(20))
+            .build();
     SessionPoolOptions sessionPoolOptions2 =
         SessionPoolOptions.newBuilder()
-            .setAcquireSessionTimeout(Duration.ofMillis(Long.MAX_VALUE))
+            .setAcquireSessionTimeoutDuration(Duration.ofMillis(Long.MAX_VALUE))
             .build();
 
     assertEquals(Duration.ofSeconds(20), sessionPoolOptions1.getAcquireSessionTimeout());
@@ -235,13 +237,13 @@ public class SessionPoolOptionsTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void setAcquireSessionTimeout_valueLessThanLowerBound() {
-    SessionPoolOptions.newBuilder().setAcquireSessionTimeout(Duration.ofMillis(0)).build();
+    SessionPoolOptions.newBuilder().setAcquireSessionTimeoutDuration(Duration.ofMillis(0)).build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void setAcquireSessionTimeout_valueMoreThanUpperBound() {
     SessionPoolOptions.newBuilder()
-        .setAcquireSessionTimeout(Duration.ofSeconds(Long.MAX_VALUE))
+        .setAcquireSessionTimeoutDuration(Duration.ofSeconds(Long.MAX_VALUE))
         .build();
   }
 
@@ -418,7 +420,7 @@ public class SessionPoolOptionsTest {
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
-            .setRemoveInactiveSessionAfter(
+            .setRemoveInactiveSessionAfterDuration(
                 Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
             .build());
     assertToBuilderRoundtrip(
@@ -438,11 +440,12 @@ public class SessionPoolOptionsTest {
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
-            .setWaitForMinSessions(Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
+            .setWaitForMinSessionsDuration(
+                Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
-            .setAcquireSessionTimeout(
+            .setAcquireSessionTimeoutDuration(
                 Duration.ofMillis(ThreadLocalRandom.current().nextLong(1, 10000)))
             .build());
     assertToBuilderRoundtrip(

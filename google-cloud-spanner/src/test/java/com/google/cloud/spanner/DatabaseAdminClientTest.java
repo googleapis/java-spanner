@@ -55,6 +55,7 @@ import io.grpc.Status;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +69,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class DatabaseAdminClientTest {
@@ -107,13 +107,13 @@ public class DatabaseAdminClientTest {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
     RetrySettings longRunningInitialRetrySettings =
         RetrySettings.newBuilder()
-            .setInitialRpcTimeout(Duration.ofMillis(600L))
-            .setMaxRpcTimeout(Duration.ofMillis(6000L))
-            .setInitialRetryDelay(Duration.ofMillis(20L))
-            .setMaxRetryDelay(Duration.ofMillis(45L))
+            .setInitialRpcTimeoutDuration(Duration.ofMillis(600L))
+            .setMaxRpcTimeoutDuration(Duration.ofMillis(6000L))
+            .setInitialRetryDelayDuration(Duration.ofMillis(20L))
+            .setMaxRetryDelayDuration(Duration.ofMillis(45L))
             .setRetryDelayMultiplier(1.5)
             .setRpcTimeoutMultiplier(1.5)
-            .setTotalTimeout(Duration.ofMinutes(48L))
+            .setTotalTimeoutDuration(Duration.ofMinutes(48L))
             .build();
     builder
         .getDatabaseAdminStubSettingsBuilder()
@@ -128,12 +128,12 @@ public class DatabaseAdminClientTest {
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
-                    .setInitialRpcTimeout(Duration.ofMillis(20L))
-                    .setInitialRetryDelay(Duration.ofMillis(10L))
-                    .setMaxRetryDelay(Duration.ofMillis(150L))
-                    .setMaxRpcTimeout(Duration.ofMillis(150L))
+                    .setInitialRpcTimeoutDuration(Duration.ofMillis(20L))
+                    .setInitialRetryDelayDuration(Duration.ofMillis(10L))
+                    .setMaxRetryDelayDuration(Duration.ofMillis(150L))
+                    .setMaxRpcTimeoutDuration(Duration.ofMillis(150L))
                     .setMaxAttempts(10)
-                    .setTotalTimeout(Duration.ofMillis(5000L))
+                    .setTotalTimeoutDuration(Duration.ofMillis(5000L))
                     .setRetryDelayMultiplier(1.3)
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));
@@ -152,12 +152,12 @@ public class DatabaseAdminClientTest {
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
-                    .setInitialRpcTimeout(Duration.ofMillis(20L))
-                    .setInitialRetryDelay(Duration.ofMillis(10L))
-                    .setMaxRetryDelay(Duration.ofMillis(150L))
-                    .setMaxRpcTimeout(Duration.ofMillis(150L))
+                    .setInitialRpcTimeoutDuration(Duration.ofMillis(20L))
+                    .setInitialRetryDelayDuration(Duration.ofMillis(10L))
+                    .setMaxRetryDelayDuration(Duration.ofMillis(150L))
+                    .setMaxRpcTimeoutDuration(Duration.ofMillis(150L))
                     .setMaxAttempts(10)
-                    .setTotalTimeout(Duration.ofMillis(5000L))
+                    .setTotalTimeoutDuration(Duration.ofMillis(5000L))
                     .setRetryDelayMultiplier(1.3)
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));
@@ -175,19 +175,19 @@ public class DatabaseAdminClientTest {
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
-                    .setInitialRpcTimeout(Duration.ofMillis(20L))
-                    .setInitialRetryDelay(Duration.ofMillis(10L))
-                    .setMaxRetryDelay(Duration.ofMillis(150L))
-                    .setMaxRpcTimeout(Duration.ofMillis(150L))
+                    .setInitialRpcTimeoutDuration(Duration.ofMillis(20L))
+                    .setInitialRetryDelayDuration(Duration.ofMillis(10L))
+                    .setMaxRetryDelayDuration(Duration.ofMillis(150L))
+                    .setMaxRpcTimeoutDuration(Duration.ofMillis(150L))
                     .setMaxAttempts(10)
-                    .setTotalTimeout(Duration.ofMillis(5000L))
+                    .setTotalTimeoutDuration(Duration.ofMillis(5000L))
                     .setRetryDelayMultiplier(1.3)
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));
     builder.setRetryAdministrativeRequestsSettings(
         SpannerOptions.Builder.DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS
             .toBuilder()
-            .setInitialRetryDelay(Duration.ofNanos(1L))
+            .setInitialRetryDelayDuration(Duration.ofNanos(1L))
             .build());
     spanner =
         builder

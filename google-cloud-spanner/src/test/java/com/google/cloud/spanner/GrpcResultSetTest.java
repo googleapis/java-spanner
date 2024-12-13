@@ -44,6 +44,7 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Transaction;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -55,7 +56,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 /** Unit tests for {@link GrpcResultSet}. */
 @RunWith(JUnit4.class)
@@ -90,7 +90,7 @@ public class GrpcResultSetTest {
         new SpannerRpc.StreamingCall() {
           @Override
           public ApiCallContext getCallContext() {
-            return GrpcCallContext.createDefault().withStreamWaitTimeout(streamWaitTimeout);
+            return GrpcCallContext.createDefault().withStreamWaitTimeoutDuration(streamWaitTimeout);
           }
 
           @Override

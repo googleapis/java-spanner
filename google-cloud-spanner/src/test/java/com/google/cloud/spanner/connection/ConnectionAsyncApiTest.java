@@ -36,7 +36,9 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerApiFutures;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.ConnectionOptions.Builder;
 import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -84,6 +86,11 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.getDialect();
     }
+  }
+
+  @Override
+  protected Builder configureConnectionOptions(Builder builder) {
+    return builder.setStatementExecutorType(StatementExecutorType.PLATFORM_THREAD);
   }
 
   @After

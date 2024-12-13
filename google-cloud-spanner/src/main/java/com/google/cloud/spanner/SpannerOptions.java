@@ -16,6 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+
 import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
@@ -74,6 +77,7 @@ import io.opentelemetry.api.common.Attributes;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,7 +92,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */
 public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
@@ -164,6 +167,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableBuiltInMetrics;
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
+  private final String monitoringHost;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -379,116 +383,223 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         case BATCH_UPDATE:
           return batchUpdateTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(batchUpdateTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(batchUpdateTimeout);
         case COMMIT:
           return commitTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(commitTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(commitTimeout);
         case EXECUTE_QUERY:
           return executeQueryTimeout == null
               ? null
               : GrpcCallContext.createDefault()
-                  .withTimeout(executeQueryTimeout)
-                  .withStreamWaitTimeout(executeQueryTimeout);
+                  .withTimeoutDuration(executeQueryTimeout)
+                  .withStreamWaitTimeoutDuration(executeQueryTimeout);
         case EXECUTE_UPDATE:
           return executeUpdateTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(executeUpdateTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(executeUpdateTimeout);
         case PARTITION_QUERY:
           return partitionQueryTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(partitionQueryTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(partitionQueryTimeout);
         case PARTITION_READ:
           return partitionReadTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(partitionReadTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(partitionReadTimeout);
         case READ:
           return readTimeout == null
               ? null
               : GrpcCallContext.createDefault()
-                  .withTimeout(readTimeout)
-                  .withStreamWaitTimeout(readTimeout);
+                  .withTimeoutDuration(readTimeout)
+                  .withStreamWaitTimeoutDuration(readTimeout);
         case ROLLBACK:
           return rollbackTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(rollbackTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(rollbackTimeout);
         default:
       }
       return null;
     }
 
-    public Duration getCommitTimeout() {
+    /** This method is obsolete. Use {@link #getCommitTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getCommitTimeoutDuration() instead.")
+    public org.threeten.bp.Duration getCommitTimeout() {
+      return toThreetenDuration(getCommitTimeoutDuration());
+    }
+
+    public Duration getCommitTimeoutDuration() {
       return commitTimeout;
     }
 
-    public SpannerCallContextTimeoutConfigurator withCommitTimeout(Duration commitTimeout) {
+    /** This method is obsolete. Use {@link #withCommitTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withCommitTimeoutDuration() instead.")
+    public SpannerCallContextTimeoutConfigurator withCommitTimeout(
+        org.threeten.bp.Duration commitTimeout) {
+      return withCommitTimeoutDuration(toJavaTimeDuration(commitTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withCommitTimeoutDuration(Duration commitTimeout) {
       this.commitTimeout = commitTimeout;
       return this;
     }
 
-    public Duration getRollbackTimeout() {
+    /** This method is obsolete. Use {@link #getRollbackTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getRollbackTimeoutDuration() instead.")
+    public org.threeten.bp.Duration getRollbackTimeout() {
+      return toThreetenDuration(getRollbackTimeoutDuration());
+    }
+
+    public Duration getRollbackTimeoutDuration() {
       return rollbackTimeout;
     }
 
-    public SpannerCallContextTimeoutConfigurator withRollbackTimeout(Duration rollbackTimeout) {
+    /** This method is obsolete. Use {@link #withRollbackTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withRollbackTimeoutDuration() instead.")
+    public SpannerCallContextTimeoutConfigurator withRollbackTimeout(
+        org.threeten.bp.Duration rollbackTimeout) {
+      return withRollbackTimeoutDuration(toJavaTimeDuration(rollbackTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withRollbackTimeoutDuration(
+        Duration rollbackTimeout) {
       this.rollbackTimeout = rollbackTimeout;
       return this;
     }
 
-    public Duration getExecuteQueryTimeout() {
+    /** This method is obsolete. Use {@link #getExecuteQueryTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getExecuteQueryTimeoutDuration() instead.")
+    public org.threeten.bp.Duration getExecuteQueryTimeout() {
+      return toThreetenDuration(getExecuteQueryTimeoutDuration());
+    }
+
+    public Duration getExecuteQueryTimeoutDuration() {
       return executeQueryTimeout;
     }
 
+    /** This method is obsolete. Use {@link #withExecuteQueryTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withExecuteQueryTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withExecuteQueryTimeout(
+        org.threeten.bp.Duration executeQueryTimeout) {
+      return withExecuteQueryTimeoutDuration(toJavaTimeDuration(executeQueryTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withExecuteQueryTimeoutDuration(
         Duration executeQueryTimeout) {
       this.executeQueryTimeout = executeQueryTimeout;
       return this;
     }
 
-    public Duration getExecuteUpdateTimeout() {
+    /** This method is obsolete. Use {@link #getExecuteUpdateTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getExecuteUpdateTimeoutDuration() instead")
+    public org.threeten.bp.Duration getExecuteUpdateTimeout() {
+      return toThreetenDuration(getExecuteUpdateTimeoutDuration());
+    }
+
+    public Duration getExecuteUpdateTimeoutDuration() {
       return executeUpdateTimeout;
     }
 
+    /** This method is obsolete. Use {@link #withExecuteUpdateTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withExecuteUpdateTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withExecuteUpdateTimeout(
+        org.threeten.bp.Duration executeUpdateTimeout) {
+      return withExecuteUpdateTimeoutDuration(toJavaTimeDuration(executeUpdateTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withExecuteUpdateTimeoutDuration(
         Duration executeUpdateTimeout) {
       this.executeUpdateTimeout = executeUpdateTimeout;
       return this;
     }
 
-    public Duration getBatchUpdateTimeout() {
+    /** This method is obsolete. Use {@link #getBatchUpdateTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getBatchUpdateTimeoutDuration() instead")
+    public org.threeten.bp.Duration getBatchUpdateTimeout() {
+      return toThreetenDuration(getBatchUpdateTimeoutDuration());
+    }
+
+    public Duration getBatchUpdateTimeoutDuration() {
       return batchUpdateTimeout;
     }
 
+    /** This method is obsolete. Use {@link #withBatchUpdateTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withBatchUpdateTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withBatchUpdateTimeout(
+        org.threeten.bp.Duration batchUpdateTimeout) {
+      return withBatchUpdateTimeoutDuration(toJavaTimeDuration(batchUpdateTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withBatchUpdateTimeoutDuration(
         Duration batchUpdateTimeout) {
       this.batchUpdateTimeout = batchUpdateTimeout;
       return this;
     }
 
-    public Duration getReadTimeout() {
+    /** This method is obsolete. Use {@link #getReadTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getReadTimeoutDuration() instead")
+    public org.threeten.bp.Duration getReadTimeout() {
+      return toThreetenDuration(getReadTimeoutDuration());
+    }
+
+    public Duration getReadTimeoutDuration() {
       return readTimeout;
     }
 
-    public SpannerCallContextTimeoutConfigurator withReadTimeout(Duration readTimeout) {
+    /** This method is obsolete. Use {@link #withReadTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withReadTimeoutDuration() instead")
+    public SpannerCallContextTimeoutConfigurator withReadTimeout(
+        org.threeten.bp.Duration readTimeout) {
+      return withReadTimeoutDuration(toJavaTimeDuration(readTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withReadTimeoutDuration(Duration readTimeout) {
       this.readTimeout = readTimeout;
       return this;
     }
 
-    public Duration getPartitionQueryTimeout() {
+    /** This method is obsolete. Use {@link #getPartitionQueryTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getPartitionQueryTimeoutDuration() instead")
+    public org.threeten.bp.Duration getPartitionQueryTimeout() {
+      return toThreetenDuration(getPartitionQueryTimeoutDuration());
+    }
+
+    public Duration getPartitionQueryTimeoutDuration() {
       return partitionQueryTimeout;
     }
 
+    /**
+     * This method is obsolete. Use {@link #withPartitionQueryTimeoutDuration(Duration)} instead.
+     */
+    @ObsoleteApi("Use withPartitionQueryTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withPartitionQueryTimeout(
+        org.threeten.bp.Duration partitionQueryTimeout) {
+      return withPartitionQueryTimeoutDuration(toJavaTimeDuration(partitionQueryTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withPartitionQueryTimeoutDuration(
         Duration partitionQueryTimeout) {
       this.partitionQueryTimeout = partitionQueryTimeout;
       return this;
     }
 
-    public Duration getPartitionReadTimeout() {
+    /** This method is obsolete. Use {@link #getPartitionReadTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getPartitionReadTimeoutDuration() instead")
+    public org.threeten.bp.Duration getPartitionReadTimeout() {
+      return toThreetenDuration(getPartitionReadTimeoutDuration());
+    }
+
+    public Duration getPartitionReadTimeoutDuration() {
       return partitionReadTimeout;
     }
 
+    /** This method is obsolete. Use {@link #withPartitionReadTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withPartitionReadTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withPartitionReadTimeout(
+        org.threeten.bp.Duration partitionReadTimeout) {
+      return withPartitionReadTimeoutDuration(toJavaTimeDuration(partitionReadTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withPartitionReadTimeoutDuration(
         Duration partitionReadTimeout) {
       this.partitionReadTimeout = partitionReadTimeout;
       return this;
@@ -672,6 +783,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableExtendedTracing = builder.enableExtendedTracing;
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
+    monitoringHost = builder.monitoringHost;
   }
 
   /**
@@ -712,6 +824,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default boolean isEnableEndToEndTracing() {
       return false;
     }
+
+    default String getMonitoringHost() {
+      return null;
+    }
   }
 
   /**
@@ -728,6 +844,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
+    private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
 
     private SpannerEnvironmentImpl() {}
 
@@ -763,6 +880,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     public boolean isEnableEndToEndTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_END_TO_END_TRACING));
     }
+
+    @Override
+    public String getMonitoringHost() {
+      return System.getenv(SPANNER_MONITORING_HOST);
+    }
   }
 
   /** Builder for {@link SpannerOptions} instances. */
@@ -773,9 +895,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.DIRECT;
     static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
         RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofSeconds(5L))
+            .setInitialRetryDelayDuration(Duration.ofSeconds(5L))
             .setRetryDelayMultiplier(2.0)
-            .setMaxRetryDelay(Duration.ofSeconds(60L))
+            .setMaxRetryDelayDuration(Duration.ofSeconds(60L))
             .setMaxAttempts(10)
             .build();
     private final ImmutableSet<String> allowedClientLibTokens =
@@ -828,6 +950,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
+    private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -838,13 +961,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       OperationTimedPollAlgorithm longRunningPollingAlgorithm =
           OperationTimedPollAlgorithm.create(
               RetrySettings.newBuilder()
-                  .setInitialRpcTimeout(Duration.ofSeconds(60L))
-                  .setMaxRpcTimeout(Duration.ofSeconds(600L))
-                  .setInitialRetryDelay(Duration.ofSeconds(20L))
-                  .setMaxRetryDelay(Duration.ofSeconds(45L))
+                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
+                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
                   .setRetryDelayMultiplier(1.5)
                   .setRpcTimeoutMultiplier(1.5)
-                  .setTotalTimeout(Duration.ofHours(48L))
+                  .setTotalTimeoutDuration(Duration.ofHours(48L))
                   .build());
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
@@ -895,6 +1018,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableExtendedTracing = options.enableExtendedTracing;
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
+      this.monitoringHost = options.monitoringHost;
     }
 
     @Override
@@ -1112,11 +1236,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return databaseAdminStubSettingsBuilder;
     }
 
+    /** This method is obsolete. Use {@link #setPartitionedDmlTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use setPartitionedDmlTimeoutDuration(Duration) instead")
+    public Builder setPartitionedDmlTimeout(org.threeten.bp.Duration timeout) {
+      return setPartitionedDmlTimeoutDuration(toJavaTimeDuration(timeout));
+    }
+
     /**
      * Sets a timeout specifically for Partitioned DML statements executed through {@link
      * DatabaseClient#executePartitionedUpdate(Statement, UpdateOption...)}. The default is 2 hours.
      */
-    public Builder setPartitionedDmlTimeout(Duration timeout) {
+    public Builder setPartitionedDmlTimeoutDuration(Duration timeout) {
       this.partitionedDmlTimeout = timeout;
       return this;
     }
@@ -1417,6 +1547,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Sets the monitoring host to be used for Built-in client side metrics */
+    public Builder setMonitoringHost(String monitoringHost) {
+      this.monitoringHost = monitoringHost;
+      return this;
+    }
+
     /**
      * Sets whether to enable extended OpenTelemetry tracing. Enabling this option will add the
      * following additional attributes to the traces that are generated by the client:
@@ -1623,7 +1759,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return databaseAdminStubSettings;
   }
 
-  public Duration getPartitionedDmlTimeout() {
+  public org.threeten.bp.Duration getPartitionedDmlTimeout() {
+    return toThreetenDuration(getPartitionedDmlTimeoutDuration());
+  }
+
+  public Duration getPartitionedDmlTimeoutDuration() {
     return partitionedDmlTimeout;
   }
 
@@ -1727,7 +1867,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
         this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-            this.getProjectId(), getCredentials());
+            this.getProjectId(), getCredentials(), this.monitoringHost);
 
     return openTelemetry != null
         ? new MetricsTracerFactory(
@@ -1752,6 +1892,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public boolean isEnableBuiltInMetrics() {
     return enableBuiltInMetrics;
+  }
+
+  /** Returns the override metrics Host. */
+  String getMonitoringHost() {
+    return monitoringHost;
   }
 
   @BetaApi

@@ -192,6 +192,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -214,7 +215,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
 @InternalApi
@@ -347,7 +347,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
               // Set a keepalive time of 120 seconds to help long running
               // commit GRPC calls succeed
-              .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
+              .setKeepAliveTimeDuration(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
 
               // Then check if SpannerOptions provides an InterceptorProvider. Create a default
               // SpannerInterceptorProvider if none is provided
@@ -396,7 +396,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       WatchdogProvider watchdogProvider =
           InstantiatingWatchdogProvider.create()
               .withExecutor(spannerWatchdog)
-              .withCheckInterval(checkInterval)
+              .withCheckIntervalDuration(checkInterval)
               .withClock(NanoClock.getDefaultClock());
 
       final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
@@ -652,7 +652,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setCredentialsProvider(credentialsProvider);
         testEmulatorSettings
             .listInstanceConfigsSettings()
-            .setSimpleTimeoutNoRetries(Duration.ofSeconds(10L));
+            .setSimpleTimeoutNoRetriesDuration(Duration.ofSeconds(10L));
         try (GrpcInstanceAdminStub stub =
             GrpcInstanceAdminStub.create(testEmulatorSettings.build())) {
           stub.listInstanceConfigsCallable()
@@ -685,9 +685,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
       RetrySettings.newBuilder()
-          .setInitialRetryDelay(Duration.ofSeconds(5L))
+          .setInitialRetryDelayDuration(Duration.ofSeconds(5L))
           .setRetryDelayMultiplier(2.0)
-          .setMaxRetryDelay(Duration.ofSeconds(60L))
+          .setMaxRetryDelayDuration(Duration.ofSeconds(60L))
           .setMaxAttempts(10)
           .build();
 
@@ -1770,7 +1770,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             SpannerGrpc.getExecuteStreamingSqlMethod(),
             true);
     // Override any timeout settings that might have been set on the call context.
-    context = context.withTimeout(timeout).withStreamWaitTimeout(timeout);
+    context = context.withTimeoutDuration(timeout).withStreamWaitTimeoutDuration(timeout);
     return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
   }
 
@@ -2037,7 +2037,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             context.withCallOptions(context.getCallOptions().withCallCredentials(callCredentials));
       }
     }
-    context = context.withStreamWaitTimeout(waitTimeout).withStreamIdleTimeout(idleTimeout);
+    context =
+        context
+            .withStreamWaitTimeoutDuration(waitTimeout)
+            .withStreamIdleTimeoutDuration(idleTimeout);
     CallContextConfigurator configurator = SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY.get();
     ApiCallContext apiCallContextFromContext = null;
     if (configurator != null) {

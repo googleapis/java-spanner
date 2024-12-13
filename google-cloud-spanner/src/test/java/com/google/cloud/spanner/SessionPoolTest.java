@@ -105,6 +105,9 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -133,9 +136,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
-import org.threeten.bp.Instant;
-import org.threeten.bp.temporal.ChronoUnit;
 
 /** Tests for SessionPool that mock out the underlying stub. */
 @RunWith(Parameterized.class)
@@ -314,7 +314,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         options
             .toBuilder()
             .setMinSessions(2)
-            .setWaitForMinSessions(Duration.ofSeconds(10L))
+            .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
             .build();
     pool = createPool();
     pool.maybeWaitOnMinSessions();
@@ -350,7 +350,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               options
                   .toBuilder()
                   .setMinSessions(2)
-                  .setWaitForMinSessions(Duration.ofSeconds(10L))
+                  .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
                   .build();
           pool = createPool();
           pool.maybeWaitOnMinSessions();
@@ -398,7 +398,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                       .toBuilder()
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
-                      .setWaitForMinSessions(Duration.ofSeconds(10L))
+                      .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
                       .build();
               pool = createPool();
               pool.maybeWaitOnMinSessions();
@@ -2212,7 +2212,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SessionPoolOptions.newBuilder()
             .setMinSessions(minSessions)
             .setMaxSessions(minSessions + 1)
-            .setWaitForMinSessions(Duration.ofSeconds(5))
+            .setWaitForMinSessionsDuration(Duration.ofSeconds(5))
             .build();
     doAnswer(
             invocation ->
@@ -2241,7 +2241,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SessionPoolOptions.newBuilder()
             .setMinSessions(minSessions + 1)
             .setMaxSessions(minSessions + 1)
-            .setWaitForMinSessions(Duration.ofMillis(100))
+            .setWaitForMinSessionsDuration(Duration.ofMillis(100))
             .build();
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     pool.maybeWaitOnMinSessions();

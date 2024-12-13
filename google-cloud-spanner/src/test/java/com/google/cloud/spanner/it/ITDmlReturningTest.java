@@ -42,7 +42,6 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.connection.ConnectionOptions;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,8 +74,6 @@ public final class ITDmlReturningTest {
 
   @BeforeClass
   public static void setUpDatabase() {
-    assumeFalse(
-        "DML Returning is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     Database googleStandardSQLDatabase =
         env.getTestHelper()
             .createTestDatabase(
@@ -85,18 +82,16 @@ public final class ITDmlReturningTest {
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
-    if (!isUsingEmulator()) {
-      Database postgreSQLDatabase =
-          env.getTestHelper()
-              .createTestDatabase(
-                  Dialect.POSTGRESQL,
-                  Collections.singletonList(
-                      "CREATE TABLE T ("
-                          + "  \"K\"    VARCHAR PRIMARY KEY,"
-                          + "  \"V\"    BIGINT"
-                          + ")"));
-      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
-    }
+    Database postgreSQLDatabase =
+        env.getTestHelper()
+            .createTestDatabase(
+                Dialect.POSTGRESQL,
+                Collections.singletonList(
+                    "CREATE TABLE T ("
+                        + "  \"K\"    VARCHAR PRIMARY KEY,"
+                        + "  \"V\"    BIGINT"
+                        + ")"));
+    postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
   }
 
   @AfterClass
@@ -222,6 +217,9 @@ public final class ITDmlReturningTest {
 
   @Test
   public void dmlReturningWithExecutePartitionedUpdate() {
+    assumeFalse(
+        "The emulator does not dis-allow THEN RETURN statements for PDML", isUsingEmulator());
+
     SpannerException e =
         assertThrows(
             SpannerException.class,

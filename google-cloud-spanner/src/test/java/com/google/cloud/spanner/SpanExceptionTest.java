@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
 import io.grpc.ManagedChannelBuilder;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -31,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class SpanExceptionTest extends AbstractMockServerTest {
@@ -47,7 +47,7 @@ public class SpanExceptionTest extends AbstractMockServerTest {
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setMaxSessions(10)
-                    .setAcquireSessionTimeout(Duration.ofMillis(10))
+                    .setAcquireSessionTimeoutDuration(Duration.ofMillis(10))
                     // .setAcquireSessionTimeout(null)
                     .build())
             .build()

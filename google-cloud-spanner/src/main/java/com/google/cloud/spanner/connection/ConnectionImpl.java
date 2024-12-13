@@ -76,6 +76,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.ConnectionProperty.Context;
 import com.google.cloud.spanner.connection.ConnectionState.Type;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
@@ -94,9 +95,10 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -108,13 +110,11 @@ import java.util.Stack;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
 class ConnectionImpl implements Connection {
@@ -130,9 +130,6 @@ class ConnectionImpl implements Connection {
       "This method may only be called while in autocommit mode";
   private static final String NOT_ALLOWED_IN_AUTOCOMMIT =
       "This method may not be called while in autocommit mode";
-
-  private static final ParsedStatement BEGIN_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
   private static final ParsedStatement COMMIT_STATEMENT =
       AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
           .parse(Statement.of("COMMIT"));
@@ -145,9 +142,6 @@ class ConnectionImpl implements Connection {
   private static final ParsedStatement START_BATCH_DML_STATEMENT =
       AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
           .parse(Statement.of("START BATCH DML"));
-  private static final ParsedStatement RUN_BATCH_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
-          .parse(Statement.of("RUN BATCH"));
 
   // These SAVEPOINT statements are used as sentinels to recognize the start/rollback/release of a
   // savepoint.
@@ -184,17 +178,6 @@ class ConnectionImpl implements Connection {
    */
   private final ConnectionStatementExecutor connectionStatementExecutor =
       new ConnectionStatementExecutorImpl(this);
-
-  /** Simple thread factory that is used for fire-and-forget rollbacks. */
-  static final class DaemonThreadFactory implements ThreadFactory {
-    @Override
-    public Thread newThread(Runnable r) {
-      Thread t = new Thread(r);
-      t.setName("connection-rollback-executor");
-      t.setDaemon(true);
-      return t;
-    }
-  }
 
   /**
    * Statements are executed using a separate thread in order to be able to cancel these. Statements
@@ -302,9 +285,17 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(options);
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
+    StatementExecutorType statementExecutorType;
+    if (options.getStatementExecutorType() != null) {
+      statementExecutorType = options.getStatementExecutorType();
+    } else {
+      statementExecutorType =
+          options.isUseVirtualThreads()
+              ? StatementExecutorType.VIRTUAL_THREAD
+              : StatementExecutorType.PLATFORM_THREAD;
+    }
     this.statementExecutor =
-        new StatementExecutor(
-            options.isUseVirtualThreads(), options.getStatementExecutionInterceptors());
+        new StatementExecutor(statementExecutorType, options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
@@ -348,7 +339,11 @@ class ConnectionImpl implements Connection {
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
     this.statementExecutor =
-        new StatementExecutor(options.isUseVirtualThreads(), Collections.emptyList());
+        new StatementExecutor(
+            options.isUseVirtualThreads()
+                ? StatementExecutorType.VIRTUAL_THREAD
+                : StatementExecutorType.PLATFORM_THREAD,
+            Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
     this.spanner = spannerPool.getSpanner(options, this);
@@ -505,11 +500,6 @@ class ConnectionImpl implements Connection {
   /** Get the current unit-of-work type of this connection. */
   UnitOfWorkType getUnitOfWorkType() {
     return unitOfWorkType;
-  }
-
-  /** Get the current batch mode of this connection. */
-  BatchMode getBatchMode() {
-    return batchMode;
   }
 
   /** @return <code>true</code> if this connection is in a batch. */
@@ -900,7 +890,7 @@ class ConnectionImpl implements Connection {
               String.format(
                   "File %s is not a valid proto descriptors file", this.protoDescriptorsFilePath));
         }
-        InputStream pdStream = new FileInputStream(protoDescriptorsFile);
+        InputStream pdStream = Files.newInputStream(protoDescriptorsFile.toPath());
         this.protoDescriptors = ByteArray.copyFrom(pdStream).toByteArray();
       } catch (Exception exception) {
         throw SpannerExceptionFactory.newSpannerException(exception);
@@ -952,8 +942,12 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setRetryAbortsInternally(boolean retryAbortsInternally) {
+    setRetryAbortsInternally(retryAbortsInternally, /* local = */ false);
+  }
+
+  void setRetryAbortsInternally(boolean retryAbortsInternally, boolean local) {
     checkSetRetryAbortsInternallyAvailable();
-    setConnectionPropertyValue(RETRY_ABORTS_INTERNALLY, retryAbortsInternally);
+    setConnectionPropertyValue(RETRY_ABORTS_INTERNALLY, retryAbortsInternally, local);
   }
 
   @Override
@@ -1420,7 +1414,7 @@ class ConnectionImpl implements Connection {
 
   @Override
   public AsyncResultSet executeQueryAsync(Statement query, QueryOption... options) {
-    return parseAndExecuteQueryAsync(CallType.ASYNC, query, AnalyzeMode.NONE, options);
+    return parseAndExecuteQueryAsync(query, options);
   }
 
   @Override
@@ -1620,8 +1614,7 @@ class ConnectionImpl implements Connection {
             + parsedStatement.getSqlWithoutComments());
   }
 
-  private AsyncResultSet parseAndExecuteQueryAsync(
-      CallType callType, Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
+  private AsyncResultSet parseAndExecuteQueryAsync(Statement query, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, buildQueryOptions());
@@ -1636,7 +1629,8 @@ class ConnectionImpl implements Connection {
               spanner.getAsyncExecutorProvider(),
               options);
         case QUERY:
-          return internalExecuteQueryAsync(callType, parsedStatement, analyzeMode, options);
+          return internalExecuteQueryAsync(
+              CallType.ASYNC, parsedStatement, AnalyzeMode.NONE, options);
         case UPDATE:
           if (parsedStatement.hasReturningClause()) {
             // Cannot execute DML statement with returning clause in read-only mode or in
@@ -1649,7 +1643,8 @@ class ConnectionImpl implements Connection {
                   "DML statement with returning clause cannot be executed in read-only mode: "
                       + parsedStatement.getSqlWithoutComments());
             }
-            return internalExecuteQueryAsync(callType, parsedStatement, analyzeMode, options);
+            return internalExecuteQueryAsync(
+                CallType.ASYNC, parsedStatement, AnalyzeMode.NONE, options);
           }
         case DDL:
         case UNKNOWN:

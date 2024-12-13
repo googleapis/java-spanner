@@ -86,6 +86,7 @@ import io.grpc.protobuf.ProtoUtils;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -112,7 +113,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import org.threeten.bp.Instant;
 
 /**
  * In-process mock implementation of a Cloud Spanner server. The user must specify the results the

@@ -41,6 +41,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.lang.reflect.Modifier;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -55,7 +56,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @Category(TracerTest.class)
 @RunWith(JUnit4.class)
@@ -121,10 +121,10 @@ public class OpenCensusApiTracerTest extends AbstractMockServerTest {
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
-                    .setInitialRetryDelay(Duration.ofNanos(1L))
-                    .setMaxRetryDelay(Duration.ofNanos(1L))
+                    .setInitialRetryDelayDuration(Duration.ofNanos(1L))
+                    .setMaxRetryDelayDuration(Duration.ofNanos(1L))
                     .setRetryDelayMultiplier(1.0)
-                    .setTotalTimeout(Duration.ofMinutes(10L))
+                    .setTotalTimeoutDuration(Duration.ofMinutes(10L))
                     .build()));
     spanner =
         builder
@@ -133,7 +133,7 @@ public class OpenCensusApiTracerTest extends AbstractMockServerTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
-                    .setWaitForMinSessions(Duration.ofSeconds(5L))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
                     .setFailOnSessionLeak()
                     .build())
             .setEnableApiTracing(true)
@@ -359,7 +359,7 @@ public class OpenCensusApiTracerTest extends AbstractMockServerTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
-                    .setWaitForMinSessions(Duration.ofSeconds(5L))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
                     .setFailOnSessionLeak()
                     .build())
             .build()

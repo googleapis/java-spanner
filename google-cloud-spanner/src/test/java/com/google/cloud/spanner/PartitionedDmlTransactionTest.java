@@ -47,6 +47,7 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status.Code;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.threeten.bp.Duration;
 
 @SuppressWarnings("unchecked")
 @RunWith(JUnit4.class)

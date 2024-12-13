@@ -33,13 +33,13 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class SessionPoolMaintainerMockServerTest extends AbstractMockServerTest {
@@ -80,7 +80,7 @@ public class SessionPoolMaintainerMockServerTest extends AbstractMockServerTest 
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setPoolMaintainerClock(clock)
-                    .setWaitForMinSessions(Duration.ofSeconds(10L))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
                     .setFailOnSessionLeak()
                     .build())
             .build()

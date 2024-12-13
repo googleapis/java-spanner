@@ -39,12 +39,12 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.threeten.bp.Duration;
-import org.threeten.bp.temporal.ChronoUnit;
 
 @InternalApi
 public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction {
