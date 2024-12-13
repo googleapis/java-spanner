@@ -1,5 +1,27 @@
 # Changelog
 
+## [6.83.0](https://github.com/googleapis/java-spanner/compare/v6.82.0...v6.83.0) (2024-12-13)
+
+
+### Features
+
+* Add Metrics host for built in metrics ([#3519](https://github.com/googleapis/java-spanner/issues/3519)) ([4ed455a](https://github.com/googleapis/java-spanner/commit/4ed455a43edf7ff8d138ce4d40a52d3224383b14))
+* Add opt-in for using multiplexed sessions for blind writes ([#3540](https://github.com/googleapis/java-spanner/issues/3540)) ([216f53e](https://github.com/googleapis/java-spanner/commit/216f53e4cbc0150078ece7785da33b342a6ab082))
+* Add UUID in Spanner TypeCode enum ([41f83dc](https://github.com/googleapis/java-spanner/commit/41f83dcf046f955ec289d4e976f40a03922054cb))
+* Introduce java.time variables and methods ([#3495](https://github.com/googleapis/java-spanner/issues/3495)) ([8a7d533](https://github.com/googleapis/java-spanner/commit/8a7d533ded21b9b94992b68c702c08bb84474e1b))
+* **spanner:** Support multiplexed session for Partitioned operations ([#3231](https://github.com/googleapis/java-spanner/issues/3231)) ([4501a3e](https://github.com/googleapis/java-spanner/commit/4501a3ea69a9346e8b95edf6f94ff839b509ec73))
+* Support 'set local' for retry_aborts_internally ([#3532](https://github.com/googleapis/java-spanner/issues/3532)) ([331942f](https://github.com/googleapis/java-spanner/commit/331942f51b11660b9de9c8fe8aacd6f60ac254b5))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.51.0 ([41f83dc](https://github.com/googleapis/java-spanner/commit/41f83dcf046f955ec289d4e976f40a03922054cb))
+
+
+### Dependencies
+
+* Update sdk platform java dependencies ([#3549](https://github.com/googleapis/java-spanner/issues/3549)) ([6235f0f](https://github.com/googleapis/java-spanner/commit/6235f0f2c223718c537addc450fa5910d1500271))
+
 ## [6.82.0](https://github.com/googleapis/java-spanner/compare/v6.81.2...v6.82.0) (2024-12-04)
 
 
