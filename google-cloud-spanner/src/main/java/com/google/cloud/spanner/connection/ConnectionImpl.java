@@ -292,7 +292,7 @@ class ConnectionImpl implements Connection {
       statementExecutorType =
           options.isUseVirtualThreads()
               ? StatementExecutorType.VIRTUAL_THREAD
-              : StatementExecutorType.DIRECT_EXECUTOR;
+              : StatementExecutorType.PLATFORM_THREAD;
     }
     this.statementExecutor =
         new StatementExecutor(statementExecutorType, options.getStatementExecutionInterceptors());
@@ -342,7 +342,7 @@ class ConnectionImpl implements Connection {
         new StatementExecutor(
             options.isUseVirtualThreads()
                 ? StatementExecutorType.VIRTUAL_THREAD
-                : StatementExecutorType.DIRECT_EXECUTOR,
+                : StatementExecutorType.PLATFORM_THREAD,
             Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
