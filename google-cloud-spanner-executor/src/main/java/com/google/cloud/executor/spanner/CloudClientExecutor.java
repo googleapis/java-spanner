@@ -832,6 +832,8 @@ public class CloudClientExecutor extends CloudExecutor {
     SessionPoolOptionsHelper.setUseMultiplexedSession(poolOptionsBuilder, useMultiplexedSession);
     SessionPoolOptionsHelper.setUseMultiplexedSessionForRW(
         poolOptionsBuilder, useMultiplexedSession);
+    SessionPoolOptionsHelper.setUseMultiplexedSessionForPartitionedOperations(
+        poolOptionsBuilder, useMultiplexedSession);
     LOGGER.log(
         Level.INFO,
         String.format(
