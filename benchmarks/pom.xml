@@ -34,7 +34,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <junixsocket.version>2.10.1</junixsocket.version>
-    <opentelemetry.version>1.44.1</opentelemetry.version>
+    <opentelemetry.version>1.45.0</opentelemetry.version>
   </properties>
 
   <dependencies>
