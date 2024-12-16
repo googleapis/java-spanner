@@ -19,6 +19,7 @@ package com.example.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.gax.rpc.FailedPreconditionException;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
@@ -643,8 +644,13 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
           attempts++;
           databaseAdminClient.deleteBackup(backup.getName());
           break;
-        } catch (SpannerException e) {
-          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION
+        } catch (SpannerException | FailedPreconditionException e) {
+          ErrorCode errorCode = ErrorCode.FAILED_PRECONDITION;
+
+          if (e instanceof SpannerException) {
+            errorCode = ((SpannerException) e).getErrorCode();
+          }
+          if (errorCode == ErrorCode.FAILED_PRECONDITION
               && e.getMessage()
                   .contains(
                       "Please try deleting the backup once the restore or post-restore optimize "
