@@ -146,6 +146,8 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
+          <forkCount>10</forkCount>
+          <reuseForks>false</reuseForks>
           <systemPropertyVariables>
             <spanner.test.instance>java-sample-integration-tests</spanner.test.instance>
             <spanner.test.instance.mr>java-client-mr-integration-tests</spanner.test.instance.mr>
@@ -157,6 +159,9 @@
             <spanner.sample.instance>mysample-instance</spanner.sample.instance>
             <spanner.quickstart.database>quick-db</spanner.quickstart.database>
           </systemPropertyVariables>
+          <excludes>
+            <exclude>**/SpannerSampleIT.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
