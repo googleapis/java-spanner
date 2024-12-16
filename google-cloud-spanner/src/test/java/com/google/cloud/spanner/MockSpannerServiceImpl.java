@@ -62,6 +62,7 @@ import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.PartitionResponse;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -1829,7 +1830,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         transactionId = null;
         break;
       case BEGIN:
-        transactionId = beginTransaction(session, tx.getBegin(), null).getId();
+        transactionId = beginTransaction(session, tx.getBegin(), null, null).getId();
         break;
       case ID:
         Transaction transaction = transactions.get(tx.getId());
@@ -1895,7 +1896,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       beginTransactionExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
       Transaction transaction =
-          beginTransaction(session, request.getOptions(), request.getMutationKey());
+          beginTransaction(session, request.getOptions(), request.getMutationKey(), request.getRequestOptions());
       responseObserver.onNext(transaction);
       responseObserver.onCompleted();
     } catch (StatusRuntimeException t) {
@@ -1906,7 +1907,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   }
 
   private Transaction beginTransaction(
-      Session session, TransactionOptions options, com.google.spanner.v1.Mutation mutationKey) {
+      Session session, TransactionOptions options, com.google.spanner.v1.Mutation mutationKey, RequestOptions requestOptions) {
     ByteString transactionId = generateTransactionName(session.getName());
     Transaction.Builder builder = Transaction.newBuilder().setId(transactionId);
     if (options != null && options.getModeCase() == ModeCase.READ_ONLY) {
@@ -1920,7 +1921,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     Transaction transaction = builder.build();
     transactions.put(transaction.getId(), transaction);
-    transactionsStarted.add(transaction.getId());
+    // Do not add transaction id to transactionsStarted if this request was from background thread
+    if (requestOptions == null || !requestOptions.getTransactionTag().equals("multiplexed-rw-background-begin-txn")) {
+      transactionsStarted.add(transaction.getId());
+    }
     isPartitionedDmlTransaction.put(
         transaction.getId(), options.getModeCase() == ModeCase.PARTITIONED_DML);
     if (abortNextTransaction.getAndSet(false)) {
@@ -2025,7 +2029,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 TransactionOptions.newBuilder()
                     .setReadWrite(ReadWrite.getDefaultInstance())
                     .build(),
-                null);
+                null,
+                request.getRequestOptions());
       } else if (request.getTransactionId() != null) {
         transaction = transactions.get(request.getTransactionId());
         Optional<Boolean> aborted =
