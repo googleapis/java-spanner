@@ -125,6 +125,10 @@ interface UnitOfWork {
   ApiFuture<Void> rollbackAsync(
       @Nonnull CallType callType, @Nonnull EndTransactionCallback callback);
 
+  default void resetForRetry() {
+    throw new UnsupportedOperationException();
+  }
+
   /** @see Connection#savepoint(String) */
   void savepoint(@Nonnull String name, @Nonnull Dialect dialect);
 
