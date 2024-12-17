@@ -77,12 +77,6 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSession;
 
-  /**
-   * Controls whether multiplexed session is enabled for blind write or not. This is only used for
-   * systest soak. TODO: Remove when multiplexed session for blind write is released.
-   */
-  private final boolean useMultiplexedSessionBlindWrite;
-
   private final boolean useMultiplexedSessionForRW;
 
   private final boolean useMultiplexedSessionForPartitionedOps;
@@ -122,7 +116,6 @@ public class SessionPoolOptions {
         (useMultiplexedSessionFromEnvVariable != null)
             ? useMultiplexedSessionFromEnvVariable
             : builder.useMultiplexedSession;
-    this.useMultiplexedSessionBlindWrite = builder.useMultiplexedSessionBlindWrite;
     // useMultiplexedSessionForRW priority => Environment var > private setter > client default
     Boolean useMultiplexedSessionForRWFromEnvVariable =
         getUseMultiplexedSessionForRWFromEnvVariable();
@@ -205,7 +198,6 @@ public class SessionPoolOptions {
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock,
         this.useMultiplexedSession,
-        this.useMultiplexedSessionBlindWrite,
         this.useMultiplexedSessionForRW,
         this.multiplexedSessionMaintenanceDuration);
   }
@@ -349,7 +341,7 @@ public class SessionPoolOptions {
   @VisibleForTesting
   @InternalApi
   protected boolean getUseMultiplexedSessionBlindWrite() {
-    return getUseMultiplexedSession() && useMultiplexedSessionBlindWrite;
+    return getUseMultiplexedSession();
   }
 
   @VisibleForTesting
@@ -599,9 +591,6 @@ public class SessionPoolOptions {
     // Set useMultiplexedSession to true to make multiplexed session the default.
     private boolean useMultiplexedSession = false;
 
-    // TODO: Remove when multiplexed session for blind write is released.
-    private boolean useMultiplexedSessionBlindWrite = false;
-
     // This field controls the default behavior of session management for RW operations in Java
     // client.
     // Set useMultiplexedSessionForRW to true to make multiplexed session for RW operations the
@@ -655,7 +644,6 @@ public class SessionPoolOptions {
       this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.useMultiplexedSession = options.useMultiplexedSession;
-      this.useMultiplexedSessionBlindWrite = options.useMultiplexedSessionBlindWrite;
       this.useMultiplexedSessionForRW = options.useMultiplexedSessionForRW;
       this.useMultiplexedSessionPartitionedOps = options.useMultiplexedSessionForPartitionedOps;
       this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
@@ -852,17 +840,6 @@ public class SessionPoolOptions {
      */
     Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
       this.useMultiplexedSession = useMultiplexedSession;
-      return this;
-    }
-
-    /**
-     * This method enables multiplexed sessions for blind writes. This method will be removed in the
-     * future when multiplexed sessions has been made the default for all operations.
-     */
-    @InternalApi
-    @VisibleForTesting
-    Builder setUseMultiplexedSessionBlindWrite(boolean useMultiplexedSessionBlindWrite) {
-      this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
       return this;
     }
 

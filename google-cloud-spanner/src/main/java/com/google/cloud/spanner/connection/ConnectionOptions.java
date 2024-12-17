@@ -70,6 +70,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -614,6 +615,7 @@ public class ConnectionOptions {
         new HashMap<>();
     private String uri;
     private Credentials credentials;
+    private StatementExecutorType statementExecutorType;
     private SessionPoolOptions sessionPoolOptions;
     private List<StatementExecutionInterceptor> statementExecutionInterceptors =
         Collections.emptyList();
@@ -626,10 +628,15 @@ public class ConnectionOptions {
     public static final String SPANNER_URI_FORMAT =
         "(?:cloudspanner:)(?<HOSTGROUP>//[\\w.-]+(?:\\.[\\w\\.-]+)*[\\w\\-\\._~:/?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=.]+)?/projects/(?<PROJECTGROUP>(([a-z]|[-.:]|[0-9])+|(DEFAULT_PROJECT_ID)))(/instances/(?<INSTANCEGROUP>([a-z]|[-]|[0-9])+)(/databases/(?<DATABASEGROUP>([a-z]|[-]|[_]|[0-9])+))?)?(?:[?|;].*)?";
 
+    public static final String EXTERNAL_HOST_FORMAT =
+        "(?:cloudspanner:)(?<HOSTGROUP>//[\\w.-]+(?::\\d+)?)(/instances/(?<INSTANCEGROUP>[a-z0-9-]+))?(/databases/(?<DATABASEGROUP>[a-z0-9_-]+))(?:[?;].*)?";
     private static final String SPANNER_URI_REGEX = "(?is)^" + SPANNER_URI_FORMAT + "$";
 
     @VisibleForTesting
     static final Pattern SPANNER_URI_PATTERN = Pattern.compile(SPANNER_URI_REGEX);
+
+    @VisibleForTesting
+    static final Pattern EXTERNAL_HOST_PATTERN = Pattern.compile(EXTERNAL_HOST_FORMAT);
 
     private static final String HOST_GROUP = "HOSTGROUP";
     private static final String PROJECT_GROUP = "PROJECTGROUP";
@@ -639,6 +646,10 @@ public class ConnectionOptions {
 
     private boolean isValidUri(String uri) {
       return SPANNER_URI_PATTERN.matcher(uri).matches();
+    }
+
+    private boolean isValidExternalHostUri(String uri) {
+      return EXTERNAL_HOST_PATTERN.matcher(uri).matches();
     }
 
     /**
@@ -698,9 +709,11 @@ public class ConnectionOptions {
      * @return this builder
      */
     public Builder setUri(String uri) {
-      Preconditions.checkArgument(
-          isValidUri(uri),
-          "The specified URI is not a valid Cloud Spanner connection URI. Please specify a URI in the format \"cloudspanner:[//host[:port]]/projects/project-id[/instances/instance-id[/databases/database-name]][\\?property-name=property-value[;property-name=property-value]*]?\"");
+      if (!isValidExternalHostUri(uri)) {
+        Preconditions.checkArgument(
+            isValidUri(uri),
+            "The specified URI is not a valid Cloud Spanner connection URI. Please specify a URI in the format \"cloudspanner:[//host[:port]]/projects/project-id[/instances/instance-id[/databases/database-name]][\\?property-name=property-value[;property-name=property-value]*]?\"");
+      }
       ConnectionPropertyValue<Boolean> value =
           cast(ConnectionProperties.parseValues(uri).get(LENIENT.getKey()));
       checkValidProperties(value != null && value.getValue(), uri);
@@ -777,6 +790,11 @@ public class ConnectionOptions {
       return this;
     }
 
+    Builder setStatementExecutorType(StatementExecutorType statementExecutorType) {
+      this.statementExecutorType = statementExecutorType;
+      return this;
+    }
+
     public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
       this.openTelemetry = openTelemetry;
       return this;
@@ -814,6 +832,7 @@ public class ConnectionOptions {
   private final String instanceId;
   private final String databaseName;
   private final Credentials credentials;
+  private final StatementExecutorType statementExecutorType;
   private final SessionPoolOptions sessionPoolOptions;
 
   private final OpenTelemetry openTelemetry;
@@ -821,7 +840,14 @@ public class ConnectionOptions {
   private final SpannerOptionsConfigurator configurator;
 
   private ConnectionOptions(Builder builder) {
-    Matcher matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
+    Matcher matcher;
+    boolean isExternalHost = false;
+    if (builder.isValidExternalHostUri(builder.uri)) {
+      matcher = Builder.EXTERNAL_HOST_PATTERN.matcher(builder.uri);
+      isExternalHost = true;
+    } else {
+      matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
+    }
     Preconditions.checkArgument(
         matcher.find(), String.format("Invalid connection URI specified: %s", builder.uri));
 
@@ -834,6 +860,7 @@ public class ConnectionOptions {
     ConnectionPropertyValue<Boolean> value = cast(connectionPropertyValues.get(LENIENT.getKey()));
     this.warnings = checkValidProperties(value != null && value.getValue(), uri);
     this.fixedCredentials = builder.credentials;
+    this.statementExecutorType = builder.statementExecutorType;
 
     this.openTelemetry = builder.openTelemetry;
     this.statementExecutionInterceptors =
@@ -938,12 +965,18 @@ public class ConnectionOptions {
       this.sessionPoolOptions = SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build();
     }
 
-    String projectId = matcher.group(Builder.PROJECT_GROUP);
+    String projectId = "default";
+    String instanceId = matcher.group(Builder.INSTANCE_GROUP);
+    if (!isExternalHost) {
+      projectId = matcher.group(Builder.PROJECT_GROUP);
+    } else if (instanceId == null) {
+      instanceId = "default";
+    }
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
       projectId = getDefaultProjectId(this.credentials);
     }
     this.projectId = projectId;
-    this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
+    this.instanceId = instanceId;
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
   }
 
@@ -972,6 +1005,10 @@ public class ConnectionOptions {
       // The leading '//' is already included in the regex for the connection URL, so we don't need
       // to add the leading '//' to the host name here.
       host = matcher.group(Builder.HOST_GROUP);
+      if (Builder.EXTERNAL_HOST_FORMAT.equals(matcher.pattern().pattern())
+          && !host.matches(".*:\\d+$")) {
+        host = String.format("%s:15000", host);
+      }
     }
     if (usePlainText) {
       return PLAIN_TEXT_PROTOCOL + host;
@@ -1103,6 +1140,10 @@ public class ConnectionOptions {
 
   CredentialsProvider getCredentialsProvider() {
     return getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER);
+  }
+
+  StatementExecutorType getStatementExecutorType() {
+    return this.statementExecutorType;
   }
 
   /** The {@link SessionPoolOptions} of this {@link ConnectionOptions}. */

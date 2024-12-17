@@ -181,9 +181,10 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementSetRetryAbortsInternally(Boolean retryAbortsInternally) {
+  public StatementResult statementSetRetryAbortsInternally(
+      Boolean retryAbortsInternally, Boolean local) {
     Preconditions.checkNotNull(retryAbortsInternally);
-    getConnection().setRetryAbortsInternally(retryAbortsInternally);
+    getConnection().setRetryAbortsInternally(retryAbortsInternally, local);
     return noResult(SET_RETRY_ABORTS_INTERNALLY);
   }
 
