@@ -139,7 +139,8 @@ public class LatencyBenchmark {
   }
 
   private double percentile(int percentile, List<Duration> orderedResults) {
-    return orderedResults.get(percentile * orderedResults.size() / 100).get(ChronoUnit.NANOS) / 1_000.0f;
+    return orderedResults.get(percentile * orderedResults.size() / 100).get(ChronoUnit.NANOS)
+        / 1_000.0f;
   }
 
   private double avg(List<Duration> results) {

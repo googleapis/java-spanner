@@ -156,11 +156,12 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     @Override
     public void onPartialResultSet(PartialResultSet results) {
       addToStream(results);
+      addToStream(END_OF_STREAM);
     }
 
     @Override
     public void onCompleted() {
-      addToStream(END_OF_STREAM);
+//      addToStream(END_OF_STREAM);
     }
 
     @Override
