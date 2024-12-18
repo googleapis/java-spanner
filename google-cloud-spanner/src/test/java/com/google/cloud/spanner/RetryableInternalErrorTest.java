@@ -30,6 +30,7 @@ import io.grpc.Status;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class RetryableInternalErrorTest extends AbstractMockServerTest {
@@ -42,7 +43,11 @@ public class RetryableInternalErrorTest extends AbstractMockServerTest {
             .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(
-                SessionPoolOptions.newBuilder().setMinSessions(1).setMaxSessions(1).build())
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(1)
+                    .setMaxSessions(1)
+                    .setWaitForMinSessions(Duration.ofSeconds(1))
+                    .build())
             .build()
             .getService()) {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
