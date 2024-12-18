@@ -83,6 +83,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -1791,6 +1792,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return callCredentialsProvider;
   }
 
+  private boolean usesNoCredentials() {
+    return Objects.equals(getCredentials(), NoCredentials.getInstance());
+  }
+
   public String getCompressorName() {
     return compressorName;
   }
@@ -1838,7 +1843,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     // Add Metrics Tracer factory if built in metrics are enabled and if the client is data client
     // and if emulator is not enabled.
-    if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled) {
+    if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled && !usesNoCredentials()) {
       ApiTracerFactory metricsTracerFactory = createMetricsApiTracerFactory();
       if (metricsTracerFactory != null) {
         apiTracerFactories.add(metricsTracerFactory);
