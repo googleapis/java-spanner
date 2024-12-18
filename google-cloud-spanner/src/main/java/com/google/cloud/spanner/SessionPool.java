@@ -2831,10 +2831,13 @@ class SessionPool {
     // Create the error message without holding the lock, as we are potentially looping through a
     // large set, and analyzing a large number of stack traces.
     StringBuilder stackTraces =
-        new StringBuilder(
-            "There are currently "
-                + currentlyCheckedOutSessions.size()
-                + " sessions checked out:\n\n");
+        new StringBuilder("MinSessions: ")
+            .append(options.getMinSessions())
+            .append("\nMaxSessions: ")
+            .append(options.getMaxSessions())
+            .append("\nThere are currently ")
+            .append(currentlyCheckedOutSessions.size())
+            .append(" sessions checked out:\n\n");
     if (options.isTrackStackTraceOfSessionCheckout()) {
       for (PooledSessionFuture session : currentlyCheckedOutSessions) {
         if (session.leakedException != null) {
