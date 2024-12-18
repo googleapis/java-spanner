@@ -738,7 +738,7 @@ public class SpannerOptionsTest {
 
   @Test
   public void testEndToEndTracingEnablement() {
-    // Test that end to end tracing is disabled by default.
+    // Test that end-to-end tracing is disabled by default.
     assertFalse(SpannerOptions.newBuilder().setProjectId("p").build().isEndToEndTracingEnabled());
     assertTrue(
         SpannerOptions.newBuilder()
@@ -755,7 +755,7 @@ public class SpannerOptionsTest {
   }
 
   @Test
-  public void testmonitoringHost() {
+  public void testMonitoringHost() {
     String metricsEndpoint = "test-endpoint:443";
     assertNull(SpannerOptions.newBuilder().setProjectId("p").build().getMonitoringHost());
     assertThat(
