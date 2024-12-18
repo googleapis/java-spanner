@@ -128,6 +128,17 @@ public class IsRetryableInternalErrorTest {
   }
 
   @Test
+  public void testAuthenticationBackendInternalServerErrorIsRetryable() {
+    final StatusRuntimeException exception =
+        new StatusRuntimeException(
+            Status.fromCode(Code.INTERNAL)
+                .withDescription(
+                    "INTERNAL: Authentication backend internal server error. Please retry."));
+
+    assertTrue(predicate.apply(exception));
+  }
+
+  @Test
   public void genericInternalExceptionIsNotRetryable() {
     final InternalException e =
         new InternalException("INTERNAL: Generic.", null, GrpcStatusCode.of(Code.INTERNAL), false);
