@@ -83,6 +83,7 @@ public class SessionPoolOptions {
 
   // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
+  private final boolean skipVerifyingBeginTransactionForMuxRW;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -132,6 +133,7 @@ public class SessionPoolOptions {
             ? useMultiplexedSessionFromEnvVariablePartitionedOps
             : builder.useMultiplexedSessionPartitionedOps;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
+    this.skipVerifyingBeginTransactionForMuxRW = builder.skipVerifyingBeginTransactionForMuxRW;
   }
 
   @Override
@@ -169,8 +171,10 @@ public class SessionPoolOptions {
         && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
         && Objects.equals(this.useMultiplexedSessionForRW, other.useMultiplexedSessionForRW)
         && Objects.equals(
-            this.multiplexedSessionMaintenanceDuration,
-            other.multiplexedSessionMaintenanceDuration);
+            this.multiplexedSessionMaintenanceDuration, other.multiplexedSessionMaintenanceDuration)
+        && Objects.equals(
+            this.skipVerifyingBeginTransactionForMuxRW,
+            other.skipVerifyingBeginTransactionForMuxRW);
   }
 
   @Override
@@ -199,7 +203,8 @@ public class SessionPoolOptions {
         this.poolMaintainerClock,
         this.useMultiplexedSession,
         this.useMultiplexedSessionForRW,
-        this.multiplexedSessionMaintenanceDuration);
+        this.multiplexedSessionMaintenanceDuration,
+        this.skipVerifyingBeginTransactionForMuxRW);
   }
 
   public Builder toBuilder() {
@@ -388,6 +393,12 @@ public class SessionPoolOptions {
 
   Duration getMultiplexedSessionMaintenanceDuration() {
     return multiplexedSessionMaintenanceDuration;
+  }
+
+  @VisibleForTesting
+  @InternalApi
+  boolean getSkipVerifyBeginTransactionForMuxRW() {
+    return skipVerifyingBeginTransactionForMuxRW;
   }
 
   public static Builder newBuilder() {
@@ -605,6 +616,7 @@ public class SessionPoolOptions {
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
+    private boolean skipVerifyingBeginTransactionForMuxRW = false;
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
@@ -648,6 +660,7 @@ public class SessionPoolOptions {
       this.useMultiplexedSessionPartitionedOps = options.useMultiplexedSessionForPartitionedOps;
       this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
+      this.skipVerifyingBeginTransactionForMuxRW = options.skipVerifyingBeginTransactionForMuxRW;
     }
 
     /**
@@ -867,6 +880,13 @@ public class SessionPoolOptions {
     Builder setMultiplexedSessionMaintenanceDuration(
         Duration multiplexedSessionMaintenanceDuration) {
       this.multiplexedSessionMaintenanceDuration = multiplexedSessionMaintenanceDuration;
+      return this;
+    }
+
+    @VisibleForTesting
+    Builder setSkipVerifyingBeginTransactionForMuxRW(
+        boolean skipVerifyingBeginTransactionForMuxRW) {
+      this.skipVerifyingBeginTransactionForMuxRW = skipVerifyingBeginTransactionForMuxRW;
       return this;
     }
 
