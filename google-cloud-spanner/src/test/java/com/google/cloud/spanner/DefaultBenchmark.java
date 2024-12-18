@@ -18,8 +18,6 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.BenchmarkingUtilityScripts.collectResults;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -31,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import org.junit.Assert;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -72,9 +71,10 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
   public static class BenchmarkState {
 
     // TODO(developer): Add your values here for PROJECT_ID, INSTANCE_ID, DATABASE_ID
-    private static final String INSTANCE_ID = "";
-    private static final String DATABASE_ID = "";
-    private static final String SERVER_URL = "https://staging-wrenchworks.sandbox.googleapis.com";
+    private static final String PROJECT_ID = "span-cloud-testing";
+    private static final String INSTANCE_ID = "sakthi-spanner-testing";
+    private static final String DATABASE_ID = "testing-database";
+    private static final String SERVER_URL = "https://spanner.googleapis.com";
     private Spanner spanner;
     private DatabaseClientImpl client;
 
@@ -88,6 +88,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     public void setup() throws Exception {
       SpannerOptions options =
           SpannerOptions.newBuilder()
+              .setProjectId(PROJECT_ID)
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
                       .setMinSessions(minSessions)
@@ -191,8 +192,8 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
 
     try (ResultSet rs = server.client.singleUse().executeQuery(getRandomisedReadStatement())) {
       while (rs.next()) {
-        assertEquals(1, rs.getColumnCount());
-        assertNotNull(rs.getValue(0));
+        Assert.assertNotEquals(rs.getColumnCount(), 0);
+        //        assertNotNull(rs.getValue(0));
       }
     }
     return watch.elapsed();

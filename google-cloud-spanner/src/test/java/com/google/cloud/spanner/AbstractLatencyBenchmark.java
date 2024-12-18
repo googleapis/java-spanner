@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractLatencyBenchmark {
 
-  static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
+  static final String SELECT_QUERY = "SELECT * FROM Employees LIMIT 100";
   static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
   static final String ID_COLUMN_NAME = "id";
 

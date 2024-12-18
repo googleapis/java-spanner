@@ -132,19 +132,19 @@ public class LatencyBenchmark {
     System.out.println();
     System.out.println(header);
     System.out.printf("Total number of queries: %d\n", orderedResults.size());
-    System.out.printf("Avg: %.2fms\n", avg(results));
-    System.out.printf("P50: %.2fms\n", percentile(50, orderedResults));
-    System.out.printf("P95: %.2fms\n", percentile(95, orderedResults));
-    System.out.printf("P99: %.2fms\n", percentile(99, orderedResults));
+    System.out.printf("Avg: %.2fµs\n", avg(results));
+    System.out.printf("P50: %.2fµs\n", percentile(50, orderedResults));
+    System.out.printf("P95: %.2fµs\n", percentile(95, orderedResults));
+    System.out.printf("P99: %.2fµs\n", percentile(99, orderedResults));
   }
 
   private double percentile(int percentile, List<Duration> orderedResults) {
     return orderedResults.get(percentile * orderedResults.size() / 100).get(ChronoUnit.NANOS)
-        / 1_000_000.0f;
+        / 1_000.0f;
   }
 
   private double avg(List<Duration> results) {
     return results.stream()
-        .collect(Collectors.averagingDouble(result -> result.get(ChronoUnit.NANOS) / 1_000_000.0f));
+        .collect(Collectors.averagingDouble(result -> result.get(ChronoUnit.NANOS) / 1_000.0f));
   }
 }

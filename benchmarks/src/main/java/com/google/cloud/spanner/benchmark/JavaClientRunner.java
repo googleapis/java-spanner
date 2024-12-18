@@ -143,12 +143,12 @@ class JavaClientRunner extends AbstractRunner {
       DoubleHistogram endToEndLatencies) {
     List<Duration> results = new ArrayList<>(numOperations);
     // Execute one query to make sure everything has been warmed up.
-    executeTransaction(databaseClient, transactionType, endToEndLatencies);
+    executeTransaction(databaseClient, transactionType, endToEndLatencies, false);
 
     for (int i = 0; i < numOperations; i++) {
       try {
         randomWait(waitMillis);
-        results.add(executeTransaction(databaseClient, transactionType, endToEndLatencies));
+        results.add(executeTransaction(databaseClient, transactionType, endToEndLatencies, true));
         incOperations();
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
@@ -158,7 +158,10 @@ class JavaClientRunner extends AbstractRunner {
   }
 
   private Duration executeTransaction(
-      DatabaseClient client, TransactionType transactionType, DoubleHistogram endToEndLatencies) {
+      DatabaseClient client,
+      TransactionType transactionType,
+      DoubleHistogram endToEndLatencies,
+      boolean recordLatency) {
     Stopwatch watch = Stopwatch.createStarted();
     switch (transactionType) {
       case READ_ONLY_SINGLE_USE:
@@ -172,7 +175,9 @@ class JavaClientRunner extends AbstractRunner {
         break;
     }
     Duration elapsedTime = watch.elapsed();
-    endToEndLatencies.record(elapsedTime.toMillis());
+    if (recordLatency) {
+      endToEndLatencies.record(elapsedTime.toMillis());
+    }
     return elapsedTime;
   }
 
