@@ -279,7 +279,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The location of the serving resources, e.g. "us-central1".
+   * The location of the serving resources, e.g., "us-central1".
    * </pre>
    *
    * <code>string location = 1;</code>
@@ -302,7 +302,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The location of the serving resources, e.g. "us-central1".
+   * The location of the serving resources, e.g., "us-central1".
    * </pre>
    *
    * <code>string location = 1;</code>
@@ -767,7 +767,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -789,7 +789,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -811,7 +811,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -832,7 +832,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -849,7 +849,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>

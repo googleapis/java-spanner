@@ -467,8 +467,8 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    * <pre>
    * The number of nodes allocated to this instance partition.
    *
-   * Users can set the node_count field to specify the target number of nodes
-   * allocated to the instance partition.
+   * Users can set the `node_count` field to specify the target number of
+   * nodes allocated to the instance partition.
    *
    * This may be zero in API responses for instance partitions that are not
    * yet in state `READY`.
@@ -488,8 +488,8 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    * <pre>
    * The number of nodes allocated to this instance partition.
    *
-   * Users can set the node_count field to specify the target number of nodes
-   * allocated to the instance partition.
+   * Users can set the `node_count` field to specify the target number of
+   * nodes allocated to the instance partition.
    *
    * This may be zero in API responses for instance partitions that are not
    * yet in state `READY`.
@@ -514,11 +514,11 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    * <pre>
    * The number of processing units allocated to this instance partition.
    *
-   * Users can set the processing_units field to specify the target number of
-   * processing units allocated to the instance partition.
+   * Users can set the `processing_units` field to specify the target number
+   * of processing units allocated to the instance partition.
    *
-   * This may be zero in API responses for instance partitions that are not
-   * yet in state `READY`.
+   * This might be zero in API responses for instance partitions that are not
+   * yet in the `READY` state.
    * </pre>
    *
    * <code>int32 processing_units = 6;</code>
@@ -535,11 +535,11 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    * <pre>
    * The number of processing units allocated to this instance partition.
    *
-   * Users can set the processing_units field to specify the target number of
-   * processing units allocated to the instance partition.
+   * Users can set the `processing_units` field to specify the target number
+   * of processing units allocated to the instance partition.
    *
-   * This may be zero in API responses for instance partitions that are not
-   * yet in state `READY`.
+   * This might be zero in API responses for instance partitions that are not
+   * yet in the `READY` state.
    * </pre>
    *
    * <code>int32 processing_units = 6;</code>
@@ -785,17 +785,22 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
+   * Output only. Deprecated: This field is not populated.
    * Output only. The names of the backups that reference this instance
    * partition. Referencing backups should share the parent instance. The
    * existence of any referencing backup prevents the instance partition from
    * being deleted.
    * </pre>
    *
-   * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    *
+   * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
    * @return A list containing the referencingBackups.
    */
+  @java.lang.Deprecated
   public com.google.protobuf.ProtocolStringList getReferencingBackupsList() {
     return referencingBackups_;
   }
@@ -803,17 +808,22 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
+   * Output only. Deprecated: This field is not populated.
    * Output only. The names of the backups that reference this instance
    * partition. Referencing backups should share the parent instance. The
    * existence of any referencing backup prevents the instance partition from
    * being deleted.
    * </pre>
    *
-   * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    *
+   * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
    * @return The count of referencingBackups.
    */
+  @java.lang.Deprecated
   public int getReferencingBackupsCount() {
     return referencingBackups_.size();
   }
@@ -821,18 +831,23 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
+   * Output only. Deprecated: This field is not populated.
    * Output only. The names of the backups that reference this instance
    * partition. Referencing backups should share the parent instance. The
    * existence of any referencing backup prevents the instance partition from
    * being deleted.
    * </pre>
    *
-   * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    *
+   * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
    * @param index The index of the element to return.
    * @return The referencingBackups at the given index.
    */
+  @java.lang.Deprecated
   public java.lang.String getReferencingBackups(int index) {
     return referencingBackups_.get(index);
   }
@@ -840,18 +855,23 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
+   * Output only. Deprecated: This field is not populated.
    * Output only. The names of the backups that reference this instance
    * partition. Referencing backups should share the parent instance. The
    * existence of any referencing backup prevents the instance partition from
    * being deleted.
    * </pre>
    *
-   * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    *
+   * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
    * @param index The index of the value to return.
    * @return The bytes of the referencingBackups at the given index.
    */
+  @java.lang.Deprecated
   public com.google.protobuf.ByteString getReferencingBackupsBytes(int index) {
     return referencingBackups_.getByteString(index);
   }
@@ -1988,8 +2008,8 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * <pre>
      * The number of nodes allocated to this instance partition.
      *
-     * Users can set the node_count field to specify the target number of nodes
-     * allocated to the instance partition.
+     * Users can set the `node_count` field to specify the target number of
+     * nodes allocated to the instance partition.
      *
      * This may be zero in API responses for instance partitions that are not
      * yet in state `READY`.
@@ -2008,8 +2028,8 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * <pre>
      * The number of nodes allocated to this instance partition.
      *
-     * Users can set the node_count field to specify the target number of nodes
-     * allocated to the instance partition.
+     * Users can set the `node_count` field to specify the target number of
+     * nodes allocated to the instance partition.
      *
      * This may be zero in API responses for instance partitions that are not
      * yet in state `READY`.
@@ -2031,8 +2051,8 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * <pre>
      * The number of nodes allocated to this instance partition.
      *
-     * Users can set the node_count field to specify the target number of nodes
-     * allocated to the instance partition.
+     * Users can set the `node_count` field to specify the target number of
+     * nodes allocated to the instance partition.
      *
      * This may be zero in API responses for instance partitions that are not
      * yet in state `READY`.
@@ -2056,8 +2076,8 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * <pre>
      * The number of nodes allocated to this instance partition.
      *
-     * Users can set the node_count field to specify the target number of nodes
-     * allocated to the instance partition.
+     * Users can set the `node_count` field to specify the target number of
+     * nodes allocated to the instance partition.
      *
      * This may be zero in API responses for instance partitions that are not
      * yet in state `READY`.
@@ -2082,11 +2102,11 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * <pre>
      * The number of processing units allocated to this instance partition.
      *
-     * Users can set the processing_units field to specify the target number of
-     * processing units allocated to the instance partition.
+     * Users can set the `processing_units` field to specify the target number
+     * of processing units allocated to the instance partition.
      *
-     * This may be zero in API responses for instance partitions that are not
-     * yet in state `READY`.
+     * This might be zero in API responses for instance partitions that are not
+     * yet in the `READY` state.
      * </pre>
      *
      * <code>int32 processing_units = 6;</code>
@@ -2102,11 +2122,11 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * <pre>
      * The number of processing units allocated to this instance partition.
      *
-     * Users can set the processing_units field to specify the target number of
-     * processing units allocated to the instance partition.
+     * Users can set the `processing_units` field to specify the target number
+     * of processing units allocated to the instance partition.
      *
-     * This may be zero in API responses for instance partitions that are not
-     * yet in state `READY`.
+     * This might be zero in API responses for instance partitions that are not
+     * yet in the `READY` state.
      * </pre>
      *
      * <code>int32 processing_units = 6;</code>
@@ -2125,11 +2145,11 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * <pre>
      * The number of processing units allocated to this instance partition.
      *
-     * Users can set the processing_units field to specify the target number of
-     * processing units allocated to the instance partition.
+     * Users can set the `processing_units` field to specify the target number
+     * of processing units allocated to the instance partition.
      *
-     * This may be zero in API responses for instance partitions that are not
-     * yet in state `READY`.
+     * This might be zero in API responses for instance partitions that are not
+     * yet in the `READY` state.
      * </pre>
      *
      * <code>int32 processing_units = 6;</code>
@@ -2150,11 +2170,11 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * <pre>
      * The number of processing units allocated to this instance partition.
      *
-     * Users can set the processing_units field to specify the target number of
-     * processing units allocated to the instance partition.
+     * Users can set the `processing_units` field to specify the target number
+     * of processing units allocated to the instance partition.
      *
-     * This may be zero in API responses for instance partitions that are not
-     * yet in state `READY`.
+     * This might be zero in API responses for instance partitions that are not
+     * yet in the `READY` state.
      * </pre>
      *
      * <code>int32 processing_units = 6;</code>
@@ -2919,17 +2939,22 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @return A list containing the referencingBackups.
      */
+    @java.lang.Deprecated
     public com.google.protobuf.ProtocolStringList getReferencingBackupsList() {
       referencingBackups_.makeImmutable();
       return referencingBackups_;
@@ -2938,17 +2963,22 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @return The count of referencingBackups.
      */
+    @java.lang.Deprecated
     public int getReferencingBackupsCount() {
       return referencingBackups_.size();
     }
@@ -2956,18 +2986,23 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @param index The index of the element to return.
      * @return The referencingBackups at the given index.
      */
+    @java.lang.Deprecated
     public java.lang.String getReferencingBackups(int index) {
       return referencingBackups_.get(index);
     }
@@ -2975,18 +3010,23 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @param index The index of the value to return.
      * @return The bytes of the referencingBackups at the given index.
      */
+    @java.lang.Deprecated
     public com.google.protobuf.ByteString getReferencingBackupsBytes(int index) {
       return referencingBackups_.getByteString(index);
     }
@@ -2994,19 +3034,24 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @param index The index to set the value at.
      * @param value The referencingBackups to set.
      * @return This builder for chaining.
      */
+    @java.lang.Deprecated
     public Builder setReferencingBackups(int index, java.lang.String value) {
       if (value == null) {
         throw new NullPointerException();
@@ -3021,18 +3066,23 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @param value The referencingBackups to add.
      * @return This builder for chaining.
      */
+    @java.lang.Deprecated
     public Builder addReferencingBackups(java.lang.String value) {
       if (value == null) {
         throw new NullPointerException();
@@ -3047,18 +3097,23 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @param values The referencingBackups to add.
      * @return This builder for chaining.
      */
+    @java.lang.Deprecated
     public Builder addAllReferencingBackups(java.lang.Iterable<java.lang.String> values) {
       ensureReferencingBackupsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, referencingBackups_);
@@ -3070,17 +3125,22 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @return This builder for chaining.
      */
+    @java.lang.Deprecated
     public Builder clearReferencingBackups() {
       referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
       bitField0_ = (bitField0_ & ~0x00000200);
@@ -3092,18 +3152,23 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
+     * Output only. Deprecated: This field is not populated.
      * Output only. The names of the backups that reference this instance
      * partition. Referencing backups should share the parent instance. The
      * existence of any referencing backup prevents the instance partition from
      * being deleted.
      * </pre>
      *
-     * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
      * </code>
      *
+     * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
      * @param value The bytes of the referencingBackups to add.
      * @return This builder for chaining.
      */
+    @java.lang.Deprecated
     public Builder addReferencingBackupsBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
         throw new NullPointerException();

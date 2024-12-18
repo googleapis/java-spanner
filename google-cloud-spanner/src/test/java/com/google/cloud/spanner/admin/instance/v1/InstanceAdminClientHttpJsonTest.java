@@ -45,6 +45,7 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
+import com.google.spanner.admin.instance.v1.FreeInstanceMetadata;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
@@ -223,6 +224,7 @@ public class InstanceAdminClientHttpJsonTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -275,6 +277,7 @@ public class InstanceAdminClientHttpJsonTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -327,6 +330,7 @@ public class InstanceAdminClientHttpJsonTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -389,6 +393,7 @@ public class InstanceAdminClientHttpJsonTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -451,6 +456,7 @@ public class InstanceAdminClientHttpJsonTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -471,6 +477,7 @@ public class InstanceAdminClientHttpJsonTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     FieldMask updateMask = FieldMask.newBuilder().build();
 
@@ -512,6 +519,7 @@ public class InstanceAdminClientHttpJsonTest {
               .setEtag("etag3123477")
               .addAllLeaderOptions(new ArrayList<String>())
               .setReconciling(true)
+              .setStorageLimitPerProcessingUnit(-1769187130)
               .build();
       FieldMask updateMask = FieldMask.newBuilder().build();
       client.updateInstanceConfigAsync(instanceConfig, updateMask).get();
@@ -917,6 +925,7 @@ public class InstanceAdminClientHttpJsonTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -971,6 +980,7 @@ public class InstanceAdminClientHttpJsonTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -1025,6 +1035,7 @@ public class InstanceAdminClientHttpJsonTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1088,6 +1099,7 @@ public class InstanceAdminClientHttpJsonTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1151,6 +1163,7 @@ public class InstanceAdminClientHttpJsonTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1173,6 +1186,7 @@ public class InstanceAdminClientHttpJsonTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     FieldMask fieldMask = FieldMask.newBuilder().build();
 
@@ -1215,6 +1229,7 @@ public class InstanceAdminClientHttpJsonTest {
               .addAllEndpointUris(new ArrayList<String>())
               .setCreateTime(Timestamp.newBuilder().build())
               .setUpdateTime(Timestamp.newBuilder().build())
+              .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
               .build();
       FieldMask fieldMask = FieldMask.newBuilder().build();
       client.updateInstanceAsync(instance, fieldMask).get();

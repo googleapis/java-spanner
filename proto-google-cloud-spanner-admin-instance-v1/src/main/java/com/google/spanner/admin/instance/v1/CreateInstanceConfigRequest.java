@@ -24,7 +24,7 @@ package com.google.spanner.admin.instance.v1;
  *
  * <pre>
  * The request for
- * [CreateInstanceConfigRequest][InstanceAdmin.CreateInstanceConfigRequest].
+ * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.CreateInstanceConfigRequest}
@@ -186,10 +186,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * Required. The InstanceConfig proto of the configuration to create.
-   * instance_config.name must be
+   * Required. The `InstanceConfig` proto of the configuration to create.
+   * `instance_config.name` must be
    * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-   * instance_config.base_config must be a Google managed configuration name,
+   * `instance_config.base_config` must be a Google-managed configuration name,
    * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
    * </pre>
    *
@@ -207,10 +207,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * Required. The InstanceConfig proto of the configuration to create.
-   * instance_config.name must be
+   * Required. The `InstanceConfig` proto of the configuration to create.
+   * `instance_config.name` must be
    * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-   * instance_config.base_config must be a Google managed configuration name,
+   * `instance_config.base_config` must be a Google-managed configuration name,
    * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
    * </pre>
    *
@@ -230,10 +230,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * Required. The InstanceConfig proto of the configuration to create.
-   * instance_config.name must be
+   * Required. The `InstanceConfig` proto of the configuration to create.
+   * `instance_config.name` must be
    * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-   * instance_config.base_config must be a Google managed configuration name,
+   * `instance_config.base_config` must be a Google-managed configuration name,
    * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
    * </pre>
    *
@@ -464,7 +464,7 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
    *
    * <pre>
    * The request for
-   * [CreateInstanceConfigRequest][InstanceAdmin.CreateInstanceConfigRequest].
+   * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.CreateInstanceConfigRequest}
@@ -957,10 +957,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *
@@ -977,10 +977,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *
@@ -1003,10 +1003,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *
@@ -1031,10 +1031,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *
@@ -1057,10 +1057,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *
@@ -1091,10 +1091,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *
@@ -1116,10 +1116,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *
@@ -1136,10 +1136,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *
@@ -1161,10 +1161,10 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The InstanceConfig proto of the configuration to create.
-     * instance_config.name must be
+     * Required. The `InstanceConfig` proto of the configuration to create.
+     * `instance_config.name` must be
      * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-     * instance_config.base_config must be a Google managed configuration name,
+     * `instance_config.base_config` must be a Google-managed configuration name,
      * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
      * </pre>
      *

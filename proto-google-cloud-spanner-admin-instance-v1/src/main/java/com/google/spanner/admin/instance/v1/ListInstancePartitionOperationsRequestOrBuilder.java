@@ -67,8 +67,7 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   * The following fields in the [Operation][google.longrunning.Operation]
-   * are eligible for filtering:
+   * The following fields in the Operation are eligible for filtering:
    *
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
@@ -121,8 +120,7 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   * The following fields in the [Operation][google.longrunning.Operation]
-   * are eligible for filtering:
+   * The following fields in the Operation are eligible for filtering:
    *
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
@@ -218,7 +216,8 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * Optional. Deadline used while retrieving metadata for instance partition
    * operations. Instance partitions whose operation metadata cannot be
    * retrieved within this deadline will be added to
-   * [unreachable][ListInstancePartitionOperationsResponse.unreachable] in
+   * [unreachable_instance_partitions][google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.unreachable_instance_partitions]
+   * in
    * [ListInstancePartitionOperationsResponse][google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse].
    * </pre>
    *
@@ -236,7 +235,8 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * Optional. Deadline used while retrieving metadata for instance partition
    * operations. Instance partitions whose operation metadata cannot be
    * retrieved within this deadline will be added to
-   * [unreachable][ListInstancePartitionOperationsResponse.unreachable] in
+   * [unreachable_instance_partitions][google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.unreachable_instance_partitions]
+   * in
    * [ListInstancePartitionOperationsResponse][google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse].
    * </pre>
    *
@@ -254,7 +254,8 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * Optional. Deadline used while retrieving metadata for instance partition
    * operations. Instance partitions whose operation metadata cannot be
    * retrieved within this deadline will be added to
-   * [unreachable][ListInstancePartitionOperationsResponse.unreachable] in
+   * [unreachable_instance_partitions][google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.unreachable_instance_partitions]
+   * in
    * [ListInstancePartitionOperationsResponse][google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse].
    * </pre>
    *
