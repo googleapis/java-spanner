@@ -1792,7 +1792,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return callCredentialsProvider;
   }
 
-  public boolean usesNoCredentials() {
+  private boolean usesNoCredentials() {
     return Objects.equals(getCredentials(), NoCredentials.getInstance());
   }
 
