@@ -2849,14 +2849,14 @@ public class CloudClientExecutor extends CloudExecutor {
   /** Construct a StructType for a given struct. This is used to set the row type. */
   private com.google.spanner.v1.StructType buildStructType(StructReader struct) {
     com.google.spanner.v1.StructType.Builder rowTypeBuilder =
-            com.google.spanner.v1.StructType.newBuilder();
+        com.google.spanner.v1.StructType.newBuilder();
     for (int i = 0; i < struct.getColumnCount(); ++i) {
       com.google.cloud.spanner.Type columnType = struct.getColumnType(i);
       rowTypeBuilder.addFields(
-              com.google.spanner.v1.StructType.Field.newBuilder()
-                      .setName(struct.getType().getStructFields().get(i).getName())
-                      .setType(cloudTypeToTypeProto(columnType))
-                      .build());
+          com.google.spanner.v1.StructType.Field.newBuilder()
+              .setName(struct.getType().getStructFields().get(i).getName())
+              .setType(cloudTypeToTypeProto(columnType))
+              .build());
     }
     return rowTypeBuilder.build();
   }
@@ -3104,11 +3104,11 @@ public class CloudClientExecutor extends CloudExecutor {
               case STRUCT:
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
-                          com.google.spanner.executor.v1.ValueList.newBuilder();
+                      com.google.spanner.executor.v1.ValueList.newBuilder();
                   List<Struct> values = struct.getStructList(i);
                   for (StructReader structValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
-                            com.google.spanner.executor.v1.Value.newBuilder();
+                        com.google.spanner.executor.v1.Value.newBuilder();
                     if (structValue == null) {
                       builder.addValue(valueProto.setIsNull(true).build());
                     } else {
@@ -3117,7 +3117,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   }
                   value.setArrayValue(builder.build());
                   value.setArrayType(
-                          com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.STRUCT).build());
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.STRUCT).build());
                 }
                 break;
               default:
@@ -3139,7 +3139,8 @@ public class CloudClientExecutor extends CloudExecutor {
         }
       }
       structBuilder.addValue(value.build());
-    };
+    }
+    ;
     return structBuilder.build();
   }
 
