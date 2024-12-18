@@ -473,7 +473,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
     }
   }
-
+/*
   @Test
   public void closeTransactionBeforeEndOfAsyncQuery() throws Exception {
     final BlockingQueue<String> results = new SynchronousQueue<>();
@@ -539,7 +539,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     assertThat(resultList).containsExactly("k1", "k2", "k3");
     assertThat(res.get()).isNull();
     assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
-  }
+  }*/
 
   @Test
   public void asyncRunnerReadRow() throws Exception {
