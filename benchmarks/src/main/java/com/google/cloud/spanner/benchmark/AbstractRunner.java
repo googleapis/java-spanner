@@ -29,10 +29,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 abstract class AbstractRunner implements BenchmarkRunner {
   static final int TOTAL_RECORDS = 1000000;
-  static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
-  static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
+  static final String SELECT_QUERY = "SELECT ID FROM Employees WHERE ID=@id";
+  static final String UPDATE_QUERY = "UPDATE Employees SET NAME=SAKTHI WHERE ID = @id";
   static final String ID_COLUMN_NAME = "id";
-  static final String SERVER_URL = "https://staging-wrenchworks.sandbox.googleapis.com";
+  static final String SERVER_URL = "https://spanner.googleapis.com";
 
   private final AtomicInteger operationCounter = new AtomicInteger();
 
