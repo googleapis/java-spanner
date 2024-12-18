@@ -20,9 +20,11 @@ import com.google.api.gax.rpc.InternalException;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import io.grpc.Status;
+import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 
 public class IsRetryableInternalError implements Predicate<Throwable> {
+  public static final IsRetryableInternalError INSTANCE = new IsRetryableInternalError();
 
   private static final ImmutableList<String> RETRYABLE_ERROR_MESSAGES =
       ImmutableList.of(
@@ -32,13 +34,19 @@ public class IsRetryableInternalError implements Predicate<Throwable> {
           "stream terminated by RST_STREAM",
           "Authentication backend internal server error. Please retry.");
 
+  public boolean isRetryableInternalError(Status status) {
+    return status.getCode() == Code.INTERNAL
+        && status.getDescription() != null
+        && isRetryableErrorMessage(status.getDescription());
+  }
+
   @Override
   public boolean apply(Throwable cause) {
-    if (isInternalError(cause)) {
-      return RETRYABLE_ERROR_MESSAGES.stream()
-          .anyMatch(message -> cause.getMessage().contains(message));
-    }
-    return false;
+    return isInternalError(cause) && isRetryableErrorMessage(cause.getMessage());
+  }
+
+  private boolean isRetryableErrorMessage(String errorMessage) {
+    return RETRYABLE_ERROR_MESSAGES.stream().anyMatch(errorMessage::contains);
   }
 
   private boolean isInternalError(Throwable cause) {
