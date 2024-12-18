@@ -56,25 +56,34 @@ public class RetryableInternalErrorTest extends AbstractMockServerTest {
               Status.INTERNAL
                   .withDescription("Authentication backend internal server error. Please retry.")
                   .asRuntimeException()));
+
+      // Execute a query. This will block until a BatchCreateSessions call has finished and then
+      // invoke ExecuteStreamingSql. Both of these RPCs should be retried.
+      try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1_STATEMENT)) {
+        assertTrue(resultSet.next());
+        assertFalse(resultSet.next());
+      }
+      // Verify that both the BatchCreateSessions call and the ExecuteStreamingSql call were
+      // retried.
+      assertEquals(2, mockSpanner.countRequestsOfType(BatchCreateSessionsRequest.class));
+      assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      // Clear the requests before the next test.
+      mockSpanner.clearRequests();
+
+      // Execute a DML statement. This uses the ExecuteSql RPC.
+      assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
       mockSpanner.setExecuteSqlExecutionTime(
           SimulatedExecutionTime.ofException(
               Status.INTERNAL
                   .withDescription("Authentication backend internal server error. Please retry.")
                   .asRuntimeException()));
-
-      try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1_STATEMENT)) {
-        assertTrue(resultSet.next());
-        assertFalse(resultSet.next());
-      }
       assertEquals(
           Long.valueOf(1L),
           client
               .readWriteTransaction()
               .run(transaction -> transaction.executeUpdate(INSERT_STATEMENT)));
-
-      // Verify that all the RPCs were retried.
-      assertEquals(2, mockSpanner.countRequestsOfType(BatchCreateSessionsRequest.class));
-      assertEquals(4, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      // Verify that also this request was retried.
+      assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     }
   }
 }

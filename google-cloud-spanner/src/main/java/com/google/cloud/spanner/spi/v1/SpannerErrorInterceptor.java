@@ -72,8 +72,7 @@ public final class SpannerErrorInterceptor implements ClientInterceptor {
               public void onClose(Status status, Metadata trailers) {
                 try {
                   // Translate INTERNAL errors that should be retried to a retryable error code.
-                  if (status.getCode() == Code.INTERNAL
-                      && IsRetryableInternalError.INSTANCE.isRetryableInternalError(status)) {
+                  if (IsRetryableInternalError.INSTANCE.isRetryableInternalError(status)) {
                     status =
                         Status.fromCode(Code.UNAVAILABLE).withDescription(status.getDescription());
                   }
