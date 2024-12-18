@@ -119,6 +119,11 @@ public interface InstanceConfigOrBuilder
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -130,6 +135,11 @@ public interface InstanceConfigOrBuilder
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -141,6 +151,11 @@ public interface InstanceConfigOrBuilder
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -152,6 +167,11 @@ public interface InstanceConfigOrBuilder
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -164,6 +184,11 @@ public interface InstanceConfigOrBuilder
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -174,8 +199,8 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -187,8 +212,8 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -200,8 +225,8 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -213,8 +238,8 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -227,8 +252,8 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -242,9 +267,9 @@ public interface InstanceConfigOrBuilder
    *
    * <pre>
    * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-   * based on which this configuration is created. Only set for user managed
+   * based on which this configuration is created. Only set for user-managed
    * configurations. `base_config` must refer to a configuration of type
-   * GOOGLE_MANAGED in the same project as this configuration.
+   * `GOOGLE_MANAGED` in the same project as this configuration.
    * </pre>
    *
    * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -257,9 +282,9 @@ public interface InstanceConfigOrBuilder
    *
    * <pre>
    * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-   * based on which this configuration is created. Only set for user managed
+   * based on which this configuration is created. Only set for user-managed
    * configurations. `base_config` must refer to a configuration of type
-   * GOOGLE_MANAGED in the same project as this configuration.
+   * `GOOGLE_MANAGED` in the same project as this configuration.
    * </pre>
    *
    * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -571,4 +596,80 @@ public interface InstanceConfigOrBuilder
    * @return The state.
    */
   com.google.spanner.admin.instance.v1.InstanceConfig.State getState();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Describes whether free instances are available to be created
+   * in this instance configuration.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for freeInstanceAvailability.
+   */
+  int getFreeInstanceAvailabilityValue();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Describes whether free instances are available to be created
+   * in this instance configuration.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The freeInstanceAvailability.
+   */
+  com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability
+      getFreeInstanceAvailability();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The `QuorumType` of the instance configuration.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for quorumType.
+   */
+  int getQuorumTypeValue();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The `QuorumType` of the instance configuration.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The quorumType.
+   */
+  com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType getQuorumType();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The storage limit in bytes per processing unit.
+   * </pre>
+   *
+   * <code>
+   * int64 storage_limit_per_processing_unit = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The storageLimitPerProcessingUnit.
+   */
+  long getStorageLimitPerProcessingUnit();
 }
