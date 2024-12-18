@@ -18,31 +18,25 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.rpc.InternalException;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
 public class IsRetryableInternalError implements Predicate<Throwable> {
 
-  private static final String HTTP2_ERROR_MESSAGE = "HTTP/2 error code: INTERNAL_ERROR";
-  private static final String CONNECTION_CLOSED_ERROR_MESSAGE =
-      "Connection closed with unknown cause";
-  private static final String EOS_ERROR_MESSAGE =
-      "Received unexpected EOS on DATA frame from server";
-
-  private static final String RST_STREAM_ERROR_MESSAGE = "stream terminated by RST_STREAM";
+  private static final ImmutableList<String> RETRYABLE_ERROR_MESSAGES =
+      ImmutableList.of(
+          "HTTP/2 error code: INTERNAL_ERROR",
+          "Connection closed with unknown cause",
+          "Received unexpected EOS on DATA frame from server",
+          "stream terminated by RST_STREAM",
+          "Authentication backend internal server error. Please retry.");
 
   @Override
   public boolean apply(Throwable cause) {
     if (isInternalError(cause)) {
-      if (cause.getMessage().contains(HTTP2_ERROR_MESSAGE)) {
-        return true;
-      } else if (cause.getMessage().contains(CONNECTION_CLOSED_ERROR_MESSAGE)) {
-        return true;
-      } else if (cause.getMessage().contains(EOS_ERROR_MESSAGE)) {
-        return true;
-      } else if (cause.getMessage().contains(RST_STREAM_ERROR_MESSAGE)) {
-        return true;
-      }
+      return RETRYABLE_ERROR_MESSAGES.stream()
+          .anyMatch(message -> cause.getMessage().contains(message));
     }
     return false;
   }
