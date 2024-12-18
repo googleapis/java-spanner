@@ -36,6 +36,17 @@ import org.threeten.bp.Duration;
 public class RetryableInternalErrorTest extends AbstractMockServerTest {
   @Test
   public void testTranslateInternalException() {
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INTERNAL
+                .withDescription("Authentication backend internal server error. Please retry.")
+                .asRuntimeException()));
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INTERNAL
+                .withDescription("Authentication backend internal server error. Please retry.")
+                .asRuntimeException()));
+
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("my-project")
@@ -46,22 +57,12 @@ public class RetryableInternalErrorTest extends AbstractMockServerTest {
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(1)
                     .setMaxSessions(1)
-                    .setWaitForMinSessions(Duration.ofSeconds(1))
+                    .setWaitForMinSessions(Duration.ofSeconds(5))
                     .build())
             .build()
             .getService()) {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      mockSpanner.setBatchCreateSessionsExecutionTime(
-          SimulatedExecutionTime.ofException(
-              Status.INTERNAL
-                  .withDescription("Authentication backend internal server error. Please retry.")
-                  .asRuntimeException()));
-      mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(
-              Status.INTERNAL
-                  .withDescription("Authentication backend internal server error. Please retry.")
-                  .asRuntimeException()));
 
+      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       // Execute a query. This will block until a BatchCreateSessions call has finished and then
       // invoke ExecuteStreamingSql. Both of these RPCs should be retried.
       try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1_STATEMENT)) {
