@@ -1925,16 +1925,17 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     Transaction transaction = builder.build();
     transactions.put(transaction.getId(), transaction);
-    // Do not add transaction id to transactionsStarted if this request was from background thread
+    // TODO: remove once UNIMPLEMENTED error is not thrown for read-write mux
+    // Do not consider the transaction if this request was from background thread
     if (requestOptions == null
         || !requestOptions.getTransactionTag().equals("multiplexed-rw-background-begin-txn")) {
       transactionsStarted.add(transaction.getId());
+      if (abortNextTransaction.getAndSet(false)) {
+        markAbortedTransaction(transaction.getId());
+      }
     }
     isPartitionedDmlTransaction.put(
         transaction.getId(), options.getModeCase() == ModeCase.PARTITIONED_DML);
-    if (abortNextTransaction.getAndSet(false)) {
-      markAbortedTransaction(transaction.getId());
-    }
     return transaction;
   }
 
