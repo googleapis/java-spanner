@@ -262,6 +262,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
                     .getOptions()
                     .getSessionPoolOptions()
                     .getSkipVerifyBeginTransactionForMuxRW()) {
+              
               verifyBeginTransactionWithRWOnMultiplexedSessionAsync(session.getName());
             }
           }
