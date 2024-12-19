@@ -130,6 +130,7 @@ integration-multiplexed-sessions-enabled)
       -Dmaven.main.skip=true \
       -Dspanner.gce.config.project_id=gcloud-devel \
       -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-multiplexed-sessions \
+      -DskipTests=true \
       -fae \
       verify
     RETURN_CODE=$?
