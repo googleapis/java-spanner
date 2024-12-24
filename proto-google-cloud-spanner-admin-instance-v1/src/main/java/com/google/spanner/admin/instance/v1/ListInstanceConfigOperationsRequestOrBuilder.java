@@ -67,8 +67,7 @@ public interface ListInstanceConfigOperationsRequestOrBuilder
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   * The following fields in the [Operation][google.longrunning.Operation]
-   * are eligible for filtering:
+   * The following fields in the Operation are eligible for filtering:
    *
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
@@ -121,8 +120,7 @@ public interface ListInstanceConfigOperationsRequestOrBuilder
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   * The following fields in the [Operation][google.longrunning.Operation]
-   * are eligible for filtering:
+   * The following fields in the Operation are eligible for filtering:
    *
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.

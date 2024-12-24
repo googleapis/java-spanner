@@ -116,9 +116,9 @@ public interface ListInstancePartitionsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of unreachable instance partitions.
-   * It includes the names of instance partitions whose metadata could
-   * not be retrieved within
+   * The list of unreachable instances or instance partitions.
+   * It includes the names of instances or instance partitions whose metadata
+   * could not be retrieved within
    * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
    * </pre>
    *
@@ -131,9 +131,9 @@ public interface ListInstancePartitionsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of unreachable instance partitions.
-   * It includes the names of instance partitions whose metadata could
-   * not be retrieved within
+   * The list of unreachable instances or instance partitions.
+   * It includes the names of instances or instance partitions whose metadata
+   * could not be retrieved within
    * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
    * </pre>
    *
@@ -146,9 +146,9 @@ public interface ListInstancePartitionsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of unreachable instance partitions.
-   * It includes the names of instance partitions whose metadata could
-   * not be retrieved within
+   * The list of unreachable instances or instance partitions.
+   * It includes the names of instances or instance partitions whose metadata
+   * could not be retrieved within
    * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
    * </pre>
    *
@@ -162,9 +162,9 @@ public interface ListInstancePartitionsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of unreachable instance partitions.
-   * It includes the names of instance partitions whose metadata could
-   * not be retrieved within
+   * The list of unreachable instances or instance partitions.
+   * It includes the names of instances or instance partitions whose metadata
+   * could not be retrieved within
    * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
    * </pre>
    *

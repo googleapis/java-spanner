@@ -24,7 +24,7 @@ package com.google.spanner.admin.instance.v1;
  *
  * <pre>
  * The request for
- * [DeleteInstanceConfigRequest][InstanceAdmin.DeleteInstanceConfigRequest].
+ * [DeleteInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.DeleteInstanceConfigRequest}
@@ -389,7 +389,7 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
    *
    * <pre>
    * The request for
-   * [DeleteInstanceConfigRequest][InstanceAdmin.DeleteInstanceConfigRequest].
+   * [DeleteInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.DeleteInstanceConfigRequest}

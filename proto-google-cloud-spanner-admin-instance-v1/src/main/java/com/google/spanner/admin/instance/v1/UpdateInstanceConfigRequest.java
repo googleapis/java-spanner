@@ -24,7 +24,7 @@ package com.google.spanner.admin.instance.v1;
  *
  * <pre>
  * The request for
- * [UpdateInstanceConfigRequest][InstanceAdmin.UpdateInstanceConfigRequest].
+ * [UpdateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstanceConfig].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.UpdateInstanceConfigRequest}
@@ -413,7 +413,7 @@ public final class UpdateInstanceConfigRequest extends com.google.protobuf.Gener
    *
    * <pre>
    * The request for
-   * [UpdateInstanceConfigRequest][InstanceAdmin.UpdateInstanceConfigRequest].
+   * [UpdateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstanceConfig].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.UpdateInstanceConfigRequest}

@@ -28,10 +28,10 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance partition [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance partition long-running operations. Each
+   * operation's name will be
    * prefixed by the instance partition's name. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
@@ -42,10 +42,10 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance partition [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance partition long-running operations. Each
+   * operation's name will be
    * prefixed by the instance partition's name. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
@@ -56,10 +56,10 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance partition [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance partition long-running operations. Each
+   * operation's name will be
    * prefixed by the instance partition's name. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
@@ -70,10 +70,10 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance partition [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance partition long-running operations. Each
+   * operation's name will be
    * prefixed by the instance partition's name. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
@@ -84,10 +84,10 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance partition [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance partition long-running operations. Each
+   * operation's name will be
    * prefixed by the instance partition's name. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
