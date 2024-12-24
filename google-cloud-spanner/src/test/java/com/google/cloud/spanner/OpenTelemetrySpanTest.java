@@ -147,7 +147,7 @@ public class OpenTelemetrySpanTest {
           "Commit Done",
           "Transaction Attempt Succeeded");
 
-  private int expectedReadWriteTransactionCount = 7;
+  private int expectedReadWriteTransactionEventsCount = 7;
   private List<String> expectedReadWriteTransactionErrorWithBeginTransactionEvents =
       ImmutableList.of(
           "Acquiring session",
@@ -238,6 +238,7 @@ public class OpenTelemetrySpanTest {
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(2)
                     .setWaitForMinSessionsDuration(Duration.ofSeconds(10))
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
                     .build());
 
     spanner = builder.build().getService();
@@ -450,6 +451,17 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction");
+
+    if (isMultiplexedSessionsEnabledForRW()) {
+      expectedReadWriteTransactionEvents =
+          ImmutableList.of(
+              "Starting Transaction Attempt",
+              "Starting Commit",
+              "Commit Done",
+              "Transaction Attempt Succeeded");
+      expectedReadWriteTransactionEventsCount = 4;
+    }
+
     DatabaseClient client = getClient();
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
@@ -494,7 +506,7 @@ public class OpenTelemetrySpanTest {
                   verifyRequestEvents(
                       spanItem,
                       expectedReadWriteTransactionEvents,
-                      expectedReadWriteTransactionCount);
+                      expectedReadWriteTransactionEventsCount);
                   break;
                 default:
                   assert false;
@@ -519,6 +531,16 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpanner.ReadWriteTransaction");
+
+    if (isMultiplexedSessionsEnabledForRW()) {
+      expectedReadWriteTransactionErrorEvents =
+          ImmutableList.of(
+              "Starting Transaction Attempt",
+              "Transaction Attempt Failed in user operation",
+              "exception");
+      expectedReadWriteTransactionErrorEventsCount = 3;
+    }
+
     DatabaseClient client = getClient();
     TransactionRunner runner = client.readWriteTransaction();
     SpannerException e =
@@ -579,6 +601,18 @@ public class OpenTelemetrySpanTest {
             "CloudSpannerOperation.Commit",
             "CloudSpannerOperation.BatchCreateSessions",
             "CloudSpanner.ReadWriteTransaction");
+    if (isMultiplexedSessionsEnabledForRW()) {
+      expectedReadWriteTransactionErrorWithBeginTransactionEvents =
+          ImmutableList.of(
+              "Starting Transaction Attempt",
+              "Transaction Attempt Aborted in user operation. Retrying",
+              "Creating Transaction",
+              "Transaction Creation Done",
+              "Starting Commit",
+              "Commit Done",
+              "Transaction Attempt Succeeded");
+      expectedReadWriteTransactionErrorWithBeginTransactionEventsCount = 8;
+    }
     DatabaseClient client = getClient();
     assertEquals(
         Long.valueOf(1L),
@@ -836,5 +870,12 @@ public class OpenTelemetrySpanTest {
       return false;
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+  }
+
+  private boolean isMultiplexedSessionsEnabledForRW() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }
