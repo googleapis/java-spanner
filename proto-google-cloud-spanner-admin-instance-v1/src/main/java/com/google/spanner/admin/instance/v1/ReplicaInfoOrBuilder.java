@@ -28,7 +28,7 @@ public interface ReplicaInfoOrBuilder
    *
    *
    * <pre>
-   * The location of the serving resources, e.g. "us-central1".
+   * The location of the serving resources, e.g., "us-central1".
    * </pre>
    *
    * <code>string location = 1;</code>
@@ -40,7 +40,7 @@ public interface ReplicaInfoOrBuilder
    *
    *
    * <pre>
-   * The location of the serving resources, e.g. "us-central1".
+   * The location of the serving resources, e.g., "us-central1".
    * </pre>
    *
    * <code>string location = 1;</code>
