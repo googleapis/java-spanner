@@ -16,11 +16,11 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -36,11 +36,11 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,12 +52,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
@@ -77,8 +75,6 @@ public class ITPgJsonbTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    assumeFalse(
-        "PgJsonb is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     testHelper = env.getTestHelper();
     databaseAdminClient = testHelper.getClient().getDatabaseAdminClient();
     databasesToDrop = new ArrayList<>();
@@ -97,7 +93,7 @@ public class ITPgJsonbTest {
   }
 
   @AfterClass
-  public static void afterClass() throws Exception {
+  public static void afterClass() {
     if (databasesToDrop != null) {
       for (DatabaseId id : databasesToDrop) {
         try {
@@ -170,11 +166,19 @@ public class ITPgJsonbTest {
     SpannerException spannerException =
         SpannerExceptionFactory.asSpannerException(executionException.getCause());
     assertEquals(ErrorCode.FAILED_PRECONDITION, spannerException.getErrorCode());
-    assertTrue(
-        spannerException.getMessage(),
-        spannerException
-            .getMessage()
-            .contains("Index idx_jsonb is defined on a column of unsupported type PG.JSONB."));
+    if (isUsingEmulator()) {
+      assertTrue(
+          spannerException.getMessage(),
+          spannerException
+              .getMessage()
+              .contains("Cannot reference PG.JSONB col1 in the creation of index idx_jsonb."));
+    } else {
+      assertTrue(
+          spannerException.getMessage(),
+          spannerException
+              .getMessage()
+              .contains("Index idx_jsonb is defined on a column of unsupported type PG.JSONB."));
+    }
   }
 
   private static final String JSON_VALUE_1 = "{\"color\":\"red\",\"value\":\"#f00\"}";
@@ -189,8 +193,6 @@ public class ITPgJsonbTest {
 
   @Test
   public void testLiteralPgJsonb() {
-    assumeFalse(
-        "PgJsonb is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -223,8 +225,6 @@ public class ITPgJsonbTest {
 
   @Test
   public void testPgJsonbParameter() {
-    assumeFalse(
-        "PgJsonb is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -275,12 +275,8 @@ public class ITPgJsonbTest {
         .build();
   }
 
-  @Ignore("Untyped jsonb parameters are not yet supported")
   @Test
   public void testPgJsonbUntypedParameter() {
-    assumeFalse(
-        "PgJsonb is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
-
     // Verify that we can use Jsonb as an untyped parameter. This is especially important for
     // PGAdapter and the JDBC driver, as these will often use untyped parameters.
     databaseClient
@@ -362,8 +358,6 @@ public class ITPgJsonbTest {
 
   @Test
   public void testMutationsWithPgJsonbAsString() {
-    assumeFalse(
-        "PgJsonb is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(
@@ -418,8 +412,6 @@ public class ITPgJsonbTest {
 
   @Test
   public void testMutationsWithPgJsonbAsValue() {
-    assumeFalse(
-        "PgJsonb is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     databaseClient
         .readWriteTransaction()
         .run(

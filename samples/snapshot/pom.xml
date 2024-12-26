@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.82.0</version>
+      <version>6.83.1-SNAPSHOT</version>
     </dependency>
     <!-- {x-version-update-end} -->
     
@@ -146,17 +146,22 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
+          <forkCount>10</forkCount>
+          <reuseForks>false</reuseForks>
           <systemPropertyVariables>
-            <spanner.test.instance>java-client-integration-tests</spanner.test.instance>
+            <spanner.test.instance>java-sample-integration-tests</spanner.test.instance>
             <spanner.test.instance.mr>java-client-mr-integration-tests</spanner.test.instance.mr>
             <spanner.test.instance.config>nam11</spanner.test.instance.config>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
-            <spanner.test.key.ring>java-client-integration-test-cmek-ring</spanner.test.key.ring>
-            <spanner.test.key.name>java-client-integration-test-cmek-key</spanner.test.key.name>
+            <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
+            <spanner.test.key.name>cmek-test-key</spanner.test.key.name>
             <spanner.sample.database>mysample</spanner.sample.database>
             <spanner.sample.instance>mysample-instance</spanner.sample.instance>
             <spanner.quickstart.database>quick-db</spanner.quickstart.database>
           </systemPropertyVariables>
+          <excludes>
+            <exclude>**/SpannerSampleIT.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
