@@ -2014,7 +2014,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       return;
     }
     sessionLastUsed.put(session.getName(), Instant.now());
-    if (session.getMultiplexed() && !request.hasPrecommitToken()) {
+    if (session.getMultiplexed()
+        && !request.hasPrecommitToken()
+        && !request.hasSingleUseTransaction()) {
       throw Status.INVALID_ARGUMENT
           .withDescription(
               "A Commit request for a read-write transaction on a multiplexed session must specify a precommit token.")
