@@ -2048,6 +2048,7 @@ class SessionPool {
 
     // Does various pool maintenance activities.
     void maintainPool() {
+      Instant currTime = clock.instant();
       synchronized (lock) {
         if (SessionPool.this.isClosed()) {
           return;
@@ -2059,8 +2060,14 @@ class SessionPool {
                   / (loopFrequency / 1000L);
         }
         this.prevNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
+
+        // Reset the start time for recording the maximum number of sessions in the pool
+        if (currTime.isAfter(SessionPool.this.lastResetTime.plus(Duration.ofMinutes(10)))) {
+          SessionPool.this.maxSessionsInUse = SessionPool.this.numSessionsInUse;
+          SessionPool.this.lastResetTime = currTime;
+        }
       }
-      Instant currTime = clock.instant();
+
       removeIdleSessions(currTime);
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
       keepAliveSessions(currTime);
@@ -2308,6 +2315,9 @@ class SessionPool {
 
   @GuardedBy("lock")
   private int maxSessionsInUse = 0;
+
+  @GuardedBy("lock")
+  private Instant lastResetTime = Clock.INSTANCE.instant();
 
   @GuardedBy("lock")
   private long numSessionsAcquired = 0;
