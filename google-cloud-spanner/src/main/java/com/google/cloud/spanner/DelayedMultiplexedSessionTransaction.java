@@ -24,6 +24,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DelayedReadContext.DelayedReadOnlyTransaction;
 import com.google.cloud.spanner.MultiplexedSessionDatabaseClient.MultiplexedSessionTransaction;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.ExecutionException;
 
@@ -223,5 +224,17 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     } catch (InterruptedException interruptedException) {
       throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
     }
+  }
+
+  /**
+   * Execute `stmt` within PARTITIONED_DML transaction using multiplexed session. This method is a
+   * blocking call as the interface expects to return the output of the `stmt`.
+   */
+  @Override
+  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+    SessionReference sessionReference = getSessionReference();
+    return new MultiplexedSessionTransaction(
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
+        .executePartitionedUpdate(stmt, options);
   }
 }

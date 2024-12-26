@@ -34,7 +34,7 @@ public class SpannerGraphSampleIT extends SampleTestBaseV2 {
 
   private static final int DBID_LENGTH = 20;
   // The instance needs to exist for tests to pass.
-  private static final String instanceId = System.getProperty("spanner.test.instance");
+  private static final String instanceId = System.getProperty("spanner.test.instance.mr");
   private static final String baseDbId = System.getProperty("spanner.sample.database");
   static Spanner spanner;
   static DatabaseAdminClient databaseAdminClient;

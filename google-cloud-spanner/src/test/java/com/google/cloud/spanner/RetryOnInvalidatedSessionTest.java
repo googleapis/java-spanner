@@ -207,7 +207,7 @@ public class RetryOnInvalidatedSessionTest {
   public void setUp() throws InterruptedException {
     mockSpanner.reset();
     if (spanner == null
-        || spanner.getOptions().getSessionPoolOptions().isFailIfPoolExhausted()
+        || spanner.getOptions().getSessionPoolOptions().isFailIfSessionNotFound()
             != failOnInvalidatedSession) {
       if (spanner != null) {
         spanner.close();
@@ -228,8 +228,8 @@ public class RetryOnInvalidatedSessionTest {
               .build()
               .getService();
       client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
     }
+    invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
   }
 
   private static void invalidateSessionPool(DatabaseClient client, int minSessions)
@@ -1002,6 +1002,7 @@ public class RetryOnInvalidatedSessionTest {
         } catch (AbortedException e) {
           transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
           if (transaction == null) {
+            manager.close();
             break;
           }
         }
@@ -1273,6 +1274,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void partitionedDml() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());
     assertThrowsSessionNotFoundIfShouldFail(
         () -> client.executePartitionedUpdate(UPDATE_STATEMENT));
   }
@@ -1285,6 +1289,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void writeAtLeastOnce() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
             client.writeAtLeastOnce(

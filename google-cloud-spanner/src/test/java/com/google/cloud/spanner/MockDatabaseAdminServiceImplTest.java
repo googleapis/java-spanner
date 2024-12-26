@@ -58,6 +58,7 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -74,7 +75,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class MockDatabaseAdminServiceImplTest {
@@ -150,12 +150,12 @@ public class MockDatabaseAdminServiceImplTest {
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
-                    .setInitialRpcTimeout(Duration.ofMillis(20L))
-                    .setInitialRetryDelay(Duration.ofMillis(10L))
-                    .setMaxRetryDelay(Duration.ofMillis(150L))
-                    .setMaxRpcTimeout(Duration.ofMillis(150L))
+                    .setInitialRpcTimeoutDuration(Duration.ofMillis(20L))
+                    .setInitialRetryDelayDuration(Duration.ofMillis(10L))
+                    .setMaxRetryDelayDuration(Duration.ofMillis(150L))
+                    .setMaxRpcTimeoutDuration(Duration.ofMillis(150L))
                     .setMaxAttempts(10)
-                    .setTotalTimeout(Duration.ofMillis(5000L))
+                    .setTotalTimeoutDuration(Duration.ofMillis(5000L))
                     .setRetryDelayMultiplier(1.3)
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));
@@ -164,12 +164,12 @@ public class MockDatabaseAdminServiceImplTest {
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
-                    .setInitialRpcTimeout(Duration.ofMillis(20L))
-                    .setInitialRetryDelay(Duration.ofMillis(10L))
-                    .setMaxRetryDelay(Duration.ofMillis(150L))
-                    .setMaxRpcTimeout(Duration.ofMillis(150L))
+                    .setInitialRpcTimeoutDuration(Duration.ofMillis(20L))
+                    .setInitialRetryDelayDuration(Duration.ofMillis(10L))
+                    .setMaxRetryDelayDuration(Duration.ofMillis(150L))
+                    .setMaxRpcTimeoutDuration(Duration.ofMillis(150L))
                     .setMaxAttempts(10)
-                    .setTotalTimeout(Duration.ofMillis(5000L))
+                    .setTotalTimeoutDuration(Duration.ofMillis(5000L))
                     .setRetryDelayMultiplier(1.3)
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));
@@ -178,12 +178,12 @@ public class MockDatabaseAdminServiceImplTest {
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
-                    .setInitialRpcTimeout(Duration.ofMillis(20L))
-                    .setInitialRetryDelay(Duration.ofMillis(10L))
-                    .setMaxRetryDelay(Duration.ofMillis(150L))
-                    .setMaxRpcTimeout(Duration.ofMillis(150L))
+                    .setInitialRpcTimeoutDuration(Duration.ofMillis(20L))
+                    .setInitialRetryDelayDuration(Duration.ofMillis(10L))
+                    .setMaxRetryDelayDuration(Duration.ofMillis(150L))
+                    .setMaxRpcTimeoutDuration(Duration.ofMillis(150L))
                     .setMaxAttempts(10)
-                    .setTotalTimeout(Duration.ofMillis(5000L))
+                    .setTotalTimeoutDuration(Duration.ofMillis(5000L))
                     .setRetryDelayMultiplier(1.3)
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));

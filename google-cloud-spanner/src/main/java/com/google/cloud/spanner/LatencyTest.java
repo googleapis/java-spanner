@@ -19,11 +19,11 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
-import org.threeten.bp.Duration;
 
 public class LatencyTest {
 
@@ -42,7 +42,7 @@ public class LatencyTest {
                         Paths.get("/Users/loite/Downloads/appdev-soda-spanner-staging.json"))))
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
-                    .setWaitForMinSessions(Duration.ofSeconds(5L))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
                     // .setUseMultiplexedSession(true)
                     .build())
             .setUseVirtualThreads(true)
