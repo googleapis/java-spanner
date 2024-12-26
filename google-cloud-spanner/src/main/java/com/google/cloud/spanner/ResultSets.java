@@ -35,6 +35,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 /** Utility methods for working with {@link com.google.cloud.spanner.ResultSet}. */
@@ -322,8 +323,18 @@ public final class ResultSets {
     }
 
     @Override
+    public UUID getUuid(int columnIndex) {
+      return getCurrentRowAsStruct().getUuid(columnIndex);
+    }
+
+    @Override
     public Date getDate(String columnName) {
       return getCurrentRowAsStruct().getDate(columnName);
+    }
+
+    @Override
+    public UUID getUuid(String columnName) {
+      return getCurrentRowAsStruct().getUuid(columnName);
     }
 
     @Override
@@ -506,6 +517,16 @@ public final class ResultSets {
     @Override
     public List<Date> getDateList(String columnName) {
       return getCurrentRowAsStruct().getDateList(columnName);
+    }
+
+    @Override
+    public List<UUID> getUuidList(int columnIndex) {
+      return getCurrentRowAsStruct().getUuidList(columnIndex);
+    }
+
+    @Override
+    public List<UUID> getUuidList(String columnNameÏ) {
+      return getCurrentRowAsStruct().getUuidList(columnNameÏ);
     }
 
     @Override

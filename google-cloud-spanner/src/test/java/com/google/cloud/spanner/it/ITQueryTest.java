@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -420,6 +421,27 @@ public class ITQueryTest {
   public void bindDateNull() {
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Date) null), Type.date());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindUuid() {
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    UUID uuid = UUID.randomUUID();
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(uuid), Type.uuid());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getUuid(0)).isEqualTo(uuid);
+  }
+
+  @Test
+  public void bindUuidNull() {
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((UUID) null), Type.uuid());
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -814,6 +836,47 @@ public class ITQueryTest {
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toDateArray(null),
             Type.array(Type.date()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindUuidArray() {
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    UUID u1 = UUID.randomUUID();
+    UUID u2 = UUID.randomUUID();
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toUuidArray(asList(u1, u2, null)),
+            Type.array(Type.uuid()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getUuidList(0)).containsExactly(u1, u2, null).inOrder();
+  }
+
+  @Test
+  public void bindUuidArrayEmpty() {
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toUuidArray(Collections.emptyList()),
+            Type.array(Type.uuid()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getUuidList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindUuidArrayNull() {
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toUuidArray(null),
+            Type.array(Type.uuid()));
     assertThat(row.isNull(0)).isTrue();
   }
 

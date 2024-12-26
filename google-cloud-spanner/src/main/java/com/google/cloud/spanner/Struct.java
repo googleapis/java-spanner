@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.concurrent.Immutable;
 
@@ -227,6 +228,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected UUID getUuidInternal(int columnIndex) {
+      return values.get(columnIndex).getUuid();
+    }
+
+    @Override
     protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
       return values.get(columnIndex).getProtoMessage(message);
     }
@@ -335,6 +341,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected List<UUID> getUuidListInternal(int columnIndex) {
+      return values.get(columnIndex).getUuidArray();
+    }
+
+    @Override
     protected List<Struct> getStructListInternal(int columnIndex) {
       return values.get(columnIndex).getStructArray();
     }
@@ -420,6 +431,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getTimestampInternal(columnIndex);
       case DATE:
         return getDateInternal(columnIndex);
+      case UUID:
+        return getUuidInternal(columnIndex);
       case STRUCT:
         return getStructInternal(columnIndex);
       case ARRAY:
@@ -451,6 +464,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
             return getTimestampListInternal(columnIndex);
           case DATE:
             return getDateListInternal(columnIndex);
+          case UUID:
+            return getUuidListInternal(columnIndex);
           case STRUCT:
             return getStructListInternal(columnIndex);
           default:
