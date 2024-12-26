@@ -82,6 +82,8 @@ final class AsyncTransactionManagerImpl
   private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
     txnState = TransactionState.STARTED;
 
+    boolean isMutationsOnlyTransaction = false;
+
     // Determine the latest transactionId when using a multiplexed session.
     ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
     if (txn != null && session.getIsMultiplexed() && !firstAttempt) {
@@ -89,6 +91,7 @@ final class AsyncTransactionManagerImpl
       // transactionId.
       multiplexedSessionPreviousTransactionId =
           txn.transactionId != null ? txn.transactionId : txn.getPreviousTransactionId();
+      isMutationsOnlyTransaction = txn.mutationsOnlyTransaction;
     }
 
     txn =
@@ -99,7 +102,17 @@ final class AsyncTransactionManagerImpl
     }
     final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
     final ApiFuture<Void> fut;
-    if (firstAttempt) {
+
+    /*
+     If the transaction contains only mutations and is using a multiplexed session, perform a
+     `BeginTransaction` after the user operation completes during a retry.
+
+     This ensures that a random mutation from the mutations list is chosen when invoking
+     `BeginTransaction`. If `BeginTransaction` is performed before the user operation,
+     the mutations are not sent, and the precommit token is not received, resulting in
+     an INVALID_ARGUMENT error (missing precommit token) during commit.
+    */
+    if (firstAttempt || isMutationsOnlyTransaction) {
       fut = ApiFutures.immediateFuture(null);
     } else {
       fut = txn.ensureTxnAsync();

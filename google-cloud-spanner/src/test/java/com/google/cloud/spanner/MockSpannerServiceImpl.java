@@ -1914,7 +1914,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     if (session.getMultiplexed()
         && options.getModeCase() == ModeCase.READ_WRITE
-        && mutationKey != null) {
+        && mutationKey != null
+        && mutationKey != com.google.spanner.v1.Mutation.getDefaultInstance()) {
       // Mutation only case in a read-write transaction.
       builder.setPrecommitToken(getTransactionPrecommitToken(transactionId));
     }
@@ -2013,6 +2014,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       return;
     }
     sessionLastUsed.put(session.getName(), Instant.now());
+    if (session.getMultiplexed() && !request.hasPrecommitToken()) {
+      throw Status.INVALID_ARGUMENT
+          .withDescription(
+              "A Commit request for a read-write transaction on a multiplexed session must specify a precommit token.")
+          .asRuntimeException();
+    }
     try {
       commitExecutionTime.simulateExecutionTime(exceptions, stickyGlobalExceptions, freezeLock);
       // Find or start a transaction

@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -1289,6 +1290,280 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(
         ByteString.copyFromUtf8("TransactionPrecommitToken"),
         request.getPrecommitToken().getPrecommitToken());
+  }
+
+  // The following 4 tests validate mutation-only cases where the BeginTransaction RPC fails with an
+  // ABORTED or retryable error
+  @Test
+  public void testMutationOnlyCaseAbortedDuringBeginTransaction() {
+    // This test verifies that in the case of mutations-only, when a transaction is retried after an
+    // ABORT in BeginTransaction RPC, the mutation key is correctly set in the BeginTransaction
+    // request
+    // and precommit token is set in Commit request.
+
+    Spanner spanner1 =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
+                    .build())
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner1.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
+    // is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              Mutation mutation =
+                  Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build();
+              transaction.buffer(mutation);
+              return null;
+            });
+
+    // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2, beginTransactionRequests.size());
+    // Verify the requests are executed using multiplexed sessions
+    for (BeginTransactionRequest request : beginTransactionRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertTrue(request.hasMutationKey());
+      assertTrue(request.getMutationKey().hasInsert());
+    }
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1L, commitRequests.size());
+    for (CommitRequest request : commitRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertNotNull(request.getPrecommitToken());
+      assertEquals(
+          ByteString.copyFromUtf8("TransactionPrecommitToken"),
+          request.getPrecommitToken().getPrecommitToken());
+    }
+
+    spanner1.close();
+  }
+
+  @Test
+  public void testMutationOnlyUsingTransactionManagerAbortedDuringBeginTransaction() {
+    // This test verifies that in the case of mutations-only, when a transaction is retried after an
+    // ABORT in BeginTransaction RPC, the mutation key is correctly set in the BeginTransaction
+    // request
+    // and precommit token is set in Commit request.
+
+    Spanner spanner1 =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
+                    .build())
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner1.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
+    // is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
+      while (true) {
+        try {
+          Mutation mutation =
+              Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build();
+          transaction.buffer(mutation);
+          manager.commit();
+          assertNotNull(manager.getCommitTimestamp());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetry();
+        }
+      }
+    }
+
+    // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2, beginTransactionRequests.size());
+    // Verify the requests are executed using multiplexed sessions
+    for (BeginTransactionRequest request : beginTransactionRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertTrue(request.hasMutationKey());
+      assertTrue(request.getMutationKey().hasInsert());
+    }
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1L, commitRequests.size());
+    for (CommitRequest request : commitRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertNotNull(request.getPrecommitToken());
+      assertEquals(
+          ByteString.copyFromUtf8("TransactionPrecommitToken"),
+          request.getPrecommitToken().getPrecommitToken());
+    }
+
+    spanner1.close();
+  }
+
+  @Test
+  public void testMutationOnlyUsingAsyncRunnerAbortedDuringBeginTransaction() {
+    // This test verifies that in the case of mutations-only, when a transaction is retried after an
+    // ABORT in BeginTransaction RPC, the mutation key is correctly set in the BeginTransaction
+    // request
+    // and precommit token is set in Commit request.
+
+    Spanner spanner1 =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
+                    .build())
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner1.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
+    // is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    AsyncRunner runner = client.runAsync();
+    get(
+        runner.runAsync(
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
+            },
+            MoreExecutors.directExecutor()));
+
+    // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2, beginTransactionRequests.size());
+    // Verify the requests are executed using multiplexed sessions
+    for (BeginTransactionRequest request : beginTransactionRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertTrue(request.hasMutationKey());
+      assertTrue(request.getMutationKey().hasDelete());
+    }
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1L, commitRequests.size());
+    for (CommitRequest request : commitRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertNotNull(request.getPrecommitToken());
+      assertEquals(
+          ByteString.copyFromUtf8("TransactionPrecommitToken"),
+          request.getPrecommitToken().getPrecommitToken());
+    }
+
+    spanner1.close();
+  }
+
+  @Test
+  public void testMutationOnlyUsingTransactionManagerAsyncAbortedDuringBeginTransaction()
+      throws InterruptedException, ExecutionException {
+    // This test verifies that in the case of mutations-only, when a transaction is retried after an
+    // ABORT in BeginTransaction RPC, the mutation key is correctly set in the BeginTransaction
+    // request
+    // and precommit token is set in Commit request.
+    Spanner spanner1 =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
+                    .build())
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner1.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
+    // is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      while (true) {
+        CommitTimestampFuture commitTimestamp =
+            transaction
+                .then(
+                    (txn, input) -> {
+                      txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                      return ApiFutures.immediateFuture(null);
+                    },
+                    MoreExecutors.directExecutor())
+                .commitAsync();
+        try {
+          assertThat(commitTimestamp.get()).isNotNull();
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetryAsync();
+        }
+      }
+    }
+
+    // Verify that for mutation only case, a mutation key is set in BeginTransactionRequest.
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2, beginTransactionRequests.size());
+    // Verify the requests are executed using multiplexed sessions
+    for (BeginTransactionRequest request : beginTransactionRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertTrue(request.hasMutationKey());
+      assertTrue(request.getMutationKey().hasDelete());
+    }
+
+    // Verify that the latest precommit token is set in the CommitRequest
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(1L, commitRequests.size());
+    for (CommitRequest request : commitRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+      assertNotNull(request.getPrecommitToken());
+      assertEquals(
+          ByteString.copyFromUtf8("TransactionPrecommitToken"),
+          request.getPrecommitToken().getPrecommitToken());
+    }
+
+    spanner1.close();
   }
 
   // Tests the behavior of the server-side kill switch for read-write multiplexed sessions..

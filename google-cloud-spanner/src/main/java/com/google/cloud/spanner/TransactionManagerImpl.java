@@ -102,7 +102,16 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
           "resetForRetry can only be called if the previous attempt" + " aborted");
     }
     try (IScope s = tracer.withSpan(span)) {
-      boolean useInlinedBegin = txn.transactionId != null;
+      /*
+       If the transaction contains only mutations and is using a multiplexed session, perform a
+       `BeginTransaction` after the user operation completes during a retry.
+
+       This ensures that a random mutation from the mutations list is chosen when invoking
+       `BeginTransaction`. If `BeginTransaction` is performed before the user operation,
+       the mutations are not sent, and the precommit token is not received, resulting in
+       an INVALID_ARGUMENT error (missing precommit token) during commit.
+      */
+      boolean useInlinedBegin = txn.mutationsOnlyTransaction || txn.transactionId != null;
 
       // Determine the latest transactionId when using a multiplexed session.
       ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
