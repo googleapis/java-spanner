@@ -49,6 +49,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -131,6 +132,9 @@ class GrpcStruct extends Struct implements Serializable {
         case DATE:
           builder.set(fieldName).to((Date) value);
           break;
+        case UUID:
+          builder.set(fieldName).to((UUID) value);
+          break;
         case ARRAY:
           final Type elementType = fieldType.getArrayElementType();
           switch (elementType.getCode()) {
@@ -183,6 +187,9 @@ class GrpcStruct extends Struct implements Serializable {
               break;
             case DATE:
               builder.set(fieldName).toDateArray((Iterable<Date>) value);
+              break;
+            case UUID:
+              builder.set(fieldName).toUuidArray((Iterable<UUID>) value);
               break;
             case STRUCT:
               builder.set(fieldName).toStructArray(elementType, (Iterable<Struct>) value);
@@ -298,6 +305,9 @@ class GrpcStruct extends Struct implements Serializable {
       case DATE:
         checkType(fieldType, proto, KindCase.STRING_VALUE);
         return Date.parseDate(proto.getStringValue());
+      case UUID:
+        checkType(fieldType, proto, KindCase.STRING_VALUE);
+        return UUID.fromString(proto.getStringValue());
       case ARRAY:
         checkType(fieldType, proto, KindCase.LIST_VALUE);
         ListValue listValue = proto.getListValue();
@@ -347,6 +357,7 @@ class GrpcStruct extends Struct implements Serializable {
       case BYTES:
       case TIMESTAMP:
       case DATE:
+      case UUID:
       case STRUCT:
       case PROTO:
         return Lists.transform(listValue.getValuesList(), input -> decodeValue(elementType, input));
@@ -503,6 +514,12 @@ class GrpcStruct extends Struct implements Serializable {
     return (Date) rowData.get(columnIndex);
   }
 
+  @Override
+  protected UUID getUuidInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
+    return (UUID) rowData.get(columnIndex);
+  }
+
   private boolean isUnrecognizedType(int columnIndex) {
     return type.getStructFields().get(columnIndex).getType().getCode() == Code.UNRECOGNIZED;
   }
@@ -624,6 +641,8 @@ class GrpcStruct extends Struct implements Serializable {
         return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
       case DATE:
         return Value.date(isNull ? null : getDateInternal(columnIndex));
+      case UUID:
+        return Value.uuid(isNull ? null : getUuidInternal(columnIndex));
       case STRUCT:
         return Value.struct(isNull ? null : getStructInternal(columnIndex));
       case UNRECOGNIZED:
@@ -664,6 +683,8 @@ class GrpcStruct extends Struct implements Serializable {
             return Value.timestampArray(isNull ? null : getTimestampListInternal(columnIndex));
           case DATE:
             return Value.dateArray(isNull ? null : getDateListInternal(columnIndex));
+          case UUID:
+            return Value.uuidArray(isNull ? null : getUuidListInternal(columnIndex));
           case STRUCT:
             return Value.structArray(
                 elementType, isNull ? null : getStructListInternal(columnIndex));
@@ -845,6 +866,12 @@ class GrpcStruct extends Struct implements Serializable {
   protected List<Date> getDateListInternal(int columnIndex) {
     ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<Date>) rowData.get(columnIndex));
+  }
+
+  @Override
+  protected List<UUID> getUuidListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
+    return Collections.unmodifiableList((List<UUID>) rowData.get(columnIndex));
   }
 
   @Override

@@ -51,6 +51,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -732,6 +733,28 @@ public class ValueTest {
   }
 
   @Test
+  public void uuid() {
+    UUID uuid = UUID.randomUUID();
+    Value v = Value.uuid(uuid);
+    assertThat(v.getType()).isEqualTo(Type.uuid());
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getUuid()).isSameInstanceAs(uuid);
+    assertThat(v.toString()).isEqualTo(uuid.toString());
+    assertEquals(uuid.toString(), v.getAsString());
+  }
+
+  @Test
+  public void uuidNull() {
+    Value v = Value.uuid(null);
+    assertThat(v.getType()).isEqualTo(Type.uuid());
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getUuid);
+    assertThat(e.getMessage()).contains("null value");
+    assertEquals("NULL", v.getAsString());
+  }
+
+  @Test
   public void protoMessage() {
     SingerInfo singerInfo = SingerInfo.newBuilder().setSingerId(111).setGenre(Genre.FOLK).build();
     Value v = Value.protoMessage(singerInfo);
@@ -1355,6 +1378,30 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
     IllegalStateException e = assertThrows(IllegalStateException.class, v::getDateArray);
+    assertThat(e.getMessage()).contains("null value");
+    assertEquals("NULL", v.getAsString());
+  }
+
+  @Test
+  public void uuidArray() {
+    UUID uuid1 = UUID.randomUUID();
+    UUID uuid2 = UUID.randomUUID();
+
+    Value v = Value.uuidArray(Arrays.asList(uuid1, null, uuid2));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getUuidArray())
+        .containsExactly(uuid1, null, uuid2)
+        .inOrder();
+    assertThat(v.toString()).isEqualTo("[" + uuid1.toString() + ",NULL," + uuid2.toString() + "]");
+    assertEquals(String.format("[%s,NULL,%s]", uuid1.toString(), uuid2.toString()), v.getAsString());
+  }
+
+  @Test
+  public void uuidArrayNull() {
+    Value v = Value.uuidArray(null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getUuidArray);
     assertThat(e.getMessage()).contains("null value");
     assertEquals("NULL", v.getAsString());
   }

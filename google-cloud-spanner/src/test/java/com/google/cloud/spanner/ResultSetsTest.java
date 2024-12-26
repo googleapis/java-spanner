@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,6 +71,7 @@ public class ResultSetsTest {
     int year = 2018;
     int month = 5;
     int day = 26;
+    UUID uuid = UUID.randomUUID();
     boolean[] boolArray = {true, false, true, true, false};
     long[] longArray = {Long.MAX_VALUE, Long.MIN_VALUE, 0, 1, -1};
     double[] doubleArray = {Double.MIN_VALUE, Double.MAX_VALUE, 0, 1, -1, 1.2341};
@@ -91,6 +93,9 @@ public class ResultSetsTest {
     };
     Date[] dateArray = {
       Date.fromYearMonthDay(1, 2, 3), Date.fromYearMonthDay(4, 5, 6), Date.fromYearMonthDay(7, 8, 9)
+    };
+    UUID[] uuidArray = {
+      UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()
     };
     String[] stringArray = {"abc", "def", "ghi"};
     String[] jsonArray = {"{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"};
@@ -114,6 +119,7 @@ public class ResultSetsTest {
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
+            Type.StructField.of("uuid", Type.uuid()),
             Type.StructField.of(
                 "protoMessage", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
             Type.StructField.of(
@@ -126,6 +132,7 @@ public class ResultSetsTest {
             Type.StructField.of("byteArray", Type.array(Type.bytes())),
             Type.StructField.of("timestampArray", Type.array(Type.timestamp())),
             Type.StructField.of("dateArray", Type.array(Type.date())),
+            Type.StructField.of("uuidArray", Type.array(Type.uuid())),
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
             Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
@@ -163,6 +170,8 @@ public class ResultSetsTest {
             .to(Timestamp.ofTimeMicroseconds(usecs))
             .set("date")
             .to(Date.fromYearMonthDay(year, month, day))
+            .set("uuid")
+            .to(uuid)
             .set("protoMessage")
             .to(protoMessageVal)
             .set("protoEnum")
@@ -183,6 +192,8 @@ public class ResultSetsTest {
             .to(Value.timestampArray(Arrays.asList(timestampArray)))
             .set("dateArray")
             .to(Value.dateArray(Arrays.asList(dateArray)))
+            .set("uuidArray")
+            .to(Value.uuidArray(Arrays.asList(uuidArray)))
             .set("stringArray")
             .to(Value.stringArray(Arrays.asList(stringArray)))
             .set("jsonArray")
@@ -228,6 +239,8 @@ public class ResultSetsTest {
             .to(Timestamp.ofTimeMicroseconds(usecs))
             .set("date")
             .to(Date.fromYearMonthDay(year, month, day))
+            .set("uuid")
+            .to(uuid)
             .set("protoMessage")
             .to(protoMessageVal)
             .set("protoEnum")
@@ -248,6 +261,8 @@ public class ResultSetsTest {
             .to(Value.timestampArray(Arrays.asList(timestampArray)))
             .set("dateArray")
             .to(Value.dateArray(Arrays.asList(dateArray)))
+            .set("uuidArray")
+            .to(Value.uuidArray(Arrays.asList(uuidArray)))
             .set("stringArray")
             .to(Value.stringArray(Arrays.asList(stringArray)))
             .set("jsonArray")
@@ -339,6 +354,12 @@ public class ResultSetsTest {
     assertThat(rs.getDate("date")).isEqualTo(Date.fromYearMonthDay(year, month, day));
     assertThat(rs.getValue("date")).isEqualTo(Value.date(Date.fromYearMonthDay(year, month, day)));
 
+    // UUID
+    assertThat(rs.getUuid(columnIndex)).isEqualTo(uuid);
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.uuid(uuid));
+    assertThat(rs.getUuid("uuid")).isEqualTo(uuid);
+    assertThat(rs.getValue("uuid")).isEqualTo(Value.uuid(uuid));
+
     assertEquals(protoMessageVal, rs.getProtoMessage(columnIndex, SingerInfo.getDefaultInstance()));
     assertEquals(Value.protoMessage(protoMessageVal), rs.getValue(columnIndex++));
     assertEquals(
@@ -400,6 +421,13 @@ public class ResultSetsTest {
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.dateArray(Arrays.asList(dateArray)));
     assertThat(rs.getDateList("dateArray")).isEqualTo(Arrays.asList(dateArray));
     assertThat(rs.getValue("dateArray")).isEqualTo(Value.dateArray(Arrays.asList(dateArray)));
+
+    // UUID Array
+    assertThat(rs.getUuidList(columnIndex)).isEqualTo(Arrays.asList(uuidArray));
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.uuidArray(Arrays.asList(uuidArray)));
+    assertThat(rs.getUuidList("uuidArray")).isEqualTo(Arrays.asList(uuidArray));
+    assertThat(rs.getValue("uuidArray")).isEqualTo(Value.uuidArray(Arrays.asList(uuidArray)));
+
     assertThat(rs.getStringList(columnIndex)).isEqualTo(Arrays.asList(stringArray));
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.stringArray(Arrays.asList(stringArray)));
     assertThat(rs.getStringList("stringArray")).isEqualTo(Arrays.asList(stringArray));

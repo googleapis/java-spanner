@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -385,6 +386,8 @@ public abstract class Value implements Serializable {
   public static Value date(@Nullable Date v) {
     return new DateImpl(v == null, v);
   }
+
+  public static Value uuid(@Nullable UUID v) { return new UuidImpl(v == null, v); }
 
   /** Returns a non-{@code NULL} {#code STRUCT} value. */
   public static Value struct(Struct v) {
@@ -776,6 +779,10 @@ public abstract class Value implements Serializable {
     return new DateArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
+  public static Value uuidArray(@Nullable Iterable<UUID> v) {
+    return new UuidArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
   /**
    * Returns an {@code ARRAY<STRUCT<...>>} value.
    *
@@ -915,6 +922,8 @@ public abstract class Value implements Serializable {
    */
   public abstract Date getDate();
 
+  public abstract UUID getUuid();
+
   /**
    * Returns the value of a {@code STRUCT}-typed instance.
    *
@@ -1034,6 +1043,8 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract List<Date> getDateArray();
+
+  public abstract List<UUID> getUuidArray();
 
   /**
    * Returns the value of an {@code ARRAY<STRUCT<...>>}-typed instance. While the returned list
@@ -1315,6 +1326,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public UUID getUuid() {
+      throw defaultGetter(Type.uuid());
+    }
+
+    @Override
     public Struct getStruct() {
       if (getType().getCode() != Type.Code.STRUCT) {
         throw new IllegalStateException(
@@ -1377,6 +1393,9 @@ public abstract class Value implements Serializable {
     public List<Date> getDateArray() {
       throw defaultGetter(Type.array(Type.date()));
     }
+
+    @Override
+    public List<UUID> getUuidArray() { throw defaultGetter(Type.array(Type.uuid()));}
 
     @Override
     public List<Struct> getStructArray() {
@@ -1785,6 +1804,24 @@ public abstract class Value implements Serializable {
 
     @Override
     public Date getDate() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+  }
+
+  private static class UuidImpl extends AbstractObjectValue<UUID> {
+
+    private UuidImpl(boolean isNull, UUID value) {
+      super(isNull, Type.uuid(), value);
+    }
+
+    @Override
+    public UUID getUuid() {
       checkNotNull();
       return value;
     }
@@ -2797,6 +2834,24 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class UuidArrayImpl extends AbstractArrayValue<UUID> {
+
+    private UuidArrayImpl(boolean isNull, @Nullable List<UUID> values) {
+      super(isNull, Type.uuid(), values);
+    }
+
+    @Override
+    public List<UUID> getUuidArray() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, UUID element) {
+      b.append(element);
+    }
+  }
+
   private static class NumericArrayImpl extends AbstractArrayValue<BigDecimal> {
 
     private NumericArrayImpl(boolean isNull, @Nullable List<BigDecimal> values) {
@@ -2938,6 +2993,8 @@ public abstract class Value implements Serializable {
           return Value.pgOid(value.getLong(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
+        case UUID:
+          return Value.uuid(value.getUuid(fieldIndex));
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
         case PROTO:
@@ -2976,6 +3033,8 @@ public abstract class Value implements Serializable {
                 return Value.pgNumericArray(value.getStringList(fieldIndex));
               case DATE:
                 return Value.dateArray(value.getDateList(fieldIndex));
+              case UUID:
+                return Value.uuidArray(value.getUuidList(fieldIndex));
               case TIMESTAMP:
                 return Value.timestampArray(value.getTimestampList(fieldIndex));
               case STRUCT:

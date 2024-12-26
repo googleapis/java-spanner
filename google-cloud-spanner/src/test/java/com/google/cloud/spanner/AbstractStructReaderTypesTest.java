@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.junit.Before;
@@ -100,6 +101,11 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected Date getDateInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected UUID getUuidInternal(int columnIndex) {
       return null;
     }
 
@@ -207,6 +213,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected List<UUID> getUuidListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected List<Struct> getStructListInternal(int columnIndex) {
       return null;
     }
@@ -301,6 +312,13 @@ public class AbstractStructReaderTypesTest {
             "getDate",
             Collections.singletonList("getValue")
           },
+            {
+                Type.uuid(),
+                "getUuidInternal",
+                UUID.randomUUID(),
+                "getUuid",
+                Collections.singletonList("getValue")
+            },
           {
             Type.array(Type.bool()),
             "getBooleanArrayInternal",
@@ -423,6 +441,13 @@ public class AbstractStructReaderTypesTest {
             "getDateList",
             Collections.singletonList("getValue")
           },
+            {
+                Type.array(Type.uuid()),
+                "getUuidListInternal",
+                Arrays.asList(UUID.randomUUID(), UUID.randomUUID()),
+                "getUuidList",
+                Collections.singletonList("getValue")
+            },
           {
             Type.array(Type.struct(StructField.of("f1", Type.int64()))),
             "getStructListInternal",
