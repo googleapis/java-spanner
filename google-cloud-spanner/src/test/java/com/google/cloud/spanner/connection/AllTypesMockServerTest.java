@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.After;
@@ -76,6 +77,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
   public static final long PG_OID_VALUE = 1L;
   public static final byte[] BYTES_VALUE = "test-bytes".getBytes(StandardCharsets.UTF_8);
   public static final Date DATE_VALUE = Date.fromYearMonthDay(2024, 3, 2);
+  public static final UUID UUID_VALUE = UUID.randomUUID();
   public static final Timestamp TIMESTAMP_VALUE =
       Timestamp.parseTimestamp("2024-03-02T07:07:00.20982735Z");
 
@@ -124,6 +126,12 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
           Date.fromYearMonthDay(2024, 3, 3),
           Date.fromYearMonthDay(1, 1, 1),
           Date.fromYearMonthDay(9999, 12, 31));
+
+  public static final List<UUID> UUID_ARRAY_VALUE =
+      Arrays.asList(
+          UUID.randomUUID(),
+          null,
+          UUID.randomUUID());
   public static final List<Timestamp> TIMESTAMP_ARRAY_VALUE =
       Arrays.asList(
           Timestamp.parseTimestamp("2024-03-01T07:07:00.20982735Z"),
@@ -157,15 +165,16 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
     // COL7: JSON / PG_JSONB
     // COL8: BYTES
     // COL9: DATE
-    // COL10: TIMESTAMP
-    // COL11: PG_OID (added only for POSTGRESQL dialect)
-    // COL12-21: ARRAY<..> for the types above.
+    // COL10: UUID
+    // COL11: TIMESTAMP
+    // COL12: PG_OID (added only for POSTGRESQL dialect)
+    // COL13-22: ARRAY<..> for the types above.
     // Only for GoogleSQL:
-    // COL22: PROTO
-    // COL23: ENUM
-    // COL24: ARRAY<PROTO>
-    // COL25: ARRAY<ENUM>
-    // COL26: ARRAY<PG_OID> (added only for POSTGRESQL dialect)
+    // COL23: PROTO
+    // COL24: ENUM
+    // COL25: ARRAY<PROTO>
+    // COL26: ARRAY<ENUM>
+    // COL27: ARRAY<PG_OID> (added only for POSTGRESQL dialect)
     ListValue.Builder row1Builder =
         ListValue.newBuilder()
             .addValues(Value.newBuilder().setBoolValue(BOOL_VALUE))
@@ -183,6 +192,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
             .addValues(
                 Value.newBuilder().setStringValue(Base64.getEncoder().encodeToString(BYTES_VALUE)))
             .addValues(Value.newBuilder().setStringValue(DATE_VALUE.toString()))
+            .addValues(Value.newBuilder().setStringValue(UUID_VALUE.toString()))
             .addValues(Value.newBuilder().setStringValue(TIMESTAMP_VALUE.toString()));
     if (dialect == Dialect.POSTGRESQL) {
       row1Builder.addValues(
@@ -361,6 +371,23 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                 .setListValue(
                     ListValue.newBuilder()
                         .addAllValues(
+                            UUID_ARRAY_VALUE.stream()
+                                .map(
+                                    uuid ->
+                                        uuid == null
+                                            ? Value.newBuilder()
+                                            .setNullValue(NullValue.NULL_VALUE)
+                                            .build()
+                                            : Value.newBuilder()
+                                                .setStringValue(uuid.toString())
+                                                .build())
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
                             TIMESTAMP_ARRAY_VALUE.stream()
                                 .map(
                                     timestamp ->
@@ -509,6 +536,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         .bind("p" + ++param)
         .to(DATE_VALUE)
         .bind("p" + ++param)
+        .to(UUID_VALUE)
+        .bind("p" + ++param)
         .to(TIMESTAMP_VALUE);
     if (dialect == Dialect.POSTGRESQL) {
       builder.bind("p" + ++param).to(PG_OID_VALUE);
@@ -538,6 +567,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         .toBytesArray(BYTES_ARRAY_VALUE)
         .bind("p" + ++param)
         .toDateArray(DATE_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .toUuidArray(UUID_ARRAY_VALUE)
         .bind("p" + ++param)
         .toTimestampArray(TIMESTAMP_ARRAY_VALUE);
     if (dialect == Dialect.POSTGRESQL) {
@@ -573,6 +604,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
             dialect == Dialect.POSTGRESQL ? resultSet.getPgJsonb(++col) : resultSet.getJson(++col));
         assertArrayEquals(BYTES_VALUE, resultSet.getBytes(++col).toByteArray());
         assertEquals(DATE_VALUE, resultSet.getDate(++col));
+        assertEquals(UUID_VALUE, resultSet.getUuid(++col));
         assertEquals(TIMESTAMP_VALUE, resultSet.getTimestamp(++col));
         if (dialect == Dialect.POSTGRESQL) {
           assertEquals(PG_OID_VALUE, resultSet.getLong(++col));
@@ -595,6 +627,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                 : resultSet.getJsonList(++col));
         assertEquals(BYTES_ARRAY_VALUE, resultSet.getBytesList(++col));
         assertEquals(DATE_ARRAY_VALUE, resultSet.getDateList(++col));
+        assertEquals(UUID_ARRAY_VALUE, resultSet.getUuidList(++col));
         assertEquals(TIMESTAMP_ARRAY_VALUE, resultSet.getTimestampList(++col));
         if (dialect == Dialect.POSTGRESQL) {
           assertEquals(PG_OID_ARRAY_VALUE, resultSet.getLongList(++col));
@@ -613,8 +646,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
       ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
       Map<String, Type> paramTypes = request.getParamTypesMap();
       Map<String, Value> params = request.getParams().getFieldsMap();
-      assertEquals(dialect == Dialect.POSTGRESQL ? 22 : 20, paramTypes.size());
-      assertEquals(dialect == Dialect.POSTGRESQL ? 22 : 20, params.size());
+      assertEquals(dialect == Dialect.POSTGRESQL ? 24 : 22, paramTypes.size());
+      assertEquals(dialect == Dialect.POSTGRESQL ? 24 : 22, params.size());
 
       // Verify param types.
       ImmutableList<TypeCode> expectedTypes;
@@ -630,6 +663,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                 TypeCode.JSON,
                 TypeCode.BYTES,
                 TypeCode.DATE,
+                TypeCode.UUID,
                 TypeCode.TIMESTAMP,
                 TypeCode.INT64);
       } else {
@@ -644,6 +678,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                 TypeCode.JSON,
                 TypeCode.BYTES,
                 TypeCode.DATE,
+                TypeCode.UUID,
                 TypeCode.TIMESTAMP);
       }
       for (int col = 0; col < expectedTypes.size(); col++) {
@@ -670,6 +705,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
           Base64.getEncoder().encodeToString(BYTES_VALUE),
           params.get("p" + ++col).getStringValue());
       assertEquals(DATE_VALUE.toString(), params.get("p" + ++col).getStringValue());
+      assertEquals(UUID_VALUE.toString(), params.get("p" + ++col).getStringValue());
       assertEquals(TIMESTAMP_VALUE.toString(), params.get("p" + ++col).getStringValue());
       if (dialect == Dialect.POSTGRESQL) {
         assertEquals(String.valueOf(PG_OID_VALUE), params.get("p" + ++col).getStringValue());
@@ -729,6 +765,11 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
           DATE_ARRAY_VALUE,
           params.get("p" + ++col).getListValue().getValuesList().stream()
               .map(value -> value.hasNullValue() ? null : Date.parseDate(value.getStringValue()))
+              .collect(Collectors.toList()));
+      assertEquals(
+          UUID_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(value -> value.hasNullValue() ? null : UUID.fromString(value.getStringValue()))
               .collect(Collectors.toList()));
       assertEquals(
           TIMESTAMP_ARRAY_VALUE,

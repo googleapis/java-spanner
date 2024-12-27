@@ -403,9 +403,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         assertFalse(resultSet.next());
         assertNotNull(resultSet.getMetadata());
-        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(24, resultSet.getType().getStructFields().size());
+        assertEquals(26, resultSet.getType().getStructFields().size());
       }
       if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
@@ -435,15 +435,15 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           connection.runPartitionedQuery(
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         assertNotNull(resultSet.getMetadata());
-        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(24, resultSet.getType().getStructFields().size());
+        assertEquals(26, resultSet.getType().getStructFields().size());
 
         assertTrue(resultSet.next());
         assertNotNull(resultSet.getMetadata());
-        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(24, resultSet.getType().getStructFields().size());
+        assertEquals(26, resultSet.getType().getStructFields().size());
 
         assertFalse(resultSet.next());
       }
@@ -470,9 +470,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           connection.runPartitionedQuery(
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         assertNotNull(resultSet.getMetadata());
-        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(24, resultSet.getType().getStructFields().size());
+        assertEquals(26, resultSet.getType().getStructFields().size());
 
         assertFalse(resultSet.next());
       }
