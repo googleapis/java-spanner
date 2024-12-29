@@ -393,6 +393,10 @@ public class SpannerPool {
       // Set a custom channel configurator to allow http instead of https.
       builder.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
     }
+    if (options.getClientCertificate() != null && options.getClientCertificateKey() != null) {
+      builder.useClientCert(
+          options.getHost(), options.getClientCertificate(), options.getClientCertificateKey());
+    }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);
     }

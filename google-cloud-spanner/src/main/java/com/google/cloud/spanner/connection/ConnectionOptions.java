@@ -20,6 +20,8 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMI
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_CONFIG_EMULATOR;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CHANNEL_PROVIDER;
+import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_CERTIFICATE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_KEY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_URL;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATABASE_ROLE;
@@ -225,6 +227,8 @@ public class ConnectionOptions {
   static final boolean DEFAULT_USE_VIRTUAL_THREADS = false;
   static final boolean DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS = false;
   static final String DEFAULT_CREDENTIALS = null;
+  static final String DEFAULT_CLIENT_CERTIFICATE = null;
+  static final String DEFAULT_CLIENT_KEY = null;
   static final String DEFAULT_OAUTH_TOKEN = null;
   static final Integer DEFAULT_MIN_SESSIONS = null;
   static final Integer DEFAULT_MAX_SESSIONS = null;
@@ -263,6 +267,10 @@ public class ConnectionOptions {
   private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
   /** Use plain text is only for local testing purposes. */
   static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
+  /** Client certificate path to establish mTLS */
+  static final String CLIENT_CERTIFICATE_PROPERTY_NAME = "clientCertificate";
+  /** Client key path to establish mTLS */
+  static final String CLIENT_KEY_PROPERTY_NAME = "clientKey";
   /** Name of the 'autocommit' connection property. */
   public static final String AUTOCOMMIT_PROPERTY_NAME = "autocommit";
   /** Name of the 'readonly' connection property. */
@@ -434,6 +442,12 @@ public class ConnectionOptions {
                       USE_PLAIN_TEXT_PROPERTY_NAME,
                       "Use a plain text communication channel (i.e. non-TLS) for communicating with the server (true/false). Set this value to true for communication with the Cloud Spanner emulator.",
                       DEFAULT_USE_PLAIN_TEXT),
+                  ConnectionProperty.createStringProperty(
+                      CLIENT_CERTIFICATE_PROPERTY_NAME,
+                      "Specifies the file path to the client certificate required for establishing an mTLS connection."),
+                  ConnectionProperty.createStringProperty(
+                      CLIENT_KEY_PROPERTY_NAME,
+                      "Specifies the file path to the client private key required for establishing an mTLS connection."),
                   ConnectionProperty.createStringProperty(
                       USER_AGENT_PROPERTY_NAME,
                       "The custom user-agent property name to use when communicating with Cloud Spanner. This property is intended for internal library usage, and should not be set by applications."),
@@ -828,6 +842,7 @@ public class ConnectionOptions {
   private final Credentials fixedCredentials;
 
   private final String host;
+  private boolean isExternalHost;
   private final String projectId;
   private final String instanceId;
   private final String databaseName;
@@ -841,10 +856,10 @@ public class ConnectionOptions {
 
   private ConnectionOptions(Builder builder) {
     Matcher matcher;
-    boolean isExternalHost = false;
+    this.isExternalHost = false;
     if (builder.isValidExternalHostUri(builder.uri)) {
       matcher = Builder.EXTERNAL_HOST_PATTERN.matcher(builder.uri);
-      isExternalHost = true;
+      this.isExternalHost = true;
     } else {
       matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
     }
@@ -967,7 +982,7 @@ public class ConnectionOptions {
 
     String projectId = "default";
     String instanceId = matcher.group(Builder.INSTANCE_GROUP);
-    if (!isExternalHost) {
+    if (!this.isExternalHost) {
       projectId = matcher.group(Builder.PROJECT_GROUP);
     } else if (instanceId == null) {
       instanceId = "default";
@@ -1289,6 +1304,14 @@ public class ConnectionOptions {
   boolean isUsePlainText() {
     return getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR)
         || getInitialConnectionPropertyValue(USE_PLAIN_TEXT);
+  }
+
+  String getClientCertificate() {
+    return getInitialConnectionPropertyValue(CLIENT_CERTIFICATE);
+  }
+
+  String getClientCertificateKey() {
+    return getInitialConnectionPropertyValue(CLIENT_KEY);
   }
 
   /**
