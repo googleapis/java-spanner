@@ -842,7 +842,6 @@ public class ConnectionOptions {
   private final Credentials fixedCredentials;
 
   private final String host;
-  private boolean isExternalHost;
   private final String projectId;
   private final String instanceId;
   private final String databaseName;
@@ -856,10 +855,10 @@ public class ConnectionOptions {
 
   private ConnectionOptions(Builder builder) {
     Matcher matcher;
-    this.isExternalHost = false;
+    boolean isExternalHost = false;
     if (builder.isValidExternalHostUri(builder.uri)) {
       matcher = Builder.EXTERNAL_HOST_PATTERN.matcher(builder.uri);
-      this.isExternalHost = true;
+      isExternalHost = true;
     } else {
       matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
     }
@@ -982,7 +981,7 @@ public class ConnectionOptions {
 
     String projectId = "default";
     String instanceId = matcher.group(Builder.INSTANCE_GROUP);
-    if (!this.isExternalHost) {
+    if (!isExternalHost) {
       projectId = matcher.group(Builder.PROJECT_GROUP);
     } else if (instanceId == null) {
       instanceId = "default";
