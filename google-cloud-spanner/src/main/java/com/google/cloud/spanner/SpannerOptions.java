@@ -1627,6 +1627,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       } else if (managedChannel != null) {
+        // Add shutdown hook for the ManagedChannel if created to prevent resource leak
         Runtime.getRuntime()
             .addShutdownHook(
                 new Thread(
