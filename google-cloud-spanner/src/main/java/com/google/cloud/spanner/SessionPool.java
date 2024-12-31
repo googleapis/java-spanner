@@ -2048,7 +2048,7 @@ class SessionPool {
 
     // Does various pool maintenance activities.
     void maintainPool() {
-      Instant currTime = clock.instant();
+      Instant currTime;
       synchronized (lock) {
         if (SessionPool.this.isClosed()) {
           return;
@@ -2061,6 +2061,7 @@ class SessionPool {
         }
         this.prevNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
 
+        currTime = clock.instant();
         // Reset the start time for recording the maximum number of sessions in the pool
         if (currTime.isAfter(SessionPool.this.lastResetTime.plus(Duration.ofMinutes(10)))) {
           SessionPool.this.maxSessionsInUse = SessionPool.this.numSessionsInUse;
