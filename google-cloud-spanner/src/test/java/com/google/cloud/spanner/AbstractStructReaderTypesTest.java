@@ -312,13 +312,13 @@ public class AbstractStructReaderTypesTest {
             "getDate",
             Collections.singletonList("getValue")
           },
-            {
-                Type.uuid(),
-                "getUuidInternal",
-                UUID.randomUUID(),
-                "getUuid",
-                Collections.singletonList("getValue")
-            },
+          {
+            Type.uuid(),
+            "getUuidInternal",
+            UUID.randomUUID(),
+            "getUuid",
+            Collections.singletonList("getValue")
+          },
           {
             Type.array(Type.bool()),
             "getBooleanArrayInternal",
@@ -441,13 +441,13 @@ public class AbstractStructReaderTypesTest {
             "getDateList",
             Collections.singletonList("getValue")
           },
-            {
-                Type.array(Type.uuid()),
-                "getUuidListInternal",
-                Arrays.asList(UUID.randomUUID(), UUID.randomUUID()),
-                "getUuidList",
-                Collections.singletonList("getValue")
-            },
+          {
+            Type.array(Type.uuid()),
+            "getUuidListInternal",
+            Arrays.asList(UUID.randomUUID(), UUID.randomUUID()),
+            "getUuidList",
+            Collections.singletonList("getValue")
+          },
           {
             Type.array(Type.struct(StructField.of("f1", Type.int64()))),
             "getStructListInternal",

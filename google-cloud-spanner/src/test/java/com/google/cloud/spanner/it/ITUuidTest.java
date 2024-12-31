@@ -51,6 +51,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+/**
+ * Class for running integration tests for UUID data type.
+ * It tests read and write operations involving UUID as key and non-key columns.
+ */
 @Category(ParallelIntegrationTest.class)
 @RunWith(Parameterized.class)
 public class ITUuidTest {
