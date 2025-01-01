@@ -53,6 +53,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1032,7 +1033,7 @@ public class ITQueryTest {
         .set("f_string")
         .to("hello")
         .set("f_interval")
-        .to(Interval.fromMonthsDaysMicros(100, 200, 5000))
+        .to(Interval.fromMonthsDaysNanos(100, 200, BigInteger.valueOf(5000000L)))
         .set("f_bytes")
         .to(ByteArray.copyFrom("bytes"))
         .build();

@@ -557,8 +557,7 @@ public class GrpcResultSetTest {
             Interval.builder()
                 .setMonths(100)
                 .setDays(10)
-                .setMicroseconds(1000)
-                .setNanoFractions((short) 10)
+                .setNanoseconds(BigInteger.valueOf(1000010))
                 .build()),
         Value.interval(null),
         Value.stringArray(ImmutableList.of("one", "two")),
@@ -584,7 +583,8 @@ public class GrpcResultSetTest {
                 Date.fromYearMonthDay(2017, 4, 17), Date.fromYearMonthDay(2017, 5, 18))),
         Value.dateArray(null),
         Value.intervalArray(
-            ImmutableList.of(Interval.ZERO, Interval.fromMonthsDaysMicros(10, 20, 30))),
+            ImmutableList.of(
+                Interval.ZERO, Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(30000L)))),
         Value.intervalArray(null),
         Value.struct(s(null, 30)),
         Value.struct(structType, null),
@@ -1023,7 +1023,7 @@ public class GrpcResultSetTest {
   @Test
   public void getIntervalList() {
     List<Interval> intervalList = new ArrayList<>();
-    intervalList.add(Interval.fromMonthsDaysMicros(10, 20, 100));
+    intervalList.add(Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(100)));
     intervalList.add(Interval.fromMonthsDaysNanos(-10, -20, BigInteger.valueOf(134520)));
 
     consumer.onPartialResultSet(

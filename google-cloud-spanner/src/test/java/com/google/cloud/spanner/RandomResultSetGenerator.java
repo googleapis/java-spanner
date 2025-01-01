@@ -29,6 +29,7 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import java.math.BigInteger;
 import java.util.Random;
 
 /** @deprecated Use {@link com.google.cloud.spanner.connection.RandomResultSetGenerator} instead. */
@@ -150,10 +151,9 @@ public class RandomResultSetGenerator {
         case INTERVAL:
           Interval interval =
               Interval.builder()
-                  .setMonths(random.nextInt(200) - 100)
-                  .setDays(random.nextInt(200) - 100)
-                  .setMicroseconds(random.nextInt(20000000) - 10000000)
-                  .setNanoFractions((short) (random.nextInt(200) - 100))
+                  .setMonths(random.nextInt(100) - 100)
+                  .setDays(random.nextInt(100) - 100)
+                  .setNanoseconds(BigInteger.valueOf(random.nextInt(10000000) - 10000000))
                   .build();
           builder.setStringValue(interval.toISO8601());
           break;

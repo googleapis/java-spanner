@@ -25,6 +25,7 @@ import static org.junit.Assume.assumeTrue;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.connection.ConnectionOptions;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -173,7 +174,7 @@ public class ITIntervalTest {
             .singleUse()
             .executeQuery(Statement.of("SELECT INTERVAL '1' DAY + INTERVAL '1' MONTH AS Col1"))) {
       assertTrue(resultSet.next());
-      assertEquals(resultSet.getInterval(0), Interval.fromMonthsDaysMicros(1, 1, 0));
+      assertEquals(resultSet.getInterval(0), Interval.fromMonthsDaysNanos(1, 1, BigInteger.ZERO));
     }
   }
 

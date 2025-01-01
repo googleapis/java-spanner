@@ -36,12 +36,9 @@ import org.jetbrains.annotations.NotNull;
 public class Interval implements Serializable {
   private final int months;
   private final int days;
-  private final long microseconds;
-  private final short nanoFractions;
+  private final BigInteger nanoseconds;
 
   public static final long MONTHS_PER_YEAR = 12;
-  public static final long DAYS_PER_MONTH = 30;
-  public static final long HOURS_PER_DAY = 24;
   public static final long MINUTES_PER_HOUR = 60;
   public static final long SECONDS_PER_MINUTE = 60;
   public static final long SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
@@ -51,8 +48,10 @@ public class Interval implements Serializable {
   public static final long MICROS_PER_SECOND = MICROS_PER_MILLI * MILLIS_PER_SECOND;
   public static final long MICROS_PER_MINUTE = SECONDS_PER_MINUTE * MICROS_PER_SECOND;
   public static final long MICROS_PER_HOUR = SECONDS_PER_HOUR * MICROS_PER_SECOND;
-  public static final long MICROS_PER_DAY = HOURS_PER_DAY * MICROS_PER_HOUR;
-  public static final long MICROS_PER_MONTH = DAYS_PER_MONTH * MICROS_PER_DAY;
+  public static final BigInteger NANOS_PER_MICROSECOND =
+      BigInteger.valueOf(MICROS_PER_SECOND * NANOS_PER_MICRO);
+  public static final BigInteger NANOS_PER_MILLISECOND =
+      BigInteger.valueOf(MILLIS_PER_SECOND * NANOS_PER_MICRO);
   public static final BigInteger NANOS_PER_SECOND =
       BigInteger.valueOf(MICROS_PER_SECOND * NANOS_PER_MICRO);
   public static final BigInteger NANOS_PER_MINUTE =
@@ -61,23 +60,15 @@ public class Interval implements Serializable {
       BigInteger.valueOf(MICROS_PER_HOUR * NANOS_PER_MICRO);
   public static final Interval ZERO = Interval.builder().build();
 
-  /** Regex to ISO8601 formatted interval. `P[n]Y[n]M[n]DT[n]H[n]M[n(.[fraction])]S` */
+  /** Regex to parse ISO8601 interval format- `P[n]Y[n]M[n]DT[n]H[n]M[n([.,][fraction])]S` */
   private static final Pattern INTERVAL_PATTERN =
       Pattern.compile(
-          "^P(?!$)(-?\\d+Y)?(-?\\d+M)?(-?\\d+D)?(T(?=-?.?\\d)(-?\\d+H)?(-?\\d+M)?(-?((\\d+(\\.\\d{1,9})?)|(\\.\\d{1,9}))S)?)?$");
+          "^P(?!$)(-?\\d+Y)?(-?\\d+M)?(-?\\d+D)?(T(?=-?[.,]?\\d)(-?\\d+H)?(-?\\d+M)?(-?((\\d+([.,]\\d{1,9})?)|([.,]\\d{1,9}))S)?)?$");
 
-  private Interval(int months, int days, long microseconds, short nanoFractions) {
+  private Interval(int months, int days, BigInteger nanoseconds) {
     this.months = months;
     this.days = days;
-
-    // Keep nanoFractions between [0, 1000).
-    if (nanoFractions < 0) {
-      nanoFractions += (short) NANOS_PER_MICRO;
-      microseconds -= 1;
-    }
-
-    this.microseconds = microseconds;
-    this.nanoFractions = nanoFractions;
+    this.nanoseconds = nanoseconds;
   }
 
   /** Returns the months component of the interval. */
@@ -90,47 +81,13 @@ public class Interval implements Serializable {
     return days;
   }
 
-  /** Returns the microseconds component of the interval. */
-  public long getMicroseconds() {
-    return microseconds;
-  }
-
-  /** Returns the nanoFractions component of the interval. */
-  public short getNanoFractions() {
-    return nanoFractions;
-  }
-
-  /** Returns the microseconds and nanoFraction of the Interval combined as nanoseconds. */
+  /** Returns the nanoseconds component of the interval. */
   public BigInteger getNanoseconds() {
-    return BigInteger.valueOf(getMicroseconds())
-        .multiply(BigInteger.valueOf(NANOS_PER_MICRO))
-        .add(BigInteger.valueOf(getNanoFractions()));
+    return nanoseconds;
   }
 
   public static Builder builder() {
     return new Builder();
-  }
-
-  /**
-   * Returns the total microseconds represented by the interval. It combines months, days and
-   * microseconds fields of the interval into microseconds.
-   */
-  public long getAsMicroseconds() {
-    return Math.addExact(
-        Math.addExact(
-            Math.multiplyExact(getMonths(), MICROS_PER_MONTH),
-            Math.multiplyExact(getDays(), MICROS_PER_DAY)),
-        getMicroseconds());
-  }
-
-  /**
-   * Returns the total nanoseconds represented by the interval. It combines months, days,
-   * microseconds and nanoFractions fields of the interval into nanoseconds.
-   */
-  public BigInteger getAsNanoseconds() {
-    return BigInteger.valueOf(getAsMicroseconds())
-        .multiply(BigInteger.valueOf(NANOS_PER_MICRO))
-        .add(BigInteger.valueOf(getNanoFractions()));
   }
 
   /** Creates an interval with specified number of months. */
@@ -145,46 +102,31 @@ public class Interval implements Serializable {
 
   /** Creates an interval with specified number of seconds. */
   public static Interval ofSeconds(long seconds) {
-    return builder().setMicroseconds(seconds * MICROS_PER_SECOND).build();
+    return builder().setNanoseconds(BigInteger.valueOf(seconds).multiply(NANOS_PER_SECOND)).build();
   }
 
   /** Creates an interval with specified number of milliseconds. */
   public static Interval ofMilliseconds(long milliseconds) {
-    return builder().setMicroseconds(milliseconds * MICROS_PER_MILLI).build();
+    return builder()
+        .setNanoseconds(BigInteger.valueOf(milliseconds).multiply(NANOS_PER_MILLISECOND))
+        .build();
   }
 
   /** Creates an interval with specified number of microseconds. */
   public static Interval ofMicroseconds(long micros) {
-    return builder().setMicroseconds(micros).build();
+    return builder()
+        .setNanoseconds(BigInteger.valueOf(micros).multiply(NANOS_PER_MICROSECOND))
+        .build();
   }
 
   /** Creates an interval with specified number of nanoseconds. */
   public static Interval ofNanoseconds(@NotNull BigInteger nanos) {
-    BigInteger micros = nanos.divide(BigInteger.valueOf(NANOS_PER_MICRO));
-    BigInteger nanoFractions = nanos.subtract(micros.multiply(BigInteger.valueOf(NANOS_PER_MICRO)));
-    long microsValue = micros.longValueExact();
-    short nanoFractionsValue = nanoFractions.shortValueExact();
-    return builder().setMicroseconds(microsValue).setNanoFractions(nanoFractionsValue).build();
-  }
-
-  /** Creates an interval with specified number of months, days and microseconds. */
-  public static Interval fromMonthsDaysMicros(int months, int days, long micros) {
-    return builder().setMonths(months).setDays(days).setMicroseconds(micros).build();
+    return builder().setNanoseconds(nanos).build();
   }
 
   /** Creates an interval with specified number of months, days and nanoseconds. */
-  public static Interval fromMonthsDaysNanos(int months, int days, BigInteger nanos) {
-    long micros = (nanos.divide(BigInteger.valueOf(NANOS_PER_MICRO))).longValueExact();
-    short nanoFractions =
-        (nanos.subtract(BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICRO))))
-            .shortValue();
-
-    return builder()
-        .setMonths(months)
-        .setDays(days)
-        .setMicroseconds(micros)
-        .setNanoFractions(nanoFractions)
-        .build();
+  public static Interval fromMonthsDaysNanos(int months, int days, BigInteger nanoseconds) {
+    return builder().setMonths(months).setDays(days).setNanoseconds(nanoseconds).build();
   }
 
   private static String getNullOrDefault(Matcher matcher, int groupIdx) {
@@ -204,7 +146,8 @@ public class Interval implements Serializable {
     long days = Long.parseLong(getNullOrDefault(matcher, 3).replace("D", ""));
     long hours = Long.parseLong(getNullOrDefault(matcher, 5).replace("H", ""));
     long minutes = Long.parseLong(getNullOrDefault(matcher, 6).replace("M", ""));
-    BigDecimal seconds = new BigDecimal(getNullOrDefault(matcher, 7).replace("S", ""));
+    BigDecimal seconds =
+        new BigDecimal(getNullOrDefault(matcher, 7).replace("S", "").replace(",", "."));
 
     long totalMonths = Math.addExact(Math.multiplyExact(years, MONTHS_PER_YEAR), months);
     BigInteger totalNanos = seconds.movePointRight(9).toBigInteger();
@@ -213,15 +156,10 @@ public class Interval implements Serializable {
     totalNanos =
         totalNanos.add(BigInteger.valueOf(hours * SECONDS_PER_HOUR).multiply(NANOS_PER_SECOND));
 
-    BigInteger totalMicros = totalNanos.divide(BigInteger.valueOf(NANOS_PER_MICRO));
-    BigInteger nanoFractions =
-        totalNanos.subtract(totalMicros.multiply(BigInteger.valueOf(NANOS_PER_MICRO)));
-
     return Interval.builder()
         .setMonths(Math.toIntExact(totalMonths))
         .setDays(Math.toIntExact(days))
-        .setMicroseconds(totalMicros.longValueExact())
-        .setNanoFractions(nanoFractions.shortValueExact())
+        .setNanoseconds(totalNanos)
         .build();
   }
 
@@ -278,7 +216,7 @@ public class Interval implements Serializable {
         result.append(String.format("%s%s", seconds_sign, seconds_part));
 
         if (!nanos.equals(zero)) {
-          result.append(String.format(".%09d", nanos).replaceAll("0+$", ""));
+          result.append(String.format(".%09d", nanos).replaceAll("(0{3})+$", ""));
         }
         result.append("S");
       }
@@ -307,8 +245,8 @@ public class Interval implements Serializable {
   @Override
   public int hashCode() {
     int result = 17;
-    result = 31 * result + Long.valueOf(getMonths()).hashCode();
-    result = 31 * result + Long.valueOf(getDays()).hashCode();
+    result = 31 * result + Integer.valueOf(getMonths()).hashCode();
+    result = 31 * result + Integer.valueOf(getDays()).hashCode();
     result = 31 * result + getNanoseconds().hashCode();
     return result;
   }
@@ -316,8 +254,7 @@ public class Interval implements Serializable {
   public static class Builder {
     private int months = 0;
     private int days = 0;
-    private long microseconds = 0;
-    private short nanoFractions = 0;
+    private BigInteger nanoseconds = BigInteger.ZERO;
 
     Builder setMonths(int months) {
       this.months = months;
@@ -329,26 +266,13 @@ public class Interval implements Serializable {
       return this;
     }
 
-    Builder setMicroseconds(long microseconds) {
-      this.microseconds = microseconds;
-      return this;
-    }
-
-    Builder setNanoFractions(short nanoFractions) {
-      if (nanoFractions <= -NANOS_PER_MICRO || nanoFractions >= NANOS_PER_MICRO) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            String.format(
-                "NanoFractions must be between:[-%d, %d]",
-                NANOS_PER_MICRO - 1, NANOS_PER_MICRO - 1));
-      }
-
-      this.nanoFractions = nanoFractions;
+    Builder setNanoseconds(BigInteger nanoseconds) {
+      this.nanoseconds = nanoseconds;
       return this;
     }
 
     public Interval build() {
-      return new Interval(months, days, microseconds, nanoFractions);
+      return new Interval(months, days, nanoseconds);
     }
   }
 }

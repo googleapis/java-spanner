@@ -36,6 +36,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -397,15 +398,13 @@ public class ValueBinderTest {
         Interval.builder()
             .setMonths(-10)
             .setDays(-100)
-            .setMicroseconds(-1000)
-            .setNanoFractions((short) 100)
+            .setNanoseconds(BigInteger.valueOf(-9999999L))
             .build(),
         Interval.ZERO,
         Interval.builder()
             .setMonths(10)
             .setDays(100)
-            .setMicroseconds(1000)
-            .setNanoFractions((short) 100)
+            .setNanoseconds(BigInteger.valueOf(9999999L))
             .build()
       };
     }
@@ -415,15 +414,13 @@ public class ValueBinderTest {
           Interval.builder()
               .setMonths(-10)
               .setDays(-100)
-              .setMicroseconds(-1000)
-              .setNanoFractions((short) 100)
+              .setNanoseconds(BigInteger.valueOf(-9999999L))
               .build(),
           Interval.ZERO,
           Interval.builder()
               .setMonths(10)
               .setDays(100)
-              .setMicroseconds(1000)
-              .setNanoFractions((short) 100)
+              .setNanoseconds(BigInteger.valueOf(9999999L))
               .build());
     }
 
