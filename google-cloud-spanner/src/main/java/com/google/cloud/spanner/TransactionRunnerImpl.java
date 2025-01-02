@@ -219,6 +219,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private CommitResponse commitResponse;
     private final Clock clock;
+    private boolean mutationsOnly = false;
 
     private final Map<SpannerRpc.Option, ?> channelHint;
 
@@ -402,6 +403,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
+          mutationsOnly = true;
           createTxnAsync(finishOps, randomMutation);
         } else {
           finishOps = finishedAsyncOperations;
@@ -1229,7 +1231,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           if (attempt.get() > 0) {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
-            useInlinedBegin = txn.transactionId != null;
+            useInlinedBegin = txn.mutationsOnly || txn.transactionId != null;
 
             // Determine the latest transactionId when using a multiplexed session.
             ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;

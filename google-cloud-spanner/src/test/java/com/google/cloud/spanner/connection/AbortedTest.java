@@ -72,6 +72,8 @@ public class AbortedTest extends AbstractMockServerTest {
       AbortInterceptor interceptor = new AbortInterceptor(0);
       try (ITConnection connection =
           createConnection(interceptor, new CountTransactionRetryListener())) {
+        interceptor.setUsingMultiplexedSession(
+            isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
         // verify that the there is no test record
         try (ResultSet rs =
             connection.executeQuery(Statement.of("SELECT COUNT(*) AS C FROM TEST WHERE ID=1"))) {
@@ -112,6 +114,8 @@ public class AbortedTest extends AbstractMockServerTest {
       AbortInterceptor interceptor = new AbortInterceptor(0);
       try (ITConnection connection =
           createConnection(interceptor, new CountTransactionRetryListener())) {
+        interceptor.setUsingMultiplexedSession(
+            isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
         // verify that the there is no test record
         try (ResultSet rs =
             connection.executeQuery(Statement.of("SELECT COUNT(*) AS C FROM TEST WHERE ID=1"))) {
