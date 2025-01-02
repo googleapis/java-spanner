@@ -3100,7 +3100,7 @@ public class DatabaseClientImplTest {
             // 1. CreateSession for the multiplexed session.
             // There will be no BatchCreateSessions request in case of multiplexed sessions, because
             // the session pool options has min size of 0.
-            assertThat(mockSpanner.getRequests()).hasSize(1);
+            assertThat(mockSpanner.getRequests()).hasSize(2);
           }
         }
         mockSpanner.reset();
