@@ -203,7 +203,7 @@ class TraceWrapper {
   Attributes createCommonAttributes(DatabaseId db) {
     AttributesBuilder builder = Attributes.builder();
     builder.put(DB_NAME_KEY, db.getDatabase());
-    builder.put(INSTANCE_NAME_KEY, db.getInstanceId().getName());
+    builder.put(INSTANCE_NAME_KEY, db.getInstanceId().getInstance());
     return builder.build();
   }
 
