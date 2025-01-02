@@ -1518,6 +1518,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    public Builder usePlainText() {
+      this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
+      this.setCredentials(NoCredentials.getInstance());
+      return this;
+    }
+
     /**
      * Sets OpenTelemetry object to be used for Spanner Metrics and Traces. GlobalOpenTelemetry will
      * be used as fallback if this options is not set.
