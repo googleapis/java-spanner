@@ -960,6 +960,7 @@ abstract class AbstractReadContext
             SpannerImpl.READ,
             span,
             tracer,
+            tracer.createTableAttributes(table, readOptions),
             session.getErrorHandler(),
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
