@@ -217,13 +217,14 @@ public class RetryOnInvalidatedSessionTest {
     builder.setMinSessions(1); // Ensure a minimum number of sessions are available.
     SessionPoolOptions sessionPoolOptions = builder.build();
 
-    spanner = SpannerOptions.newBuilder()
-        .setProjectId("[PROJECT]")
-        .setChannelProvider(channelProvider)
-        .setSessionPoolOption(sessionPoolOptions)
-        .setCredentials(NoCredentials.getInstance())
-        .build()
-        .getService();
+    spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setSessionPoolOption(sessionPoolOptions)
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getService();
 
     client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
 
