@@ -38,6 +38,7 @@ import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -49,6 +50,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.lang.reflect.Modifier;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -197,6 +199,9 @@ public class OpenTelemetrySpanTest {
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+    mockSpanner.putStatementResult(
+        StatementResult.read(
+            "FOO", KeySet.all(), Collections.singletonList("ID"), SELECT1_RESULTSET));
     String uniqueName = InProcessServerBuilder.generateName();
     server = InProcessServerBuilder.forName(uniqueName).addService(mockSpanner).build().start();
 
@@ -328,6 +333,7 @@ public class OpenTelemetrySpanTest {
                       spanItem,
                       expectedReadOnlyTransactionSingleUseEvents,
                       expectedReadOnlyTransactionSingleUseEventsCount);
+                  verifyCommonAttributes(spanItem);
                   break;
                 default:
                   assert false;
@@ -424,6 +430,7 @@ public class OpenTelemetrySpanTest {
                       spanItem,
                       expectedReadOnlyTransactionMultiUseEvents,
                       expectedReadOnlyTransactionMultiUseEventsCount);
+                  verifyCommonAttributes(spanItem);
                   break;
                 default:
                   assert false;
@@ -495,6 +502,7 @@ public class OpenTelemetrySpanTest {
                       spanItem,
                       expectedReadWriteTransactionEvents,
                       expectedReadWriteTransactionCount);
+                  verifyCommonAttributes(spanItem);
                   break;
                 default:
                   assert false;
@@ -557,6 +565,7 @@ public class OpenTelemetrySpanTest {
                       spanItem,
                       expectedReadWriteTransactionErrorEvents,
                       expectedReadWriteTransactionErrorEventsCount);
+                  verifyCommonAttributes(spanItem);
                   break;
                 case "CloudSpannerOperation.ExecuteUpdate":
                   assertEquals(0, spanItem.getEvents().size());
@@ -646,6 +655,7 @@ public class OpenTelemetrySpanTest {
                       spanItem,
                       expectedReadWriteTransactionErrorWithBeginTransactionEvents,
                       expectedReadWriteTransactionErrorWithBeginTransactionEventsCount);
+                  verifyCommonAttributes(spanItem);
                   break;
                 default:
                   assert false;
@@ -805,6 +815,33 @@ public class OpenTelemetrySpanTest {
             .anyMatch(event -> event.getName().equals("Starting RPC retry 1")));
   }
 
+  @Test
+  public void testTableAttributes() {
+    DatabaseClient client = getClient();
+    client
+        .readWriteTransaction(Options.optimisticLock())
+        .run(
+            transaction -> {
+              try (ResultSet rs =
+                  transaction.read(
+                      "FOO",
+                      KeySet.all(),
+                      Collections.singletonList("ID"),
+                      Options.tag("test-tag"))) {
+                while (rs.next()) {
+                  assertEquals(rs.getLong(0), 1);
+                }
+              }
+              return null;
+            });
+    SpanData spanData =
+        spanExporter.getFinishedSpanItems().stream()
+            .filter(x -> x.getName().equals("CloudSpannerOperation.ExecuteStreamingRead"))
+            .findFirst()
+            .get();
+    verifyTableAttributes(spanData);
+  }
+
   private void waitForFinishedSpans(int numExpectedSpans) {
     // Wait for all spans to finish. Failing to do so can cause the test to miss the
     // BatchCreateSessions span, as that span is executed asynchronously in the SessionClient, and
@@ -829,6 +866,16 @@ public class OpenTelemetrySpanTest {
     assertEquals(
         expectedSpansItems.stream().sorted().collect(Collectors.toList()),
         actualSpanItems.stream().distinct().sorted().collect(Collectors.toList()));
+  }
+
+  private static void verifyCommonAttributes(SpanData span) {
+    assertEquals(span.getAttributes().get(AttributeKey.stringKey("instance.name")), "my-instance");
+    assertEquals(span.getAttributes().get(AttributeKey.stringKey("db.name")), "my-database");
+  }
+
+  private static void verifyTableAttributes(SpanData span) {
+    assertEquals(span.getAttributes().get(AttributeKey.stringKey("statement.tag")), "test-tag");
+    assertEquals(span.getAttributes().get(AttributeKey.stringKey("db.table")), "FOO");
   }
 
   private boolean isMultiplexedSessionsEnabled() {
