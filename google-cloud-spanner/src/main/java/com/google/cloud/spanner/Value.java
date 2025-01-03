@@ -387,7 +387,9 @@ public abstract class Value implements Serializable {
     return new DateImpl(v == null, v);
   }
 
-  public static Value uuid(@Nullable UUID v) { return new UuidImpl(v == null, v); }
+  public static Value uuid(@Nullable UUID v) {
+    return new UuidImpl(v == null, v);
+  }
 
   /** Returns a non-{@code NULL} {#code STRUCT} value. */
   public static Value struct(Struct v) {
@@ -1395,7 +1397,9 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public List<UUID> getUuidArray() { throw defaultGetter(Type.array(Type.uuid()));}
+    public List<UUID> getUuidArray() {
+      throw defaultGetter(Type.array(Type.uuid()));
+    }
 
     @Override
     public List<Struct> getStructArray() {

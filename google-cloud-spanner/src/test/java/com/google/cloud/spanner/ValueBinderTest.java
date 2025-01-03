@@ -332,7 +332,9 @@ public class ValueBinderTest {
       return Date.fromYearMonthDay(2016, 9, 15);
     }
 
-    public static UUID defaultUuid() { return UUID.fromString("db09330e-cc05-472c-a54e-b2784deebac3");}
+    public static UUID defaultUuid() {
+      return UUID.fromString("db09330e-cc05-472c-a54e-b2784deebac3");
+    }
 
     public static boolean[] defaultBooleanArray() {
       return new boolean[] {false, true};
@@ -392,7 +394,9 @@ public class ValueBinderTest {
     }
 
     public static Iterable<UUID> defaultUuidIterable() {
-      return Arrays.asList(UUID.fromString("8ebe9153-2747-4c92-a462-6da13eb25ebb"), UUID.fromString("12c154ca-6500-4be0-89c8-160bcfa8c3f6"));
+      return Arrays.asList(
+          UUID.fromString("8ebe9153-2747-4c92-a462-6da13eb25ebb"),
+          UUID.fromString("12c154ca-6500-4be0-89c8-160bcfa8c3f6"));
     }
 
     static Object getDefault(java.lang.reflect.Type type)

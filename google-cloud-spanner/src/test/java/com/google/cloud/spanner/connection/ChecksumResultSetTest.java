@@ -112,8 +112,7 @@ public class ChecksumResultSetTest {
               Value.dateArray(
                   Arrays.asList(Date.parseDate("2000-01-01"), null, Date.parseDate("2022-08-03"))))
           .set("uuidArray")
-          .to(
-              Value.uuidArray(Arrays.asList(UUID.randomUUID(), UUID.randomUUID())))
+          .to(Value.uuidArray(Arrays.asList(UUID.randomUUID(), UUID.randomUUID())))
           .set("stringArray")
           .to(Value.stringArray(Arrays.asList("test2", null, "test1")))
           .set("jsonArray")

@@ -94,9 +94,7 @@ public class ResultSetsTest {
     Date[] dateArray = {
       Date.fromYearMonthDay(1, 2, 3), Date.fromYearMonthDay(4, 5, 6), Date.fromYearMonthDay(7, 8, 9)
     };
-    UUID[] uuidArray = {
-      UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()
-    };
+    UUID[] uuidArray = {UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()};
     String[] stringArray = {"abc", "def", "ghi"};
     String[] jsonArray = {"{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"};
     AbstractMessage[] protoMessageArray = {

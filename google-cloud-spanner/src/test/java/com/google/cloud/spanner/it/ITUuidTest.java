@@ -52,8 +52,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 /**
- * Class for running integration tests for UUID data type.
- * It tests read and write operations involving UUID as key and non-key columns.
+ * Class for running integration tests for UUID data type. It tests read and write operations
+ * involving UUID as key and non-key columns.
  */
 @Category(ParallelIntegrationTest.class)
 @RunWith(Parameterized.class)
@@ -83,33 +83,28 @@ public class ITUuidTest {
 
   private static final String[] GOOGLE_STANDARD_SQL_SCHEMA =
       new String[] {
-          "CREATE TABLE T ("
-              + "  Key                 STRING(MAX) NOT NULL,"
-              + "  UuidValue           UUID,"
-              + "  UuidArrayValue      ARRAY<UUID>,"
-              + ") PRIMARY KEY (Key)",
-          "CREATE TABLE UK ("
-              + "  Key                 UUID NOT NULL,"
-              + ") PRIMARY KEY (Key)",
+        "CREATE TABLE T ("
+            + "  Key                 STRING(MAX) NOT NULL,"
+            + "  UuidValue           UUID,"
+            + "  UuidArrayValue      ARRAY<UUID>,"
+            + ") PRIMARY KEY (Key)",
+        "CREATE TABLE UK (" + "  Key                 UUID NOT NULL," + ") PRIMARY KEY (Key)",
       };
 
   private static final String[] POSTGRESQL_SCHEMA =
       new String[] {
-          "CREATE TABLE T ("
-              + "  Key              VARCHAR PRIMARY KEY,"
-              + "  UuidValue        UUID,"
-              + "  UuidArrayValue   UUID[]"
-              + ")",
-          "CREATE TABLE UK ("
-              + "  Key              UUID PRIMARY KEY"
-              + ")",
+        "CREATE TABLE T ("
+            + "  Key              VARCHAR PRIMARY KEY,"
+            + "  UuidValue        UUID,"
+            + "  UuidArrayValue   UUID[]"
+            + ")",
+        "CREATE TABLE UK (" + "  Key              UUID PRIMARY KEY" + ")",
       };
 
   private static DatabaseClient client;
 
   private UUID uuid1 = UUID.fromString("aac68fbe-6847-48b1-8373-110950aeaf3a");;
   private UUID uuid2 = UUID.fromString("f5868be9-7983-4cfa-adf3-2e9f13f2019d");
-
 
   @BeforeClass
   public static void setUpDatabase()
@@ -204,10 +199,7 @@ public class ITUuidTest {
     UUID uuid2 = UUID.randomUUID();
 
     write(
-        baseInsert()
-            .set("UuidArrayValue")
-            .toUuidArray(Arrays.asList(null, uuid1, uuid2))
-            .build());
+        baseInsert().set("UuidArrayValue").toUuidArray(Arrays.asList(null, uuid1, uuid2)).build());
     Struct row = readLastRow("UuidArrayValue");
     assertFalse(row.isNull(0));
     assertEquals(row.getUuidList(0), Arrays.asList(null, uuid1, uuid2));
@@ -331,7 +323,8 @@ public class ITUuidTest {
                                       com.google.protobuf.ListValue.newBuilder()
                                           .addValues(
                                               com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("aac68fbe-6847-48b1-8373-110950aeaf3a")))
+                                                  .setStringValue(
+                                                      "aac68fbe-6847-48b1-8373-110950aeaf3a")))
                                   .build()))
                       .build());
               return null;
@@ -339,19 +332,17 @@ public class ITUuidTest {
 
     Struct row = readRow("T", "untyped1", "UuidValue", "UuidArrayValue");
     assertEquals(UUID.fromString("aac68fbe-6847-48b1-8373-110950aeaf3a"), row.getUuid(0));
-    assertEquals(Collections.singletonList(UUID.fromString("aac68fbe-6847-48b1-8373-110950aeaf3a")), row.getUuidList(1));
+    assertEquals(
+        Collections.singletonList(UUID.fromString("aac68fbe-6847-48b1-8373-110950aeaf3a")),
+        row.getUuidList(1));
   }
 
   private String getInsertStatementWithKeyLiterals(UUID uuid1, UUID uuid2) {
     String statement = "INSERT INTO UK (Key) VALUES ";
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      statement +=
-      "('"+ uuid1.toString() +"'),"
-          + "('"+ uuid2.toString()+"'::uuid)";
+      statement += "('" + uuid1.toString() + "')," + "('" + uuid2.toString() + "'::uuid)";
     } else {
-      statement +=
-          "('"+ uuid1.toString() +"'),"
-          + "(CAST('"+ uuid2.toString()+"' AS UUID))";
+      statement += "('" + uuid1.toString() + "')," + "(CAST('" + uuid2.toString() + "' AS UUID))";
     }
     return statement;
   }
@@ -364,7 +355,8 @@ public class ITUuidTest {
         .readWriteTransaction()
         .run(
             transaction -> {
-              transaction.executeUpdate(Statement.of(getInsertStatementWithKeyLiterals(uuid1, uuid2)));
+              transaction.executeUpdate(
+                  Statement.of(getInsertStatementWithKeyLiterals(uuid1, uuid2)));
               return null;
             });
 
@@ -372,9 +364,7 @@ public class ITUuidTest {
   }
 
   private String getInsertStatementWithKeyParameters() {
-    String statement = "INSERT INTO UK (Key) VALUES "
-        + "($1),"
-        + "($2)";
+    String statement = "INSERT INTO UK (Key) VALUES " + "($1)," + "($2)";
     return (dialect.dialect == Dialect.POSTGRESQL) ? statement : statement.replace("$", "@p");
   }
 
@@ -382,7 +372,7 @@ public class ITUuidTest {
   public void uuidAsKeyParameter() {
     deleteAllRows("UK");
     UUID uuid1 = UUID.fromString("fb907080-48a4-4615-b2c4-c8ccb5bb66a4");
-    UUID uuid2 = UUID.fromString("faee3a78-cc54-42fc-baa2-53197fb89e8a");;
+    UUID uuid2 = UUID.fromString("faee3a78-cc54-42fc-baa2-53197fb89e8a");
 
     client
         .readWriteTransaction()
@@ -401,13 +391,9 @@ public class ITUuidTest {
     verifyKeyContents(Arrays.asList(uuid1, uuid2));
   }
 
-  private void verifyKeyContents(List<UUID> uuids){
+  private void verifyKeyContents(List<UUID> uuids) {
     try (ResultSet resultSet =
-        client
-            .singleUse()
-            .executeQuery(
-                Statement.of(
-                    "SELECT Key AS key FROM UK ORDER BY key"))) {
+        client.singleUse().executeQuery(Statement.of("SELECT Key AS key FROM UK ORDER BY key"))) {
 
       for (UUID uuid : uuids) {
         assertTrue(resultSet.next());
@@ -431,14 +417,16 @@ public class ITUuidTest {
       assertEquals(uuid1, resultSet.getUuid("uuidvalue"));
       assertEquals(Value.uuid(uuid1), resultSet.getValue("uuidvalue"));
       assertEquals(Collections.singletonList(uuid1), resultSet.getUuidList("uuidarrayvalue"));
-      assertEquals(Value.uuidArray(Collections.singletonList(uuid1)), resultSet.getValue("uuidarrayvalue"));
+      assertEquals(
+          Value.uuidArray(Collections.singletonList(uuid1)), resultSet.getValue("uuidarrayvalue"));
 
       // Row 2
       assertTrue(resultSet.next());
       assertEquals(uuid1, resultSet.getUuid("uuidvalue"));
       assertEquals(Value.uuid(uuid1), resultSet.getValue("uuidvalue"));
       assertEquals(Collections.singletonList(uuid1), resultSet.getUuidList("uuidarrayvalue"));
-      assertEquals(Value.uuidArray(Collections.singletonList(uuid1)), resultSet.getValue("uuidarrayvalue"));
+      assertEquals(
+          Value.uuidArray(Collections.singletonList(uuid1)), resultSet.getValue("uuidarrayvalue"));
 
       // Row 3
       assertTrue(resultSet.next());
@@ -450,7 +438,8 @@ public class ITUuidTest {
       assertEquals(uuid1, resultSet.getUuid("uuidvalue"));
       assertEquals(Value.uuid(uuid1), resultSet.getValue("uuidvalue"));
       assertEquals(Arrays.asList(uuid1, uuid2, null), resultSet.getUuidList("uuidarrayvalue"));
-      assertEquals(Value.uuidArray(Arrays.asList(uuid1, uuid2, null)), resultSet.getValue("uuidarrayvalue"));
+      assertEquals(
+          Value.uuidArray(Arrays.asList(uuid1, uuid2, null)), resultSet.getValue("uuidarrayvalue"));
     }
   }
 }

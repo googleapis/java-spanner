@@ -128,10 +128,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
           Date.fromYearMonthDay(9999, 12, 31));
 
   public static final List<UUID> UUID_ARRAY_VALUE =
-      Arrays.asList(
-          UUID.randomUUID(),
-          null,
-          UUID.randomUUID());
+      Arrays.asList(UUID.randomUUID(), null, UUID.randomUUID());
   public static final List<Timestamp> TIMESTAMP_ARRAY_VALUE =
       Arrays.asList(
           Timestamp.parseTimestamp("2024-03-01T07:07:00.20982735Z"),
@@ -376,8 +373,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                                     uuid ->
                                         uuid == null
                                             ? Value.newBuilder()
-                                            .setNullValue(NullValue.NULL_VALUE)
-                                            .build()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()
                                             : Value.newBuilder()
                                                 .setStringValue(uuid.toString())
                                                 .build())

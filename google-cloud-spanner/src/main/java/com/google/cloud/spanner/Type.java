@@ -185,7 +185,9 @@ public final class Type implements Serializable {
     return TYPE_DATE;
   }
 
-  public static Type uuid() { return TYPE_UUID;}
+  public static Type uuid() {
+    return TYPE_UUID;
+  }
 
   /** Returns a descriptor for an array of {@code elementType}. */
   public static Type array(Type elementType) {

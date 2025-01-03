@@ -294,6 +294,7 @@ class DirectExecuteResultSet implements ProtobufResultSet {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getUuid(columnIndex);
   }
+
   @Override
   public UUID getUuid(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);

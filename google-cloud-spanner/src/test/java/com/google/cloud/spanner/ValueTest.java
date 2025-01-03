@@ -1389,11 +1389,10 @@ public class ValueTest {
 
     Value v = Value.uuidArray(Arrays.asList(uuid1, null, uuid2));
     assertThat(v.isNull()).isFalse();
-    assertThat(v.getUuidArray())
-        .containsExactly(uuid1, null, uuid2)
-        .inOrder();
+    assertThat(v.getUuidArray()).containsExactly(uuid1, null, uuid2).inOrder();
     assertThat(v.toString()).isEqualTo("[" + uuid1.toString() + ",NULL," + uuid2.toString() + "]");
-    assertEquals(String.format("[%s,NULL,%s]", uuid1.toString(), uuid2.toString()), v.getAsString());
+    assertEquals(
+        String.format("[%s,NULL,%s]", uuid1.toString(), uuid2.toString()), v.getAsString());
   }
 
   @Test
