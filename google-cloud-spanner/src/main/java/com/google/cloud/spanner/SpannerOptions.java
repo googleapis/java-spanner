@@ -1828,11 +1828,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   /** Returns an instance of OpenTelemetry object for Built-in Client metrics. */
   public OpenTelemetry getBuiltInMetricsOpenTelemetry() {
     return this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-        this.getProjectId(), getCredentials());
+        this.getProjectId(), getCredentials(), this.getMonitoringHost());
   }
 
   /** Returns attributes for an instance of Built-in Client metrics. */
-  public Map<String, String> getBuiltInMetricsClientAttributes() {
+  public Map<String, String> getBuiltInMetricsAttributes() {
     return builtInOpenTelemetryMetricsProvider.createOrGetClientAttributes(
         this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass()));
   }
