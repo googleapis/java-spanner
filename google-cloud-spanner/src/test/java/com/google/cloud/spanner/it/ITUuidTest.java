@@ -77,6 +77,7 @@ public class ITUuidTest {
           new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL),
           new DialectTestParameter(Dialect.POSTGRESQL));
     }
+    return Collections.emptyList();
   }
 
   @Parameterized.Parameter() public DialectTestParameter dialect;
@@ -91,7 +92,7 @@ public class ITUuidTest {
             + "  UuidValue           UUID,"
             + "  UuidArrayValue      ARRAY<UUID>,"
             + ") PRIMARY KEY (Key)",
-        "CREATE TABLE UK (" + "  Key                 UUID NOT NULL," + ") PRIMARY KEY (Key)",
+        "CREATE TABLE UK (" + "  Key UUID NOT NULL," + ") PRIMARY KEY (Key)",
       };
 
   private static final String[] POSTGRESQL_SCHEMA =
@@ -101,7 +102,7 @@ public class ITUuidTest {
             + "  UuidValue        UUID,"
             + "  UuidArrayValue   UUID[]"
             + ")",
-        "CREATE TABLE UK (" + "  Key              UUID PRIMARY KEY" + ")",
+        "CREATE TABLE UK (" + "  Key UUID PRIMARY KEY" + ")",
       };
 
   private static DatabaseClient client;
