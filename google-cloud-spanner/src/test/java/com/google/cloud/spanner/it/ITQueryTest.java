@@ -426,7 +426,9 @@ public class ITQueryTest {
 
   @Test
   public void bindUuid() {
+    // TODO: Remove once it is enabled in emulator.
     assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
     assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
 
     UUID uuid = UUID.randomUUID();
@@ -437,7 +439,9 @@ public class ITQueryTest {
 
   @Test
   public void bindUuidNull() {
+    // TODO: Remove once it is enabled in emulator.
     assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
     assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
 
     Struct row =
@@ -841,7 +845,9 @@ public class ITQueryTest {
 
   @Test
   public void bindUuidArray() {
+    // TODO: Remove once it is enabled in emulator.
     assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
     assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
 
     UUID u1 = UUID.randomUUID();
@@ -857,7 +863,9 @@ public class ITQueryTest {
 
   @Test
   public void bindUuidArrayEmpty() {
+    // TODO: Remove once it is enabled in emulator.
     assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
     assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
 
     Struct row =
@@ -870,7 +878,9 @@ public class ITQueryTest {
 
   @Test
   public void bindUuidArrayNull() {
+    // TODO: Remove once it is enabled in emulator.
     assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
     assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
 
     Struct row =
