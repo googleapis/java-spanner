@@ -57,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -205,31 +206,37 @@ public class RetryOnInvalidatedSessionTest {
 
   @Before
   public void setUp() throws InterruptedException {
+    // Reset the mock Spanner service to ensure a clean state for each test.
     mockSpanner.reset();
-    if (spanner == null
-        || spanner.getOptions().getSessionPoolOptions().isFailIfSessionNotFound()
-            != failOnInvalidatedSession) {
-      if (spanner != null) {
-        spanner.close();
-      }
-      SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder().setFailOnSessionLeak();
-      if (failOnInvalidatedSession) {
-        builder.setFailIfSessionNotFound();
-      }
-      // This prevents repeated retries for a large number of sessions in the pool.
-      builder.setMinSessions(1);
-      SessionPoolOptions sessionPoolOptions = builder.build();
-      spanner =
-          SpannerOptions.newBuilder()
-              .setProjectId("[PROJECT]")
-              .setChannelProvider(channelProvider)
-              .setSessionPoolOption(sessionPoolOptions)
-              .setCredentials(NoCredentials.getInstance())
-              .build()
-              .getService();
-      client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+    // Create a new Spanner instance for each test to ensure session isolation.
+    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder().setFailOnSessionLeak();
+    if (failOnInvalidatedSession) {
+      builder.setFailIfSessionNotFound();
     }
+    builder.setMinSessions(1); // Ensure a minimum number of sessions are available.
+    SessionPoolOptions sessionPoolOptions = builder.build();
+
+    spanner = SpannerOptions.newBuilder()
+        .setProjectId("[PROJECT]")
+        .setChannelProvider(channelProvider)
+        .setSessionPoolOption(sessionPoolOptions)
+        .setCredentials(NoCredentials.getInstance())
+        .build()
+        .getService();
+
+    client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+    // Invalidate the session pool to ensure no sessions are reused.
     invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+  }
+
+  @After
+  public void tearDown() {
+    // Close the Spanner instance to release all sessions.
+    if (spanner != null) {
+      spanner.close();
+    }
   }
 
   private static void invalidateSessionPool(DatabaseClient client, int minSessions)
