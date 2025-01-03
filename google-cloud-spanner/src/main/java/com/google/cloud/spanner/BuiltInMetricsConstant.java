@@ -34,9 +34,9 @@ import java.util.stream.Collectors;
 public class BuiltInMetricsConstant {
 
   public static final String METER_NAME = "spanner.googleapis.com/internal/client";
-
   public static final String GAX_METER_NAME = OpenTelemetryMetricsRecorder.GAX_METER_NAME;
-
+  static final String SPANNER_METER_NAME = "spanner-java";
+  static final String GFE_LATENCIES_NAME = "gfe_latencies";
   static final String OPERATION_LATENCIES_NAME = "operation_latencies";
   static final String ATTEMPT_LATENCIES_NAME = "attempt_latencies";
   static final String OPERATION_LATENCY_NAME = "operation_latency";
@@ -114,6 +114,7 @@ public class BuiltInMetricsConstant {
     ImmutableMap.Builder<InstrumentSelector, View> views = ImmutableMap.builder();
     defineView(
         views,
+        BuiltInMetricsConstant.GAX_METER_NAME,
         BuiltInMetricsConstant.OPERATION_LATENCY_NAME,
         BuiltInMetricsConstant.OPERATION_LATENCIES_NAME,
         BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
@@ -121,6 +122,7 @@ public class BuiltInMetricsConstant {
         "ms");
     defineView(
         views,
+        BuiltInMetricsConstant.GAX_METER_NAME,
         BuiltInMetricsConstant.ATTEMPT_LATENCY_NAME,
         BuiltInMetricsConstant.ATTEMPT_LATENCIES_NAME,
         BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
@@ -128,6 +130,15 @@ public class BuiltInMetricsConstant {
         "ms");
     defineView(
         views,
+        BuiltInMetricsConstant.SPANNER_METER_NAME,
+        BuiltInMetricsConstant.GFE_LATENCIES_NAME,
+        BuiltInMetricsConstant.GFE_LATENCIES_NAME,
+        BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
+        InstrumentType.HISTOGRAM,
+        "ms");
+    defineView(
+        views,
+        BuiltInMetricsConstant.GAX_METER_NAME,
         BuiltInMetricsConstant.OPERATION_COUNT_NAME,
         BuiltInMetricsConstant.OPERATION_COUNT_NAME,
         Aggregation.sum(),
@@ -135,6 +146,7 @@ public class BuiltInMetricsConstant {
         "1");
     defineView(
         views,
+        BuiltInMetricsConstant.GAX_METER_NAME,
         BuiltInMetricsConstant.ATTEMPT_COUNT_NAME,
         BuiltInMetricsConstant.ATTEMPT_COUNT_NAME,
         Aggregation.sum(),
@@ -145,6 +157,7 @@ public class BuiltInMetricsConstant {
 
   private static void defineView(
       ImmutableMap.Builder<InstrumentSelector, View> viewMap,
+      String meterName,
       String metricName,
       String metricViewName,
       Aggregation aggregation,
@@ -153,7 +166,7 @@ public class BuiltInMetricsConstant {
     InstrumentSelector selector =
         InstrumentSelector.builder()
             .setName(BuiltInMetricsConstant.METER_NAME + '/' + metricName)
-            .setMeterName(BuiltInMetricsConstant.GAX_METER_NAME)
+            .setMeterName(meterName)
             .setType(type)
             .setUnit(unit)
             .build();
