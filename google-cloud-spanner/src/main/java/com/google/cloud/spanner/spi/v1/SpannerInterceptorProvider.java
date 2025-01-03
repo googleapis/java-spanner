@@ -29,7 +29,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,15 +46,17 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
 
   @ObsoleteApi("This method always uses Global OpenTelemetry")
   public static SpannerInterceptorProvider createDefault() {
-    return createDefault(GlobalOpenTelemetry.get(), GlobalOpenTelemetry.get());
+    return createDefault(
+        GlobalOpenTelemetry.get(),
+        new BuiltInOpenTelemetryMetricsRecorder(GlobalOpenTelemetry.get(), new HashMap<>()));
   }
 
   public static SpannerInterceptorProvider createDefault(
-      OpenTelemetry openTelemetry, OpenTelemetry builtInMetricsopenTelemetry) {
+      OpenTelemetry openTelemetry,
+      BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
     return createDefault(
         openTelemetry,
-        builtInMetricsopenTelemetry,
-        new HashMap<>(),
+        builtInOpenTelemetryMetricsRecorder,
         Suppliers.memoize(
             () -> {
               return false;
@@ -64,8 +65,7 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
 
   public static SpannerInterceptorProvider createDefault(
       OpenTelemetry openTelemetry,
-      OpenTelemetry builtInMetricsopenTelemetry,
-      Map<String, String> builtInMetricsClientAttributes,
+      BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder,
       Supplier<Boolean> directPathEnabledSupplier) {
     List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
     defaultInterceptorList.add(new SpannerErrorInterceptor());
@@ -74,8 +74,7 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
     defaultInterceptorList.add(
         new HeaderInterceptor(
             new SpannerRpcMetrics(openTelemetry),
-            new BuiltInOpenTelemetryMetricsRecorder(
-                builtInMetricsopenTelemetry, builtInMetricsClientAttributes),
+            builtInOpenTelemetryMetricsRecorder,
             directPathEnabledSupplier));
     return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
   }
