@@ -118,6 +118,7 @@
       <plugin>
         <groupId>org.graalvm.buildtools</groupId>
         <artifactId>native-maven-plugin</artifactId>
+        <version>0.10.4</version>
         <configuration>
           <buildArgs combine.children="append">
             <buildArg>-Dspanner.testenv.config.class=${spanner.testenv.config.class}</buildArg>
@@ -133,6 +134,7 @@
         <?m2e ignore?>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.6.0</version>
       </plugin>
 
       <plugin>
