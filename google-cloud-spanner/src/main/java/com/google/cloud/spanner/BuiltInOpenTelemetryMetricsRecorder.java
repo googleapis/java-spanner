@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,11 @@ public class BuiltInOpenTelemetryMetricsRecorder {
    */
   public BuiltInOpenTelemetryMetricsRecorder(
       OpenTelemetry openTelemetry, Map<String, String> clientAttributes) {
-    if (openTelemetry != null && clientAttributes != null) {
+    if (openTelemetry == null || clientAttributes == null) {
       gfeLatencyRecorder = null;
       return;
     }
+
     Meter meter =
         openTelemetry
             .meterBuilder(BuiltInMetricsConstant.SPANNER_METER_NAME)

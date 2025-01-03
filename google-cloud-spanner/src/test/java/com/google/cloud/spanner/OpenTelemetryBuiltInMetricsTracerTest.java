@@ -90,7 +90,9 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
 
     String client_name = "spanner-java/";
     openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
-    attributes = provider.createOrGetClientAttributes("test-project", client_name);
+    provider.reset();
+    provider.initialize("test-project", client_name, null, null);
+    attributes = provider.getClientAttributes();
 
     expectedBaseAttributes =
         Attributes.builder()

@@ -28,6 +28,7 @@ import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
@@ -44,72 +45,96 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 final class BuiltInOpenTelemetryMetricsProvider {
 
-  static BuiltInOpenTelemetryMetricsProvider INSTANCE = new BuiltInOpenTelemetryMetricsProvider();
+  public static BuiltInOpenTelemetryMetricsProvider INSTANCE =
+      new BuiltInOpenTelemetryMetricsProvider();
 
   private static final Logger logger =
       Logger.getLogger(BuiltInOpenTelemetryMetricsProvider.class.getName());
+
+  private final Cache<String, Map<String, String>> clientAttributesCache =
+      CacheBuilder.newBuilder().maximumSize(1000).build();
 
   private static String taskId;
 
   private OpenTelemetry openTelemetry;
 
-  private final Cache<String, Map<String, String>> clientAttributesCache =
-      CacheBuilder.newBuilder().maximumSize(1000).build();
+  private Map<String, String> clientAttributes;
 
-  private BuiltInOpenTelemetryMetricsProvider() {}
+  private boolean isInitialized;
 
-  OpenTelemetry getOrCreateOpenTelemetry(
-      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost) {
+  private BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder;
+
+  private BuiltInOpenTelemetryMetricsProvider() {};
+
+  void initialize(
+      String projectId,
+      String client_name,
+      @Nullable Credentials credentials,
+      @Nullable String monitoringHost) {
+
     try {
-      if (this.openTelemetry == null) {
-        SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
-        BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
-            SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
-            sdkMeterProviderBuilder);
-        SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-        this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
-        Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
+      if (!isInitialized) {
+        this.openTelemetry = createOpenTelemetry(projectId, credentials, monitoringHost);
+        this.clientAttributes = createClientAttributes(projectId, client_name);
+        this.builtInOpenTelemetryMetricsRecorder =
+            new BuiltInOpenTelemetryMetricsRecorder(openTelemetry, clientAttributes);
+        isInitialized = true;
       }
-      return this.openTelemetry;
-    } catch (IOException ex) {
+    } catch (Exception ex) {
       logger.log(
           Level.WARNING,
-          "Unable to get OpenTelemetry object for client side metrics, will skip exporting client side metrics",
+          "Unable to initialize OpenTelemetry object or attributes for client side metrics, will skip exporting client side metrics",
           ex);
-      return null;
     }
   }
 
-  Map<String, String> createOrGetClientAttributes(String projectId, String client_name) {
-    try {
-      String key = projectId + client_name;
-      return clientAttributesCache.get(
-          key,
-          () -> {
-            Map<String, String> clientAttributes = new HashMap<>();
-            clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
-            clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
-            clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
-            clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
-            String clientUid = getDefaultTaskValue();
-            clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
-            clientAttributes.put(CLIENT_HASH_KEY.getKey(), generateClientHash(clientUid));
-            return clientAttributes;
-          });
-    } catch (ExecutionException executionException) {
-      logger.log(
-          Level.WARNING,
-          "Unable to get Client Attributes for client side metrics, will skip exporting client side metrics",
-          executionException);
-      return null;
-    }
+  OpenTelemetry getOpenTelemetry() {
+    return this.openTelemetry;
+  }
+
+  Map<String, String> getClientAttributes() {
+    return this.clientAttributes;
+  }
+
+  BuiltInOpenTelemetryMetricsRecorder getBuiltInOpenTelemetryMetricsRecorder() {
+    return this.builtInOpenTelemetryMetricsRecorder;
+  }
+
+  @VisibleForTesting
+  void reset() {
+    isInitialized = false;
+  }
+
+  private Map<String, String> createClientAttributes(String projectId, String client_name) {
+    Map<String, String> clientAttributes = new HashMap<>();
+    clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
+    clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
+    clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
+    clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
+    String clientUid = getDefaultTaskValue();
+    clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
+    clientAttributes.put(CLIENT_HASH_KEY.getKey(), generateClientHash(clientUid));
+    return clientAttributes;
+  }
+
+  private OpenTelemetry createOpenTelemetry(
+      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost)
+      throws IOException {
+    OpenTelemetry openTelemetry;
+    SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
+    BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
+        SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
+        sdkMeterProviderBuilder);
+    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
+    Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
+    return openTelemetry;
   }
 
   /**

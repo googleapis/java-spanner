@@ -1864,16 +1864,21 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
   }
 
-  /** Returns an instance of OpenTelemetry object for Built-in Client metrics. */
-  public OpenTelemetry getBuiltInMetricsOpenTelemetry() {
-    return this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-        this.getProjectId(), getCredentials());
+  /**
+   * Returns an instance of Built-In MetricsRecorder object. initializeBuiltInMetrics should be
+   * called first before this recorder can be fetched
+   */
+  public BuiltInOpenTelemetryMetricsRecorder getBuiltInMetricsRecorder() {
+    return this.builtInOpenTelemetryMetricsProvider.getBuiltInOpenTelemetryMetricsRecorder();
   }
 
-  /** Returns attributes for an instance of Built-in Client metrics. */
-  public Map<String, String> getBuiltInMetricsClientAttributes() {
-    return builtInOpenTelemetryMetricsProvider.createOrGetClientAttributes(
-        this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass()));
+  /** Initialize the built-in metrics provider */
+  public void initializeBuiltInMetrics() {
+    this.builtInOpenTelemetryMetricsProvider.initialize(
+        this.getProjectId(),
+        "spanner-java/" + GaxProperties.getLibraryVersion(getClass()),
+        getCredentials(),
+        this.getMonitoringHost());
   }
 
   @Override
@@ -1921,13 +1926,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private ApiTracerFactory createMetricsApiTracerFactory() {
-    OpenTelemetry openTelemetry =
-        this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-            this.getProjectId(), getCredentials(), this.monitoringHost);
+    OpenTelemetry openTelemetry = this.builtInOpenTelemetryMetricsProvider.getOpenTelemetry();
 
     Map<String, String> clientAttributes =
-        builtInOpenTelemetryMetricsProvider.createOrGetClientAttributes(
-            this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass()));
+        builtInOpenTelemetryMetricsProvider.getClientAttributes();
     return openTelemetry != null && clientAttributes != null
         ? new MetricsTracerFactory(
             new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
