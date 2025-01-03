@@ -315,7 +315,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 getOptions().getSessionPoolOptions().getUseMultiplexedSessionBlindWrite(),
                 multiplexedSessionDatabaseClient,
                 getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps(),
-                useMultiplexedSessionForRW);
+                useMultiplexedSessionForRW,
+                this.tracer.createCommonAttributes(db));
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -329,7 +330,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       boolean useMultiplexedSessionBlindWrite,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient,
       boolean useMultiplexedSessionPartitionedOps,
-      boolean useMultiplexedSessionForRW) {
+      boolean useMultiplexedSessionForRW,
+      Attributes commonAttributes) {
     return new DatabaseClientImpl(
         clientId,
         pool,
@@ -337,7 +339,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         multiplexedSessionClient,
         useMultiplexedSessionPartitionedOps,
         tracer,
-        useMultiplexedSessionForRW);
+        useMultiplexedSessionForRW,
+        commonAttributes);
   }
 
   @Override
