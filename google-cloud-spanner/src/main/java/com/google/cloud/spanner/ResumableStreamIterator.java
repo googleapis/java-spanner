@@ -326,6 +326,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
         // When start a new stream set the Span as current to make the gRPC Span a child of
         // this Span.
         stream = checkNotNull(startStream(resumeToken, streamMessageListener));
+        stream.requestPrefetchChunks();
       }
     }
   }
