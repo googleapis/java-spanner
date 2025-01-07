@@ -218,7 +218,9 @@ public class SpannerPool {
           && Objects.equals(this.openTelemetry, other.openTelemetry)
           && Objects.equals(this.enableExtendedTracing, other.enableExtendedTracing)
           && Objects.equals(this.enableApiTracing, other.enableApiTracing)
-          && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing);
+          && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing)
+          && Objects.equals(this.clientCertificate, other.clientCertificate)
+          && Objects.equals(this.clientCertificateKey, other.clientCertificateKey);
     }
 
     @Override
@@ -237,7 +239,9 @@ public class SpannerPool {
           this.openTelemetry,
           this.enableExtendedTracing,
           this.enableApiTracing,
-          this.enableEndToEndTracing);
+          this.enableEndToEndTracing,
+          this.clientCertificate,
+          this.clientCertificateKey);
     }
   }
 
