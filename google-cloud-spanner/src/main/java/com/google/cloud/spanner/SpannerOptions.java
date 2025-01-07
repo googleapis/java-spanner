@@ -27,11 +27,9 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
-import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
-import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
@@ -71,19 +69,17 @@ import io.grpc.CallCredentials;
 import io.grpc.CompressorRegistry;
 import io.grpc.Context;
 import io.grpc.ExperimentalApi;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -98,8 +94,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -952,7 +946,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
-    private ManagedChannel managedChannel;
     private boolean leaderAwareRoutingEnabled = true;
     private boolean attemptDirectPath = true;
     private DirectedReadOptions directedReadOptions;
@@ -963,6 +956,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
+    private SslContext mTLSContext = null;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1496,31 +1490,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    public Builder useClientCert(String host, String clientCertificate, String clientKey) {
+    /**
+     * Configures mTLS authentication using the provided client certificate and key files. mTLS is
+     * only supported for external spanner hosts.
+     *
+     * @param clientCertificate Path to the client certificate file.
+     * @param clientCertificateKey Path to the client private key file.
+     * @throws SpannerException If an error occurs while configuring the mTLS context
+     */
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3574")
+    public Builder useClientCert(String clientCertificate, String clientCertificateKey) {
       try {
-        URI uri = new URI(host);
-        managedChannel =
-            NettyChannelBuilder.forAddress(uri.getHost(), uri.getPort())
-                .sslContext(
-                    GrpcSslContexts.forClient()
-                        .keyManager(new File(clientCertificate), new File(clientKey))
-                        .build())
+        this.mTLSContext =
+            GrpcSslContexts.forClient()
+                .keyManager(new File(clientCertificate), new File(clientCertificateKey))
                 .build();
-
-        setChannelProvider(
-            FixedTransportChannelProvider.create(GrpcTransportChannel.create(managedChannel)));
-      } catch (URISyntaxException e) {
-        throw new IllegalArgumentException(
-            "Invalid host format. Expected format: 'protocol://host[:port]'.", e);
       } catch (Exception e) {
-        throw new RuntimeException("Unexpected error during mTLS setup.", e);
+        throw SpannerExceptionFactory.asSpannerException(e);
       }
-      return this;
-    }
-
-    public Builder usePlainText() {
-      this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
-      this.setCredentials(NoCredentials.getInstance());
       return this;
     }
 
@@ -1632,24 +1619,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-      } else if (managedChannel != null) {
-        // Add shutdown hook for the ManagedChannel if created to prevent resource leak
-        Runtime.getRuntime()
-            .addShutdownHook(
-                new Thread(
-                    () -> {
-                      final Logger logger = Logger.getLogger(SpannerOptions.class.getName());
-                      try {
-                        managedChannel.shutdown();
-                        logger.log(
-                            Level.INFO, "[SpannerOptions] ManagedChannel shut down successfully.");
-                      } catch (Exception e) {
-                        logger.log(
-                            Level.WARNING,
-                            "[SpannerOptions] Failed to shut down ManagedChannel.",
-                            e);
-                      }
-                    }));
+      }
+      if (mTLSContext != null) {
+        this.setChannelConfigurator(
+            builder -> {
+              if (builder instanceof NettyChannelBuilder) {
+                ((NettyChannelBuilder) builder).sslContext(mTLSContext);
+              }
+              return builder;
+            });
       }
       if (this.numChannels == null) {
         this.numChannels =

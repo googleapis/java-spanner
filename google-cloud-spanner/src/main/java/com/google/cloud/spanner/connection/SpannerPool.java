@@ -161,6 +161,8 @@ public class SpannerPool {
     private final Boolean enableExtendedTracing;
     private final Boolean enableApiTracing;
     private final boolean enableEndToEndTracing;
+    private final String clientCertificate;
+    private final String clientCertificateKey;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -192,6 +194,8 @@ public class SpannerPool {
       this.enableExtendedTracing = options.isEnableExtendedTracing();
       this.enableApiTracing = options.isEnableApiTracing();
       this.enableEndToEndTracing = options.isEndToEndTracingEnabled();
+      this.clientCertificate = options.getClientCertificate();
+      this.clientCertificateKey = options.getClientCertificateKey();
     }
 
     @Override
@@ -393,9 +397,8 @@ public class SpannerPool {
       // Set a custom channel configurator to allow http instead of https.
       builder.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
     }
-    if (options.getClientCertificate() != null && options.getClientCertificateKey() != null) {
-      builder.useClientCert(
-          options.getHost(), options.getClientCertificate(), options.getClientCertificateKey());
+    if (key.clientCertificate != null && key.clientCertificateKey != null) {
+      builder.useClientCert(key.clientCertificate, key.clientCertificateKey);
     }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);
