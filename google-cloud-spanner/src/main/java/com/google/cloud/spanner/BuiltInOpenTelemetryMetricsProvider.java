@@ -94,6 +94,18 @@ final class BuiltInOpenTelemetryMetricsProvider {
     }
   }
 
+  @VisibleForTesting
+  void initialize(
+      OpenTelemetry openTelemetry,
+      String projectId,
+      String client_name,
+      @Nullable Credentials credentials,
+      @Nullable String monitoringHost) {
+    initialize(projectId, client_name, credentials, monitoringHost);
+    this.builtInOpenTelemetryMetricsRecorder =
+        new BuiltInOpenTelemetryMetricsRecorder(openTelemetry, clientAttributes);
+  }
+
   OpenTelemetry getOpenTelemetry() {
     return this.openTelemetry;
   }

@@ -60,7 +60,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTest {
+public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServerTest {
 
   private static final Statement SELECT_RANDOM = Statement.of("SELECT * FROM random");
 
@@ -71,7 +71,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
 
   private static Map<String, String> attributes;
 
-  private static Attributes expectedBaseAttributes;
+  private static Attributes expectedCommonBaseAttributes;
+  private static Attributes expectedCommonRequestAttributes;
 
   private static final long MIN_LATENCY = 0;
 
@@ -91,10 +92,11 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
     String client_name = "spanner-java/";
     openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
     provider.reset();
-    provider.initialize("test-project", client_name, null, null);
+    // provider.getOpenTelemetry().getMeterProvider().
+    provider.initialize(openTelemetry, "test-project", client_name, null, null);
     attributes = provider.getClientAttributes();
 
-    expectedBaseAttributes =
+    expectedCommonBaseAttributes =
         Attributes.builder()
             .put(BuiltInMetricsConstant.PROJECT_ID_KEY, "test-project")
             .put(BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY, "unknown")
@@ -104,6 +106,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
             .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, client_name)
             .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
             .put(BuiltInMetricsConstant.CLIENT_HASH_KEY, attributes.get("client_hash"))
+            .build();
+
+    expectedCommonRequestAttributes =
+        Attributes.builder()
+            .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, "i")
+            .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
+            .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
+            .put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false")
             .build();
   }
 
@@ -139,10 +149,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
                     .setRetryDelayMultiplier(1.0)
                     .setTotalTimeoutDuration(Duration.ofMinutes(10L))
                     .build()));
+    String endpoint = address.getHostString() + ":" + server.getPort();
     spanner =
-        builder
+        SpannerOptions.newBuilder()
             .setProjectId("test-project")
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://" + endpoint)
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
@@ -150,8 +162,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
                     .setFailOnSessionLeak()
                     .setSkipVerifyingBeginTransactionForMuxRW(true)
                     .build())
-            // Setting this to false so that Spanner Options does not register Metrics Tracer
-            // factory again.
             .setBuiltInMetricsEnabled(false)
             .setApiTracerFactory(metricsTracerFactory)
             .build()
@@ -169,8 +179,9 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
 
     long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
     Attributes expectedAttributes =
-        expectedBaseAttributes
+        expectedCommonBaseAttributes
             .toBuilder()
+            .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteStreamingSql")
             .build();
@@ -196,6 +207,11 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
         getMetricData(metricReader, BuiltInMetricsConstant.ATTEMPT_COUNT_NAME);
     assertNotNull(attemptCountMetricData);
     assertThat(getAggregatedValue(attemptCountMetricData, expectedAttributes)).isEqualTo(1);
+
+    MetricData gfeLatencyMetricData =
+        getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
+    long gfeLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
+    assertThat(gfeLatencyValue).isEqualTo(gfeLatencyValue);
   }
 
   @Test
@@ -212,14 +228,15 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
     stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
     Attributes expectedAttributesBeginTransactionOK =
-        expectedBaseAttributes
+        expectedCommonBaseAttributes
             .toBuilder()
+            .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")
             .build();
 
     Attributes expectedAttributesBeginTransactionFailed =
-        expectedBaseAttributes
+        expectedCommonBaseAttributes
             .toBuilder()
             .put(BuiltInMetricsConstant.STATUS_KEY, "UNAVAILABLE")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")

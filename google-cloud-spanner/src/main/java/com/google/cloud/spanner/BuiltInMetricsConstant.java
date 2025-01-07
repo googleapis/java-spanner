@@ -49,7 +49,8 @@ public class BuiltInMetricsConstant {
               OPERATION_LATENCIES_NAME,
               ATTEMPT_LATENCIES_NAME,
               OPERATION_COUNT_NAME,
-              ATTEMPT_COUNT_NAME)
+              ATTEMPT_COUNT_NAME,
+              GFE_LATENCIES_NAME)
           .stream()
           .map(m -> METER_NAME + '/' + m)
           .collect(Collectors.toSet());
