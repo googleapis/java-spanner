@@ -38,10 +38,14 @@ class TraceWrapper {
       AttributeKey.stringKey("transaction.tag");
   private static final AttributeKey<String> STATEMENT_TAG_KEY =
       AttributeKey.stringKey("statement.tag");
+  private static final AttributeKey<String> INSTANCE_NAME_KEY =
+      AttributeKey.stringKey("instance.name");
+  private static final AttributeKey<String> DB_NAME_KEY = AttributeKey.stringKey("db.name");
   private static final AttributeKey<String> DB_STATEMENT_KEY =
       AttributeKey.stringKey("db.statement");
   private static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
       AttributeKey.stringArrayKey("db.statement");
+  private static final AttributeKey<String> DB_TABLE_NAME_KEY = AttributeKey.stringKey("db.table");
   private static final AttributeKey<String> THREAD_NAME_KEY = AttributeKey.stringKey("thread.name");
 
   private final Tracer openCensusTracer;
@@ -61,8 +65,8 @@ class TraceWrapper {
     return spanBuilder(spanName, Attributes.empty());
   }
 
-  ISpan spanBuilder(String spanName, TransactionOption... options) {
-    return spanBuilder(spanName, createTransactionAttributes(options));
+  ISpan spanBuilder(String spanName, Attributes commonAttributes, TransactionOption... options) {
+    return spanBuilder(spanName, createTransactionAttributes(commonAttributes, options));
   }
 
   ISpan spanBuilder(String spanName, Attributes attributes) {
@@ -137,7 +141,9 @@ class TraceWrapper {
     }
   }
 
-  Attributes createTransactionAttributes(TransactionOption... options) {
+  Attributes createTransactionAttributes(
+      Attributes commonAttributes, TransactionOption... options) {
+    AttributesBuilder builder = commonAttributes.toBuilder();
     if (options != null && options.length > 0) {
       Optional<TagOption> tagOption =
           Arrays.stream(options)
@@ -145,10 +151,10 @@ class TraceWrapper {
               .map(option -> (TagOption) option)
               .findAny();
       if (tagOption.isPresent()) {
-        return Attributes.of(TRANSACTION_TAG_KEY, tagOption.get().getTag());
+        builder.put(TRANSACTION_TAG_KEY, tagOption.get().getTag());
       }
     }
-    return Attributes.empty();
+    return builder.build();
   }
 
   Attributes createStatementAttributes(Statement statement, Options options) {
@@ -183,6 +189,22 @@ class TraceWrapper {
       return builder.build();
     }
     return Attributes.empty();
+  }
+
+  Attributes createTableAttributes(String tableName, Options options) {
+    AttributesBuilder builder = Attributes.builder();
+    builder.put(DB_TABLE_NAME_KEY, tableName);
+    if (options != null && options.hasTag()) {
+      builder.put(STATEMENT_TAG_KEY, options.tag());
+    }
+    return builder.build();
+  }
+
+  Attributes createCommonAttributes(DatabaseId db) {
+    AttributesBuilder builder = Attributes.builder();
+    builder.put(DB_NAME_KEY, db.getDatabase());
+    builder.put(INSTANCE_NAME_KEY, db.getInstanceId().getInstance());
+    return builder.build();
   }
 
   private static String getTraceThreadName() {

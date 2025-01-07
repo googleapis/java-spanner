@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -1185,6 +1186,37 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
       assertThat(res.get(10L, TimeUnit.SECONDS)).isNull();
     }
+  }
+
+  @Test
+  public void testAbandonedAsyncTransactionManager_rollbackFails() throws Exception {
+    mockSpanner.setRollbackExecutionTime(
+        SimulatedExecutionTime.ofException(Status.PERMISSION_DENIED.asRuntimeException()));
+
+    boolean gotException = false;
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, Long> updateCount =
+              transactionContextFuture.then(
+                  (transactionContext, ignored) ->
+                      transactionContext.executeUpdateAsync(UPDATE_STATEMENT),
+                  executor);
+          assertEquals(1L, updateCount.get().longValue());
+          // Break without committing or rolling back the transaction.
+          break;
+        } catch (AbortedException e) {
+          transactionContextFuture = manager.resetForRetryAsync();
+        }
+      }
+    } catch (SpannerException spannerException) {
+      // The error from the automatically executed Rollback is surfaced when the
+      // AsyncTransactionManager is closed.
+      assertEquals(ErrorCode.PERMISSION_DENIED, spannerException.getErrorCode());
+      gotException = true;
+    }
+    assertTrue(gotException);
   }
 
   private boolean isMultiplexedSessionsEnabled() {

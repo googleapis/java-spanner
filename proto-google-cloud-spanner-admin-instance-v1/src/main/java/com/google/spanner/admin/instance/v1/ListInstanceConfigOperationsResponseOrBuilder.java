@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ public interface ListInstanceConfigOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance configuration [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance configuration long-running operations. Each
+   * operation's name will be
    * prefixed by the name of the instance configuration. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
@@ -42,10 +42,10 @@ public interface ListInstanceConfigOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance configuration [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance configuration long-running operations. Each
+   * operation's name will be
    * prefixed by the name of the instance configuration. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
@@ -56,10 +56,10 @@ public interface ListInstanceConfigOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance configuration [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance configuration long-running operations. Each
+   * operation's name will be
    * prefixed by the name of the instance configuration. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
@@ -70,10 +70,10 @@ public interface ListInstanceConfigOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance configuration [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance configuration long-running operations. Each
+   * operation's name will be
    * prefixed by the name of the instance configuration. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *
@@ -84,10 +84,10 @@ public interface ListInstanceConfigOperationsResponseOrBuilder
    *
    *
    * <pre>
-   * The list of matching instance configuration [long-running
-   * operations][google.longrunning.Operation]. Each operation's name will be
+   * The list of matching instance configuration long-running operations. Each
+   * operation's name will be
    * prefixed by the name of the instance configuration. The operation's
-   * [metadata][google.longrunning.Operation.metadata] field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata.
    * </pre>
    *

@@ -883,6 +883,11 @@ public class SessionPoolOptions {
       return this;
     }
 
+    // The additional BeginTransaction RPC for multiplexed session read-write is causing
+    // unexpected behavior in mock Spanner tests that rely on mocking the BeginTransaction RPC.
+    // Invoking this method with `true` skips sending the BeginTransaction RPC when the multiplexed
+    // session is created for the first time during client initialization.
+    // This is only used for tests.
     @VisibleForTesting
     Builder setSkipVerifyingBeginTransactionForMuxRW(
         boolean skipVerifyingBeginTransactionForMuxRW) {
