@@ -159,6 +159,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
                 SessionPoolOptions.newBuilder()
                     .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
                     .setFailOnSessionLeak()
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
                     .build())
             .setBuiltInMetricsEnabled(false)
             .setApiTracerFactory(metricsTracerFactory)

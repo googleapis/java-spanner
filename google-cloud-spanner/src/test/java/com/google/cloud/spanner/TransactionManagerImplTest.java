@@ -234,6 +234,21 @@ public class TransactionManagerImplTest {
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
+    when(rpc.createSession(
+            Mockito.anyString(),
+            Mockito.anyString(),
+            Mockito.anyMap(),
+            Mockito.eq(null),
+            Mockito.eq(true)))
+        .thenAnswer(
+            invocation ->
+                Session.newBuilder()
+                    .setName(invocation.getArguments()[0] + "/sessions/1")
+                    .setMultiplexed(true)
+                    .setCreateTime(
+                        com.google.protobuf.Timestamp.newBuilder()
+                            .setSeconds(System.currentTimeMillis() * 1000))
+                    .build());
     when(rpc.beginTransactionAsync(
             Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
@@ -300,6 +315,21 @@ public class TransactionManagerImplTest {
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
+    when(rpc.createSession(
+            Mockito.anyString(),
+            Mockito.anyString(),
+            Mockito.anyMap(),
+            Mockito.eq(null),
+            Mockito.eq(true)))
+        .thenAnswer(
+            invocation ->
+                Session.newBuilder()
+                    .setName(invocation.getArguments()[0] + "/sessions/1")
+                    .setMultiplexed(true)
+                    .setCreateTime(
+                        com.google.protobuf.Timestamp.newBuilder()
+                            .setSeconds(System.currentTimeMillis() * 1000))
+                    .build());
     when(rpc.beginTransactionAsync(
             Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(

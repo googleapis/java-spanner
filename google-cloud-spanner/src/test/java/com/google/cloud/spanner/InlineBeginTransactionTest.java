@@ -191,6 +191,13 @@ public class InlineBeginTransactionTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
             .setTrackTransactionStarter()
+            // The extra BeginTransaction RPC for multiplexed session read-write is causing
+            // unexpected behavior in tests having a mock on the BeginTransaction RPC. Therefore,
+            // this is being skipped.
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
+                    .build())
             .build()
             .getService();
   }

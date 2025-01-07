@@ -194,6 +194,11 @@ class ConnectionImpl implements Connection {
    */
   private final ConnectionOptions options;
 
+  enum Caller {
+    APPLICATION,
+    TRANSACTION_RUNNER,
+  }
+
   /** The supported batch modes. */
   enum BatchMode {
     NONE,
@@ -266,6 +271,9 @@ class ConnectionImpl implements Connection {
    * calling beginTransaction or by setting a transaction property while not in autocommit mode.
    */
   private boolean transactionBeginMarked = false;
+
+  /** This field is set to true when a transaction runner is active for this connection. */
+  private boolean transactionRunnerActive = false;
 
   private BatchMode batchMode;
   private UnitOfWorkType unitOfWorkType;
@@ -1164,16 +1172,19 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void commit() {
-    get(commitAsync(CallType.SYNC));
+    get(commitAsync(CallType.SYNC, Caller.APPLICATION));
   }
 
   @Override
   public ApiFuture<Void> commitAsync() {
-    return commitAsync(CallType.ASYNC);
+    return commitAsync(CallType.ASYNC, Caller.APPLICATION);
   }
 
-  private ApiFuture<Void> commitAsync(CallType callType) {
+  ApiFuture<Void> commitAsync(CallType callType, Caller caller) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !transactionRunnerActive || caller == Caller.TRANSACTION_RUNNER,
+        "Cannot call commit when a transaction runner is active");
     maybeAutoCommitOrFlushCurrentUnitOfWork(COMMIT_STATEMENT.getType(), COMMIT_STATEMENT);
     return endCurrentTransactionAsync(callType, commit, COMMIT_STATEMENT);
   }
@@ -1201,16 +1212,19 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void rollback() {
-    get(rollbackAsync(CallType.SYNC));
+    get(rollbackAsync(CallType.SYNC, Caller.APPLICATION));
   }
 
   @Override
   public ApiFuture<Void> rollbackAsync() {
-    return rollbackAsync(CallType.ASYNC);
+    return rollbackAsync(CallType.ASYNC, Caller.APPLICATION);
   }
 
-  private ApiFuture<Void> rollbackAsync(CallType callType) {
+  ApiFuture<Void> rollbackAsync(CallType callType, Caller caller) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !transactionRunnerActive || caller == Caller.TRANSACTION_RUNNER,
+        "Cannot call rollback when a transaction runner is active");
     maybeAutoCommitOrFlushCurrentUnitOfWork(ROLLBACK_STATEMENT.getType(), ROLLBACK_STATEMENT);
     return endCurrentTransactionAsync(callType, rollback, ROLLBACK_STATEMENT);
   }
@@ -1241,6 +1255,27 @@ class ConnectionImpl implements Connection {
       setDefaultTransactionOptions();
     }
     return res;
+  }
+
+  @Override
+  public <T> T runTransaction(TransactionCallable<T> callable) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(!isBatchActive(), "Cannot run transaction while in a batch");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(), "Cannot run transaction when a transaction is already active");
+    ConnectionPreconditions.checkState(
+        !transactionRunnerActive, "A transaction runner is already active for this connection");
+    this.transactionRunnerActive = true;
+    try {
+      return new TransactionRunnerImpl(this).run(callable);
+    } finally {
+      this.transactionRunnerActive = false;
+    }
+  }
+
+  void resetForRetry(UnitOfWork retryUnitOfWork) {
+    retryUnitOfWork.resetForRetry();
+    this.currentUnitOfWork = retryUnitOfWork;
   }
 
   @Override
@@ -2000,7 +2035,7 @@ class ConnectionImpl implements Connection {
     return transaction;
   }
 
-  private UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+  UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
     return getCurrentUnitOfWorkOrStartNewUnitOfWork(
         StatementType.UNKNOWN, /* parsedStatement = */ null, /* internalMetadataQuery = */ false);
   }

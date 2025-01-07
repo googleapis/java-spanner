@@ -107,6 +107,7 @@ class SessionPoolAsyncTransactionManager<I extends SessionFuture>
                 new ApiFutureCallback<Void>() {
                   @Override
                   public void onFailure(Throwable t) {
+                    session.close();
                     res.setException(t);
                   }
 
