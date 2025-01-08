@@ -58,6 +58,11 @@ fi
 INSTALL_OPTS=""
 if [[ $ENABLE_AIRLOCK = 'true' ]]; then
   INSTALL_OPTS="-Pairlock-trusted"
+  wget -q https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -O /tmp/maven.zip && \
+    unzip /tmp/maven.zip -d /tmp/maven && \
+    mv /tmp/maven/apache-maven-3.9.9 /usr/local/lib/maven && \
+    rm /tmp/maven.zip && \
+    ln -s $JAVA_HOME/lib $JAVA_HOME/conf
 fi
 
 # this should run maven enforcer
