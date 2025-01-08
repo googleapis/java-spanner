@@ -159,6 +159,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     default boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
       return false;
     }
+
+    /** it requests the initial prefetch chunks from gRPC stream */
+    default void requestPrefetchChunks() {};
   }
 
   static double valueProtoToFloat64(com.google.protobuf.Value proto) {

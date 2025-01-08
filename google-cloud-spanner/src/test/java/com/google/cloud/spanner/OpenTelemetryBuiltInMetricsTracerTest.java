@@ -144,6 +144,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
                 SessionPoolOptions.newBuilder()
                     .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
                     .setFailOnSessionLeak()
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
                     .build())
             // Setting this to false so that Spanner Options does not register Metrics Tracer
             // factory again.
