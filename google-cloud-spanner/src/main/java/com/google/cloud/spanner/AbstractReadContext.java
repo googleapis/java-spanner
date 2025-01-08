@@ -797,7 +797,6 @@ abstract class AbstractReadContext
                     isRouteToLeader());
             session.markUsed(clock.instant());
             stream.setCall(call, request.getTransaction().hasBegin());
-            call.request(prefetchChunks);
             return stream;
           }
 
@@ -992,7 +991,6 @@ abstract class AbstractReadContext
                     isRouteToLeader());
             session.markUsed(clock.instant());
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
-            call.request(prefetchChunks);
             return stream;
           }
 
