@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -39,6 +40,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     implements CloseableIterator<PartialResultSet> {
   private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
   static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
+  private final int prefetchChunks;
   private AsyncResultSet.StreamMessageListener streamMessageListener;
 
   private final ConsumerImpl consumer;
@@ -60,6 +62,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   GrpcStreamIterator(
       Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
     this.statement = statement;
+    this.prefetchChunks = prefetchChunks;
     this.consumer = new ConsumerImpl(cancelQueryWhenClientIsClosed);
     // One extra to allow for END_OF_STREAM message.
     this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
@@ -100,6 +103,13 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     if (call != null) {
       call.cancel(message);
     }
+  }
+
+  @Override
+  @InternalApi
+  public void requestPrefetchChunks() {
+    Preconditions.checkState(call != null, "The StreamingCall object is not initialized");
+    call.request(prefetchChunks);
   }
 
   @Override

@@ -814,6 +814,12 @@
     <className>com/google/cloud/spanner/connection/TransactionRetryListener</className>
     <method>void retryDmlAsPartitionedDmlFailed(java.util.UUID, com.google.cloud.spanner.Statement, java.lang.Throwable)</method>
   </difference>
-  
+
+  <!-- Added transaction runner. -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.lang.Object runTransaction(com.google.cloud.spanner.connection.Connection$TransactionCallable)</method>
+  </difference>
   
 </differences>
