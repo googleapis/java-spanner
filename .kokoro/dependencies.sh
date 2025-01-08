@@ -63,6 +63,7 @@ if [[ $ENABLE_AIRLOCK = 'true' ]]; then
     mv /tmp/maven/apache-maven-3.9.9 /usr/local/lib/maven && \
     rm /tmp/maven.zip && \
     ln -s $JAVA_HOME/lib $JAVA_HOME/conf
+    ls -la /usr/local/lib/maven
 fi
 
 # this should run maven enforcer
