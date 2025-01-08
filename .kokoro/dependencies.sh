@@ -60,15 +60,15 @@ if [[ $ENABLE_AIRLOCK = 'true' ]]; then
   INSTALL_OPTS="-Pairlock-trusted"
   wget -q https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -O /tmp/maven.zip && \
     unzip /tmp/maven.zip -d /tmp/maven && \
-    cp -r  /tmp/maven/apache-maven-3.9.9/* /usr/local/lib/maven && \
+    rm -r /usr/local/lib/maven && \
+    mv  /tmp/maven/apache-maven-3.9.9 /usr/local/lib/maven && \
     rm /tmp/maven.zip && \
-    ln -s $JAVA_HOME/lib $JAVA_HOME/conf
     ls -la /usr/local/lib/maven
 fi
 
 # this should run maven enforcer
 retry_with_backoff 3 10 \
-  mvn install -B -V \
+  mvn install -U -B -V \
     ${INSTALL_OPTS} \
     -DskipTests=true \
     -Dmaven.javadoc.skip=true \
