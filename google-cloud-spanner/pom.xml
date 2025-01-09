@@ -270,7 +270,7 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-monitoring-v3</artifactId>
-      <version>3.55.0</version>
+      <version>3.56.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
