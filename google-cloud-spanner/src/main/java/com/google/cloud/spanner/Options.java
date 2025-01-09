@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
@@ -72,6 +73,25 @@ public final class Options implements Serializable {
         if (e.proto.equals(proto)) return e;
       }
       return RpcOrderBy.UNSPECIFIED;
+    }
+  }
+
+  public enum RpcLockHint {
+    UNSPECIFIED(LockHint.LOCK_HINT_UNSPECIFIED),
+    SHARED(LockHint.LOCK_HINT_SHARED),
+    Exclusve(LockHint.LOCK_HINT_EXCLUSIVE);
+
+    private final LockHint proto;
+
+    RpcLockHint(LockHint proto) {
+      this.proto = Preconditions.checkNotNull(proto);
+    }
+
+    public static RpcLockHint fromProto(LockHint proto) {
+      for (RpcLockHint e : RpcLockHint.values()) {
+        if (e.proto.equals(proto)) return e;
+      }
+      return RpcLockHint.UNSPECIFIED;
     }
   }
 
@@ -158,6 +178,10 @@ public final class Options implements Serializable {
   /** Specifies the order_by to use for the RPC. */
   public static ReadOption orderBy(RpcOrderBy orderBy) {
     return new OrderByOption(orderBy);
+  }
+
+  public static ReadOption lockHint(RpcLockHint orderBy) {
+    return new LockHintOption(orderBy);
   }
 
   /**
@@ -469,6 +493,7 @@ public final class Options implements Serializable {
   private DirectedReadOptions directedReadOptions;
   private DecodeMode decodeMode;
   private RpcOrderBy orderBy;
+  private RpcLockHint lockHint;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -605,6 +630,14 @@ public final class Options implements Serializable {
     return orderBy == null ? null : orderBy.proto;
   }
 
+  boolean hasLockHint() {
+    return lockHint != null;
+  }
+
+  LockHint lockHint() {
+    return lockHint == null ? null : lockHint.proto;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -661,6 +694,9 @@ public final class Options implements Serializable {
     if (orderBy != null) {
       b.append("orderBy: ").append(orderBy).append(' ');
     }
+    if (lockHint != null) {
+      b.append("lockHint: ").append(lockHint).append(' ');
+    }
     return b.toString();
   }
 
@@ -700,7 +736,8 @@ public final class Options implements Serializable {
         && Objects.equals(withExcludeTxnFromChangeStreams(), that.withExcludeTxnFromChangeStreams())
         && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
         && Objects.equals(directedReadOptions(), that.directedReadOptions())
-        && Objects.equals(orderBy(), that.orderBy());
+        && Objects.equals(orderBy(), that.orderBy())
+        && Objects.equals(lockHint(), that.lockHint());
   }
 
   @Override
@@ -759,6 +796,9 @@ public final class Options implements Serializable {
     }
     if (orderBy != null) {
       result = 31 * result + orderBy.hashCode();
+    }
+    if (lockHint != null) {
+      result = 31 * result + lockHint.hashCode();
     }
     return result;
   }
@@ -850,6 +890,19 @@ public final class Options implements Serializable {
     @Override
     void appendToOptions(Options options) {
       options.orderBy = orderBy;
+    }
+  }
+
+  static class LockHintOption extends InternalOption implements ReadOption {
+    private final RpcLockHint lockHint;
+
+    LockHintOption(RpcLockHint lockHint) {
+      this.lockHint = lockHint;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.lockHint = lockHint;
     }
   }
 

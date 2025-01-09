@@ -52,6 +52,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options.RpcLockHint;
 import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
@@ -90,6 +91,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -1752,6 +1754,27 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ReadRequest request = requests.get(0);
     assertEquals(OrderBy.ORDER_BY_NO_ORDER, request.getOrderBy());
+  }
+
+  @Test
+  public void testExecuteReadWithLockHintOption() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .read(
+                READ_TABLE_NAME,
+                KeySet.singleKey(Key.of(1L)),
+                READ_COLUMN_NAMES,
+                Options.lockHint(RpcLockHint.Exclusve))) {
+      consumeResults(resultSet);
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertEquals(LockHint.LOCK_HINT_EXCLUSIVE, request.getLockHint());
   }
 
   @Test

@@ -951,6 +951,9 @@ abstract class AbstractReadContext
     } else if (defaultDirectedReadOptions != null) {
       builder.setDirectedReadOptions(defaultDirectedReadOptions);
     }
+    if (readOptions.hasLockHint()) {
+      builder.setLockHint(readOptions.lockHint());
+    }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
