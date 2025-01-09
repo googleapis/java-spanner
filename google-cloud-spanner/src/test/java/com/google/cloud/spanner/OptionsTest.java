@@ -410,7 +410,7 @@ public class OptionsTest {
     assertEquals(optionsWithSharedLockHint1, optionsWithSharedLockHint2);
 
     Options optionsWithExclusiveLockOrder =
-        Options.fromReadOptions(Options.lockHint(RpcLockHint.Exclusve));
+        Options.fromReadOptions(Options.lockHint(RpcLockHint.EXCLUSIVE));
     assertNotEquals(optionsWithSharedLockHint1, optionsWithExclusiveLockOrder);
   }
 

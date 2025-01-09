@@ -1767,7 +1767,7 @@ public class DatabaseClientImplTest {
                 READ_TABLE_NAME,
                 KeySet.singleKey(Key.of(1L)),
                 READ_COLUMN_NAMES,
-                Options.lockHint(RpcLockHint.Exclusve))) {
+                Options.lockHint(RpcLockHint.EXCLUSIVE))) {
       consumeResults(resultSet);
     }
 

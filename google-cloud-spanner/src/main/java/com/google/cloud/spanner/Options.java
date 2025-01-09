@@ -79,7 +79,7 @@ public final class Options implements Serializable {
   public enum RpcLockHint {
     UNSPECIFIED(LockHint.LOCK_HINT_UNSPECIFIED),
     SHARED(LockHint.LOCK_HINT_SHARED),
-    Exclusve(LockHint.LOCK_HINT_EXCLUSIVE);
+    EXCLUSIVE(LockHint.LOCK_HINT_EXCLUSIVE);
 
     private final LockHint proto;
 
