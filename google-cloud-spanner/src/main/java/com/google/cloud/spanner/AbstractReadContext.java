@@ -951,7 +951,7 @@ abstract class AbstractReadContext
     } else if (defaultDirectedReadOptions != null) {
       builder.setDirectedReadOptions(defaultDirectedReadOptions);
     }
-    if (readOptions.hasLockHint()) {
+    if (readOptions.hasLockHint() && !isReadOnly()) {
       builder.setLockHint(readOptions.lockHint());
     }
     final int prefetchChunks =

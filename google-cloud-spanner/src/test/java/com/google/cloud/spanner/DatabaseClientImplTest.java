@@ -1757,7 +1757,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testExecuteReadWithLockHintOption() {
+  public void testUnsupportedTransactionWithLockHintOption() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet resultSet =
@@ -1770,6 +1770,32 @@ public class DatabaseClientImplTest {
                 Options.lockHint(RpcLockHint.EXCLUSIVE))) {
       consumeResults(resultSet);
     }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    // lock hint is only supported in  ReadWriteTransaction
+    assertEquals(LockHint.LOCK_HINT_UNSPECIFIED, request.getLockHint());
+  }
+
+  @Test
+  public void testReadWriteTransactionWithLockHint() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.lockHint(RpcLockHint.EXCLUSIVE))) {
+            consumeResults(resultSet);
+          }
+          return null;
+        });
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
     assertThat(requests).hasSize(1);
