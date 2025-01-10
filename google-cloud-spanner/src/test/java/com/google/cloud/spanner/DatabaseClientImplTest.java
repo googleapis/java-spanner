@@ -52,6 +52,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options.RpcLockHint;
 import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
@@ -90,6 +91,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -270,6 +272,9 @@ public class DatabaseClientImplTest {
   @Test
   public void
       testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
+    assumeFalse(
+        "Session pool maintainer test skipped for multiplexed sessions",
+        isMultiplexedSessionsEnabledForRW());
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -347,6 +352,9 @@ public class DatabaseClientImplTest {
   @Test
   public void
       testPoolMaintainer_whenInactiveTransactionAndSessionExistsOnBackend_removeSessionsFromPool() {
+    assumeFalse(
+        "Session leaks tests are skipped for multiplexed sessions",
+        isMultiplexedSessionsEnabledForRW());
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -482,6 +490,9 @@ public class DatabaseClientImplTest {
    */
   @Test
   public void testPoolMaintainer_whenPDMLFollowedByInactiveTransaction_removeSessionsFromPool() {
+    assumeFalse(
+        "Session leaks tests are skipped for multiplexed sessions",
+        isMultiplexedSessionsEnabledForRW());
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -1743,6 +1754,53 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ReadRequest request = requests.get(0);
     assertEquals(OrderBy.ORDER_BY_NO_ORDER, request.getOrderBy());
+  }
+
+  @Test
+  public void testUnsupportedTransactionWithLockHintOption() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .read(
+                READ_TABLE_NAME,
+                KeySet.singleKey(Key.of(1L)),
+                READ_COLUMN_NAMES,
+                Options.lockHint(RpcLockHint.EXCLUSIVE))) {
+      consumeResults(resultSet);
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    // lock hint is only supported in  ReadWriteTransaction
+    assertEquals(LockHint.LOCK_HINT_UNSPECIFIED, request.getLockHint());
+  }
+
+  @Test
+  public void testReadWriteTransactionWithLockHint() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.lockHint(RpcLockHint.EXCLUSIVE))) {
+            consumeResults(resultSet);
+          }
+          return null;
+        });
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertEquals(LockHint.LOCK_HINT_EXCLUSIVE, request.getLockHint());
   }
 
   @Test
@@ -3085,6 +3143,7 @@ public class DatabaseClientImplTest {
                         .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
             // No additional requests should have been sent by the client.
             // Note that in case of the use of multiplexed sessions, then we have 2 requests:
+            // Note that in case of the use of regular sessions, then we have 1 request:
             // 1. BatchCreateSessions for the session pool.
             // 2. CreateSession for the multiplexed session.
             assertThat(mockSpanner.getRequests())
@@ -3211,9 +3270,16 @@ public class DatabaseClientImplTest {
               ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
         }
 
-        assertThrows(
-            ResourceNotFoundException.class,
-            () -> dbClient.readWriteTransaction().run(transaction -> null));
+        if (!spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+          // We only verify this for read-write transactions if we are not using multiplexed
+          // sessions. For multiplexed sessions, we don't need any special handling, as deleting the
+          // database will also invalidate the multiplexed session, and trying to continue to use it
+          // will continue to return an error.
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> dbClient.readWriteTransaction().run(transaction -> null));
+        }
+
         assertThat(mockSpanner.getRequests()).isEmpty();
         // Now get a new database client. Normally multiple calls to Spanner#getDatabaseClient will
         // return the same instance, but not when the instance has been invalidated by a
@@ -3300,13 +3366,18 @@ public class DatabaseClientImplTest {
       Thread.sleep(1L);
     }
     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+    int expectedMinSessions =
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()
+            ? minSessions
+            : minSessions - 1;
     Long res =
         client
             .readWriteTransaction()
             .allowNestedTransaction()
             .run(
                 transaction -> {
-                  assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                  assertThat(client.pool.getNumberOfSessionsInPool())
+                      .isEqualTo(expectedMinSessions);
                   return transaction.executeUpdate(UPDATE_STATEMENT);
                 });
     assertThat(res).isEqualTo(UPDATE_COUNT);
@@ -3333,6 +3404,9 @@ public class DatabaseClientImplTest {
     }
     assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
     assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+    // When read-write transaction uses multiplexed sessions, then sessions are not checked out from
+    // the session pool.
+    int expectedMinSessions = isMultiplexedSessionsEnabledForRW() ? minSessions : minSessions - 1;
     Long res =
         client1
             .readWriteTransaction()
@@ -3341,7 +3415,8 @@ public class DatabaseClientImplTest {
                 transaction -> {
                   // Client1 should have 1 session checked out.
                   // Client2 should have 0 sessions checked out.
-                  assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                  assertThat(client1.pool.getNumberOfSessionsInPool())
+                      .isEqualTo(expectedMinSessions);
                   assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
                   Long add =
                       client2
@@ -3350,9 +3425,9 @@ public class DatabaseClientImplTest {
                               transaction1 -> {
                                 // Both clients should now have 1 session checked out.
                                 assertThat(client1.pool.getNumberOfSessionsInPool())
-                                    .isEqualTo(minSessions - 1);
+                                    .isEqualTo(expectedMinSessions);
                                 assertThat(client2.pool.getNumberOfSessionsInPool())
-                                    .isEqualTo(minSessions - 1);
+                                    .isEqualTo(expectedMinSessions);
                                 try (ResultSet rs = transaction1.executeQuery(SELECT1)) {
                                   if (rs.next()) {
                                     return rs.getLong(0);
@@ -5090,6 +5165,9 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testSessionPoolExhaustedError_containsStackTraces() {
+    assumeFalse(
+        "Session pool tests are skipped for multiplexed sessions",
+        isMultiplexedSessionsEnabledForRW());
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
@@ -5449,5 +5527,12 @@ public class DatabaseClientImplTest {
       return false;
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+  }
+
+  private boolean isMultiplexedSessionsEnabledForRW() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }

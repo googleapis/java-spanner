@@ -538,6 +538,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadOnlySessionInPool() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
@@ -568,6 +571,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionSelect() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -582,6 +588,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionRead() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -597,6 +606,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadWithOptimisticLock() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction(Options.optimisticLock());
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -612,6 +624,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -628,6 +643,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadRow() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -638,6 +656,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadRowUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -649,6 +670,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionUpdate() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () -> runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
@@ -656,6 +680,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionBatchUpdate() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -666,6 +693,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionBuffer() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -678,6 +708,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionSelectInvalidatedDuringTransaction() {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     final AtomicInteger attempt = new AtomicInteger();
     assertThrowsSessionNotFoundIfShouldFail(
@@ -702,6 +735,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadInvalidatedDuringTransaction() {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     final AtomicInteger attempt = new AtomicInteger();
     assertThrowsSessionNotFoundIfShouldFail(
@@ -728,6 +764,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadUsingIndexInvalidatedDuringTransaction() {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     final AtomicInteger attempt = new AtomicInteger();
     assertThrowsSessionNotFoundIfShouldFail(
@@ -756,6 +795,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadRowInvalidatedDuringTransaction() {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     final AtomicInteger attempt = new AtomicInteger();
     assertThrowsSessionNotFoundIfShouldFail(
@@ -778,6 +820,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadRowUsingIndexInvalidatedDuringTransaction() {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     TransactionRunner runner = client.readWriteTransaction();
     final AtomicInteger attempt = new AtomicInteger();
     assertThrowsSessionNotFoundIfShouldFail(
@@ -803,6 +848,9 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReadOnlySessionInPool() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -825,6 +873,9 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerSelect() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -847,6 +898,9 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerRead() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -870,6 +924,9 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReadUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -893,6 +950,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void transactionManagerReadRow() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -914,6 +974,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void transactionManagerReadRowUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -937,6 +1000,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void transactionManagerUpdate() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -958,6 +1024,9 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void transactionManagerAborted_thenSessionNotFoundOnBeginTransaction()
       throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     int attempt = 0;
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
@@ -990,6 +1059,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void transactionManagerBatchUpdate() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -1013,6 +1085,9 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerBuffer() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -1037,6 +1112,9 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerSelectInvalidatedDuringTransaction() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
@@ -1083,6 +1161,9 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReadInvalidatedDuringTransaction() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
@@ -1131,6 +1212,9 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void transactionManagerReadUsingIndexInvalidatedDuringTransaction()
       throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
@@ -1180,6 +1264,9 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReadRowInvalidatedDuringTransaction() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
@@ -1226,6 +1313,9 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void transactionManagerReadRowUsingIndexInvalidatedDuringTransaction()
       throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
@@ -1283,6 +1373,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void write() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     assertThrowsSessionNotFoundIfShouldFail(
         () -> client.write(Collections.singletonList(Mutation.delete("FOO", KeySet.all()))));
   }
@@ -1300,17 +1393,26 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncRunnerSelect() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncRunner_withReadFunction(input -> input.executeQueryAsync(SELECT1AND2));
   }
 
   @Test
   public void asyncRunnerRead() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncRunner_withReadFunction(
         input -> input.readAsync("FOO", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   @Test
   public void asyncRunnerReadUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncRunner_withReadFunction(
         input ->
             input.readUsingIndexAsync(
@@ -1319,6 +1421,9 @@ public class RetryOnInvalidatedSessionTest {
 
   private void asyncRunner_withReadFunction(
       final Function<TransactionContext, AsyncResultSet> readFunction) throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
     try {
       AsyncRunner runner = client.runAsync();
@@ -1356,6 +1461,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncRunnerReadRow() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -1367,6 +1475,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncRunnerReadRowUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -1380,6 +1491,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncRunnerUpdate() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () -> get(runner.runAsync(txn -> txn.executeUpdateAsync(UPDATE_STATEMENT), executor)));
@@ -1387,6 +1501,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncRunnerBatchUpdate() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -1398,6 +1515,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncRunnerBuffer() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -1412,17 +1532,26 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerAsyncSelect() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readAsync(input -> input.executeQueryAsync(SELECT1AND2));
   }
 
   @Test
   public void asyncTransactionManagerAsyncRead() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readAsync(
         input -> input.readAsync("FOO", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerAsyncReadUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readAsync(
         input ->
             input.readUsingIndexAsync(
@@ -1431,6 +1560,9 @@ public class RetryOnInvalidatedSessionTest {
 
   private void asyncTransactionManager_readAsync(
       final Function<TransactionContext, AsyncResultSet> fn) throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
     try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
       TransactionContextFuture context = manager.beginAsync();
@@ -1475,17 +1607,26 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerSelect() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readSync(input -> input.executeQuery(SELECT1AND2));
   }
 
   @Test
   public void asyncTransactionManagerRead() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readSync(
         input -> input.read("FOO", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerReadUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readSync(
         input ->
             input.readUsingIndex("FOO", "idx", KeySet.all(), Collections.singletonList("BAR")));
@@ -1493,6 +1634,9 @@ public class RetryOnInvalidatedSessionTest {
 
   private void asyncTransactionManager_readSync(final Function<TransactionContext, ResultSet> fn)
       throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
     try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
       TransactionContextFuture context = manager.beginAsync();
@@ -1524,6 +1668,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerReadRow() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readRowFunction(
         input ->
             ApiFutures.immediateFuture(
@@ -1532,6 +1679,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerReadRowUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readRowFunction(
         input ->
             ApiFutures.immediateFuture(
@@ -1541,12 +1691,18 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerReadRowAsync() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readRowFunction(
         input -> input.readRowAsync("FOO", Key.of("foo"), Collections.singletonList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerReadRowUsingIndexAsync() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_readRowFunction(
         input ->
             input.readRowUsingIndexAsync(
@@ -1555,6 +1711,9 @@ public class RetryOnInvalidatedSessionTest {
 
   private void asyncTransactionManager_readRowFunction(
       final Function<TransactionContext, ApiFuture<Struct>> fn) throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
     try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
       TransactionContextFuture context = manager.beginAsync();
@@ -1576,18 +1735,27 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerUpdateAsync() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_updateFunction(
         input -> input.executeUpdateAsync(UPDATE_STATEMENT), UPDATE_COUNT);
   }
 
   @Test
   public void asyncTransactionManagerUpdate() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_updateFunction(
         input -> ApiFutures.immediateFuture(input.executeUpdate(UPDATE_STATEMENT)), UPDATE_COUNT);
   }
 
   @Test
   public void asyncTransactionManagerBatchUpdateAsync() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_updateFunction(
         input -> input.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)),
         new long[] {UPDATE_COUNT, UPDATE_COUNT});
@@ -1595,6 +1763,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerBatchUpdate() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     asyncTransactionManager_updateFunction(
         input ->
             ApiFutures.immediateFuture(
@@ -1604,6 +1775,9 @@ public class RetryOnInvalidatedSessionTest {
 
   private <T> void asyncTransactionManager_updateFunction(
       final Function<TransactionContext, ApiFuture<T>> fn, T expected) throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
       TransactionContextFuture transaction = manager.beginAsync();
       while (true) {

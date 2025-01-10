@@ -171,6 +171,9 @@ public class SessionPoolLeakTest {
 
   @Test
   public void testReadWriteTransactionExceptionOnCreateSession() {
+    assumeFalse(
+        "Session Leaks do not occur with Multiplexed Sessions",
+        isMultiplexedSessionsEnabledForRW());
     readWriteTransactionTest(
         () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(
@@ -180,6 +183,9 @@ public class SessionPoolLeakTest {
 
   @Test
   public void testReadWriteTransactionExceptionOnBegin() {
+    assumeFalse(
+        "Session Leaks do not occur with Multiplexed Sessions",
+        isMultiplexedSessionsEnabledForRW());
     readWriteTransactionTest(
         () ->
             mockSpanner.setBeginTransactionExecutionTime(
@@ -200,6 +206,9 @@ public class SessionPoolLeakTest {
 
   @Test
   public void testTransactionManagerExceptionOnCreateSession() {
+    assumeFalse(
+        "Session Leaks do not occur with Multiplexed Sessions",
+        isMultiplexedSessionsEnabledForRW());
     transactionManagerTest(
         () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(
@@ -209,6 +218,9 @@ public class SessionPoolLeakTest {
 
   @Test
   public void testTransactionManagerExceptionOnBegin() {
+    assumeFalse(
+        "Session Leaks do not occur with Multiplexed Sessions",
+        isMultiplexedSessionsEnabledForRW());
     assertThat(pool.getNumberOfSessionsInPool(), is(equalTo(0)));
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
@@ -228,5 +240,12 @@ public class SessionPoolLeakTest {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
     assertEquals(expectedNumberOfSessionsAfterExecution, pool.getNumberOfSessionsInPool());
+  }
+
+  private boolean isMultiplexedSessionsEnabledForRW() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }
