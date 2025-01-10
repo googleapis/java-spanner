@@ -29,8 +29,6 @@ import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.opentelemetry.api.OpenTelemetry;
@@ -53,24 +51,33 @@ final class BuiltInOpenTelemetryMetricsProvider {
 
   public static BuiltInOpenTelemetryMetricsProvider INSTANCE =
       new BuiltInOpenTelemetryMetricsProvider();
-
   private static final Logger logger =
       Logger.getLogger(BuiltInOpenTelemetryMetricsProvider.class.getName());
-
-  private final Cache<String, Map<String, String>> clientAttributesCache =
-      CacheBuilder.newBuilder().maximumSize(1000).build();
-
   private static String taskId;
-
   private OpenTelemetry openTelemetry;
-
   private Map<String, String> clientAttributes;
-
   private boolean isInitialized;
-
   private BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder;
 
   private BuiltInOpenTelemetryMetricsProvider() {};
+
+  @VisibleForTesting
+  void reset() {
+    isInitialized = false;
+  }
+
+  @VisibleForTesting
+  void initialize(
+      OpenTelemetry openTelemetry,
+      String projectId,
+      String client_name,
+      @Nullable Credentials credentials,
+      @Nullable String monitoringHost) {
+    initialize(projectId, client_name, credentials, monitoringHost);
+    // Use injected opentelemetry object for testing.
+    this.builtInOpenTelemetryMetricsRecorder =
+        new BuiltInOpenTelemetryMetricsRecorder(openTelemetry, clientAttributes);
+  }
 
   void initialize(
       String projectId,
@@ -94,18 +101,6 @@ final class BuiltInOpenTelemetryMetricsProvider {
     }
   }
 
-  @VisibleForTesting
-  void initialize(
-      OpenTelemetry openTelemetry,
-      String projectId,
-      String client_name,
-      @Nullable Credentials credentials,
-      @Nullable String monitoringHost) {
-    initialize(projectId, client_name, credentials, monitoringHost);
-    this.builtInOpenTelemetryMetricsRecorder =
-        new BuiltInOpenTelemetryMetricsRecorder(openTelemetry, clientAttributes);
-  }
-
   OpenTelemetry getOpenTelemetry() {
     return this.openTelemetry;
   }
@@ -116,11 +111,6 @@ final class BuiltInOpenTelemetryMetricsProvider {
 
   BuiltInOpenTelemetryMetricsRecorder getBuiltInOpenTelemetryMetricsRecorder() {
     return this.builtInOpenTelemetryMetricsRecorder;
-  }
-
-  @VisibleForTesting
-  void reset() {
-    isInitialized = false;
   }
 
   private Map<String, String> createClientAttributes(String projectId, String client_name) {

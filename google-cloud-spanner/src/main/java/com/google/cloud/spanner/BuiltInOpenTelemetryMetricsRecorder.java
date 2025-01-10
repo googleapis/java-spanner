@@ -17,7 +17,6 @@
 package com.google.cloud.spanner;
 
 import com.google.api.gax.core.GaxProperties;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
@@ -41,6 +40,7 @@ public class BuiltInOpenTelemetryMetricsRecorder {
    * </ul>
    *
    * @param openTelemetry OpenTelemetry instance
+   * @param clientAttributes Client attributes for metrics
    */
   public BuiltInOpenTelemetryMetricsRecorder(
       OpenTelemetry openTelemetry, Map<String, String> clientAttributes) {
@@ -79,8 +79,7 @@ public class BuiltInOpenTelemetryMetricsRecorder {
     }
   }
 
-  @VisibleForTesting
-  Attributes toOtelAttributes(Map<String, String> attributes) {
+  private Attributes toOtelAttributes(Map<String, String> attributes) {
     Preconditions.checkNotNull(attributes, "Attributes map cannot be null");
     AttributesBuilder attributesBuilder = Attributes.builder();
     attributes.forEach(attributesBuilder::put);

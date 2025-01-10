@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.core.GaxProperties;
 import com.google.cloud.spanner.Options.TagOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SpannerOptions.TracingFramework;
@@ -46,6 +47,12 @@ class TraceWrapper {
   private static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
       AttributeKey.stringArrayKey("db.statement");
   private static final AttributeKey<String> DB_TABLE_NAME_KEY = AttributeKey.stringKey("db.table");
+  private static final AttributeKey<String> GCP_CLIENT_SERVICE_KEY =
+      AttributeKey.stringKey("gcp.client.service");
+  private static final AttributeKey<String> GCP_CLIENT_VERSION_KEY =
+      AttributeKey.stringKey("gcp.client.version");
+  private static final AttributeKey<String> GCP_CLIENT_REPO_KEY =
+      AttributeKey.stringKey("gcp.client.repo");
   private static final AttributeKey<String> THREAD_NAME_KEY = AttributeKey.stringKey("thread.name");
 
   private final Tracer openCensusTracer;
@@ -204,6 +211,9 @@ class TraceWrapper {
     AttributesBuilder builder = Attributes.builder();
     builder.put(DB_NAME_KEY, db.getDatabase());
     builder.put(INSTANCE_NAME_KEY, db.getInstanceId().getInstance());
+    builder.put(GCP_CLIENT_SERVICE_KEY, "spanner");
+    builder.put(GCP_CLIENT_REPO_KEY, "googleapis/java-spanner");
+    builder.put(GCP_CLIENT_VERSION_KEY, GaxProperties.getLibraryVersion(TraceWrapper.class));
     return builder.build();
   }
 
