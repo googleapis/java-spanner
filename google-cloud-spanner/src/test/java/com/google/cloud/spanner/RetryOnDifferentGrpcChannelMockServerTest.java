@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
@@ -59,7 +60,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import static org.junit.Assume.assumeFalse;
 
 @RunWith(JUnit4.class)
 public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServerTest {
