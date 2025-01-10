@@ -112,9 +112,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   public void testSingleUseQuery_withoutSqlStatement() {
     try (Connection connection = createTestConnection(getBaseUrl())) {
       connection.setAutocommit(true);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       try (ResultSet resultSet = connection.executeQuery(SELECT1_STATEMENT)) {
         assertTrue(resultSet.next());
         assertFalse(resultSet.next());
@@ -153,9 +150,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
 
     try (Connection connection = createTestConnection(getBaseUrl())) {
       connection.setAutocommit(true);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       try (ResultSet resultSet = connection.executeQuery(SELECT1_STATEMENT)) {
         assertTrue(resultSet.next());
         assertFalse(resultSet.next());
@@ -192,9 +186,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   public void testSingleUseQuery() {
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(true);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       try (ResultSet resultSet = connection.executeQuery(SELECT1_STATEMENT)) {
         assertTrue(resultSet.next());
         assertFalse(resultSet.next());
@@ -230,9 +221,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(true);
       connection.executeUpdate(INSERT_STATEMENT);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
     }
     assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
     List<SpanData> spans = spanExporter.getFinishedSpanItems();
@@ -269,9 +257,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
       connection.executeUpdate(INSERT_STATEMENT);
       connection.executeUpdate(INSERT_STATEMENT);
       connection.runBatch();
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
     }
     assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
     List<SpanData> spans = spanExporter.getFinishedSpanItems();
@@ -313,9 +298,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
 
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(true);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.execute(Statement.of(ddl));
     }
     assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
@@ -334,9 +316,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
 
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(true);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.startBatchDdl();
       connection.execute(Statement.of(ddl1));
       connection.execute(Statement.of(ddl2));
@@ -354,9 +333,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   public void testMultiUseReadOnlyQueries() {
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(false);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.setReadOnly(true);
       twice(
           () -> {
@@ -388,9 +364,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   public void testMultiUseReadWriteQueries() {
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(false);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.setReadOnly(false);
       twice(
           () -> {
@@ -425,9 +398,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   public void testMultiUseReadWriteUpdates() {
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(false);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.setReadOnly(false);
       assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
       assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
@@ -457,9 +427,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   public void testMultiUseReadWriteBatchUpdates() {
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(false);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.setReadOnly(false);
 
       twice(
@@ -500,9 +467,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   public void testMultiUseReadWriteAborted() {
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(false);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.setReadOnly(false);
       assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
       mockSpanner.abortNextStatement();
@@ -551,9 +515,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
 
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(false);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.setReadOnly(false);
       connection.setSavepointSupport(SavepointSupport.ENABLED);
       assertEquals(1L, connection.executeUpdate(statement1));
@@ -603,9 +564,6 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
     try (Connection connection = createTestConnection()) {
       connection.setAutocommit(false);
       connection.setReadOnly(false);
-      assumeFalse(
-          "OpenTelemetryTracingTest handler is not implemented for read-write with multiplexed sessions",
-          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.setTransactionTag("my_tag");
       assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
       connection.commit();

@@ -369,11 +369,4 @@ public abstract class ITAbstractSpannerTest {
     }
     return false;
   }
-
-  protected boolean isMultiplexedSessionsEnabledForRW(Spanner spanner) {
-    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
-      return false;
-    }
-    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
-  }
 }
