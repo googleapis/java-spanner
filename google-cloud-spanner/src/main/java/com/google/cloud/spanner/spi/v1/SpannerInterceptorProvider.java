@@ -18,6 +18,7 @@ package com.google.cloud.spanner.spi.v1;
 import com.google.api.core.InternalApi;
 import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
+import com.google.cloud.spanner.BuiltInOpenTelemetryMetricsRecorder;
 import com.google.cloud.spanner.SpannerRpcMetrics;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -26,6 +27,7 @@ import io.grpc.ClientInterceptor;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,12 +46,17 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
 
   @ObsoleteApi("This method always uses Global OpenTelemetry")
   public static SpannerInterceptorProvider createDefault() {
-    return createDefault(GlobalOpenTelemetry.get());
+    return createDefault(
+        GlobalOpenTelemetry.get(),
+        new BuiltInOpenTelemetryMetricsRecorder(GlobalOpenTelemetry.get(), new HashMap<>()));
   }
 
-  public static SpannerInterceptorProvider createDefault(OpenTelemetry openTelemetry) {
+  public static SpannerInterceptorProvider createDefault(
+      OpenTelemetry openTelemetry,
+      BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
     return createDefault(
         openTelemetry,
+        builtInOpenTelemetryMetricsRecorder,
         Suppliers.memoize(
             () -> {
               return false;
@@ -57,13 +64,18 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
   }
 
   public static SpannerInterceptorProvider createDefault(
-      OpenTelemetry openTelemetry, Supplier<Boolean> directPathEnabledSupplier) {
+      OpenTelemetry openTelemetry,
+      BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder,
+      Supplier<Boolean> directPathEnabledSupplier) {
     List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
     defaultInterceptorList.add(new SpannerErrorInterceptor());
     defaultInterceptorList.add(
         new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
     defaultInterceptorList.add(
-        new HeaderInterceptor(new SpannerRpcMetrics(openTelemetry), directPathEnabledSupplier));
+        new HeaderInterceptor(
+            new SpannerRpcMetrics(openTelemetry),
+            builtInOpenTelemetryMetricsRecorder,
+            directPathEnabledSupplier));
     return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
   }
 

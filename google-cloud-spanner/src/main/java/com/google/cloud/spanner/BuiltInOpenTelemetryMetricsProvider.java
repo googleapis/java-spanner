@@ -28,6 +28,7 @@ import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.opentelemetry.api.OpenTelemetry;
@@ -48,40 +49,71 @@ import javax.annotation.Nullable;
 
 final class BuiltInOpenTelemetryMetricsProvider {
 
-  static BuiltInOpenTelemetryMetricsProvider INSTANCE = new BuiltInOpenTelemetryMetricsProvider();
-
+  public static BuiltInOpenTelemetryMetricsProvider INSTANCE =
+      new BuiltInOpenTelemetryMetricsProvider();
   private static final Logger logger =
       Logger.getLogger(BuiltInOpenTelemetryMetricsProvider.class.getName());
-
   private static String taskId;
-
   private OpenTelemetry openTelemetry;
+  private Map<String, String> clientAttributes;
+  private boolean isInitialized;
+  private BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder;
 
-  private BuiltInOpenTelemetryMetricsProvider() {}
+  private BuiltInOpenTelemetryMetricsProvider() {};
 
-  OpenTelemetry getOrCreateOpenTelemetry(
-      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost) {
+  @VisibleForTesting
+  void reset() {
+    isInitialized = false;
+  }
+
+  @VisibleForTesting
+  void initialize(
+      OpenTelemetry openTelemetry,
+      String projectId,
+      String client_name,
+      @Nullable Credentials credentials,
+      @Nullable String monitoringHost) {
+    initialize(projectId, client_name, credentials, monitoringHost);
+    // Use injected opentelemetry object for testing.
+    this.builtInOpenTelemetryMetricsRecorder =
+        new BuiltInOpenTelemetryMetricsRecorder(openTelemetry, clientAttributes);
+  }
+
+  void initialize(
+      String projectId,
+      String client_name,
+      @Nullable Credentials credentials,
+      @Nullable String monitoringHost) {
+
     try {
-      if (this.openTelemetry == null) {
-        SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
-        BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
-            SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
-            sdkMeterProviderBuilder);
-        SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-        this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
-        Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
+      if (!isInitialized) {
+        this.openTelemetry = createOpenTelemetry(projectId, credentials, monitoringHost);
+        this.clientAttributes = createClientAttributes(projectId, client_name);
+        this.builtInOpenTelemetryMetricsRecorder =
+            new BuiltInOpenTelemetryMetricsRecorder(openTelemetry, clientAttributes);
+        isInitialized = true;
       }
-      return this.openTelemetry;
-    } catch (IOException ex) {
+    } catch (Exception ex) {
       logger.log(
           Level.WARNING,
-          "Unable to get OpenTelemetry object for client side metrics, will skip exporting client side metrics",
+          "Unable to initialize OpenTelemetry object or attributes for client side metrics, will skip exporting client side metrics",
           ex);
-      return null;
     }
   }
 
-  Map<String, String> createClientAttributes(String projectId, String client_name) {
+  OpenTelemetry getOpenTelemetry() {
+    return this.openTelemetry;
+  }
+
+  Map<String, String> getClientAttributes() {
+    return this.clientAttributes;
+  }
+
+  BuiltInOpenTelemetryMetricsRecorder getBuiltInOpenTelemetryMetricsRecorder() {
+    return this.builtInOpenTelemetryMetricsRecorder;
+  }
+
+  private Map<String, String> createClientAttributes(String projectId, String client_name) {
     Map<String, String> clientAttributes = new HashMap<>();
     clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
     clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
@@ -91,6 +123,20 @@ final class BuiltInOpenTelemetryMetricsProvider {
     clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
     clientAttributes.put(CLIENT_HASH_KEY.getKey(), generateClientHash(clientUid));
     return clientAttributes;
+  }
+
+  private OpenTelemetry createOpenTelemetry(
+      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost)
+      throws IOException {
+    OpenTelemetry openTelemetry;
+    SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
+    BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
+        SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
+        sdkMeterProviderBuilder);
+    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
+    Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
+    return openTelemetry;
   }
 
   /**

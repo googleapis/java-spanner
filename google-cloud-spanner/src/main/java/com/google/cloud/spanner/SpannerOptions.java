@@ -1860,6 +1860,23 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
   }
 
+  /**
+   * Returns an instance of Built-In MetricsRecorder object. initializeBuiltInMetrics should be
+   * called first before this recorder can be fetched
+   */
+  public BuiltInOpenTelemetryMetricsRecorder getBuiltInMetricsRecorder() {
+    return this.builtInOpenTelemetryMetricsProvider.getBuiltInOpenTelemetryMetricsRecorder();
+  }
+
+  /** Initialize the built-in metrics provider */
+  public void initializeBuiltInMetrics() {
+    this.builtInOpenTelemetryMetricsProvider.initialize(
+        this.getProjectId(),
+        "spanner-java/" + GaxProperties.getLibraryVersion(getClass()),
+        getCredentials(),
+        this.getMonitoringHost());
+  }
+
   @Override
   public ApiTracerFactory getApiTracerFactory() {
     return createApiTracerFactory(false, false);
@@ -1905,15 +1922,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private ApiTracerFactory createMetricsApiTracerFactory() {
-    OpenTelemetry openTelemetry =
-        this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-            this.getProjectId(), getCredentials(), this.monitoringHost);
+    OpenTelemetry openTelemetry = this.builtInOpenTelemetryMetricsProvider.getOpenTelemetry();
 
-    return openTelemetry != null
+    Map<String, String> clientAttributes =
+        builtInOpenTelemetryMetricsProvider.getClientAttributes();
+    return openTelemetry != null && clientAttributes != null
         ? new MetricsTracerFactory(
             new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            builtInOpenTelemetryMetricsProvider.createClientAttributes(
-                this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
+            clientAttributes)
         : null;
   }
 
