@@ -418,7 +418,10 @@ public abstract class AbstractStatementParser {
 
   static final Set<String> ddlStatements =
       ImmutableSet.of("CREATE", "DROP", "ALTER", "ANALYZE", "GRANT", "REVOKE", "RENAME");
-  static final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH", "SHOW");
+  static final Set<String> selectStatements =
+      ImmutableSet.of("SELECT", "WITH", "SHOW", "FROM", "GRAPH");
+  static final Set<String> SELECT_STATEMENTS_ALLOWING_PRECEDING_BRACKETS =
+      ImmutableSet.of("SELECT", "FROM");
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;
 
@@ -581,6 +584,10 @@ public abstract class AbstractStatementParser {
     if (sql.startsWith("@")) {
       sql = removeStatementHint(sql);
     }
+    if (sql.startsWith("(")) {
+      sql = removeOpeningBrackets(sql);
+      return statementStartsWith(sql, SELECT_STATEMENTS_ALLOWING_PRECEDING_BRACKETS);
+    }
     return statementStartsWith(sql, selectStatements);
   }
 
@@ -657,6 +664,18 @@ public abstract class AbstractStatementParser {
 
   /** Removes any statement hints at the beginning of the statement. */
   abstract String removeStatementHint(String sql);
+
+  private String removeOpeningBrackets(String sql) {
+    int index = 0;
+    while (index < sql.length()) {
+      if (sql.charAt(index) == '(' || Character.isWhitespace(sql.charAt(index))) {
+        index++;
+      } else {
+        return sql.substring(index);
+      }
+    }
+    return sql;
+  }
 
   @VisibleForTesting
   static final ReadQueryUpdateTransactionOption[] EMPTY_OPTIONS =
