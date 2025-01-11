@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
@@ -133,6 +134,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     AtomicInteger attempts = new AtomicInteger();
 
     try (Spanner spanner = builder.build().getService()) {
+      assumeFalse(
+          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed sessions",
+          isMultiplexedSessionsEnabledForRW(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       client
           .readWriteTransaction()
@@ -168,6 +172,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
         SimulatedExecutionTime.ofStickyException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
 
     try (Spanner spanner = builder.build().getService()) {
+      assumeFalse(
+          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed sessions",
+          isMultiplexedSessionsEnabledForRW(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       SpannerException exception =
           assertThrows(
@@ -211,6 +218,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
         SimulatedExecutionTime.ofStickyException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
 
     try (Spanner spanner = builder.build().getService()) {
+      assumeFalse(
+          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed sessions",
+          isMultiplexedSessionsEnabledForRW(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
       // Retry until all channels have been deny-listed.
@@ -339,6 +349,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
         SimulatedExecutionTime.ofMinimumAndRandomTime(500, 500));
 
     try (Spanner spanner = builder.build().getService()) {
+      assumeFalse(
+          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed sessions",
+          isMultiplexedSessionsEnabledForRW(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
       Context context =
@@ -364,5 +377,12 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     // are being executed, the RPC invocation will be skipped, and the error will eventually bubble
     // up.
     assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+  }
+
+  private boolean isMultiplexedSessionsEnabledForRW(Spanner spanner) {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }
