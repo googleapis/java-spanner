@@ -97,7 +97,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.85.0</version>
+      <version>6.85.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>

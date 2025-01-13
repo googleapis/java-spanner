@@ -116,18 +116,15 @@ public class LatencyBenchmark {
     System.out.printf("Wait between queries: %dms\n", waitMillis);
     System.out.printf("Warm Up Minutes: %dm\n", warmUpMinutes);
 
-    List<Duration> javaClientResults = null;
+    System.out.println("Running benchmarking with skipping gRPC");
     System.out.println();
     System.out.println("Running benchmark for Java Client Library");
     JavaClientRunner javaClientRunner = new JavaClientRunner(databaseId);
-    javaClientResults =
-        javaClientRunner.execute(
-            transactionType, clients, operations, waitMillis, useMultiplexedSession, warmUpMinutes);
-
-    printResults("Java Client Library", javaClientResults);
+    javaClientRunner.execute(
+        transactionType, clients, operations, waitMillis, useMultiplexedSession, warmUpMinutes);
   }
 
-  private void printResults(String header, List<Duration> results) {
+  public static void printResults(String header, List<Duration> results) {
     if (results == null) {
       return;
     }
@@ -142,12 +139,12 @@ public class LatencyBenchmark {
     System.out.printf("P99: %.2fµs\n", percentile(99, orderedResults));
   }
 
-  private double percentile(int percentile, List<Duration> orderedResults) {
+  private static double percentile(int percentile, List<Duration> orderedResults) {
     return orderedResults.get(percentile * orderedResults.size() / 100).get(ChronoUnit.NANOS)
         / 1_000.0f;
   }
 
-  private double avg(List<Duration> results) {
+  private static double avg(List<Duration> results) {
     return results.stream()
         .collect(Collectors.averagingDouble(result -> result.get(ChronoUnit.NANOS) / 1_000.0f));
   }

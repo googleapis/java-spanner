@@ -20,6 +20,7 @@ import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -63,7 +64,7 @@ class JavaClientRunner extends AbstractRunner {
   }
 
   @Override
-  public List<Duration> execute(
+  public void execute(
       TransactionType transactionType,
       int numClients,
       int numOperations,
@@ -119,24 +120,59 @@ class JavaClientRunner extends AbstractRunner {
     try (Spanner spanner = options.getService()) {
       DatabaseClient databaseClient = spanner.getDatabaseClient(databaseId);
 
-      List<Future<List<Duration>>> results = new ArrayList<>(numClients);
-      ExecutorService service = Executors.newFixedThreadPool(numClients);
-      for (int client = 0; client < numClients; client++) {
-        results.add(
-            service.submit(
-                () ->
-                    runBenchmark(
-                        databaseClient,
-                        transactionType,
-                        numOperations,
-                        waitMillis,
-                        warmUpMinutes,
-                        endToEndLatencies)));
-      }
-      return collectResults(service, sdkMeterProvider, results, numClients, numOperations);
+      executeBenchmarkAndPrintResults(
+          numClients,
+          databaseClient,
+          transactionType,
+          numOperations,
+          waitMillis,
+          warmUpMinutes,
+          endToEndLatencies,
+          true);
+      executeBenchmarkAndPrintResults(
+          numClients,
+          databaseClient,
+          transactionType,
+          numOperations,
+          waitMillis,
+          warmUpMinutes,
+          endToEndLatencies,
+          false);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
     }
+
+    sdkMeterProvider.close();
+  }
+
+  private void executeBenchmarkAndPrintResults(
+      int numClients,
+      DatabaseClient databaseClient,
+      TransactionType transactionType,
+      int numOperations,
+      int waitMillis,
+      int warmUpMinutes,
+      DoubleHistogram endToEndLatencies,
+      boolean skipTrailers)
+      throws Exception {
+    List<Future<List<Duration>>> results = new ArrayList<>(numClients);
+    ExecutorService service = Executors.newFixedThreadPool(numClients);
+    resetOperations();
+    for (int client = 0; client < numClients; client++) {
+      results.add(
+          service.submit(
+              () ->
+                  runBenchmark(
+                      databaseClient,
+                      transactionType,
+                      numOperations,
+                      waitMillis,
+                      warmUpMinutes,
+                      endToEndLatencies,
+                      skipTrailers)));
+    }
+    LatencyBenchmark.printResults(
+        "Performance Results", collectResults(service, results, numClients, numOperations));
   }
 
   private List<Duration> runBenchmark(
@@ -145,18 +181,21 @@ class JavaClientRunner extends AbstractRunner {
       int numOperations,
       int waitMillis,
       int warmUpMinutes,
-      DoubleHistogram endToEndLatencies) {
+      DoubleHistogram endToEndLatencies,
+      boolean skipTrailers) {
     List<Duration> results = new ArrayList<>(numOperations);
     // Execute one query to make sure everything has been warmed up.
     Instant endTime = Instant.now().plus(warmUpMinutes, ChronoUnit.MINUTES);
     while (Instant.now().isBefore(endTime)) {
-      executeTransaction(databaseClient, transactionType, endToEndLatencies, false);
+      executeTransaction(databaseClient, skipTrailers, transactionType, endToEndLatencies, false);
     }
 
     for (int i = 0; i < numOperations; i++) {
       try {
         randomWait(waitMillis);
-        results.add(executeTransaction(databaseClient, transactionType, endToEndLatencies, true));
+        results.add(
+            executeTransaction(
+                databaseClient, skipTrailers, transactionType, endToEndLatencies, true));
         incOperations();
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
@@ -167,13 +206,14 @@ class JavaClientRunner extends AbstractRunner {
 
   private Duration executeTransaction(
       DatabaseClient client,
+      boolean skipTrailers,
       TransactionType transactionType,
       DoubleHistogram endToEndLatencies,
       boolean recordLatency) {
     Stopwatch watch = Stopwatch.createStarted();
     switch (transactionType) {
       case READ_ONLY_SINGLE_USE:
-        executeSingleUseReadOnlyTransaction(client);
+        executeSingleUseReadOnlyTransaction(client, skipTrailers);
         break;
       case READ_ONLY_MULTI_USE:
         executeMultiUseReadOnlyTransaction(client);
@@ -189,8 +229,12 @@ class JavaClientRunner extends AbstractRunner {
     return elapsedTime;
   }
 
-  private void executeSingleUseReadOnlyTransaction(DatabaseClient client) {
-    try (ResultSet resultSet = client.singleUse().executeQuery(getRandomisedReadStatement())) {
+  private void executeSingleUseReadOnlyTransaction(DatabaseClient client, boolean skipTrailers) {
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                getRandomisedReadStatement(), Options.skippingTrailerOption(skipTrailers))) {
       while (resultSet.next()) {
         for (int i = 0; i < resultSet.getColumnCount(); i++) {
           if (resultSet.isNull(i)) {

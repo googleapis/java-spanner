@@ -208,6 +208,11 @@ public final class Options implements Serializable {
     return new PriorityOption(priority);
   }
 
+  /** Specifies the priority to use for the RPC. */
+  public static SkippingTrailerOption skippingTrailerOption(boolean skipTrailers) {
+    return new SkippingTrailerOption(skipTrailers);
+  }
+
   public static TransactionOption maxCommitDelay(Duration maxCommitDelay) {
     Preconditions.checkArgument(!maxCommitDelay.isNegative(), "maxCommitDelay should be positive");
     return new MaxCommitDelayOption(maxCommitDelay);
@@ -387,6 +392,19 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class SkippingTrailerOption extends InternalOption implements QueryOption {
+
+    boolean skipTrailers;
+
+    SkippingTrailerOption(boolean skipTrailers) {
+      this.skipTrailers = skipTrailers;
+    }
+    @Override
+    void appendToOptions(Options options) {
+      options.skipTrailers = skipTrailers;
+    }
+  }
+
   static final class PriorityOption extends InternalOption
       implements ReadQueryUpdateTransactionOption {
     private final RpcPriority priority;
@@ -480,6 +498,7 @@ public final class Options implements Serializable {
   private Long limit;
   private Integer prefetchChunks;
   private Integer bufferRows;
+  private boolean skipTrailers;
   private Integer pageSize;
   private String pageToken;
   private String filter;
@@ -532,6 +551,10 @@ public final class Options implements Serializable {
 
   int bufferRows() {
     return bufferRows;
+  }
+
+  boolean skipTrailers() {
+    return skipTrailers;
   }
 
   boolean hasPageSize() {

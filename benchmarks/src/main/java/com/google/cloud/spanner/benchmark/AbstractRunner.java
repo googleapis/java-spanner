@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.benchmark;
 
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -41,9 +40,12 @@ abstract class AbstractRunner implements BenchmarkRunner {
     operationCounter.incrementAndGet();
   }
 
+  protected void resetOperations() {
+    operationCounter.set(0);
+  }
+
   protected List<Duration> collectResults(
       ExecutorService service,
-      SdkMeterProvider sdkMeterProvider,
       List<Future<List<Duration>>> results,
       int numClients,
       int numOperations)
@@ -59,7 +61,6 @@ abstract class AbstractRunner implements BenchmarkRunner {
     if (!service.awaitTermination(60L, TimeUnit.MINUTES)) {
       throw new TimeoutException();
     }
-    sdkMeterProvider.close();
     List<Duration> allResults = new ArrayList<>(numClients * numOperations);
     for (Future<List<Duration>> result : results) {
       allResults.addAll(result.get());

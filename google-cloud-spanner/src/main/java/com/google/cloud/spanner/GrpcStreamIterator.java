@@ -52,20 +52,22 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private TimeUnit streamWaitTimeoutUnit;
   private long streamWaitTimeoutValue;
   private SpannerException error;
+  private boolean skipTrailers;
 
   @VisibleForTesting
   GrpcStreamIterator(int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
-    this(null, prefetchChunks, cancelQueryWhenClientIsClosed);
+    this(null, prefetchChunks, cancelQueryWhenClientIsClosed, false);
   }
 
   @VisibleForTesting
   GrpcStreamIterator(
-      Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
+      Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed, boolean skipTrailers) {
     this.statement = statement;
     this.prefetchChunks = prefetchChunks;
     this.consumer = new ConsumerImpl(cancelQueryWhenClientIsClosed);
     // One extra to allow for END_OF_STREAM message.
     this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
+    this.skipTrailers = skipTrailers;
   }
 
   protected final SpannerRpc.ResultStreamConsumer consumer() {
@@ -166,11 +168,16 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     @Override
     public void onPartialResultSet(PartialResultSet results) {
       addToStream(results);
+      if(skipTrailers) {
+        addToStream(END_OF_STREAM);
+      }
     }
 
     @Override
     public void onCompleted() {
-      addToStream(END_OF_STREAM);
+      if(!skipTrailers) {
+        addToStream(END_OF_STREAM);
+      }
     }
 
     @Override
