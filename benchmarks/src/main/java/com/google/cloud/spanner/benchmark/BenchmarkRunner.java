@@ -31,5 +31,6 @@ public interface BenchmarkRunner {
       int numClients,
       int numOperations,
       int waitMillis,
-      boolean useMultiplexedSession);
+      boolean useMultiplexedSession,
+      int warmUpMinutes);
 }

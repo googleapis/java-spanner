@@ -44,6 +44,8 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -66,7 +68,8 @@ class JavaClientRunner extends AbstractRunner {
       int numClients,
       int numOperations,
       int waitMillis,
-      boolean useMultiplexedSession) {
+      boolean useMultiplexedSession,
+      int warmUpMinutes) {
     // setup open telemetry metrics and traces
     // setup open telemetry metrics and traces
     SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
@@ -127,9 +130,10 @@ class JavaClientRunner extends AbstractRunner {
                         transactionType,
                         numOperations,
                         waitMillis,
+                        warmUpMinutes,
                         endToEndLatencies)));
       }
-      return collectResults(service, results, numClients, numOperations);
+      return collectResults(service, sdkMeterProvider, results, numClients, numOperations);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
     }
@@ -140,10 +144,14 @@ class JavaClientRunner extends AbstractRunner {
       TransactionType transactionType,
       int numOperations,
       int waitMillis,
+      int warmUpMinutes,
       DoubleHistogram endToEndLatencies) {
     List<Duration> results = new ArrayList<>(numOperations);
     // Execute one query to make sure everything has been warmed up.
-    executeTransaction(databaseClient, transactionType, endToEndLatencies, false);
+    Instant endTime = Instant.now().plus(warmUpMinutes, ChronoUnit.MINUTES);
+    while (Instant.now().isBefore(endTime)) {
+      executeTransaction(databaseClient, transactionType, endToEndLatencies, false);
+    }
 
     for (int i = 0; i < numOperations; i++) {
       try {
