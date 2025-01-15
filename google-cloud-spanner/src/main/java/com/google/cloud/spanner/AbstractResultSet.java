@@ -161,7 +161,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     /** it requests the initial prefetch chunks from gRPC stream */
-    default void requestPrefetchChunks() {};
+    default void requestPrefetchChunks() {}
   }
 
   static double valueProtoToFloat64(com.google.protobuf.Value proto) {
