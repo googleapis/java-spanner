@@ -48,7 +48,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   interface Listener {
     /**
      * Called when transaction metadata is seen. This method may be invoked at most once. If the
-     * method is invoked, it will precede {@link #onError(SpannerException)} or {@link #onDone()}.
+     * method is invoked, it will precede {@link #onError(SpannerException,boolean)} or {@link
+     * #onDone(boolean)}.
      */
     void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
         throws SpannerException;
