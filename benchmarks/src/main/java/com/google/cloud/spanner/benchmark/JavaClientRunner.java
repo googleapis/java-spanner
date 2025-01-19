@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.benchmark;
 
+import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.DatabaseClient;
@@ -28,8 +30,20 @@ import com.google.cloud.spanner.SessionPoolOptionsHelper;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.spi.v1.SpannerInterceptorProvider;
 import com.google.common.base.Stopwatch;
+import io.grpc.CallOptions;
+import io.grpc.CallOptions.Key;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
+import io.grpc.Context;
+import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
+import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
+import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -49,6 +63,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -56,11 +73,17 @@ import java.util.concurrent.ThreadLocalRandom;
 
 class JavaClientRunner extends AbstractRunner {
   private final DatabaseId databaseId;
+  private final ConcurrentHashMap<String, Long> concurrentHashMap;
+  private final Key<String> trackingKey = Key.create("tracking-uuid");
+  private static final Metadata.Key<String> SERVER_TIMING_HEADER_KEY =
+      Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER);
+  private static final String SERVER_TIMING_HEADER_PREFIX = "gfet4t7; dur=";
   private long numNullValues;
   private long numNonNullValues;
 
   JavaClientRunner(DatabaseId databaseId) {
     this.databaseId = databaseId;
+    this.concurrentHashMap = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -101,11 +124,52 @@ class JavaClientRunner extends AbstractRunner {
             .build();
     SpannerOptions.enableOpenTelemetryMetrics();
     SpannerOptions.enableOpenTelemetryTraces();
+
+    ClientInterceptor clientInterceptor =
+        new ClientInterceptor() {
+          @Override
+          public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+              MethodDescriptor<ReqT, RespT> methodDescriptor,
+              CallOptions callOptions,
+              Channel channel) {
+            return new SimpleForwardingClientCall<ReqT, RespT>(
+                channel.newCall(methodDescriptor, callOptions)) {
+              @Override
+              public void start(Listener<RespT> responseListener, Metadata headers) {
+                super.start(
+                    new SimpleForwardingClientCallListener<RespT>(responseListener) {
+                      @Override
+                      public void onHeaders(Metadata headers) {
+                        if ("google.spanner.v1.Spanner/ExecuteStreamingSql"
+                            .equalsIgnoreCase(methodDescriptor.getFullMethodName())) {
+                          String serverTiming = headers.get(SERVER_TIMING_HEADER_KEY);
+                          if (serverTiming != null
+                              && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
+                            long latency =
+                                Long.parseLong(
+                                    serverTiming.substring(SERVER_TIMING_HEADER_PREFIX.length()));
+                            String trackingUuid = callOptions.getOption(trackingKey);
+                            Optional.ofNullable(trackingUuid)
+                                .ifPresent(id -> concurrentHashMap.put(trackingUuid, latency));
+                          }
+                        }
+                        //                        concurrentHashMap.put(uuid, "uuid");
+                        super.onHeaders(headers);
+                      }
+                    },
+                    headers);
+              }
+            };
+          }
+        };
+
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setOpenTelemetry(openTelemetry)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
+            .setInterceptorProvider(
+                SpannerInterceptorProvider.createDefault().with(clientInterceptor))
             .setHost(SERVER_URL)
             .build();
     // Register query stats metric.
@@ -210,23 +274,40 @@ class JavaClientRunner extends AbstractRunner {
       TransactionType transactionType,
       DoubleHistogram endToEndLatencies,
       boolean recordLatency) {
+    String uuid = UUID.randomUUID().toString();
+    CallContextConfigurator configurator =
+        new CallContextConfigurator() {
+          @Override
+          public <ReqT, RespT> ApiCallContext configure(
+              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+            GrpcCallContext grpcCallContext = (GrpcCallContext) context;
+            return grpcCallContext.withCallOptions(
+                grpcCallContext.getCallOptions().withOption(trackingKey, uuid));
+          }
+        };
+    Context context =
+        Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
     Stopwatch watch = Stopwatch.createStarted();
-    switch (transactionType) {
-      case READ_ONLY_SINGLE_USE:
-        executeSingleUseReadOnlyTransaction(client, skipTrailers);
-        break;
-      case READ_ONLY_MULTI_USE:
-        executeMultiUseReadOnlyTransaction(client);
-        break;
-      case READ_WRITE:
-        executeReadWriteTransaction(client);
-        break;
-    }
+    context.run(
+        () -> {
+          switch (transactionType) {
+            case READ_ONLY_SINGLE_USE:
+              executeSingleUseReadOnlyTransaction(client, skipTrailers);
+              break;
+            case READ_ONLY_MULTI_USE:
+              executeMultiUseReadOnlyTransaction(client);
+              break;
+            case READ_WRITE:
+              executeReadWriteTransaction(client);
+              break;
+          }
+        });
     Duration elapsedTime = watch.elapsed();
+    long gfeLatency = concurrentHashMap.remove(uuid);
     if (recordLatency) {
-      endToEndLatencies.record(elapsedTime.toMillis());
+      endToEndLatencies.record(elapsedTime.toMillis() - gfeLatency);
     }
-    return elapsedTime;
+    return elapsedTime.minus(gfeLatency, ChronoUnit.MILLIS);
   }
 
   private void executeSingleUseReadOnlyTransaction(DatabaseClient client, boolean skipTrailers) {
@@ -234,7 +315,9 @@ class JavaClientRunner extends AbstractRunner {
         client
             .singleUse()
             .executeQuery(
-                getRandomisedReadStatement(), Options.skippingTrailerOption(skipTrailers))) {
+                getRandomisedReadStatement(),
+                Options.tag("uuid"),
+                Options.skippingTrailerOption(skipTrailers))) {
       while (resultSet.next()) {
         for (int i = 0; i < resultSet.getColumnCount(); i++) {
           if (resultSet.isNull(i)) {
