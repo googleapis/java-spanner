@@ -61,7 +61,10 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
 
   @VisibleForTesting
   GrpcStreamIterator(
-      Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed, boolean skipTrailers) {
+      Statement statement,
+      int prefetchChunks,
+      boolean cancelQueryWhenClientIsClosed,
+      boolean skipTrailers) {
     this.statement = statement;
     this.prefetchChunks = prefetchChunks;
     this.consumer = new ConsumerImpl(cancelQueryWhenClientIsClosed);
@@ -168,14 +171,14 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     @Override
     public void onPartialResultSet(PartialResultSet results) {
       addToStream(results);
-      if(skipTrailers) {
+      if (skipTrailers) {
         addToStream(END_OF_STREAM);
       }
     }
 
     @Override
     public void onCompleted() {
-      if(!skipTrailers) {
+      if (!skipTrailers) {
         addToStream(END_OF_STREAM);
       }
     }

@@ -20,7 +20,8 @@ public interface BenchmarkRunner {
   enum TransactionType {
     READ_ONLY_SINGLE_USE,
     READ_ONLY_MULTI_USE,
-    READ_WRITE
+    READ_WRITE,
+    READ_ONLY_STALE_READ
   }
 
   void execute(
@@ -29,5 +30,6 @@ public interface BenchmarkRunner {
       int numOperations,
       int waitMillis,
       boolean useMultiplexedSession,
-      int warmUpMinutes);
+      int warmUpMinutes,
+      int staleReadMinutes);
 }

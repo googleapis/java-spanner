@@ -80,6 +80,7 @@ public class LatencyBenchmark {
     options.addOption("w", "wait", true, "Wait time in millis. Defaults to zero.");
     options.addOption("name", true, "Name of this test run");
     options.addOption("wu", true, "Warm up time in minutes. Defaults to 2 minutes");
+    options.addOption("sr", true, "Stale Read in minutes. Defaults to 2 minutes");
     CommandLineParser parser = new DefaultParser();
     return parser.parse(options, args);
   }
@@ -105,6 +106,8 @@ public class LatencyBenchmark {
         commandLine.hasOption('m') ? Boolean.parseBoolean(commandLine.getOptionValue('m')) : false;
     int warmUpMinutes =
         commandLine.hasOption("wu") ? Integer.parseInt(commandLine.getOptionValue("wu")) : 2;
+    int staleReadMinutes =
+        commandLine.hasOption("sr") ? Integer.parseInt(commandLine.getOptionValue("sr")) : 2;
 
     System.out.println();
     System.out.println("Running benchmark with the following options");
@@ -115,13 +118,20 @@ public class LatencyBenchmark {
     System.out.printf("Use Multiplexed Sessions: %s\n", useMultiplexedSession);
     System.out.printf("Wait between queries: %dms\n", waitMillis);
     System.out.printf("Warm Up Minutes: %dm\n", warmUpMinutes);
+    System.out.printf("Stale Read Minutes: %dm\n", staleReadMinutes);
 
     System.out.println("Running benchmarking with skipping gRPC");
     System.out.println();
     System.out.println("Running benchmark for Java Client Library");
     JavaClientRunner javaClientRunner = new JavaClientRunner(databaseId);
     javaClientRunner.execute(
-        transactionType, clients, operations, waitMillis, useMultiplexedSession, warmUpMinutes);
+        transactionType,
+        clients,
+        operations,
+        waitMillis,
+        useMultiplexedSession,
+        warmUpMinutes,
+        staleReadMinutes);
   }
 
   public static void printResults(String header, List<Duration> results) {

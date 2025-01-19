@@ -392,13 +392,15 @@ public final class Options implements Serializable {
     }
   }
 
-  static final class SkippingTrailerOption extends InternalOption implements QueryOption {
+  static final class SkippingTrailerOption extends InternalOption
+      implements QueryOption, ReadOption {
 
     boolean skipTrailers;
 
     SkippingTrailerOption(boolean skipTrailers) {
       this.skipTrailers = skipTrailers;
     }
+
     @Override
     void appendToOptions(Options options) {
       options.skipTrailers = skipTrailers;
