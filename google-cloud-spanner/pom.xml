@@ -17,9 +17,10 @@
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-    <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
-    <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
-    <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
+    <spanner.testenv.instance>projects/span-cloud-testing/instances/spanner-java-client-testing</spanner.testenv.instance>
+    <spanner.gce.config.server_url>https://staging-wrenchworks.sandbox.googleapis.com</spanner.gce.config.server_url>
+    <spanner.gce.config.project_id>span-cloud-testing</spanner.gce.config.project_id>
+    <spanner.testenv.kms_key.name>projects/span-cloud-testing/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
   </properties>
 
 
@@ -62,6 +63,7 @@
               <systemPropertyVariables>
                 <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>
                 <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
+                <spanner.gce.config.server_url>${spanner.gce.config.server_url}</spanner.gce.config.server_url>
                 <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
                 <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
               </systemPropertyVariables>
@@ -86,6 +88,7 @@
           <systemPropertyVariables>
             <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>
             <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
+            <spanner.gce.config.server_url>${spanner.gce.config.server_url}</spanner.gce.config.server_url>
             <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
             <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
           </systemPropertyVariables>
@@ -122,6 +125,7 @@
           <buildArgs combine.children="append">
             <buildArg>-Dspanner.testenv.config.class=${spanner.testenv.config.class}</buildArg>
             <buildArg>-Dspanner.testenv.instance=${spanner.testenv.instance}</buildArg>
+            <buildArg>-Dspanner.gce.config.server_url=${spanner.gce.config.server_url}</buildArg>
             <buildArg>-Dspanner.gce.config.project_id=${spanner.gce.config.project_id}</buildArg>
             <buildArg>-Dspanner.testenv.kms_key.name=${spanner.testenv.kms_key.name}</buildArg>
           </buildArgs>
@@ -371,7 +375,7 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <!-- Executor tests - The 'provided' scope is overwritten to compile time scope for the profile 'executor-tests' -->
     <dependency>
       <groupId>com.google.api.grpc</groupId>
