@@ -390,7 +390,7 @@ public class SessionPoolOptions {
   private static Boolean getUseMultiplexedSessionForRWFromEnvVariable() {
     // Checks the value of env, GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
     // This returns null until RW is supported.
-    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW");
+    return null;
   }
 
   Duration getMultiplexedSessionMaintenanceDuration() {
