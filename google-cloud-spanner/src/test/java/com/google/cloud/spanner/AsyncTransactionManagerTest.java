@@ -28,7 +28,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -944,7 +943,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     List<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
     // Remove the CreateSession requests for multiplexed sessions, as those are not relevant for
     // this test if multiplexed session for read-write is not enabled.
-    if (!isMultiplexedSessionsEnabledForRW()){
+    if (!isMultiplexedSessionsEnabledForRW()) {
       requests.removeIf(request -> request == CreateSessionRequest.class);
     }
     int size = Iterables.size(requests);

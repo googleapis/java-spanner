@@ -20,7 +20,6 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.*;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
