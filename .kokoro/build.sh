@@ -128,6 +128,7 @@ integration-multiplexed-sessions-enabled)
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
+      -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
       -Dspanner.gce.config.project_id=gcloud-devel \
       -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-multiplexed-sessions \
       -fae \
