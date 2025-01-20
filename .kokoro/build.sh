@@ -129,8 +129,8 @@ integration-multiplexed-sessions-enabled)
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
       -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
-      -Dspanner.gce.config.project_id=gcloud-devel \
-      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-multiplexed-sessions \
+      -Dspanner.gce.config.project_id=span-cloud-testing \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/java-client-integration-tests-multiplexed-sessions \
       -fae \
       verify
     RETURN_CODE=$?
