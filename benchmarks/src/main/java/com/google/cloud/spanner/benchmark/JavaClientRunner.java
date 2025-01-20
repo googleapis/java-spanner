@@ -175,7 +175,7 @@ class JavaClientRunner extends AbstractRunner {
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
             .setInterceptorProvider(
-                SpannerInterceptorProvider.createDefault().with(clientInterceptor))
+                SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
             .setHost(SERVER_URL)
             .build();
     // Register query stats metric.
@@ -329,7 +329,6 @@ class JavaClientRunner extends AbstractRunner {
         });
     Duration elapsedTime = watch.elapsed();
     long gfeLatency = concurrentHashMap.remove(uuid);
-    System.out.println("gfe latency " + gfeLatency);
     if (recordLatency) {
       endToEndLatencies.record(elapsedTime.toMillis() - gfeLatency);
     }
