@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.85.0](https://github.com/googleapis/java-spanner/compare/v6.84.0...v6.85.0) (2025-01-10)
+
+
+### Features
+
+* Add gcp client attributes in OpenTelemetry traces ([#3595](https://github.com/googleapis/java-spanner/issues/3595)) ([7893f24](https://github.com/googleapis/java-spanner/commit/7893f2499f6a43e4e80ec78a9f0da5beedb6967a))
+* Add LockHint feature ([#3588](https://github.com/googleapis/java-spanner/issues/3588)) ([326442b](https://github.com/googleapis/java-spanner/commit/326442bca41700debcbeb67b6bd11fc36bd4f26d))
+* **spanner:** MTLS setup for spanner external host clients ([#3574](https://github.com/googleapis/java-spanner/issues/3574)) ([f8dd152](https://github.com/googleapis/java-spanner/commit/f8dd15272f2a250c5b57c9f2527d03dbd557d717))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.56.0 ([#3563](https://github.com/googleapis/java-spanner/issues/3563)) ([e4d0b0f](https://github.com/googleapis/java-spanner/commit/e4d0b0ffa2308c8d949630b52c67e3b79c4491fb))
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.57.0 ([#3592](https://github.com/googleapis/java-spanner/issues/3592)) ([a7542da](https://github.com/googleapis/java-spanner/commit/a7542daff466226221eeb9a885a2e67a99adb678))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.41.1 ([#3589](https://github.com/googleapis/java-spanner/issues/3589)) ([2cd4238](https://github.com/googleapis/java-spanner/commit/2cd42388370dac004bfd807f6aede3ba45456706))
+* Update dependency com.google.cloud.opentelemetry:exporter-trace to v0.33.0 ([#3455](https://github.com/googleapis/java-spanner/issues/3455)) ([70649dc](https://github.com/googleapis/java-spanner/commit/70649dc2f64aa06404893cc6a36716fc366c83e7))
+* Update dependency com.google.re2j:re2j to v1.8 ([#3594](https://github.com/googleapis/java-spanner/issues/3594)) ([0f2013d](https://github.com/googleapis/java-spanner/commit/0f2013d66d3fd14e6be019cda6745ddc32032091))
+* Update googleapis/sdk-platform-java action to v2.51.1 ([#3591](https://github.com/googleapis/java-spanner/issues/3591)) ([3daa1a0](https://github.com/googleapis/java-spanner/commit/3daa1a0c735000845558a1d3612257a7d0524350))
+
 ## [6.84.0](https://github.com/googleapis/java-spanner/compare/v6.83.0...v6.84.0) (2025-01-06)
 
 

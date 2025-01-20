@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -905,6 +906,13 @@ public class OpenTelemetrySpanTest {
   private static void verifyCommonAttributes(SpanData span) {
     assertEquals(span.getAttributes().get(AttributeKey.stringKey("instance.name")), "my-instance");
     assertEquals(span.getAttributes().get(AttributeKey.stringKey("db.name")), "my-database");
+    assertEquals(span.getAttributes().get(AttributeKey.stringKey("gcp.client.service")), "spanner");
+    assertEquals(
+        span.getAttributes().get(AttributeKey.stringKey("gcp.client.repo")),
+        "googleapis/java-spanner");
+    assertEquals(
+        span.getAttributes().get(AttributeKey.stringKey("gcp.client.version")),
+        GaxProperties.getLibraryVersion(TraceWrapper.class));
   }
 
   private static void verifyTableAttributes(SpanData span) {
