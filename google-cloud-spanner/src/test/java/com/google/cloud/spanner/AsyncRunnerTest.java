@@ -61,33 +61,17 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void testAsyncRunner_doesNotReturnCommitTimestampBeforeCommit() {
     AsyncRunner runner = client().runAsync();
-    if (isMultiplexedSessionsEnabledForRW()) {
-      ExecutionException e =
-          assertThrows(ExecutionException.class, () -> runner.getCommitTimestamp().get());
-      Throwable cause = e.getCause();
-      assertTrue(cause instanceof IllegalStateException);
-      assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
-    } else {
-      IllegalStateException e =
-          assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitResponseBeforeCommit() {
     AsyncRunner runner = client().runAsync();
-    if (isMultiplexedSessionsEnabledForRW()) {
-      ExecutionException e =
-          assertThrows(ExecutionException.class, () -> runner.getCommitResponse().get());
-      Throwable cause = e.getCause();
-      assertTrue(cause instanceof IllegalStateException);
-      assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
-    } else {
-      IllegalStateException e =
-          assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
@@ -524,8 +508,6 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void closeTransactionBeforeEndOfAsyncQuery() throws Exception {
-    // TODO(sriharshach): Fix this unittest
-    assumeFalse("Skipping for mux", isMultiplexedSessionsEnabledForRW());
     final BlockingQueue<String> results = new SynchronousQueue<>();
     final SettableApiFuture<Boolean> finished = SettableApiFuture.create();
     DatabaseClientImpl clientImpl = (DatabaseClientImpl) client();

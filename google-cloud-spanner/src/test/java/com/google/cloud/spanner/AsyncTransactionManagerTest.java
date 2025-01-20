@@ -251,11 +251,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerIsNonBlocking() throws Exception {
-    // TODO: Remove this condition once DelayedAsyncTransactionManager is made non-blocking with
-    // multiplexed sessions.
-    assumeFalse(
-        "DelayedAsyncTransactionManager is currently blocking with multiplexed sessions.",
-        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     mockSpanner.freeze();
     try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
@@ -639,11 +634,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerIsNonBlockingWithBatchUpdate() throws Exception {
-    // TODO: Remove this condition once DelayedAsyncTransactionManager is made non-blocking with
-    // multiplexed sessions.
-    assumeFalse(
-        "DelayedAsyncTransactionManager is currently blocking with multiplexed sessions.",
-        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     mockSpanner.freeze();
     try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
@@ -952,6 +942,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     }
     assertThat(attempt.get()).isEqualTo(2);
     List<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
+    // Remove the CreateSession requests for multiplexed sessions, as those are not relevant for
+    // this test if multiplexed session for read-write is not enabled.
+    if (!isMultiplexedSessionsEnabledForRW()){
+      requests.removeIf(request -> request == CreateSessionRequest.class);
+    }
     int size = Iterables.size(requests);
     assertThat(size).isIn(Range.closed(5, 6));
     if (size == 5) {
