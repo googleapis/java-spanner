@@ -3142,14 +3142,20 @@ public class DatabaseClientImplTest {
                         .readWriteTransaction()
                         .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
             // No additional requests should have been sent by the client.
-            // Note that in case of the use of regular sessions, then we have 1 request:
-            // 1. BatchCreateSessions for the session pool.
-            // Note that in case of the use of multiplexed sessions for read-only and read-write,
-            // then we have 1 request:
-            // 1. CreateSession for the multiplexed session.
-            // There will be no BatchCreateSessions request in case of multiplexed sessions, because
-            // the session pool options has min size of 0.
-            assertThat(mockSpanner.getRequests()).hasSize(1);
+            if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()
+                && !spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+              // Note that in case of the use of multiplexed sessions for read-only alone, then we
+              // have 2 requests:
+              // 1. BatchCreateSessions for the session pool.
+              // 2. CreateSession for the multiplexed session.
+              assertThat(mockSpanner.getRequests()).hasSize(2);
+            } else {
+              // Note that in case of the use of regular sessions, then we have 1 request:
+              // BatchCreateSessions for the session pool.
+              // Note that in case of the use of multiplexed sessions for read-write, then we have 1
+              // request: CreateSession for the multiplexed session.
+              assertThat(mockSpanner.getRequests()).hasSize(1);
+            }
           }
         }
         mockSpanner.reset();

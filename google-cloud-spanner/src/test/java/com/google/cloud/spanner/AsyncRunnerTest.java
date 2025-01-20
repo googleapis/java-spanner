@@ -214,6 +214,17 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               BeginTransactionRequest.class,
               ExecuteSqlRequest.class,
               CommitRequest.class);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteSqlRequest.class,
+              // The retry will use an explicit BeginTransaction RPC because the first statement of
+              // the transaction did not return a transaction id during the initial attempt.
+              BeginTransactionRequest.class,
+              ExecuteSqlRequest.class,
+              CommitRequest.class);
     } else {
       assertThat(mockSpanner.getRequestTypes())
           .containsExactly(
@@ -263,11 +274,15 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             executor);
     res.get();
     if (isMultiplexedSessionsEnabledForRW()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsAtLeast(
+              CreateSessionRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
+    } else if (isMultiplexedSessionsEnabled()) {
       // The mock server could have received a CreateSession request for a multiplexed session, but
       // it could also be that that request has not yet reached the server.
       assertThat(mockSpanner.getRequestTypes())
           .containsAtLeast(
-              CreateSessionRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
+              BatchCreateSessionsRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
     } else {
       assertThat(mockSpanner.getRequestTypes())
           .containsExactly(
@@ -416,6 +431,17 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               ExecuteSqlRequest.class,
               ExecuteBatchDmlRequest.class,
               CommitRequest.class);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteSqlRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class,
+              ExecuteSqlRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
     } else {
       assertThat(mockSpanner.getRequestTypes())
           .containsExactly(
@@ -467,7 +493,12 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     if (isMultiplexedSessionsEnabledForRW()) {
       assertThat(mockSpanner.getRequestTypes())
           .containsExactly(
+              CreateSessionRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
               CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
               ExecuteBatchDmlRequest.class,
               CommitRequest.class);
     } else {

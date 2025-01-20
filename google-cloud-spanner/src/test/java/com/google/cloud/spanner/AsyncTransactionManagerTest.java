@@ -355,7 +355,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    ImmutableList<Class<? extends Message>> expectedRequestsWithRegularSession =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             // The first update that fails. This will cause a transaction retry.
@@ -367,7 +367,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             ExecuteSqlRequest.class,
             ExecuteSqlRequest.class,
             CommitRequest.class);
-    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSession =
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionForRW =
         ImmutableList.of(
             CreateSessionRequest.class,
             // The first update that fails. This will cause a transaction retry.
@@ -381,10 +381,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             CommitRequest.class);
     if (isMultiplexedSessionsEnabledForRW()) {
       assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSession);
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionForRW);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithRegularSession);
+      assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
     }
   }
 
@@ -594,6 +595,13 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             assertThat(mockSpanner.getRequestTypes())
                 .containsExactly(
                     CreateSessionRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
+          } else if (isMultiplexedSessionsEnabled()) {
+            assertThat(mockSpanner.getRequestTypes())
+                .containsExactly(
+                    CreateSessionRequest.class,
+                    BatchCreateSessionsRequest.class,
+                    ExecuteSqlRequest.class,
+                    CommitRequest.class);
           } else {
             assertThat(mockSpanner.getRequestTypes())
                 .containsExactly(
@@ -707,13 +715,13 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    ImmutableList<Class<? extends Message>> expectedRequestsWithRegularSession =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             ExecuteBatchDmlRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
-    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSession =
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
         ImmutableList.of(
             CreateSessionRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -721,10 +729,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             CommitRequest.class);
     if (isMultiplexedSessionsEnabledForRW()) {
       assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSession);
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithRegularSession);
+      assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
     }
   }
 
@@ -758,14 +767,14 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(attempt.get()).isEqualTo(2);
     // There should only be 1 CommitRequest, as the first attempt should abort already after the
     // ExecuteBatchDmlRequest.
-    ImmutableList<Class<? extends Message>> expectedRequestsWithRegularSession =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             ExecuteBatchDmlRequest.class,
             BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
-    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSession =
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
         ImmutableList.of(
             CreateSessionRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -774,10 +783,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             CommitRequest.class);
     if (isMultiplexedSessionsEnabledForRW()) {
       assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSession);
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithRegularSession);
+      assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
     }
   }
 
@@ -809,18 +819,17 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(attempt.get()).isEqualTo(2);
     // There should only be 1 CommitRequest, as the first attempt should abort already after the
     // ExecuteBatchDmlRequest.
-    ImmutableList<Class<? extends Message>> expectedRequestsWithRegularSession =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             ExecuteBatchDmlRequest.class,
             BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
-    // There should only be 1 CommitRequest, as the first attempt should abort already after the
-    // ExecuteBatchDmlRequest.
-    // When requests run using multiplexed session, the BatchCreateSessionsRequest will not be
+    // When requests run using multiplexed session with read-write enabled, the
+    // BatchCreateSessionsRequest will not be
     // triggered because we are creating an empty pool during initialization.
-    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSession =
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
         ImmutableList.of(
             CreateSessionRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -829,10 +838,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             CommitRequest.class);
     if (isMultiplexedSessionsEnabledForRW()) {
       assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSession);
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithRegularSession);
+      assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
     }
   }
 
@@ -882,7 +892,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     } finally {
       mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     }
-    ImmutableList<Class<? extends Message>> expectedRequestsWithRegularSession =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -890,7 +900,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
-    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSession =
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
         ImmutableList.of(
             CreateSessionRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -900,10 +910,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             CommitRequest.class);
     if (isMultiplexedSessionsEnabledForRW()) {
       assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSession);
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithRegularSession);
+      assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
     }
   }
 
@@ -941,6 +952,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     }
     assertThat(attempt.get()).isEqualTo(2);
     List<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
+    // Remove the CreateSession requests for multiplexed sessions, as those are not relevant for
+    // this test if multiplexed session for read-write is not enabled.
+    if (!isMultiplexedSessionsEnabledForRW()) {
+      requests.removeIf(request -> request == CreateSessionRequest.class);
+    }
     int size = Iterables.size(requests);
     assertThat(size).isIn(Range.closed(5, 6));
     if (size == 5) {
@@ -1008,18 +1024,19 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
-    ImmutableList<Class<? extends Message>> expectedRequestsWithRegularSession =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
-    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSession =
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
         ImmutableList.of(
             CreateSessionRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
     if (isMultiplexedSessionsEnabledForRW()) {
       assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSession);
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithRegularSession);
+      assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
     }
   }
 
@@ -1044,18 +1061,19 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    ImmutableList<Class<? extends Message>> expectedRequestsWithRegularSession =
+    ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
-    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSession =
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
         ImmutableList.of(
             CreateSessionRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
-    if (isMultiplexedSessionsEnabled()) {
+    if (isMultiplexedSessionsEnabledForRW()) {
       assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSession);
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactlyElementsIn(expectedRequestsWithRegularSession);
+      assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
     }
   }
 

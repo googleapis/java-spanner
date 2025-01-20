@@ -469,7 +469,6 @@ public class OpenTelemetrySpanTest {
               "Transaction Attempt Succeeded");
       expectedReadWriteTransactionEventsCount = 4;
     }
-
     DatabaseClient client = getClient();
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
@@ -540,7 +539,6 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpanner.ReadWriteTransaction");
-
     if (isMultiplexedSessionsEnabledForRW()) {
       expectedReadWriteTransactionErrorEvents =
           ImmutableList.of(
@@ -549,7 +547,6 @@ public class OpenTelemetrySpanTest {
               "exception");
       expectedReadWriteTransactionErrorEventsCount = 3;
     }
-
     DatabaseClient client = getClient();
     TransactionRunner runner = client.readWriteTransaction();
     SpannerException e =
