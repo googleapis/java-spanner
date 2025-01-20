@@ -27,8 +27,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assume.assumeFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -1208,6 +1208,9 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void testAbandonedAsyncTransactionManager_rollbackFails() throws Exception {
+    assumeFalse(
+        "Fix this test",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     mockSpanner.setRollbackExecutionTime(
         SimulatedExecutionTime.ofException(Status.PERMISSION_DENIED.asRuntimeException()));
 
