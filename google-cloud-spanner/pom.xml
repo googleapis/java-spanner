@@ -17,7 +17,7 @@
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-    <spanner.testenv.instance>projects/span-cloud-testing/instances/spanner-java-client-testing</spanner.testenv.instance>
+    <spanner.testenv.instance>projects/span-cloud-testing/instances/harsha-test-gcloud</spanner.testenv.instance>
     <spanner.gce.config.server_url>https://staging-wrenchworks.sandbox.googleapis.com</spanner.gce.config.server_url>
     <spanner.gce.config.project_id>span-cloud-testing</spanner.gce.config.project_id>
     <spanner.testenv.kms_key.name>projects/span-cloud-testing/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
