@@ -90,7 +90,8 @@ public class ChangeStreamsTxnExclusionSampleIT extends SampleTestBase {
   public void testSetExcludeTxnFromChangeStreamsSampleSample() throws Exception {
     final DatabaseClient client = spanner.getDatabaseClient(databaseId);
     String out =
-        runSample(() -> ChangeStreamsTxnExclusionSample.rwTxnExcludedFromChangeStreams(client));
+        runSample(
+            () -> ChangeStreamsTxnExclusionSample.readWriteTxnExcludedFromChangeStreams(client));
     assertThat(out).contains("New singer inserted.");
     assertThat(out).contains("Singer first name updated.");
   }

@@ -38,12 +38,12 @@ public class ChangeStreamsTxnExclusionSample {
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
-      rwTxnExcludedFromChangeStreams(databaseClient);
+      readWriteTxnExcludedFromChangeStreams(databaseClient);
     }
   }
 
   // [START spanner_set_exclude_txn_from_change_streams]
-  static void rwTxnExcludedFromChangeStreams(DatabaseClient client) {
+  static void readWriteTxnExcludedFromChangeStreams(DatabaseClient client) {
     // Exclude the transaction from allowed tracking change streams with alloww_txn_exclusion=true.
     // This exclusion will be applied to all the individual operations inside this transaction.
     client
