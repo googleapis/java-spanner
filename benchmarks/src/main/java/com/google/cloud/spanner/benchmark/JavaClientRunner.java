@@ -178,8 +178,8 @@ class JavaClientRunner extends AbstractRunner {
             .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
-//            .setInterceptorProvider(
-//                SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
+            .setInterceptorProvider(
+                SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
             .setHost(SERVER_URL)
             .build();
     // Register query stats metric.
