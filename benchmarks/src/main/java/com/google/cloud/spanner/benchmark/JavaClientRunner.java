@@ -51,6 +51,8 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -121,7 +123,8 @@ class JavaClientRunner extends AbstractRunner {
         OpenTelemetrySdk.builder()
             .setMeterProvider(sdkMeterProvider)
             .setTracerProvider(tracerProvider)
-            .build();
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .buildAndRegisterGlobal();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptionsHelper.setUseMultiplexedSession(
                 SessionPoolOptions.newBuilder(), useMultiplexedSession)
@@ -172,6 +175,7 @@ class JavaClientRunner extends AbstractRunner {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setOpenTelemetry(openTelemetry)
+            .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
 //            .setInterceptorProvider(
