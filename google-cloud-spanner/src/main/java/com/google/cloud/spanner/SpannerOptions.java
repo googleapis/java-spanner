@@ -741,7 +741,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
-    channelConfigurator = builder.channelConfigurator;
+    if (builder.mTLSContext != null) {
+      channelConfigurator =
+          channelBuilder -> {
+            if (channelBuilder instanceof NettyChannelBuilder) {
+              ((NettyChannelBuilder) channelBuilder).sslContext(builder.mTLSContext);
+            }
+            return channelBuilder;
+          };
+    } else {
+      channelConfigurator = builder.channelConfigurator;
+    }
     interceptorProvider = builder.interceptorProvider;
     sessionPoolOptions =
         builder.sessionPoolOptions != null
@@ -1619,15 +1629,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-      }
-      if (mTLSContext != null) {
-        this.setChannelConfigurator(
-            builder -> {
-              if (builder instanceof NettyChannelBuilder) {
-                ((NettyChannelBuilder) builder).sslContext(mTLSContext);
-              }
-              return builder;
-            });
       }
       if (this.numChannels == null) {
         this.numChannels =
