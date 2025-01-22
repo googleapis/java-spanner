@@ -744,6 +744,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     if (builder.mTLSContext != null) {
       channelConfigurator =
           channelBuilder -> {
+            if (builder.channelConfigurator != null) {
+              channelBuilder = builder.channelConfigurator.apply(channelBuilder);
+            }
             if (channelBuilder instanceof NettyChannelBuilder) {
               ((NettyChannelBuilder) channelBuilder).sslContext(builder.mTLSContext);
             }
