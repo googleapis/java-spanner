@@ -161,7 +161,11 @@ public class ITTransactionManagerAsyncTest {
         } catch (ExecutionException e) {
           assertThat(e.getCause()).isInstanceOf(SpannerException.class);
           SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+          if(env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+            assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+          } else {
+            assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+          }
           // expected
           break;
         }
