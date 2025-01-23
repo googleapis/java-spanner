@@ -177,8 +177,8 @@ class JavaClientRunner extends AbstractRunner {
             .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
-            .setInterceptorProvider(
-                SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
+//            .setInterceptorProvider(
+//                SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
             .setHost(SERVER_URL)
             .build();
     // Register query stats metric.
@@ -340,7 +340,7 @@ class JavaClientRunner extends AbstractRunner {
           }
         });
     Duration elapsedTime = watch.elapsed();
-    long gfeLatency = concurrentHashMap.remove(uuid);
+    long gfeLatency = 0; // concurrentHashMap.remove(uuid);
     if (recordLatency) {
       endToEndLatencies.record(elapsedTime.toMillis() - gfeLatency);
     }
