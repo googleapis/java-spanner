@@ -202,6 +202,7 @@ class JavaClientRunner extends AbstractRunner {
           warmUpMinutes,
           staleReadSeconds,
           endToEndLatencies,
+          true,
           true);
 
       System.out.println("Running tests without skipping trailers ...");
@@ -214,6 +215,7 @@ class JavaClientRunner extends AbstractRunner {
           warmUpMinutes,
           staleReadSeconds,
           endToEndLatencies,
+          false,
           false);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
@@ -231,7 +233,8 @@ class JavaClientRunner extends AbstractRunner {
       int warmUpMinutes,
       int staleReadSeconds,
       DoubleHistogram endToEndLatencies,
-      boolean skipTrailers)
+      boolean skipTrailers,
+      boolean doWarmUp)
       throws Exception {
     List<Future<List<Duration>>> results = new ArrayList<>(numClients);
     ExecutorService service = Executors.newFixedThreadPool(numClients);
@@ -249,7 +252,8 @@ class JavaClientRunner extends AbstractRunner {
                       warmUpMinutes,
                       staleReadSeconds,
                       endToEndLatencies,
-                      skipTrailers)));
+                      skipTrailers,
+                      doWarmUp)));
     }
     LatencyBenchmark.printResults(
         "Performance Results", collectResults(service, results, numClients, numOperations));
@@ -263,12 +267,13 @@ class JavaClientRunner extends AbstractRunner {
       int warmUpMinutes,
       int staleReadSeconds,
       DoubleHistogram endToEndLatencies,
-      boolean skipTrailers) {
+      boolean skipTrailers,
+      boolean doWarmUp) {
     List<Duration> results = new ArrayList<>(numOperations);
     // Execute one query to make sure everything has been warmed up.
     Instant endTime = Instant.now().plus(warmUpMinutes, ChronoUnit.MINUTES);
     setWarmUpEndTime(endTime);
-    while (Instant.now().isBefore(endTime)) {
+    while (Instant.now().isBefore(endTime) && doWarmUp) {
       executeTransaction(
           databaseClient,
           skipTrailers,
