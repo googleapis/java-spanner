@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner.benchmark;
 
-import com.google.api.gax.grpc.GrpcCallContext;
-import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.DatabaseClient;
@@ -31,17 +29,14 @@ import com.google.cloud.spanner.SessionPoolOptionsHelper;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.spi.v1.SpannerInterceptorProvider;
 import com.google.common.base.Stopwatch;
 import io.grpc.CallOptions;
 import io.grpc.CallOptions.Key;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.ClientInterceptor;
-import io.grpc.Context;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
 import io.grpc.Metadata;
@@ -68,7 +63,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -177,8 +171,9 @@ class JavaClientRunner extends AbstractRunner {
             .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
-//            .setInterceptorProvider(
-//                SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
+            //            .setInterceptorProvider(
+            //
+            // SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
             .setHost(SERVER_URL)
             .build();
     // Register query stats metric.
@@ -238,7 +233,6 @@ class JavaClientRunner extends AbstractRunner {
       throws Exception {
     List<Future<List<Duration>>> results = new ArrayList<>(numClients);
     ExecutorService service = Executors.newFixedThreadPool(numClients);
-    resetOperations();
     operationStarted(false);
     for (int client = 0; client < numClients; client++) {
       results.add(
@@ -282,9 +276,10 @@ class JavaClientRunner extends AbstractRunner {
           endToEndLatencies,
           false);
     }
-    operationStarted(true);
     endTime = Instant.now().plus(numOperations, ChronoUnit.MINUTES);
-    while(Instant.now().isBefore(endTime)) {
+    setOperationEndTime(endTime);
+    operationStarted(true);
+    while (Instant.now().isBefore(endTime)) {
       try {
         randomWait(waitMillis);
         results.add(
@@ -295,7 +290,6 @@ class JavaClientRunner extends AbstractRunner {
                 transactionType,
                 endToEndLatencies,
                 true));
-        incOperations();
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
       }

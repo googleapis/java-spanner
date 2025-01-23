@@ -27,7 +27,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -40,18 +39,14 @@ abstract class AbstractRunner implements BenchmarkRunner {
   static final String ID_COLUMN_NAME = "id";
   static final String SERVER_URL = "https://spanner.googleapis.com";
 
-  private final AtomicInteger operationCounter = new AtomicInteger();
+  private final AtomicReference<Instant> operationEndTime = new AtomicReference<>();
 
   private final AtomicBoolean operationStarted = new AtomicBoolean();
 
   private final AtomicReference<Instant> warmUpEndTime = new AtomicReference<>();
 
-  protected void incOperations() {
-    operationCounter.incrementAndGet();
-  }
-
-  protected void resetOperations() {
-    operationCounter.set(0);
+  protected void setOperationEndTime(Instant instant) {
+    operationEndTime.set(instant);
   }
 
   protected void operationStarted(boolean started) {
@@ -68,20 +63,17 @@ abstract class AbstractRunner implements BenchmarkRunner {
       int numClients,
       int numOperations)
       throws Exception {
-    int totalOperations = numClients * numOperations;
     service.shutdown();
     while (!service.isTerminated()) {
       Thread.sleep(1000L);
       if (operationStarted.get()) {
         //noinspection BusyWait
-        System.out.printf("\r%d/%d", operationCounter.get(), totalOperations);
+        System.out.printf("\rOperation Ends in %s", showTime(operationEndTime.get()));
       } else if (warmUpEndTime.get() != null) {
-        System.out.printf(
-            "\rWarm up ends in %d-%d",
-            ChronoUnit.MINUTES.between(Instant.now(), warmUpEndTime.get()),
-            ChronoUnit.SECONDS.between(Instant.now(), warmUpEndTime.get()));
+        System.out.printf("\rWarm up ends in %s", showTime(warmUpEndTime.get()));
       }
     }
+    System.out.print("\r\r");
     System.out.println();
     if (!service.awaitTermination(60L, TimeUnit.MINUTES)) {
       throw new TimeoutException();
@@ -91,6 +83,13 @@ abstract class AbstractRunner implements BenchmarkRunner {
       allResults.addAll(result.get());
     }
     return allResults.stream().map(Duration::getNano).collect(Collectors.toList());
+  }
+
+  private String showTime(Instant endTime) {
+    long totalSeconds = ChronoUnit.SECONDS.between(Instant.now(), endTime);
+    long totalMinutes = ChronoUnit.MINUTES.between(Instant.now(), endTime);
+
+    return String.format("%s-%s", totalMinutes, totalSeconds - (totalMinutes * 60));
   }
 
   protected void randomWait(int waitMillis) throws InterruptedException {
