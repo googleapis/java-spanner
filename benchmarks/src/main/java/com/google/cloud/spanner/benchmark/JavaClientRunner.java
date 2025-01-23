@@ -309,42 +309,25 @@ class JavaClientRunner extends AbstractRunner {
       TransactionType transactionType,
       DoubleHistogram endToEndLatencies,
       boolean recordLatency) {
-    String uuid = UUID.randomUUID().toString();
-    CallContextConfigurator configurator =
-        new CallContextConfigurator() {
-          @Override
-          public <ReqT, RespT> ApiCallContext configure(
-              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
-            GrpcCallContext grpcCallContext = (GrpcCallContext) context;
-            return grpcCallContext.withCallOptions(
-                grpcCallContext.getCallOptions().withOption(trackingKey, uuid));
-          }
-        };
-    Context context =
-        Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
     Stopwatch watch = Stopwatch.createStarted();
-    context.run(
-        () -> {
-          switch (transactionType) {
-            case READ_ONLY_STALE_READ:
-              executeSingleUseReadOnlyStaleReadTransaction(client, staleReadSeconds, skipTrailers);
-            case READ_ONLY_SINGLE_USE:
-              executeSingleUseReadOnlyTransaction(client, skipTrailers);
-              break;
-            case READ_ONLY_MULTI_USE:
-              executeMultiUseReadOnlyTransaction(client);
-              break;
-            case READ_WRITE:
-              executeReadWriteTransaction(client);
-              break;
-          }
-        });
-    Duration elapsedTime = watch.elapsed();
-    long gfeLatency = 0;
-    if (recordLatency) {
-      endToEndLatencies.record(elapsedTime.toMillis() - gfeLatency);
+    switch (transactionType) {
+      case READ_ONLY_STALE_READ:
+        executeSingleUseReadOnlyStaleReadTransaction(client, staleReadSeconds, skipTrailers);
+      case READ_ONLY_SINGLE_USE:
+        executeSingleUseReadOnlyTransaction(client, skipTrailers);
+        break;
+      case READ_ONLY_MULTI_USE:
+        executeMultiUseReadOnlyTransaction(client);
+        break;
+      case READ_WRITE:
+        executeReadWriteTransaction(client);
+        break;
     }
-    return elapsedTime.minus(gfeLatency, ChronoUnit.MILLIS);
+    Duration elapsedTime = watch.elapsed();
+    if (recordLatency) {
+      endToEndLatencies.record(elapsedTime.toMillis());
+    }
+    return elapsedTime;
   }
 
   private void executeSingleUseReadOnlyStaleReadTransaction(
