@@ -340,7 +340,7 @@ class JavaClientRunner extends AbstractRunner {
           }
         });
     Duration elapsedTime = watch.elapsed();
-    long gfeLatency = 0; // concurrentHashMap.remove(uuid);
+    long gfeLatency = 0;
     if (recordLatency) {
       endToEndLatencies.record(elapsedTime.toMillis() - gfeLatency);
     }
