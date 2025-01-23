@@ -71,6 +71,7 @@ public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {
     long numberOfSongs = 0L;
     AbortInterceptor interceptor = new AbortInterceptor(0.0D);
     try (ITConnection connection = createConnection(interceptor)) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.setAutocommit(false);
       connection.setRetryAbortsInternally(true);
       // Read all data from the different music tables in the transaction

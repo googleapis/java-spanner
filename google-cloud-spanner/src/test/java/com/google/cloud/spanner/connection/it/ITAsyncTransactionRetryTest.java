@@ -91,7 +91,10 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
   @Before
   public void clearTable() {
     try (ITConnection connection = createConnection()) {
+      connection.execute(Statement.of("SELECT 1"));
+      connection.commit();
       connection.bufferedWrite(Mutation.delete("TEST", KeySet.all()));
+      //connection.executeUpdate(Statement.of("DELETE FROM TEST WHERE TRUE"));
       get(connection.commitAsync());
     }
   }
@@ -221,6 +224,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       ApiFuture<Long> count = getTestRecordCountAsync(connection);
       // do an insert
       ApiFuture<Long> updateCount =
@@ -253,6 +257,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       ApiFuture<Long> count = getTestRecordCountAsync(connection);
       // indicate that the next statement should abort
       interceptor.setProbability(1.0);
@@ -276,6 +281,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       ApiFuture<Long> count = getTestRecordCountAsync(connection);
       // insert a test record
       connection.executeUpdateAsync(
@@ -309,6 +315,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert a test record
       connection.executeUpdateAsync(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')"));
@@ -359,6 +366,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert two test records
       connection.executeUpdateAsync(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test 1')"));
@@ -392,6 +400,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       ApiFuture<Long> count = getTestRecordCountAsync(connection);
       // do three inserts which all will abort and retry
       interceptor.setProbability(1.0);
@@ -428,6 +437,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       ApiFuture<Long> count = getTestRecordCountAsync(connection);
       // insert a test record
       connection.executeUpdateAsync(
@@ -504,6 +514,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert two test records
       connection.executeUpdateAsync(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test 1')"));
@@ -539,6 +550,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert two test records
       connection.executeUpdateAsync(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test 1')"));
@@ -581,6 +593,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert two test records
       connection.executeUpdateAsync(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test 1')"));
@@ -632,6 +645,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
     try (ITConnection connection = createConnection()) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.executeUpdateAsync(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test 1')"));
       connection.executeUpdateAsync(
@@ -641,6 +655,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     // open a new connection and select the two test records
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // select the test records and consume the entire result set
       try (AsyncResultSet rs =
           connection.executeQueryAsync(Statement.of("SELECT * FROM TEST ORDER BY ID"))) {
@@ -694,6 +709,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     // open a new connection and select the two test records
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // select the test records and consume the entire result set
       try (AsyncResultSet rs =
           connection.executeQueryAsync(Statement.of("SELECT * FROM TEST ORDER BY ID"))) {
@@ -744,6 +760,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert three test records
       connection.executeUpdateAsync(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test 1')"));
@@ -833,6 +850,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     final long UPDATED_RECORDS = 1000L;
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection = createConnection()) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert test records
       for (int i = 0; i < NUMBER_OF_TEST_RECORDS; i++) {
         connection.bufferedWrite(
@@ -845,6 +863,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     }
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // select the test records and iterate over them
       try (AsyncResultSet rs =
           connection.executeQueryAsync(Statement.of("SELECT * FROM TEST ORDER BY ID"))) {
@@ -867,6 +886,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         // Wait until the entire result set has been consumed.
         get(finished);
       }
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // Do an update that will abort and retry.
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
@@ -898,6 +918,7 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0.25D);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
+      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert test records
       for (int i = 0; i < NUMBER_OF_TEST_RECORDS; i++) {
         connection.bufferedWrite(

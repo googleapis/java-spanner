@@ -60,6 +60,8 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
   public void testDoAllowBufferedWriteInReadWriteTransaction() {
     try (ITConnection connection = createConnection()) {
       assertThat(connection.isAutocommit(), is(false));
+      connection.execute(Statement.of("SELECT 1"));
+      connection.commit();
       connection.bufferedWrite(
           Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST").build());
       connection.commit();
