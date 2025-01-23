@@ -123,8 +123,8 @@ class JavaClientRunner extends AbstractRunner {
         SessionPoolOptionsHelper.setUseMultiplexedSession(
                 SessionPoolOptions.newBuilder(), useMultiplexedSession)
             .build();
-    SpannerOptions.enableOpenTelemetryMetrics();
-    SpannerOptions.enableOpenTelemetryTraces();
+//    SpannerOptions.enableOpenTelemetryMetrics();
+//    SpannerOptions.enableOpenTelemetryTraces();
 
     ClientInterceptor clientInterceptor =
         new ClientInterceptor() {
@@ -167,8 +167,8 @@ class JavaClientRunner extends AbstractRunner {
 
     SpannerOptions options =
         SpannerOptions.newBuilder()
-            .setOpenTelemetry(openTelemetry)
-            .setEnableEndToEndTracing(true)
+//            .setOpenTelemetry(openTelemetry)
+//            .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
             //            .setInterceptorProvider(
