@@ -471,7 +471,10 @@ public class ITTransactionTest {
         .run(
             transaction -> {
               client.singleUseReadOnlyTransaction();
-
+              ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"));
+              while(rs.next()) {
+                // do nothing
+              }
               return null;
             });
   }

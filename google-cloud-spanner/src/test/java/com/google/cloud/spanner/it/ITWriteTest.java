@@ -1043,7 +1043,11 @@ public class ITWriteTest {
               .build());
       fail("Expected exception");
     } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      if (env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      } else {
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      }
     }
   }
 
@@ -1053,7 +1057,11 @@ public class ITWriteTest {
       write(baseInsert().set("ColumnThatDoesNotExist").to("V1").build());
       fail("Expected exception");
     } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      if (env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      } else {
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      }
     }
   }
 
@@ -1063,8 +1071,12 @@ public class ITWriteTest {
       write(baseInsert().set("StringValue").to(1.234).build());
       fail("Expected exception");
     } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-      assertThat(ex.getMessage()).contains("STRING");
+      if (env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      } else {
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+        assertThat(ex.getMessage()).contains("STRING");
+      }
     }
   }
 
