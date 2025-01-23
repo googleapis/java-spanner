@@ -99,7 +99,7 @@ class JavaClientRunner extends AbstractRunner {
       int waitMillis,
       boolean useMultiplexedSession,
       int warmUpMinutes,
-      int staleReadMinutes) {
+      int staleReadSeconds) {
     // setup open telemetry metrics and traces
     // setup open telemetry metrics and traces
     SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
@@ -162,7 +162,6 @@ class JavaClientRunner extends AbstractRunner {
                                 .ifPresent(id -> concurrentHashMap.put(trackingUuid, latency));
                           }
                         }
-                        //                        concurrentHashMap.put(uuid, "uuid");
                         super.onHeaders(headers);
                       }
                     },
@@ -193,7 +192,7 @@ class JavaClientRunner extends AbstractRunner {
             .build();
     try (Spanner spanner = options.getService()) {
       DatabaseClient databaseClient = spanner.getDatabaseClient(databaseId);
-
+      System.out.println("Running tests with skipping trailers...");
       executeBenchmarkAndPrintResults(
           numClients,
           databaseClient,
@@ -201,9 +200,11 @@ class JavaClientRunner extends AbstractRunner {
           numOperations,
           waitMillis,
           warmUpMinutes,
-          staleReadMinutes,
+          staleReadSeconds,
           endToEndLatencies,
           true);
+
+      System.out.println("Running tests without skipping trailers ...");
       executeBenchmarkAndPrintResults(
           numClients,
           databaseClient,
@@ -211,7 +212,7 @@ class JavaClientRunner extends AbstractRunner {
           numOperations,
           waitMillis,
           warmUpMinutes,
-          staleReadMinutes,
+          staleReadSeconds,
           endToEndLatencies,
           false);
     } catch (Throwable t) {
@@ -228,13 +229,14 @@ class JavaClientRunner extends AbstractRunner {
       int numOperations,
       int waitMillis,
       int warmUpMinutes,
-      int staleReadMinutes,
+      int staleReadSeconds,
       DoubleHistogram endToEndLatencies,
       boolean skipTrailers)
       throws Exception {
     List<Future<List<Duration>>> results = new ArrayList<>(numClients);
     ExecutorService service = Executors.newFixedThreadPool(numClients);
     resetOperations();
+    operationStarted(false);
     for (int client = 0; client < numClients; client++) {
       results.add(
           service.submit(
@@ -245,7 +247,7 @@ class JavaClientRunner extends AbstractRunner {
                       numOperations,
                       waitMillis,
                       warmUpMinutes,
-                      staleReadMinutes,
+                      staleReadSeconds,
                       endToEndLatencies,
                       skipTrailers)));
     }
@@ -259,22 +261,23 @@ class JavaClientRunner extends AbstractRunner {
       int numOperations,
       int waitMillis,
       int warmUpMinutes,
-      int staleReadMinutes,
+      int staleReadSeconds,
       DoubleHistogram endToEndLatencies,
       boolean skipTrailers) {
     List<Duration> results = new ArrayList<>(numOperations);
     // Execute one query to make sure everything has been warmed up.
     Instant endTime = Instant.now().plus(warmUpMinutes, ChronoUnit.MINUTES);
+    setWarmUpEndTime(endTime);
     while (Instant.now().isBefore(endTime)) {
       executeTransaction(
           databaseClient,
           skipTrailers,
-          staleReadMinutes,
+          staleReadSeconds,
           transactionType,
           endToEndLatencies,
           false);
     }
-
+    operationStarted(true);
     for (int i = 0; i < numOperations; i++) {
       try {
         randomWait(waitMillis);
@@ -282,7 +285,7 @@ class JavaClientRunner extends AbstractRunner {
             executeTransaction(
                 databaseClient,
                 skipTrailers,
-                staleReadMinutes,
+                staleReadSeconds,
                 transactionType,
                 endToEndLatencies,
                 true));
@@ -297,7 +300,7 @@ class JavaClientRunner extends AbstractRunner {
   private Duration executeTransaction(
       DatabaseClient client,
       boolean skipTrailers,
-      int staleReadMinutes,
+      int staleReadSeconds,
       TransactionType transactionType,
       DoubleHistogram endToEndLatencies,
       boolean recordLatency) {
@@ -319,7 +322,7 @@ class JavaClientRunner extends AbstractRunner {
         () -> {
           switch (transactionType) {
             case READ_ONLY_STALE_READ:
-              executeSingleUseReadOnlyStaleReadTransaction(client, staleReadMinutes, skipTrailers);
+              executeSingleUseReadOnlyStaleReadTransaction(client, staleReadSeconds, skipTrailers);
             case READ_ONLY_SINGLE_USE:
               executeSingleUseReadOnlyTransaction(client, skipTrailers);
               break;
@@ -332,7 +335,7 @@ class JavaClientRunner extends AbstractRunner {
           }
         });
     Duration elapsedTime = watch.elapsed();
-    long gfeLatency = 0; // concurrentHashMap.remove(uuid);
+    long gfeLatency = concurrentHashMap.remove(uuid);
     if (recordLatency) {
       endToEndLatencies.record(elapsedTime.toMillis() - gfeLatency);
     }
@@ -340,12 +343,12 @@ class JavaClientRunner extends AbstractRunner {
   }
 
   private void executeSingleUseReadOnlyStaleReadTransaction(
-      DatabaseClient client, int staleReadMinutes, boolean skipTrailers) {
+      DatabaseClient client, int staleReadSeconds, boolean skipTrailers) {
     List<String> columns = new ArrayList<>();
     columns.add(ID_COLUMN_NAME);
     try (ResultSet resultSet =
         client
-            .singleUse(TimestampBound.ofExactStaleness(staleReadMinutes, TimeUnit.MINUTES))
+            .singleUse(TimestampBound.ofExactStaleness(staleReadSeconds, TimeUnit.SECONDS))
             .read(
                 TABLE_NAME,
                 KeySet.singleKey(com.google.cloud.spanner.Key.of(getRandomReadKey())),

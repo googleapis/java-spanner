@@ -16,8 +16,9 @@
 
 package com.google.cloud.spanner.benchmark;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +26,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 abstract class AbstractRunner implements BenchmarkRunner {
   static final int TOTAL_RECORDS = 1000000;
@@ -34,9 +38,13 @@ abstract class AbstractRunner implements BenchmarkRunner {
   static final String SELECT_QUERY = "SELECT ID FROM Employees WHERE ID=@id";
   static final String UPDATE_QUERY = "UPDATE Employees SET NAME=SAKTHI WHERE ID = @id";
   static final String ID_COLUMN_NAME = "id";
-  static final String SERVER_URL = "https://staging-wrenchworks.sandbox.googleapis.com";
+  static final String SERVER_URL = "https://spanner.googleapis.com";
 
   private final AtomicInteger operationCounter = new AtomicInteger();
+
+  private final AtomicBoolean operationStarted = new AtomicBoolean();
+
+  private final AtomicReference<Instant> warmUpEndTime = new AtomicReference<>();
 
   protected void incOperations() {
     operationCounter.incrementAndGet();
@@ -46,7 +54,15 @@ abstract class AbstractRunner implements BenchmarkRunner {
     operationCounter.set(0);
   }
 
-  protected List<Duration> collectResults(
+  protected void operationStarted(boolean started) {
+    operationStarted.set(started);
+  }
+
+  protected void setWarmUpEndTime(Instant instant) {
+    warmUpEndTime.set(instant);
+  }
+
+  protected List<Integer> collectResults(
       ExecutorService service,
       List<Future<List<Duration>>> results,
       int numClients,
@@ -55,9 +71,16 @@ abstract class AbstractRunner implements BenchmarkRunner {
     int totalOperations = numClients * numOperations;
     service.shutdown();
     while (!service.isTerminated()) {
-      //noinspection BusyWait
       Thread.sleep(1000L);
-      System.out.printf("\r%d/%d", operationCounter.get(), totalOperations);
+      if (operationStarted.get()) {
+        //noinspection BusyWait
+        System.out.printf("\r%d/%d", operationCounter.get(), totalOperations);
+      } else if (warmUpEndTime.get() != null) {
+        System.out.printf(
+            "\rWarm up ends in %d-%d",
+            ChronoUnit.MINUTES.between(Instant.now(), warmUpEndTime.get()),
+            ChronoUnit.SECONDS.between(Instant.now(), warmUpEndTime.get()));
+      }
     }
     System.out.println();
     if (!service.awaitTermination(60L, TimeUnit.MINUTES)) {
@@ -67,7 +90,7 @@ abstract class AbstractRunner implements BenchmarkRunner {
     for (Future<List<Duration>> result : results) {
       allResults.addAll(result.get());
     }
-    return allResults;
+    return allResults.stream().map(Duration::getNano).collect(Collectors.toList());
   }
 
   protected void randomWait(int waitMillis) throws InterruptedException {
@@ -76,11 +99,5 @@ abstract class AbstractRunner implements BenchmarkRunner {
     }
     int randomMillis = ThreadLocalRandom.current().nextInt(waitMillis * 2);
     Thread.sleep(randomMillis);
-  }
-
-  protected String generateRandomString() {
-    byte[] bytes = new byte[64];
-    ThreadLocalRandom.current().nextBytes(bytes);
-    return new String(bytes, StandardCharsets.UTF_8);
   }
 }

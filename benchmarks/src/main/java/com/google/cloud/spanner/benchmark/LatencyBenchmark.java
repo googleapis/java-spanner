@@ -16,12 +16,12 @@
 
 package com.google.cloud.spanner.benchmark;
 
+import static com.google.common.math.Quantiles.percentiles;
+
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.benchmark.BenchmarkRunner.TransactionType;
 import com.google.common.annotations.VisibleForTesting;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,7 +80,7 @@ public class LatencyBenchmark {
     options.addOption("w", "wait", true, "Wait time in millis. Defaults to zero.");
     options.addOption("name", true, "Name of this test run");
     options.addOption("wu", true, "Warm up time in minutes. Defaults to 2 minutes");
-    options.addOption("sr", true, "Stale Read in minutes. Defaults to 2 minutes");
+    options.addOption("sr", true, "Stale Read in seconds. Defaults to 0 seconds");
     CommandLineParser parser = new DefaultParser();
     return parser.parse(options, args);
   }
@@ -106,8 +106,8 @@ public class LatencyBenchmark {
         commandLine.hasOption('m') ? Boolean.parseBoolean(commandLine.getOptionValue('m')) : false;
     int warmUpMinutes =
         commandLine.hasOption("wu") ? Integer.parseInt(commandLine.getOptionValue("wu")) : 2;
-    int staleReadMinutes =
-        commandLine.hasOption("sr") ? Integer.parseInt(commandLine.getOptionValue("sr")) : 2;
+    int staleReadSeconds =
+        commandLine.hasOption("sr") ? Integer.parseInt(commandLine.getOptionValue("sr")) : 0;
 
     System.out.println();
     System.out.println("Running benchmark with the following options");
@@ -118,7 +118,7 @@ public class LatencyBenchmark {
     System.out.printf("Use Multiplexed Sessions: %s\n", useMultiplexedSession);
     System.out.printf("Wait between queries: %dms\n", waitMillis);
     System.out.printf("Warm Up Minutes: %dm\n", warmUpMinutes);
-    System.out.printf("Stale Read Minutes: %dm\n", staleReadMinutes);
+    System.out.printf("Stale Read Seconds: %ds\n", staleReadSeconds);
 
     System.out.println("Running benchmarking with skipping gRPC");
     System.out.println();
@@ -131,14 +131,14 @@ public class LatencyBenchmark {
         waitMillis,
         useMultiplexedSession,
         warmUpMinutes,
-        staleReadMinutes);
+        staleReadSeconds);
   }
 
-  public static void printResults(String header, List<Duration> results) {
+  public static void printResults(String header, List<Integer> results) {
     if (results == null) {
       return;
     }
-    List<Duration> orderedResults = new ArrayList<>(results);
+    List<Integer> orderedResults = new ArrayList<>(results);
     Collections.sort(orderedResults);
     System.out.println();
     System.out.println(header);
@@ -149,13 +149,11 @@ public class LatencyBenchmark {
     System.out.printf("P99: %.2fµs\n", percentile(99, orderedResults));
   }
 
-  private static double percentile(int percentile, List<Duration> orderedResults) {
-    return orderedResults.get(percentile * orderedResults.size() / 100).get(ChronoUnit.NANOS)
-        / 1_000.0f;
+  private static double percentile(int percentile, List<Integer> orderedResults) {
+    return percentiles().index(percentile).compute(orderedResults) / 1_000.0f;
   }
 
-  private static double avg(List<Duration> results) {
-    return results.stream()
-        .collect(Collectors.averagingDouble(result -> result.get(ChronoUnit.NANOS) / 1_000.0f));
+  private static double avg(List<Integer> results) {
+    return results.stream().collect(Collectors.averagingDouble(result -> result / 1_000.0f));
   }
 }
