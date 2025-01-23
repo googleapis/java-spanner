@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 abstract class AbstractRunner implements BenchmarkRunner {
-  static final int TOTAL_RECORDS = 1000000;
+  static final int TOTAL_RECORDS = 100000;
   static final int READ_RANGE = 99;
   static final String TABLE_NAME = "Employees";
   static final String SELECT_QUERY = "SELECT ID FROM Employees WHERE ID=@id";

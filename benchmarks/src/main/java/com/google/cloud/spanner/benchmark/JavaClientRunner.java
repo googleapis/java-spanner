@@ -421,7 +421,7 @@ class JavaClientRunner extends AbstractRunner {
   }
 
   static int getRandomReadKey() {
-    return ThreadLocalRandom.current().nextInt(READ_RANGE);
+    return ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
   }
 
   static Statement getRandomisedReadStatement() {
