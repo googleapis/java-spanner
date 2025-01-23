@@ -22,6 +22,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.GceTestEnvConfig;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
@@ -34,6 +35,7 @@ import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConne
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.rpc.RetryInfo;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
@@ -367,5 +369,12 @@ public abstract class ITAbstractSpannerTest {
       }
     }
     return false;
+  }
+
+  protected boolean isMultiplexedSessionsEnabledForRW(Spanner spanner) {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }
