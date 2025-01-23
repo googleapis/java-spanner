@@ -345,7 +345,7 @@ class JavaClientRunner extends AbstractRunner {
     columns.add(ID_COLUMN_NAME);
     try (ResultSet resultSet =
         client
-            .singleUse(TimestampBound.strong())
+            .singleUse(TimestampBound.ofExactStaleness(staleReadMinutes, TimeUnit.MINUTES))
             .read(
                 TABLE_NAME,
                 KeySet.singleKey(com.google.cloud.spanner.Key.of(getRandomReadKey())),
