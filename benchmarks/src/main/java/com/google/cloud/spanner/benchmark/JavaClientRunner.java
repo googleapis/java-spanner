@@ -269,7 +269,7 @@ class JavaClientRunner extends AbstractRunner {
       DoubleHistogram endToEndLatencies,
       boolean skipTrailers,
       boolean doWarmUp) {
-    List<Duration> results = new ArrayList<>(numOperations);
+    List<Duration> results = new ArrayList<>();
     // Execute one query to make sure everything has been warmed up.
     Instant endTime = Instant.now().plus(warmUpMinutes, ChronoUnit.MINUTES);
     setWarmUpEndTime(endTime);
@@ -283,7 +283,8 @@ class JavaClientRunner extends AbstractRunner {
           false);
     }
     operationStarted(true);
-    for (int i = 0; i < numOperations; i++) {
+    endTime = Instant.now().plus(numOperations, ChronoUnit.MINUTES);
+    while(Instant.now().isBefore(endTime)) {
       try {
         randomWait(waitMillis);
         results.add(

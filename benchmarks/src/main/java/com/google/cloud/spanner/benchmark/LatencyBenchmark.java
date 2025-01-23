@@ -113,7 +113,7 @@ public class LatencyBenchmark {
     System.out.println("Running benchmark with the following options");
     System.out.printf("Database: %s\n", databaseId);
     System.out.printf("Clients: %d\n", clients);
-    System.out.printf("Operations: %d\n", operations);
+    System.out.printf("Number of Minutes: %dm\n", operations);
     System.out.printf("Transaction type: %s\n", transactionType);
     System.out.printf("Use Multiplexed Sessions: %s\n", useMultiplexedSession);
     System.out.printf("Wait between queries: %dms\n", waitMillis);
