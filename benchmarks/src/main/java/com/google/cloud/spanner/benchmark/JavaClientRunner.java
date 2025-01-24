@@ -69,6 +69,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 class JavaClientRunner extends AbstractRunner {
   private final DatabaseId databaseId;
@@ -123,8 +124,8 @@ class JavaClientRunner extends AbstractRunner {
         SessionPoolOptionsHelper.setUseMultiplexedSession(
                 SessionPoolOptions.newBuilder(), useMultiplexedSession)
             .build();
-//    SpannerOptions.enableOpenTelemetryMetrics();
-//    SpannerOptions.enableOpenTelemetryTraces();
+    //    SpannerOptions.enableOpenTelemetryMetrics();
+    //    SpannerOptions.enableOpenTelemetryTraces();
 
     ClientInterceptor clientInterceptor =
         new ClientInterceptor() {
@@ -167,8 +168,8 @@ class JavaClientRunner extends AbstractRunner {
 
     SpannerOptions options =
         SpannerOptions.newBuilder()
-//            .setOpenTelemetry(openTelemetry)
-//            .setEnableEndToEndTracing(true)
+            //            .setOpenTelemetry(openTelemetry)
+            //            .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
             //            .setInterceptorProvider(
@@ -305,9 +306,13 @@ class JavaClientRunner extends AbstractRunner {
       DoubleHistogram endToEndLatencies,
       boolean recordLatency) {
     Stopwatch watch = Stopwatch.createStarted();
+    Duration elapsedTime = null;
     switch (transactionType) {
       case READ_ONLY_STALE_READ:
         executeSingleUseReadOnlyStaleReadTransaction(client, staleReadSeconds, skipTrailers);
+      case COMMIT:
+        elapsedTime = executeCommit(client, skipTrailers);
+        break;
       case READ_ONLY_SINGLE_USE:
         executeSingleUseReadOnlyTransaction(client, skipTrailers);
         break;
@@ -318,11 +323,26 @@ class JavaClientRunner extends AbstractRunner {
         executeReadWriteTransaction(client);
         break;
     }
-    Duration elapsedTime = watch.elapsed();
+
+    elapsedTime = Optional.ofNullable(elapsedTime).orElse(watch.elapsed());
     if (recordLatency) {
       endToEndLatencies.record(elapsedTime.toMillis());
     }
     return elapsedTime;
+  }
+
+  private Duration executeCommit(DatabaseClient client, boolean skipTrailers) {
+    AtomicReference<Duration> executeQueryDuration = new AtomicReference<>();
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    client
+        .readWriteTransaction(Options.skippingTrailerOption(skipTrailers))
+        .run(
+            transaction -> {
+              transaction.executeQuery(Statement.of("SELECT 1"));
+              executeQueryDuration.set(stopwatch.elapsed());
+              return null;
+            });
+    return stopwatch.elapsed().minus(executeQueryDuration.get());
   }
 
   private void executeSingleUseReadOnlyStaleReadTransaction(

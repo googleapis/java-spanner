@@ -21,7 +21,8 @@ public interface BenchmarkRunner {
     READ_ONLY_SINGLE_USE,
     READ_ONLY_MULTI_USE,
     READ_WRITE,
-    READ_ONLY_STALE_READ
+    READ_ONLY_STALE_READ,
+    COMMIT
   }
 
   void execute(

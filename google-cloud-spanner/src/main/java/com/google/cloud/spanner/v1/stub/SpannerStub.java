@@ -111,6 +111,10 @@ public abstract class SpannerStub implements BackgroundResource {
     throw new UnsupportedOperationException("Not implemented: commitCallable()");
   }
 
+  public UnaryCallable<CommitRequest, CommitResponse> commitSkipTrailersCallable() {
+    throw new UnsupportedOperationException("Not implemented: SkipTrailers()");
+  }
+
   public UnaryCallable<RollbackRequest, Empty> rollbackCallable() {
     throw new UnsupportedOperationException("Not implemented: rollbackCallable()");
   }

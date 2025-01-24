@@ -52,7 +52,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private TimeUnit streamWaitTimeoutUnit;
   private long streamWaitTimeoutValue;
   private SpannerException error;
-  private boolean skipTrailers;
+  private final boolean skipTrailers;
 
   @VisibleForTesting
   GrpcStreamIterator(int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {

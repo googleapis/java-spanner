@@ -476,7 +476,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture;
           final ISpan opSpan = tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span);
           try (IScope ignore = tracer.withSpan(opSpan)) {
-            commitFuture = rpc.commitAsync(commitRequest, getTransactionChannelHint());
+            if(options.skipTrailers()) {
+              commitFuture = rpc.commitAsyncSkipTrailers(commitRequest, getTransactionChannelHint());
+            } else {
+              commitFuture = rpc.commitAsync(commitRequest, getTransactionChannelHint());
+            }
           }
           session.markUsed(clock.instant());
           commitFuture.addListener(

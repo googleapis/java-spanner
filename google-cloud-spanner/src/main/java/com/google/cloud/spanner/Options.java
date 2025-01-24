@@ -393,7 +393,7 @@ public final class Options implements Serializable {
   }
 
   static final class SkippingTrailerOption extends InternalOption
-      implements QueryOption, ReadOption {
+      implements QueryOption, ReadOption, TransactionOption {
 
     boolean skipTrailers;
 

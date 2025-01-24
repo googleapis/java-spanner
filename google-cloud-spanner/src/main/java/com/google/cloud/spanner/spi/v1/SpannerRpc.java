@@ -479,6 +479,9 @@ public interface SpannerRpc extends ServiceRpc {
   ApiFuture<CommitResponse> commitAsync(
       CommitRequest commitRequest, @Nullable Map<Option, ?> options);
 
+  ApiFuture<CommitResponse> commitAsyncSkipTrailers(
+      CommitRequest commitRequest, @Nullable Map<Option, ?> options);
+
   default RetrySettings getCommitRetrySettings() {
     return SpannerStubSettings.newBuilder().commitSettings().getRetrySettings();
   }

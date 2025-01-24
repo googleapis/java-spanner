@@ -1845,6 +1845,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public ApiFuture<CommitResponse> commitAsyncSkipTrailers(CommitRequest request,
+      @Nullable Map<Option, ?> options) {
+    GrpcCallContext context =
+        newCallContext(options, request.getSession(), request, SpannerGrpc.getCommitMethod(), true);
+    return spannerStub.commitSkipTrailersCallable().futureCall(request, context);
+  }
+
+  @Override
   public CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException {
     return get(commitAsync(commitRequest, options));
