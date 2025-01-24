@@ -189,19 +189,6 @@ class JavaClientRunner extends AbstractRunner {
             .build();
     try (Spanner spanner = options.getService()) {
       DatabaseClient databaseClient = spanner.getDatabaseClient(databaseId);
-      System.out.println("Running tests with skipping trailers...");
-      executeBenchmarkAndPrintResults(
-          numClients,
-          databaseClient,
-          transactionType,
-          numOperations,
-          waitMillis,
-          warmUpMinutes,
-          staleReadSeconds,
-          endToEndLatencies,
-          true,
-          true);
-
       System.out.println("Running tests without skipping trailers ...");
       executeBenchmarkAndPrintResults(
           numClients,
@@ -214,6 +201,19 @@ class JavaClientRunner extends AbstractRunner {
           endToEndLatencies,
           false,
           false);
+
+      System.out.println("Running tests with skipping trailers...");
+      executeBenchmarkAndPrintResults(
+          numClients,
+          databaseClient,
+          transactionType,
+          numOperations,
+          waitMillis,
+          warmUpMinutes,
+          staleReadSeconds,
+          endToEndLatencies,
+          true,
+          true);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
     }
