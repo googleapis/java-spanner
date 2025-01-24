@@ -69,6 +69,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 class JavaClientRunner extends AbstractRunner {
@@ -338,7 +339,11 @@ class JavaClientRunner extends AbstractRunner {
         .readWriteTransaction(Options.skippingTrailerOption(skipTrailers))
         .run(
             transaction -> {
-              transaction.executeQuery(Statement.of("SELECT 1"));
+              try(ResultSet resultSet = transaction.executeQuery(Statement.of("SELECT 1"))) {
+                while (resultSet.next()) {
+                  resultSet.getCurrentRowAsStruct();
+                }
+              }
               executeQueryDuration.set(stopwatch.elapsed());
               return null;
             });
