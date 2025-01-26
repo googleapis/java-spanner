@@ -22,6 +22,8 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_D
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_PARTITION_MODE_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CHANNEL_PROVIDER_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_CERTIFICATE_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_KEY_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CREDENTIALS_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CREDENTIALS_PROVIDER_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DATABASE_ROLE_PROPERTY_NAME;
@@ -33,6 +35,8 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CHANNEL_PROVIDER;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_CERTIFICATE;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_KEY;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CREDENTIALS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATABASE_ROLE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATA_BOOST_ENABLED;
@@ -192,6 +196,20 @@ public class ConnectionProperties {
           BooleanConverter.INSTANCE,
           Context.STARTUP);
 
+  static final ConnectionProperty<String> CLIENT_CERTIFICATE =
+      create(
+          CLIENT_CERTIFICATE_PROPERTY_NAME,
+          "Specifies the file path to the client certificate required for establishing an mTLS connection.",
+          DEFAULT_CLIENT_CERTIFICATE,
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
+  static final ConnectionProperty<String> CLIENT_KEY =
+      create(
+          CLIENT_KEY_PROPERTY_NAME,
+          "Specifies the file path to the client private key required for establishing an mTLS connection.",
+          DEFAULT_CLIENT_KEY,
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<String> CREDENTIALS_URL =
       create(
           CREDENTIALS_PROPERTY_NAME,
