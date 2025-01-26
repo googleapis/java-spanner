@@ -52,6 +52,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options.RpcLockHint;
 import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
@@ -90,6 +91,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -1755,6 +1757,53 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testUnsupportedTransactionWithLockHintOption() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .read(
+                READ_TABLE_NAME,
+                KeySet.singleKey(Key.of(1L)),
+                READ_COLUMN_NAMES,
+                Options.lockHint(RpcLockHint.EXCLUSIVE))) {
+      consumeResults(resultSet);
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    // lock hint is only supported in  ReadWriteTransaction
+    assertEquals(LockHint.LOCK_HINT_UNSPECIFIED, request.getLockHint());
+  }
+
+  @Test
+  public void testReadWriteTransactionWithLockHint() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.lockHint(RpcLockHint.EXCLUSIVE))) {
+            consumeResults(resultSet);
+          }
+          return null;
+        });
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertEquals(LockHint.LOCK_HINT_EXCLUSIVE, request.getLockHint());
+  }
+
+  @Test
   public void testExecuteReadWithDirectedReadOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -3093,15 +3142,20 @@ public class DatabaseClientImplTest {
                         .readWriteTransaction()
                         .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
             // No additional requests should have been sent by the client.
-            // Note that in case of the use of multiplexed sessions, then we have 2 requests:
-            // Note that in case of the use of regular sessions, then we have 1 request:
-            // 1. BatchCreateSessions for the session pool.
-            // 2. CreateSession for the multiplexed session.
-            assertThat(mockSpanner.getRequests())
-                .hasSize(
-                    spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()
-                        ? 2
-                        : 1);
+            if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()
+                && !spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+              // Note that in case of the use of multiplexed sessions for read-only alone, then we
+              // have 2 requests:
+              // 1. BatchCreateSessions for the session pool.
+              // 2. CreateSession for the multiplexed session.
+              assertThat(mockSpanner.getRequests()).hasSize(2);
+            } else {
+              // Note that in case of the use of regular sessions, then we have 1 request:
+              // BatchCreateSessions for the session pool.
+              // Note that in case of the use of multiplexed sessions for read-write, then we have 1
+              // request: CreateSession for the multiplexed session.
+              assertThat(mockSpanner.getRequests()).hasSize(1);
+            }
           }
         }
         mockSpanner.reset();
