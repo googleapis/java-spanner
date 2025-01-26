@@ -71,9 +71,13 @@ import io.grpc.Context;
 import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -737,7 +741,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
-    channelConfigurator = builder.channelConfigurator;
+    if (builder.mTLSContext != null) {
+      channelConfigurator =
+          channelBuilder -> {
+            if (builder.channelConfigurator != null) {
+              channelBuilder = builder.channelConfigurator.apply(channelBuilder);
+            }
+            if (channelBuilder instanceof NettyChannelBuilder) {
+              ((NettyChannelBuilder) channelBuilder).sslContext(builder.mTLSContext);
+            }
+            return channelBuilder;
+          };
+    } else {
+      channelConfigurator = builder.channelConfigurator;
+    }
     interceptorProvider = builder.interceptorProvider;
     sessionPoolOptions =
         builder.sessionPoolOptions != null
@@ -952,6 +969,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
+    private SslContext mTLSContext = null;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1482,6 +1500,27 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setEmulatorHost(String emulatorHost) {
       this.emulatorHost = emulatorHost;
+      return this;
+    }
+
+    /**
+     * Configures mTLS authentication using the provided client certificate and key files. mTLS is
+     * only supported for external spanner hosts.
+     *
+     * @param clientCertificate Path to the client certificate file.
+     * @param clientCertificateKey Path to the client private key file.
+     * @throws SpannerException If an error occurs while configuring the mTLS context
+     */
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3574")
+    public Builder useClientCert(String clientCertificate, String clientCertificateKey) {
+      try {
+        this.mTLSContext =
+            GrpcSslContexts.forClient()
+                .keyManager(new File(clientCertificate), new File(clientCertificateKey))
+                .build();
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
       return this;
     }
 
