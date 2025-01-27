@@ -200,7 +200,7 @@ class JavaClientRunner extends AbstractRunner {
           staleReadSeconds,
           endToEndLatencies,
           false,
-          false);
+          true);
 
       System.out.println("Running tests with skipping trailers...");
       executeBenchmarkAndPrintResults(
@@ -213,7 +213,7 @@ class JavaClientRunner extends AbstractRunner {
           staleReadSeconds,
           endToEndLatencies,
           true,
-          true);
+          false);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
     }
