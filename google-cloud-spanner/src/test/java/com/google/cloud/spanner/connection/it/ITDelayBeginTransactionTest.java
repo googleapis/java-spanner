@@ -53,8 +53,6 @@ public class ITDelayBeginTransactionTest extends ITAbstractSpannerTest {
   @Before
   public void setupTestData() {
     try (ITConnection connection = createConnection()) {
-      connection.execute(Statement.of("SELECT 1"));
-      connection.commit();
       connection.bufferedWrite(Mutation.delete("TEST", KeySet.all()));
       connection.commit();
 

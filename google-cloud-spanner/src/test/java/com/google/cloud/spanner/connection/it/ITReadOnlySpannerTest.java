@@ -69,7 +69,6 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
         verifier.verifyStatementsInFile(
             "ITReadOnlySpannerTest_CreateTables.sql", SqlScriptVerifier.class, false);
 
-        connection.execute(Statement.of("SELECT 1"));
         // fill tables with data
         connection.setAutocommit(false);
         connection.setReadOnly(false);

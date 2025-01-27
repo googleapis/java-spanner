@@ -74,8 +74,6 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
   @Before
   public void clearTable() {
     try (ITConnection connection = createConnection()) {
-      connection.execute(Statement.of("SELECT 1"));
-      connection.commit();
       connection.bufferedWrite(Mutation.delete("TEST", KeySet.all()));
       connection.commit();
     }
@@ -174,7 +172,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // verify that the there is no test record
       try (ResultSet rs =
           connection.executeQuery(Statement.of("SELECT COUNT(*) AS C FROM TEST WHERE ID=1"))) {
@@ -219,7 +218,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         assertThat(rs.getLong("C"), is(equalTo(0L)));
         assertThat(rs.next(), is(false));
       }
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // indicate that the next statement should abort
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
@@ -245,7 +245,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // verify that the there is no test record
       try (ResultSet rs =
           connection.executeQuery(Statement.of("SELECT COUNT(*) AS C FROM TEST WHERE ID=1"))) {
@@ -289,7 +290,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         assertThat(rs.getLong("C"), is(equalTo(0L)));
         assertThat(rs.next(), is(false));
       }
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert a test record
       connection.executeUpdate(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')"));
@@ -327,7 +329,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       connection.executeUpdate(Statement.of("INSERT INTO TEST (ID, NAME) VALUES (2, 'test 2')"));
       // do a query
       try (ResultSet rs = connection.executeQuery(Statement.of("SELECT * FROM TEST ORDER BY ID"))) {
-        interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+        interceptor.setUsingMultiplexedSession(
+            isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
         // the first record should be accessible without any problems
         assertThat(rs.next(), is(true));
         assertThat(rs.getLong("ID"), is(equalTo(1L)));
@@ -365,7 +368,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         assertThat(rs.getLong("C"), is(equalTo(0L)));
         assertThat(rs.next(), is(false));
       }
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // do three inserts which all will abort and retry
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
@@ -413,7 +417,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         assertThat(rs.getString("NAME"), is(equalTo("test 1")));
         assertThat(rs.next(), is(false));
       }
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // do another insert that will abort and retry
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
@@ -448,7 +453,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         // iterate one step
         assertThat(rs.next(), is(true));
         assertThat(rs.getLong("ID"), is(equalTo(1L)));
-        interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+        interceptor.setUsingMultiplexedSession(
+            isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
         // do another insert that will abort and retry
         interceptor.setProbability(1.0);
         interceptor.setOnlyInjectOnce(true);
@@ -485,7 +491,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
           // do nothing, just consume the result set
         }
       }
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // do another insert that will abort and retry
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
@@ -523,7 +530,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // now try to do an insert that will abort. The retry should now fail as there has been a
       // concurrent modification
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       boolean expectedException = false;
@@ -563,7 +571,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // now try to do an insert that will abort. The retry should now fail as there has been a
       // concurrent modification
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       boolean expectedException = false;
@@ -603,7 +612,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // now try to do an insert that will abort. The retry should now fail as there has been a
       // concurrent modification
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       boolean expectedException = false;
@@ -643,7 +653,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         connection2.commit();
       }
       // now try to do an insert that will abort. The retry should still succeed.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       int currentRetryCount = RETRY_STATISTICS.totalRetryAttemptsStarted;
@@ -729,7 +740,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
       // First verify that the transaction has not yet retried.
       int currentRetryCount = RETRY_STATISTICS.totalRetryAttemptsStarted;
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
 
@@ -776,7 +788,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // Now try to do an insert that will abort. The retry should now fail as there has been a
       // concurrent modification.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       boolean expectedException = false;
@@ -824,7 +837,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         };
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.executeUpdate(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')"));
       connection.commit();
@@ -870,7 +884,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         };
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       connection.executeUpdate(
           Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')"));
       connection.commit();
@@ -925,7 +940,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         };
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // Insert two test records.
       connection.executeUpdate(Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test 1')"));
       connection.executeUpdate(Statement.of("INSERT INTO TEST (ID, NAME) VALUES (2, 'test 2')"));
@@ -1006,7 +1022,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // Now try to do an insert that will abort. The retry should now fail as there has been a
       // concurrent modification.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       boolean expectedException = false;
@@ -1055,7 +1072,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // Now try to do an insert that will abort. The retry should now fail as there has been a
       // concurrent modification.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       boolean expectedException = false;
@@ -1111,7 +1129,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         }
       }
       // now try to do an insert that will abort.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       connection.executeUpdate(Statement.of("INSERT INTO TEST (ID, NAME) VALUES (3, 'test 3')"));
@@ -1170,7 +1189,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // Now try to do an insert that will abort. The subsequent retry will fail as the SELECT *
       // FROM FOO now returns a result.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       try {
@@ -1237,7 +1257,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // Now try to do an insert that will abort. The subsequent retry will fail as the INSERT INTO
       // FOO now succeeds.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       try {
@@ -1306,7 +1327,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // Now try to do an insert that will abort. The subsequent retry will fail as the SELECT *
       // FROM FOO now fails.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       try {
@@ -1367,7 +1389,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       // Now try to do an insert that will abort. The subsequent retry will fail as the INSERT INTO
       // FOO now fails.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       try {
@@ -1429,7 +1452,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         connection2.execute(Statement.of("DROP TABLE FOO"));
       }
       // try to continue to consume the result set, but this will now abort.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       try {
@@ -1471,7 +1495,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         }
       }
       // Do an update that will abort and retry.
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       interceptor.setProbability(1.0);
       interceptor.setOnlyInjectOnce(true);
       connection.executeUpdate(
@@ -1502,7 +1527,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
     AbortInterceptor interceptor = new AbortInterceptor(0.25D);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
-      interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+      interceptor.setUsingMultiplexedSession(
+          isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
       // insert test records
       for (int i = 0; i < NUMBER_OF_TEST_RECORDS; i++) {
         connection.bufferedWrite(
@@ -1569,7 +1595,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
         }
         // Now try to consume the result set, but the call to next() will throw an AbortedException.
         // The retry should still succeed.
-        interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+        interceptor.setUsingMultiplexedSession(
+            isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
         interceptor.setProbability(1.0);
         interceptor.setOnlyInjectOnce(true);
         int currentSuccessfulRetryCount = RETRY_STATISTICS.totalSuccessfulRetries;
@@ -1594,7 +1621,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
           connection2.commit();
         }
         // this time the abort will occur on the call to commit()
-        interceptor.setUsingMultiplexedSession(isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
+        interceptor.setUsingMultiplexedSession(
+            isMultiplexedSessionsEnabledForRW(connection.getSpanner()));
         interceptor.setProbability(1.0);
         interceptor.setOnlyInjectOnce(true);
         boolean expectedException = false;

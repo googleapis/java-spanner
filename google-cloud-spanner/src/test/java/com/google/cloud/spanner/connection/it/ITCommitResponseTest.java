@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
-import com.google.cloud.spanner.BackupInfo.State;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
@@ -52,10 +51,7 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
   @Before
   public void clearTestData() {
     try (ITConnection connection = createConnection()) {
-      connection.execute(Statement.of("SELECT 1"));
-      connection.commit();
       connection.bufferedWrite(Mutation.delete("TEST", KeySet.all()));
-      //connection.executeUpdate(Statement.of("DELETE FROM TEST WHERE TRUE"));
       connection.commit();
     }
   }

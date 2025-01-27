@@ -28,7 +28,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
-import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Before;
@@ -65,19 +64,12 @@ public class ITExplainTest extends ITAbstractSpannerTest {
         connection.runBatch();
       }
     }
-    try {
-      Thread.sleep(3000);
-    } catch (Exception e) {
-      System.out.println(e);
-    }
   }
 
   @Test
   public void testExplainStatement() {
     assumeFalse("Emulator does not support PostgreSQL Dialect", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
-      connection.execute(Statement.of("SELECT 1"));
-      connection.commit();
       connection.bufferedWrite(
           Arrays.asList(
               Mutation.newInsertBuilder("TEST").set("ID").to(3L).set("NAME").to("TEST-3").build(),
@@ -97,8 +89,6 @@ public class ITExplainTest extends ITAbstractSpannerTest {
   public void testExplainAnalyzeStatement() {
     assumeFalse("Emulator does not support PostgreSQL Dialect", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
-      connection.execute(Statement.of("SELECT 1"));
-      connection.commit();
       connection.bufferedWrite(
           Arrays.asList(
               Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST-1").build(),
