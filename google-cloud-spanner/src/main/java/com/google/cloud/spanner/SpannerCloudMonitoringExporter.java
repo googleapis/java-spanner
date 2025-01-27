@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 import java.time.Duration;
@@ -49,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -66,7 +68,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   // https://cloud.google.com/monitoring/quotas#custom_metrics_quotas.
   private static final int EXPORT_BATCH_SIZE_LIMIT = 200;
   private final AtomicBoolean spannerExportFailureLogged = new AtomicBoolean(false);
-  private CompletableResultCode lastExportCode;
+  private final AtomicBoolean lastExportSkippedData = new AtomicBoolean(false);
   private final MetricServiceClient client;
   private final String spannerProjectId;
 
@@ -101,44 +103,49 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   }
 
   @Override
-  public CompletableResultCode export(Collection<MetricData> collection) {
+  public CompletableResultCode export(@Nonnull Collection<MetricData> collection) {
     if (client.isShutdown()) {
       logger.log(Level.WARNING, "Exporter is shut down");
       return CompletableResultCode.ofFailure();
     }
 
-    this.lastExportCode = exportSpannerClientMetrics(collection);
-    return lastExportCode;
+    return exportSpannerClientMetrics(collection);
   }
 
   /** Export client built in metrics */
   private CompletableResultCode exportSpannerClientMetrics(Collection<MetricData> collection) {
-    // Filter spanner metrics
+    // Filter spanner metrics. Only include metrics that contain a project and instance ID.
     List<MetricData> spannerMetricData =
         collection.stream()
             .filter(md -> SPANNER_METRICS.contains(md.getName()))
             .collect(Collectors.toList());
 
+    // Log warnings for metrics that will be skipped.
+    boolean mustFilter = false;
+    if (spannerMetricData.stream()
+        .flatMap(metricData -> metricData.getData().getPoints().stream())
+        .anyMatch(this::shouldSkipPointDataDueToProjectId)) {
+      logger.log(
+          Level.WARNING, "Some metric data contain a different projectId. These will be skipped.");
+      mustFilter = true;
+    }
+    if (spannerMetricData.stream()
+        .flatMap(metricData -> metricData.getData().getPoints().stream())
+        .anyMatch(this::shouldSkipPointDataDueToMissingInstanceId)) {
+      logger.log(Level.WARNING, "Some metric data miss instanceId. These will be skipped.");
+      mustFilter = true;
+    }
+    if (mustFilter) {
+      spannerMetricData =
+          spannerMetricData.stream()
+              .filter(this::shouldSkipMetricData)
+              .collect(Collectors.toList());
+    }
+    lastExportSkippedData.set(mustFilter);
+
     // Skips exporting if there's none
     if (spannerMetricData.isEmpty()) {
       return CompletableResultCode.ofSuccess();
-    }
-
-    // Verifies metrics project id is the same as the spanner project id set on this client
-    if (!spannerMetricData.stream()
-        .flatMap(metricData -> metricData.getData().getPoints().stream())
-        .allMatch(
-            pd -> spannerProjectId.equals(SpannerCloudMonitoringExporterUtils.getProjectId(pd)))) {
-      logger.log(Level.WARNING, "Metric data has a different projectId. Skipping export.");
-      return CompletableResultCode.ofFailure();
-    }
-
-    // Verifies if metrics data has missing instance id.
-    if (spannerMetricData.stream()
-        .flatMap(metricData -> metricData.getData().getPoints().stream())
-        .anyMatch(pd -> SpannerCloudMonitoringExporterUtils.getInstanceId(pd) == null)) {
-      logger.log(Level.WARNING, "Metric data has missing instanceId. Skipping export.");
-      return CompletableResultCode.ofFailure();
     }
 
     List<TimeSeries> spannerTimeSeries;
@@ -190,6 +197,26 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     return spannerExportCode;
   }
 
+  private boolean shouldSkipMetricData(MetricData metricData) {
+    return metricData.getData().getPoints().stream()
+        .anyMatch(
+            pd ->
+                shouldSkipPointDataDueToProjectId(pd)
+                    || shouldSkipPointDataDueToMissingInstanceId(pd));
+  }
+
+  private boolean shouldSkipPointDataDueToProjectId(PointData pointData) {
+    return !spannerProjectId.equals(SpannerCloudMonitoringExporterUtils.getProjectId(pointData));
+  }
+
+  private boolean shouldSkipPointDataDueToMissingInstanceId(PointData pointData) {
+    return SpannerCloudMonitoringExporterUtils.getInstanceId(pointData) == null;
+  }
+
+  boolean lastExportSkippedData() {
+    return this.lastExportSkippedData.get();
+  }
+
   private ApiFuture<List<Empty>> exportTimeSeriesInBatch(
       ProjectName projectName, List<TimeSeries> timeSeries) {
     List<ApiFuture<Empty>> batchResults = new ArrayList<>();
@@ -233,7 +260,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
    * metric over time.
    */
   @Override
-  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+  public AggregationTemporality getAggregationTemporality(@Nonnull InstrumentType instrumentType) {
     return AggregationTemporality.CUMULATIVE;
   }
 }
