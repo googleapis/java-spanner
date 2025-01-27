@@ -132,7 +132,10 @@ public class ITJsonWriteReadTest {
                               .to(Value.json(jsonStr))
                               .build())));
 
-      if(env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+      if (env.getTestHelper()
+          .getOptions()
+          .getSessionPoolOptions()
+          .getUseMultiplexedSessionForRW()) {
         assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
       } else {
         assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());

@@ -108,15 +108,6 @@ public class ITPgNumericTest {
                 "CREATE TABLE \"" + tableName + "\" (id BIGINT PRIMARY KEY, col1 NUMERIC)"),
             null)
         .get(OPERATION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
-
-    databaseClient.readWriteTransaction().run(
-        transaction -> {
-          ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"));
-          while (rs.next()) {
-            // do nothing
-          }
-          return null;
-        });
   }
 
   @Test
@@ -333,14 +324,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsInt() {
-    databaseClient.readWriteTransaction().run(
-        transaction -> {
-          ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"));
-          while (rs.next()) {
-            // do nothing
-          }
-          return null;
-        });
     databaseClient
         .readWriteTransaction()
         .run(
@@ -367,14 +350,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsLong() {
-    databaseClient.readWriteTransaction().run(
-        transaction -> {
-          ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"));
-          while (rs.next()) {
-            // do nothing
-          }
-          return null;
-        });
     databaseClient
         .readWriteTransaction()
         .run(
@@ -401,14 +376,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsBigDecimal() {
-    databaseClient.readWriteTransaction().run(
-        transaction -> {
-          ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"));
-          while (rs.next()) {
-            // do nothing
-          }
-          return null;
-        });
     databaseClient
         .readWriteTransaction()
         .run(
@@ -446,14 +413,6 @@ public class ITPgNumericTest {
 
   @Test
   public void testMutationsWithPgNumericAsValue() {
-    databaseClient.readWriteTransaction().run(
-        transaction -> {
-          ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"));
-          while (rs.next()) {
-            // do nothing
-          }
-          return null;
-        });
     databaseClient
         .readWriteTransaction()
         .run(

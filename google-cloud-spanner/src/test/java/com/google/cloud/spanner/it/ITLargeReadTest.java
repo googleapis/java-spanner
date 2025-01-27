@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -102,11 +101,6 @@ public class ITLargeReadTest {
                         + ")"));
     postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     hasher = Hashing.goodFastHash(64);
-    try {
-      Thread.sleep(10000);
-    } catch (Exception e) {
-
-    }
     List<Mutation> mutations = new ArrayList<>();
     Random rnd = new Random();
     int totalSize = 0;

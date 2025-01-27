@@ -161,7 +161,10 @@ public class ITTransactionManagerAsyncTest {
         } catch (ExecutionException e) {
           assertThat(e.getCause()).isInstanceOf(SpannerException.class);
           SpannerException se = (SpannerException) e.getCause();
-          if(env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+          if (env.getTestHelper()
+              .getOptions()
+              .getSessionPoolOptions()
+              .getUseMultiplexedSessionForRW()) {
             assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
           } else {
             assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);

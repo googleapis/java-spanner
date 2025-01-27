@@ -120,15 +120,6 @@ public class ITPgJsonbTest {
                     + "\" (id BIGINT PRIMARY KEY, col1 JSONB, colarray JSONB[])"),
             null)
         .get(OPERATION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
-
-    databaseClient.readWriteTransaction().run(
-        transaction -> {
-          ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"));
-          while (rs.next()) {
-            // do nothing
-          }
-          return null;
-        });
   }
 
   @Test
@@ -421,14 +412,6 @@ public class ITPgJsonbTest {
 
   @Test
   public void testMutationsWithPgJsonbAsValue() {
-    databaseClient.readWriteTransaction().run(
-        transaction -> {
-          ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"));
-          while (rs.next()) {
-            // do nothing
-          }
-          return null;
-        });
     databaseClient
         .readWriteTransaction()
         .run(
