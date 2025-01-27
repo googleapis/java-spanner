@@ -291,7 +291,7 @@ class JavaClientRunner extends AbstractRunner {
                 staleReadSeconds,
                 transactionType,
                 endToEndLatencies,
-                true));
+                false));
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
       }
