@@ -106,13 +106,13 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, client_name)
             .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
             .put(BuiltInMetricsConstant.CLIENT_HASH_KEY, attributes.get("client_hash"))
+            .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, "i")
+            .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
+            .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
             .build();
 
     expectedCommonRequestAttributes =
         Attributes.builder()
-            .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, "i")
-            .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
-            .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
             .put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false")
             .build();
   }
@@ -308,7 +308,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .setApiTracerFactory(metricsTracerFactory)
             .build()
             .getService();
-    String instance = "test-instance";
+    String instance = "i";
     DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("test-project", instance, "d"));
 
     // Using this client will return UNAVAILABLE, as the server is not reachable and we have
@@ -319,29 +319,24 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
 
     Attributes expectedAttributesCreateSessionOK =
-        expectedBaseAttributes
+        expectedCommonBaseAttributes
             .toBuilder()
+            .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
             // Include the additional attributes that are added by the HeaderInterceptor in the
             // filter. Note that the DIRECT_PATH_USED attribute is not added, as the request never
             // leaves the client.
-            .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, instance)
-            .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
-            .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
             .build();
 
     Attributes expectedAttributesCreateSessionFailed =
-        expectedBaseAttributes
+        expectedCommonBaseAttributes
             .toBuilder()
             .put(BuiltInMetricsConstant.STATUS_KEY, "UNAVAILABLE")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
             // Include the additional attributes that are added by the HeaderInterceptor in the
             // filter. Note that the DIRECT_PATH_USED attribute is not added, as the request never
             // leaves the client.
-            .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, instance)
-            .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
-            .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
             .build();
 
     MetricData attemptCountMetricData =

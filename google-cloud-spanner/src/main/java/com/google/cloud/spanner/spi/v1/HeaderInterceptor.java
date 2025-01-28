@@ -123,9 +123,9 @@ class HeaderInterceptor implements ClientInterceptor {
           Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = databaseName + method.getFullMethodName();
-          TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
-          Attributes attributes =
-              getMetricAttributes(key, method.getFullMethodName(), databaseName);
+          TagContext openCensusTagContext = getOpenCensusTagContext(key, method.getFullMethodName(), databaseName);
+          Attributes customMetricAttributes =
+              getCustomMetricAttributes(key, method.getFullMethodName(), databaseName);
           Map<String, String> builtInMetricsAttributes =
               getBuiltInMetricAttributes(key, databaseName);
           addBuiltInMetricAttributes(compositeTracer, builtInMetricsAttributes);
@@ -154,12 +154,12 @@ class HeaderInterceptor implements ClientInterceptor {
     };
   }
 
-  private void processServerTimingHeader(
+  private void processHeader(
       Metadata metadata,
       TagContext tagContext,
       Attributes attributes,
       Span span,
-      Map<String, String> builtInMetricsAttributes, 
+      Map<String, String> builtInMetricsAttributes,
       Boolean isDirectPathUsed) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
@@ -182,7 +182,7 @@ class HeaderInterceptor implements ClientInterceptor {
         spannerRpcMetrics.recordGfeLatency(gfeLatency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
         // TODO: Also pass directpath used
-        builtInOpenTelemetryMetricsRecorder.recordGFELatency(latency, builtInMetricsAttributes);
+        builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, builtInMetricsAttributes);
 
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
@@ -254,7 +254,7 @@ class HeaderInterceptor implements ClientInterceptor {
                 .build());
   }
 
-  private Attributes buildCustomMetricAttributes(
+  private Attributes getCustomMetricAttributes(
       String key, String method, DatabaseName databaseName) throws ExecutionException {
     return attributesCache.get(
         key,
