@@ -408,7 +408,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           // At this point, it is ensured that the transaction contains only mutations. Adding a
           // safeguard to apply this only for multiplexed sessions.
           if (session.getIsMultiplexed()) {
-            mutationsOnlyTransaction = true;
+            mutationsOnlyTransaction = false;
           }
           createTxnAsync(finishOps, randomMutation);
         } else {
