@@ -57,7 +57,7 @@ fi
 
 INSTALL_OPTS=""
 if [[ $ENABLE_AIRLOCK = 'true' ]]; then
-  INSTALL_OPTS="-Pairlock-trusted"
+  INSTALL_OPTS="-Pairlock-trusted,-release-sonatype"
   wget -q https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -O /tmp/maven.zip && \
     unzip /tmp/maven.zip -d /tmp/maven && \
     rm -r /usr/local/lib/maven && \
