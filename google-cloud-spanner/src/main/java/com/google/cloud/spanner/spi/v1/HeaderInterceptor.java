@@ -28,7 +28,6 @@ import com.google.cloud.spanner.BuiltInMetricsConstant;
 import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
-import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.spanner.admin.database.v1.DatabaseName;
@@ -57,6 +56,7 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -120,14 +120,14 @@ class HeaderInterceptor implements ClientInterceptor {
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
           Map<String, String> builtInMetricsAttributes =
               getBuiltInMetricAttributes(key, databaseName);
+          addBuiltInMetricAttributes(compositeTracer, builtInMetricsAttributes);
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
-                  addBuiltInMetricAttributes(
-                      compositeTracer, builtInMetricsAttributes, isDirectPathUsed);
+                  addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
                   processHeader(metadata, tagContext, attributes, span);
                   super.onHeaders(metadata);
                 }
@@ -241,16 +241,17 @@ class HeaderInterceptor implements ClientInterceptor {
   }
 
   private void addBuiltInMetricAttributes(
-      CompositeTracer compositeTracer,
-      Map<String, String> builtInMetricsAttributes,
-      Boolean isDirectPathUsed) {
+      CompositeTracer compositeTracer, Map<String, String> builtInMetricsAttributes) {
     if (compositeTracer != null) {
-      // Direct Path used attribute
-      Map<String, String> attributes = new HashMap<>(builtInMetricsAttributes);
-      attributes.put(
-          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
+      compositeTracer.addAttributes(builtInMetricsAttributes);
+    }
+  }
 
-      compositeTracer.addAttributes(attributes);
+  private void addDirectPathUsedAttribute(
+      CompositeTracer compositeTracer, Boolean isDirectPathUsed) {
+    if (compositeTracer != null) {
+      compositeTracer.addAttributes(
+          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
     }
   }
 
