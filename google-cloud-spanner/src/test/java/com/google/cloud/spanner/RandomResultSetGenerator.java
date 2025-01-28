@@ -86,6 +86,8 @@ public class RandomResultSetGenerator {
             .build(),
       };
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings({"ProtoBuilderReturnValueIgnored", "ReturnValueIgnored"})
   private static ResultSetMetadata generateMetadata() {
     StructType.Builder rowTypeBuilder = StructType.newBuilder();
     for (int col = 0; col < TYPES.length; col++) {

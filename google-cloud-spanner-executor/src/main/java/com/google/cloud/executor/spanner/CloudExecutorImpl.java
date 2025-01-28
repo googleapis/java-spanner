@@ -72,6 +72,8 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
     // Create a top-level OpenTelemetry span for streaming request.
     Tracer tracer = WorkerProxy.openTelemetrySdk.getTracer(CloudClientExecutor.class.getName());
     Span span = tracer.spanBuilder("java_systest_execute_actions_stream").setNoParent().startSpan();
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("MustBeClosedChecker")
     Scope scope = span.makeCurrent();
 
     final String traceId = span.getSpanContext().getTraceId();

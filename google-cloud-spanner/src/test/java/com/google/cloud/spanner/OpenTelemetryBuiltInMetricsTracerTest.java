@@ -279,6 +279,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     }
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("CheckReturnValue")
   @Test
   public void testMetricsWithGaxRetryUnaryRpc() {
     Stopwatch stopwatch = Stopwatch.createStarted();
