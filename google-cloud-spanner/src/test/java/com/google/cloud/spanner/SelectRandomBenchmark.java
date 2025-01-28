@@ -113,6 +113,8 @@ public class SelectRandomBenchmark {
   }
 
   /** Measures the time needed to execute a burst of read requests. */
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("ReturnValueIgnored")
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
     int totalQueries = server.maxSessions * 8;

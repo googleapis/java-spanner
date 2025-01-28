@@ -266,6 +266,8 @@ public class AbstractReadContextTest {
     assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("JUnit4TestNotRun")
   public void executeSqlRequestBuilderWithRequestOptions() {
     ExecuteSqlRequest request =
         context

@@ -40,6 +40,8 @@ public class BackupIdTest {
     assertThat(bid.toString()).isEqualTo(name);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("CheckReturnValue")
   @Test
   public void badName() {
     IllegalArgumentException e =

@@ -196,6 +196,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
     assertThat(getAggregatedValue(attemptCountMetricData, expectedAttributes)).isEqualTo(1);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("CheckReturnValue")
   @Test
   public void testMetricsWithGaxRetryUnaryRpc() {
     Stopwatch stopwatch = Stopwatch.createStarted();

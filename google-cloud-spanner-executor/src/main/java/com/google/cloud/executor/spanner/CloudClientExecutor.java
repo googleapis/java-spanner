@@ -2862,6 +2862,8 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Convert a struct to a proto(value list) for constructing result rows and struct values. */
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings({"ProtoBuilderReturnValueIgnored", "ReturnValueIgnored"})
   private com.google.spanner.executor.v1.ValueList buildStruct(StructReader struct) {
     com.google.spanner.executor.v1.ValueList.Builder structBuilder =
         com.google.spanner.executor.v1.ValueList.newBuilder();
