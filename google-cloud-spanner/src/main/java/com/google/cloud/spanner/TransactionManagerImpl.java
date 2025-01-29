@@ -99,7 +99,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   public TransactionContext resetForRetry() {
     if (txn == null || !txn.isAborted() && txnState != TransactionState.ABORTED) {
       throw new IllegalStateException(
-          "resetForRetry can only be called if the previous attempt" + " aborted");
+          "resetForRetry can only be called if the previous attempt aborted");
     }
     try (IScope s = tracer.withSpan(span)) {
       /*

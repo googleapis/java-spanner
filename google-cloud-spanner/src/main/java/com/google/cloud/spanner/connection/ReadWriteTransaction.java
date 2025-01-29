@@ -1262,6 +1262,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
+  public void resetForRetry() {
+    txContextFuture = ApiFutures.immediateFuture(txManager.resetForRetry());
+  }
+
+  @Override
   String getUnitOfWorkName() {
     return "read/write transaction";
   }
