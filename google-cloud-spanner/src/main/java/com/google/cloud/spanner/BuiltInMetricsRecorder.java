@@ -17,21 +17,24 @@
 package com.google.cloud.spanner;
 
 import com.google.api.gax.core.GaxProperties;
-import com.google.common.annotations.VisibleForTesting;
+import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.common.base.Preconditions;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
-import java.util.HashMap;
 import java.util.Map;
 
-/** OpenTelemetry implementation of recording built in metrics. */
-public class BuiltInOpenTelemetryMetricsRecorder {
+/**
+ * Implementation for recording built in metrics.
+ *
+ * <p>This class extends the {@link OpenTelemetryMetricsRecorder} which implements the *
+ * measurements related to the lifecyle of an RPC.
+ */
+class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
 
   private final DoubleHistogram gfeLatencyRecorder;
-  private final Map<String, String> attributes = new HashMap<>();
 
   /**
    * Creates the following instruments for the following metrics:
@@ -41,14 +44,10 @@ public class BuiltInOpenTelemetryMetricsRecorder {
    * </ul>
    *
    * @param openTelemetry OpenTelemetry instance
+   * @param serviceName Service Name
    */
-  public BuiltInOpenTelemetryMetricsRecorder(
-      OpenTelemetry openTelemetry, Map<String, String> clientAttributes) {
-    if (openTelemetry == null || clientAttributes == null) {
-      gfeLatencyRecorder = null;
-      return;
-    }
-
+  BuiltInMetricsRecorder(OpenTelemetry openTelemetry, String serviceName) {
+    super(openTelemetry, serviceName);
     Meter meter =
         openTelemetry
             .meterBuilder(BuiltInMetricsConstant.SPANNER_METER_NAME)
@@ -56,13 +55,11 @@ public class BuiltInOpenTelemetryMetricsRecorder {
             .build();
     this.gfeLatencyRecorder =
         meter
-            .histogramBuilder(
-                BuiltInMetricsConstant.METER_NAME + '/' + BuiltInMetricsConstant.GFE_LATENCIES_NAME)
+            .histogramBuilder(serviceName + '/' + BuiltInMetricsConstant.GFE_LATENCIES_NAME)
             .setDescription(
                 "Latency between Google's network receiving an RPC and reading back the first byte of the response")
             .setUnit("ms")
             .build();
-    this.attributes.putAll(clientAttributes);
   }
 
   /**
@@ -72,14 +69,10 @@ public class BuiltInOpenTelemetryMetricsRecorder {
    * @param gfeLatency Attempt Latency in ms
    * @param attributes Map of the attributes to store
    */
-  public void recordGFELatency(double gfeLatency, Map<String, String> attributes) {
-    if (gfeLatencyRecorder != null) {
-      this.attributes.putAll(attributes);
-      gfeLatencyRecorder.record(gfeLatency, toOtelAttributes(this.attributes));
-    }
+  void recordGFELatency(double gfeLatency, Map<String, String> attributes) {
+    gfeLatencyRecorder.record(gfeLatency, toOtelAttributes(attributes));
   }
 
-  @VisibleForTesting
   Attributes toOtelAttributes(Map<String, String> attributes) {
     Preconditions.checkNotNull(attributes, "Attributes map cannot be null");
     AttributesBuilder attributesBuilder = Attributes.builder();

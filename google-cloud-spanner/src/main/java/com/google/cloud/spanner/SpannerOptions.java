@@ -33,8 +33,6 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
-import com.google.api.gax.tracing.MetricsTracerFactory;
-import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.api.gax.tracing.OpencensusTracerFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
@@ -144,8 +142,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
-  private final BuiltInOpenTelemetryMetricsProvider builtInOpenTelemetryMetricsProvider =
-      BuiltInOpenTelemetryMetricsProvider.INSTANCE;
+  private final BuiltInMetricsProvider builtInMetricsProvider = BuiltInMetricsProvider.INSTANCE;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
@@ -1864,23 +1861,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
   }
 
-  /**
-   * Returns an instance of Built-In MetricsRecorder object. initializeBuiltInMetrics should be
-   * called first before this recorder can be fetched
-   */
-  public BuiltInOpenTelemetryMetricsRecorder getBuiltInMetricsRecorder() {
-    return this.builtInOpenTelemetryMetricsProvider.getBuiltInOpenTelemetryMetricsRecorder();
-  }
-
-  /** Initialize the built-in metrics provider */
-  public void initializeBuiltInMetrics() {
-    this.builtInOpenTelemetryMetricsProvider.initialize(
-        this.getProjectId(),
-        "spanner-java/" + GaxProperties.getLibraryVersion(getClass()),
-        getCredentials(),
-        this.getMonitoringHost());
-  }
-
   @Override
   public ApiTracerFactory getApiTracerFactory() {
     return createApiTracerFactory(false, false);
@@ -1926,14 +1906,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private ApiTracerFactory createMetricsApiTracerFactory() {
-    OpenTelemetry openTelemetry = this.builtInOpenTelemetryMetricsProvider.getOpenTelemetry();
+    OpenTelemetry openTelemetry =
+        this.builtInMetricsProvider.getOrCreateOpenTelemetry(
+            this.getProjectId(), getCredentials(), this.monitoringHost);
 
-    Map<String, String> clientAttributes =
-        builtInOpenTelemetryMetricsProvider.getClientAttributes();
-    return openTelemetry != null && clientAttributes != null
-        ? new MetricsTracerFactory(
-            new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            clientAttributes)
+    return openTelemetry != null
+        ? new BuiltInMetricsTracerFactory(
+            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+            builtInMetricsProvider.createClientAttributes(
+                this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
         : null;
   }
 

@@ -82,7 +82,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   public static void setup() {
     metricReader = InMemoryMetricReader.create();
 
-    BuiltInOpenTelemetryMetricsProvider provider = BuiltInOpenTelemetryMetricsProvider.INSTANCE;
+    BuiltInMetricsProvider provider = BuiltInMetricsProvider.INSTANCE;
 
     SdkMeterProviderBuilder meterProvider =
         SdkMeterProvider.builder().registerMetricReader(metricReader);
@@ -91,10 +91,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     String client_name = "spanner-java/";
     openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
-    provider.reset();
-    // provider.getOpenTelemetry().getMeterProvider().
-    provider.initialize(openTelemetry, "test-project", client_name, null, null);
-    attributes = provider.getClientAttributes();
+    attributes = provider.createClientAttributes("test-project", client_name);
 
     expectedCommonBaseAttributes =
         Attributes.builder()
@@ -102,7 +99,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .put(BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY, "unknown")
             .put(
                 BuiltInMetricsConstant.LOCATION_ID_KEY,
-                BuiltInOpenTelemetryMetricsProvider.detectClientLocation())
+                BuiltInMetricsProvider.detectClientLocation())
             .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, client_name)
             .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
             .put(BuiltInMetricsConstant.CLIENT_HASH_KEY, attributes.get("client_hash"))
@@ -112,9 +109,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .build();
 
     expectedCommonRequestAttributes =
-        Attributes.builder()
-            .put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false")
-            .build();
+        Attributes.builder().put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false").build();
   }
 
   @BeforeClass
@@ -133,9 +128,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   public void createSpannerInstance() {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
 
+    // new BuiltInMetricsTracerFactory(
+    //     new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+    //     clientAttributes)
     ApiTracerFactory metricsTracerFactory =
-        new MetricsTracerFactory(
-            new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+        new BuiltInMetricsTracerFactory(
+            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
             attributes);
     // Set a quick polling algorithm to prevent this from slowing down the test unnecessarily.
     builder

@@ -333,7 +333,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.endToEndTracingEnabled = options.isEndToEndTracingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
-    options.initializeBuiltInMetrics();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -358,7 +357,6 @@ public class GapicSpannerRpc implements SpannerRpc {
                               options.getInterceptorProvider(),
                               SpannerInterceptorProvider.createDefault(
                                   options.getOpenTelemetry(),
-                                  options.getBuiltInMetricsRecorder(),
                                   (() -> directPathEnabledSupplier.get()))))
                       // This sets the trace context headers.
                       .withTraceContext(endToEndTracingEnabled, options.getOpenTelemetry())

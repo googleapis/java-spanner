@@ -190,4 +190,12 @@ public class CompositeTracer extends BaseApiTracer {
       }
     }
   }
+
+  public void recordGFELatency(double latency) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordGFELatency(latency);
+      }
+    }
+  }
 }

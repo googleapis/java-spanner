@@ -25,7 +25,6 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENC
 
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.cloud.spanner.BuiltInMetricsConstant;
-import com.google.cloud.spanner.BuiltInOpenTelemetryMetricsRecorder;
 import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
@@ -97,17 +96,12 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
-  private final BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder;
-
   private final Supplier<Boolean> directPathEnabledSupplier;
 
   HeaderInterceptor(
-      SpannerRpcMetrics spannerRpcMetrics,
-      BuiltInOpenTelemetryMetricsRecorder builtInOpenTelemetryMetricsRecorder,
-      Supplier<Boolean> directPathEnabledSupplier) {
+      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
     this.spannerRpcMetrics = spannerRpcMetrics;
     this.directPathEnabledSupplier = directPathEnabledSupplier;
-    this.builtInOpenTelemetryMetricsRecorder = builtInOpenTelemetryMetricsRecorder;
   }
 
   @Override
@@ -123,9 +117,9 @@ class HeaderInterceptor implements ClientInterceptor {
           Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = databaseName + method.getFullMethodName();
-          TagContext openCensusTagContext = getOpenCensusTagContext(key, method.getFullMethodName(), databaseName);
-          Attributes customMetricAttributes =
-              getCustomMetricAttributes(key, method.getFullMethodName(), databaseName);
+          TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
+          Attributes attributes =
+              getMetricAttributes(key, method.getFullMethodName(), databaseName);
           Map<String, String> builtInMetricsAttributes =
               getBuiltInMetricAttributes(key, databaseName);
           addBuiltInMetricAttributes(compositeTracer, builtInMetricsAttributes);
@@ -136,12 +130,7 @@ class HeaderInterceptor implements ClientInterceptor {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
-                  processHeader(
-                      metadata,
-                      openCensusTagContext,
-                      customMetricAttributes,
-                      span,
-                      builtInMetricsAttributes , isDirectPathUsed);
+                  processHeader(metadata, tagContext, attributes, span, compositeTracer);
                   super.onHeaders(metadata);
                 }
               },
@@ -159,8 +148,7 @@ class HeaderInterceptor implements ClientInterceptor {
       TagContext tagContext,
       Attributes attributes,
       Span span,
-      Map<String, String> builtInMetricsAttributes,
-      Boolean isDirectPathUsed) {
+      CompositeTracer compositeTracer) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
     try {
@@ -181,8 +169,7 @@ class HeaderInterceptor implements ClientInterceptor {
 
         spannerRpcMetrics.recordGfeLatency(gfeLatency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
-        // TODO: Also pass directpath used
-        builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, builtInMetricsAttributes);
+        compositeTracer.recordGFELatency(gfeLatency);
 
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
@@ -240,7 +227,7 @@ class HeaderInterceptor implements ClientInterceptor {
     return UNDEFINED_DATABASE_NAME;
   }
 
-  private TagContext getOpenCensusTagContext(String key, String method, DatabaseName databaseName)
+  private TagContext getTagContext(String key, String method, DatabaseName databaseName)
       throws ExecutionException {
     return tagsCache.get(
         key,
@@ -254,8 +241,8 @@ class HeaderInterceptor implements ClientInterceptor {
                 .build());
   }
 
-  private Attributes getCustomMetricAttributes(
-      String key, String method, DatabaseName databaseName) throws ExecutionException {
+  private Attributes getMetricAttributes(String key, String method, DatabaseName databaseName)
+      throws ExecutionException {
     return attributesCache.get(
         key,
         () -> {

@@ -44,7 +44,7 @@ import org.junit.runners.JUnit4;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
-// @Ignore("Built-in Metrics are not GA'ed yet. Enable this test once the metrics are released")
+@Ignore("Built-in Metrics are not GA'ed yet. Enable this test once the metrics are released")
 public class ITBuiltInMetricsTest {
 
   private static Database db;
@@ -87,7 +87,9 @@ public class ITBuiltInMetricsTest {
                 + " AND metric.labels.method=\"Spanner.Commit\""
                 + " AND resource.labels.instance_id=\"%s\""
                 + " AND metric.labels.database=\"%s\"",
-            "operation_latencies", db.getId().getInstanceId().getInstance(), db.getId().getDatabase());
+            "operation_latencies",
+            db.getId().getInstanceId().getInstance(),
+            db.getId().getDatabase());
 
     ListTimeSeriesRequest.Builder requestBuilder =
         ListTimeSeriesRequest.newBuilder()

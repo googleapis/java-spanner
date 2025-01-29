@@ -20,9 +20,9 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 
-class BuiltInOpenTelemetryMetricsView {
+class BuiltInMetricsView {
 
-  private BuiltInOpenTelemetryMetricsView() {}
+  private BuiltInMetricsView() {}
 
   /** Register built-in metrics on the {@link SdkMeterProviderBuilder} with credentials. */
   static void registerBuiltinMetrics(

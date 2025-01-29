@@ -77,7 +77,8 @@ class SpannerCloudMonitoringExporterUtils {
 
     for (MetricData metricData : collection) {
       // Get metrics data from GAX library and Spanner library
-      if (!(metricData.getInstrumentationScopeInfo().getName().equals(GAX_METER_NAME) || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME))) {
+      if (!(metricData.getInstrumentationScopeInfo().getName().equals(GAX_METER_NAME)
+          || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME))) {
         // Filter out metric data for instruments that are not part of the spanner metrics list
         continue;
       }
