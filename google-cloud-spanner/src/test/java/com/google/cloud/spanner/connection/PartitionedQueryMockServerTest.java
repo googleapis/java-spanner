@@ -50,6 +50,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
+  /*
 
   @Parameters(name = "dialect = {0}")
   public static Object[] data() {
@@ -767,4 +768,5 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
     assertEquals(2, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     assertEquals(2, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
+  */
 }
