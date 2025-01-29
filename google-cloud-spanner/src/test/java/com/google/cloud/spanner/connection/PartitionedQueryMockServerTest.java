@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*
 package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
@@ -50,7 +50,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
-  /*
 
   @Parameters(name = "dialect = {0}")
   public static Object[] data() {
@@ -768,5 +767,5 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
     assertEquals(2, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     assertEquals(2, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
-  */
 }
+*/
