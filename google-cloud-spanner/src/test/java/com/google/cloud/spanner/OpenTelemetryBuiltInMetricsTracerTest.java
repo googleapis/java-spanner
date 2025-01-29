@@ -128,9 +128,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   public void createSpannerInstance() {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
 
-    // new BuiltInMetricsTracerFactory(
-    //     new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-    //     clientAttributes)
     ApiTracerFactory metricsTracerFactory =
         new BuiltInMetricsTracerFactory(
             new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
@@ -160,6 +157,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
                     .setFailOnSessionLeak()
                     .setSkipVerifyingBeginTransactionForMuxRW(true)
                     .build())
+            // Setting this to false so that Spanner Options does not register Metrics Tracer
+            // factory again.
             .setBuiltInMetricsEnabled(false)
             .setApiTracerFactory(metricsTracerFactory)
             .build()
