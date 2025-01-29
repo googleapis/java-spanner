@@ -77,15 +77,13 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSession;
 
-  /**
-   * Controls whether multiplexed session is enabled for blind write or not. This is only used for
-   * systest soak. TODO: Remove when multiplexed session for blind write is released.
-   */
-  private final boolean useMultiplexedSessionBlindWrite;
-
   private final boolean useMultiplexedSessionForRW;
 
+  private final boolean useMultiplexedSessionForPartitionedOps;
+
+  // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
+  private final boolean skipVerifyingBeginTransactionForMuxRW;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -119,7 +117,6 @@ public class SessionPoolOptions {
         (useMultiplexedSessionFromEnvVariable != null)
             ? useMultiplexedSessionFromEnvVariable
             : builder.useMultiplexedSession;
-    this.useMultiplexedSessionBlindWrite = builder.useMultiplexedSessionBlindWrite;
     // useMultiplexedSessionForRW priority => Environment var > private setter > client default
     Boolean useMultiplexedSessionForRWFromEnvVariable =
         getUseMultiplexedSessionForRWFromEnvVariable();
@@ -127,7 +124,16 @@ public class SessionPoolOptions {
         (useMultiplexedSessionForRWFromEnvVariable != null)
             ? useMultiplexedSessionForRWFromEnvVariable
             : builder.useMultiplexedSessionForRW;
+    // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client
+    // default
+    Boolean useMultiplexedSessionFromEnvVariablePartitionedOps =
+        getUseMultiplexedSessionFromEnvVariablePartitionedOps();
+    this.useMultiplexedSessionForPartitionedOps =
+        (useMultiplexedSessionFromEnvVariablePartitionedOps != null)
+            ? useMultiplexedSessionFromEnvVariablePartitionedOps
+            : builder.useMultiplexedSessionPartitionedOps;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
+    this.skipVerifyingBeginTransactionForMuxRW = builder.skipVerifyingBeginTransactionForMuxRW;
   }
 
   @Override
@@ -165,8 +171,10 @@ public class SessionPoolOptions {
         && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
         && Objects.equals(this.useMultiplexedSessionForRW, other.useMultiplexedSessionForRW)
         && Objects.equals(
-            this.multiplexedSessionMaintenanceDuration,
-            other.multiplexedSessionMaintenanceDuration);
+            this.multiplexedSessionMaintenanceDuration, other.multiplexedSessionMaintenanceDuration)
+        && Objects.equals(
+            this.skipVerifyingBeginTransactionForMuxRW,
+            other.skipVerifyingBeginTransactionForMuxRW);
   }
 
   @Override
@@ -194,9 +202,9 @@ public class SessionPoolOptions {
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock,
         this.useMultiplexedSession,
-        this.useMultiplexedSessionBlindWrite,
         this.useMultiplexedSessionForRW,
-        this.multiplexedSessionMaintenanceDuration);
+        this.multiplexedSessionMaintenanceDuration,
+        this.skipVerifyingBeginTransactionForMuxRW);
   }
 
   public Builder toBuilder() {
@@ -338,7 +346,7 @@ public class SessionPoolOptions {
   @VisibleForTesting
   @InternalApi
   protected boolean getUseMultiplexedSessionBlindWrite() {
-    return getUseMultiplexedSession() && useMultiplexedSessionBlindWrite;
+    return getUseMultiplexedSession();
   }
 
   @VisibleForTesting
@@ -349,17 +357,31 @@ public class SessionPoolOptions {
     return getUseMultiplexedSession() && useMultiplexedSessionForRW;
   }
 
+  @VisibleForTesting
+  @InternalApi
+  public boolean getUseMultiplexedSessionPartitionedOps() {
+    return useMultiplexedSessionForPartitionedOps;
+  }
+
   private static Boolean getUseMultiplexedSessionFromEnvVariable() {
-    String useMultiplexedSessionFromEnvVariable =
-        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
-    if (useMultiplexedSessionFromEnvVariable != null
-        && useMultiplexedSessionFromEnvVariable.length() > 0) {
-      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)
-          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)) {
-        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+  }
+
+  @VisibleForTesting
+  @InternalApi
+  protected static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
+    // Checks the value of env, GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS
+    // This returns null until Partitioned Operations is supported.
+    return null;
+  }
+
+  private static Boolean parseBooleanEnvVariable(String variableName) {
+    String envVariable = System.getenv(variableName);
+    if (envVariable != null && envVariable.length() > 0) {
+      if ("true".equalsIgnoreCase(envVariable) || "false".equalsIgnoreCase(envVariable)) {
+        return Boolean.parseBoolean(envVariable);
       } else {
-        throw new IllegalArgumentException(
-            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS should be either true or false.");
+        throw new IllegalArgumentException(variableName + " should be either true or false.");
       }
     }
     return null;
@@ -373,6 +395,12 @@ public class SessionPoolOptions {
 
   Duration getMultiplexedSessionMaintenanceDuration() {
     return multiplexedSessionMaintenanceDuration;
+  }
+
+  @VisibleForTesting
+  @InternalApi
+  boolean getSkipVerifyBeginTransactionForMuxRW() {
+    return skipVerifyingBeginTransactionForMuxRW;
   }
 
   public static Builder newBuilder() {
@@ -576,17 +604,21 @@ public class SessionPoolOptions {
     // Set useMultiplexedSession to true to make multiplexed session the default.
     private boolean useMultiplexedSession = false;
 
-    // TODO: Remove when multiplexed session for blind write is released.
-    private boolean useMultiplexedSessionBlindWrite = false;
-
     // This field controls the default behavior of session management for RW operations in Java
     // client.
     // Set useMultiplexedSessionForRW to true to make multiplexed session for RW operations the
     // default.
     private boolean useMultiplexedSessionForRW = false;
 
+    // This field controls the default behavior of session management for Partitioned operations in
+    // Java client.
+    // Set useMultiplexedSessionPartitionedOps to true to make multiplexed session for Partitioned
+    // operations the default.
+    private boolean useMultiplexedSessionPartitionedOps = false;
+
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
+    private boolean skipVerifyingBeginTransactionForMuxRW = false;
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
@@ -626,10 +658,11 @@ public class SessionPoolOptions {
       this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.useMultiplexedSession = options.useMultiplexedSession;
-      this.useMultiplexedSessionBlindWrite = options.useMultiplexedSessionBlindWrite;
       this.useMultiplexedSessionForRW = options.useMultiplexedSessionForRW;
+      this.useMultiplexedSessionPartitionedOps = options.useMultiplexedSessionForPartitionedOps;
       this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
+      this.skipVerifyingBeginTransactionForMuxRW = options.skipVerifyingBeginTransactionForMuxRW;
     }
 
     /**
@@ -826,17 +859,6 @@ public class SessionPoolOptions {
     }
 
     /**
-     * This method enables multiplexed sessions for blind writes. This method will be removed in the
-     * future when multiplexed sessions has been made the default for all operations.
-     */
-    @InternalApi
-    @VisibleForTesting
-    Builder setUseMultiplexedSessionBlindWrite(boolean useMultiplexedSessionBlindWrite) {
-      this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
-      return this;
-    }
-
-    /**
      * Sets whether the client should use multiplexed session for R/W operations or not. This method
      * is intentionally package-private and intended for internal use.
      */
@@ -847,10 +869,31 @@ public class SessionPoolOptions {
       return this;
     }
 
+    /**
+     * Sets whether the client should use multiplexed session for Partitioned operations or not.
+     * This method is intentionally package-private and intended for internal use.
+     */
+    Builder setUseMultiplexedSessionPartitionedOps(boolean useMultiplexedSessionPartitionedOps) {
+      this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
+      return this;
+    }
+
     @VisibleForTesting
     Builder setMultiplexedSessionMaintenanceDuration(
         Duration multiplexedSessionMaintenanceDuration) {
       this.multiplexedSessionMaintenanceDuration = multiplexedSessionMaintenanceDuration;
+      return this;
+    }
+
+    // The additional BeginTransaction RPC for multiplexed session read-write is causing
+    // unexpected behavior in mock Spanner tests that rely on mocking the BeginTransaction RPC.
+    // Invoking this method with `true` skips sending the BeginTransaction RPC when the multiplexed
+    // session is created for the first time during client initialization.
+    // This is only used for tests.
+    @VisibleForTesting
+    Builder setSkipVerifyingBeginTransactionForMuxRW(
+        boolean skipVerifyingBeginTransactionForMuxRW) {
+      this.skipVerifyingBeginTransactionForMuxRW = skipVerifyingBeginTransactionForMuxRW;
       return this;
     }
 

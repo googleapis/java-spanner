@@ -22,13 +22,16 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
@@ -252,10 +255,15 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
             // initiate a begin transaction request to verify if read-write transactions are
             // supported using multiplexed sessions.
             if (sessionClient
-                .getSpanner()
-                .getOptions()
-                .getSessionPoolOptions()
-                .getUseMultiplexedSessionForRW()) {
+                    .getSpanner()
+                    .getOptions()
+                    .getSessionPoolOptions()
+                    .getUseMultiplexedSessionForRW()
+                && !sessionClient
+                    .getSpanner()
+                    .getOptions()
+                    .getSessionPoolOptions()
+                    .getSkipVerifyBeginTransactionForMuxRW()) {
               verifyBeginTransactionWithRWOnMultiplexedSessionAsync(session.getName());
             }
           }
@@ -500,6 +508,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   }
 
   @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+      throws SpannerException {
+    return createMultiplexedSessionTransaction(/* singleUse = */ true)
+        .batchWriteAtLeastOnce(mutationGroups, options);
+  }
+
+  @Override
   public ReadContext singleUse() {
     return createMultiplexedSessionTransaction(/* singleUse = */ true).singleUse();
   }
@@ -551,6 +567,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
     return createMultiplexedSessionTransaction(/* singleUse = */ false)
         .transactionManagerAsync(options);
+  }
+
+  @Override
+  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+    return createMultiplexedSessionTransaction(/* singleUse = */ true)
+        .executePartitionedUpdate(stmt, options);
   }
 
   /**

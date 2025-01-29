@@ -22,6 +22,8 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_D
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_PARTITION_MODE_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CHANNEL_PROVIDER_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_CERTIFICATE_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_KEY_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CREDENTIALS_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CREDENTIALS_PROVIDER_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DATABASE_ROLE_PROPERTY_NAME;
@@ -33,6 +35,8 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CHANNEL_PROVIDER;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_CERTIFICATE;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_KEY;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CREDENTIALS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATABASE_ROLE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATA_BOOST_ENABLED;
@@ -112,19 +116,21 @@ import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.Sa
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.StringValueConverter;
 import com.google.cloud.spanner.connection.ConnectionProperty.Context;
 import com.google.cloud.spanner.connection.DirectedReadOptionsUtil.DirectedReadOptionsConverter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.DirectedReadOptions;
 import java.time.Duration;
-import java.util.Map;
 
 /**
  * Utility class that defines all known connection properties. This class will eventually replace
  * the list of {@link com.google.cloud.spanner.connection.ConnectionOptions.ConnectionProperty} in
  * {@link ConnectionOptions}.
  */
-class ConnectionProperties {
+public class ConnectionProperties {
   private static final ImmutableMap.Builder<String, ConnectionProperty<?>>
       CONNECTION_PROPERTIES_BUILDER = ImmutableMap.builder();
+
+  private static final Boolean[] BOOLEANS = new Boolean[] {Boolean.TRUE, Boolean.FALSE};
 
   static final ConnectionProperty<ConnectionState.Type> CONNECTION_STATE_TYPE =
       create(
@@ -133,6 +139,7 @@ class ConnectionProperties {
               + "If no value is set, then the database dialect default will be used, "
               + "which is NON_TRANSACTIONAL for GoogleSQL and TRANSACTIONAL for PostgreSQL.",
           null,
+          ConnectionState.Type.values(),
           ConnectionStateTypeConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<String> TRACING_PREFIX =
@@ -148,6 +155,7 @@ class ConnectionProperties {
           LENIENT_PROPERTY_NAME,
           "Silently ignore unknown properties in the connection string/properties (true/false)",
           DEFAULT_LENIENT,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<String> ENDPOINT =
@@ -167,6 +175,7 @@ class ConnectionProperties {
               + "The instance and database in the connection string will automatically be created if these do not yet exist on the emulator. "
               + "Add dialect=postgresql to the connection string to make sure that the database that is created uses the PostgreSQL dialect.",
           false,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_AUTO_SAVEPOINTS_FOR_EMULATOR =
@@ -175,6 +184,7 @@ class ConnectionProperties {
           "Automatically creates savepoints for each statement in a read/write transaction when using the Emulator. "
               + "This is no longer needed when using Emulator version 1.5.23 or higher.",
           false,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_PLAIN_TEXT =
@@ -182,9 +192,24 @@ class ConnectionProperties {
           USE_PLAIN_TEXT_PROPERTY_NAME,
           "Use a plain text communication channel (i.e. non-TLS) for communicating with the server (true/false). Set this value to true for communication with the Cloud Spanner emulator.",
           DEFAULT_USE_PLAIN_TEXT,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
 
+  static final ConnectionProperty<String> CLIENT_CERTIFICATE =
+      create(
+          CLIENT_CERTIFICATE_PROPERTY_NAME,
+          "Specifies the file path to the client certificate required for establishing an mTLS connection.",
+          DEFAULT_CLIENT_CERTIFICATE,
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
+  static final ConnectionProperty<String> CLIENT_KEY =
+      create(
+          CLIENT_KEY_PROPERTY_NAME,
+          "Specifies the file path to the client private key required for establishing an mTLS connection.",
+          DEFAULT_CLIENT_KEY,
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<String> CREDENTIALS_URL =
       create(
           CREDENTIALS_PROPERTY_NAME,
@@ -226,6 +251,7 @@ class ConnectionProperties {
           DIALECT_PROPERTY_NAME,
           "Sets the dialect to use for new databases that are created by this connection.",
           Dialect.GOOGLE_STANDARD_SQL,
+          Dialect.values(),
           DialectConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> TRACK_SESSION_LEAKS =
@@ -238,6 +264,7 @@ class ConnectionProperties {
               + "actual session leak is detected. The stack trace of the exception will "
               + "in that case not contain the call stack of when the session was checked out.",
           DEFAULT_TRACK_SESSION_LEAKS,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> TRACK_CONNECTION_LEAKS =
@@ -250,6 +277,7 @@ class ConnectionProperties {
               + "actual connection leak is detected. The stack trace of the exception will "
               + "in that case not contain the call stack of when the connection was created.",
           DEFAULT_TRACK_CONNECTION_LEAKS,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> ROUTE_TO_LEADER =
@@ -257,6 +285,7 @@ class ConnectionProperties {
           ROUTE_TO_LEADER_PROPERTY_NAME,
           "Should read/write transactions and partitioned DML be routed to leader region (true/false)",
           DEFAULT_ROUTE_TO_LEADER,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_VIRTUAL_THREADS =
@@ -265,6 +294,7 @@ class ConnectionProperties {
           "Use a virtual thread instead of a platform thread for each connection (true/false). "
               + "This option only has any effect if the application is running on Java 21 or higher. In all other cases, the option is ignored.",
           DEFAULT_USE_VIRTUAL_THREADS,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_VIRTUAL_GRPC_TRANSPORT_THREADS =
@@ -273,6 +303,7 @@ class ConnectionProperties {
           "Use a virtual thread instead of a platform thread for the gRPC executor (true/false). "
               + "This option only has any effect if the application is running on Java 21 or higher. In all other cases, the option is ignored.",
           DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> ENABLE_EXTENDED_TRACING =
@@ -282,6 +313,7 @@ class ConnectionProperties {
               + "by this connection. The SQL string is added as the standard OpenTelemetry "
               + "attribute 'db.statement'.",
           DEFAULT_ENABLE_EXTENDED_TRACING,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> ENABLE_API_TRACING =
@@ -292,6 +324,7 @@ class ConnectionProperties {
               + "or if you want to debug potential latency problems caused by RPCs that are "
               + "being retried.",
           DEFAULT_ENABLE_API_TRACING,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> ENABLE_END_TO_END_TRACING =
@@ -302,6 +335,7 @@ class ConnectionProperties {
               + "Server side traces can only go to Google Cloud Trace, so to see end to end traces, "
               + "the application should configure an exporter that exports the traces to Google Cloud Trace.",
           DEFAULT_ENABLE_END_TO_END_TRACING,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Integer> MIN_SESSIONS =
@@ -345,6 +379,7 @@ class ConnectionProperties {
           AUTOCOMMIT_PROPERTY_NAME,
           "Should the connection start in autocommit (true/false)",
           DEFAULT_AUTOCOMMIT,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Boolean> READONLY =
@@ -352,13 +387,16 @@ class ConnectionProperties {
           READONLY_PROPERTY_NAME,
           "Should the connection start in read-only mode (true/false)",
           DEFAULT_READONLY,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<AutocommitDmlMode> AUTOCOMMIT_DML_MODE =
       create(
           "autocommit_dml_mode",
-          "Should the connection automatically retry Aborted errors (true/false)",
+          "Determines the transaction type that is used to execute "
+              + "DML statements when the connection is in auto-commit mode.",
           AutocommitDmlMode.TRANSACTIONAL,
+          AutocommitDmlMode.values(),
           AutocommitDmlModeConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Boolean> RETRY_ABORTS_INTERNALLY =
@@ -371,6 +409,7 @@ class ConnectionProperties {
           RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
           "Should the connection automatically retry Aborted errors (true/false)",
           DEFAULT_RETRY_ABORTS_INTERNALLY,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Boolean> RETURN_COMMIT_STATS =
@@ -378,6 +417,7 @@ class ConnectionProperties {
           "returnCommitStats",
           "Request that Spanner returns commit statistics for read/write transactions (true/false)",
           DEFAULT_RETURN_COMMIT_STATS,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Boolean> DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE =
@@ -389,6 +429,7 @@ class ConnectionProperties {
               + "the first write operation in a read/write transaction will be executed using the read/write transaction. Enabling this mode can reduce locking "
               + "and improve performance for applications that can handle the lower transaction isolation semantics.",
           DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Boolean> KEEP_TRANSACTION_ALIVE =
@@ -398,6 +439,7 @@ class ConnectionProperties {
               + "if no other statements are being executed. This option should be used with caution, as it can keep transactions alive and hold on to locks "
               + "longer than intended. This option should typically be used for CLI-type application that might wait for user input for a longer period of time.",
           DEFAULT_KEEP_TRANSACTION_ALIVE,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
 
@@ -415,6 +457,7 @@ class ConnectionProperties {
               + "Executing a query that cannot be partitioned will fail. "
               + "Executing a query in a read/write transaction will also fail.",
           DEFAULT_AUTO_PARTITION_MODE,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Boolean> DATA_BOOST_ENABLED =
@@ -423,6 +466,7 @@ class ConnectionProperties {
           "Enable data boost for all partitioned queries that are executed by this connection. "
               + "This setting is only used for partitioned queries and is ignored by all other statements.",
           DEFAULT_DATA_BOOST_ENABLED,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Integer> MAX_PARTITIONS =
@@ -468,6 +512,7 @@ class ConnectionProperties {
           RPC_PRIORITY_NAME,
           "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH.",
           DEFAULT_RPC_PRIORITY,
+          RpcPriority.values(),
           RpcPriorityConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<SavepointSupport> SAVEPOINT_SUPPORT =
@@ -475,6 +520,7 @@ class ConnectionProperties {
           "savepoint_support",
           "Determines the behavior of the connection when savepoints are used.",
           SavepointSupport.FAIL_AFTER_ROLLBACK,
+          SavepointSupport.values(),
           SavepointSupportConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<DdlInTransactionMode> DDL_IN_TRANSACTION_MODE =
@@ -482,6 +528,7 @@ class ConnectionProperties {
           DDL_IN_TRANSACTION_MODE_PROPERTY_NAME,
           "Determines how the connection should handle DDL statements in a read/write transaction.",
           DEFAULT_DDL_IN_TRANSACTION_MODE,
+          DdlInTransactionMode.values(),
           DdlInTransactionModeConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Duration> MAX_COMMIT_DELAY =
@@ -504,6 +551,7 @@ class ConnectionProperties {
               + "This setting is only in read/write transactions. DML statements in auto-commit mode "
               + "are executed directly.",
           DEFAULT_AUTO_BATCH_DML,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Long> AUTO_BATCH_DML_UPDATE_COUNT =
@@ -538,11 +586,16 @@ class ConnectionProperties {
               + AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME
               + " to false.",
           DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION,
+          BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
 
-  static final Map<String, ConnectionProperty<?>> CONNECTION_PROPERTIES =
+  static final ImmutableMap<String, ConnectionProperty<?>> CONNECTION_PROPERTIES =
       CONNECTION_PROPERTIES_BUILDER.build();
+
+  /** The list of all supported connection properties. */
+  public static ImmutableList<ConnectionProperty<?>> VALID_CONNECTION_PROPERTIES =
+      ImmutableList.copyOf(ConnectionProperties.CONNECTION_PROPERTIES.values());
 
   /** Utility method for creating a new core {@link ConnectionProperty}. */
   private static <T> ConnectionProperty<T> create(
@@ -551,10 +604,27 @@ class ConnectionProperties {
       T defaultValue,
       ClientSideStatementValueConverter<T> converter,
       Context context) {
-    ConnectionProperty<T> property =
-        ConnectionProperty.create(name, description, defaultValue, converter, context);
-    CONNECTION_PROPERTIES_BUILDER.put(property.getKey(), property);
-    return property;
+    return create(name, description, defaultValue, null, converter, context);
+  }
+
+  /** Utility method for creating a new core {@link ConnectionProperty}. */
+  private static <T> ConnectionProperty<T> create(
+      String name,
+      String description,
+      T defaultValue,
+      T[] validValues,
+      ClientSideStatementValueConverter<T> converter,
+      Context context) {
+    try {
+      ConnectionProperty<T> property =
+          ConnectionProperty.create(
+              name, description, defaultValue, validValues, converter, context);
+      CONNECTION_PROPERTIES_BUILDER.put(property.getKey(), property);
+      return property;
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+    return null;
   }
 
   /** Parse the connection properties that can be found in the given connection URL. */

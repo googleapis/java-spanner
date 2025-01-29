@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,8 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> ListInstanceConfigs</td>
- *      <td><p> Lists the supported instance configurations for a given project.</td>
+ *      <td><p> Lists the supported instance configurations for a given project.
+ * <p>  Returns both Google-managed configurations and user-managed configurations.</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
  *      <ul>
@@ -169,14 +170,14 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> CreateInstanceConfig</td>
- *      <td><p> Creates an instance configuration and begins preparing it to be used. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of preparing the new instance configuration. The instance configuration name is assigned by the caller. If the named instance configuration already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
+ *      <td><p> Creates an instance configuration and begins preparing it to be used. The returned long-running operation can be used to track the progress of preparing the new instance configuration. The instance configuration name is assigned by the caller. If the named instance configuration already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
  * <p>  Immediately after the request returns:
  * <p>    &#42; The instance configuration is readable via the API, with all requested     attributes. The instance configuration's     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]     field is set to true. Its state is `CREATING`.
  * <p>  While the operation is pending:
  * <p>    &#42; Cancelling the operation renders the instance configuration immediately     unreadable via the API.   &#42; Except for deleting the creating resource, all other attempts to modify     the instance configuration are rejected.
  * <p>  Upon completion of the returned operation:
  * <p>    &#42; Instances can be created using the instance configuration.   &#42; The instance configuration's   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]   field becomes false. Its state becomes `READY`.
- * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance configuration. The [metadata][google.longrunning.Operation.metadata] field type is [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata]. The [response][google.longrunning.Operation.response] field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+ * <p>  The returned long-running operation will have a name of the format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance configuration. The metadata field type is [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata]. The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
  * <p>  Authorization requires `spanner.instanceConfigs.create` permission on the resource [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
@@ -197,7 +198,7 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> UpdateInstanceConfig</td>
- *      <td><p> Updates an instance configuration. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of updating the instance. If the named instance configuration does not exist, returns `NOT_FOUND`.
+ *      <td><p> Updates an instance configuration. The returned long-running operation can be used to track the progress of updating the instance. If the named instance configuration does not exist, returns `NOT_FOUND`.
  * <p>  Only user-managed configurations can be updated.
  * <p>  Immediately after the request returns:
  * <p>    &#42; The instance configuration's     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]     field is set to true.
@@ -205,7 +206,7 @@ import javax.annotation.Generated;
  * <p>    &#42; Cancelling the operation sets its metadata's     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].     The operation is guaranteed to succeed at undoing all changes, after     which point it terminates with a `CANCELLED` status.   &#42; All other attempts to modify the instance configuration are rejected.   &#42; Reading the instance configuration via the API continues to give the     pre-request values.
  * <p>  Upon completion of the returned operation:
  * <p>    &#42; Creating instances using the instance configuration uses the new     values.   &#42; The new values of the instance configuration are readable via the API.   &#42; The instance configuration's   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]   field becomes false.
- * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance configuration modification.  The [metadata][google.longrunning.Operation.metadata] field type is [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata]. The [response][google.longrunning.Operation.response] field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+ * <p>  The returned long-running operation will have a name of the format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance configuration modification.  The metadata field type is [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata]. The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
  * <p>  Authorization requires `spanner.instanceConfigs.update` permission on the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
@@ -246,7 +247,7 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> ListInstanceConfigOperations</td>
- *      <td><p> Lists the user-managed instance configuration [long-running operations][google.longrunning.Operation] in the given project. An instance configuration operation has a name of the form `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`. The long-running operation [metadata][google.longrunning.Operation.metadata] field type `metadata.type_url` describes the type of the metadata. Operations returned include those that have completed/failed/canceled within the last 7 days, and pending operations. Operations returned are ordered by `operation.metadata.value.start_time` in descending order starting from the most recently started operation.</td>
+ *      <td><p> Lists the user-managed instance configuration long-running operations in the given project. An instance configuration operation has a name of the form `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`. The long-running operation metadata field type `metadata.type_url` describes the type of the metadata. Operations returned include those that have completed/failed/canceled within the last 7 days, and pending operations. Operations returned are ordered by `operation.metadata.value.start_time` in descending order starting from the most recently started operation.</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
  *      <ul>
@@ -325,14 +326,14 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> CreateInstance</td>
- *      <td><p> Creates an instance and begins preparing it to begin serving. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of preparing the new instance. The instance name is assigned by the caller. If the named instance already exists, `CreateInstance` returns `ALREADY_EXISTS`.
+ *      <td><p> Creates an instance and begins preparing it to begin serving. The returned long-running operation can be used to track the progress of preparing the new instance. The instance name is assigned by the caller. If the named instance already exists, `CreateInstance` returns `ALREADY_EXISTS`.
  * <p>  Immediately upon completion of this request:
  * <p>    &#42; The instance is readable via the API, with all requested attributes     but no allocated resources. Its state is `CREATING`.
  * <p>  Until completion of the returned operation:
  * <p>    &#42; Cancelling the operation renders the instance immediately unreadable     via the API.   &#42; The instance can be deleted.   &#42; All other attempts to modify the instance are rejected.
  * <p>  Upon completion of the returned operation:
  * <p>    &#42; Billing for all successfully-allocated resources begins (some types     may have lower than the requested levels).   &#42; Databases can be created in the instance.   &#42; The instance's allocated resource levels are readable via the API.   &#42; The instance's state becomes `READY`.
- * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance.  The [metadata][google.longrunning.Operation.metadata] field type is [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The [response][google.longrunning.Operation.response] field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.</td>
+ * <p>  The returned long-running operation will have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance.  The metadata field type is [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The response field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
  *      <ul>
@@ -352,14 +353,14 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> UpdateInstance</td>
- *      <td><p> Updates an instance, and begins allocating or releasing resources as requested. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+ *      <td><p> Updates an instance, and begins allocating or releasing resources as requested. The returned long-running operation can be used to track the progress of updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
  * <p>  Immediately upon completion of this request:
  * <p>    &#42; For resource types for which a decrease in the instance's allocation     has been requested, billing is based on the newly-requested level.
  * <p>  Until completion of the returned operation:
  * <p>    &#42; Cancelling the operation sets its metadata's     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time],     and begins restoring resources to their pre-request values. The     operation is guaranteed to succeed at undoing all resource changes,     after which point it terminates with a `CANCELLED` status.   &#42; All other attempts to modify the instance are rejected.   &#42; Reading the instance via the API continues to give the pre-request     resource levels.
  * <p>  Upon completion of the returned operation:
  * <p>    &#42; Billing begins for all successfully-allocated resources (some types     may have lower than the requested levels).   &#42; All newly-reserved resources are available for serving the instance's     tables.   &#42; The instance's new resource levels are readable via the API.
- * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance modification.  The [metadata][google.longrunning.Operation.metadata] field type is [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The [response][google.longrunning.Operation.response] field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+ * <p>  The returned long-running operation will have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance modification.  The metadata field type is [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The response field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
  * <p>  Authorization requires `spanner.instances.update` permission on the resource [name][google.spanner.admin.instance.v1.Instance.name].</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
@@ -481,14 +482,14 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> CreateInstancePartition</td>
- *      <td><p> Creates an instance partition and begins preparing it to be used. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of preparing the new instance partition. The instance partition name is assigned by the caller. If the named instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+ *      <td><p> Creates an instance partition and begins preparing it to be used. The returned long-running operation can be used to track the progress of preparing the new instance partition. The instance partition name is assigned by the caller. If the named instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
  * <p>  Immediately upon completion of this request:
  * <p>    &#42; The instance partition is readable via the API, with all requested     attributes but no allocated resources. Its state is `CREATING`.
  * <p>  Until completion of the returned operation:
  * <p>    &#42; Cancelling the operation renders the instance partition immediately     unreadable via the API.   &#42; The instance partition can be deleted.   &#42; All other attempts to modify the instance partition are rejected.
  * <p>  Upon completion of the returned operation:
  * <p>    &#42; Billing for all successfully-allocated resources begins (some types     may have lower than the requested levels).   &#42; Databases can start using this instance partition.   &#42; The instance partition's allocated resource levels are readable via the     API.   &#42; The instance partition's state becomes `READY`.
- * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance partition.  The [metadata][google.longrunning.Operation.metadata] field type is [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata]. The [response][google.longrunning.Operation.response] field type is [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.</td>
+ * <p>  The returned long-running operation will have a name of the format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance partition.  The metadata field type is [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata]. The response field type is [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
  *      <ul>
@@ -528,14 +529,14 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> UpdateInstancePartition</td>
- *      <td><p> Updates an instance partition, and begins allocating or releasing resources as requested. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of updating the instance partition. If the named instance partition does not exist, returns `NOT_FOUND`.
+ *      <td><p> Updates an instance partition, and begins allocating or releasing resources as requested. The returned long-running operation can be used to track the progress of updating the instance partition. If the named instance partition does not exist, returns `NOT_FOUND`.
  * <p>  Immediately upon completion of this request:
  * <p>    &#42; For resource types for which a decrease in the instance partition's   allocation has been requested, billing is based on the newly-requested   level.
  * <p>  Until completion of the returned operation:
  * <p>    &#42; Cancelling the operation sets its metadata's     [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],     and begins restoring resources to their pre-request values. The     operation is guaranteed to succeed at undoing all resource changes,     after which point it terminates with a `CANCELLED` status.   &#42; All other attempts to modify the instance partition are rejected.   &#42; Reading the instance partition via the API continues to give the     pre-request resource levels.
  * <p>  Upon completion of the returned operation:
  * <p>    &#42; Billing begins for all successfully-allocated resources (some types     may have lower than the requested levels).   &#42; All newly-reserved resources are available for serving the instance     partition's tables.   &#42; The instance partition's new resource levels are readable via the API.
- * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance partition modification. The [metadata][google.longrunning.Operation.metadata] field type is [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata]. The [response][google.longrunning.Operation.response] field type is [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+ * <p>  The returned long-running operation will have a name of the format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance partition modification. The metadata field type is [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata]. The response field type is [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
  * <p>  Authorization requires `spanner.instancePartitions.update` permission on the resource [name][google.spanner.admin.instance.v1.InstancePartition.name].</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
@@ -555,7 +556,7 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> ListInstancePartitionOperations</td>
- *      <td><p> Lists instance partition [long-running operations][google.longrunning.Operation] in the given instance. An instance partition operation has a name of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`. The long-running operation [metadata][google.longrunning.Operation.metadata] field type `metadata.type_url` describes the type of the metadata. Operations returned include those that have completed/failed/canceled within the last 7 days, and pending operations. Operations returned are ordered by `operation.metadata.value.start_time` in descending order starting from the most recently started operation.
+ *      <td><p> Lists instance partition long-running operations in the given instance. An instance partition operation has a name of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`. The long-running operation metadata field type `metadata.type_url` describes the type of the metadata. Operations returned include those that have completed/failed/canceled within the last 7 days, and pending operations. Operations returned are ordered by `operation.metadata.value.start_time` in descending order starting from the most recently started operation.
  * <p>  Authorization requires `spanner.instancePartitionOperations.list` permission on the resource [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
@@ -576,14 +577,14 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> MoveInstance</td>
- *      <td><p> Moves an instance to the target instance configuration. You can use the returned [long-running operation][google.longrunning.Operation] to track the progress of moving the instance.
+ *      <td><p> Moves an instance to the target instance configuration. You can use the returned long-running operation to track the progress of moving the instance.
  * <p>  `MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of the following criteria:
  * <p>    &#42; Is undergoing a move to a different instance configuration   &#42; Has backups   &#42; Has an ongoing update   &#42; Contains any CMEK-enabled databases   &#42; Is a free trial instance
  * <p>  While the operation is pending:
  * <p>    &#42; All other attempts to modify the instance, including changes to its     compute capacity, are rejected.   &#42; The following database and backup admin operations are rejected:
  * <p>      &#42; `DatabaseAdmin.CreateDatabase`     &#42; `DatabaseAdmin.UpdateDatabaseDdl` (disabled if default_leader is        specified in the request.)     &#42; `DatabaseAdmin.RestoreDatabase`     &#42; `DatabaseAdmin.CreateBackup`     &#42; `DatabaseAdmin.CopyBackup`
  * <p>    &#42; Both the source and target instance configurations are subject to     hourly compute and storage charges.   &#42; The instance might experience higher read-write latencies and a higher     transaction abort rate. However, moving an instance doesn't cause any     downtime.
- * <p>  The returned [long-running operation][google.longrunning.Operation] has a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the move instance operation. The [metadata][google.longrunning.Operation.metadata] field type is [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata]. The [response][google.longrunning.Operation.response] field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful. Cancelling the operation sets its metadata's [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time]. Cancellation is not immediate because it involves moving any data previously moved to the target instance configuration back to the original instance configuration. You can use this operation to track the progress of the cancellation. Upon successful completion of the cancellation, the operation terminates with `CANCELLED` status.
+ * <p>  The returned long-running operation has a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the move instance operation. The metadata field type is [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata]. The response field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful. Cancelling the operation sets its metadata's [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time]. Cancellation is not immediate because it involves moving any data previously moved to the target instance configuration back to the original instance configuration. You can use this operation to track the progress of the cancellation. Upon successful completion of the cancellation, the operation terminates with `CANCELLED` status.
  * <p>  If not cancelled, upon completion of the returned operation:
  * <p>    &#42; The instance successfully moves to the target instance     configuration.   &#42; You are billed for compute and storage in target instance   configuration.
  * <p>  Authorization requires the `spanner.instances.update` permission on the resource [instance][google.spanner.admin.instance.v1.Instance].
@@ -734,6 +735,8 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Lists the supported instance configurations for a given project.
    *
+   * <p>Returns both Google-managed configurations and user-managed configurations.
+   *
    * <p>Sample code:
    *
    * <pre>{@code
@@ -766,6 +769,8 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Lists the supported instance configurations for a given project.
    *
+   * <p>Returns both Google-managed configurations and user-managed configurations.
+   *
    * <p>Sample code:
    *
    * <pre>{@code
@@ -795,6 +800,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists the supported instance configurations for a given project.
+   *
+   * <p>Returns both Google-managed configurations and user-managed configurations.
    *
    * <p>Sample code:
    *
@@ -829,6 +836,8 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Lists the supported instance configurations for a given project.
    *
+   * <p>Returns both Google-managed configurations and user-managed configurations.
+   *
    * <p>Sample code:
    *
    * <pre>{@code
@@ -861,6 +870,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists the supported instance configurations for a given project.
+   *
+   * <p>Returns both Google-managed configurations and user-managed configurations.
    *
    * <p>Sample code:
    *
@@ -1013,11 +1024,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance configuration and begins preparing it to be used. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * preparing the new instance configuration. The instance configuration name is assigned by the
-   * caller. If the named instance configuration already exists, `CreateInstanceConfig` returns
-   * `ALREADY_EXISTS`.
+   * Creates an instance configuration and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance configuration. The
+   * instance configuration name is assigned by the caller. If the named instance configuration
+   * already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately after the request returns:
    *
@@ -1038,13 +1048,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false. Its state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance configuration. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance configuration. The metadata field type is
    * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
    * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
@@ -1070,9 +1079,9 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * @param parent Required. The name of the project in which to create the instance configuration.
    *     Values are of the form `projects/&lt;project&gt;`.
-   * @param instanceConfig Required. The InstanceConfig proto of the configuration to create.
-   *     instance_config.name must be `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-   *     instance_config.base_config must be a Google managed configuration name, e.g.
+   * @param instanceConfig Required. The `InstanceConfig` proto of the configuration to create.
+   *     `instance_config.name` must be `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
+   *     `instance_config.base_config` must be a Google-managed configuration name, e.g.
    *     &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
    * @param instanceConfigId Required. The ID of the instance configuration to create. Valid
    *     identifiers are of the form `custom-[-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64
@@ -1094,11 +1103,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance configuration and begins preparing it to be used. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * preparing the new instance configuration. The instance configuration name is assigned by the
-   * caller. If the named instance configuration already exists, `CreateInstanceConfig` returns
-   * `ALREADY_EXISTS`.
+   * Creates an instance configuration and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance configuration. The
+   * instance configuration name is assigned by the caller. If the named instance configuration
+   * already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately after the request returns:
    *
@@ -1119,13 +1127,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false. Its state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance configuration. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance configuration. The metadata field type is
    * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
    * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
@@ -1151,9 +1158,9 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * @param parent Required. The name of the project in which to create the instance configuration.
    *     Values are of the form `projects/&lt;project&gt;`.
-   * @param instanceConfig Required. The InstanceConfig proto of the configuration to create.
-   *     instance_config.name must be `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-   *     instance_config.base_config must be a Google managed configuration name, e.g.
+   * @param instanceConfig Required. The `InstanceConfig` proto of the configuration to create.
+   *     `instance_config.name` must be `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
+   *     `instance_config.base_config` must be a Google-managed configuration name, e.g.
    *     &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
    * @param instanceConfigId Required. The ID of the instance configuration to create. Valid
    *     identifiers are of the form `custom-[-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64
@@ -1175,11 +1182,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance configuration and begins preparing it to be used. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * preparing the new instance configuration. The instance configuration name is assigned by the
-   * caller. If the named instance configuration already exists, `CreateInstanceConfig` returns
-   * `ALREADY_EXISTS`.
+   * Creates an instance configuration and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance configuration. The
+   * instance configuration name is assigned by the caller. If the named instance configuration
+   * already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately after the request returns:
    *
@@ -1200,13 +1206,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false. Its state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance configuration. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance configuration. The metadata field type is
    * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
    * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
@@ -1241,11 +1246,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance configuration and begins preparing it to be used. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * preparing the new instance configuration. The instance configuration name is assigned by the
-   * caller. If the named instance configuration already exists, `CreateInstanceConfig` returns
-   * `ALREADY_EXISTS`.
+   * Creates an instance configuration and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance configuration. The
+   * instance configuration name is assigned by the caller. If the named instance configuration
+   * already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately after the request returns:
    *
@@ -1266,13 +1270,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false. Its state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance configuration. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance configuration. The metadata field type is
    * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
    * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
@@ -1308,11 +1311,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance configuration and begins preparing it to be used. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * preparing the new instance configuration. The instance configuration name is assigned by the
-   * caller. If the named instance configuration already exists, `CreateInstanceConfig` returns
-   * `ALREADY_EXISTS`.
+   * Creates an instance configuration and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance configuration. The
+   * instance configuration name is assigned by the caller. If the named instance configuration
+   * already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately after the request returns:
    *
@@ -1333,13 +1335,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false. Its state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance configuration. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance configuration. The metadata field type is
    * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
    * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
@@ -1374,9 +1375,9 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Updates an instance configuration. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of updating the
-   * instance. If the named instance configuration does not exist, returns `NOT_FOUND`.
+   * Updates an instance configuration. The returned long-running operation can be used to track the
+   * progress of updating the instance. If the named instance configuration does not exist, returns
+   * `NOT_FOUND`.
    *
    * <p>Only user-managed configurations can be updated.
    *
@@ -1402,13 +1403,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * the instance configuration modification. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance configuration modification. The metadata field type is
    * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.update` permission on the resource
    * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
@@ -1454,9 +1454,9 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Updates an instance configuration. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of updating the
-   * instance. If the named instance configuration does not exist, returns `NOT_FOUND`.
+   * Updates an instance configuration. The returned long-running operation can be used to track the
+   * progress of updating the instance. If the named instance configuration does not exist, returns
+   * `NOT_FOUND`.
    *
    * <p>Only user-managed configurations can be updated.
    *
@@ -1482,13 +1482,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * the instance configuration modification. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance configuration modification. The metadata field type is
    * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.update` permission on the resource
    * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
@@ -1522,9 +1521,9 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Updates an instance configuration. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of updating the
-   * instance. If the named instance configuration does not exist, returns `NOT_FOUND`.
+   * Updates an instance configuration. The returned long-running operation can be used to track the
+   * progress of updating the instance. If the named instance configuration does not exist, returns
+   * `NOT_FOUND`.
    *
    * <p>Only user-managed configurations can be updated.
    *
@@ -1550,13 +1549,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * the instance configuration modification. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance configuration modification. The metadata field type is
    * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.update` permission on the resource
    * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
@@ -1591,9 +1589,9 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Updates an instance configuration. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of updating the
-   * instance. If the named instance configuration does not exist, returns `NOT_FOUND`.
+   * Updates an instance configuration. The returned long-running operation can be used to track the
+   * progress of updating the instance. If the named instance configuration does not exist, returns
+   * `NOT_FOUND`.
    *
    * <p>Only user-managed configurations can be updated.
    *
@@ -1619,13 +1617,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * configuration's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
    * field becomes false.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * the instance configuration modification. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance configuration modification. The metadata field type is
    * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
-   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   * The response field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig],
+   * if successful.
    *
    * <p>Authorization requires `spanner.instanceConfigs.update` permission on the resource
    * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
@@ -1801,15 +1798,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists the user-managed instance configuration [long-running
-   * operations][google.longrunning.Operation] in the given project. An instance configuration
-   * operation has a name of the form
+   * Lists the user-managed instance configuration long-running operations in the given project. An
+   * instance configuration operation has a name of the form
    * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Sample code:
    *
@@ -1843,15 +1839,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists the user-managed instance configuration [long-running
-   * operations][google.longrunning.Operation] in the given project. An instance configuration
-   * operation has a name of the form
+   * Lists the user-managed instance configuration long-running operations in the given project. An
+   * instance configuration operation has a name of the form
    * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Sample code:
    *
@@ -1883,15 +1878,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists the user-managed instance configuration [long-running
-   * operations][google.longrunning.Operation] in the given project. An instance configuration
-   * operation has a name of the form
+   * Lists the user-managed instance configuration long-running operations in the given project. An
+   * instance configuration operation has a name of the form
    * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Sample code:
    *
@@ -1926,15 +1920,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists the user-managed instance configuration [long-running
-   * operations][google.longrunning.Operation] in the given project. An instance configuration
-   * operation has a name of the form
+   * Lists the user-managed instance configuration long-running operations in the given project. An
+   * instance configuration operation has a name of the form
    * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Sample code:
    *
@@ -1969,15 +1962,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists the user-managed instance configuration [long-running
-   * operations][google.longrunning.Operation] in the given project. An instance configuration
-   * operation has a name of the form
+   * Lists the user-managed instance configuration long-running operations in the given project. An
+   * instance configuration operation has a name of the form
    * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Sample code:
    *
@@ -2209,7 +2201,9 @@ public class InstanceAdminClient implements BackgroundResource {
    * }</pre>
    *
    * @param parent Required. The instance whose instance partitions should be listed. Values are of
-   *     the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   *     the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance} = '-'` to
+   *     list instance partitions for all Instances in a project, e.g.,
+   *     `projects/myproject/instances/-`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final ListInstancePartitionsPagedResponse listInstancePartitions(InstanceName parent) {
@@ -2242,7 +2236,9 @@ public class InstanceAdminClient implements BackgroundResource {
    * }</pre>
    *
    * @param parent Required. The instance whose instance partitions should be listed. Values are of
-   *     the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   *     the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance} = '-'` to
+   *     list instance partitions for all Instances in a project, e.g.,
+   *     `projects/myproject/instances/-`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final ListInstancePartitionsPagedResponse listInstancePartitions(String parent) {
@@ -2475,10 +2471,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
+   * Creates an instance and begins preparing it to begin serving. The returned long-running
+   * operation can be used to track the progress of preparing the new instance. The instance name is
+   * assigned by the caller. If the named instance already exists, `CreateInstance` returns
+   * `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -2498,12 +2494,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance's allocated resource levels are readable via the API. &#42; The instance's state
    * becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of
+   * the instance. The metadata field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Sample code:
    *
@@ -2543,10 +2538,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
+   * Creates an instance and begins preparing it to begin serving. The returned long-running
+   * operation can be used to track the progress of preparing the new instance. The instance name is
+   * assigned by the caller. If the named instance already exists, `CreateInstance` returns
+   * `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -2566,12 +2561,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance's allocated resource levels are readable via the API. &#42; The instance's state
    * becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of
+   * the instance. The metadata field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Sample code:
    *
@@ -2611,10 +2605,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
+   * Creates an instance and begins preparing it to begin serving. The returned long-running
+   * operation can be used to track the progress of preparing the new instance. The instance name is
+   * assigned by the caller. If the named instance already exists, `CreateInstance` returns
+   * `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -2634,12 +2628,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance's allocated resource levels are readable via the API. &#42; The instance's state
    * becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of
+   * the instance. The metadata field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Sample code:
    *
@@ -2670,10 +2663,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
+   * Creates an instance and begins preparing it to begin serving. The returned long-running
+   * operation can be used to track the progress of preparing the new instance. The instance name is
+   * assigned by the caller. If the named instance already exists, `CreateInstance` returns
+   * `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -2693,12 +2686,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance's allocated resource levels are readable via the API. &#42; The instance's state
    * becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of
+   * the instance. The metadata field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Sample code:
    *
@@ -2729,10 +2721,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
+   * Creates an instance and begins preparing it to begin serving. The returned long-running
+   * operation can be used to track the progress of preparing the new instance. The instance name is
+   * assigned by the caller. If the named instance already exists, `CreateInstance` returns
+   * `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -2752,12 +2744,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance's allocated resource levels are readable via the API. &#42; The instance's state
    * becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of
+   * the instance. The metadata field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Sample code:
    *
@@ -2788,8 +2779,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates an instance, and begins allocating or releasing resources as requested. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+   * long-running operation can be used to track the progress of updating the instance. If the named
+   * instance does not exist, returns `NOT_FOUND`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -2811,12 +2802,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * than the requested levels). &#42; All newly-reserved resources are available for serving the
    * instance's tables. &#42; The instance's new resource levels are readable via the API.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
-   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance
+   * modification. The metadata field type is
+   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Authorization requires `spanner.instances.update` permission on the resource
    * [name][google.spanner.admin.instance.v1.Instance.name].
@@ -2857,8 +2847,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates an instance, and begins allocating or releasing resources as requested. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+   * long-running operation can be used to track the progress of updating the instance. If the named
+   * instance does not exist, returns `NOT_FOUND`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -2880,12 +2870,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * than the requested levels). &#42; All newly-reserved resources are available for serving the
    * instance's tables. &#42; The instance's new resource levels are readable via the API.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
-   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance
+   * modification. The metadata field type is
+   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Authorization requires `spanner.instances.update` permission on the resource
    * [name][google.spanner.admin.instance.v1.Instance.name].
@@ -2919,8 +2908,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates an instance, and begins allocating or releasing resources as requested. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+   * long-running operation can be used to track the progress of updating the instance. If the named
+   * instance does not exist, returns `NOT_FOUND`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -2942,12 +2931,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * than the requested levels). &#42; All newly-reserved resources are available for serving the
    * instance's tables. &#42; The instance's new resource levels are readable via the API.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
-   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance
+   * modification. The metadata field type is
+   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Authorization requires `spanner.instances.update` permission on the resource
    * [name][google.spanner.admin.instance.v1.Instance.name].
@@ -2981,8 +2969,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates an instance, and begins allocating or releasing resources as requested. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+   * long-running operation can be used to track the progress of updating the instance. If the named
+   * instance does not exist, returns `NOT_FOUND`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -3004,12 +2992,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * than the requested levels). &#42; All newly-reserved resources are available for serving the
    * instance's tables. &#42; The instance's new resource levels are readable via the API.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
-   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance
+   * modification. The metadata field type is
+   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Authorization requires `spanner.instances.update` permission on the resource
    * [name][google.spanner.admin.instance.v1.Instance.name].
@@ -3725,10 +3712,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance partition and begins preparing it to be used. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance partition. The instance partition name is assigned by the caller. If the named
-   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   * Creates an instance partition and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance partition. The
+   * instance partition name is assigned by the caller. If the named instance partition already
+   * exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -3748,12 +3735,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's allocated resource levels are readable via the API. &#42; The instance
    * partition's state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance partition. The metadata field type is
    * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Sample code:
@@ -3799,10 +3785,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance partition and begins preparing it to be used. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance partition. The instance partition name is assigned by the caller. If the named
-   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   * Creates an instance partition and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance partition. The
+   * instance partition name is assigned by the caller. If the named instance partition already
+   * exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -3822,12 +3808,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's allocated resource levels are readable via the API. &#42; The instance
    * partition's state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance partition. The metadata field type is
    * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Sample code:
@@ -3873,10 +3858,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance partition and begins preparing it to be used. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance partition. The instance partition name is assigned by the caller. If the named
-   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   * Creates an instance partition and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance partition. The
+   * instance partition name is assigned by the caller. If the named instance partition already
+   * exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -3896,12 +3881,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's allocated resource levels are readable via the API. &#42; The instance
    * partition's state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance partition. The metadata field type is
    * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Sample code:
@@ -3933,10 +3917,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance partition and begins preparing it to be used. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance partition. The instance partition name is assigned by the caller. If the named
-   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   * Creates an instance partition and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance partition. The
+   * instance partition name is assigned by the caller. If the named instance partition already
+   * exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -3956,12 +3940,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's allocated resource levels are readable via the API. &#42; The instance
    * partition's state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance partition. The metadata field type is
    * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Sample code:
@@ -3994,10 +3977,10 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Creates an instance partition and begins preparing it to be used. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance partition. The instance partition name is assigned by the caller. If the named
-   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   * Creates an instance partition and begins preparing it to be used. The returned long-running
+   * operation can be used to track the progress of preparing the new instance partition. The
+   * instance partition name is assigned by the caller. If the named instance partition already
+   * exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -4017,12 +4000,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's allocated resource levels are readable via the API. &#42; The instance
    * partition's state becomes `READY`.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
-   * field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance partition. The metadata field type is
    * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Sample code:
@@ -4194,9 +4176,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates an instance partition, and begins allocating or releasing resources as requested. The
-   * returned [long-running operation][google.longrunning.Operation] can be used to track the
-   * progress of updating the instance partition. If the named instance partition does not exist,
-   * returns `NOT_FOUND`.
+   * returned long-running operation can be used to track the progress of updating the instance
+   * partition. If the named instance partition does not exist, returns `NOT_FOUND`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -4219,12 +4200,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's tables. &#42; The instance partition's new resource levels are readable
    * via the API.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track the instance partition modification. The
-   * [metadata][google.longrunning.Operation.metadata] field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance partition modification. The metadata field type is
    * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Authorization requires `spanner.instancePartitions.update` permission on the resource
@@ -4270,9 +4250,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates an instance partition, and begins allocating or releasing resources as requested. The
-   * returned [long-running operation][google.longrunning.Operation] can be used to track the
-   * progress of updating the instance partition. If the named instance partition does not exist,
-   * returns `NOT_FOUND`.
+   * returned long-running operation can be used to track the progress of updating the instance
+   * partition. If the named instance partition does not exist, returns `NOT_FOUND`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -4295,12 +4274,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's tables. &#42; The instance partition's new resource levels are readable
    * via the API.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track the instance partition modification. The
-   * [metadata][google.longrunning.Operation.metadata] field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance partition modification. The metadata field type is
    * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Authorization requires `spanner.instancePartitions.update` permission on the resource
@@ -4335,9 +4313,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates an instance partition, and begins allocating or releasing resources as requested. The
-   * returned [long-running operation][google.longrunning.Operation] can be used to track the
-   * progress of updating the instance partition. If the named instance partition does not exist,
-   * returns `NOT_FOUND`.
+   * returned long-running operation can be used to track the progress of updating the instance
+   * partition. If the named instance partition does not exist, returns `NOT_FOUND`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -4360,12 +4337,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's tables. &#42; The instance partition's new resource levels are readable
    * via the API.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track the instance partition modification. The
-   * [metadata][google.longrunning.Operation.metadata] field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance partition modification. The metadata field type is
    * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Authorization requires `spanner.instancePartitions.update` permission on the resource
@@ -4401,9 +4377,8 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates an instance partition, and begins allocating or releasing resources as requested. The
-   * returned [long-running operation][google.longrunning.Operation] can be used to track the
-   * progress of updating the instance partition. If the named instance partition does not exist,
-   * returns `NOT_FOUND`.
+   * returned long-running operation can be used to track the progress of updating the instance
+   * partition. If the named instance partition does not exist, returns `NOT_FOUND`.
    *
    * <p>Immediately upon completion of this request:
    *
@@ -4426,12 +4401,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * instance partition's tables. &#42; The instance partition's new resource levels are readable
    * via the API.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
-   * track the instance partition modification. The
-   * [metadata][google.longrunning.Operation.metadata] field type is
+   * <p>The returned long-running operation will have a name of the format
+   * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance partition modification. The metadata field type is
    * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
-   * The [response][google.longrunning.Operation.response] field type is
+   * The response field type is
    * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
    *
    * <p>Authorization requires `spanner.instancePartitions.update` permission on the resource
@@ -4465,14 +4439,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
-   * instance. An instance partition operation has a name of the form
+   * Lists instance partition long-running operations in the given instance. An instance partition
+   * operation has a name of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
    * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
@@ -4509,14 +4483,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
-   * instance. An instance partition operation has a name of the form
+   * Lists instance partition long-running operations in the given instance. An instance partition
+   * operation has a name of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
    * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
@@ -4551,14 +4525,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
-   * instance. An instance partition operation has a name of the form
+   * Lists instance partition long-running operations in the given instance. An instance partition
+   * operation has a name of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
    * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
@@ -4597,14 +4571,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
-   * instance. An instance partition operation has a name of the form
+   * Lists instance partition long-running operations in the given instance. An instance partition
+   * operation has a name of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
    * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
@@ -4643,14 +4617,14 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
-   * instance. An instance partition operation has a name of the form
+   * Lists instance partition long-running operations in the given instance. An instance partition
+   * operation has a name of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
-   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
-   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
-   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
-   * the most recently started operation.
+   * The long-running operation metadata field type `metadata.type_url` describes the type of the
+   * metadata. Operations returned include those that have completed/failed/canceled within the last
+   * 7 days, and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the most recently
+   * started operation.
    *
    * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
    * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
@@ -4696,8 +4670,8 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Moves an instance to the target instance configuration. You can use the returned [long-running
-   * operation][google.longrunning.Operation] to track the progress of moving the instance.
+   * Moves an instance to the target instance configuration. You can use the returned long-running
+   * operation to track the progress of moving the instance.
    *
    * <p>`MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of the following
    * criteria:
@@ -4718,13 +4692,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * storage charges. &#42; The instance might experience higher read-write latencies and a higher
    * transaction abort rate. However, moving an instance doesn't cause any downtime.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] has a name of the format
+   * <p>The returned long-running operation has a name of the format
    * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the move
-   * instance operation. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful. Cancelling the operation
-   * sets its metadata's
+   * instance operation. The metadata field type is
+   * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful. Cancelling
+   * the operation sets its metadata's
    * [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time]. Cancellation
    * is not immediate because it involves moving any data previously moved to the target instance
    * configuration back to the original instance configuration. You can use this operation to track
@@ -4770,8 +4743,8 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Moves an instance to the target instance configuration. You can use the returned [long-running
-   * operation][google.longrunning.Operation] to track the progress of moving the instance.
+   * Moves an instance to the target instance configuration. You can use the returned long-running
+   * operation to track the progress of moving the instance.
    *
    * <p>`MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of the following
    * criteria:
@@ -4792,13 +4765,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * storage charges. &#42; The instance might experience higher read-write latencies and a higher
    * transaction abort rate. However, moving an instance doesn't cause any downtime.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] has a name of the format
+   * <p>The returned long-running operation has a name of the format
    * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the move
-   * instance operation. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful. Cancelling the operation
-   * sets its metadata's
+   * instance operation. The metadata field type is
+   * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful. Cancelling
+   * the operation sets its metadata's
    * [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time]. Cancellation
    * is not immediate because it involves moving any data previously moved to the target instance
    * configuration back to the original instance configuration. You can use this operation to track
@@ -4844,8 +4816,8 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
-   * Moves an instance to the target instance configuration. You can use the returned [long-running
-   * operation][google.longrunning.Operation] to track the progress of moving the instance.
+   * Moves an instance to the target instance configuration. You can use the returned long-running
+   * operation to track the progress of moving the instance.
    *
    * <p>`MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of the following
    * criteria:
@@ -4866,13 +4838,12 @@ public class InstanceAdminClient implements BackgroundResource {
    * storage charges. &#42; The instance might experience higher read-write latencies and a higher
    * transaction abort rate. However, moving an instance doesn't cause any downtime.
    *
-   * <p>The returned [long-running operation][google.longrunning.Operation] has a name of the format
+   * <p>The returned long-running operation has a name of the format
    * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the move
-   * instance operation. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful. Cancelling the operation
-   * sets its metadata's
+   * instance operation. The metadata field type is
+   * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata]. The response
+   * field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful. Cancelling
+   * the operation sets its metadata's
    * [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time]. Cancellation
    * is not immediate because it involves moving any data previously moved to the target instance
    * configuration back to the original instance configuration. You can use this operation to track

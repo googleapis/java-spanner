@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,9 +133,6 @@ public interface InstanceOrBuilder
    * This might be zero in API responses for instances that are not yet in the
    * `READY` state.
    *
-   * If the instance has varying node count across replicas (achieved by
-   * setting asymmetric_autoscaling_options in autoscaling config), the
-   * node_count here is the maximum node count across all replicas.
    *
    * For more information, see
    * [Compute capacity, nodes, and processing
@@ -165,10 +162,6 @@ public interface InstanceOrBuilder
    * This might be zero in API responses for instances that are not yet in the
    * `READY` state.
    *
-   * If the instance has varying processing units per replica
-   * (achieved by setting asymmetric_autoscaling_options in autoscaling config),
-   * the processing_units here is the maximum processing units across all
-   * replicas.
    *
    * For more information, see
    * [Compute capacity, nodes and processing
@@ -504,6 +497,31 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
+   * The `InstanceType` of the current instance.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+   *
+   * @return The enum numeric value on the wire for instanceType.
+   */
+  int getInstanceTypeValue();
+  /**
+   *
+   *
+   * <pre>
+   * The `InstanceType` of the current instance.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+   *
+   * @return The instanceType.
+   */
+  com.google.spanner.admin.instance.v1.Instance.InstanceType getInstanceType();
+
+  /**
+   *
+   *
+   * <pre>
    * Deprecated. This field is not populated.
    * </pre>
    *
@@ -631,6 +649,45 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
+   * Free instance metadata. Only populated for free instances.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+   * </code>
+   *
+   * @return Whether the freeInstanceMetadata field is set.
+   */
+  boolean hasFreeInstanceMetadata();
+  /**
+   *
+   *
+   * <pre>
+   * Free instance metadata. Only populated for free instances.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+   * </code>
+   *
+   * @return The freeInstanceMetadata.
+   */
+  com.google.spanner.admin.instance.v1.FreeInstanceMetadata getFreeInstanceMetadata();
+  /**
+   *
+   *
+   * <pre>
+   * Free instance metadata. Only populated for free instances.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+   * </code>
+   */
+  com.google.spanner.admin.instance.v1.FreeInstanceMetadataOrBuilder
+      getFreeInstanceMetadataOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
    * Optional. The `Edition` of the current instance.
    * </pre>
    *
@@ -660,15 +717,16 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
-   * Optional. Controls the default backup behavior for new databases within the
-   * instance.
+   * Optional. Controls the default backup schedule behavior for new databases
+   * within the instance. By default, a backup schedule is created automatically
+   * when a new database is created in a new instance.
    *
-   * Note that `AUTOMATIC` is not permitted for free instances, as backups and
-   * backup schedules are not allowed for free instances.
+   * Note that the `AUTOMATIC` value isn't permitted for free instances,
+   * as backups and backup schedules aren't supported for free instances.
    *
    * In the `GetInstance` or `ListInstances` response, if the value of
-   * default_backup_schedule_type is unset or NONE, no default backup
-   * schedule will be created for new databases within the instance.
+   * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+   * create a default backup schedule for new databases in the instance.
    * </pre>
    *
    * <code>
@@ -682,15 +740,16 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
-   * Optional. Controls the default backup behavior for new databases within the
-   * instance.
+   * Optional. Controls the default backup schedule behavior for new databases
+   * within the instance. By default, a backup schedule is created automatically
+   * when a new database is created in a new instance.
    *
-   * Note that `AUTOMATIC` is not permitted for free instances, as backups and
-   * backup schedules are not allowed for free instances.
+   * Note that the `AUTOMATIC` value isn't permitted for free instances,
+   * as backups and backup schedules aren't supported for free instances.
    *
    * In the `GetInstance` or `ListInstances` response, if the value of
-   * default_backup_schedule_type is unset or NONE, no default backup
-   * schedule will be created for new databases within the instance.
+   * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+   * create a default backup schedule for new databases in the instance.
    * </pre>
    *
    * <code>

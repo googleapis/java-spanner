@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
+import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
@@ -33,9 +34,11 @@ class DatabaseClientImpl implements DatabaseClient {
   private static final String READ_ONLY_TRANSACTION = "CloudSpanner.ReadOnlyTransaction";
   private static final String PARTITION_DML_TRANSACTION = "CloudSpanner.PartitionDMLTransaction";
   private final TraceWrapper tracer;
+  private Attributes commonAttributes;
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
+  @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
 
   final boolean useMultiplexedSessionBlindWrite;
@@ -47,8 +50,10 @@ class DatabaseClientImpl implements DatabaseClient {
         pool,
         /* useMultiplexedSessionBlindWrite = */ false,
         /* multiplexedSessionDatabaseClient = */ null,
+        /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
-        /* useMultiplexedSessionForRW = */ false);
+        /* useMultiplexedSessionForRW = */ false,
+        Attributes.empty());
   }
 
   @VisibleForTesting
@@ -58,8 +63,10 @@ class DatabaseClientImpl implements DatabaseClient {
         pool,
         /* useMultiplexedSessionBlindWrite = */ false,
         /* multiplexedSessionDatabaseClient = */ null,
+        /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
-        /* useMultiplexedSessionForRW = */ false);
+        /* useMultiplexedSessionForRW = */ false,
+        Attributes.empty());
   }
 
   DatabaseClientImpl(
@@ -67,14 +74,18 @@ class DatabaseClientImpl implements DatabaseClient {
       SessionPool pool,
       boolean useMultiplexedSessionBlindWrite,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
+      boolean useMultiplexedSessionPartitionedOps,
       TraceWrapper tracer,
-      boolean useMultiplexedSessionForRW) {
+      boolean useMultiplexedSessionForRW,
+      Attributes commonAttributes) {
     this.clientId = clientId;
     this.pool = pool;
     this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
+    this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
     this.tracer = tracer;
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
+    this.commonAttributes = commonAttributes;
   }
 
   @VisibleForTesting
@@ -133,7 +144,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient().writeWithOptions(mutations, options);
@@ -156,7 +167,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeAtLeastOnceWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       if (useMultiplexedSessionBlindWrite && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient()
@@ -176,8 +187,11 @@ class DatabaseClientImpl implements DatabaseClient {
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       final Iterable<MutationGroup> mutationGroups, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
+      if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
+        return getMultiplexedSessionDatabaseClient().batchWriteAtLeastOnce(mutationGroups, options);
+      }
       return runWithSessionRetry(session -> session.batchWriteAtLeastOnce(mutationGroups, options));
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -189,7 +203,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadContext singleUse() {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().singleUse();
     } catch (RuntimeException e) {
@@ -201,7 +215,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadContext singleUse(TimestampBound bound) {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().singleUse(bound);
     } catch (RuntimeException e) {
@@ -213,7 +227,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction() {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().singleUseReadOnlyTransaction();
     } catch (RuntimeException e) {
@@ -225,7 +239,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().singleUseReadOnlyTransaction(bound);
     } catch (RuntimeException e) {
@@ -237,7 +251,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadOnlyTransaction readOnlyTransaction() {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().readOnlyTransaction();
     } catch (RuntimeException e) {
@@ -249,7 +263,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().readOnlyTransaction(bound);
     } catch (RuntimeException e) {
@@ -261,7 +275,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSessionForRW().readWriteTransaction(options);
     } catch (RuntimeException e) {
@@ -273,7 +287,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSessionForRW().transactionManager(options);
     } catch (RuntimeException e) {
@@ -285,7 +299,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSessionForRW().runAsync(options);
     } catch (RuntimeException e) {
@@ -297,7 +311,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSessionForRW().transactionManagerAsync(options);
     } catch (RuntimeException e) {
@@ -309,7 +323,15 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
-    ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION);
+    if (useMultiplexedSessionPartitionedOps) {
+      return getMultiplexedSession().executePartitionedUpdate(stmt, options);
+    }
+    return executePartitionedUpdateWithPooledSession(stmt, options);
+  }
+
+  private long executePartitionedUpdateWithPooledSession(
+      final Statement stmt, final UpdateOption... options) {
+    ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
     } catch (RuntimeException e) {

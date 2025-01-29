@@ -71,9 +71,13 @@ import io.grpc.Context;
 import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -83,6 +87,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -736,7 +741,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
-    channelConfigurator = builder.channelConfigurator;
+    if (builder.mTLSContext != null) {
+      channelConfigurator =
+          channelBuilder -> {
+            if (builder.channelConfigurator != null) {
+              channelBuilder = builder.channelConfigurator.apply(channelBuilder);
+            }
+            if (channelBuilder instanceof NettyChannelBuilder) {
+              ((NettyChannelBuilder) channelBuilder).sslContext(builder.mTLSContext);
+            }
+            return channelBuilder;
+          };
+    } else {
+      channelConfigurator = builder.channelConfigurator;
+    }
     interceptorProvider = builder.interceptorProvider;
     sessionPoolOptions =
         builder.sessionPoolOptions != null
@@ -951,6 +969,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
+    private SslContext mTLSContext = null;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1485,6 +1504,27 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Configures mTLS authentication using the provided client certificate and key files. mTLS is
+     * only supported for external spanner hosts.
+     *
+     * @param clientCertificate Path to the client certificate file.
+     * @param clientCertificateKey Path to the client private key file.
+     * @throws SpannerException If an error occurs while configuring the mTLS context
+     */
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3574")
+    public Builder useClientCert(String clientCertificate, String clientCertificateKey) {
+      try {
+        this.mTLSContext =
+            GrpcSslContexts.forClient()
+                .keyManager(new File(clientCertificate), new File(clientCertificateKey))
+                .build();
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
+      return this;
+    }
+
+    /**
      * Sets OpenTelemetry object to be used for Spanner Metrics and Traces. GlobalOpenTelemetry will
      * be used as fallback if this options is not set.
      */
@@ -1791,6 +1831,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return callCredentialsProvider;
   }
 
+  private boolean usesNoCredentials() {
+    return Objects.equals(getCredentials(), NoCredentials.getInstance());
+  }
+
   public String getCompressorName() {
     return compressorName;
   }
@@ -1838,7 +1882,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     // Add Metrics Tracer factory if built in metrics are enabled and if the client is data client
     // and if emulator is not enabled.
-    if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled) {
+    if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled && !usesNoCredentials()) {
       ApiTracerFactory metricsTracerFactory = createMetricsApiTracerFactory();
       if (metricsTracerFactory != null) {
         apiTracerFactories.add(metricsTracerFactory);

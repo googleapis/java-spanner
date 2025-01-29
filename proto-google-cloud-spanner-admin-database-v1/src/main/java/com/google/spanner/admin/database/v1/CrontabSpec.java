@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public final class CrontabSpec extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Required. Textual representation of the crontab. User can customize the
    * backup frequency and the backup version time using the cron
-   * expression. The version time must be in UTC timzeone.
+   * expression. The version time must be in UTC timezone.
    *
    * The backup will contain an externally consistent copy of the
    * database at the version time. Allowed frequencies are 12 hour, 1 day,
@@ -110,7 +110,7 @@ public final class CrontabSpec extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Required. Textual representation of the crontab. User can customize the
    * backup frequency and the backup version time using the cron
-   * expression. The version time must be in UTC timzeone.
+   * expression. The version time must be in UTC timezone.
    *
    * The backup will contain an externally consistent copy of the
    * database at the version time. Allowed frequencies are 12 hour, 1 day,
@@ -684,7 +684,7 @@ public final class CrontabSpec extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Required. Textual representation of the crontab. User can customize the
      * backup frequency and the backup version time using the cron
-     * expression. The version time must be in UTC timzeone.
+     * expression. The version time must be in UTC timezone.
      *
      * The backup will contain an externally consistent copy of the
      * database at the version time. Allowed frequencies are 12 hour, 1 day,
@@ -717,7 +717,7 @@ public final class CrontabSpec extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Required. Textual representation of the crontab. User can customize the
      * backup frequency and the backup version time using the cron
-     * expression. The version time must be in UTC timzeone.
+     * expression. The version time must be in UTC timezone.
      *
      * The backup will contain an externally consistent copy of the
      * database at the version time. Allowed frequencies are 12 hour, 1 day,
@@ -750,7 +750,7 @@ public final class CrontabSpec extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Required. Textual representation of the crontab. User can customize the
      * backup frequency and the backup version time using the cron
-     * expression. The version time must be in UTC timzeone.
+     * expression. The version time must be in UTC timezone.
      *
      * The backup will contain an externally consistent copy of the
      * database at the version time. Allowed frequencies are 12 hour, 1 day,
@@ -782,7 +782,7 @@ public final class CrontabSpec extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Required. Textual representation of the crontab. User can customize the
      * backup frequency and the backup version time using the cron
-     * expression. The version time must be in UTC timzeone.
+     * expression. The version time must be in UTC timezone.
      *
      * The backup will contain an externally consistent copy of the
      * database at the version time. Allowed frequencies are 12 hour, 1 day,
@@ -810,7 +810,7 @@ public final class CrontabSpec extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Required. Textual representation of the crontab. User can customize the
      * backup frequency and the backup version time using the cron
-     * expression. The version time must be in UTC timzeone.
+     * expression. The version time must be in UTC timezone.
      *
      * The backup will contain an externally consistent copy of the
      * database at the version time. Allowed frequencies are 12 hour, 1 day,

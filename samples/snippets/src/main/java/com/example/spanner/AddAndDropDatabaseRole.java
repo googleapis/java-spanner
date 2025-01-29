@@ -23,6 +23,8 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -36,12 +38,12 @@ public class AddAndDropDatabaseRole {
     String databaseId = "my-database";
     String parentRole = "parent_role";
     String childRole = "child_role";
-    addAndDropDatabaseRole(projectId, instanceId, databaseId, parentRole, childRole);
+    addAndDropDatabaseRole(projectId, instanceId, databaseId, parentRole, childRole, "Albums");
   }
 
   static void addAndDropDatabaseRole(
       String projectId, String instanceId, String databaseId,
-      String parentRole, String childRole) {
+      String parentRole, String childRole, String... tables) {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(projectId)
@@ -49,13 +51,15 @@ public class AddAndDropDatabaseRole {
             .getService();
         DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
       System.out.println("Waiting for role create operation to complete...");
+      List<String> roleStatements = new ArrayList<>(ImmutableList.of(
+          String.format("CREATE ROLE %s", parentRole),
+          String.format("CREATE ROLE %s", childRole),
+          String.format("GRANT ROLE %s TO ROLE %s", parentRole, childRole)));
+      for (String table : tables) {
+        roleStatements.add(String.format("GRANT SELECT ON TABLE %s TO ROLE %s", table, parentRole));
+      }
       databaseAdminClient.updateDatabaseDdlAsync(
-              DatabaseName.of(projectId, instanceId, databaseId),
-              ImmutableList.of(
-                  String.format("CREATE ROLE %s", parentRole),
-                  String.format("GRANT SELECT ON TABLE Albums TO ROLE %s", parentRole),
-                  String.format("CREATE ROLE %s", childRole),
-                  String.format("GRANT ROLE %s TO ROLE %s", parentRole, childRole)))
+              DatabaseName.of(projectId, instanceId, databaseId), roleStatements)
           .get(5, TimeUnit.MINUTES);
       System.out.printf(
           "Created roles %s and %s and granted privileges%n", parentRole, childRole);

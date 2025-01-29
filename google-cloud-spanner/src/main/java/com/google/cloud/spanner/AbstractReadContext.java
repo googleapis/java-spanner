@@ -58,6 +58,7 @@ import com.google.spanner.v1.TransactionSelector;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -67,6 +68,7 @@ import javax.annotation.concurrent.GuardedBy;
  */
 abstract class AbstractReadContext
     implements ReadContext, AbstractResultSet.Listener, SessionTransaction {
+  private static final Logger logger = Logger.getLogger(AbstractReadContext.class.getName());
 
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractReadContext> {
     private SessionImpl session;
@@ -797,7 +799,6 @@ abstract class AbstractReadContext
                     isRouteToLeader());
             session.markUsed(clock.instant());
             stream.setCall(call, request.getTransaction().hasBegin());
-            call.request(prefetchChunks);
             return stream;
           }
 
@@ -952,6 +953,15 @@ abstract class AbstractReadContext
     } else if (defaultDirectedReadOptions != null) {
       builder.setDirectedReadOptions(defaultDirectedReadOptions);
     }
+    if (readOptions.hasLockHint()) {
+      if (isReadOnly()) {
+        logger.warning(
+            "Lock hint is only supported for ReadWrite transactions. "
+                + "Overriding lock hint to default unspecified.");
+      } else {
+        builder.setLockHint(readOptions.lockHint());
+      }
+    }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
@@ -960,6 +970,7 @@ abstract class AbstractReadContext
             SpannerImpl.READ,
             span,
             tracer,
+            tracer.createTableAttributes(table, readOptions),
             session.getErrorHandler(),
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
@@ -991,7 +1002,6 @@ abstract class AbstractReadContext
                     isRouteToLeader());
             session.markUsed(clock.instant());
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
-            call.request(prefetchChunks);
             return stream;
           }
 
