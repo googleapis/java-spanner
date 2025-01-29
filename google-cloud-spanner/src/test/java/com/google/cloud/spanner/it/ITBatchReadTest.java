@@ -181,7 +181,9 @@ public class ITBatchReadTest {
           totalSize = 0;
         }
       }
-      dbClient.write(mutations);
+      if (mutations.size() > 0) {
+        dbClient.write(mutations);
+      }
     }
     // Our read/queries are executed with some staleness.
     Thread.sleep(2 * STALENESS_MILLISEC);
