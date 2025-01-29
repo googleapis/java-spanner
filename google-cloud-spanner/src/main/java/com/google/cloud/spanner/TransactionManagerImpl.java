@@ -103,15 +103,17 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     }
     try (IScope s = tracer.withSpan(span)) {
       /*
+       In case of regular session, explicitBeginBeforeUserOperation field is always true and hence there is no change in behaviour.
+
        If the transaction contains only mutations and is using a multiplexed session, perform a
        `BeginTransaction` after the user operation completes during a retry.
-
-       This ensures that a random mutation from the mutations list is chosen when invoking
+       This ensures that the mutations from the user callable is available before invoking
        `BeginTransaction`. If `BeginTransaction` is performed before the user operation,
        the mutations are not sent, and the precommit token is not received, resulting in
        an INVALID_ARGUMENT error (missing precommit token) during commit.
       */
-      boolean useInlinedBegin = txn.mutationsOnlyTransaction || txn.transactionId != null;
+      boolean useInlinedBegin = txn.transactionId != null;
+      boolean explicitBeginBeforeUserOperation = !txn.mutationsOnlyTransaction;
 
       // Determine the latest transactionId when using a multiplexed session.
       ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
@@ -124,7 +126,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       txn =
           session.newTransaction(
               options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
-      if (!useInlinedBegin) {
+      if (!useInlinedBegin && explicitBeginBeforeUserOperation) {
         txn.ensureTxn();
       }
       txnState = TransactionState.STARTED;

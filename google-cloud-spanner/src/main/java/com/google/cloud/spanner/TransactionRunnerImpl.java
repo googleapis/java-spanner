@@ -223,6 +223,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private final Map<SpannerRpc.Option, ?> channelHint;
 
     // This field indicates whether the read-write transaction contains only mutation operations.
+    // This field is set only in case of multiplexed sessions.
     boolean mutationsOnlyTransaction = false;
 
     private TransactionContextImpl(Builder builder) {
@@ -1234,19 +1235,23 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     Callable<T> retryCallable =
         () -> {
           boolean useInlinedBegin = true;
+          boolean explicitBeginBeforeUserOperation = true;
           if (attempt.get() > 0) {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
+            useInlinedBegin = txn.transactionId != null;
+
             /*
+             In case of regular session, explicitBeginBeforeUserOperation field is always true and hence there is no change in behaviour.
+
              If the transaction contains only mutations and is using a multiplexed session, perform a
              `BeginTransaction` after the user operation completes during a retry.
-
-             This ensures that a random mutation from the mutations list is chosen when invoking
+             This ensures that the mutations from the user callable is available before invoking
              `BeginTransaction`. If `BeginTransaction` is performed before the user operation,
              the mutations are not sent, and the precommit token is not received, resulting in
              an INVALID_ARGUMENT error (missing precommit token) during commit.
             */
-            useInlinedBegin = txn.mutationsOnlyTransaction || txn.transactionId != null;
+            explicitBeginBeforeUserOperation = !txn.mutationsOnlyTransaction;
 
             // Determine the latest transactionId when using a multiplexed session.
             ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
@@ -1267,7 +1272,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           span.addAnnotation("Starting Transaction Attempt", "Attempt", attempt.longValue());
           // Only ensure that there is a transaction if we should not inline the beginTransaction
           // with the first statement.
-          if (!useInlinedBegin) {
+          if (!useInlinedBegin && explicitBeginBeforeUserOperation) {
             txn.ensureTxn();
           }
 
