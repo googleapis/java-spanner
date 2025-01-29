@@ -59,7 +59,6 @@ public class GceTestEnvConfig implements TestEnvConfig {
 
   public GceTestEnvConfig() {
     String projectId = System.getProperty(GCE_PROJECT_ID, "");
-    projectId = "span-cloud-testing";
     String serverUrl = System.getProperty(GCE_SERVER_URL, "");
     String credentialsFile = System.getProperty(GCE_CREDENTIALS_FILE, "");
     double errorProbability =
@@ -84,13 +83,13 @@ public class GceTestEnvConfig implements TestEnvConfig {
         throw new RuntimeException(e);
       }
     }
-    // SpannerInterceptorProvider interceptorProvider =
-    //     SpannerInterceptorProvider.createDefault().with(new GrpcErrorInjector(errorProbability));
-    //  if (attemptDirectPath) {
-    //   interceptorProvider =
-    //       interceptorProvider.with(new DirectPathAddressCheckInterceptor(directPathTestScenario));
-    // }
-    // builder.setInterceptorProvider(interceptorProvider);
+    SpannerInterceptorProvider interceptorProvider =
+        SpannerInterceptorProvider.createDefault().with(new GrpcErrorInjector(errorProbability));
+    if (attemptDirectPath) {
+      interceptorProvider =
+          interceptorProvider.with(new DirectPathAddressCheckInterceptor(directPathTestScenario));
+    }
+    builder.setInterceptorProvider(interceptorProvider);
     // DirectPath tests need to set a custom endpoint to the ChannelProvider
     InstantiatingGrpcChannelProvider.Builder customChannelProviderBuilder =
         InstantiatingGrpcChannelProvider.newBuilder();
@@ -98,8 +97,8 @@ public class GceTestEnvConfig implements TestEnvConfig {
       customChannelProviderBuilder
           .setEndpoint(DIRECT_PATH_ENDPOINT)
           .setAttemptDirectPath(true)
-          .setAttemptDirectPathXds();
-          // .setInterceptorProvider(interceptorProvider);
+          .setAttemptDirectPathXds()
+          .setInterceptorProvider(interceptorProvider);
       builder.setChannelProvider(customChannelProviderBuilder.build());
     }
     options = builder.build();
