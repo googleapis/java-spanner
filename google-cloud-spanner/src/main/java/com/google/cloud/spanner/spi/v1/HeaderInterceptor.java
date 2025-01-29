@@ -169,7 +169,9 @@ class HeaderInterceptor implements ClientInterceptor {
 
         spannerRpcMetrics.recordGfeLatency(gfeLatency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
-        compositeTracer.recordGFELatency(gfeLatency);
+        if (compositeTracer != null) {
+          compositeTracer.recordGFELatency(gfeLatency);
+        }
 
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
