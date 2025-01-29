@@ -31,17 +31,17 @@ public class SessionPoolOptionsHelper {
     return sessionPoolOptionsBuilder.setUseMultiplexedSession(useMultiplexedSession);
   }
 
-  // TODO: Remove when multiplexed session for blind write is released.
-  public static SessionPoolOptions.Builder setUseMultiplexedSessionBlindWrite(
-      SessionPoolOptions.Builder sessionPoolOptionsBuilder,
-      boolean useMultiplexedSessionBlindWrite) {
-    return sessionPoolOptionsBuilder.setUseMultiplexedSessionBlindWrite(
-        useMultiplexedSessionBlindWrite);
-  }
-
   // TODO: Remove when multiplexed session for read write is released.
   public static SessionPoolOptions.Builder setUseMultiplexedSessionForRW(
       SessionPoolOptions.Builder sessionPoolOptionsBuilder, boolean useMultiplexedSessionForRW) {
     return sessionPoolOptionsBuilder.setUseMultiplexedSessionForRW(useMultiplexedSessionForRW);
+  }
+
+  // TODO: Remove when multiplexed session for partitioned operations are released.
+  public static SessionPoolOptions.Builder setUseMultiplexedSessionForPartitionedOperations(
+      SessionPoolOptions.Builder sessionPoolOptionsBuilder,
+      boolean useMultiplexedSessionForPartitionedOps) {
+    return sessionPoolOptionsBuilder.setUseMultiplexedSessionPartitionedOps(
+        useMultiplexedSessionForPartitionedOps);
   }
 }

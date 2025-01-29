@@ -32,7 +32,9 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.ConnectionOptions.Builder;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -125,6 +127,11 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         super.createConnection(ImmutableList.of(), ImmutableList.of(listener));
     connection.setAutocommit(false);
     return connection;
+  }
+
+  @Override
+  protected Builder configureConnectionOptions(Builder builder) {
+    return builder.setStatementExecutorType(StatementExecutorType.PLATFORM_THREAD);
   }
 
   @Test

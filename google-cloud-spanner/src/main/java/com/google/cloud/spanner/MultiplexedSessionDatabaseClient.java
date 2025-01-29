@@ -25,6 +25,7 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
@@ -254,10 +255,15 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
             // initiate a begin transaction request to verify if read-write transactions are
             // supported using multiplexed sessions.
             if (sessionClient
-                .getSpanner()
-                .getOptions()
-                .getSessionPoolOptions()
-                .getUseMultiplexedSessionForRW()) {
+                    .getSpanner()
+                    .getOptions()
+                    .getSessionPoolOptions()
+                    .getUseMultiplexedSessionForRW()
+                && !sessionClient
+                    .getSpanner()
+                    .getOptions()
+                    .getSessionPoolOptions()
+                    .getSkipVerifyBeginTransactionForMuxRW()) {
               verifyBeginTransactionWithRWOnMultiplexedSessionAsync(session.getName());
             }
           }
@@ -561,6 +567,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
     return createMultiplexedSessionTransaction(/* singleUse = */ false)
         .transactionManagerAsync(options);
+  }
+
+  @Override
+  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+    return createMultiplexedSessionTransaction(/* singleUse = */ true)
+        .executePartitionedUpdate(stmt, options);
   }
 
   /**

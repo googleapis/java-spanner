@@ -16,13 +16,18 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.Tuple;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,8 +36,10 @@ import java.util.regex.Pattern;
  * AUTOCOMMIT=TRUE.
  */
 class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
+  private final Cache<String, Tuple<T, Boolean>> cache;
   private final ClientSideStatementImpl statement;
   private final Method method;
+  private final boolean supportsLocal;
   private final ClientSideStatementValueConverter<T> converter;
   private final Pattern allowedValuesPattern;
 
@@ -46,12 +53,18 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
   @SuppressWarnings("unchecked")
   ClientSideStatementSetExecutor(ClientSideStatementImpl statement) throws CompileException {
     Preconditions.checkNotNull(statement.getSetStatement());
+    this.cache =
+        CacheBuilder.newBuilder()
+            .maximumSize(25)
+            // Set the concurrency level to 1, as we don't expect many concurrent updates.
+            .concurrencyLevel(1)
+            .build();
     try {
       this.statement = statement;
       this.allowedValuesPattern =
           Pattern.compile(
               String.format(
-                  "(?is)\\A\\s*set\\s+%s\\s*%s\\s*%s\\s*\\z",
+                  "(?is)\\A\\s*set\\s+((?:local|session)\\s+)?%s\\s*%s\\s*%s\\s*\\z",
                   statement.getSetStatement().getPropertyName(),
                   statement.getSetStatement().getSeparator(),
                   statement.getSetStatement().getAllowedValues()));
@@ -64,9 +77,21 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
       Constructor<ClientSideStatementValueConverter<T>> constructor =
           converterClass.getConstructor(String.class);
       this.converter = constructor.newInstance(statement.getSetStatement().getAllowedValues());
-      this.method =
-          ConnectionStatementExecutor.class.getDeclaredMethod(
-              statement.getMethodName(), converter.getParameterClass());
+      Method method;
+      boolean supportsLocal;
+      try {
+        method =
+            ConnectionStatementExecutor.class.getDeclaredMethod(
+                statement.getMethodName(), converter.getParameterClass());
+        supportsLocal = false;
+      } catch (NoSuchMethodException ignore) {
+        method =
+            ConnectionStatementExecutor.class.getDeclaredMethod(
+                statement.getMethodName(), converter.getParameterClass(), Boolean.class);
+        supportsLocal = true;
+      }
+      this.method = method;
+      this.supportsLocal = supportsLocal;
     } catch (Exception e) {
       throw new CompileException(e, statement);
     }
@@ -75,17 +100,29 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
   @Override
   public StatementResult execute(ConnectionStatementExecutor connection, ParsedStatement statement)
       throws Exception {
-    return (StatementResult)
-        method.invoke(connection, getParameterValue(statement.getSqlWithoutComments()));
+    Tuple<T, Boolean> value;
+    try {
+      value =
+          this.cache.get(
+              statement.getSqlWithoutComments(),
+              () -> getParameterValue(statement.getSqlWithoutComments()));
+    } catch (ExecutionException | UncheckedExecutionException executionException) {
+      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+    }
+    if (this.supportsLocal) {
+      return (StatementResult) method.invoke(connection, value.x(), value.y());
+    }
+    return (StatementResult) method.invoke(connection, value.x());
   }
 
-  T getParameterValue(String sql) {
+  Tuple<T, Boolean> getParameterValue(String sql) {
     Matcher matcher = allowedValuesPattern.matcher(sql);
-    if (matcher.find() && matcher.groupCount() >= 1) {
-      String value = matcher.group(1);
+    if (matcher.find() && matcher.groupCount() >= 2) {
+      boolean local = matcher.group(1) != null && "local".equalsIgnoreCase(matcher.group(1).trim());
+      String value = matcher.group(2);
       T res = converter.convert(value);
       if (res != null) {
-        return res;
+        return Tuple.of(res, local);
       }
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT,
@@ -94,8 +131,9 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
               this.statement.getSetStatement().getPropertyName(), value));
     } else {
       Matcher invalidMatcher = this.statement.getPattern().matcher(sql);
-      if (invalidMatcher.find() && invalidMatcher.groupCount() == 1) {
-        String invalidValue = invalidMatcher.group(1);
+      int valueGroup = this.supportsLocal ? 2 : 1;
+      if (invalidMatcher.find() && invalidMatcher.groupCount() == valueGroup) {
+        String invalidValue = invalidMatcher.group(valueGroup);
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
             String.format(

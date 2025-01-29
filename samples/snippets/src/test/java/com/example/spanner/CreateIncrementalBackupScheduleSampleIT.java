@@ -33,16 +33,16 @@ public class CreateIncrementalBackupScheduleSampleIT extends SampleTestBaseV2 {
   public void testCreateIncrementalBackupScheduleSample() throws Exception {
     String backupScheduleId = String.format("schedule-%s", UUID.randomUUID());
     BackupScheduleName backupScheduleName =
-        BackupScheduleName.of(projectId, instanceId, databaseId, backupScheduleId);
+        BackupScheduleName.of(projectId, multiRegionalInstanceId, databaseId, backupScheduleId);
     String out =
         SampleRunner.runSample(
             () -> {
               try {
                 CreateIncrementalBackupScheduleSample.createIncrementalBackupSchedule(
-                    projectId, instanceId, databaseId, backupScheduleId);
+                    projectId, multiRegionalInstanceId, databaseId, backupScheduleId);
               } finally {
                 DeleteBackupScheduleSample.deleteBackupSchedule(
-                    projectId, instanceId, databaseId, backupScheduleId);
+                    projectId, multiRegionalInstanceId, databaseId, backupScheduleId);
               }
             });
     assertThat(out)

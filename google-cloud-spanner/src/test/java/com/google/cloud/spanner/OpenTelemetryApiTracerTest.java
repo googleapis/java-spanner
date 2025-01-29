@@ -135,6 +135,7 @@ public class OpenTelemetryApiTracerTest extends AbstractMockServerTest {
                 SessionPoolOptions.newBuilder()
                     .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
                     .setFailOnSessionLeak()
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
                     .build())
             .setEnableApiTracing(true)
             .build()
@@ -428,6 +429,7 @@ public class OpenTelemetryApiTracerTest extends AbstractMockServerTest {
                 SessionPoolOptions.newBuilder()
                     .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
                     .setFailOnSessionLeak()
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
                     .build())
             .build()
             .getService();

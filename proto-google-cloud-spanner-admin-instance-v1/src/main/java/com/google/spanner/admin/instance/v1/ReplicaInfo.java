@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,7 +279,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The location of the serving resources, e.g. "us-central1".
+   * The location of the serving resources, e.g., "us-central1".
    * </pre>
    *
    * <code>string location = 1;</code>
@@ -302,7 +302,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The location of the serving resources, e.g. "us-central1".
+   * The location of the serving resources, e.g., "us-central1".
    * </pre>
    *
    * <code>string location = 1;</code>
@@ -767,7 +767,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -789,7 +789,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -811,7 +811,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -832,7 +832,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -849,7 +849,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The location of the serving resources, e.g. "us-central1".
+     * The location of the serving resources, e.g., "us-central1".
      * </pre>
      *
      * <code>string location = 1;</code>
