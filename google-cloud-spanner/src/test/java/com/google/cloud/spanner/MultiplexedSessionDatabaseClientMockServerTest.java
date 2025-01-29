@@ -1293,8 +1293,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   private Spanner setupSpannerForAbortedBeginTransactionTests() {
     // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
-    // is cleared
-    // after the first call, so the retry should succeed.
+    // is cleared after the first call, so the retry should succeed.
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));

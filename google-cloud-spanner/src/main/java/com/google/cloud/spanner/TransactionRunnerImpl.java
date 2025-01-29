@@ -1242,7 +1242,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             useInlinedBegin = txn.transactionId != null;
 
             /*
-             In case of regular session, explicitBeginBeforeUserOperation field is always true and hence there is no change in behaviour.
+             In case of regular session, explicitBeginBeforeUserOperation field is always true and hence
+             there is no change in behaviour.
 
              If the transaction contains only mutations and is using a multiplexed session, perform a
              `BeginTransaction` after the user operation completes during a retry.
