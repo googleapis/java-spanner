@@ -166,8 +166,10 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     }
   }
 
-  // This is a blocking method, as the interface that it implements is also defined as a blocking
-  // method.
+  /**
+   * This is a blocking method, as the interface that it implements is also defined as a blocking
+   * method.
+   */
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       Iterable<MutationGroup> mutationGroups, TransactionOption... options)

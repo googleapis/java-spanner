@@ -17,9 +17,6 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Options.TransactionOption;
-import com.google.cloud.spanner.Options.UpdateOption;
-import com.google.spanner.v1.BatchWriteResponse;
 
 /**
  * Base class for the Multiplexed Session {@link DatabaseClient} implementation. Throws {@link
