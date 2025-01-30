@@ -16,10 +16,15 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.MethodName;
 import com.google.api.gax.tracing.MetricsTracer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import javax.annotation.Nullable;
 
 /**
  * Implements built-in metrics tracer.
@@ -27,11 +32,13 @@ import java.util.Map;
  * <p>This class extends the {@link MetricsTracer} which computes generic metrics that can be
  * observed in the lifecycle of an RPC operation.
  */
-class BuiltInMetricsTracer extends MetricsTracer {
+class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
 
   private final BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder;
   // These are RPC specific attributes and pertain to a specific API Trace
   private final Map<String, String> attributes = new HashMap<>();
+
+  private Long gfeLatency = null;
 
   BuiltInMetricsTracer(
       MethodName methodName, BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
@@ -40,8 +47,83 @@ class BuiltInMetricsTracer extends MetricsTracer {
     this.attributes.put(METHOD_ATTRIBUTE, methodName.toString());
   }
 
-  void recordGFELatency(double gfeLatency) {
-    this.builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, this.attributes);
+  /**
+   * Adds an annotation that the attempt succeeded. Successful attempt add "OK" value to the status
+   * attribute key.
+   */
+  @Override
+  public void attemptSucceeded() {
+    super.attemptSucceeded();
+    if (gfeLatency != null) {
+      attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
+      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+    }
+  }
+
+  /**
+   * Add an annotation that the attempt was cancelled by the user. Cancelled attempt add "CANCELLED"
+   * to the status attribute key.
+   */
+  @Override
+  public void attemptCancelled() {
+    super.attemptCancelled();
+    if (gfeLatency != null) {
+      attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.CANCELLED.toString());
+      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+    }
+  }
+
+  /**
+   * Adds an annotation that the attempt failed, but another attempt will be made after the delay.
+   *
+   * @param error the error that caused the attempt to fail.
+   * @param delay the amount of time to wait before the next attempt will start.
+   *     <p>Failed attempt extracts the error from the throwable and adds it to the status attribute
+   *     key.
+   */
+  @Override
+  public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
+    super.attemptFailedDuration(error, delay);
+    if (gfeLatency != null) {
+      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+    }
+  }
+
+  /**
+   * Adds an annotation that the attempt failed and that no further attempts will be made because
+   * retry limits have been reached. This extracts the error from the throwable and adds it to the
+   * status attribute key.
+   *
+   * @param error the last error received before retries were exhausted.
+   */
+  @Override
+  public void attemptFailedRetriesExhausted(Throwable error) {
+    super.attemptFailedRetriesExhausted(error);
+    if (gfeLatency != null) {
+      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+    }
+  }
+
+  /**
+   * Adds an annotation that the attempt failed and that no further attempts will be made because
+   * the last error was not retryable. This extracts the error from the throwable and adds it to the
+   * status attribute key.
+   *
+   * @param error the error that caused the final attempt to fail.
+   */
+  @Override
+  public void attemptPermanentFailure(Throwable error) {
+    super.attemptPermanentFailure(error);
+    if (gfeLatency != null) {
+      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+    }
+  }
+
+  void recordGFELatency(Long gfeLatency) {
+    this.gfeLatency = gfeLatency;
   }
 
   @Override
@@ -54,5 +136,21 @@ class BuiltInMetricsTracer extends MetricsTracer {
   public void addAttributes(String key, String value) {
     super.addAttributes(key, value);
     this.attributes.put(key, value);
+  }
+
+  private static String extractStatus(@Nullable Throwable error) {
+    final String statusString;
+
+    if (error == null) {
+      return StatusCode.Code.OK.toString();
+    } else if (error instanceof CancellationException) {
+      statusString = StatusCode.Code.CANCELLED.toString();
+    } else if (error instanceof ApiException) {
+      statusString = ((ApiException) error).getStatusCode().getCode().toString();
+    } else {
+      statusString = StatusCode.Code.UNKNOWN.toString();
+    }
+
+    return statusString;
   }
 }

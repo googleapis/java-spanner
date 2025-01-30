@@ -207,8 +207,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     MetricData gfeLatencyMetricData =
         getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
-    long gfeLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
-    assertThat(gfeLatencyValue).isEqualTo(gfeLatencyValue);
+    long gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
+    assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
   }
 
   @Test
