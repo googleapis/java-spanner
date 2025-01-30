@@ -96,100 +96,21 @@ class JavaClientRunner extends AbstractRunner {
       boolean useMultiplexedSession,
       int warmUpMinutes,
       int staleReadSeconds) {
-    // setup open telemetry metrics and traces
-    // setup open telemetry metrics and traces
-    SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
-    SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-            .setResource(
-                Resource.create(
-                    Attributes.of(
-                        AttributeKey.stringKey("service.name"),
-                        "Java-MultiplexedSession-Benchmark")))
-            .setSampler(Sampler.alwaysOn())
-            .build();
-    MetricExporter cloudMonitoringExporter =
-        GoogleCloudMetricExporter.createWithDefaultConfiguration();
-    SdkMeterProvider sdkMeterProvider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(PeriodicMetricReader.create(cloudMonitoringExporter))
-            .build();
-    OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setMeterProvider(sdkMeterProvider)
-            .setTracerProvider(tracerProvider)
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .buildAndRegisterGlobal();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptionsHelper.setUseMultiplexedSession(
                 SessionPoolOptions.newBuilder(), useMultiplexedSession)
             .build();
-    //    SpannerOptions.enableOpenTelemetryMetrics();
-    //    SpannerOptions.enableOpenTelemetryTraces();
-
-//    ClientInterceptor clientInterceptor =
-//        new ClientInterceptor() {
-//          @Override
-//          public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
-//              MethodDescriptor<ReqT, RespT> methodDescriptor,
-//              CallOptions callOptions,
-//              Channel channel) {
-//            return new SimpleForwardingClientCall<ReqT, RespT>(
-//                channel.newCall(methodDescriptor, callOptions)) {
-//              @Override
-//              public void start(Listener<RespT> responseListener, Metadata headers) {
-//                super.start(
-//                    new SimpleForwardingClientCallListener<RespT>(responseListener) {
-//                      @Override
-//                      public void onHeaders(Metadata headers) {
-//                        if ("google.spanner.v1.Spanner/ExecuteStreamingSql"
-//                                .equalsIgnoreCase(methodDescriptor.getFullMethodName())
-//                            || "google.spanner.v1.Spanner/StreamingRead"
-//                                .equalsIgnoreCase(methodDescriptor.getFullMethodName())) {
-//                          String serverTiming = headers.get(SERVER_TIMING_HEADER_KEY);
-//                          if (serverTiming != null
-//                              && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
-//                            long latency =
-//                                Long.parseLong(
-//                                    serverTiming.substring(SERVER_TIMING_HEADER_PREFIX.length()));
-//                            String trackingUuid = callOptions.getOption(trackingKey);
-//                            Optional.ofNullable(trackingUuid)
-//                                .ifPresent(id -> concurrentHashMap.put(trackingUuid, latency));
-//                          }
-//                        }
-//                        super.onHeaders(headers);
-//                      }
-//                    },
-//                    headers);
-//              }
-//            };
-//          }
-//        };
-
     SpannerOptions options =
         SpannerOptions.newBuilder()
-            //            .setOpenTelemetry(openTelemetry)
-            //            .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
-            //            .setInterceptorProvider(
-            //
-            // SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
             .setHost(SERVER_URL)
             .build();
     // Register query stats metric.
     // This should be done once before start recording the data.
-    Meter meter = openTelemetry.getMeter("cloud.google.com/java");
-    DoubleHistogram endToEndLatencies =
-        meter
-            .histogramBuilder("spanner/end_end_elapsed")
-            .setDescription("The execution of end to end latency")
-            .setUnit("ms")
-            .build();
     try (Spanner spanner = options.getService()) {
       DatabaseClient databaseClient = spanner.getDatabaseClient(databaseId);
-      System.out.println("Running tests without skipping trailers ...");
+      System.out.println("Running tests with skipping trailers ...");
       executeBenchmarkAndPrintResults(
           numClients,
           databaseClient,
@@ -198,11 +119,10 @@ class JavaClientRunner extends AbstractRunner {
           waitMillis,
           warmUpMinutes,
           staleReadSeconds,
-          endToEndLatencies,
           true,
           true);
 
-      System.out.println("Running tests with skipping trailers...");
+      System.out.println("Running tests without skipping trailers...");
       executeBenchmarkAndPrintResults(
           numClients,
           databaseClient,
@@ -211,14 +131,11 @@ class JavaClientRunner extends AbstractRunner {
           waitMillis,
           warmUpMinutes,
           staleReadSeconds,
-          endToEndLatencies,
           false,
           false);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
     }
-
-    sdkMeterProvider.close();
   }
 
   private void executeBenchmarkAndPrintResults(
@@ -229,7 +146,6 @@ class JavaClientRunner extends AbstractRunner {
       int waitMillis,
       int warmUpMinutes,
       int staleReadSeconds,
-      DoubleHistogram endToEndLatencies,
       boolean skipTrailers,
       boolean doWarmUp)
       throws Exception {
@@ -247,7 +163,6 @@ class JavaClientRunner extends AbstractRunner {
                       waitMillis,
                       warmUpMinutes,
                       staleReadSeconds,
-                      endToEndLatencies,
                       skipTrailers,
                       doWarmUp)));
     }
@@ -262,7 +177,6 @@ class JavaClientRunner extends AbstractRunner {
       int waitMillis,
       int warmUpMinutes,
       int staleReadSeconds,
-      DoubleHistogram endToEndLatencies,
       boolean skipTrailers,
       boolean doWarmUp) {
     List<Duration> results = new ArrayList<>();
@@ -274,9 +188,7 @@ class JavaClientRunner extends AbstractRunner {
           databaseClient,
           skipTrailers,
           staleReadSeconds,
-          transactionType,
-          endToEndLatencies,
-          false);
+          transactionType);
     }
     endTime = Instant.now().plus(numOperations, ChronoUnit.MINUTES);
     setOperationEndTime(endTime);
@@ -289,9 +201,7 @@ class JavaClientRunner extends AbstractRunner {
                 databaseClient,
                 skipTrailers,
                 staleReadSeconds,
-                transactionType,
-                endToEndLatencies,
-                false));
+                transactionType));
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
       }
@@ -303,9 +213,7 @@ class JavaClientRunner extends AbstractRunner {
       DatabaseClient client,
       boolean skipTrailers,
       int staleReadSeconds,
-      TransactionType transactionType,
-      DoubleHistogram endToEndLatencies,
-      boolean recordLatency) {
+      TransactionType transactionType) {
     Stopwatch watch = Stopwatch.createStarted();
     Duration elapsedTime = null;
     switch (transactionType) {
@@ -325,11 +233,7 @@ class JavaClientRunner extends AbstractRunner {
         break;
     }
 
-    elapsedTime = Optional.ofNullable(elapsedTime).orElse(watch.elapsed());
-    if (recordLatency) {
-      endToEndLatencies.record(elapsedTime.toMillis());
-    }
-    return elapsedTime;
+    return Optional.ofNullable(elapsedTime).orElse(watch.elapsed());
   }
 
   private Duration executeCommit(DatabaseClient client, boolean skipTrailers) {
