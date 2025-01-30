@@ -222,6 +222,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private final Map<SpannerRpc.Option, ?> channelHint;
 
+    // This field indicates whether the read-write transaction contains only mutation operations.
+    boolean mutationsOnlyTransaction = false;
+
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
@@ -415,6 +418,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
+          // At this point, it is ensured that the transaction contains only mutations. Adding a
+          // safeguard to apply this only for multiplexed sessions.
+          if (session.getIsMultiplexed()) {
+            mutationsOnlyTransaction = false;
+          }
           createTxnAsync(finishOps, randomMutation);
         } else {
           finishOps = finishedAsyncOperations;
@@ -1242,7 +1250,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           if (attempt.get() > 0) {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
-            useInlinedBegin = txn.transactionId != null;
+            useInlinedBegin = txn.mutationsOnlyTransaction || txn.transactionId != null;
 
             // Determine the latest transactionId when using a multiplexed session.
             ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
