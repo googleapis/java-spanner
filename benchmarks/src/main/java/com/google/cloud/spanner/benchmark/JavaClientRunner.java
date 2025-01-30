@@ -110,17 +110,6 @@ class JavaClientRunner extends AbstractRunner {
     // This should be done once before start recording the data.
     try (Spanner spanner = options.getService()) {
       DatabaseClient databaseClient = spanner.getDatabaseClient(databaseId);
-      System.out.println("Running tests with skipping trailers ...");
-      executeBenchmarkAndPrintResults(
-          numClients,
-          databaseClient,
-          transactionType,
-          numOperations,
-          waitMillis,
-          warmUpMinutes,
-          staleReadSeconds,
-          true,
-          true);
 
       System.out.println("Running tests without skipping trailers...");
       executeBenchmarkAndPrintResults(
@@ -132,6 +121,18 @@ class JavaClientRunner extends AbstractRunner {
           warmUpMinutes,
           staleReadSeconds,
           false,
+          true);
+
+      System.out.println("Running tests with skipping trailers ...");
+      executeBenchmarkAndPrintResults(
+          numClients,
+          databaseClient,
+          transactionType,
+          numOperations,
+          waitMillis,
+          warmUpMinutes,
+          staleReadSeconds,
+          true,
           false);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
