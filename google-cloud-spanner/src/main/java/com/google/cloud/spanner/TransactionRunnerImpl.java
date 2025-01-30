@@ -222,10 +222,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private final Map<SpannerRpc.Option, ?> channelHint;
 
-    // This field indicates whether the read-write transaction contains only mutation operations.
-    // This field is set only in case of multiplexed sessions.
-    boolean mutationsOnlyTransaction = false;
-
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
@@ -330,6 +326,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               }
               res.set(null);
             } catch (ExecutionException e) {
+              SpannerException spannerException = SpannerExceptionFactory.asSpannerException(e);
+              if (spannerException.getErrorCode() == ErrorCode.ABORTED
+                  && session.getIsMultiplexed()
+                  && mutation != null) {
+                // Begin transaction can return ABORTED errors. This can only happen if it included
+                // a mutation key, which again means that this is a mutation-only transaction on a multiplexed
+                // session.
+                createTxnAsync(res, mutation);
+                return;
+              }
               span.addAnnotation(
                   "Transaction Creation Failed", e.getCause() == null ? e : e.getCause());
               res.setException(e.getCause() == null ? e : e.getCause());
@@ -406,11 +412,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
-          // At this point, it is ensured that the transaction contains only mutations. Adding a
-          // safeguard to apply this only for multiplexed sessions.
-          if (session.getIsMultiplexed()) {
-            mutationsOnlyTransaction = true;
-          }
           createTxnAsync(finishOps, randomMutation);
         } else {
           finishOps = finishedAsyncOperations;
@@ -1235,24 +1236,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     Callable<T> retryCallable =
         () -> {
           boolean useInlinedBegin = true;
-          boolean explicitBeginBeforeUserOperation = true;
           if (attempt.get() > 0) {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
             useInlinedBegin = txn.transactionId != null;
-
-            /*
-             In case of regular session, explicitBeginBeforeUserOperation field is always true and hence
-             there is no change in behaviour.
-
-             If the transaction contains only mutations and is using a multiplexed session, perform a
-             `BeginTransaction` after the user operation completes during a retry.
-             This ensures that the mutations from the user callable is available before invoking
-             `BeginTransaction`. If `BeginTransaction` is performed before the user operation,
-             the mutations are not sent, and the precommit token is not received, resulting in
-             an INVALID_ARGUMENT error (missing precommit token) during commit.
-            */
-            explicitBeginBeforeUserOperation = !txn.mutationsOnlyTransaction;
 
             // Determine the latest transactionId when using a multiplexed session.
             ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
@@ -1273,7 +1260,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           span.addAnnotation("Starting Transaction Attempt", "Attempt", attempt.longValue());
           // Only ensure that there is a transaction if we should not inline the beginTransaction
           // with the first statement.
-          if (!useInlinedBegin && explicitBeginBeforeUserOperation) {
+          if (!useInlinedBegin) {
             txn.ensureTxn();
           }
 
