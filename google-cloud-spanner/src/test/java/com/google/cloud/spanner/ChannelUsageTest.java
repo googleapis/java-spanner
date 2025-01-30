@@ -228,8 +228,6 @@ public class ChannelUsageTest {
     assertEquals(numChannels, batchCreateSessionLocalIps.size());
   }
 
-  // Suppressed for initial Error Prone rollout.
-  @SuppressWarnings("CheckReturnValue")
   @Test
   public void testUsesAllChannels() throws InterruptedException {
     final int multiplier = 2;

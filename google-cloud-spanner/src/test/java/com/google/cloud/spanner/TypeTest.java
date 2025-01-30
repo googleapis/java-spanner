@@ -541,8 +541,6 @@ public class TypeTest {
     assertProtoEquals(t.toProto(), "code: STRUCT struct_type {}");
   }
 
-  // Suppressed for initial Error Prone rollout.
-  @SuppressWarnings("CheckReturnValue")
   @Test
   public void structFieldIndexNotFound() {
     Type t = Type.struct(StructField.of("f1", Type.int64()));
@@ -551,8 +549,6 @@ public class TypeTest {
     assertThat(e.getMessage().contains("Field not found: f2"));
   }
 
-  // Suppressed for initial Error Prone rollout.
-  @SuppressWarnings("CheckReturnValue")
   @Test
   public void structFieldIndexAmbiguous() {
     Type t = Type.struct(StructField.of("f1", Type.int64()), StructField.of("f1", Type.string()));
