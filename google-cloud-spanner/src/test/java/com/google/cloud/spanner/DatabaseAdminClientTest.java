@@ -632,8 +632,6 @@ public class DatabaseAdminClientTest {
     assertThat(instance.listDatabaseOperations().iterateAll()).hasSize(6);
   }
 
-  // Suppressed for initial Error Prone rollout.
-  @SuppressWarnings("CheckReturnValue")
   @Test
   public void instanceListDatabaseOperationsWithMetadata() throws Exception {
     Instance instance =
@@ -716,8 +714,6 @@ public class DatabaseAdminClientTest {
     assertThat(instance.listBackupOperations().iterateAll()).hasSize(2);
   }
 
-  // Suppressed for initial Error Prone rollout.
-  @SuppressWarnings("CheckReturnValue")
   @Test
   public void instanceListBackupOperationsWithProgress() throws InvalidProtocolBufferException {
     Instance instance =
