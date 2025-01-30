@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerExceptionFactory.asSpannerException;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerBatchUpdateException;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.cloud.spanner.SpannerImpl.BATCH_UPDATE;
@@ -224,7 +225,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     // This field indicates whether the read-write transaction contains only mutation operations.
     // This field is set only in case of multiplexed sessions.
-    boolean mutationsOnlyTransaction = false;
+    // boolean mutationsOnlyTransaction = false;
 
     private TransactionContextImpl(Builder builder) {
       super(builder);
@@ -330,6 +331,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               }
               res.set(null);
             } catch (ExecutionException e) {
+              SpannerException spannerException = asSpannerException(e.getCause());
+              if (spannerException.getErrorCode() == ErrorCode.ABORTED) {
+                // Begin transaction aborted. This can only happen if it included a mutation key,
+                // which again means that this is a mutation-only transaction on a multiplexed
+                // session.
+                createTxnAsync(res, mutation);
+                return;
+              }
               span.addAnnotation(
                   "Transaction Creation Failed", e.getCause() == null ? e : e.getCause());
               res.setException(e.getCause() == null ? e : e.getCause());
@@ -408,9 +417,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           finishOps = SettableApiFuture.create();
           // At this point, it is ensured that the transaction contains only mutations. Adding a
           // safeguard to apply this only for multiplexed sessions.
-          if (session.getIsMultiplexed()) {
-            mutationsOnlyTransaction = true;
-          }
+//          if (session.getIsMultiplexed()) {
+//            mutationsOnlyTransaction = true;
+//          }
           createTxnAsync(finishOps, randomMutation);
         } else {
           finishOps = finishedAsyncOperations;
@@ -1235,7 +1244,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     Callable<T> retryCallable =
         () -> {
           boolean useInlinedBegin = true;
-          boolean explicitBeginBeforeUserOperation = true;
+          // boolean explicitBeginBeforeUserOperation = true;
           if (attempt.get() > 0) {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
@@ -1252,7 +1261,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
              the mutations are not sent, and the precommit token is not received, resulting in
              an INVALID_ARGUMENT error (missing precommit token) during commit.
             */
-            explicitBeginBeforeUserOperation = !txn.mutationsOnlyTransaction;
+            // explicitBeginBeforeUserOperation = !txn.mutationsOnlyTransaction;
 
             // Determine the latest transactionId when using a multiplexed session.
             ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
@@ -1273,7 +1282,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           span.addAnnotation("Starting Transaction Attempt", "Attempt", attempt.longValue());
           // Only ensure that there is a transaction if we should not inline the beginTransaction
           // with the first statement.
-          if (!useInlinedBegin && explicitBeginBeforeUserOperation) {
+          if (!useInlinedBegin /*&& explicitBeginBeforeUserOperation*/) {
             txn.ensureTxn();
           }
 

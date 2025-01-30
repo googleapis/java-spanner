@@ -114,7 +114,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
        an INVALID_ARGUMENT error (missing precommit token) during commit.
       */
       boolean useInlinedBegin = txn.transactionId != null;
-      boolean explicitBeginBeforeUserOperation = !txn.mutationsOnlyTransaction;
+      // boolean explicitBeginBeforeUserOperation = !txn.mutationsOnlyTransaction;
 
       // Determine the latest transactionId when using a multiplexed session.
       ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
@@ -127,7 +127,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       txn =
           session.newTransaction(
               options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
-      if (!useInlinedBegin && explicitBeginBeforeUserOperation) {
+      if (!useInlinedBegin /* && explicitBeginBeforeUserOperation*/) {
         txn.ensureTxn();
       }
       txnState = TransactionState.STARTED;

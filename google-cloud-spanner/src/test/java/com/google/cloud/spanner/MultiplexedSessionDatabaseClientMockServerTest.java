@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -1367,6 +1368,36 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Verify that the latest precommit token is set in the CommitRequest
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     verifyPreCommitTokenSetInCommitRequest(commitRequests);
+
+    spanner.close();
+  }
+  
+  @Test
+  public void testMutationOnlyFirstTimeAbortedDuringBeginTransaction() {
+    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    Statement invalidUpdate = Statement.of("update invalid_table set foo=1 where bar=2");
+    mockSpanner.putStatementResult(StatementResult.exception(invalidUpdate, Status.NOT_FOUND.withDescription("Table not found").asRuntimeException()));
+    
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    AtomicInteger attempt = new AtomicInteger();
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              if (attempt.incrementAndGet() > 1) {
+                try {
+                  transaction.executeUpdate(invalidUpdate);
+                } catch (SpannerException ignore) {
+                  // Ignore the exception and continue with the transaction.
+                }
+              }
+              Mutation mutation =
+                  Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build();
+              transaction.buffer(mutation);
+              return null;
+            });
 
     spanner.close();
   }

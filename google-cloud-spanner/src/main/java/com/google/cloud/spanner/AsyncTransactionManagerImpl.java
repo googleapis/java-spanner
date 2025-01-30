@@ -82,7 +82,7 @@ final class AsyncTransactionManagerImpl
   private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
     txnState = TransactionState.STARTED;
 
-    boolean isMutationsOnlyTransaction = false;
+    // boolean isMutationsOnlyTransaction = false;
 
     // Determine the latest transactionId when using a multiplexed session.
     ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
@@ -91,7 +91,7 @@ final class AsyncTransactionManagerImpl
       // transactionId.
       multiplexedSessionPreviousTransactionId =
           txn.transactionId != null ? txn.transactionId : txn.getPreviousTransactionId();
-      isMutationsOnlyTransaction = txn.mutationsOnlyTransaction;
+      // isMutationsOnlyTransaction = txn.mutationsOnlyTransaction;
     }
 
     txn =
@@ -112,7 +112,7 @@ final class AsyncTransactionManagerImpl
      the mutations are not sent, and the precommit token is not received, resulting in
      an INVALID_ARGUMENT error (missing precommit token) during commit.
     */
-    if (firstAttempt || isMutationsOnlyTransaction) {
+    if (firstAttempt /*|| isMutationsOnlyTransaction*/) {
       fut = ApiFutures.immediateFuture(null);
     } else {
       fut = txn.ensureTxnAsync();
