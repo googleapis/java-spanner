@@ -331,8 +331,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   && session.getIsMultiplexed()
                   && mutation != null) {
                 // Begin transaction can return ABORTED errors. This can only happen if it included
-                // a mutation key, which again means that this is a mutation-only transaction on a multiplexed
-                // session.
+                // a mutation key, which again means that this is a mutation-only transaction on a
+                // multiplexed session.
+                span.addAnnotation(
+                    "Transaction Creation Failed with ABORT. Retrying",
+                    e.getCause() == null ? e : e.getCause());
                 createTxnAsync(res, mutation);
                 return;
               }
