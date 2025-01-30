@@ -128,44 +128,44 @@ class JavaClientRunner extends AbstractRunner {
     //    SpannerOptions.enableOpenTelemetryMetrics();
     //    SpannerOptions.enableOpenTelemetryTraces();
 
-    ClientInterceptor clientInterceptor =
-        new ClientInterceptor() {
-          @Override
-          public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
-              MethodDescriptor<ReqT, RespT> methodDescriptor,
-              CallOptions callOptions,
-              Channel channel) {
-            return new SimpleForwardingClientCall<ReqT, RespT>(
-                channel.newCall(methodDescriptor, callOptions)) {
-              @Override
-              public void start(Listener<RespT> responseListener, Metadata headers) {
-                super.start(
-                    new SimpleForwardingClientCallListener<RespT>(responseListener) {
-                      @Override
-                      public void onHeaders(Metadata headers) {
-                        if ("google.spanner.v1.Spanner/ExecuteStreamingSql"
-                                .equalsIgnoreCase(methodDescriptor.getFullMethodName())
-                            || "google.spanner.v1.Spanner/StreamingRead"
-                                .equalsIgnoreCase(methodDescriptor.getFullMethodName())) {
-                          String serverTiming = headers.get(SERVER_TIMING_HEADER_KEY);
-                          if (serverTiming != null
-                              && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
-                            long latency =
-                                Long.parseLong(
-                                    serverTiming.substring(SERVER_TIMING_HEADER_PREFIX.length()));
-                            String trackingUuid = callOptions.getOption(trackingKey);
-                            Optional.ofNullable(trackingUuid)
-                                .ifPresent(id -> concurrentHashMap.put(trackingUuid, latency));
-                          }
-                        }
-                        super.onHeaders(headers);
-                      }
-                    },
-                    headers);
-              }
-            };
-          }
-        };
+//    ClientInterceptor clientInterceptor =
+//        new ClientInterceptor() {
+//          @Override
+//          public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+//              MethodDescriptor<ReqT, RespT> methodDescriptor,
+//              CallOptions callOptions,
+//              Channel channel) {
+//            return new SimpleForwardingClientCall<ReqT, RespT>(
+//                channel.newCall(methodDescriptor, callOptions)) {
+//              @Override
+//              public void start(Listener<RespT> responseListener, Metadata headers) {
+//                super.start(
+//                    new SimpleForwardingClientCallListener<RespT>(responseListener) {
+//                      @Override
+//                      public void onHeaders(Metadata headers) {
+//                        if ("google.spanner.v1.Spanner/ExecuteStreamingSql"
+//                                .equalsIgnoreCase(methodDescriptor.getFullMethodName())
+//                            || "google.spanner.v1.Spanner/StreamingRead"
+//                                .equalsIgnoreCase(methodDescriptor.getFullMethodName())) {
+//                          String serverTiming = headers.get(SERVER_TIMING_HEADER_KEY);
+//                          if (serverTiming != null
+//                              && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
+//                            long latency =
+//                                Long.parseLong(
+//                                    serverTiming.substring(SERVER_TIMING_HEADER_PREFIX.length()));
+//                            String trackingUuid = callOptions.getOption(trackingKey);
+//                            Optional.ofNullable(trackingUuid)
+//                                .ifPresent(id -> concurrentHashMap.put(trackingUuid, latency));
+//                          }
+//                        }
+//                        super.onHeaders(headers);
+//                      }
+//                    },
+//                    headers);
+//              }
+//            };
+//          }
+//        };
 
     SpannerOptions options =
         SpannerOptions.newBuilder()
@@ -199,7 +199,7 @@ class JavaClientRunner extends AbstractRunner {
           warmUpMinutes,
           staleReadSeconds,
           endToEndLatencies,
-          false,
+          true,
           true);
 
       System.out.println("Running tests with skipping trailers...");
@@ -212,7 +212,7 @@ class JavaClientRunner extends AbstractRunner {
           warmUpMinutes,
           staleReadSeconds,
           endToEndLatencies,
-          true,
+          false,
           false);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
