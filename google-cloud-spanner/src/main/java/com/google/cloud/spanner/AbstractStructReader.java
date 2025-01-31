@@ -67,6 +67,8 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Date getDateInternal(int columnIndex);
 
+  protected abstract Interval getIntervalInternal(int columnIndex);
+
   protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
     throw new UnsupportedOperationException("Not implemented");
   }
@@ -127,6 +129,8 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract List<Timestamp> getTimestampListInternal(int columnIndex);
 
   protected abstract List<Date> getDateListInternal(int columnIndex);
+
+  protected abstract List<Interval> getIntervalListInternal(int columnIndex);
 
   protected abstract List<Struct> getStructListInternal(int columnIndex);
 
@@ -297,6 +301,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.date(), columnName);
     return getDateInternal(columnIndex);
+  }
+
+  @Override
+  public Interval getInterval(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.interval(), columnIndex);
+    return getIntervalInternal(columnIndex);
+  }
+
+  @Override
+  public Interval getInterval(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.interval(), columnName);
+    return getIntervalInternal(columnIndex);
   }
 
   @Override
@@ -581,6 +598,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.array(Type.date()), columnName);
     return getDateListInternal(columnIndex);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.interval()), columnIndex);
+    return getIntervalListInternal(columnIndex);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.interval()), columnName);
+    return getIntervalListInternal(columnIndex);
   }
 
   @Override
