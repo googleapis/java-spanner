@@ -1,5 +1,35 @@
 # Changelog
 
+## [6.86.0](https://github.com/googleapis/java-spanner/compare/v6.85.0...v6.86.0) (2025-01-31)
+
+
+### Features
+
+* Add sample for asymmetric autoscaling instances ([#3562](https://github.com/googleapis/java-spanner/issues/3562)) ([3584b81](https://github.com/googleapis/java-spanner/commit/3584b81a27bfcdd071fbf7e0d40dfa840ea88151))
+* Support graph and pipe queries in Connection API ([#3586](https://github.com/googleapis/java-spanner/issues/3586)) ([71c3063](https://github.com/googleapis/java-spanner/commit/71c306346d5b3805f55d5698cf8867d5f4ae519e))
+
+
+### Bug Fixes
+
+* Always add instance-id for built-in metrics ([#3612](https://github.com/googleapis/java-spanner/issues/3612)) ([705b627](https://github.com/googleapis/java-spanner/commit/705b627646f1679b7d1c4c1f86a853872cf8bfd5))
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.51.1 ([3e27251](https://github.com/googleapis/java-spanner/commit/3e272510970d1951b74c4ec9425f1a890790ddb3))
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.52.0 ([bf69673](https://github.com/googleapis/java-spanner/commit/bf69673886dbe040292214ed6e64997a230441f6))
+* **spanner:** Moved mTLSContext configurator from builder to construtor ([#3605](https://github.com/googleapis/java-spanner/issues/3605)) ([ac7c30b](https://github.com/googleapis/java-spanner/commit/ac7c30bfb14bdafc11675c2a120effde4a71c922))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.42.0 ([#3616](https://github.com/googleapis/java-spanner/issues/3616)) ([2ea59f0](https://github.com/googleapis/java-spanner/commit/2ea59f05225f2dba2effb503e6abddcfdb6fe6ee))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.46.0 ([#3530](https://github.com/googleapis/java-spanner/issues/3530)) ([d505850](https://github.com/googleapis/java-spanner/commit/d5058504b94501cabd75ad5e7030404b63c3f8b4))
+
+
+### Documentation
+
+* Clarify how async updates can overtake each other ([#3581](https://github.com/googleapis/java-spanner/issues/3581)) ([1be250f](https://github.com/googleapis/java-spanner/commit/1be250fea686f3a41739c9c8aa474ed956b130e4))
+* Fix typo timzeone -&gt; timezone ([bf69673](https://github.com/googleapis/java-spanner/commit/bf69673886dbe040292214ed6e64997a230441f6))
+* Fixed parameter arguments for AbstractResultSet's Listener's on TransactionMetadata doc ([#3602](https://github.com/googleapis/java-spanner/issues/3602)) ([1f143a4](https://github.com/googleapis/java-spanner/commit/1f143a4b7b899aec8cf58546f7540a41d1c73731))
+* **samples:** Add samples and tests for change streams transaction exclusion ([#3098](https://github.com/googleapis/java-spanner/issues/3098)) ([1f81600](https://github.com/googleapis/java-spanner/commit/1f816009abdbfb32bb26686d8fdb2a771216004e))
+
 ## [6.85.0](https://github.com/googleapis/java-spanner/compare/v6.84.0...v6.85.0) (2025-01-10)
 
 
