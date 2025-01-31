@@ -1328,6 +1328,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case DATE:
                 builder.bind(fieldName).toDateArray(null);
                 break;
+              case UUID:
+                builder.bind(fieldName).toUuidArray(null);
+                break;
               case FLOAT32:
                 builder.bind(fieldName).toFloat32Array((Iterable<Float>) null);
                 break;
@@ -1373,6 +1376,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case DATE:
             builder.bind(fieldName).to((Date) null);
+            break;
+          case UUID:
+            builder.bind(fieldName).to((UUID) null);
             break;
           case FLOAT32:
             builder.bind(fieldName).to((Float) null);
@@ -1441,6 +1447,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                         (Iterable<Date>)
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.date(), value.getListValue()));
+                break;
+              case UUID:
+                builder
+                    .bind(fieldName)
+                    .toUuidArray(
+                        (Iterable<UUID>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.uuid(), value.getListValue()));
                 break;
               case FLOAT32:
                 builder
@@ -1532,6 +1546,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case DATE:
             builder.bind(fieldName).to(Date.parseDate(value.getStringValue()));
+            break;
+          case UUID:
+            builder.bind(fieldName).to(UUID.fromString(value.getStringValue()));
             break;
           case FLOAT32:
             builder.bind(fieldName).to((float) value.getNumberValue());
