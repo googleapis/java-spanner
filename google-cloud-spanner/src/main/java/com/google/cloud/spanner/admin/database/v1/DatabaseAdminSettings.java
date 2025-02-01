@@ -44,6 +44,8 @@ import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
+import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
@@ -310,6 +312,11 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
           ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
       listDatabaseRolesSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).listDatabaseRolesSettings();
+  }
+
+  /** Returns the object with the settings used for calls to addSplitPoints. */
+  public UnaryCallSettings<AddSplitPointsRequest, AddSplitPointsResponse> addSplitPointsSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).addSplitPointsSettings();
   }
 
   /** Returns the object with the settings used for calls to createBackupSchedule. */
@@ -604,6 +611,12 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
             ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
         listDatabaseRolesSettings() {
       return getStubSettingsBuilder().listDatabaseRolesSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to addSplitPoints. */
+    public UnaryCallSettings.Builder<AddSplitPointsRequest, AddSplitPointsResponse>
+        addSplitPointsSettings() {
+      return getStubSettingsBuilder().addSplitPointsSettings();
     }
 
     /** Returns the builder for the settings used for calls to createBackupSchedule. */

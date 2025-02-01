@@ -34,6 +34,8 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.longrunning.stub.OperationsStub;
 import com.google.protobuf.Empty;
+import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
@@ -229,6 +231,10 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
   public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
       listDatabaseRolesCallable() {
     throw new UnsupportedOperationException("Not implemented: listDatabaseRolesCallable()");
+  }
+
+  public UnaryCallable<AddSplitPointsRequest, AddSplitPointsResponse> addSplitPointsCallable() {
+    throw new UnsupportedOperationException("Not implemented: addSplitPointsCallable()");
   }
 
   public UnaryCallable<CreateBackupScheduleRequest, BackupSchedule> createBackupScheduleCallable() {
