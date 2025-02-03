@@ -213,6 +213,20 @@ public final class Options implements Serializable {
   }
 
   /**
+   * If set to true, this option marks the end of the transaction. The transaction should be
+   * committed or aborted after this statement executes, and attempts to execute any other requests
+   * against this transaction (including reads and queries) will be rejected. Mixing mutations with
+   * statements that are marked as the last statement is not allowed.
+   *
+   * <p>For DML statements, setting this option may cause some error reporting to be deferred until
+   * commit time (e.g. validation of unique constraints). Given this, successful execution of a DML
+   * statement should not be assumed until the transaction commits.
+   */
+  public static LastStatementUpdateOption lastStatementSet(Boolean lastStatementSet) {
+    return new LastStatementUpdateOption(lastStatementSet);
+  }
+
+  /**
    * Specifying this will cause the list operation to start fetching the record from this onwards.
    */
   public static ListOption pageToken(String pageToken) {
@@ -470,6 +484,8 @@ public final class Options implements Serializable {
   private DecodeMode decodeMode;
   private RpcOrderBy orderBy;
 
+  private Boolean lastStatementSet;
+
   // Construction is via factory methods below.
   private Options() {}
 
@@ -605,6 +621,14 @@ public final class Options implements Serializable {
     return orderBy == null ? null : orderBy.proto;
   }
 
+  boolean hasLastStatementSet() {
+    return lastStatementSet != null;
+  }
+
+  Boolean lastStatementSet() {
+    return lastStatementSet;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -661,6 +685,9 @@ public final class Options implements Serializable {
     if (orderBy != null) {
       b.append("orderBy: ").append(orderBy).append(' ');
     }
+    if (lastStatementSet != null) {
+      b.append("lastStatementSet: ").append(lastStatementSet).append(' ');
+    }
     return b.toString();
   }
 
@@ -700,7 +727,8 @@ public final class Options implements Serializable {
         && Objects.equals(withExcludeTxnFromChangeStreams(), that.withExcludeTxnFromChangeStreams())
         && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
         && Objects.equals(directedReadOptions(), that.directedReadOptions())
-        && Objects.equals(orderBy(), that.orderBy());
+        && Objects.equals(orderBy(), that.orderBy())
+        && Objects.equals(lastStatementSet(), that.lastStatementSet());
   }
 
   @Override
@@ -759,6 +787,9 @@ public final class Options implements Serializable {
     }
     if (orderBy != null) {
       result = 31 * result + orderBy.hashCode();
+    }
+    if (lastStatementSet != null) {
+      result = 31 * result + lastStatementSet.hashCode();
     }
     return result;
   }
@@ -910,6 +941,20 @@ public final class Options implements Serializable {
       if (o == this) return true;
       if (!(o instanceof FilterOption)) return false;
       return Objects.equals(filter, ((FilterOption) o).filter);
+    }
+  }
+
+  static final class LastStatementUpdateOption extends InternalOption implements UpdateOption {
+
+    private final Boolean lastStatementSet;
+
+    LastStatementUpdateOption(Boolean lastStatementSet) {
+      this.lastStatementSet = lastStatementSet;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.lastStatementSet = lastStatementSet;
     }
   }
 }

@@ -696,6 +696,9 @@ abstract class AbstractReadContext
     if (!isReadOnly()) {
       builder.setSeqno(getSeqNo());
     }
+    if (options.hasLastStatementSet()) {
+      builder.setLastStatement(options.lastStatementSet());
+    }
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
     return builder;
@@ -740,6 +743,9 @@ abstract class AbstractReadContext
     TransactionSelector selector = getTransactionSelector();
     if (selector != null) {
       builder.setTransaction(selector);
+    }
+    if (options.hasLastStatementSet()) {
+      builder.setLastStatements(options.lastStatementSet());
     }
     builder.setSeqno(getSeqNo());
     builder.setRequestOptions(buildRequestOptions(options));
