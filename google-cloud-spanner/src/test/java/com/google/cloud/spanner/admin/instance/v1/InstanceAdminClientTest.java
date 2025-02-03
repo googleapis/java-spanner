@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
+import com.google.spanner.admin.instance.v1.FreeInstanceMetadata;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
@@ -235,6 +236,7 @@ public class InstanceAdminClientTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -281,6 +283,7 @@ public class InstanceAdminClientTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -327,6 +330,7 @@ public class InstanceAdminClientTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -389,6 +393,7 @@ public class InstanceAdminClientTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -451,6 +456,7 @@ public class InstanceAdminClientTest {
             .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
             .setReconciling(true)
+            .setStorageLimitPerProcessingUnit(-1769187130)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -852,6 +858,7 @@ public class InstanceAdminClientTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -900,6 +907,7 @@ public class InstanceAdminClientTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -948,6 +956,7 @@ public class InstanceAdminClientTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1010,6 +1019,7 @@ public class InstanceAdminClientTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1072,6 +1082,7 @@ public class InstanceAdminClientTest {
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setUpdateTime(Timestamp.newBuilder().build())
+            .setFreeInstanceMetadata(FreeInstanceMetadata.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()

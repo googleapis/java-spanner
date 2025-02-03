@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ package com.google.spanner.admin.instance.v1;
  *
  * <pre>
  * The request for
- * [DeleteInstanceConfigRequest][InstanceAdmin.DeleteInstanceConfigRequest].
+ * [DeleteInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.DeleteInstanceConfigRequest}
@@ -389,7 +389,7 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
    *
    * <pre>
    * The request for
-   * [DeleteInstanceConfigRequest][InstanceAdmin.DeleteInstanceConfigRequest].
+   * [DeleteInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.DeleteInstanceConfigRequest}

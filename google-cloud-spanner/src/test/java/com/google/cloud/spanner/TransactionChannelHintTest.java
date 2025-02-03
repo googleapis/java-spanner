@@ -188,6 +188,8 @@ public class TransactionChannelHintTest {
         .setCompressorName("gzip")
         .setHost("http://" + endpoint)
         .setCredentials(NoCredentials.getInstance())
+        .setSessionPoolOption(
+            SessionPoolOptions.newBuilder().setSkipVerifyingBeginTransactionForMuxRW(true).build())
         .build();
   }
 

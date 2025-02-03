@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1397,7 +1397,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * Required. The target storage utilization percentage that the autoscaler
      * should be trying to achieve for the instance. This number is on a scale
      * from 0 (no utilization) to 100 (full utilization). The valid range is
-     * [10, 100] inclusive.
+     * [10, 99] inclusive.
      * </pre>
      *
      * <code>int32 storage_utilization_percent = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1481,7 +1481,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * Required. The target storage utilization percentage that the autoscaler
      * should be trying to achieve for the instance. This number is on a scale
      * from 0 (no utilization) to 100 (full utilization). The valid range is
-     * [10, 100] inclusive.
+     * [10, 99] inclusive.
      * </pre>
      *
      * <code>int32 storage_utilization_percent = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1958,7 +1958,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        * Required. The target storage utilization percentage that the autoscaler
        * should be trying to achieve for the instance. This number is on a scale
        * from 0 (no utilization) to 100 (full utilization). The valid range is
-       * [10, 100] inclusive.
+       * [10, 99] inclusive.
        * </pre>
        *
        * <code>int32 storage_utilization_percent = 2 [(.google.api.field_behavior) = REQUIRED];
@@ -1977,7 +1977,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        * Required. The target storage utilization percentage that the autoscaler
        * should be trying to achieve for the instance. This number is on a scale
        * from 0 (no utilization) to 100 (full utilization). The valid range is
-       * [10, 100] inclusive.
+       * [10, 99] inclusive.
        * </pre>
        *
        * <code>int32 storage_utilization_percent = 2 [(.google.api.field_behavior) = REQUIRED];
@@ -2000,7 +2000,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        * Required. The target storage utilization percentage that the autoscaler
        * should be trying to achieve for the instance. This number is on a scale
        * from 0 (no utilization) to 100 (full utilization). The valid range is
-       * [10, 100] inclusive.
+       * [10, 99] inclusive.
        * </pre>
        *
        * <code>int32 storage_utilization_percent = 2 [(.google.api.field_behavior) = REQUIRED];

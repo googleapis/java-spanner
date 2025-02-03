@@ -1,6 +1,6 @@
-gapic_generator_version: 2.51.0
-googleapis_commitish: f4eff5440fd07389f820d22d2a55690c6390dc6d
-libraries_bom_version: 26.51.0
+gapic_generator_version: 2.52.0
+googleapis_commitish: 2a3db2e19f48a139db9f40278c0217df110add9b
+libraries_bom_version: 26.53.0
 libraries:
   - api_shortname: spanner
     name_pretty: Cloud Spanner

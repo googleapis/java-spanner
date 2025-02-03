@@ -2247,6 +2247,54 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.maybeWaitOnMinSessions();
   }
 
+  @Test
+  public void reset_maxSessionsInUse() {
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setPoolMaintainerClock(clock)
+            .build();
+    setupForLongRunningTransactionsCleanup(options);
+
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+
+    // All 3 sessions used. 100% of pool utilised.
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+
+    // complete the async tasks
+    readSession1.get().setEligibleForLongRunning(false);
+    readSession2.get().setEligibleForLongRunning(false);
+    readSession3.get().setEligibleForLongRunning(true);
+
+    assertEquals(3, pool.getMaxSessionsInUse());
+    assertEquals(3, pool.getNumberOfSessionsInUse());
+
+    // Release 1 session
+    readSession1.get().close();
+
+    // Verify that numSessionsInUse reduces to 2 while maxSessionsInUse remain 3
+    assertEquals(3, pool.getMaxSessionsInUse());
+    assertEquals(2, pool.getNumberOfSessionsInUse());
+
+    // ensure that the lastResetTime for maxSessionsInUse > 10 minutes
+    when(clock.instant()).thenReturn(Instant.now().plus(11, ChronoUnit.MINUTES));
+
+    pool.poolMaintainer.maintainPool();
+
+    // Verify that maxSessionsInUse is reset to numSessionsInUse
+    assertEquals(2, pool.getMaxSessionsInUse());
+    assertEquals(2, pool.getNumberOfSessionsInUse());
+  }
+
   private void mockKeepAlive(ReadContext context) {
     ResultSet resultSet = mock(ResultSet.class);
     when(resultSet.next()).thenReturn(true, false);

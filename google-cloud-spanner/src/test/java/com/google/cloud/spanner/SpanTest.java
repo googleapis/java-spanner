@@ -480,7 +480,23 @@ public class SpanTest {
             "Request for 2 sessions returned 2 sessions",
             "Request for 1 multiplexed session returned 1 session",
             "Creating 2 sessions");
-    if (isMultiplexedSessionsEnabled()) {
+    List<String> expectedAnnotationsForMultiplexedSessionsRW =
+        ImmutableList.of(
+            "Starting Transaction Attempt",
+            "Starting Commit",
+            "Commit Done",
+            "Transaction Attempt Succeeded",
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions");
+    if (isMultiplexedSessionsEnabledForRW()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       verifyAnnotations(
           failOnOverkillTraceComponent.getAnnotations().stream()
               .distinct()
@@ -538,7 +554,21 @@ public class SpanTest {
             "Request for 1 multiplexed session returned 1 session",
             "Request for 2 sessions returned 2 sessions",
             "Creating 2 sessions");
-    if (isMultiplexedSessionsEnabled()) {
+    List<String> expectedAnnotationsForMultiplexedSessionsRW =
+        ImmutableList.of(
+            "Starting Transaction Attempt",
+            "Transaction Attempt Failed in user operation",
+            "Requesting 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions");
+    if (isMultiplexedSessionsEnabledForRW()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       verifyAnnotations(
           failOnOverkillTraceComponent.getAnnotations().stream()
               .distinct()
@@ -564,5 +594,12 @@ public class SpanTest {
       return false;
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+  }
+
+  private boolean isMultiplexedSessionsEnabledForRW() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }
