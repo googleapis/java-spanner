@@ -32,7 +32,6 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
@@ -997,15 +996,15 @@ public class SpannerSample {
   // [START spanner_dml_standard_insert]
   static void insertUsingDml(DatabaseClient dbClient) {
     dbClient
-            .readWriteTransaction()
-            .run(transaction -> {
-              String sql =
-                      "INSERT INTO Singers (SingerId, FirstName, LastName) "
-                              + " VALUES (10, 'Virginia', 'Watson')";
-              long rowCount = transaction.executeUpdate(Statement.of(sql));
-              System.out.printf("%d record inserted.\n", rowCount);
-              return null;
-            });
+        .readWriteTransaction()
+        .run(transaction -> {
+          String sql =
+              "INSERT INTO Singers (SingerId, FirstName, LastName) "
+                  + " VALUES (10, 'Virginia', 'Watson')";
+          long rowCount = transaction.executeUpdate(Statement.of(sql));
+          System.out.printf("%d record inserted.\n", rowCount);
+          return null;
+        });
   }
   // [END spanner_dml_standard_insert]
 
@@ -2231,6 +2230,7 @@ public class SpannerSample {
       printUsageAndExit();
     }
     // [START init_client]
+    SpannerOptions options = SpannerOptions.newBuilder().build();
     Spanner spanner = options.getService();
     DatabaseAdminClient dbAdminClient = null;
     try {
