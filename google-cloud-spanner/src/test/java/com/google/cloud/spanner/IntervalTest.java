@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
 
 import java.math.BigInteger;
 import org.junit.Test;

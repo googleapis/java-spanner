@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * Represents the time duration as a combination of months, days and nanoseconds. Nanoseconds are
@@ -120,7 +120,7 @@ public class Interval implements Serializable {
   }
 
   /** Creates an interval with specified number of nanoseconds. */
-  public static Interval ofNanoseconds(@NotNull BigInteger nanos) {
+  public static Interval ofNanoseconds(@Nonnull BigInteger nanos) {
     return builder().setNanoseconds(nanos).build();
   }
 
