@@ -134,6 +134,10 @@ public class Interval implements Serializable {
     return value == null ? "0" : value;
   }
 
+  /**
+   * Parse an {@link Interval} value from ISO8601 interval format-
+   * `P[n]Y[n]M[n]DT[n]H[n]M[n([.,][fraction])]S`
+   */
   public static Interval parseFromString(String interval) {
     Matcher matcher = INTERVAL_PATTERN.matcher(interval);
     if (!matcher.matches()) {
