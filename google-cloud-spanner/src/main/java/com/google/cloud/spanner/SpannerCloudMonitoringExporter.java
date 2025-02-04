@@ -29,7 +29,6 @@ import com.google.auth.Credentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.monitoring.v3.CreateTimeSeriesRequest;
@@ -40,8 +39,10 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,8 +50,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /**
  * Spanner Cloud Monitoring OpenTelemetry Exporter.
@@ -63,22 +64,16 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   private static final Logger logger =
       Logger.getLogger(SpannerCloudMonitoringExporter.class.getName());
 
-  // This system property can be used to override the monitoring endpoint
-  // to a different environment. It's meant for internal testing only.
-  private static final String MONITORING_ENDPOINT =
-      MoreObjects.firstNonNull(
-          System.getProperty("spanner.test-monitoring-endpoint"),
-          MetricServiceSettings.getDefaultEndpoint());
-
   // This the quota limit from Cloud Monitoring. More details in
   // https://cloud.google.com/monitoring/quotas#custom_metrics_quotas.
   private static final int EXPORT_BATCH_SIZE_LIMIT = 200;
   private final AtomicBoolean spannerExportFailureLogged = new AtomicBoolean(false);
-  private CompletableResultCode lastExportCode;
+  private final AtomicBoolean lastExportSkippedData = new AtomicBoolean(false);
   private final MetricServiceClient client;
   private final String spannerProjectId;
 
-  static SpannerCloudMonitoringExporter create(String projectId, @Nullable Credentials credentials)
+  static SpannerCloudMonitoringExporter create(
+      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost)
       throws IOException {
     MetricServiceSettings.Builder settingsBuilder = MetricServiceSettings.newBuilder();
     CredentialsProvider credentialsProvider;
@@ -88,12 +83,14 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
       credentialsProvider = FixedCredentialsProvider.create(credentials);
     }
     settingsBuilder.setCredentialsProvider(credentialsProvider);
-    settingsBuilder.setEndpoint(MONITORING_ENDPOINT);
+    if (monitoringHost != null) {
+      settingsBuilder.setEndpoint(monitoringHost);
+    }
 
-    org.threeten.bp.Duration timeout = Duration.ofMinutes(1);
+    Duration timeout = Duration.ofMinutes(1);
     // TODO: createServiceTimeSeries needs special handling if the request failed. Leaving
     // it as not retried for now.
-    settingsBuilder.createServiceTimeSeriesSettings().setSimpleTimeoutNoRetries(timeout);
+    settingsBuilder.createServiceTimeSeriesSettings().setSimpleTimeoutNoRetriesDuration(timeout);
 
     return new SpannerCloudMonitoringExporter(
         projectId, MetricServiceClient.create(settingsBuilder.build()));
@@ -106,36 +103,49 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   }
 
   @Override
-  public CompletableResultCode export(Collection<MetricData> collection) {
+  public CompletableResultCode export(@Nonnull Collection<MetricData> collection) {
     if (client.isShutdown()) {
       logger.log(Level.WARNING, "Exporter is shut down");
       return CompletableResultCode.ofFailure();
     }
 
-    this.lastExportCode = exportSpannerClientMetrics(collection);
-    return lastExportCode;
+    return exportSpannerClientMetrics(collection);
   }
 
   /** Export client built in metrics */
   private CompletableResultCode exportSpannerClientMetrics(Collection<MetricData> collection) {
-    // Filter spanner metrics
+    // Filter spanner metrics. Only include metrics that contain a project and instance ID.
     List<MetricData> spannerMetricData =
         collection.stream()
             .filter(md -> SPANNER_METRICS.contains(md.getName()))
             .collect(Collectors.toList());
 
+    // Log warnings for metrics that will be skipped.
+    boolean mustFilter = false;
+    if (spannerMetricData.stream()
+        .flatMap(metricData -> metricData.getData().getPoints().stream())
+        .anyMatch(this::shouldSkipPointDataDueToProjectId)) {
+      logger.log(
+          Level.WARNING, "Some metric data contain a different projectId. These will be skipped.");
+      mustFilter = true;
+    }
+    if (spannerMetricData.stream()
+        .flatMap(metricData -> metricData.getData().getPoints().stream())
+        .anyMatch(this::shouldSkipPointDataDueToMissingInstanceId)) {
+      logger.log(Level.WARNING, "Some metric data miss instanceId. These will be skipped.");
+      mustFilter = true;
+    }
+    if (mustFilter) {
+      spannerMetricData =
+          spannerMetricData.stream()
+              .filter(this::shouldSkipMetricData)
+              .collect(Collectors.toList());
+    }
+    lastExportSkippedData.set(mustFilter);
+
     // Skips exporting if there's none
     if (spannerMetricData.isEmpty()) {
       return CompletableResultCode.ofSuccess();
-    }
-
-    // Verifies metrics project id is the same as the spanner project id set on this client
-    if (!spannerMetricData.stream()
-        .flatMap(metricData -> metricData.getData().getPoints().stream())
-        .allMatch(
-            pd -> spannerProjectId.equals(SpannerCloudMonitoringExporterUtils.getProjectId(pd)))) {
-      logger.log(Level.WARNING, "Metric data has a different projectId. Skipping export.");
-      return CompletableResultCode.ofFailure();
     }
 
     List<TimeSeries> spannerTimeSeries;
@@ -166,7 +176,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
                 // TODO: Add the link of public documentation when available in the log message.
                 msg +=
                     String.format(
-                        " Need monitoring metric writer permission on project=%s.",
+                        " Need monitoring metric writer permission on project=%s. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions",
                         projectName.getProject());
               }
               logger.log(Level.WARNING, msg, throwable);
@@ -185,6 +195,26 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
         MoreExecutors.directExecutor());
 
     return spannerExportCode;
+  }
+
+  private boolean shouldSkipMetricData(MetricData metricData) {
+    return metricData.getData().getPoints().stream()
+        .anyMatch(
+            pd ->
+                shouldSkipPointDataDueToProjectId(pd)
+                    || shouldSkipPointDataDueToMissingInstanceId(pd));
+  }
+
+  private boolean shouldSkipPointDataDueToProjectId(PointData pointData) {
+    return !spannerProjectId.equals(SpannerCloudMonitoringExporterUtils.getProjectId(pointData));
+  }
+
+  private boolean shouldSkipPointDataDueToMissingInstanceId(PointData pointData) {
+    return SpannerCloudMonitoringExporterUtils.getInstanceId(pointData) == null;
+  }
+
+  boolean lastExportSkippedData() {
+    return this.lastExportSkippedData.get();
   }
 
   private ApiFuture<List<Empty>> exportTimeSeriesInBatch(
@@ -230,7 +260,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
    * metric over time.
    */
   @Override
-  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+  public AggregationTemporality getAggregationTemporality(@Nonnull InstrumentType instrumentType) {
     return AggregationTemporality.CUMULATIVE;
   }
 }

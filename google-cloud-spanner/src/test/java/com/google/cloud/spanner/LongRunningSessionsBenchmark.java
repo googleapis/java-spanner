@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -48,7 +49,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
-import org.threeten.bp.Duration;
 
 /**
  * Benchmarks for long-running sessions scenarios. The simulated execution times are based on
@@ -126,7 +126,7 @@ public class LongRunningSessionsBenchmark {
                   SessionPoolOptions.newBuilder()
                       .setMinSessions(minSessions)
                       .setMaxSessions(maxSessions)
-                      .setWaitForMinSessions(Duration.ofSeconds(5))
+                      .setWaitForMinSessionsDuration(Duration.ofSeconds(5))
                       .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
                       .build())
               .build();

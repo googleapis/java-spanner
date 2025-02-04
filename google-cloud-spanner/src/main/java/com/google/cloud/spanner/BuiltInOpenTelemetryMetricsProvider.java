@@ -20,7 +20,6 @@ import static com.google.cloud.opentelemetry.detection.GCPPlatformDetector.Suppo
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
-import static com.google.cloud.spanner.BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
@@ -60,14 +59,17 @@ final class BuiltInOpenTelemetryMetricsProvider {
 
   private BuiltInOpenTelemetryMetricsProvider() {}
 
-  OpenTelemetry getOrCreateOpenTelemetry(String projectId, @Nullable Credentials credentials) {
+  OpenTelemetry getOrCreateOpenTelemetry(
+      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost) {
     try {
       if (this.openTelemetry == null) {
         SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
         BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
-            SpannerCloudMonitoringExporter.create(projectId, credentials), sdkMeterProviderBuilder);
-        this.openTelemetry =
-            OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProviderBuilder.build()).build();
+            SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
+            sdkMeterProviderBuilder);
+        SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+        this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
+        Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
       }
       return this.openTelemetry;
     } catch (IOException ex) {
@@ -83,8 +85,6 @@ final class BuiltInOpenTelemetryMetricsProvider {
     Map<String, String> clientAttributes = new HashMap<>();
     clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
     clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
-    // TODO: Replace this with real value.
-    clientAttributes.put(DIRECT_PATH_ENABLED_KEY.getKey(), "false");
     clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
     clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
     String clientUid = getDefaultTaskValue();

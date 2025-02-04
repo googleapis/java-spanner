@@ -23,10 +23,10 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import java.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 /** Tests for samples that use an in-mem mock server instead of running on real Cloud Spanner. */
 @RunWith(JUnit4.class)
@@ -52,13 +52,13 @@ public class SamplesMockServerTest extends AbstractMockServerTest {
         .setRetryableCodes(StatusCode.Code.UNAVAILABLE)
         .setRetrySettings(
             RetrySettings.newBuilder()
-                .setInitialRetryDelay(Duration.ofMillis(500))
-                .setMaxRetryDelay(Duration.ofSeconds(16))
+                .setInitialRetryDelayDuration(Duration.ofMillis(500))
+                .setMaxRetryDelayDuration(Duration.ofSeconds(16))
                 .setRetryDelayMultiplier(1.5)
-                .setInitialRpcTimeout(Duration.ofNanos(1L))
-                .setMaxRpcTimeout(Duration.ofNanos(1L))
+                .setInitialRpcTimeoutDuration(Duration.ofNanos(1L))
+                .setMaxRpcTimeoutDuration(Duration.ofNanos(1L))
                 .setRpcTimeoutMultiplier(1.0)
-                .setTotalTimeout(Duration.ofNanos(1L))
+                .setTotalTimeoutDuration(Duration.ofNanos(1L))
                 .build());
     // Create a Spanner client using the custom retry and timeout settings.
     try (Spanner spanner = builder.build().getService()) {

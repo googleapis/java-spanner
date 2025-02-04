@@ -24,7 +24,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
-import org.threeten.bp.Duration;
+import java.time.Duration;
 
 /**
  * Util class for quickly checking whether a local emulator or test server can be found. A common
@@ -66,7 +66,7 @@ class LocalConnectionChecker {
                         .build());
         testEmulatorSettings
             .listInstanceConfigsSettings()
-            .setSimpleTimeoutNoRetries(Duration.ofSeconds(10L));
+            .setSimpleTimeoutNoRetriesDuration(Duration.ofSeconds(10L));
         try (GrpcInstanceAdminStub stub =
             GrpcInstanceAdminStub.create(testEmulatorSettings.build())) {
           stub.listInstanceConfigsCallable()

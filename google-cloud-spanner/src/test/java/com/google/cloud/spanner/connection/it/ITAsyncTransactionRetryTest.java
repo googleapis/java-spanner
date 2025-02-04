@@ -17,10 +17,8 @@
 package com.google.cloud.spanner.connection.it;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
@@ -580,7 +578,6 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAbortWithConcurrentInsert() {
-    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
@@ -632,7 +629,6 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAbortWithConcurrentDelete() {
-    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
     try (ITConnection connection = createConnection()) {
@@ -686,7 +682,6 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAbortWithConcurrentUpdate() {
-    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
     try (ITConnection connection = createConnection()) {
@@ -746,7 +741,6 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithUnseenConcurrentInsert() throws InterruptedException {
-    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {

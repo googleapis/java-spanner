@@ -127,6 +127,10 @@ class GrpcValueIterator extends AbstractIterator<com.google.protobuf.Value> {
     return statistics;
   }
 
+  boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
+    return stream.initiateStreaming(streamMessageListener);
+  }
+
   Type type() {
     checkState(type != null, "metadata has not been received");
     return type;

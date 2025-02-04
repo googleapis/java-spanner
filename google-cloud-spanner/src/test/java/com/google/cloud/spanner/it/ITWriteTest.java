@@ -19,6 +19,7 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.cloud.spanner.Type.array;
 import static com.google.cloud.spanner.Type.json;
+import static com.google.cloud.spanner.Type.pgJsonb;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertArrayEquals;
@@ -54,7 +55,6 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.NullValue;
 import com.google.rpc.Code;
@@ -98,9 +98,7 @@ public class ITWriteTest {
   public static List<DialectTestParameter> data() {
     List<DialectTestParameter> params = new ArrayList<>();
     params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
-    if (!EmulatorSpannerHelper.isUsingEmulator()) {
-      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
-    }
+    params.add(new DialectTestParameter(Dialect.POSTGRESQL));
     return params;
   }
 
@@ -149,7 +147,7 @@ public class ITWriteTest {
             + "  StringValue         VARCHAR,"
             + "  JsonValue           JSONB,"
             + "  BytesValue          BYTEA,"
-            + "  TimestampValue      TIMESTAMPTZ,"
+            + "  TimestampValue      SPANNER.COMMIT_TIMESTAMP,"
             + "  DateValue           DATE,"
             + "  NumericValue        NUMERIC,"
             + "  BoolArrayValue      BOOL[],"
@@ -181,12 +179,10 @@ public class ITWriteTest {
         env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA);
 
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
-    if (!EmulatorSpannerHelper.isUsingEmulator()) {
-      Database postgreSQLDatabase =
-          env.getTestHelper()
-              .createTestDatabase(Dialect.POSTGRESQL, Arrays.asList(POSTGRESQL_SCHEMA));
-      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
-    }
+    Database postgreSQLDatabase =
+        env.getTestHelper()
+            .createTestDatabase(Dialect.POSTGRESQL, Arrays.asList(POSTGRESQL_SCHEMA));
+    postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
   }
 
   @Before
@@ -481,31 +477,42 @@ public class ITWriteTest {
 
   @Test
   public void writeJson() {
-    assumeFalse("PostgreSQL does not yet support JSON", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("JsonValue").to(Value.json("{\"rating\":9,\"open\":true}")).build());
     Struct row = readLastRow("JsonValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
-    assertThat(row.getJson(0)).isEqualTo("{\"open\":true,\"rating\":9}");
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      assertThat(row.getColumnType("jsonvalue")).isEqualTo(pgJsonb());
+      assertThat(row.getPgJsonb(0)).isEqualTo("{\"open\": true, \"rating\": 9}");
+    } else {
+      assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
+      assertThat(row.getJson(0)).isEqualTo("{\"open\":true,\"rating\":9}");
+    }
   }
 
   @Test
   public void writeJsonEmpty() {
-    assumeFalse("PostgreSQL does not yet support JSON", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("JsonValue").to(Value.json("{}")).build());
     Struct row = readLastRow("JsonValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
-    assertThat(row.getJson(0)).isEqualTo("{}");
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      assertThat(row.getColumnType("jsonvalue")).isEqualTo(pgJsonb());
+      assertThat(row.getPgJsonb(0)).isEqualTo("{}");
+    } else {
+      assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
+      assertThat(row.getJson(0)).isEqualTo("{}");
+    }
   }
 
   @Test
   public void writeJsonNull() {
-    assumeFalse("PostgreSQL does not yet support JSON", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("JsonValue").to(Value.json(null)).build());
     Struct row = readLastRow("JsonValue");
     assertThat(row.isNull(0)).isTrue();
-    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      assertThat(row.getColumnType("jsonvalue")).isEqualTo(pgJsonb());
+    } else {
+      assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
+    }
   }
 
   @Test
@@ -626,8 +633,6 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestamp() {
-    assumeFalse(
-        "PostgresSQL does not yet support Timestamp", dialect.dialect == Dialect.POSTGRESQL);
     Timestamp timestamp = Timestamp.parseTimestamp("2016-09-15T00:00:00.111111Z");
     write(baseInsert().set("TimestampValue").to(timestamp).build());
     Struct row = readLastRow("TimestampValue");
@@ -644,8 +649,6 @@ public class ITWriteTest {
 
   @Test
   public void writeCommitTimestamp() {
-    assumeFalse(
-        "PostgreSQL does not yet support Commit Timestamp", dialect.dialect == Dialect.POSTGRESQL);
     Timestamp commitTimestamp =
         write(baseInsert().set("TimestampValue").to(Value.COMMIT_TIMESTAMP).build());
     Struct row = readLastRow("TimestampValue");
@@ -830,36 +833,46 @@ public class ITWriteTest {
 
   @Test
   public void writeJsonArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("JsonArrayValue").toJsonArray(null).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isTrue();
-    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      assertThat(row.getColumnType("jsonarrayvalue")).isEqualTo(array(pgJsonb()));
+    } else {
+      assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+    }
   }
 
   @Test
   public void writeJsonArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("JsonArrayValue").toJsonArray(Collections.emptyList()).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
-    assertThat(row.getJsonList(0)).containsExactly();
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      assertThat(row.getColumnType("jsonarrayvalue")).isEqualTo(array(pgJsonb()));
+      assertThat(row.getPgJsonbList(0)).containsExactly();
+    } else {
+      assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+      assertThat(row.getJsonList(0)).containsExactly();
+    }
   }
 
   @Test
   public void writeJsonArray() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("JsonArrayValue").toJsonArray(Arrays.asList("[]", null, "{}")).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
-    assertThat(row.getJsonList(0)).containsExactly("[]", null, "{}").inOrder();
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      assertThat(row.getColumnType("jsonarrayvalue")).isEqualTo(array(pgJsonb()));
+      assertThat(row.getPgJsonbList(0)).containsExactly("[]", null, "{}").inOrder();
+    } else {
+      assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+      assertThat(row.getJsonList(0)).containsExactly("[]", null, "{}").inOrder();
+    }
   }
 
   @Test
   public void writeJsonArrayNoNulls() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(
         baseInsert()
             .set("JsonArrayValue")
@@ -867,10 +880,17 @@ public class ITWriteTest {
             .build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
-    assertThat(row.getJsonList(0))
-        .containsExactly("[]", "{\"color\":\"red\",\"value\":\"#f00\"}", "{}")
-        .inOrder();
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      assertThat(row.getColumnType("jsonarrayvalue")).isEqualTo(array(pgJsonb()));
+      assertThat(row.getPgJsonbList(0))
+          .containsExactly("[]", "{\"color\": \"red\", \"value\": \"#f00\"}", "{}")
+          .inOrder();
+    } else {
+      assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+      assertThat(row.getJsonList(0))
+          .containsExactly("[]", "{\"color\":\"red\",\"value\":\"#f00\"}", "{}")
+          .inOrder();
+    }
   }
 
   @Test
@@ -1430,9 +1450,7 @@ public class ITWriteTest {
 
       assertTrue(resultSet.next());
       assertEquals("timestampvalue", resultSet.getString("column_name"));
-      assertEquals(
-          Type.timestamp().getSpannerTypeName(dialect.dialect),
-          resultSet.getString("spanner_type"));
+      assertEquals("spanner.commit_timestamp", resultSet.getString("spanner_type"));
 
       assertTrue(resultSet.next());
       assertEquals("datevalue", resultSet.getString("column_name"));

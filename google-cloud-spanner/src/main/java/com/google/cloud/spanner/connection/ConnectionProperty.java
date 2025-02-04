@@ -37,12 +37,13 @@ import javax.annotation.Nullable;
  * connection state is an opt-in.
  */
 public class ConnectionProperty<T> {
+
   /**
    * Context indicates when a {@link ConnectionProperty} may be set. Each higher-ordinal value
    * includes the preceding values, meaning that a {@link ConnectionProperty} with {@link
    * Context#USER} can be set both at connection startup and during the connection's lifetime.
    */
-  enum Context {
+  public enum Context {
     /** The property can only be set at startup of the connection. */
     STARTUP,
     /**
@@ -79,8 +80,20 @@ public class ConnectionProperty<T> {
       T defaultValue,
       ClientSideStatementValueConverter<T> converter,
       Context context) {
+    return create(name, description, defaultValue, null, converter, context);
+  }
+
+  /** Utility method for creating a typed {@link ConnectionProperty}. */
+  @Nonnull
+  static <T> ConnectionProperty<T> create(
+      @Nonnull String name,
+      String description,
+      T defaultValue,
+      T[] validValues,
+      ClientSideStatementValueConverter<T> converter,
+      Context context) {
     return new ConnectionProperty<>(
-        null, name, description, defaultValue, null, converter, context);
+        null, name, description, defaultValue, validValues, converter, context);
   }
 
   /**
@@ -163,35 +176,38 @@ public class ConnectionProperty<T> {
     return new ConnectionPropertyValue<>(this, convertedValue, convertedValue);
   }
 
-  String getKey() {
+  @Nonnull
+  public String getKey() {
     return this.key;
   }
 
-  boolean hasExtension() {
+  public boolean hasExtension() {
     return this.extension != null;
   }
 
-  String getExtension() {
+  public String getExtension() {
     return this.extension;
   }
 
-  String getName() {
+  @Nonnull
+  public String getName() {
     return this.name;
   }
 
-  String getDescription() {
+  @Nonnull
+  public String getDescription() {
     return this.description;
   }
 
-  T getDefaultValue() {
+  public T getDefaultValue() {
     return this.defaultValue;
   }
 
-  T[] getValidValues() {
+  public T[] getValidValues() {
     return this.validValues;
   }
 
-  Context getContext() {
+  public Context getContext() {
     return this.context;
   }
 }

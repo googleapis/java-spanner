@@ -404,13 +404,26 @@
       }
     },
     {
-      "name": "SET SPANNER.RETRY_ABORTS_INTERNALLY =|TO TRUE|FALSE",
+      "name": "SET [SESSION|LOCAL] SPANNER.RETRY_ABORTS_INTERNALLY =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
       "statementType": "SET_RETRY_ABORTS_INTERNALLY",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.retry_aborts_internally(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+((?:session|local)\\s+)?spanner\\.retry_aborts_internally(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetRetryAbortsInternally",
-      "exampleStatements": ["set spanner.retry_aborts_internally = true", "set spanner.retry_aborts_internally = false", "set spanner.retry_aborts_internally to true", "set spanner.retry_aborts_internally to false"],
+      "exampleStatements": [
+        "set spanner.retry_aborts_internally = true",
+        "set spanner.retry_aborts_internally = false",
+        "set spanner.retry_aborts_internally to true",
+        "set spanner.retry_aborts_internally to false",
+        "set local spanner.retry_aborts_internally = true",
+        "set local spanner.retry_aborts_internally = false",
+        "set local spanner.retry_aborts_internally to true",
+        "set local spanner.retry_aborts_internally to false",
+        "set session spanner.retry_aborts_internally = true",
+        "set session spanner.retry_aborts_internally = false",
+        "set session spanner.retry_aborts_internally to true",
+        "set session spanner.retry_aborts_internally to false"
+      ],
       "examplePrerequisiteStatements": ["set spanner.readonly = false", "set autocommit = false"],
       "setStatement": {
         "propertyName": "SPANNER.RETRY_ABORTS_INTERNALLY",
@@ -420,7 +433,7 @@
       }
     },
     {
-      "name": "SET SPANNER.AUTOCOMMIT_DML_MODE =|TO 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'",
+      "name": "SET SPANNER.AUTOCOMMIT_DML_MODE =|TO 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'|'TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
       "statementType": "SET_AUTOCOMMIT_DML_MODE",
@@ -429,13 +442,15 @@
       "exampleStatements": [
         "set spanner.autocommit_dml_mode='PARTITIONED_NON_ATOMIC'",
         "set spanner.autocommit_dml_mode='TRANSACTIONAL'",
+        "set spanner.autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'",
         "set spanner.autocommit_dml_mode to 'PARTITIONED_NON_ATOMIC'",
-        "set spanner.autocommit_dml_mode to 'TRANSACTIONAL'"
+        "set spanner.autocommit_dml_mode to 'TRANSACTIONAL'",
+        "set spanner.autocommit_dml_mode to 'TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'"
       ],
       "setStatement": {
         "propertyName": "SPANNER.AUTOCOMMIT_DML_MODE",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL)'",
+        "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL|TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC)'",
         "converterName": "ClientSideStatementValueConverters$AutocommitDmlModeConverter"
       }
     },

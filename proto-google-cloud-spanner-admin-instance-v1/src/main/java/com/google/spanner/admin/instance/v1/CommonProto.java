@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,28 +47,30 @@ public final class CommonProto {
     java.lang.String[] descriptorData = {
       "\n-google/spanner/admin/instance/v1/commo"
           + "n.proto\022 google.spanner.admin.instance.v"
-          + "1\032\037google/api/field_behavior.proto\032\037goog"
-          + "le/protobuf/timestamp.proto\"\213\001\n\021Operatio"
-          + "nProgress\022\030\n\020progress_percent\030\001 \001(\005\022.\n\ns"
-          + "tart_time\030\002 \001(\0132\032.google.protobuf.Timest"
-          + "amp\022,\n\010end_time\030\003 \001(\0132\032.google.protobuf."
-          + "Timestamp\")\n\020ReplicaSelection\022\025\n\010locatio"
-          + "n\030\001 \001(\tB\003\340A\002*w\n\021FulfillmentPeriod\022\"\n\036FUL"
-          + "FILLMENT_PERIOD_UNSPECIFIED\020\000\022\035\n\031FULFILL"
-          + "MENT_PERIOD_NORMAL\020\001\022\037\n\033FULFILLMENT_PERI"
-          + "OD_EXTENDED\020\002B\375\001\n$com.google.spanner.adm"
-          + "in.instance.v1B\013CommonProtoP\001ZFcloud.goo"
-          + "gle.com/go/spanner/admin/instance/apiv1/"
-          + "instancepb;instancepb\252\002&Google.Cloud.Spa"
-          + "nner.Admin.Instance.V1\312\002&Google\\Cloud\\Sp"
-          + "anner\\Admin\\Instance\\V1\352\002+Google::Cloud:"
-          + ":Spanner::Admin::Instance::V1b\006proto3"
+          + "1\032\037google/api/field_behavior.proto\032\031goog"
+          + "le/api/resource.proto\032\037google/protobuf/t"
+          + "imestamp.proto\"\213\001\n\021OperationProgress\022\030\n\020"
+          + "progress_percent\030\001 \001(\005\022.\n\nstart_time\030\002 \001"
+          + "(\0132\032.google.protobuf.Timestamp\022,\n\010end_ti"
+          + "me\030\003 \001(\0132\032.google.protobuf.Timestamp\")\n\020"
+          + "ReplicaSelection\022\025\n\010location\030\001 \001(\tB\003\340A\002*"
+          + "w\n\021FulfillmentPeriod\022\"\n\036FULFILLMENT_PERI"
+          + "OD_UNSPECIFIED\020\000\022\035\n\031FULFILLMENT_PERIOD_N"
+          + "ORMAL\020\001\022\037\n\033FULFILLMENT_PERIOD_EXTENDED\020\002"
+          + "B\375\001\n$com.google.spanner.admin.instance.v"
+          + "1B\013CommonProtoP\001ZFcloud.google.com/go/sp"
+          + "anner/admin/instance/apiv1/instancepb;in"
+          + "stancepb\252\002&Google.Cloud.Spanner.Admin.In"
+          + "stance.V1\312\002&Google\\Cloud\\Spanner\\Admin\\I"
+          + "nstance\\V1\352\002+Google::Cloud::Spanner::Adm"
+          + "in::Instance::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
               com.google.api.FieldBehaviorProto.getDescriptor(),
+              com.google.api.ResourceProto.getDescriptor(),
               com.google.protobuf.TimestampProto.getDescriptor(),
             });
     internal_static_google_spanner_admin_instance_v1_OperationProgress_descriptor =
@@ -93,6 +95,7 @@ public final class CommonProto {
     com.google.protobuf.Descriptors.FileDescriptor.internalUpdateFileDescriptor(
         descriptor, registry);
     com.google.api.FieldBehaviorProto.getDescriptor();
+    com.google.api.ResourceProto.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
   }
 

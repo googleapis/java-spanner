@@ -20,9 +20,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import java.time.Instant;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.threeten.bp.Instant;
 
 /**
  * A {@code Session} can be used to perform transactions that read and/or modify data in a Cloud

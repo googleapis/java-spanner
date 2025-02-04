@@ -289,7 +289,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     ApiFuture<Void> ensureTxnAsync() {
       final SettableApiFuture<Void> res = SettableApiFuture.create();
       if (transactionId == null || isAborted()) {
-        createTxnAsync(res);
+        createTxnAsync(res, null);
       } else {
         span.addAnnotation("Transaction Initialized", "Id", transactionId.toStringUtf8());
         txnLogger.log(
@@ -301,22 +301,44 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       return res;
     }
 
-    private void createTxnAsync(final SettableApiFuture<Void> res) {
+    private void createTxnAsync(
+        final SettableApiFuture<Void> res, com.google.spanner.v1.Mutation mutation) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut =
+      final ApiFuture<Transaction> fut =
           session.beginTransactionAsync(
-              options, isRouteToLeader(), getTransactionChannelHint(), getPreviousTransactionId());
+              options,
+              isRouteToLeader(),
+              getTransactionChannelHint(),
+              getPreviousTransactionId(),
+              mutation);
       fut.addListener(
           () -> {
             try {
-              transactionId = fut.get();
+              Transaction txn = fut.get();
+              transactionId = txn.getId();
               span.addAnnotation("Transaction Creation Done", "Id", transactionId.toStringUtf8());
               txnLogger.log(
                   Level.FINER,
                   "Started transaction {0}",
                   txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
+              if (txn.hasPrecommitToken()) {
+                onPrecommitToken(txn.getPrecommitToken());
+              }
               res.set(null);
             } catch (ExecutionException e) {
+              SpannerException spannerException = SpannerExceptionFactory.asSpannerException(e);
+              if (spannerException.getErrorCode() == ErrorCode.ABORTED
+                  && session.getIsMultiplexed()
+                  && mutation != null) {
+                // Begin transaction can return ABORTED errors. This can only happen if it included
+                // a mutation key, which again means that this is a mutation-only transaction on a
+                // multiplexed session.
+                span.addAnnotation(
+                    "Transaction Creation Failed with ABORT. Retrying",
+                    e.getCause() == null ? e : e.getCause());
+                createTxnAsync(res, mutation);
+                return;
+              }
               span.addAnnotation(
                   "Transaction Creation Failed", e.getCause() == null ? e : e.getCause());
               res.setException(e.getCause() == null ? e : e.getCause());
@@ -357,13 +379,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       close();
 
       List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+      com.google.spanner.v1.Mutation randomMutation = null;
       synchronized (committingLock) {
         if (committing) {
           throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
         }
         committing = true;
         if (!mutations.isEmpty()) {
-          Mutation.toProto(mutations, mutationsProto);
+          randomMutation = Mutation.toProtoAndReturnRandomMutation(mutations, mutationsProto);
         }
       }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
@@ -392,14 +415,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
-          createTxnAsync(finishOps);
+          createTxnAsync(finishOps, randomMutation);
         } else {
           finishOps = finishedAsyncOperations;
         }
       }
       builder.addAllMutations(mutationsProto);
       finishOps.addListener(
-          new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
+          new CommitRunnable(
+              res, finishOps, builder, /* retryAttemptDueToCommitProtocolExtension = */ false),
+          MoreExecutors.directExecutor());
       return res;
     }
 
@@ -408,14 +433,17 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       private final SettableApiFuture<CommitResponse> res;
       private final ApiFuture<Void> prev;
       private final CommitRequest.Builder requestBuilder;
+      private final boolean retryAttemptDueToCommitProtocolExtension;
 
       CommitRunnable(
           SettableApiFuture<CommitResponse> res,
           ApiFuture<Void> prev,
-          CommitRequest.Builder requestBuilder) {
+          CommitRequest.Builder requestBuilder,
+          boolean retryAttemptDueToCommitProtocolExtension) {
         this.res = res;
         this.prev = prev;
         this.requestBuilder = requestBuilder;
+        this.retryAttemptDueToCommitProtocolExtension = retryAttemptDueToCommitProtocolExtension;
       }
 
       @Override
@@ -449,6 +477,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // Set the precommit token in the CommitRequest for multiplexed sessions.
             requestBuilder.setPrecommitToken(getLatestPrecommitToken());
           }
+          if (retryAttemptDueToCommitProtocolExtension) {
+            // When a retry occurs due to the commit protocol extension, clear all mutations because
+            // they were already buffered in SpanFE during the previous attempt.
+            requestBuilder.clearMutations();
+            span.addAnnotation(
+                "Retrying commit operation with a new precommit token obtained from the previous CommitResponse");
+          }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture;
@@ -469,6 +504,29 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     return;
                   }
                   com.google.spanner.v1.CommitResponse proto = commitFuture.get();
+
+                  // If the CommitResponse includes a precommit token, the client will retry the
+                  // commit RPC once with the new token and clear any existing mutations.
+                  // This case is applicable only when the read-write transaction uses multiplexed
+                  // session.
+                  if (proto.hasPrecommitToken() && !retryAttemptDueToCommitProtocolExtension) {
+                    // track the latest pre commit token
+                    onPrecommitToken(proto.getPrecommitToken());
+                    span.addAnnotation(
+                        "Commit operation will be retried with new precommit token as the CommitResponse includes a MultiplexedSessionRetry field");
+                    opSpan.end();
+
+                    // Retry the commit RPC with the latest precommit token from CommitResponse.
+                    new CommitRunnable(
+                            res,
+                            prev,
+                            requestBuilder,
+                            /* retryAttemptDueToCommitProtocolExtension = */ true)
+                        .run();
+
+                    // Exit to prevent further processing in this attempt.
+                    return;
+                  }
                   if (!proto.hasCommitTimestamp()) {
                     throw newSpannerException(
                         ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());

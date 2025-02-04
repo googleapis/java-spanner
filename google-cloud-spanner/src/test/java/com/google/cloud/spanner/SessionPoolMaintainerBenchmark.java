@@ -27,6 +27,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -46,7 +47,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
-import org.threeten.bp.Duration;
 
 /**
  * Benchmarks for the SessionPoolMaintainer. Run these benchmarks from the command line like this:
@@ -111,7 +111,7 @@ public class SessionPoolMaintainerBenchmark {
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
                       // Set idle timeout and loop frequency to very low values.
-                      .setRemoveInactiveSessionAfter(Duration.ofMillis(idleTimeout))
+                      .setRemoveInactiveSessionAfterDuration(Duration.ofMillis(idleTimeout))
                       .setLoopFrequency(idleTimeout / 10)
                       .build())
               .build();

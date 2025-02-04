@@ -20,6 +20,7 @@ import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionFutureWrapper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import io.opentelemetry.api.common.Attributes;
 
 /**
  * Subclass of {@link IntegrationTestEnv} that allows the user to specify when the underlying
@@ -51,7 +52,9 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
         SessionPool pool,
         boolean useMultiplexedSessionBlindWriteIgnore,
         MultiplexedSessionDatabaseClient ignore,
-        boolean useMultiplexedSessionForRWIgnore) {
+        boolean useMultiplexedSessionPartitionedOpsIgnore,
+        boolean useMultiplexedSessionForRWIgnore,
+        Attributes attributes) {
       return new DatabaseClientWithClosedSessionImpl(clientId, pool, tracer);
     }
   }

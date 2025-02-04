@@ -48,7 +48,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   interface Listener {
     /**
      * Called when transaction metadata is seen. This method may be invoked at most once. If the
-     * method is invoked, it will precede {@link #onError(SpannerException)} or {@link #onDone()}.
+     * method is invoked, it will precede {@link #onError(SpannerException,boolean)} or {@link
+     * #onDone(boolean)}.
      */
     void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
         throws SpannerException;
@@ -150,6 +151,17 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     void close(@Nullable String message);
 
     boolean isWithBeginTransaction();
+
+    /**
+     * @param streamMessageListener A class object which implements StreamMessageListener
+     * @return true if streaming is supported by the iterator, otherwise false
+     */
+    default boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
+      return false;
+    }
+
+    /** it requests the initial prefetch chunks from gRPC stream */
+    default void requestPrefetchChunks() {}
   }
 
   static double valueProtoToFloat64(com.google.protobuf.Value proto) {

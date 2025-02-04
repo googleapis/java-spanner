@@ -161,6 +161,8 @@ public class SpannerPool {
     private final Boolean enableExtendedTracing;
     private final Boolean enableApiTracing;
     private final boolean enableEndToEndTracing;
+    private final String clientCertificate;
+    private final String clientCertificateKey;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -192,6 +194,8 @@ public class SpannerPool {
       this.enableExtendedTracing = options.isEnableExtendedTracing();
       this.enableApiTracing = options.isEnableApiTracing();
       this.enableEndToEndTracing = options.isEndToEndTracingEnabled();
+      this.clientCertificate = options.getClientCertificate();
+      this.clientCertificateKey = options.getClientCertificateKey();
     }
 
     @Override
@@ -214,7 +218,9 @@ public class SpannerPool {
           && Objects.equals(this.openTelemetry, other.openTelemetry)
           && Objects.equals(this.enableExtendedTracing, other.enableExtendedTracing)
           && Objects.equals(this.enableApiTracing, other.enableApiTracing)
-          && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing);
+          && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing)
+          && Objects.equals(this.clientCertificate, other.clientCertificate)
+          && Objects.equals(this.clientCertificateKey, other.clientCertificateKey);
     }
 
     @Override
@@ -233,7 +239,9 @@ public class SpannerPool {
           this.openTelemetry,
           this.enableExtendedTracing,
           this.enableApiTracing,
-          this.enableEndToEndTracing);
+          this.enableEndToEndTracing,
+          this.clientCertificate,
+          this.clientCertificateKey);
     }
   }
 
@@ -392,6 +400,9 @@ public class SpannerPool {
       builder.setCredentials(NoCredentials.getInstance());
       // Set a custom channel configurator to allow http instead of https.
       builder.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
+    }
+    if (key.clientCertificate != null && key.clientCertificateKey != null) {
+      builder.useClientCert(key.clientCertificate, key.clientCertificateKey);
     }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);

@@ -585,87 +585,110 @@ public class StatementParserTest {
 
   @Test
   public void testIsQuery() {
-    assertThat(parser.isQuery("")).isFalse();
-    assertThat(parser.isQuery("random text")).isFalse();
-    assertThat(parser.isQuery("SELECT1")).isFalse();
-    assertThat(parser.isQuery("SSELECT 1")).isFalse();
+    assertFalse(parser.isQuery(""));
+    assertFalse(parser.isQuery("random text"));
+    assertFalse(parser.isQuery("SELECT1"));
+    assertFalse(parser.isQuery("SSELECT 1"));
 
-    assertThat(parser.isQuery("SELECT 1")).isTrue();
-    assertThat(parser.isQuery("select 1")).isTrue();
-    assertThat(parser.isQuery("SELECT foo FROM bar WHERE id=@id")).isTrue();
+    assertTrue(parser.isQuery("SELECT 1"));
+    assertTrue(parser.isQuery("select 1"));
+    assertTrue(parser.isQuery("SELECT foo FROM bar WHERE id=@id"));
 
-    assertThat(parser.isQuery("INSERT INTO FOO (ID, NAME) VALUES (1, 'NAME')")).isFalse();
-    assertThat(parser.isQuery("UPDATE FOO SET NAME='NAME' WHERE ID=1")).isFalse();
-    assertThat(parser.isQuery("DELETE FROM FOO")).isFalse();
-    assertThat(parser.isQuery("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
-        .isFalse();
-    assertThat(parser.isQuery("alter table foo add Description string(100)")).isFalse();
-    assertThat(parser.isQuery("drop table foo")).isFalse();
-    assertThat(parser.isQuery("Create index BAR on foo (name)")).isFalse();
+    assertFalse(parser.isQuery("INSERT INTO FOO (ID, NAME) VALUES (1, 'NAME')"));
+    assertFalse(parser.isQuery("UPDATE FOO SET NAME='NAME' WHERE ID=1"));
+    assertFalse(parser.isQuery("DELETE FROM FOO"));
+    assertFalse(parser.isQuery("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
+    assertFalse(parser.isQuery("alter table foo add Description string(100)"));
+    assertFalse(parser.isQuery("drop table foo"));
+    assertFalse(parser.isQuery("Create index BAR on foo (name)"));
 
-    assertThat(parser.isQuery("select * from foo")).isTrue();
+    assertTrue(parser.isQuery("select * from foo"));
 
-    assertThat(parser.isQuery("INSERT INTO FOO (ID, NAME) SELECT ID+1, NAME FROM FOO")).isFalse();
+    assertFalse(parser.isQuery("INSERT INTO FOO (ID, NAME) SELECT ID+1, NAME FROM FOO"));
 
-    assertThat(
-            parser.isQuery(
-                "WITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
-                    + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
-                    + "SELECT * FROM subQ1\n"
-                    + "UNION ALL\n"
-                    + "SELECT * FROM subQ2"))
-        .isTrue();
-    assertThat(
-            parser.isQuery(
-                "with subQ1 AS (SELECT SchoolID FROM Roster),\n"
-                    + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
-                    + "select * FROM subQ1\n"
-                    + "UNION ALL\n"
-                    + "SELECT * FROM subQ2"))
-        .isTrue();
-    assertThat(
-            parser
-                .parse(
-                    Statement.of(
-                        "-- this is a comment\nwith foo as (select * from bar)\nselect * from foo"))
-                .isQuery())
-        .isTrue();
+    assertTrue(
+        parser.isQuery(
+            "WITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
+                + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
+                + "SELECT * FROM subQ1\n"
+                + "UNION ALL\n"
+                + "SELECT * FROM subQ2"));
+    assertTrue(
+        parser.isQuery(
+            "with subQ1 AS (SELECT SchoolID FROM Roster),\n"
+                + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
+                + "select * FROM subQ1\n"
+                + "UNION ALL\n"
+                + "SELECT * FROM subQ2"));
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "-- this is a comment\nwith foo as (select * from bar)\nselect * from foo"))
+            .isQuery());
 
-    assertThat(parser.parse(Statement.of("-- this is a comment\nselect * from foo")).isQuery())
-        .isTrue();
-    assertThat(
-            parser
-                .parse(
-                    Statement.of(
-                        "/* multi line comment\n* with more information on the next line\n*/\nSELECT ID, NAME\nFROM\tTEST\n\tWHERE ID=1"))
-                .isQuery())
-        .isTrue();
-    assertThat(
-            parser
-                .parse(
-                    Statement.of(
-                        "/** java doc comment\n* with more information on the next line\n*/\nselect max(id) from test"))
-                .isQuery())
-        .isTrue();
-    assertThat(
-            parser
-                .parse(Statement.of("-- INSERT in a single line comment \n    select 1"))
-                .isQuery())
-        .isTrue();
-    assertThat(
-            parser
-                .parse(
-                    Statement.of(
-                        "/* UPDATE in a multi line comment\n* with more information on the next line\n*/\nSELECT 1"))
-                .isQuery())
-        .isTrue();
-    assertThat(
-            parser
-                .parse(
-                    Statement.of(
-                        "/** DELETE in a java doc comment\n* with more information on the next line\n*/\n\n\n\n -- UPDATE test\nSELECT 1"))
-                .isQuery())
-        .isTrue();
+    assertTrue(parser.parse(Statement.of("-- this is a comment\nselect * from foo")).isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "/* multi line comment\n* with more information on the next line\n*/\nSELECT ID, NAME\nFROM\tTEST\n\tWHERE ID=1"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "/** java doc comment\n* with more information on the next line\n*/\nselect max(id) from test"))
+            .isQuery());
+    assertTrue(
+        parser.parse(Statement.of("-- INSERT in a single line comment \n    select 1")).isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "/* UPDATE in a multi line comment\n* with more information on the next line\n*/\nSELECT 1"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "/** DELETE in a java doc comment\n* with more information on the next line\n*/\n\n\n\n -- UPDATE test\nSELECT 1"))
+            .isQuery());
+
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "GRAPH FinGraph\n" + "MATCH (n)\n" + "RETURN LABELS(n) AS label, n.id"))
+            .isQuery());
+    assertTrue(
+        parser.parse(Statement.of("FROM Produce\n" + "|> WHERE item != 'bananas'")).isQuery());
+
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "(\n"
+                        + "  SELECT * FROM Foo\n"
+                        + "  EXCEPT ALL\n"
+                        + "  SELECT 1\n"
+                        + ")\n"
+                        + "EXCEPT ALL\n"
+                        + "SELECT 2"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "(\n"
+                        + "  (SELECT * FROM Foo)\n"
+                        + "  EXCEPT ALL\n"
+                        + "  SELECT 1\n"
+                        + ")\n"
+                        + "EXCEPT ALL\n"
+                        + "SELECT 2"))
+            .isQuery());
+    assertFalse(parser.parse(Statement.of("(show variable autocommit;\n")).isQuery());
   }
 
   @Test

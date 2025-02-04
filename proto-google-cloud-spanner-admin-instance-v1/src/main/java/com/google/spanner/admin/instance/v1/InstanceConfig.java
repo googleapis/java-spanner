@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     etag_ = "";
     leaderOptions_ = com.google.protobuf.LazyStringArrayList.emptyList();
     state_ = 0;
+    freeInstanceAvailability_ = 0;
+    quorumType_ = 0;
   }
 
   @java.lang.Override
@@ -108,7 +110,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Google managed configuration.
+     * Google-managed configuration.
      * </pre>
      *
      * <code>GOOGLE_MANAGED = 1;</code>
@@ -118,7 +120,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * User managed configuration.
+     * User-managed configuration.
      * </pre>
      *
      * <code>USER_MANAGED = 2;</code>
@@ -141,7 +143,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Google managed configuration.
+     * Google-managed configuration.
      * </pre>
      *
      * <code>GOOGLE_MANAGED = 1;</code>
@@ -151,7 +153,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * User managed configuration.
+     * User-managed configuration.
      * </pre>
      *
      * <code>USER_MANAGED = 2;</code>
@@ -404,6 +406,420 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(enum_scope:google.spanner.admin.instance.v1.InstanceConfig.State)
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * Describes the availability for free instances to be created in an instance
+   * configuration.
+   * </pre>
+   *
+   * Protobuf enum {@code google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability}
+   */
+  public enum FreeInstanceAvailability implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     *
+     *
+     * <pre>
+     * Not specified.
+     * </pre>
+     *
+     * <code>FREE_INSTANCE_AVAILABILITY_UNSPECIFIED = 0;</code>
+     */
+    FREE_INSTANCE_AVAILABILITY_UNSPECIFIED(0),
+    /**
+     *
+     *
+     * <pre>
+     * Indicates that free instances are available to be created in this
+     * instance configuration.
+     * </pre>
+     *
+     * <code>AVAILABLE = 1;</code>
+     */
+    AVAILABLE(1),
+    /**
+     *
+     *
+     * <pre>
+     * Indicates that free instances are not supported in this instance
+     * configuration.
+     * </pre>
+     *
+     * <code>UNSUPPORTED = 2;</code>
+     */
+    UNSUPPORTED(2),
+    /**
+     *
+     *
+     * <pre>
+     * Indicates that free instances are currently not available to be created
+     * in this instance configuration.
+     * </pre>
+     *
+     * <code>DISABLED = 3;</code>
+     */
+    DISABLED(3),
+    /**
+     *
+     *
+     * <pre>
+     * Indicates that additional free instances cannot be created in this
+     * instance configuration because the project has reached its limit of free
+     * instances.
+     * </pre>
+     *
+     * <code>QUOTA_EXCEEDED = 4;</code>
+     */
+    QUOTA_EXCEEDED(4),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     *
+     *
+     * <pre>
+     * Not specified.
+     * </pre>
+     *
+     * <code>FREE_INSTANCE_AVAILABILITY_UNSPECIFIED = 0;</code>
+     */
+    public static final int FREE_INSTANCE_AVAILABILITY_UNSPECIFIED_VALUE = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Indicates that free instances are available to be created in this
+     * instance configuration.
+     * </pre>
+     *
+     * <code>AVAILABLE = 1;</code>
+     */
+    public static final int AVAILABLE_VALUE = 1;
+    /**
+     *
+     *
+     * <pre>
+     * Indicates that free instances are not supported in this instance
+     * configuration.
+     * </pre>
+     *
+     * <code>UNSUPPORTED = 2;</code>
+     */
+    public static final int UNSUPPORTED_VALUE = 2;
+    /**
+     *
+     *
+     * <pre>
+     * Indicates that free instances are currently not available to be created
+     * in this instance configuration.
+     * </pre>
+     *
+     * <code>DISABLED = 3;</code>
+     */
+    public static final int DISABLED_VALUE = 3;
+    /**
+     *
+     *
+     * <pre>
+     * Indicates that additional free instances cannot be created in this
+     * instance configuration because the project has reached its limit of free
+     * instances.
+     * </pre>
+     *
+     * <code>QUOTA_EXCEEDED = 4;</code>
+     */
+    public static final int QUOTA_EXCEEDED_VALUE = 4;
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static FreeInstanceAvailability valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static FreeInstanceAvailability forNumber(int value) {
+      switch (value) {
+        case 0:
+          return FREE_INSTANCE_AVAILABILITY_UNSPECIFIED;
+        case 1:
+          return AVAILABLE;
+        case 2:
+          return UNSUPPORTED;
+        case 3:
+          return DISABLED;
+        case 4:
+          return QUOTA_EXCEEDED;
+        default:
+          return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<FreeInstanceAvailability>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+
+    private static final com.google.protobuf.Internal.EnumLiteMap<FreeInstanceAvailability>
+        internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<FreeInstanceAvailability>() {
+              public FreeInstanceAvailability findValueByNumber(int number) {
+                return FreeInstanceAvailability.forNumber(number);
+              }
+            };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+      return getDescriptor();
+    }
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+      return com.google.spanner.admin.instance.v1.InstanceConfig.getDescriptor()
+          .getEnumTypes()
+          .get(2);
+    }
+
+    private static final FreeInstanceAvailability[] VALUES = values();
+
+    public static FreeInstanceAvailability valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private FreeInstanceAvailability(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability)
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Indicates the quorum type of this instance configuration.
+   * </pre>
+   *
+   * Protobuf enum {@code google.spanner.admin.instance.v1.InstanceConfig.QuorumType}
+   */
+  public enum QuorumType implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     *
+     *
+     * <pre>
+     * Quorum type not specified.
+     * </pre>
+     *
+     * <code>QUORUM_TYPE_UNSPECIFIED = 0;</code>
+     */
+    QUORUM_TYPE_UNSPECIFIED(0),
+    /**
+     *
+     *
+     * <pre>
+     * An instance configuration tagged with `REGION` quorum type forms a write
+     * quorum in a single region.
+     * </pre>
+     *
+     * <code>REGION = 1;</code>
+     */
+    REGION(1),
+    /**
+     *
+     *
+     * <pre>
+     * An instance configuration tagged with the `DUAL_REGION` quorum type forms
+     * a write quorum with exactly two read-write regions in a multi-region
+     * configuration.
+     *
+     * This instance configuration requires failover in the event of
+     * regional failures.
+     * </pre>
+     *
+     * <code>DUAL_REGION = 2;</code>
+     */
+    DUAL_REGION(2),
+    /**
+     *
+     *
+     * <pre>
+     * An instance configuration tagged with the `MULTI_REGION` quorum type
+     * forms a write quorum from replicas that are spread across more than one
+     * region in a multi-region configuration.
+     * </pre>
+     *
+     * <code>MULTI_REGION = 3;</code>
+     */
+    MULTI_REGION(3),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     *
+     *
+     * <pre>
+     * Quorum type not specified.
+     * </pre>
+     *
+     * <code>QUORUM_TYPE_UNSPECIFIED = 0;</code>
+     */
+    public static final int QUORUM_TYPE_UNSPECIFIED_VALUE = 0;
+    /**
+     *
+     *
+     * <pre>
+     * An instance configuration tagged with `REGION` quorum type forms a write
+     * quorum in a single region.
+     * </pre>
+     *
+     * <code>REGION = 1;</code>
+     */
+    public static final int REGION_VALUE = 1;
+    /**
+     *
+     *
+     * <pre>
+     * An instance configuration tagged with the `DUAL_REGION` quorum type forms
+     * a write quorum with exactly two read-write regions in a multi-region
+     * configuration.
+     *
+     * This instance configuration requires failover in the event of
+     * regional failures.
+     * </pre>
+     *
+     * <code>DUAL_REGION = 2;</code>
+     */
+    public static final int DUAL_REGION_VALUE = 2;
+    /**
+     *
+     *
+     * <pre>
+     * An instance configuration tagged with the `MULTI_REGION` quorum type
+     * forms a write quorum from replicas that are spread across more than one
+     * region in a multi-region configuration.
+     * </pre>
+     *
+     * <code>MULTI_REGION = 3;</code>
+     */
+    public static final int MULTI_REGION_VALUE = 3;
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static QuorumType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static QuorumType forNumber(int value) {
+      switch (value) {
+        case 0:
+          return QUORUM_TYPE_UNSPECIFIED;
+        case 1:
+          return REGION;
+        case 2:
+          return DUAL_REGION;
+        case 3:
+          return MULTI_REGION;
+        default:
+          return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<QuorumType> internalGetValueMap() {
+      return internalValueMap;
+    }
+
+    private static final com.google.protobuf.Internal.EnumLiteMap<QuorumType> internalValueMap =
+        new com.google.protobuf.Internal.EnumLiteMap<QuorumType>() {
+          public QuorumType findValueByNumber(int number) {
+            return QuorumType.forNumber(number);
+          }
+        };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+      return getDescriptor();
+    }
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+      return com.google.spanner.admin.instance.v1.InstanceConfig.getDescriptor()
+          .getEnumTypes()
+          .get(3);
+    }
+
+    private static final QuorumType[] VALUES = values();
+
+    public static QuorumType valueOf(com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private QuorumType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:google.spanner.admin.instance.v1.InstanceConfig.QuorumType)
+  }
+
   public static final int NAME_FIELD_NUMBER = 1;
 
   @SuppressWarnings("serial")
@@ -567,6 +983,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -581,6 +1002,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -596,6 +1022,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -610,6 +1041,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -624,6 +1060,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * The geographic placement of nodes in this instance configuration and their
    * replication properties.
+   *
+   * To create user-managed configurations, input
+   * `replicas` must include all replicas in `replicas` of the `base_config`
+   * and include one or more replicas in the `optional_replicas` of the
+   * `base_config`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -641,8 +1082,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -658,8 +1099,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -675,8 +1116,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -691,8 +1132,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -707,8 +1148,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The available optional replicas to choose from for user
-   * managed configurations. Populated for Google managed configurations.
+   * Output only. The available optional replicas to choose from for
+   * user-managed configurations. Populated for Google-managed configurations.
    * </pre>
    *
    * <code>
@@ -730,9 +1171,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-   * based on which this configuration is created. Only set for user managed
+   * based on which this configuration is created. Only set for user-managed
    * configurations. `base_config` must refer to a configuration of type
-   * GOOGLE_MANAGED in the same project as this configuration.
+   * `GOOGLE_MANAGED` in the same project as this configuration.
    * </pre>
    *
    * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -756,9 +1197,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-   * based on which this configuration is created. Only set for user managed
+   * based on which this configuration is created. Only set for user-managed
    * configurations. `base_config` must refer to a configuration of type
-   * GOOGLE_MANAGED in the same project as this configuration.
+   * `GOOGLE_MANAGED` in the same project as this configuration.
    * </pre>
    *
    * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -1162,6 +1603,112 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         : result;
   }
 
+  public static final int FREE_INSTANCE_AVAILABILITY_FIELD_NUMBER = 12;
+  private int freeInstanceAvailability_ = 0;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Describes whether free instances are available to be created
+   * in this instance configuration.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for freeInstanceAvailability.
+   */
+  @java.lang.Override
+  public int getFreeInstanceAvailabilityValue() {
+    return freeInstanceAvailability_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Describes whether free instances are available to be created
+   * in this instance configuration.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The freeInstanceAvailability.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability
+      getFreeInstanceAvailability() {
+    com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability result =
+        com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability.forNumber(
+            freeInstanceAvailability_);
+    return result == null
+        ? com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability.UNRECOGNIZED
+        : result;
+  }
+
+  public static final int QUORUM_TYPE_FIELD_NUMBER = 18;
+  private int quorumType_ = 0;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The `QuorumType` of the instance configuration.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for quorumType.
+   */
+  @java.lang.Override
+  public int getQuorumTypeValue() {
+    return quorumType_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The `QuorumType` of the instance configuration.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The quorumType.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType getQuorumType() {
+    com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType result =
+        com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType.forNumber(quorumType_);
+    return result == null
+        ? com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType.UNRECOGNIZED
+        : result;
+  }
+
+  public static final int STORAGE_LIMIT_PER_PROCESSING_UNIT_FIELD_NUMBER = 19;
+  private long storageLimitPerProcessingUnit_ = 0L;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The storage limit in bytes per processing unit.
+   * </pre>
+   *
+   * <code>
+   * int64 storage_limit_per_processing_unit = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The storageLimitPerProcessingUnit.
+   */
+  @java.lang.Override
+  public long getStorageLimitPerProcessingUnit() {
+    return storageLimitPerProcessingUnit_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1210,6 +1757,20 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.admin.instance.v1.InstanceConfig.State.STATE_UNSPECIFIED
             .getNumber()) {
       output.writeEnum(11, state_);
+    }
+    if (freeInstanceAvailability_
+        != com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability
+            .FREE_INSTANCE_AVAILABILITY_UNSPECIFIED
+            .getNumber()) {
+      output.writeEnum(12, freeInstanceAvailability_);
+    }
+    if (quorumType_
+        != com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType.QUORUM_TYPE_UNSPECIFIED
+            .getNumber()) {
+      output.writeEnum(18, quorumType_);
+    }
+    if (storageLimitPerProcessingUnit_ != 0L) {
+      output.writeInt64(19, storageLimitPerProcessingUnit_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -1268,6 +1829,22 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             .getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(11, state_);
     }
+    if (freeInstanceAvailability_
+        != com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability
+            .FREE_INSTANCE_AVAILABILITY_UNSPECIFIED
+            .getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(12, freeInstanceAvailability_);
+    }
+    if (quorumType_
+        != com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType.QUORUM_TYPE_UNSPECIFIED
+            .getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(18, quorumType_);
+    }
+    if (storageLimitPerProcessingUnit_ != 0L) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeInt64Size(
+              19, storageLimitPerProcessingUnit_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1295,6 +1872,10 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     if (!getLeaderOptionsList().equals(other.getLeaderOptionsList())) return false;
     if (getReconciling() != other.getReconciling()) return false;
     if (state_ != other.state_) return false;
+    if (freeInstanceAvailability_ != other.freeInstanceAvailability_) return false;
+    if (quorumType_ != other.quorumType_) return false;
+    if (getStorageLimitPerProcessingUnit() != other.getStorageLimitPerProcessingUnit())
+      return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -1336,6 +1917,12 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getReconciling());
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
+    hash = (37 * hash) + FREE_INSTANCE_AVAILABILITY_FIELD_NUMBER;
+    hash = (53 * hash) + freeInstanceAvailability_;
+    hash = (37 * hash) + QUORUM_TYPE_FIELD_NUMBER;
+    hash = (53 * hash) + quorumType_;
+    hash = (37 * hash) + STORAGE_LIMIT_PER_PROCESSING_UNIT_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getStorageLimitPerProcessingUnit());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1521,6 +2108,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       leaderOptions_ = com.google.protobuf.LazyStringArrayList.emptyList();
       reconciling_ = false;
       state_ = 0;
+      freeInstanceAvailability_ = 0;
+      quorumType_ = 0;
+      storageLimitPerProcessingUnit_ = 0L;
       return this;
     }
 
@@ -1608,6 +2198,15 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       }
       if (((from_bitField0_ & 0x00000400) != 0)) {
         result.state_ = state_;
+      }
+      if (((from_bitField0_ & 0x00000800) != 0)) {
+        result.freeInstanceAvailability_ = freeInstanceAvailability_;
+      }
+      if (((from_bitField0_ & 0x00001000) != 0)) {
+        result.quorumType_ = quorumType_;
+      }
+      if (((from_bitField0_ & 0x00002000) != 0)) {
+        result.storageLimitPerProcessingUnit_ = storageLimitPerProcessingUnit_;
       }
     }
 
@@ -1752,6 +2351,15 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
+      if (other.freeInstanceAvailability_ != 0) {
+        setFreeInstanceAvailabilityValue(other.getFreeInstanceAvailabilityValue());
+      }
+      if (other.quorumType_ != 0) {
+        setQuorumTypeValue(other.getQuorumTypeValue());
+      }
+      if (other.getStorageLimitPerProcessingUnit() != 0L) {
+        setStorageLimitPerProcessingUnit(other.getStorageLimitPerProcessingUnit());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -1867,6 +2475,24 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00000400;
                 break;
               } // case 88
+            case 96:
+              {
+                freeInstanceAvailability_ = input.readEnum();
+                bitField0_ |= 0x00000800;
+                break;
+              } // case 96
+            case 144:
+              {
+                quorumType_ = input.readEnum();
+                bitField0_ |= 0x00001000;
+                break;
+              } // case 144
+            case 152:
+              {
+                storageLimitPerProcessingUnit_ = input.readInt64();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 152
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -2248,6 +2874,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2265,6 +2896,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2282,6 +2918,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2299,6 +2940,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2322,6 +2968,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2343,6 +2994,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2366,6 +3022,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2389,6 +3050,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2410,6 +3076,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2431,6 +3102,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2452,6 +3128,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2472,6 +3153,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2492,6 +3178,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2505,6 +3196,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2523,6 +3219,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2541,6 +3242,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2555,6 +3261,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2569,6 +3280,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The geographic placement of nodes in this instance configuration and their
      * replication properties.
+     *
+     * To create user-managed configurations, input
+     * `replicas` must include all replicas in `replicas` of the `base_config`
+     * and include one or more replicas in the `optional_replicas` of the
+     * `base_config`.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
@@ -2617,8 +3333,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2637,8 +3353,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2656,8 +3372,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2675,8 +3391,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2701,8 +3417,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2724,8 +3440,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2749,8 +3465,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2775,8 +3491,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2798,8 +3514,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2821,8 +3537,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2844,8 +3560,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2866,8 +3582,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2888,8 +3604,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2904,8 +3620,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2924,8 +3640,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2944,8 +3660,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2960,8 +3676,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -2977,8 +3693,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The available optional replicas to choose from for user
-     * managed configurations. Populated for Google managed configurations.
+     * Output only. The available optional replicas to choose from for
+     * user-managed configurations. Populated for Google-managed configurations.
      * </pre>
      *
      * <code>
@@ -3016,9 +3732,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-     * based on which this configuration is created. Only set for user managed
+     * based on which this configuration is created. Only set for user-managed
      * configurations. `base_config` must refer to a configuration of type
-     * GOOGLE_MANAGED in the same project as this configuration.
+     * `GOOGLE_MANAGED` in the same project as this configuration.
      * </pre>
      *
      * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -3041,9 +3757,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-     * based on which this configuration is created. Only set for user managed
+     * based on which this configuration is created. Only set for user-managed
      * configurations. `base_config` must refer to a configuration of type
-     * GOOGLE_MANAGED in the same project as this configuration.
+     * `GOOGLE_MANAGED` in the same project as this configuration.
      * </pre>
      *
      * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -3066,9 +3782,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-     * based on which this configuration is created. Only set for user managed
+     * based on which this configuration is created. Only set for user-managed
      * configurations. `base_config` must refer to a configuration of type
-     * GOOGLE_MANAGED in the same project as this configuration.
+     * `GOOGLE_MANAGED` in the same project as this configuration.
      * </pre>
      *
      * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -3090,9 +3806,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-     * based on which this configuration is created. Only set for user managed
+     * based on which this configuration is created. Only set for user-managed
      * configurations. `base_config` must refer to a configuration of type
-     * GOOGLE_MANAGED in the same project as this configuration.
+     * `GOOGLE_MANAGED` in the same project as this configuration.
      * </pre>
      *
      * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -3110,9 +3826,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Base configuration name, e.g. projects/&lt;project_name&gt;/instanceConfigs/nam3,
-     * based on which this configuration is created. Only set for user managed
+     * based on which this configuration is created. Only set for user-managed
      * configurations. `base_config` must refer to a configuration of type
-     * GOOGLE_MANAGED in the same project as this configuration.
+     * `GOOGLE_MANAGED` in the same project as this configuration.
      * </pre>
      *
      * <code>string base_config = 7 [(.google.api.resource_reference) = { ... }</code>
@@ -3935,6 +4651,279 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     public Builder clearState() {
       bitField0_ = (bitField0_ & ~0x00000400);
       state_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int freeInstanceAvailability_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Describes whether free instances are available to be created
+     * in this instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The enum numeric value on the wire for freeInstanceAvailability.
+     */
+    @java.lang.Override
+    public int getFreeInstanceAvailabilityValue() {
+      return freeInstanceAvailability_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Describes whether free instances are available to be created
+     * in this instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The enum numeric value on the wire for freeInstanceAvailability to set.
+     * @return This builder for chaining.
+     */
+    public Builder setFreeInstanceAvailabilityValue(int value) {
+      freeInstanceAvailability_ = value;
+      bitField0_ |= 0x00000800;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Describes whether free instances are available to be created
+     * in this instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The freeInstanceAvailability.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability
+        getFreeInstanceAvailability() {
+      com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability result =
+          com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability.forNumber(
+              freeInstanceAvailability_);
+      return result == null
+          ? com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability
+              .UNRECOGNIZED
+          : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Describes whether free instances are available to be created
+     * in this instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The freeInstanceAvailability to set.
+     * @return This builder for chaining.
+     */
+    public Builder setFreeInstanceAvailability(
+        com.google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00000800;
+      freeInstanceAvailability_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Describes whether free instances are available to be created
+     * in this instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability free_instance_availability = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearFreeInstanceAvailability() {
+      bitField0_ = (bitField0_ & ~0x00000800);
+      freeInstanceAvailability_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int quorumType_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The `QuorumType` of the instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The enum numeric value on the wire for quorumType.
+     */
+    @java.lang.Override
+    public int getQuorumTypeValue() {
+      return quorumType_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The `QuorumType` of the instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The enum numeric value on the wire for quorumType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setQuorumTypeValue(int value) {
+      quorumType_ = value;
+      bitField0_ |= 0x00001000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The `QuorumType` of the instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The quorumType.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType getQuorumType() {
+      com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType result =
+          com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType.forNumber(quorumType_);
+      return result == null
+          ? com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType.UNRECOGNIZED
+          : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The `QuorumType` of the instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The quorumType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setQuorumType(
+        com.google.spanner.admin.instance.v1.InstanceConfig.QuorumType value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00001000;
+      quorumType_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The `QuorumType` of the instance configuration.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.InstanceConfig.QuorumType quorum_type = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearQuorumType() {
+      bitField0_ = (bitField0_ & ~0x00001000);
+      quorumType_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private long storageLimitPerProcessingUnit_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The storage limit in bytes per processing unit.
+     * </pre>
+     *
+     * <code>
+     * int64 storage_limit_per_processing_unit = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The storageLimitPerProcessingUnit.
+     */
+    @java.lang.Override
+    public long getStorageLimitPerProcessingUnit() {
+      return storageLimitPerProcessingUnit_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The storage limit in bytes per processing unit.
+     * </pre>
+     *
+     * <code>
+     * int64 storage_limit_per_processing_unit = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The storageLimitPerProcessingUnit to set.
+     * @return This builder for chaining.
+     */
+    public Builder setStorageLimitPerProcessingUnit(long value) {
+
+      storageLimitPerProcessingUnit_ = value;
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The storage limit in bytes per processing unit.
+     * </pre>
+     *
+     * <code>
+     * int64 storage_limit_per_processing_unit = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearStorageLimitPerProcessingUnit() {
+      bitField0_ = (bitField0_ & ~0x00002000);
+      storageLimitPerProcessingUnit_ = 0L;
       onChanged();
       return this;
     }

@@ -25,6 +25,7 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -125,7 +126,8 @@ class SessionClient implements AutoCloseable {
     public void run() {
       List<SessionImpl> sessions;
       int remainingSessionsToCreate = sessionCount;
-      ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS);
+      ISpan span =
+          spanner.getTracer().spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS, commonAttributes);
       try (IScope s = spanner.getTracer().withSpan(span)) {
         spanner
             .getTracer()
@@ -170,6 +172,7 @@ class SessionClient implements AutoCloseable {
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
   private final ScheduledExecutorService executor;
   private final DatabaseId db;
+  private final Attributes commonAttributes;
 
   @GuardedBy("this")
   private volatile long sessionChannelCounter;
@@ -182,6 +185,7 @@ class SessionClient implements AutoCloseable {
     this.db = db;
     this.executorFactory = executorFactory;
     this.executor = executorFactory.get();
+    this.commonAttributes = spanner.getTracer().createCommonAttributes(db);
   }
 
   @Override
@@ -205,7 +209,7 @@ class SessionClient implements AutoCloseable {
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION);
+    ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION, this.commonAttributes);
     try (IScope s = spanner.getTracer().withSpan(span)) {
       com.google.spanner.v1.Session session =
           spanner
@@ -237,7 +241,23 @@ class SessionClient implements AutoCloseable {
    * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
    */
   void createMultiplexedSession(SessionConsumer consumer) {
-    ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION);
+    try {
+      SessionImpl sessionImpl = createMultiplexedSession();
+      consumer.onSessionReady(sessionImpl);
+    } catch (Throwable t) {
+      consumer.onSessionCreateFailure(t, 1);
+    }
+  }
+
+  /**
+   * Creates a multiplexed session and returns it. A multiplexed session is not affiliated with any
+   * GRPC channel. In case of an error during the gRPC calls, an exception will be thrown.
+   */
+  SessionImpl createMultiplexedSession() {
+    ISpan span =
+        spanner
+            .getTracer()
+            .spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION, this.commonAttributes);
     try (IScope s = spanner.getTracer().withSpan(span)) {
       com.google.spanner.v1.Session session =
           spanner
@@ -253,10 +273,12 @@ class SessionClient implements AutoCloseable {
               spanner,
               new SessionReference(
                   session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
-      consumer.onSessionReady(sessionImpl);
+      span.addAnnotation(
+          String.format("Request for %d multiplexed session returned %d session", 1, 1));
+      return sessionImpl;
     } catch (Throwable t) {
       span.setStatus(t);
-      consumer.onSessionCreateFailure(t, 1);
+      throw t;
     } finally {
       span.end();
     }
@@ -289,31 +311,7 @@ class SessionClient implements AutoCloseable {
 
     @Override
     public void run() {
-      ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION);
-      try (IScope s = spanner.getTracer().withSpan(span)) {
-        com.google.spanner.v1.Session session =
-            spanner
-                .getRpc()
-                .createSession(
-                    db.getName(),
-                    spanner.getOptions().getDatabaseRole(),
-                    spanner.getOptions().getSessionLabels(),
-                    null,
-                    true);
-        SessionImpl sessionImpl =
-            new SessionImpl(
-                spanner,
-                new SessionReference(
-                    session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
-        span.addAnnotation(
-            String.format("Request for %d multiplexed session returned %d session", 1, 1));
-        consumer.onSessionReady(sessionImpl);
-      } catch (Throwable t) {
-        span.setStatus(t);
-        consumer.onSessionCreateFailure(t, 1);
-      } finally {
-        span.end();
-      }
+      createMultiplexedSession(consumer);
     }
   }
 

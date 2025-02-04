@@ -19,6 +19,7 @@ package com.example.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.gax.rpc.FailedPreconditionException;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
@@ -527,6 +528,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
                 .setNodeCount(1)
                 .build())
         .get();
+    System.out.println("Creating database ...");
     try {
       String out =
           SampleRunner.runSample(
@@ -538,6 +540,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
               String.format(
                   "Created database [%s]", DatabaseName.of(projectId, instanceId, databaseId)));
 
+      System.out.println("Creating backup with encryption key ...");
       out =
           SampleRunner.runSampleWithRetry(
               () ->
@@ -556,6 +559,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
                       + "was created at (.*) using encryption key %s",
                   projectId, instanceId, encryptedBackupId, key));
 
+      System.out.println("Restoring backup with encryption key ...");
       out =
           SampleRunner.runSampleWithRetry(
               () ->
@@ -587,6 +591,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     } finally {
       // Delete the backups from the test instance first, as the instance can only be deleted once
       // all backups have been deleted.
+      System.out.println("Deleting backups ...");
       deleteAllBackups(instanceId);
       instanceAdminClient.deleteInstance(instanceId);
     }
@@ -633,13 +638,19 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     InstanceName instanceName = InstanceName.of(projectId, instanceId);
     for (Backup backup : databaseAdminClient.listBackups(instanceName.toString()).iterateAll()) {
       int attempts = 0;
+      System.out.printf("Deleting backup ... %s%n", backup.getName());
       while (attempts < 30) {
         try {
           attempts++;
           databaseAdminClient.deleteBackup(backup.getName());
           break;
-        } catch (SpannerException e) {
-          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION
+        } catch (SpannerException | FailedPreconditionException e) {
+          ErrorCode errorCode = ErrorCode.FAILED_PRECONDITION;
+
+          if (e instanceof SpannerException) {
+            errorCode = ((SpannerException) e).getErrorCode();
+          }
+          if (errorCode == ErrorCode.FAILED_PRECONDITION
               && e.getMessage()
                   .contains(
                       "Please try deleting the backup once the restore or post-restore optimize "
@@ -676,6 +687,38 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
               try {
                 CreateInstanceExample.createInstance(dbId.getInstanceId().getProject(), instanceId);
                 UpdateInstanceExample.updateInstance(dbId.getInstanceId().getProject(), instanceId);
+              } finally {
+                spanner.getInstanceAdminClient().deleteInstance(instanceId);
+              }
+            });
+    assertThat(out)
+        .contains(
+            String.format(
+                "Instance %s was successfully created",
+                InstanceId.of(dbId.getInstanceId().getProject(), instanceId)));
+    assertThat(out)
+        .contains(
+            String.format(
+                "Instance %s was successfully updated",
+                InstanceId.of(dbId.getInstanceId().getProject(), instanceId)));
+  }
+
+  @Test
+  public void testCreateAndUpdateInstanceDefaultBackupScheduleTypeSample() {
+    String databaseId = idGenerator.generateDatabaseId();
+    DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
+
+    String instanceId = formatForTest("sample-inst");
+    String out =
+        runSampleRunnable(
+            () -> {
+              try {
+                CreateInstanceWithoutDefaultBackupSchedulesExample
+                    .createInstanceWithoutDefaultBackupSchedules(
+                        dbId.getInstanceId().getProject(), instanceId);
+                UpdateInstanceDefaultBackupScheduleTypeExample
+                    .updateInstanceDefaultBackupScheduleType(
+                        dbId.getInstanceId().getProject(), instanceId);
               } finally {
                 spanner.getInstanceAdminClient().deleteInstance(instanceId);
               }

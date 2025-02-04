@@ -37,6 +37,7 @@ import io.grpc.Server;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +57,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.threeten.bp.Duration;
 
 @RunWith(Parameterized.class)
 public class DatabaseAdminGaxTest {
@@ -214,22 +214,22 @@ public class DatabaseAdminGaxTest {
     mockDatabaseAdmin.reset();
     RetrySettings retrySettingsWithLowTimeout =
         RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofMillis(1L))
-            .setMaxRetryDelay(Duration.ofMillis(1L))
-            .setInitialRpcTimeout(Duration.ofMillis(20L))
-            .setMaxRpcTimeout(Duration.ofMillis(1000L))
+            .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+            .setMaxRetryDelayDuration(Duration.ofMillis(1L))
+            .setInitialRpcTimeoutDuration(Duration.ofMillis(20L))
+            .setMaxRpcTimeoutDuration(Duration.ofMillis(1000L))
             .setRetryDelayMultiplier(2.0)
             .setMaxAttempts(10)
-            .setTotalTimeout(Duration.ofMillis(200L))
+            .setTotalTimeoutDuration(Duration.ofMillis(200L))
             .build();
     RetrySettings retrySettingsWithHighTimeout =
         RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofMillis(1L))
-            .setMaxRetryDelay(Duration.ofMillis(1L))
-            .setInitialRpcTimeout(Duration.ofMillis(2000L))
-            .setMaxRpcTimeout(Duration.ofMillis(5000L))
+            .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+            .setMaxRetryDelayDuration(Duration.ofMillis(1L))
+            .setInitialRpcTimeoutDuration(Duration.ofMillis(2000L))
+            .setMaxRpcTimeoutDuration(Duration.ofMillis(5000L))
             .setMaxAttempts(3)
-            .setTotalTimeout(Duration.ofMillis(15000L))
+            .setTotalTimeoutDuration(Duration.ofMillis(15000L))
             .build();
     final RetrySettings retrySettingsToUse =
         exceptionType == ExceptionType.DELAYED

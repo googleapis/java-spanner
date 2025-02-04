@@ -121,11 +121,11 @@ public interface TransactionContext extends ReadContext {
   /**
    * Same as {@link #executeUpdate(Statement,UpdateOption...)}, but is guaranteed to be
    * non-blocking. If multiple asynchronous update statements are submitted to the same read/write
-   * transaction, the statements are guaranteed to be submitted to Cloud Spanner in the order that
-   * they were submitted in the client. This does however not guarantee that an asynchronous update
-   * statement will see the results of all previously submitted statements, as the execution of the
-   * statements can be parallel. If you rely on the results of a previous statement, you should
-   * block until the result of that statement is known and has been returned to the client.
+   * transaction, the statements are guaranteed to be sent to Cloud Spanner in the order that they
+   * were submitted in the client. This does however not guarantee that Spanner will receive the
+   * requests in the same order as they were sent, as requests that are sent partly in parallel can
+   * overtake each other. It is therefore recommended to block until an update statement has
+   * returned a result before sending the next update statement.
    */
   ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options);
 
@@ -181,11 +181,11 @@ public interface TransactionContext extends ReadContext {
   /**
    * Same as {@link #batchUpdate(Iterable, UpdateOption...)}, but is guaranteed to be non-blocking.
    * If multiple asynchronous update statements are submitted to the same read/write transaction,
-   * the statements are guaranteed to be submitted to Cloud Spanner in the order that they were
-   * submitted in the client. This does however not guarantee that an asynchronous update statement
-   * will see the results of all previously submitted statements, as the execution of the statements
-   * can be parallel. If you rely on the results of a previous statement, you should block until the
-   * result of that statement is known and has been returned to the client.
+   * the statements are guaranteed to be sent to Cloud Spanner in the order that they were submitted
+   * in the client. This does however not guarantee that Spanner will receive the requests in the
+   * same order as they were sent, as requests that are sent partly in parallel can overtake each
+   * other. It is therefore recommended to block until an update statement has returned a result
+   * before sending the next update statement.
    */
   ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements, UpdateOption... options);
 }

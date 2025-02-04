@@ -16,27 +16,32 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.spanner.v1.PartialResultSet;
+import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /** Adapts a streaming read/query call into an iterator over partial result sets. */
 @VisibleForTesting
 class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     implements CloseableIterator<PartialResultSet> {
   private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
-  private static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
+  static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
+  private final int prefetchChunks;
+  private AsyncResultSet.StreamMessageListener streamMessageListener;
 
   private final ConsumerImpl consumer;
   private final BlockingQueue<PartialResultSet> stream;
@@ -57,6 +62,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   GrpcStreamIterator(
       Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
     this.statement = statement;
+    this.prefetchChunks = prefetchChunks;
     this.consumer = new ConsumerImpl(cancelQueryWhenClientIsClosed);
     // One extra to allow for END_OF_STREAM message.
     this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
@@ -66,11 +72,16 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     return consumer;
   }
 
+  void registerListener(AsyncResultSet.StreamMessageListener streamMessageListener) {
+    this.streamMessageListener = Preconditions.checkNotNull(streamMessageListener);
+  }
+
   public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
     this.call = call;
     this.withBeginTransaction = withBeginTransaction;
     ApiCallContext callContext = call.getCallContext();
-    Duration streamWaitTimeout = callContext == null ? null : callContext.getStreamWaitTimeout();
+    Duration streamWaitTimeout =
+        callContext == null ? null : callContext.getStreamWaitTimeoutDuration();
     if (streamWaitTimeout != null) {
       // Determine the timeout unit to use. This reduces the precision to seconds if the timeout
       // value is more than 1 second, which is lower than the precision that would normally be
@@ -92,6 +103,13 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     if (call != null) {
       call.cancel(message);
     }
+  }
+
+  @Override
+  @InternalApi
+  public void requestPrefetchChunks() {
+    Preconditions.checkState(call != null, "The StreamingCall object is not initialized");
+    call.request(prefetchChunks);
   }
 
   @Override
@@ -135,6 +153,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private void addToStream(PartialResultSet results) {
     // We assume that nothing from the user will interrupt gRPC event threads.
     Uninterruptibles.putUninterruptibly(stream, results);
+    onStreamMessage(results);
   }
 
   private class ConsumerImpl implements SpannerRpc.ResultStreamConsumer {
@@ -181,5 +200,10 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     public boolean cancelQueryWhenClientIsClosed() {
       return this.cancelQueryWhenClientIsClosed;
     }
+  }
+
+  private void onStreamMessage(PartialResultSet partialResultSet) {
+    Optional.ofNullable(streamMessageListener)
+        .ifPresent(sl -> sl.onStreamMessage(partialResultSet, stream.remainingCapacity() <= 1));
   }
 }

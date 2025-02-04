@@ -16,8 +16,11 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.TransactionMutationLimitExceededException.isTransactionMutationLimitException;
+
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.ErrorDetails;
 import com.google.api.gax.rpc.WatchdogTimeoutException;
 import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.common.base.MoreObjects;
@@ -256,6 +259,18 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
+  static ErrorDetails extractErrorDetails(Throwable cause) {
+    Throwable prevCause = null;
+    while (cause != null && cause != prevCause) {
+      if (cause instanceof ApiException) {
+        return ((ApiException) cause).getErrorDetails();
+      }
+      prevCause = cause;
+      cause = cause.getCause();
+    }
+    return null;
+  }
+
   /**
    * Creates a {@link StatusRuntimeException} that contains a {@link RetryInfo} with the specified
    * retry delay.
@@ -312,6 +327,11 @@ public final class SpannerExceptionFactory {
               return new InstanceNotFoundException(
                   token, message, resourceInfo, cause, apiException);
           }
+        }
+      case INVALID_ARGUMENT:
+        if (isTransactionMutationLimitException(cause)) {
+          return new TransactionMutationLimitExceededException(
+              token, code, message, cause, apiException);
         }
         // Fall through to the default.
       default:

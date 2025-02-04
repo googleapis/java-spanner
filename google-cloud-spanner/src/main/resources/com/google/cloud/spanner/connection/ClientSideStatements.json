@@ -355,13 +355,18 @@
 	  }
 	},
 	{
-	  "name": "SET RETRY_ABORTS_INTERNALLY = TRUE|FALSE",
+	  "name": "SET [LOCAL] RETRY_ABORTS_INTERNALLY = TRUE|FALSE",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
 	  "statementType": "SET_RETRY_ABORTS_INTERNALLY",
-	  "regex": "(?is)\\A\\s*set\\s+retry_aborts_internally\\s*(?:=)\\s*(.*)\\z",
+	  "regex": "(?is)\\A\\s*set\\s+(local\\s+)?retry_aborts_internally\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetRetryAbortsInternally",
-	  "exampleStatements": ["set retry_aborts_internally = true", "set retry_aborts_internally = false"],
+	  "exampleStatements": [
+			"set retry_aborts_internally = true",
+			"set retry_aborts_internally = false",
+			"set local retry_aborts_internally = true",
+			"set local retry_aborts_internally = false"
+		],
 	  "examplePrerequisiteStatements": ["set readonly = false", "set autocommit = false"],
 	  "setStatement": {
 	    "propertyName": "RETRY_ABORTS_INTERNALLY",
@@ -371,17 +376,17 @@
 	  }
 	},
 	{
-	  "name": "SET AUTOCOMMIT_DML_MODE = 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'",
+	  "name": "SET AUTOCOMMIT_DML_MODE = 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'|'TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
 	  "statementType": "SET_AUTOCOMMIT_DML_MODE",
 	  "regex": "(?is)\\A\\s*set\\s+autocommit_dml_mode\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetAutocommitDmlMode",
-	  "exampleStatements": ["set autocommit_dml_mode='PARTITIONED_NON_ATOMIC'", "set autocommit_dml_mode='TRANSACTIONAL'"],
+	  "exampleStatements": ["set autocommit_dml_mode='PARTITIONED_NON_ATOMIC'", "set autocommit_dml_mode='TRANSACTIONAL'", "set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'"],
 	  "setStatement": {
 	    "propertyName": "AUTOCOMMIT_DML_MODE",
 	    "separator": "=",
-	    "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL)'",
+	    "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL|TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC)'",
 	    "converterName": "ClientSideStatementValueConverters$AutocommitDmlModeConverter"
 	  }
 	},

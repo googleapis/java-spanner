@@ -18,6 +18,7 @@ package com.google.cloud.executor.spanner;
 
 import static com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
@@ -70,15 +71,21 @@ import com.google.cloud.spanner.StructReader;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.cloud.trace.v1.TraceServiceClient;
+import com.google.cloud.trace.v1.TraceServiceSettings;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.devtools.cloudtrace.v1.GetTraceRequest;
+import com.google.devtools.cloudtrace.v1.Trace;
+import com.google.devtools.cloudtrace.v1.TraceSpan;
 import com.google.longrunning.Operation;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
@@ -152,6 +159,9 @@ import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -160,13 +170,17 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -174,8 +188,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
-import org.threeten.bp.Duration;
-import org.threeten.bp.LocalDate;
 
 /**
  * Implementation of the SpannerExecutorProxy gRPC service that proxies action request through the
@@ -332,24 +344,28 @@ public class CloudClientExecutor extends CloudExecutor {
             // Try to commit
             return null;
           };
+      io.opentelemetry.context.Context context = io.opentelemetry.context.Context.current();
       Runnable runnable =
-          () -> {
-            try {
-              runner =
-                  optimistic
-                      ? dbClient.readWriteTransaction(Options.optimisticLock())
-                      : dbClient.readWriteTransaction();
-              LOGGER.log(Level.INFO, String.format("Ready to run callable %s\n", transactionSeed));
-              runner.run(callable);
-              transactionSucceeded(runner.getCommitTimestamp().toProto());
-            } catch (SpannerException e) {
-              LOGGER.log(
-                  Level.WARNING,
-                  String.format("Transaction runnable failed with exception %s\n", e.getMessage()),
-                  e);
-              transactionFailed(e);
-            }
-          };
+          context.wrap(
+              () -> {
+                try {
+                  runner =
+                      optimistic
+                          ? dbClient.readWriteTransaction(Options.optimisticLock())
+                          : dbClient.readWriteTransaction();
+                  LOGGER.log(
+                      Level.INFO, String.format("Ready to run callable %s\n", transactionSeed));
+                  runner.run(callable);
+                  transactionSucceeded(runner.getCommitTimestamp().toProto());
+                } catch (SpannerException e) {
+                  LOGGER.log(
+                      Level.WARNING,
+                      String.format(
+                          "Transaction runnable failed with exception %s\n", e.getMessage()),
+                      e);
+                  transactionFailed(e);
+                }
+              });
       LOGGER.log(
           Level.INFO,
           String.format("Callable and Runnable created, ready to execute %s\n", transactionSeed));
@@ -607,10 +623,12 @@ public class CloudClientExecutor extends CloudExecutor {
       } catch (SpannerException e) {
         return sender.finishWithError(toStatus(e));
       } catch (Exception e) {
+        LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
         return sender.finishWithError(
             toStatus(
                 SpannerExceptionFactory.newSpannerException(
-                    ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                    ErrorCode.INVALID_ARGUMENT,
+                    CloudClientExecutor.unexpectedExceptionResponse(e))));
       }
     }
 
@@ -714,7 +732,8 @@ public class CloudClientExecutor extends CloudExecutor {
           return sender.finishWithError(
               toStatus(
                   SpannerExceptionFactory.newSpannerException(
-                      ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                      ErrorCode.INVALID_ARGUMENT,
+                      CloudClientExecutor.unexpectedExceptionResponse(e))));
         }
         return sender.sendOutcome(outcomeBuilder.build());
       } else if (batchTxn != null) {
@@ -752,6 +771,11 @@ public class CloudClientExecutor extends CloudExecutor {
   private static final Executor actionThreadPool =
       Executors.newCachedThreadPool(
           new ThreadFactoryBuilder().setNameFormat("action-pool-%d").build());
+
+  // Thread pool to verify end to end traces.
+  private static final ExecutorService endToEndTracesThreadPool =
+      Executors.newCachedThreadPool(
+          new ThreadFactoryBuilder().setNameFormat("end-to-end-traces-pool-%d").build());
 
   private synchronized Spanner getClientWithTimeout(
       long timeoutSeconds, boolean useMultiplexedSession) throws IOException {
@@ -794,21 +818,26 @@ public class CloudClientExecutor extends CloudExecutor {
     }
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofSeconds(1))
+            .setInitialRetryDelayDuration(Duration.ofSeconds(1))
             .setRetryDelayMultiplier(1.3)
-            .setMaxRetryDelay(Duration.ofSeconds(32))
-            .setInitialRpcTimeout(rpcTimeout)
+            .setMaxRetryDelayDuration(Duration.ofSeconds(32))
+            .setInitialRpcTimeoutDuration(rpcTimeout)
             .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(rpcTimeout)
-            .setTotalTimeout(rpcTimeout)
+            .setMaxRpcTimeoutDuration(rpcTimeout)
+            .setTotalTimeoutDuration(rpcTimeout)
             .build();
 
     com.google.cloud.spanner.SessionPoolOptions.Builder poolOptionsBuilder =
         com.google.cloud.spanner.SessionPoolOptions.newBuilder();
-    SessionPoolOptionsHelper.setUseMultiplexedSession(
-        com.google.cloud.spanner.SessionPoolOptions.newBuilder(), useMultiplexedSession);
-    SessionPoolOptionsHelper.setUseMultiplexedSessionBlindWrite(
-        com.google.cloud.spanner.SessionPoolOptions.newBuilder(), useMultiplexedSession);
+    SessionPoolOptionsHelper.setUseMultiplexedSession(poolOptionsBuilder, useMultiplexedSession);
+    SessionPoolOptionsHelper.setUseMultiplexedSessionForRW(
+        poolOptionsBuilder, useMultiplexedSession);
+    SessionPoolOptionsHelper.setUseMultiplexedSessionForPartitionedOperations(
+        poolOptionsBuilder, useMultiplexedSession);
+    LOGGER.log(
+        Level.INFO,
+        String.format(
+            "Using multiplexed sessions for read-write transactions: %s", useMultiplexedSession));
     com.google.cloud.spanner.SessionPoolOptions sessionPoolOptions = poolOptionsBuilder.build();
     // Cloud Spanner Client does not support global retry settings,
     // Thus, we need to add retry settings to each individual stub.
@@ -818,6 +847,8 @@ public class CloudClientExecutor extends CloudExecutor {
             .setHost(HOST_PREFIX + WorkerProxy.spannerPort)
             .setCredentials(credentials)
             .setChannelProvider(channelProvider)
+            .setEnableEndToEndTracing(true)
+            .setOpenTelemetry(WorkerProxy.openTelemetrySdk)
             .setSessionPoolOption(sessionPoolOptions);
 
     SpannerStubSettings.Builder stubSettingsBuilder =
@@ -839,6 +870,88 @@ public class CloudClientExecutor extends CloudExecutor {
     stubSettingsBuilder.deleteSessionSettings().setRetrySettings(retrySettings);
 
     return optionsBuilder.build().getService();
+  }
+
+  private TraceServiceClient traceServiceClient;
+
+  // Return the trace service client, create one if not exists.
+  private synchronized TraceServiceClient getTraceServiceClient() throws IOException {
+    if (traceServiceClient != null) {
+      return traceServiceClient;
+    }
+    // Create a trace service client
+    Credentials credentials;
+    if (WorkerProxy.serviceKeyFile.isEmpty()) {
+      credentials = NoCredentials.getInstance();
+    } else {
+      credentials =
+          GoogleCredentials.fromStream(
+              new ByteArrayInputStream(
+                  FileUtils.readFileToByteArray(new File(WorkerProxy.serviceKeyFile))),
+              HTTP_TRANSPORT_FACTORY);
+    }
+
+    TraceServiceSettings traceServiceSettings =
+        TraceServiceSettings.newBuilder()
+            .setEndpoint(WorkerProxy.CLOUD_TRACE_ENDPOINT)
+            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+            .build();
+
+    traceServiceClient = TraceServiceClient.create(traceServiceSettings);
+    return traceServiceClient;
+  }
+
+  public Future<Boolean> getEndToEndTraceVerificationTask(String traceId) {
+    return endToEndTracesThreadPool.submit(
+        () -> {
+          try {
+            // Wait for 10 seconds before verifying to ensure traces are exported.
+            long sleepDuration = TimeUnit.SECONDS.toMillis(10);
+            LOGGER.log(
+                Level.INFO,
+                String.format(
+                    "Sleeping for %d milliseconds before verifying end to end trace",
+                    sleepDuration));
+            Thread.sleep(sleepDuration);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Handle interruption
+            LOGGER.log(Level.INFO, String.format("Thread interrupted."));
+            return false; // Return false if interrupted
+          }
+          return isExportedEndToEndTraceValid(traceId);
+        });
+  }
+
+  private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
+  private static final String READ_ONLY_TRANSACTION = "CloudSpanner.ReadOnlyTransaction";
+
+  /* Returns whether a exported trace is valid. */
+  public boolean isExportedEndToEndTraceValid(String traceId) {
+    try {
+      GetTraceRequest getTraceRequest =
+          GetTraceRequest.newBuilder()
+              .setProjectId(WorkerProxy.PROJECT_ID)
+              .setTraceId(traceId)
+              .build();
+      Trace trace = getTraceServiceClient().getTrace(getTraceRequest);
+      boolean readWriteOrReadOnlyTxnPresent = false, spannerServerSideSpanPresent = false;
+      for (TraceSpan span : trace.getSpansList()) {
+        if (span.getName().contains(READ_ONLY_TRANSACTION)
+            || span.getName().contains(READ_WRITE_TRANSACTION)) {
+          readWriteOrReadOnlyTxnPresent = true;
+        }
+        if (span.getName().startsWith("Spanner.")) {
+          spannerServerSideSpanPresent = true;
+        }
+      }
+      if (readWriteOrReadOnlyTxnPresent && !spannerServerSideSpanPresent) {
+        return false;
+      }
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Failed to verify end to end trace.", e);
+      return false;
+    }
+    return true;
   }
 
   /** Handle actions. */
@@ -865,17 +978,20 @@ public class CloudClientExecutor extends CloudExecutor {
       useMultiplexedSession = false;
     }
 
+    io.opentelemetry.context.Context context = io.opentelemetry.context.Context.current();
     actionThreadPool.execute(
-        () -> {
-          Status status =
-              executeAction(outcomeSender, action, dbPath, useMultiplexedSession, executionContext);
-          if (!status.isOk()) {
-            LOGGER.log(
-                Level.WARNING,
-                String.format("Failed to execute action with error: %s\n%s", status, action));
-            executionContext.onError(status.getCause());
-          }
-        });
+        context.wrap(
+            () -> {
+              Status status =
+                  executeAction(
+                      outcomeSender, action, dbPath, useMultiplexedSession, executionContext);
+              if (!status.isOk()) {
+                LOGGER.log(
+                    Level.WARNING,
+                    String.format("Failed to execute action with error: %s\n%s", status, action));
+                executionContext.onError(status.getCause());
+              }
+            }));
     return Status.OK;
   }
 
@@ -886,7 +1002,10 @@ public class CloudClientExecutor extends CloudExecutor {
       String dbPath,
       boolean useMultiplexedSession,
       ExecutionFlowContext executionContext) {
-
+    Tracer tracer = WorkerProxy.openTelemetrySdk.getTracer(CloudClientExecutor.class.getName());
+    String actionType = action.getActionCase().toString();
+    Span span = tracer.spanBuilder(String.format("performaction_%s", actionType)).startSpan();
+    Scope scope = span.makeCurrent();
     try {
       if (action.hasAdmin()) {
         return executeAdminAction(useMultiplexedSession, action.getAdmin(), outcomeSender);
@@ -959,11 +1078,15 @@ public class CloudClientExecutor extends CloudExecutor {
                     ErrorCode.UNIMPLEMENTED, "Not implemented yet: \n" + action)));
       }
     } catch (Exception e) {
+      span.recordException(e);
       LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return outcomeSender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
+    } finally {
+      scope.close();
+      span.end();
     }
   }
 
@@ -1056,7 +1179,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return outcomeSender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1145,7 +1268,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1167,7 +1290,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1215,7 +1338,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1259,7 +1382,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1290,7 +1413,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1321,7 +1444,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1351,7 +1474,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1371,7 +1494,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1400,7 +1523,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1435,7 +1558,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1469,7 +1592,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1490,7 +1613,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }
@@ -1527,7 +1650,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1563,7 +1686,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1594,7 +1717,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1628,7 +1751,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1648,7 +1771,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1688,7 +1811,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1725,7 +1848,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1764,7 +1887,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1803,7 +1926,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1837,7 +1960,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1868,7 +1991,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1896,7 +2019,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -1915,7 +2038,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2005,10 +2128,11 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(Level.WARNING, String.format("GenerateDbPartitionsRead failed for %s", action));
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2051,10 +2175,11 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(Level.WARNING, String.format("GenerateDbPartitionsQuery failed for %s", action));
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2083,10 +2208,11 @@ public class CloudClientExecutor extends CloudExecutor {
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2110,10 +2236,11 @@ public class CloudClientExecutor extends CloudExecutor {
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2363,10 +2490,11 @@ public class CloudClientExecutor extends CloudExecutor {
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
   }
 
@@ -2714,61 +2842,75 @@ public class CloudClientExecutor extends CloudExecutor {
   /** Convert a result row to a row proto(value list) for sending back to the client. */
   private com.google.spanner.executor.v1.ValueList buildRow(
       StructReader result, OutcomeSender sender) throws SpannerException {
-    com.google.spanner.executor.v1.ValueList.Builder rowBuilder =
-        com.google.spanner.executor.v1.ValueList.newBuilder();
+    sender.setRowType(buildStructType(result));
+    return buildStruct(result);
+  }
+
+  /** Construct a StructType for a given struct. This is used to set the row type. */
+  private com.google.spanner.v1.StructType buildStructType(StructReader struct) {
     com.google.spanner.v1.StructType.Builder rowTypeBuilder =
         com.google.spanner.v1.StructType.newBuilder();
-    for (int i = 0; i < result.getColumnCount(); ++i) {
-      com.google.cloud.spanner.Type columnType = result.getColumnType(i);
+    for (int i = 0; i < struct.getColumnCount(); ++i) {
+      com.google.cloud.spanner.Type columnType = struct.getColumnType(i);
       rowTypeBuilder.addFields(
           com.google.spanner.v1.StructType.Field.newBuilder()
-              .setName(result.getType().getStructFields().get(i).getName())
+              .setName(struct.getType().getStructFields().get(i).getName())
               .setType(cloudTypeToTypeProto(columnType))
               .build());
+    }
+    return rowTypeBuilder.build();
+  }
+
+  /** Convert a struct to a proto(value list) for constructing result rows and struct values. */
+  private com.google.spanner.executor.v1.ValueList buildStruct(StructReader struct) {
+    com.google.spanner.executor.v1.ValueList.Builder structBuilder =
+        com.google.spanner.executor.v1.ValueList.newBuilder();
+    for (int i = 0; i < struct.getColumnCount(); ++i) {
+      com.google.cloud.spanner.Type columnType = struct.getColumnType(i);
       com.google.spanner.executor.v1.Value.Builder value =
           com.google.spanner.executor.v1.Value.newBuilder();
-      if (result.isNull(i)) {
+      if (struct.isNull(i)) {
         value.setIsNull(true);
       } else {
         switch (columnType.getCode()) {
           case BOOL:
-            value.setBoolValue(result.getBoolean(i));
+            value.setBoolValue(struct.getBoolean(i));
             break;
           case FLOAT32:
-            value.setDoubleValue((double) result.getFloat(i));
+            value.setDoubleValue((double) struct.getFloat(i));
             break;
           case FLOAT64:
-            value.setDoubleValue(result.getDouble(i));
+            value.setDoubleValue(struct.getDouble(i));
             break;
           case INT64:
-            value.setIntValue(result.getLong(i));
+            value.setIntValue(struct.getLong(i));
             break;
           case STRING:
-            value.setStringValue(result.getString(i));
+            value.setStringValue(struct.getString(i));
             break;
           case BYTES:
-            value.setBytesValue(toByteString(result.getBytes(i)));
+            value.setBytesValue(toByteString(struct.getBytes(i)));
             break;
           case TIMESTAMP:
-            value.setTimestampValue(timestampToProto(result.getTimestamp(i)));
+            value.setTimestampValue(timestampToProto(struct.getTimestamp(i)));
             break;
           case DATE:
-            value.setDateDaysValue(daysFromDate(result.getDate(i)));
+            value.setDateDaysValue(daysFromDate(struct.getDate(i)));
             break;
           case NUMERIC:
-            String ascii = result.getBigDecimal(i).toPlainString();
+            String ascii = struct.getBigDecimal(i).toPlainString();
             value.setStringValue(ascii);
             break;
           case JSON:
-            value.setStringValue(result.getJson(i));
+            value.setStringValue(struct.getJson(i));
             break;
           case ARRAY:
-            switch (result.getColumnType(i).getArrayElementType().getCode()) {
+            switch (struct.getColumnType(i).getArrayElementType().getCode()) {
               case BOOL:
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<Boolean> values = result.getBooleanList(i);
+                  List<Boolean> values = struct.getBooleanList(i);
                   for (Boolean booleanValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2787,7 +2929,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<Float> values = result.getFloatList(i);
+                  List<Float> values = struct.getFloatList(i);
                   for (Float floatValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2806,7 +2948,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<Double> values = result.getDoubleList(i);
+                  List<Double> values = struct.getDoubleList(i);
                   for (Double doubleValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2825,7 +2967,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<Long> values = result.getLongList(i);
+                  List<Long> values = struct.getLongList(i);
                   for (Long longValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2844,7 +2986,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<String> values = result.getStringList(i);
+                  List<String> values = struct.getStringList(i);
                   for (String stringValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2863,7 +3005,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<ByteArray> values = result.getBytesList(i);
+                  List<ByteArray> values = struct.getBytesList(i);
                   for (ByteArray byteArrayValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2885,7 +3027,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<Date> values = result.getDateList(i);
+                  List<Date> values = struct.getDateList(i);
                   for (Date dateValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2905,7 +3047,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<Timestamp> values = result.getTimestampList(i);
+                  List<Timestamp> values = struct.getTimestampList(i);
                   for (Timestamp timestampValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2925,7 +3067,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<BigDecimal> values = result.getBigDecimalList(i);
+                  List<BigDecimal> values = struct.getBigDecimalList(i);
                   for (BigDecimal bigDec : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2944,7 +3086,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
                       com.google.spanner.executor.v1.ValueList.newBuilder();
-                  List<String> values = result.getJsonList(i);
+                  List<String> values = struct.getJsonList(i);
                   for (String stringValue : values) {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
@@ -2959,28 +3101,47 @@ public class CloudClientExecutor extends CloudExecutor {
                       com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.JSON).build());
                 }
                 break;
+              case STRUCT:
+                {
+                  com.google.spanner.executor.v1.ValueList.Builder builder =
+                      com.google.spanner.executor.v1.ValueList.newBuilder();
+                  List<Struct> values = struct.getStructList(i);
+                  for (StructReader structValue : values) {
+                    com.google.spanner.executor.v1.Value.Builder valueProto =
+                        com.google.spanner.executor.v1.Value.newBuilder();
+                    if (structValue == null) {
+                      builder.addValue(valueProto.setIsNull(true).build());
+                    } else {
+                      builder.addValue(valueProto.setStructValue(buildStruct(structValue))).build();
+                    }
+                  }
+                  value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.STRUCT).build());
+                }
+                break;
               default:
                 throw SpannerExceptionFactory.newSpannerException(
                     ErrorCode.INVALID_ARGUMENT,
                     "Unsupported row array type: "
-                        + result.getColumnType(i)
+                        + struct.getColumnType(i)
                         + " for result type "
-                        + result.getType().toString());
+                        + struct.getType().toString());
             }
             break;
           default:
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT,
                 "Unsupported row type: "
-                    + result.getColumnType(i)
+                    + struct.getColumnType(i)
                     + " for result type "
-                    + result.getType().toString());
+                    + struct.getType().toString());
         }
       }
-      rowBuilder.addValue(value.build());
+      structBuilder.addValue(value.build());
     }
-    sender.setRowType(rowTypeBuilder.build());
-    return rowBuilder.build();
+    ;
+    return structBuilder.build();
   }
 
   /** Convert a ListValue proto to a list of cloud Value. */

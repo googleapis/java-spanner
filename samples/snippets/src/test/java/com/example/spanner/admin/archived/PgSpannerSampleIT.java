@@ -130,7 +130,7 @@ public class PgSpannerSampleIT {
     assertThat(databaseId).isNotNull();
 
     System.out.println("Create Database ...");
-    String out = runSample("createpgdatabase");
+    String out = runSample("createdatabase");
     assertThat(out).contains("Created database");
     assertThat(out).contains(dbId.getName());
 

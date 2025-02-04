@@ -64,7 +64,8 @@ import org.mockito.Mockito;
 public class ResumableStreamIteratorTest {
   interface Starter {
     AbstractResultSet.CloseableIterator<PartialResultSet> startStream(
-        @Nullable ByteString resumeToken);
+        @Nullable ByteString resumeToken,
+        AsyncResultSet.StreamMessageListener streamMessageListener);
   }
 
   interface ResultSetStream {
@@ -164,8 +165,9 @@ public class ResumableStreamIteratorTest {
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override
           AbstractResultSet.CloseableIterator<PartialResultSet> startStream(
-              @Nullable ByteString resumeToken) {
-            return starter.startStream(resumeToken);
+              @Nullable ByteString resumeToken,
+              AsyncResultSet.StreamMessageListener streamMessageListener) {
+            return starter.startStream(resumeToken, null);
           }
         };
   }
@@ -173,7 +175,7 @@ public class ResumableStreamIteratorTest {
   @Test
   public void simple() {
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(null, "a"))
         .thenReturn(resultSet(null, "b"))
@@ -195,7 +197,7 @@ public class ResumableStreamIteratorTest {
     setInternalState(ResumableStreamIterator.class, this.resumableStreamIterator, "span", span);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
@@ -218,7 +220,7 @@ public class ResumableStreamIteratorTest {
     setInternalState(ResumableStreamIterator.class, this.resumableStreamIterator, "span", span);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
@@ -232,14 +234,14 @@ public class ResumableStreamIteratorTest {
   @Test
   public void restart() {
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
         .thenThrow(new RetryableException(errorCodeParameter, "failed by test"));
 
     ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r2")))
+    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r2"), null))
         .thenReturn(new ResultSetIterator(s2));
     Mockito.when(s2.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r3"), "c"))
@@ -251,7 +253,7 @@ public class ResumableStreamIteratorTest {
   @Test
   public void restartWithHoldBack() {
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
@@ -260,7 +262,7 @@ public class ResumableStreamIteratorTest {
         .thenThrow(new RetryableException(errorCodeParameter, "failed by test"));
 
     ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r2")))
+    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r2"), null))
         .thenReturn(new ResultSetIterator(s2));
     Mockito.when(s2.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r3"), "c"))
@@ -272,7 +274,7 @@ public class ResumableStreamIteratorTest {
   @Test
   public void restartWithHoldBackMidStream() {
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(null, "b"))
@@ -281,7 +283,7 @@ public class ResumableStreamIteratorTest {
         .thenThrow(new RetryableException(errorCodeParameter, "failed by test"));
 
     ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r2")))
+    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r2"), null))
         .thenReturn(new ResultSetIterator(s2));
     Mockito.when(s2.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r3"), "e"))
@@ -304,7 +306,7 @@ public class ResumableStreamIteratorTest {
         ResumableStreamIterator.class, this.resumableStreamIterator, "backOff", backOff);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenThrow(
@@ -312,7 +314,7 @@ public class ResumableStreamIteratorTest {
                 ErrorCode.UNAVAILABLE, "failed by test", Status.UNAVAILABLE.asRuntimeException()));
 
     ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r1")))
+    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r1"), null))
         .thenReturn(new ResultSetIterator(s2));
     Mockito.when(s2.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
@@ -324,7 +326,7 @@ public class ResumableStreamIteratorTest {
   @Test
   public void nonRetryableError() {
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
@@ -343,7 +345,7 @@ public class ResumableStreamIteratorTest {
     initWithLimit(1);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(null, "a"))
         .thenReturn(resultSet(null, "b"))
@@ -356,7 +358,7 @@ public class ResumableStreamIteratorTest {
     initWithLimit(1);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
@@ -369,14 +371,14 @@ public class ResumableStreamIteratorTest {
     initWithLimit(1);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
         .thenThrow(new RetryableException(errorCodeParameter, "failed by test"));
 
     ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r2")))
+    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r2"), null))
         .thenReturn(new ResultSetIterator(s2));
     Mockito.when(s2.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r3"), "c"))
@@ -390,13 +392,13 @@ public class ResumableStreamIteratorTest {
     initWithLimit(1);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(null, "XXXXXX"))
         .thenThrow(new RetryableException(errorCodeParameter, "failed by test"));
 
     ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s2));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s2));
     Mockito.when(s2.next())
         .thenReturn(resultSet(null, "a"))
         .thenReturn(resultSet(null, "b"))
@@ -409,14 +411,14 @@ public class ResumableStreamIteratorTest {
     initWithLimit(1);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(null, "XXXXXX"))
         .thenThrow(new RetryableException(errorCodeParameter, "failed by test"));
 
     ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r1")))
+    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r1"), null))
         .thenReturn(new ResultSetIterator(s2));
     Mockito.when(s2.next())
         .thenReturn(resultSet(null, "b"))
@@ -430,7 +432,7 @@ public class ResumableStreamIteratorTest {
     initWithLimit(1);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(null, "b"))
@@ -447,7 +449,7 @@ public class ResumableStreamIteratorTest {
     initWithLimit(1);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(starter.startStream(null, null)).thenReturn(new ResultSetIterator(s1));
     Mockito.when(s1.next())
         .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
         .thenReturn(resultSet(null, "b"))
@@ -455,7 +457,7 @@ public class ResumableStreamIteratorTest {
         .thenThrow(new RetryableException(errorCodeParameter, "failed by test"));
 
     ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
-    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r3")))
+    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r3"), null))
         .thenReturn(new ResultSetIterator(s2));
     Mockito.when(s2.next()).thenReturn(resultSet(null, "d")).thenReturn(null);
 

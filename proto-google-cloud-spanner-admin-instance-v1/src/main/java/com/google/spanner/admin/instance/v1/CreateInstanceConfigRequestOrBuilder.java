@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,10 +90,10 @@ public interface CreateInstanceConfigRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The InstanceConfig proto of the configuration to create.
-   * instance_config.name must be
+   * Required. The `InstanceConfig` proto of the configuration to create.
+   * `instance_config.name` must be
    * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-   * instance_config.base_config must be a Google managed configuration name,
+   * `instance_config.base_config` must be a Google-managed configuration name,
    * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
    * </pre>
    *
@@ -108,10 +108,10 @@ public interface CreateInstanceConfigRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The InstanceConfig proto of the configuration to create.
-   * instance_config.name must be
+   * Required. The `InstanceConfig` proto of the configuration to create.
+   * `instance_config.name` must be
    * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-   * instance_config.base_config must be a Google managed configuration name,
+   * `instance_config.base_config` must be a Google-managed configuration name,
    * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
    * </pre>
    *
@@ -126,10 +126,10 @@ public interface CreateInstanceConfigRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The InstanceConfig proto of the configuration to create.
-   * instance_config.name must be
+   * Required. The `InstanceConfig` proto of the configuration to create.
+   * `instance_config.name` must be
    * `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
-   * instance_config.base_config must be a Google managed configuration name,
+   * `instance_config.base_config` must be a Google-managed configuration name,
    * e.g. &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
    * </pre>
    *

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,8 +127,8 @@ public interface InstancePartitionOrBuilder
    * <pre>
    * The number of nodes allocated to this instance partition.
    *
-   * Users can set the node_count field to specify the target number of nodes
-   * allocated to the instance partition.
+   * Users can set the `node_count` field to specify the target number of
+   * nodes allocated to the instance partition.
    *
    * This may be zero in API responses for instance partitions that are not
    * yet in state `READY`.
@@ -145,8 +145,8 @@ public interface InstancePartitionOrBuilder
    * <pre>
    * The number of nodes allocated to this instance partition.
    *
-   * Users can set the node_count field to specify the target number of nodes
-   * allocated to the instance partition.
+   * Users can set the `node_count` field to specify the target number of
+   * nodes allocated to the instance partition.
    *
    * This may be zero in API responses for instance partitions that are not
    * yet in state `READY`.
@@ -164,11 +164,11 @@ public interface InstancePartitionOrBuilder
    * <pre>
    * The number of processing units allocated to this instance partition.
    *
-   * Users can set the processing_units field to specify the target number of
-   * processing units allocated to the instance partition.
+   * Users can set the `processing_units` field to specify the target number
+   * of processing units allocated to the instance partition.
    *
-   * This may be zero in API responses for instance partitions that are not
-   * yet in state `READY`.
+   * This might be zero in API responses for instance partitions that are not
+   * yet in the `READY` state.
    * </pre>
    *
    * <code>int32 processing_units = 6;</code>
@@ -182,11 +182,11 @@ public interface InstancePartitionOrBuilder
    * <pre>
    * The number of processing units allocated to this instance partition.
    *
-   * Users can set the processing_units field to specify the target number of
-   * processing units allocated to the instance partition.
+   * Users can set the `processing_units` field to specify the target number
+   * of processing units allocated to the instance partition.
    *
-   * This may be zero in API responses for instance partitions that are not
-   * yet in state `READY`.
+   * This might be zero in API responses for instance partitions that are not
+   * yet in the `READY` state.
    * </pre>
    *
    * <code>int32 processing_units = 6;</code>
@@ -374,67 +374,87 @@ public interface InstancePartitionOrBuilder
    *
    *
    * <pre>
+   * Output only. Deprecated: This field is not populated.
    * Output only. The names of the backups that reference this instance
    * partition. Referencing backups should share the parent instance. The
    * existence of any referencing backup prevents the instance partition from
    * being deleted.
    * </pre>
    *
-   * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    *
+   * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
    * @return A list containing the referencingBackups.
    */
+  @java.lang.Deprecated
   java.util.List<java.lang.String> getReferencingBackupsList();
   /**
    *
    *
    * <pre>
+   * Output only. Deprecated: This field is not populated.
    * Output only. The names of the backups that reference this instance
    * partition. Referencing backups should share the parent instance. The
    * existence of any referencing backup prevents the instance partition from
    * being deleted.
    * </pre>
    *
-   * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    *
+   * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
    * @return The count of referencingBackups.
    */
+  @java.lang.Deprecated
   int getReferencingBackupsCount();
   /**
    *
    *
    * <pre>
+   * Output only. Deprecated: This field is not populated.
    * Output only. The names of the backups that reference this instance
    * partition. Referencing backups should share the parent instance. The
    * existence of any referencing backup prevents the instance partition from
    * being deleted.
    * </pre>
    *
-   * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    *
+   * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
    * @param index The index of the element to return.
    * @return The referencingBackups at the given index.
    */
+  @java.lang.Deprecated
   java.lang.String getReferencingBackups(int index);
   /**
    *
    *
    * <pre>
+   * Output only. Deprecated: This field is not populated.
    * Output only. The names of the backups that reference this instance
    * partition. Referencing backups should share the parent instance. The
    * existence of any referencing backup prevents the instance partition from
    * being deleted.
    * </pre>
    *
-   * <code>repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_backups = 11 [deprecated = true, (.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    *
+   * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
    * @param index The index of the value to return.
    * @return The bytes of the referencingBackups at the given index.
    */
+  @java.lang.Deprecated
   com.google.protobuf.ByteString getReferencingBackupsBytes(int index);
 
   /**

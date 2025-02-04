@@ -56,6 +56,7 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -93,8 +94,12 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
-  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
+  private final Supplier<Boolean> directPathEnabledSupplier;
+
+  HeaderInterceptor(
+      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
     this.spannerRpcMetrics = spannerRpcMetrics;
+    this.directPathEnabledSupplier = directPathEnabledSupplier;
   }
 
   @Override
@@ -115,14 +120,14 @@ class HeaderInterceptor implements ClientInterceptor {
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
           Map<String, String> builtInMetricsAttributes =
               getBuiltInMetricAttributes(key, databaseName);
+          addBuiltInMetricAttributes(compositeTracer, builtInMetricsAttributes);
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
-                  addBuiltInMetricAttributes(
-                      compositeTracer, builtInMetricsAttributes, isDirectPathUsed);
+                  addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
                   processHeader(metadata, tagContext, attributes, span);
                   super.onHeaders(metadata);
                 }
@@ -228,21 +233,25 @@ class HeaderInterceptor implements ClientInterceptor {
           attributes.put(BuiltInMetricsConstant.DATABASE_KEY.getKey(), databaseName.getDatabase());
           attributes.put(
               BuiltInMetricsConstant.INSTANCE_ID_KEY.getKey(), databaseName.getInstance());
+          attributes.put(
+              BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY.getKey(),
+              String.valueOf(this.directPathEnabledSupplier.get()));
           return attributes;
         });
   }
 
   private void addBuiltInMetricAttributes(
-      CompositeTracer compositeTracer,
-      Map<String, String> builtInMetricsAttributes,
-      Boolean isDirectPathUsed) {
+      CompositeTracer compositeTracer, Map<String, String> builtInMetricsAttributes) {
     if (compositeTracer != null) {
-      // Direct Path used attribute
-      Map<String, String> attributes = new HashMap<>(builtInMetricsAttributes);
-      attributes.put(
-          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
+      compositeTracer.addAttributes(builtInMetricsAttributes);
+    }
+  }
 
-      compositeTracer.addAttributes(attributes);
+  private void addDirectPathUsedAttribute(
+      CompositeTracer compositeTracer, Boolean isDirectPathUsed) {
+    if (compositeTracer != null) {
+      compositeTracer.addAttributes(
+          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
     }
   }
 

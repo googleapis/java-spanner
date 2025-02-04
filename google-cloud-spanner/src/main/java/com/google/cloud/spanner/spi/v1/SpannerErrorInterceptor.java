@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.spi.v1;
 
+import com.google.cloud.spanner.IsRetryableInternalError;
 import com.google.rpc.BadRequest;
 import com.google.rpc.Help;
 import com.google.rpc.LocalizedMessage;
@@ -32,6 +33,7 @@ import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.grpc.Status.Code;
 import io.grpc.protobuf.ProtoUtils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +71,11 @@ public final class SpannerErrorInterceptor implements ClientInterceptor {
               @Override
               public void onClose(Status status, Metadata trailers) {
                 try {
+                  // Translate INTERNAL errors that should be retried to a retryable error code.
+                  if (IsRetryableInternalError.INSTANCE.isRetryableInternalError(status)) {
+                    status =
+                        Status.fromCode(Code.UNAVAILABLE).withDescription(status.getDescription());
+                  }
                   if (trailers.containsKey(LOCALIZED_MESSAGE_KEY)) {
                     status =
                         Status.fromCodeValue(status.getCode().value())

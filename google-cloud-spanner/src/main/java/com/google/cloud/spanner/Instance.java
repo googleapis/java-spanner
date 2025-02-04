@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
+import com.google.spanner.admin.instance.v1.Instance.Edition;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.Map;
 
@@ -108,6 +109,12 @@ public class Instance extends InstanceInfo {
     @Override
     public Builder putAllLabels(Map<String, String> labels) {
       infoBuilder.putAllLabels(labels);
+      return this;
+    }
+
+    @Override
+    public Builder setEdition(Edition edition) {
+      infoBuilder.setEdition(edition);
       return this;
     }
 
@@ -228,6 +235,7 @@ public class Instance extends InstanceInfo {
             .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
             .setUpdateTime(Timestamp.fromProto(proto.getUpdateTime()))
             .setAutoscalingConfig(proto.getAutoscalingConfig())
+            .setEdition(proto.getEdition())
             .setProcessingUnits(proto.getProcessingUnits());
     State state;
     switch (proto.getState()) {
