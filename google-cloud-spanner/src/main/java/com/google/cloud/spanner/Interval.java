@@ -48,8 +48,7 @@ public class Interval implements Serializable {
   public static final long MICROS_PER_SECOND = MICROS_PER_MILLI * MILLIS_PER_SECOND;
   public static final long MICROS_PER_MINUTE = SECONDS_PER_MINUTE * MICROS_PER_SECOND;
   public static final long MICROS_PER_HOUR = SECONDS_PER_HOUR * MICROS_PER_SECOND;
-  public static final BigInteger NANOS_PER_MICROSECOND =
-      BigInteger.valueOf(MICROS_PER_SECOND * NANOS_PER_MICRO);
+  public static final BigInteger NANOS_PER_MICROSECOND = BigInteger.valueOf(NANOS_PER_MICRO);
   public static final BigInteger NANOS_PER_MILLISECOND =
       BigInteger.valueOf(MILLIS_PER_SECOND * NANOS_PER_MICRO);
   public static final BigInteger NANOS_PER_SECOND =

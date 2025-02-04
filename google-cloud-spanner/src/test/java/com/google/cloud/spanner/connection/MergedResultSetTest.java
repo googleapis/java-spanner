@@ -150,7 +150,7 @@ public class MergedResultSetTest {
       if (numPartitions == 0) {
         assertEquals(0, resultSet.getColumnCount());
       } else {
-        assertEquals(24, resultSet.getColumnCount());
+        assertEquals(26, resultSet.getColumnCount());
         assertEquals(Type.bool(), resultSet.getColumnType(0));
         assertEquals(Type.bool(), resultSet.getColumnType("COL0"));
         assertEquals(10, resultSet.getColumnIndex("COL10"));

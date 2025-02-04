@@ -16,11 +16,28 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.Interval.MICROS_PER_HOUR;
+import static com.google.cloud.spanner.Interval.MICROS_PER_MILLI;
+import static com.google.cloud.spanner.Interval.MICROS_PER_MINUTE;
+import static com.google.cloud.spanner.Interval.MICROS_PER_SECOND;
+import static com.google.cloud.spanner.Interval.MILLIS_PER_SECOND;
+import static com.google.cloud.spanner.Interval.MINUTES_PER_HOUR;
+import static com.google.cloud.spanner.Interval.NANOS_PER_HOUR;
+import static com.google.cloud.spanner.Interval.NANOS_PER_MICRO;
+import static com.google.cloud.spanner.Interval.NANOS_PER_MICROSECOND;
+import static com.google.cloud.spanner.Interval.NANOS_PER_MILLISECOND;
+import static com.google.cloud.spanner.Interval.NANOS_PER_MINUTE;
+import static com.google.cloud.spanner.Interval.NANOS_PER_SECOND;
+import static com.google.cloud.spanner.Interval.SECONDS_PER_HOUR;
+import static com.google.cloud.spanner.Interval.SECONDS_PER_MINUTE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -50,8 +67,7 @@ public class IntervalTest {
     Interval interval = Interval.ofSeconds(10);
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
-    assertEquals(
-        BigInteger.valueOf(10).multiply(Interval.NANOS_PER_SECOND), interval.getNanoseconds());
+    assertEquals(BigInteger.valueOf(Duration.ofSeconds(10).toNanos()), interval.getNanoseconds());
   }
 
   @Test
@@ -59,8 +75,7 @@ public class IntervalTest {
     Interval interval = Interval.ofMilliseconds(10);
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
-    assertEquals(
-        BigInteger.valueOf(10).multiply(Interval.NANOS_PER_MILLISECOND), interval.getNanoseconds());
+    assertEquals(BigInteger.valueOf(Duration.ofMillis(10).toNanos()), interval.getNanoseconds());
   }
 
   @Test
@@ -69,7 +84,8 @@ public class IntervalTest {
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
     assertEquals(
-        BigInteger.valueOf(10).multiply(Interval.NANOS_PER_MICROSECOND), interval.getNanoseconds());
+        BigInteger.valueOf(Duration.of(10, ChronoUnit.MICROS).toNanos()),
+        interval.getNanoseconds());
   }
 
   @Test
@@ -345,6 +361,32 @@ public class IntervalTest {
     Interval interval10 = Interval.fromMonthsDaysNanos(20, 10, BigInteger.valueOf(50));
     Interval interval11 = Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(50));
     assertNotEquals(interval10.hashCode(), interval11.hashCode());
+  }
+
+  @Test
+  public void testConstants() {
+    assertEquals(Duration.of(1, ChronoUnit.HOURS).toMinutes(), MINUTES_PER_HOUR);
+    assertEquals(Duration.of(1, ChronoUnit.MINUTES).getSeconds(), SECONDS_PER_MINUTE);
+    assertEquals(Duration.of(1, ChronoUnit.HOURS).getSeconds(), SECONDS_PER_HOUR);
+    assertEquals(Duration.of(1, ChronoUnit.SECONDS).toMillis(), MILLIS_PER_SECOND);
+
+    assertEquals(TimeUnit.MICROSECONDS.convert(1, TimeUnit.MILLISECONDS), MICROS_PER_MILLI);
+    assertEquals(TimeUnit.NANOSECONDS.convert(1, TimeUnit.MICROSECONDS), NANOS_PER_MICRO);
+    assertEquals(TimeUnit.MICROSECONDS.convert(1, TimeUnit.SECONDS), MICROS_PER_SECOND);
+    assertEquals(TimeUnit.MICROSECONDS.convert(1, TimeUnit.MINUTES), MICROS_PER_MINUTE);
+    assertEquals(TimeUnit.MICROSECONDS.convert(1, TimeUnit.HOURS), MICROS_PER_HOUR);
+
+    assertEquals(
+        TimeUnit.NANOSECONDS.convert(1, TimeUnit.MICROSECONDS),
+        NANOS_PER_MICROSECOND.longValueExact());
+    assertEquals(
+        TimeUnit.NANOSECONDS.convert(1, TimeUnit.MILLISECONDS),
+        NANOS_PER_MILLISECOND.longValueExact());
+    assertEquals(
+        TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS), NANOS_PER_SECOND.longValueExact());
+    assertEquals(
+        TimeUnit.NANOSECONDS.convert(1, TimeUnit.MINUTES), NANOS_PER_MINUTE.longValueExact());
+    assertEquals(TimeUnit.NANOSECONDS.convert(1, TimeUnit.HOURS), NANOS_PER_HOUR.longValueExact());
   }
 
   private static class TestCase {
