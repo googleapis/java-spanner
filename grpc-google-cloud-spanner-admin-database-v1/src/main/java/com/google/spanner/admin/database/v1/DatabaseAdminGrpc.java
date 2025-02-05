@@ -944,6 +944,53 @@ public final class DatabaseAdminGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.database.v1.AddSplitPointsRequest,
+          com.google.spanner.admin.database.v1.AddSplitPointsResponse>
+      getAddSplitPointsMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "AddSplitPoints",
+      requestType = com.google.spanner.admin.database.v1.AddSplitPointsRequest.class,
+      responseType = com.google.spanner.admin.database.v1.AddSplitPointsResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.database.v1.AddSplitPointsRequest,
+          com.google.spanner.admin.database.v1.AddSplitPointsResponse>
+      getAddSplitPointsMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.database.v1.AddSplitPointsRequest,
+            com.google.spanner.admin.database.v1.AddSplitPointsResponse>
+        getAddSplitPointsMethod;
+    if ((getAddSplitPointsMethod = DatabaseAdminGrpc.getAddSplitPointsMethod) == null) {
+      synchronized (DatabaseAdminGrpc.class) {
+        if ((getAddSplitPointsMethod = DatabaseAdminGrpc.getAddSplitPointsMethod) == null) {
+          DatabaseAdminGrpc.getAddSplitPointsMethod =
+              getAddSplitPointsMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.database.v1.AddSplitPointsRequest,
+                          com.google.spanner.admin.database.v1.AddSplitPointsResponse>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "AddSplitPoints"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.database.v1.AddSplitPointsRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.database.v1.AddSplitPointsResponse
+                                  .getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new DatabaseAdminMethodDescriptorSupplier("AddSplitPoints"))
+                      .build();
+        }
+      }
+    }
+    return getAddSplitPointsMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.database.v1.CreateBackupScheduleRequest,
           com.google.spanner.admin.database.v1.BackupSchedule>
       getCreateBackupScheduleMethod;
@@ -1661,6 +1708,21 @@ public final class DatabaseAdminGrpc {
      *
      *
      * <pre>
+     * Adds split points to specified tables, indexes of a database.
+     * </pre>
+     */
+    default void addSplitPoints(
+        com.google.spanner.admin.database.v1.AddSplitPointsRequest request,
+        io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.AddSplitPointsResponse>
+            responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getAddSplitPointsMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Creates a new backup schedule.
      * </pre>
      */
@@ -2236,6 +2298,23 @@ public final class DatabaseAdminGrpc {
      *
      *
      * <pre>
+     * Adds split points to specified tables, indexes of a database.
+     * </pre>
+     */
+    public void addSplitPoints(
+        com.google.spanner.admin.database.v1.AddSplitPointsRequest request,
+        io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.AddSplitPointsResponse>
+            responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getAddSplitPointsMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Creates a new backup schedule.
      * </pre>
      */
@@ -2734,6 +2813,19 @@ public final class DatabaseAdminGrpc {
      *
      *
      * <pre>
+     * Adds split points to specified tables, indexes of a database.
+     * </pre>
+     */
+    public com.google.spanner.admin.database.v1.AddSplitPointsResponse addSplitPoints(
+        com.google.spanner.admin.database.v1.AddSplitPointsRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getAddSplitPointsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Creates a new backup schedule.
      * </pre>
      */
@@ -3225,6 +3317,20 @@ public final class DatabaseAdminGrpc {
      *
      *
      * <pre>
+     * Adds split points to specified tables, indexes of a database.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<
+            com.google.spanner.admin.database.v1.AddSplitPointsResponse>
+        addSplitPoints(com.google.spanner.admin.database.v1.AddSplitPointsRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getAddSplitPointsMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Creates a new backup schedule.
      * </pre>
      */
@@ -3315,11 +3421,12 @@ public final class DatabaseAdminGrpc {
   private static final int METHODID_LIST_DATABASE_OPERATIONS = 17;
   private static final int METHODID_LIST_BACKUP_OPERATIONS = 18;
   private static final int METHODID_LIST_DATABASE_ROLES = 19;
-  private static final int METHODID_CREATE_BACKUP_SCHEDULE = 20;
-  private static final int METHODID_GET_BACKUP_SCHEDULE = 21;
-  private static final int METHODID_UPDATE_BACKUP_SCHEDULE = 22;
-  private static final int METHODID_DELETE_BACKUP_SCHEDULE = 23;
-  private static final int METHODID_LIST_BACKUP_SCHEDULES = 24;
+  private static final int METHODID_ADD_SPLIT_POINTS = 20;
+  private static final int METHODID_CREATE_BACKUP_SCHEDULE = 21;
+  private static final int METHODID_GET_BACKUP_SCHEDULE = 22;
+  private static final int METHODID_UPDATE_BACKUP_SCHEDULE = 23;
+  private static final int METHODID_DELETE_BACKUP_SCHEDULE = 24;
+  private static final int METHODID_LIST_BACKUP_SCHEDULES = 25;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -3452,6 +3559,13 @@ public final class DatabaseAdminGrpc {
               (com.google.spanner.admin.database.v1.ListDatabaseRolesRequest) request,
               (io.grpc.stub.StreamObserver<
                       com.google.spanner.admin.database.v1.ListDatabaseRolesResponse>)
+                  responseObserver);
+          break;
+        case METHODID_ADD_SPLIT_POINTS:
+          serviceImpl.addSplitPoints(
+              (com.google.spanner.admin.database.v1.AddSplitPointsRequest) request,
+              (io.grpc.stub.StreamObserver<
+                      com.google.spanner.admin.database.v1.AddSplitPointsResponse>)
                   responseObserver);
           break;
         case METHODID_CREATE_BACKUP_SCHEDULE:
@@ -3628,6 +3742,13 @@ public final class DatabaseAdminGrpc {
                     com.google.spanner.admin.database.v1.ListDatabaseRolesResponse>(
                     service, METHODID_LIST_DATABASE_ROLES)))
         .addMethod(
+            getAddSplitPointsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.database.v1.AddSplitPointsRequest,
+                    com.google.spanner.admin.database.v1.AddSplitPointsResponse>(
+                    service, METHODID_ADD_SPLIT_POINTS)))
+        .addMethod(
             getCreateBackupScheduleMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
                 new MethodHandlers<
@@ -3732,6 +3853,7 @@ public final class DatabaseAdminGrpc {
                       .addMethod(getListDatabaseOperationsMethod())
                       .addMethod(getListBackupOperationsMethod())
                       .addMethod(getListDatabaseRolesMethod())
+                      .addMethod(getAddSplitPointsMethod())
                       .addMethod(getCreateBackupScheduleMethod())
                       .addMethod(getGetBackupScheduleMethod())
                       .addMethod(getUpdateBackupScheduleMethod())
