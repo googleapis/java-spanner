@@ -471,7 +471,6 @@ public class ITTransactionTest {
         .run(
             transaction -> {
               client.singleUseReadOnlyTransaction();
-
               return null;
             });
   }
