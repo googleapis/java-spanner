@@ -46,25 +46,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-final class BuiltInOpenTelemetryMetricsProvider {
+final class BuiltInMetricsProvider {
 
-  static BuiltInOpenTelemetryMetricsProvider INSTANCE = new BuiltInOpenTelemetryMetricsProvider();
+  static BuiltInMetricsProvider INSTANCE = new BuiltInMetricsProvider();
 
-  private static final Logger logger =
-      Logger.getLogger(BuiltInOpenTelemetryMetricsProvider.class.getName());
+  private static final Logger logger = Logger.getLogger(BuiltInMetricsProvider.class.getName());
 
   private static String taskId;
 
   private OpenTelemetry openTelemetry;
 
-  private BuiltInOpenTelemetryMetricsProvider() {}
+  private BuiltInMetricsProvider() {}
 
   OpenTelemetry getOrCreateOpenTelemetry(
       String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost) {
     try {
       if (this.openTelemetry == null) {
         SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
-        BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
+        BuiltInMetricsView.registerBuiltinMetrics(
             SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
             sdkMeterProviderBuilder);
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
