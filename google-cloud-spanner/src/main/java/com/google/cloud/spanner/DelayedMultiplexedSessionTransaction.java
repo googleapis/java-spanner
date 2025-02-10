@@ -20,12 +20,14 @@ import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DelayedReadContext.DelayedReadOnlyTransaction;
 import com.google.cloud.spanner.MultiplexedSessionDatabaseClient.MultiplexedSessionTransaction;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.BatchWriteResponse;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -161,6 +163,22 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         new MultiplexedSessionTransaction(
             client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)) {
       return transaction.writeWithOptions(mutations, options);
+    }
+  }
+
+  /**
+   * This is a blocking method, as the interface that it implements is also defined as a blocking
+   * method.
+   */
+  @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+      throws SpannerException {
+    SessionReference sessionReference = getSessionReference();
+    try (MultiplexedSessionTransaction transaction =
+        new MultiplexedSessionTransaction(
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)) {
+      return transaction.batchWriteAtLeastOnce(mutationGroups, options);
     }
   }
 

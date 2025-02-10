@@ -321,6 +321,7 @@ class SessionImpl implements Session {
       throw SpannerExceptionFactory.newSpannerException(e);
     } finally {
       span.end();
+      onTransactionDone();
     }
   }
 
