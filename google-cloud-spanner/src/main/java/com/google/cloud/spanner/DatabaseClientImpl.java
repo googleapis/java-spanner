@@ -282,6 +282,8 @@ class DatabaseClientImpl implements DatabaseClient {
       span.setStatus(e);
       span.end();
       throw e;
+    } finally {
+      span.end();
     }
   }
 
@@ -294,6 +296,8 @@ class DatabaseClientImpl implements DatabaseClient {
       span.setStatus(e);
       span.end();
       throw e;
+    } finally {
+      span.end();
     }
   }
 
@@ -306,6 +310,8 @@ class DatabaseClientImpl implements DatabaseClient {
       span.setStatus(e);
       span.end();
       throw e;
+    } finally {
+      span.end();
     }
   }
 
@@ -318,6 +324,8 @@ class DatabaseClientImpl implements DatabaseClient {
       span.setStatus(e);
       span.end();
       throw e;
+    } finally {
+      span.end();
     }
   }
 
