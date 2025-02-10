@@ -35,7 +35,6 @@ import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConne
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.rpc.RetryInfo;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
