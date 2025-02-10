@@ -104,6 +104,11 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       // UNIMPLEMENTED with error message "Transaction type read_write not supported with
       // multiplexed sessions" is returned.
       this.client.maybeMarkUnimplementedForRW(spannerException);
+      // Mark multiplexed sessions for Partitioned Ops as unimplemented and fall back to regular
+      // sessions if
+      // UNIMPLEMENTED with error message "Partitioned operations are not supported with multiplexed
+      // sessions".
+      this.client.maybeMarkUnimplementedForPartitionedOps(spannerException);
     }
 
     @Override
@@ -214,6 +219,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    */
   @VisibleForTesting final AtomicBoolean unimplementedForRW = new AtomicBoolean(false);
 
+  /**
+   * This flag is set to true if the server return UNIMPLEMENTED when partitioned transaction is
+   * executed on a multiplexed session. TODO: Remove once this is guaranteed to be available.
+   */
+  @VisibleForTesting final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
+
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
     this(sessionClient, Clock.systemUTC());
   }
@@ -316,7 +327,16 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
-  private boolean verifyErrorMessage(SpannerException spannerException, String message) {
+  boolean maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
+    if (verifyErrorMessage(
+        spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
+      unimplementedForPartitionedOps.set(true);
+      return true;
+    }
+    return false;
+  }
+
+  static boolean verifyErrorMessage(SpannerException spannerException, String message) {
     if (spannerException.getCause() == null) {
       return false;
     }
@@ -389,6 +409,10 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   boolean isMultiplexedSessionsForRWSupported() {
     return !this.unimplementedForRW.get();
+  }
+
+  boolean isMultiplexedSessionsForPartitionedOpsSupported() {
+    return !this.unimplementedForPartitionedOps.get();
   }
 
   void close() {
