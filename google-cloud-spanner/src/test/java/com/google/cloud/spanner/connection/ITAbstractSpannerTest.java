@@ -148,6 +148,9 @@ public abstract class ITAbstractSpannerTest {
             if (usingMultiplexedsession) {
               Field stateField = cls.getDeclaredField("txnState");
               stateField.setAccessible(true);
+              if(tx.getState() == null) {
+                return;
+              }
               tx.rollback();
               stateField.set(tx, TransactionState.ABORTED);
             } else {
