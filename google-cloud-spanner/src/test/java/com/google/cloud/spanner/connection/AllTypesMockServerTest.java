@@ -22,6 +22,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.Interval;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SingerProto.Genre;
@@ -35,6 +36,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -78,6 +80,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
   public static final Date DATE_VALUE = Date.fromYearMonthDay(2024, 3, 2);
   public static final Timestamp TIMESTAMP_VALUE =
       Timestamp.parseTimestamp("2024-03-02T07:07:00.20982735Z");
+  public static final Interval INTERVAL_VALUE = Interval.parseFromString("P2Y4M3DT10H1M7.3S");
 
   public static final List<Boolean> BOOL_ARRAY_VALUE = Arrays.asList(true, null, false);
   public static final List<Long> INT64_ARRAY_VALUE =
@@ -131,6 +134,13 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
           Timestamp.parseTimestamp("2024-03-03T07:07:00Z"),
           Timestamp.MIN_VALUE,
           Timestamp.MAX_VALUE);
+  public static final List<Interval> INTERVAL_ARRAY_VALUE =
+      Arrays.asList(
+          INTERVAL_VALUE,
+          null,
+          Interval.fromMonthsDaysNanos(9, 39, BigInteger.TEN),
+          Interval.fromMonthsDaysNanos(-120000, -3660000, new BigInteger("-316224000000000000000")),
+          Interval.fromMonthsDaysNanos(120000, 3660000, new BigInteger("316224000000000000000")));
 
   @Before
   public void setupDialect() {
@@ -158,14 +168,15 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
     // COL8: BYTES
     // COL9: DATE
     // COL10: TIMESTAMP
-    // COL11: PG_OID (added only for POSTGRESQL dialect)
-    // COL12-21: ARRAY<..> for the types above.
+    // COL11: INTERVAL
+    // COL12: PG_OID (added only for POSTGRESQL dialect)
+    // COL13-22: ARRAY<..> for the types above.
     // Only for GoogleSQL:
-    // COL22: PROTO
-    // COL23: ENUM
-    // COL24: ARRAY<PROTO>
-    // COL25: ARRAY<ENUM>
-    // COL26: ARRAY<PG_OID> (added only for POSTGRESQL dialect)
+    // COL23: PROTO
+    // COL24: ENUM
+    // COL25: ARRAY<PROTO>
+    // COL26: ARRAY<ENUM>
+    // COL27: ARRAY<PG_OID> (added only for POSTGRESQL dialect)
     ListValue.Builder row1Builder =
         ListValue.newBuilder()
             .addValues(Value.newBuilder().setBoolValue(BOOL_VALUE))
@@ -183,7 +194,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
             .addValues(
                 Value.newBuilder().setStringValue(Base64.getEncoder().encodeToString(BYTES_VALUE)))
             .addValues(Value.newBuilder().setStringValue(DATE_VALUE.toString()))
-            .addValues(Value.newBuilder().setStringValue(TIMESTAMP_VALUE.toString()));
+            .addValues(Value.newBuilder().setStringValue(TIMESTAMP_VALUE.toString()))
+            .addValues(Value.newBuilder().setStringValue(INTERVAL_VALUE.toString()));
     if (dialect == Dialect.POSTGRESQL) {
       row1Builder.addValues(
           Value.newBuilder().setStringValue(String.valueOf(PG_OID_VALUE)).build());
@@ -372,6 +384,23 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                                                 .setStringValue(timestamp.toString())
                                                 .build())
                                 .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            INTERVAL_ARRAY_VALUE.stream()
+                                .map(
+                                    interval ->
+                                        interval == null
+                                            ? Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()
+                                            : Value.newBuilder()
+                                                .setStringValue(interval.toISO8601())
+                                                .build())
+                                .collect(Collectors.toList()))
                         .build()));
 
     if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
@@ -509,7 +538,9 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         .bind("p" + ++param)
         .to(DATE_VALUE)
         .bind("p" + ++param)
-        .to(TIMESTAMP_VALUE);
+        .to(TIMESTAMP_VALUE)
+        .bind("p" + ++param)
+        .to(INTERVAL_VALUE);
     if (dialect == Dialect.POSTGRESQL) {
       builder.bind("p" + ++param).to(PG_OID_VALUE);
     }
@@ -539,7 +570,9 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         .bind("p" + ++param)
         .toDateArray(DATE_ARRAY_VALUE)
         .bind("p" + ++param)
-        .toTimestampArray(TIMESTAMP_ARRAY_VALUE);
+        .toTimestampArray(TIMESTAMP_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .toIntervalArray(INTERVAL_ARRAY_VALUE);
     if (dialect == Dialect.POSTGRESQL) {
       builder.bind("p" + ++param).toInt64Array(PG_OID_ARRAY_VALUE);
     }
@@ -574,6 +607,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         assertArrayEquals(BYTES_VALUE, resultSet.getBytes(++col).toByteArray());
         assertEquals(DATE_VALUE, resultSet.getDate(++col));
         assertEquals(TIMESTAMP_VALUE, resultSet.getTimestamp(++col));
+        assertEquals(INTERVAL_VALUE, resultSet.getInterval(++col));
         if (dialect == Dialect.POSTGRESQL) {
           assertEquals(PG_OID_VALUE, resultSet.getLong(++col));
         }
@@ -596,6 +630,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         assertEquals(BYTES_ARRAY_VALUE, resultSet.getBytesList(++col));
         assertEquals(DATE_ARRAY_VALUE, resultSet.getDateList(++col));
         assertEquals(TIMESTAMP_ARRAY_VALUE, resultSet.getTimestampList(++col));
+        assertEquals(INTERVAL_ARRAY_VALUE, resultSet.getIntervalList(++col));
         if (dialect == Dialect.POSTGRESQL) {
           assertEquals(PG_OID_ARRAY_VALUE, resultSet.getLongList(++col));
         }
@@ -613,8 +648,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
       ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
       Map<String, Type> paramTypes = request.getParamTypesMap();
       Map<String, Value> params = request.getParams().getFieldsMap();
-      assertEquals(dialect == Dialect.POSTGRESQL ? 22 : 20, paramTypes.size());
-      assertEquals(dialect == Dialect.POSTGRESQL ? 22 : 20, params.size());
+      assertEquals(dialect == Dialect.POSTGRESQL ? 24 : 22, paramTypes.size());
+      assertEquals(dialect == Dialect.POSTGRESQL ? 24 : 22, params.size());
 
       // Verify param types.
       ImmutableList<TypeCode> expectedTypes;
@@ -631,6 +666,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                 TypeCode.BYTES,
                 TypeCode.DATE,
                 TypeCode.TIMESTAMP,
+                TypeCode.INTERVAL,
                 TypeCode.INT64);
       } else {
         expectedTypes =
@@ -644,7 +680,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                 TypeCode.JSON,
                 TypeCode.BYTES,
                 TypeCode.DATE,
-                TypeCode.TIMESTAMP);
+                TypeCode.TIMESTAMP,
+                TypeCode.INTERVAL);
       }
       for (int col = 0; col < expectedTypes.size(); col++) {
         assertEquals(expectedTypes.get(col), paramTypes.get("p" + (col + 1)).getCode());
@@ -671,6 +708,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
           params.get("p" + ++col).getStringValue());
       assertEquals(DATE_VALUE.toString(), params.get("p" + ++col).getStringValue());
       assertEquals(TIMESTAMP_VALUE.toString(), params.get("p" + ++col).getStringValue());
+      assertEquals(INTERVAL_VALUE.toString(), params.get("p" + ++col).getStringValue());
       if (dialect == Dialect.POSTGRESQL) {
         assertEquals(String.valueOf(PG_OID_VALUE), params.get("p" + ++col).getStringValue());
       }
@@ -738,6 +776,15 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                       value.hasNullValue()
                           ? null
                           : Timestamp.parseTimestamp(value.getStringValue()))
+              .collect(Collectors.toList()));
+      assertEquals(
+          INTERVAL_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(
+                  value ->
+                      value.hasNullValue()
+                          ? null
+                          : Interval.parseFromString(value.getStringValue()))
               .collect(Collectors.toList()));
       if (dialect == Dialect.POSTGRESQL) {
         assertEquals(
