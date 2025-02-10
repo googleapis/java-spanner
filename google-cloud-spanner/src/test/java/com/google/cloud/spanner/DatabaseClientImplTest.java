@@ -4006,7 +4006,10 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+    TraceWrapper traceWrapper =
+        new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, traceWrapper);
     try (TransactionManager ignore = client.transactionManager(option)) {
       verify(session).transactionManager(option);
     }
@@ -4019,7 +4022,10 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+    TraceWrapper traceWrapper =
+        new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, traceWrapper);
     client.runAsync(option);
 
     verify(session).runAsync(option);
@@ -4032,7 +4038,10 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+    TraceWrapper traceWrapper =
+        new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, traceWrapper);
     try (AsyncTransactionManager ignore = client.transactionManagerAsync(option)) {
       verify(session).transactionManagerAsync(option);
     }
