@@ -469,6 +469,9 @@ public class SpanTest {
             "Creating 2 sessions");
     List<String> expectedAnnotationsForMultiplexedSession =
         ImmutableList.of(
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
             "Starting Transaction Attempt",
             "Starting Commit",
             "Commit Done",
@@ -542,6 +545,9 @@ public class SpanTest {
             "Creating 2 sessions");
     List<String> expectedAnnotationsForMultiplexedSession =
         ImmutableList.of(
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
             "Starting Transaction Attempt",
             "Transaction Attempt Failed in user operation",
             "Requesting 2 sessions",
