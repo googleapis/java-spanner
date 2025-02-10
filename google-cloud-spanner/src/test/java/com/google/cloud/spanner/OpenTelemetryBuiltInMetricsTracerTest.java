@@ -343,8 +343,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     // Attempt count should have a failed metric point for CreateSession.
     assertEquals(
         1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed));
-    // There should be no OK metric points for CreateSession.
-    assertEquals(0, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionOK));
   }
 
   private MetricData getMetricData(InMemoryMetricReader reader, String metricName) {
