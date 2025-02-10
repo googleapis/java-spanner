@@ -1043,14 +1043,7 @@ public class ITWriteTest {
               .build());
       fail("Expected exception");
     } catch (SpannerException ex) {
-      if (env.getTestHelper()
-          .getOptions()
-          .getSessionPoolOptions()
-          .getUseMultiplexedSessionForRW()) {
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      } else {
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-      }
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
   }
 
@@ -1060,14 +1053,7 @@ public class ITWriteTest {
       write(baseInsert().set("ColumnThatDoesNotExist").to("V1").build());
       fail("Expected exception");
     } catch (SpannerException ex) {
-      if (env.getTestHelper()
-          .getOptions()
-          .getSessionPoolOptions()
-          .getUseMultiplexedSessionForRW()) {
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      } else {
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-      }
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
   }
 
