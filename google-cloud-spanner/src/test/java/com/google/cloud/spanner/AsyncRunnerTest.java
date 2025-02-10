@@ -60,20 +60,34 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitTimestampBeforeCommit() {
-    assumeFalse("Skipping for mux", isMultiplexedSessionsEnabledForRW());
     AsyncRunner runner = client().runAsync();
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
-    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    if (isMultiplexedSessionsEnabledForRW()) {
+      ExecutionException e =
+          assertThrows(ExecutionException.class, () -> runner.getCommitTimestamp().get());
+      Throwable cause = e.getCause();
+      assertTrue(cause instanceof IllegalStateException);
+      assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
+    } else {
+      IllegalStateException e =
+          assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
+      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    }
   }
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitResponseBeforeCommit() {
-    assumeFalse("Skipping for mux", isMultiplexedSessionsEnabledForRW());
     AsyncRunner runner = client().runAsync();
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
-    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    if (isMultiplexedSessionsEnabledForRW()) {
+      ExecutionException e =
+          assertThrows(ExecutionException.class, () -> runner.getCommitResponse().get());
+      Throwable cause = e.getCause();
+      assertTrue(cause instanceof IllegalStateException);
+      assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
+    } else {
+      IllegalStateException e =
+          assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
+      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    }
   }
 
   @Test
