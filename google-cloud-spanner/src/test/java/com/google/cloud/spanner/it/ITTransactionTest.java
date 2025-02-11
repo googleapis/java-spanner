@@ -464,7 +464,10 @@ public class ITTransactionTest {
   @Test
   public void nestedTxnSucceedsWhenAllowed() {
     assumeFalse("Emulator does not support multiple parallel transactions", isUsingEmulator());
-
+    // TODO(sriharshach): Remove this skip once backend support empty transactions to commit.
+    assumeFalse(
+        "Skipping for multiplexed sessions since it does not allow empty transactions to commit",
+        isUsingMultiplexedSessionsForRW());
     client
         .readWriteTransaction()
         .allowNestedTransaction()
@@ -587,5 +590,9 @@ public class ITTransactionTest {
     assertNotNull(runner.getCommitResponse().getCommitStats());
     // MutationCount = 2 (2 columns).
     assertEquals(2L, runner.getCommitResponse().getCommitStats().getMutationCount());
+  }
+
+  boolean isUsingMultiplexedSessionsForRW() {
+    return env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }
