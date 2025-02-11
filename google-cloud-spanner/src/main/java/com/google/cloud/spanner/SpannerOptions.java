@@ -33,8 +33,6 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
-import com.google.api.gax.tracing.MetricsTracerFactory;
-import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.api.gax.tracing.OpencensusTracerFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
@@ -144,8 +142,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
-  private final BuiltInOpenTelemetryMetricsProvider builtInOpenTelemetryMetricsProvider =
-      BuiltInOpenTelemetryMetricsProvider.INSTANCE;
+  private final BuiltInMetricsProvider builtInMetricsProvider = BuiltInMetricsProvider.INSTANCE;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
@@ -1910,13 +1907,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
-        this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
+        this.builtInMetricsProvider.getOrCreateOpenTelemetry(
             this.getProjectId(), getCredentials(), this.monitoringHost);
 
     return openTelemetry != null
-        ? new MetricsTracerFactory(
-            new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            builtInOpenTelemetryMetricsProvider.createClientAttributes(
+        ? new BuiltInMetricsTracerFactory(
+            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+            builtInMetricsProvider.createClientAttributes(
                 this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
         : null;
   }
