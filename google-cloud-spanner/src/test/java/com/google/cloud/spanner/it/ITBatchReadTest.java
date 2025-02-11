@@ -181,7 +181,7 @@ public class ITBatchReadTest {
           totalSize = 0;
         }
       }
-      if (mutations.size() > 0) {
+      if (!mutations.isEmpty()) {
         dbClient.write(mutations);
       }
     }
