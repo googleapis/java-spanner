@@ -253,6 +253,9 @@ public class ITAsyncExamplesTest {
             },
             executor);
     assertThat(insertCount.get()).isEqualTo(1L);
+    if (env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+      runner = client.runAsync();
+    }
     ApiFuture<Long> deleteCount =
         runner.runAsync(
             txn ->

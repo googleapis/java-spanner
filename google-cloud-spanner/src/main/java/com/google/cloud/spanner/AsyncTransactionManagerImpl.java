@@ -55,7 +55,7 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public void close() {
-    closeAsync();
+    SpannerApiFutures.get(closeAsync());
   }
 
   @Override
@@ -80,11 +80,6 @@ final class AsyncTransactionManagerImpl
   }
 
   private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
-    /*if (!firstAttempt) {
-      Preconditions.checkState(
-          txnState == TransactionState.ABORTED,
-          "resetForRetry can only be called after the transaction aborted.");
-    }*/
     txnState = TransactionState.STARTED;
 
     // Determine the latest transactionId when using a multiplexed session.
