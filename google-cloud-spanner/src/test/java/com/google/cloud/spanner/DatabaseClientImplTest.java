@@ -4006,10 +4006,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    TraceWrapper traceWrapper =
-        new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
-
-    DatabaseClientImpl client = new DatabaseClientImpl(pool, traceWrapper);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
     try (TransactionManager ignore = client.transactionManager(option)) {
       verify(session).transactionManager(option);
     }
