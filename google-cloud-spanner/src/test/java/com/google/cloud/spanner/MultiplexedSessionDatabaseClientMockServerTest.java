@@ -1541,11 +1541,11 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
             Arrays.asList(
                 Status.UNIMPLEMENTED
                     .withDescription(
-                        "Partitioned operations are not supported with multiplexed sessions")
+                        "Transaction type partitioned_dml not supported with multiplexed sessions")
                     .asRuntimeException(),
                 Status.UNIMPLEMENTED
                     .withDescription(
-                        "Partitioned operations are not supported with multiplexed sessions")
+                        "Transaction type partitioned_dml not supported with multiplexed sessions")
                     .asRuntimeException())));
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
@@ -1571,7 +1571,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   public void testPartitionedQuery_receivesUnimplemented_fallsBackToRegularSession() {
     mockSpanner.setPartitionQueryExecutionTime(
         SimulatedExecutionTime.ofException(
-            Status.UNIMPLEMENTED
+            Status.INVALID_ARGUMENT
                 .withDescription(
                     "Partitioned operations are not supported with multiplexed sessions")
                 .asRuntimeException()));
@@ -1586,7 +1586,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
               () -> {
                 transaction.partitionQuery(PartitionOptions.getDefaultInstance(), STATEMENT);
               });
-      assertEquals(ErrorCode.UNIMPLEMENTED, spannerException.getErrorCode());
+      assertEquals(ErrorCode.INVALID_ARGUMENT, spannerException.getErrorCode());
 
       // Verify that we received one PartitionQueryRequest.
       List<PartitionQueryRequest> partitionQueryRequests =

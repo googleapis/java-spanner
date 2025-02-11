@@ -306,8 +306,10 @@ public class BatchClientImpl implements BatchClient {
     }
 
     void maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
-      if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
-          spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
+      if (spannerException.getErrorCode() == ErrorCode.INVALID_ARGUMENT
+          && MultiplexedSessionDatabaseClient.verifyErrorMessage(
+              spannerException,
+              "Partitioned operations are not supported with multiplexed sessions")) {
         this.unimplementedForPartitionedOps.set(true);
       }
     }

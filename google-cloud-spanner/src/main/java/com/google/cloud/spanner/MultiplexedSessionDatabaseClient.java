@@ -328,8 +328,10 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   }
 
   boolean maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
-    if (verifyErrorMessage(
-        spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
+    if (spannerException.getErrorCode() == ErrorCode.UNIMPLEMENTED
+        && verifyErrorMessage(
+            spannerException,
+            "Transaction type partitioned_dml not supported with multiplexed sessions")) {
       unimplementedForPartitionedOps.set(true);
       return true;
     }
