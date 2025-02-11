@@ -371,7 +371,7 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <!-- Executor tests - The 'provided' scope is overwritten to compile time scope for the profile 'executor-tests' -->
     <dependency>
       <groupId>com.google.api.grpc</groupId>

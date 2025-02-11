@@ -254,6 +254,9 @@ public class ITAsyncExamplesTest {
             executor);
     assertThat(insertCount.get()).isEqualTo(1L);
     if (env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+      // The runAsync() method should only be called once on the runner.
+      // However, due to a bug in regular sessions, it can be executed multiple times on the same
+      // runner.
       runner = client.runAsync();
     }
     ApiFuture<Long> deleteCount =
@@ -302,6 +305,12 @@ public class ITAsyncExamplesTest {
             },
             executor);
     assertThat(insertCount.get()).asList().containsExactly(1L, 1L, 1L);
+    if (env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+      // The runAsync() method should only be called once on the runner.
+      // However, due to a bug in regular sessions, it can be executed multiple times on the same
+      // runner.
+      runner = client.runAsync();
+    }
     ApiFuture<long[]> deleteCount =
         runner.runAsync(
             txn ->
