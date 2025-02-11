@@ -60,14 +60,17 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitTimestampBeforeCommit() {
-    assumeFalse("Skipping for mux", isMultiplexedSessionsEnabledForRW());
     AsyncRunner runner = client().runAsync();
     if (isMultiplexedSessionsEnabledForRW()) {
-      ExecutionException e =
-          assertThrows(ExecutionException.class, () -> runner.getCommitTimestamp().get());
-      Throwable cause = e.getCause();
-      assertTrue(cause instanceof IllegalStateException);
-      assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
+      Throwable e = assertThrows(Throwable.class, () -> runner.getCommitTimestamp().get());
+      assertTrue(e instanceof ExecutionException || e instanceof IllegalStateException);
+      if (e instanceof ExecutionException) {
+        Throwable cause = e.getCause();
+        assertTrue(cause instanceof IllegalStateException);
+        assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
+      } else {
+        assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+      }
     } else {
       IllegalStateException e =
           assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
@@ -77,14 +80,17 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitResponseBeforeCommit() {
-    assumeFalse("Skipping for mux", isMultiplexedSessionsEnabledForRW());
     AsyncRunner runner = client().runAsync();
     if (isMultiplexedSessionsEnabledForRW()) {
-      ExecutionException e =
-          assertThrows(ExecutionException.class, () -> runner.getCommitResponse().get());
-      Throwable cause = e.getCause();
-      assertTrue(cause instanceof IllegalStateException);
-      assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
+      Throwable e = assertThrows(Throwable.class, () -> runner.getCommitResponse().get());
+      assertTrue(e instanceof ExecutionException || e instanceof IllegalStateException);
+      if (e instanceof ExecutionException) {
+        Throwable cause = e.getCause();
+        assertTrue(cause instanceof IllegalStateException);
+        assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
+      } else {
+        assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+      }
     } else {
       IllegalStateException e =
           assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
