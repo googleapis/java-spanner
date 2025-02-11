@@ -47,6 +47,8 @@ class TraceWrapper {
   private static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
       AttributeKey.stringArrayKey("db.statement");
   private static final AttributeKey<String> DB_TABLE_NAME_KEY = AttributeKey.stringKey("db.table");
+  private static final AttributeKey<String> CLOUD_REGION_KEY =
+      AttributeKey.stringKey("cloud.region");
   private static final AttributeKey<String> GCP_CLIENT_SERVICE_KEY =
       AttributeKey.stringKey("gcp.client.service");
   private static final AttributeKey<String> GCP_CLIENT_VERSION_KEY =
@@ -214,6 +216,7 @@ class TraceWrapper {
     builder.put(GCP_CLIENT_SERVICE_KEY, "spanner");
     builder.put(GCP_CLIENT_REPO_KEY, "googleapis/java-spanner");
     builder.put(GCP_CLIENT_VERSION_KEY, GaxProperties.getLibraryVersion(TraceWrapper.class));
+    builder.put(CLOUD_REGION_KEY, BuiltInMetricsProvider.detectClientLocation());
     return builder.build();
   }
 
