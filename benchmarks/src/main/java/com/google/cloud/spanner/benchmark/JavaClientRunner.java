@@ -123,67 +123,16 @@ class JavaClientRunner extends AbstractRunner {
         SessionPoolOptionsHelper.setUseMultiplexedSession(
                 SessionPoolOptions.newBuilder(), useMultiplexedSession)
             .build();
-//    SpannerOptions.enableOpenTelemetryMetrics();
-//    SpannerOptions.enableOpenTelemetryTraces();
-
-    ClientInterceptor clientInterceptor =
-        new ClientInterceptor() {
-          @Override
-          public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
-              MethodDescriptor<ReqT, RespT> methodDescriptor,
-              CallOptions callOptions,
-              Channel channel) {
-            return new SimpleForwardingClientCall<ReqT, RespT>(
-                channel.newCall(methodDescriptor, callOptions)) {
-              @Override
-              public void start(Listener<RespT> responseListener, Metadata headers) {
-                super.start(
-                    new SimpleForwardingClientCallListener<RespT>(responseListener) {
-                      @Override
-                      public void onHeaders(Metadata headers) {
-                        if ("google.spanner.v1.Spanner/ExecuteStreamingSql"
-                                .equalsIgnoreCase(methodDescriptor.getFullMethodName())
-                            || "google.spanner.v1.Spanner/StreamingRead"
-                                .equalsIgnoreCase(methodDescriptor.getFullMethodName())) {
-                          String serverTiming = headers.get(SERVER_TIMING_HEADER_KEY);
-                          if (serverTiming != null
-                              && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
-                            long latency =
-                                Long.parseLong(
-                                    serverTiming.substring(SERVER_TIMING_HEADER_PREFIX.length()));
-                            String trackingUuid = callOptions.getOption(trackingKey);
-                            Optional.ofNullable(trackingUuid)
-                                .ifPresent(id -> concurrentHashMap.put(trackingUuid, latency));
-                          }
-                        }
-                        super.onHeaders(headers);
-                      }
-                    },
-                    headers);
-              }
-            };
-          }
-        };
+    SpannerOptions.enableOpenTelemetryMetrics();
+    SpannerOptions.enableOpenTelemetryTraces();
 
     SpannerOptions options =
         SpannerOptions.newBuilder()
-//            .setOpenTelemetry(openTelemetry)
-//            .setEnableEndToEndTracing(true)
+            .setOpenTelemetry(openTelemetry)
+            .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
-            //            .setInterceptorProvider(
-            //
-            // SpannerInterceptorProvider.createDefault(openTelemetry).with(clientInterceptor))
             .setHost(SERVER_URL)
-            .build();
-    // Register query stats metric.
-    // This should be done once before start recording the data.
-    Meter meter = openTelemetry.getMeter("cloud.google.com/java");
-    DoubleHistogram endToEndLatencies =
-        meter
-            .histogramBuilder("spanner/end_end_elapsed")
-            .setDescription("The execution of end to end latency")
-            .setUnit("ms")
             .build();
     try (Spanner spanner = options.getService()) {
       DatabaseClient databaseClient = spanner.getDatabaseClient(databaseId);
@@ -196,7 +145,6 @@ class JavaClientRunner extends AbstractRunner {
           waitMillis,
           warmUpMinutes,
           staleReadSeconds,
-          endToEndLatencies,
           true,
           true);
 
@@ -209,7 +157,6 @@ class JavaClientRunner extends AbstractRunner {
           waitMillis,
           warmUpMinutes,
           staleReadSeconds,
-          endToEndLatencies,
           false,
           false);
     } catch (Throwable t) {
@@ -227,7 +174,6 @@ class JavaClientRunner extends AbstractRunner {
       int waitMillis,
       int warmUpMinutes,
       int staleReadSeconds,
-      DoubleHistogram endToEndLatencies,
       boolean skipTrailers,
       boolean doWarmUp)
       throws Exception {
@@ -245,7 +191,6 @@ class JavaClientRunner extends AbstractRunner {
                       waitMillis,
                       warmUpMinutes,
                       staleReadSeconds,
-                      endToEndLatencies,
                       skipTrailers,
                       doWarmUp)));
     }
@@ -260,7 +205,6 @@ class JavaClientRunner extends AbstractRunner {
       int waitMillis,
       int warmUpMinutes,
       int staleReadSeconds,
-      DoubleHistogram endToEndLatencies,
       boolean skipTrailers,
       boolean doWarmUp) {
     List<Duration> results = new ArrayList<>();
@@ -272,9 +216,7 @@ class JavaClientRunner extends AbstractRunner {
           databaseClient,
           skipTrailers,
           staleReadSeconds,
-          transactionType,
-          endToEndLatencies,
-          false);
+          transactionType);
     }
     endTime = Instant.now().plus(numOperations, ChronoUnit.MINUTES);
     setOperationEndTime(endTime);
@@ -287,9 +229,7 @@ class JavaClientRunner extends AbstractRunner {
                 databaseClient,
                 skipTrailers,
                 staleReadSeconds,
-                transactionType,
-                endToEndLatencies,
-                true));
+                transactionType));
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
       }
@@ -301,9 +241,7 @@ class JavaClientRunner extends AbstractRunner {
       DatabaseClient client,
       boolean skipTrailers,
       int staleReadSeconds,
-      TransactionType transactionType,
-      DoubleHistogram endToEndLatencies,
-      boolean recordLatency) {
+      TransactionType transactionType) {
     Stopwatch watch = Stopwatch.createStarted();
     switch (transactionType) {
       case READ_ONLY_STALE_READ:
@@ -318,11 +256,7 @@ class JavaClientRunner extends AbstractRunner {
         executeReadWriteTransaction(client);
         break;
     }
-    Duration elapsedTime = watch.elapsed();
-    if (recordLatency) {
-      endToEndLatencies.record(elapsedTime.toMillis());
-    }
-    return elapsedTime;
+    return watch.elapsed();
   }
 
   private void executeSingleUseReadOnlyStaleReadTransaction(
