@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
+
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.connection.Repeat.twice;
@@ -679,4 +679,3 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
             .build());
   }
 }
-*/
