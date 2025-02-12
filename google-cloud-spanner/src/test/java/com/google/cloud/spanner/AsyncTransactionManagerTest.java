@@ -1208,9 +1208,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void testAbandonedAsyncTransactionManager_rollbackFails() throws Exception {
-    assumeFalse(
-        "Fix this test",
-        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     mockSpanner.setRollbackExecutionTime(
         SimulatedExecutionTime.ofException(Status.PERMISSION_DENIED.asRuntimeException()));
 
