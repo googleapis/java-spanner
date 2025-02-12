@@ -16,12 +16,17 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.security.SecureRandom;
 
 public class XGoogSpannerRequestId {
   // 1. Generate the random process Id singleton.
-  public static String RAND_PROCESS_ID = XGoogSpannerRequestId.generateRandProcessId();
-  public static long VERSION = 1; // The version of the specification being implemented.
+  @VisibleForTesting
+  static String RAND_PROCESS_ID = XGoogSpannerRequestId.generateRandProcessId();
+
+  @VisibleForTesting
+  static long VERSION = 1; // The version of the specification being implemented.
+
   private long nthClientId;
   private long nthChannelId;
   private long nthRequest;
