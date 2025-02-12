@@ -81,7 +81,8 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       txnState = TransactionState.COMMIT_FAILED;
       throw e2;
     } finally {
-      // At this point, if the TransactionState is not ABORTED, then the transaction has reached a terminal state.
+      // At this point, if the TransactionState is not ABORTED, then the transaction has reached a
+      // terminal state.
       // We can safely call close() to release resources.
       if (getState() != TransactionState.ABORTED) {
         close();
