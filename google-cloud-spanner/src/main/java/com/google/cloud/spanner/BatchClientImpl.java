@@ -65,7 +65,8 @@ public class BatchClientImpl implements BatchClient {
    * This flag is set to true if the server return UNIMPLEMENTED when partitioned transaction is
    * executed on a multiplexed session. TODO: Remove once this is guaranteed to be available.
    */
-  @VisibleForTesting final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
+  @VisibleForTesting
+  static final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
 
   BatchClientImpl(SessionClient sessionClient, boolean isMultiplexedSessionEnabled) {
     this.sessionClient = checkNotNull(sessionClient);
@@ -113,8 +114,7 @@ public class BatchClientImpl implements BatchClient {
                 sessionClient.getSpanner().getOptions().getDirectedReadOptions())
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
-        checkNotNull(bound),
-        unimplementedForPartitionedOps);
+        checkNotNull(bound));
   }
 
   @Override
@@ -137,8 +137,7 @@ public class BatchClientImpl implements BatchClient {
                 sessionClient.getSpanner().getOptions().getDirectedReadOptions())
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
-        batchTransactionId,
-        unimplementedForPartitionedOps);
+        batchTransactionId);
   }
 
   private boolean canUseMultiplexedSession() {
@@ -163,25 +162,18 @@ public class BatchClientImpl implements BatchClient {
       implements BatchReadOnlyTransaction {
     private final String sessionName;
     private final Map<SpannerRpc.Option, ?> options;
-    final AtomicBoolean unimplementedForPartitionedOps;
 
     BatchReadOnlyTransactionImpl(
-        MultiUseReadOnlyTransaction.Builder builder,
-        TimestampBound bound,
-        AtomicBoolean unimplementedForPartitionedOps) {
+        MultiUseReadOnlyTransaction.Builder builder, TimestampBound bound) {
       super(builder.setTimestampBound(bound));
-      this.unimplementedForPartitionedOps = unimplementedForPartitionedOps;
       this.sessionName = session.getName();
       this.options = session.getOptions();
       initTransaction();
     }
 
     BatchReadOnlyTransactionImpl(
-        MultiUseReadOnlyTransaction.Builder builder,
-        BatchTransactionId batchTransactionId,
-        AtomicBoolean unimplementedForPartitionedOps) {
+        MultiUseReadOnlyTransaction.Builder builder, BatchTransactionId batchTransactionId) {
       super(builder.setTransactionId(batchTransactionId.getTransactionId()));
-      this.unimplementedForPartitionedOps = unimplementedForPartitionedOps;
       this.sessionName = session.getName();
       this.options = session.getOptions();
     }
@@ -289,7 +281,6 @@ public class BatchClientImpl implements BatchClient {
 
       final PartitionQueryRequest request = builder.build();
       try {
-
         PartitionResponse response = rpc.partitionQuery(request, options);
         ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
         for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
@@ -310,7 +301,7 @@ public class BatchClientImpl implements BatchClient {
           && MultiplexedSessionDatabaseClient.verifyErrorMessage(
               spannerException,
               "Partitioned operations are not supported with multiplexed sessions")) {
-        this.unimplementedForPartitionedOps.set(true);
+        unimplementedForPartitionedOps.set(true);
       }
     }
 
