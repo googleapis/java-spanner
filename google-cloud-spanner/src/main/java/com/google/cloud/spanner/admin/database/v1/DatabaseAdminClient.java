@@ -41,6 +41,8 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
+import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.BackupSchedule;
@@ -78,6 +80,7 @@ import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
+import com.google.spanner.admin.database.v1.SplitPoints;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -520,6 +523,25 @@ import javax.annotation.Generated;
  *      <ul>
  *           <li><p> listDatabaseRolesPagedCallable()
  *           <li><p> listDatabaseRolesCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> AddSplitPoints</td>
+ *      <td><p> Adds split points to specified tables, indexes of a database.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> addSplitPoints(AddSplitPointsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> addSplitPoints(DatabaseName database, List&lt;SplitPoints&gt; splitPoints)
+ *           <li><p> addSplitPoints(String database, List&lt;SplitPoints&gt; splitPoints)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> addSplitPointsCallable()
  *      </ul>
  *       </td>
  *    </tr>
@@ -4316,6 +4338,137 @@ public class DatabaseAdminClient implements BackgroundResource {
   public final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
       listDatabaseRolesCallable() {
     return stub.listDatabaseRolesCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Adds split points to specified tables, indexes of a database.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   List<SplitPoints> splitPoints = new ArrayList<>();
+   *   AddSplitPointsResponse response = databaseAdminClient.addSplitPoints(database, splitPoints);
+   * }
+   * }</pre>
+   *
+   * @param database Required. The database on whose tables/indexes split points are to be added.
+   *     Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
+   * @param splitPoints Required. The split points to add.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final AddSplitPointsResponse addSplitPoints(
+      DatabaseName database, List<SplitPoints> splitPoints) {
+    AddSplitPointsRequest request =
+        AddSplitPointsRequest.newBuilder()
+            .setDatabase(database == null ? null : database.toString())
+            .addAllSplitPoints(splitPoints)
+            .build();
+    return addSplitPoints(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Adds split points to specified tables, indexes of a database.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   List<SplitPoints> splitPoints = new ArrayList<>();
+   *   AddSplitPointsResponse response = databaseAdminClient.addSplitPoints(database, splitPoints);
+   * }
+   * }</pre>
+   *
+   * @param database Required. The database on whose tables/indexes split points are to be added.
+   *     Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
+   * @param splitPoints Required. The split points to add.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final AddSplitPointsResponse addSplitPoints(
+      String database, List<SplitPoints> splitPoints) {
+    AddSplitPointsRequest request =
+        AddSplitPointsRequest.newBuilder()
+            .setDatabase(database)
+            .addAllSplitPoints(splitPoints)
+            .build();
+    return addSplitPoints(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Adds split points to specified tables, indexes of a database.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   AddSplitPointsRequest request =
+   *       AddSplitPointsRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .addAllSplitPoints(new ArrayList<SplitPoints>())
+   *           .setInitiator("initiator-248987089")
+   *           .build();
+   *   AddSplitPointsResponse response = databaseAdminClient.addSplitPoints(request);
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final AddSplitPointsResponse addSplitPoints(AddSplitPointsRequest request) {
+    return addSplitPointsCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Adds split points to specified tables, indexes of a database.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   AddSplitPointsRequest request =
+   *       AddSplitPointsRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .addAllSplitPoints(new ArrayList<SplitPoints>())
+   *           .setInitiator("initiator-248987089")
+   *           .build();
+   *   ApiFuture<AddSplitPointsResponse> future =
+   *       databaseAdminClient.addSplitPointsCallable().futureCall(request);
+   *   // Do something.
+   *   AddSplitPointsResponse response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<AddSplitPointsRequest, AddSplitPointsResponse>
+      addSplitPointsCallable() {
+    return stub.addSplitPointsCallable();
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.

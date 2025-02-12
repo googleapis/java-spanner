@@ -48,6 +48,8 @@ import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
+import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.BackupSchedule;
@@ -87,6 +89,7 @@ import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreInfo;
+import com.google.spanner.admin.database.v1.SplitPoints;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
@@ -2244,6 +2247,82 @@ public class DatabaseAdminClientTest {
     try {
       String parent = "parent-995424086";
       client.listDatabaseRoles(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void addSplitPointsTest() throws Exception {
+    AddSplitPointsResponse expectedResponse = AddSplitPointsResponse.newBuilder().build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    List<SplitPoints> splitPoints = new ArrayList<>();
+
+    AddSplitPointsResponse actualResponse = client.addSplitPoints(database, splitPoints);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    AddSplitPointsRequest actualRequest = ((AddSplitPointsRequest) actualRequests.get(0));
+
+    Assert.assertEquals(database.toString(), actualRequest.getDatabase());
+    Assert.assertEquals(splitPoints, actualRequest.getSplitPointsList());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void addSplitPointsExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      List<SplitPoints> splitPoints = new ArrayList<>();
+      client.addSplitPoints(database, splitPoints);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void addSplitPointsTest2() throws Exception {
+    AddSplitPointsResponse expectedResponse = AddSplitPointsResponse.newBuilder().build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    String database = "database1789464955";
+    List<SplitPoints> splitPoints = new ArrayList<>();
+
+    AddSplitPointsResponse actualResponse = client.addSplitPoints(database, splitPoints);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    AddSplitPointsRequest actualRequest = ((AddSplitPointsRequest) actualRequests.get(0));
+
+    Assert.assertEquals(database, actualRequest.getDatabase());
+    Assert.assertEquals(splitPoints, actualRequest.getSplitPointsList());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void addSplitPointsExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String database = "database1789464955";
+      List<SplitPoints> splitPoints = new ArrayList<>();
+      client.addSplitPoints(database, splitPoints);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.

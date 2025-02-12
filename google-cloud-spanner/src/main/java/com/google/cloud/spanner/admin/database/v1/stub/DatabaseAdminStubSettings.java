@@ -64,6 +64,8 @@ import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
+import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
@@ -240,6 +242,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
   private final PagedCallSettings<
           ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
       listDatabaseRolesSettings;
+  private final UnaryCallSettings<AddSplitPointsRequest, AddSplitPointsResponse>
+      addSplitPointsSettings;
   private final UnaryCallSettings<CreateBackupScheduleRequest, BackupSchedule>
       createBackupScheduleSettings;
   private final UnaryCallSettings<GetBackupScheduleRequest, BackupSchedule>
@@ -745,6 +749,11 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     return listDatabaseRolesSettings;
   }
 
+  /** Returns the object with the settings used for calls to addSplitPoints. */
+  public UnaryCallSettings<AddSplitPointsRequest, AddSplitPointsResponse> addSplitPointsSettings() {
+    return addSplitPointsSettings;
+  }
+
   /** Returns the object with the settings used for calls to createBackupSchedule. */
   public UnaryCallSettings<CreateBackupScheduleRequest, BackupSchedule>
       createBackupScheduleSettings() {
@@ -912,6 +921,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     listDatabaseOperationsSettings = settingsBuilder.listDatabaseOperationsSettings().build();
     listBackupOperationsSettings = settingsBuilder.listBackupOperationsSettings().build();
     listDatabaseRolesSettings = settingsBuilder.listDatabaseRolesSettings().build();
+    addSplitPointsSettings = settingsBuilder.addSplitPointsSettings().build();
     createBackupScheduleSettings = settingsBuilder.createBackupScheduleSettings().build();
     getBackupScheduleSettings = settingsBuilder.getBackupScheduleSettings().build();
     updateBackupScheduleSettings = settingsBuilder.updateBackupScheduleSettings().build();
@@ -978,6 +988,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     private final PagedCallSettings.Builder<
             ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
         listDatabaseRolesSettings;
+    private final UnaryCallSettings.Builder<AddSplitPointsRequest, AddSplitPointsResponse>
+        addSplitPointsSettings;
     private final UnaryCallSettings.Builder<CreateBackupScheduleRequest, BackupSchedule>
         createBackupScheduleSettings;
     private final UnaryCallSettings.Builder<GetBackupScheduleRequest, BackupSchedule>
@@ -1095,6 +1107,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       listBackupOperationsSettings =
           PagedCallSettings.newBuilder(LIST_BACKUP_OPERATIONS_PAGE_STR_FACT);
       listDatabaseRolesSettings = PagedCallSettings.newBuilder(LIST_DATABASE_ROLES_PAGE_STR_FACT);
+      addSplitPointsSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       createBackupScheduleSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       getBackupScheduleSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       updateBackupScheduleSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
@@ -1124,6 +1137,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               listDatabaseOperationsSettings,
               listBackupOperationsSettings,
               listDatabaseRolesSettings,
+              addSplitPointsSettings,
               createBackupScheduleSettings,
               getBackupScheduleSettings,
               updateBackupScheduleSettings,
@@ -1161,6 +1175,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       listDatabaseOperationsSettings = settings.listDatabaseOperationsSettings.toBuilder();
       listBackupOperationsSettings = settings.listBackupOperationsSettings.toBuilder();
       listDatabaseRolesSettings = settings.listDatabaseRolesSettings.toBuilder();
+      addSplitPointsSettings = settings.addSplitPointsSettings.toBuilder();
       createBackupScheduleSettings = settings.createBackupScheduleSettings.toBuilder();
       getBackupScheduleSettings = settings.getBackupScheduleSettings.toBuilder();
       updateBackupScheduleSettings = settings.updateBackupScheduleSettings.toBuilder();
@@ -1189,6 +1204,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               listDatabaseOperationsSettings,
               listBackupOperationsSettings,
               listDatabaseRolesSettings,
+              addSplitPointsSettings,
               createBackupScheduleSettings,
               getBackupScheduleSettings,
               updateBackupScheduleSettings,
@@ -1318,6 +1334,11 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
 
       builder
           .listDatabaseRolesSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .addSplitPointsSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
@@ -1659,6 +1680,12 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
         listDatabaseRolesSettings() {
       return listDatabaseRolesSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to addSplitPoints. */
+    public UnaryCallSettings.Builder<AddSplitPointsRequest, AddSplitPointsResponse>
+        addSplitPointsSettings() {
+      return addSplitPointsSettings;
     }
 
     /** Returns the builder for the settings used for calls to createBackupSchedule. */
