@@ -276,7 +276,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <ignoredDependencies> com.google.api:gax,org.apache.maven.surefire:surefire-junit4 </ignoredDependencies>
+            <ignoredDependencies> com.google.api:gax,org.apache.maven.surefire:surefire-junit4,io.opentelemetry.semconv:opentelemetry-semconv </ignoredDependencies>
           </configuration>
         </plugin>
       </plugins>
