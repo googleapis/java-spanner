@@ -80,6 +80,13 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     } catch (SpannerException e2) {
       txnState = TransactionState.COMMIT_FAILED;
       throw e2;
+    } finally {
+      // At this point, if the TransactionState is not ABORTED, then the transaction has reached an
+      // end state.
+      // We can safely call close() to release resources.
+      if (getState() != TransactionState.ABORTED) {
+        close();
+      }
     }
   }
 
@@ -92,6 +99,9 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       txn.rollback();
     } finally {
       txnState = TransactionState.ROLLED_BACK;
+      // At this point, the TransactionState is ROLLED_BACK which is an end state.
+      // We can safely call close() to release resources.
+      close();
     }
   }
 
