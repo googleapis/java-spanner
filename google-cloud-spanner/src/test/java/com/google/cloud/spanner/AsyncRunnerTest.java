@@ -60,17 +60,51 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void testAsyncRunner_doesNotReturnCommitTimestampBeforeCommit() {
     AsyncRunner runner = client().runAsync();
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
-    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    if (isMultiplexedSessionsEnabledForRW()) {
+      Throwable e = assertThrows(Throwable.class, () -> runner.getCommitTimestamp().get());
+      // If the error occurs within the future, it gets wrapped in an ExecutionException.
+      // This happens when DelayedAsyncRunner is invoked while the multiplexed session is not yet
+      // created.
+      // If the error occurs before the future is created, it may throw an IllegalStateException
+      // instead.
+      assertTrue(e instanceof ExecutionException || e instanceof IllegalStateException);
+      if (e instanceof ExecutionException) {
+        Throwable cause = e.getCause();
+        assertTrue(cause instanceof IllegalStateException);
+        assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
+      } else {
+        assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+      }
+    } else {
+      IllegalStateException e =
+          assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
+      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    }
   }
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitResponseBeforeCommit() {
     AsyncRunner runner = client().runAsync();
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
-    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    if (isMultiplexedSessionsEnabledForRW()) {
+      Throwable e = assertThrows(Throwable.class, () -> runner.getCommitResponse().get());
+      // If the error occurs within the future, it gets wrapped in an ExecutionException.
+      // This happens when DelayedAsyncRunner is invoked while the multiplexed session is not yet
+      // created.
+      // If the error occurs before the future is created, it may throw an IllegalStateException
+      // instead.
+      assertTrue(e instanceof ExecutionException || e instanceof IllegalStateException);
+      if (e instanceof ExecutionException) {
+        Throwable cause = e.getCause();
+        assertTrue(cause instanceof IllegalStateException);
+        assertTrue(cause.getMessage().contains("runAsync() has not yet been called"));
+      } else {
+        assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+      }
+    } else {
+      IllegalStateException e =
+          assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
+      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    }
   }
 
   @Test
@@ -558,7 +592,9 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     // Wait until at least one row has been fetched. At that moment there should be one session
     // checked out.
     dataReceived.await();
-    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
+    if (!isMultiplexedSessionsEnabledForRW()) {
+      assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
+    }
     assertThat(res.isDone()).isFalse();
     dataChecked.countDown();
     // Get the data from the transaction.
