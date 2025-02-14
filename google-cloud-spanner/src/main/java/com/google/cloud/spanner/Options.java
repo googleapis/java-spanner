@@ -108,6 +108,9 @@ public final class Options implements Serializable {
   /** Marker interface to mark options applicable to Update and Write operations */
   public interface UpdateTransactionOption extends UpdateOption, TransactionOption {}
 
+  /** Marker interface for options that can be used with both executeQuery and executeUpdate. */
+  public interface QueryUpdateOption extends QueryOption, UpdateOption {}
+
   /**
    * Marker interface to mark options applicable to Create, Update and Delete operations in admin
    * API.
@@ -246,8 +249,8 @@ public final class Options implements Serializable {
    * commit time (e.g. validation of unique constraints). Given this, successful execution of a DML
    * statement should not be assumed until the transaction commits.
    */
-  public static LastStatementUpdateOption lastStatementSet(Boolean lastStatementSet) {
-    return new LastStatementUpdateOption(lastStatementSet);
+  public static QueryUpdateOption lastStatement() {
+    return new LastStatementUpdateOption();
   }
 
   /**
@@ -508,8 +511,7 @@ public final class Options implements Serializable {
   private DecodeMode decodeMode;
   private RpcOrderBy orderBy;
   private RpcLockHint lockHint;
-
-  private Boolean lastStatementSet;
+  private Boolean lastStatement;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -646,12 +648,12 @@ public final class Options implements Serializable {
     return orderBy == null ? null : orderBy.proto;
   }
 
-  boolean hasLastStatementSet() {
-    return lastStatementSet != null;
+  boolean hasLastStatement() {
+    return lastStatement != null;
   }
 
-  Boolean lastStatementSet() {
-    return lastStatementSet;
+  Boolean isLastStatement() {
+    return lastStatement;
   }
 
   boolean hasLockHint() {
@@ -718,8 +720,8 @@ public final class Options implements Serializable {
     if (orderBy != null) {
       b.append("orderBy: ").append(orderBy).append(' ');
     }
-    if (lastStatementSet != null) {
-      b.append("lastStatementSet: ").append(lastStatementSet).append(' ');
+    if (lastStatement != null) {
+      b.append("lastStatement: ").append(lastStatement).append(' ');
     }
     if (lockHint != null) {
       b.append("lockHint: ").append(lockHint).append(' ');
@@ -764,7 +766,7 @@ public final class Options implements Serializable {
         && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
         && Objects.equals(directedReadOptions(), that.directedReadOptions())
         && Objects.equals(orderBy(), that.orderBy())
-        && Objects.equals(lastStatementSet(), that.lastStatementSet());
+        && Objects.equals(isLastStatement(), that.isLastStatement())
         && Objects.equals(lockHint(), that.lockHint());
   }
 
@@ -825,8 +827,8 @@ public final class Options implements Serializable {
     if (orderBy != null) {
       result = 31 * result + orderBy.hashCode();
     }
-    if (lastStatementSet != null) {
-      result = 31 * result + lastStatementSet.hashCode();
+    if (lastStatement != null) {
+      result = 31 * result + lastStatement.hashCode();
     }
     if (lockHint != null) {
       result = 31 * result + lockHint.hashCode();
@@ -997,17 +999,18 @@ public final class Options implements Serializable {
     }
   }
 
-  static final class LastStatementUpdateOption extends InternalOption implements UpdateOption {
+  static final class LastStatementUpdateOption extends InternalOption implements QueryUpdateOption {
 
-    private final Boolean lastStatementSet;
-
-    LastStatementUpdateOption(Boolean lastStatementSet) {
-      this.lastStatementSet = lastStatementSet;
-    }
+    LastStatementUpdateOption() {}
 
     @Override
     void appendToOptions(Options options) {
-      options.lastStatementSet = lastStatementSet;
+      options.lastStatement = true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      return o instanceof LastStatementUpdateOption;
     }
   }
 }
