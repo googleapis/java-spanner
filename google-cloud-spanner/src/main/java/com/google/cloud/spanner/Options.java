@@ -1012,7 +1012,7 @@ public final class Options implements Serializable {
     public int hashCode() {
       return LastStatementUpdateOption.class.hashCode();
     }
-    
+
     @Override
     public boolean equals(Object o) {
       return o instanceof LastStatementUpdateOption;
