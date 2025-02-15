@@ -266,6 +266,7 @@ public class AbstractReadContextTest {
     assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
   }
 
+  @Test
   public void executeSqlRequestBuilderWithRequestOptions() {
     ExecuteSqlRequest request =
         context

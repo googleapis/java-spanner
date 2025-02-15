@@ -810,6 +810,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @Test
   public void longRunningTransactionsCleanup_whenActionSetToClose_verifyInactiveSessionsClosed()
       throws Exception {
@@ -856,6 +858,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @Test
   public void longRunningTransactionsCleanup_whenActionSetToWarn_verifyInactiveSessionsOpen()
       throws Exception {
@@ -904,6 +908,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @Test
   public void
       longRunningTransactionsCleanup_whenUtilisationBelowThreshold_verifyInactiveSessionsOpen()
@@ -947,6 +953,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @Test
   public void
       longRunningTransactionsCleanup_whenAllAreExpectedlyLongRunning_verifyInactiveSessionsOpen()
@@ -1013,6 +1021,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @Test
   public void longRunningTransactionsCleanup_whenBelowDurationThreshold_verifyInactiveSessionsOpen()
       throws Exception {
@@ -1058,6 +1068,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @Test
   public void longRunningTransactionsCleanup_whenException_doNothing() throws Exception {
     Clock clock = mock(Clock.class);
@@ -1101,6 +1113,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @Test
   public void
       longRunningTransactionsCleanup_whenTaskRecurrenceBelowThreshold_verifyInactiveSessionsOpen()
