@@ -29,7 +29,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class XGoogSpannerRequestIdTest {
   private static final Pattern REGEX_RAND_PROCESS_ID =
-      Pattern.compile("1.([0-9a-z]{8})(\\.\\d+){3}\\.(\\d+)$");
+      Pattern.compile("1.([0-9a-z]{16})(\\.\\d+){3}\\.(\\d+)$");
 
   @Test
   public void testEquals() {

@@ -47,7 +47,8 @@ public class XGoogSpannerRequestId {
   }
 
   private static String generateRandProcessId() {
-    return String.format("%08x", new SecureRandom().nextInt());
+    // Expecting to use 64-bits of randomness to avoid clashes.
+    return String.format("%016x", new SecureRandom().nextInt(64));
   }
 
   @Override
