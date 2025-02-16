@@ -25,7 +25,8 @@ import java.util.Objects;
 @InternalApi
 public class XGoogSpannerRequestId {
   // 1. Generate the random process Id singleton.
-  @VisibleForTesting static String RAND_PROCESS_ID = XGoogSpannerRequestId.generateRandProcessId();
+  @VisibleForTesting
+  static final String RAND_PROCESS_ID = XGoogSpannerRequestId.generateRandProcessId();
 
   @VisibleForTesting
   static final long VERSION = 1; // The version of the specification being implemented.
