@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.InternalApi;
 import com.google.common.annotations.VisibleForTesting;
+import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Objects;
 
@@ -48,7 +49,8 @@ public class XGoogSpannerRequestId {
 
   private static String generateRandProcessId() {
     // Expecting to use 64-bits of randomness to avoid clashes.
-    return String.format("%016x", new SecureRandom().nextInt(64));
+    BigInteger bigInt = new BigInteger(64, new SecureRandom());
+    return String.format("%016x", bigInt);
   }
 
   @Override
