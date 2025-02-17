@@ -101,6 +101,7 @@ public class ITLargeReadTest {
                         + ")"));
     postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     hasher = Hashing.goodFastHash(64);
+
     List<Mutation> mutations = new ArrayList<>();
     Random rnd = new Random();
     int totalSize = 0;
