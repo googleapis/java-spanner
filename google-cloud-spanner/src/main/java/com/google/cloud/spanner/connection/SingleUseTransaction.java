@@ -34,6 +34,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.QueryUpdateOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadOnlyTransaction;
@@ -298,7 +299,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                 writeTransaction.run(
                     transaction ->
                         DirectExecuteResultSet.ofResultSet(
-                            transaction.executeQuery(update.getStatement(), options)));
+                            transaction.executeQuery(
+                                update.getStatement(), appendLastStatement(options))));
             state = UnitOfWorkState.COMMITTED;
             return resultSet;
           } catch (Throwable t) {
@@ -554,11 +556,15 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                     transaction -> {
                       if (analyzeMode == AnalyzeMode.NONE) {
                         return Tuple.of(
-                            transaction.executeUpdate(update.getStatement(), options), null);
+                            transaction.executeUpdate(
+                                update.getStatement(), appendLastStatement(options)),
+                            null);
                       }
                       ResultSet resultSet =
                           transaction.analyzeUpdateStatement(
-                              update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                              update.getStatement(),
+                              analyzeMode.getQueryAnalyzeMode(),
+                              appendLastStatement(options));
                       return Tuple.of(null, resultSet);
                     });
             state = UnitOfWorkState.COMMITTED;
@@ -580,6 +586,29 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return addRetryUpdateAsPartitionedDmlCallback(transactionalResult, callType, update, options);
     }
     return transactionalResult;
+  }
+
+  private static final QueryUpdateOption[] LAST_STATEMENT_OPTIONS =
+      new QueryUpdateOption[] {Options.lastStatement()};
+
+  private static UpdateOption[] appendLastStatement(UpdateOption[] options) {
+    if (options.length == 0) {
+      return LAST_STATEMENT_OPTIONS;
+    }
+    UpdateOption[] result = new UpdateOption[options.length + 1];
+    System.arraycopy(options, 0, result, 0, options.length);
+    result[result.length - 1] = LAST_STATEMENT_OPTIONS[0];
+    return result;
+  }
+
+  private static QueryOption[] appendLastStatement(QueryOption[] options) {
+    if (options.length == 0) {
+      return LAST_STATEMENT_OPTIONS;
+    }
+    QueryOption[] result = new QueryOption[options.length + 1];
+    System.arraycopy(options, 0, result, 0, options.length);
+    result[result.length - 1] = LAST_STATEMENT_OPTIONS[0];
+    return result;
   }
 
   /**
@@ -719,7 +748,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                 try {
                   long[] res =
                       transaction.batchUpdate(
-                          Iterables.transform(updates, ParsedStatement::getStatement), options);
+                          Iterables.transform(updates, ParsedStatement::getStatement),
+                          appendLastStatement(options));
                   state = UnitOfWorkState.COMMITTED;
                   return res;
                 } catch (Throwable t) {
