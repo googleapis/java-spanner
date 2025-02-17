@@ -1521,6 +1521,10 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
   /** Test the successful retry of a transaction with a high chance of multiple aborts */
   @Test
   public void testRetryHighAbortRate() {
+    // TODO(sriharshach): Remove this skip once backend support empty transactions to commit.
+    assumeFalse(
+        "Skipping for multiplexed sessions since it does not allow empty transactions to commit",
+        env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     final int NUMBER_OF_TEST_RECORDS = 10000;
     final long UPDATED_RECORDS = 1000L;
     // abort on 25% of all statements
