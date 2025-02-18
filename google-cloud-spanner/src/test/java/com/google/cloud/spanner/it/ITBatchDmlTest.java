@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Database;
@@ -84,6 +85,10 @@ public final class ITBatchDmlTest {
 
   @Test
   public void noStatementsInRequest() {
+    // TODO(sriharshach): Remove this skip once backend support empty transactions to commit.
+    assumeFalse(
+        "Skipping for multiplexed sessions since it does not allow empty transactions to commit",
+        isUsingMultiplexedSessionsForRW());
     final TransactionCallable<long[]> callable =
         transaction -> {
           List<Statement> stmts = new ArrayList<>();
@@ -251,5 +256,9 @@ public final class ITBatchDmlTest {
 
     assertThat(actualRowCounts.length).isEqualTo(80);
     assertThat(expectedRowCounts).isEqualTo(actualRowCounts);
+  }
+
+  boolean isUsingMultiplexedSessionsForRW() {
+    return env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }
