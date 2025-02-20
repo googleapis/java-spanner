@@ -1,5 +1,28 @@
 # Changelog
 
+## [6.87.0](https://github.com/googleapis/java-spanner/compare/v6.86.0...v6.87.0) (2025-02-20)
+
+
+### Features
+
+* Add AddSplitPoints API ([a5ebcd3](https://github.com/googleapis/java-spanner/commit/a5ebcd343a67c57d61362cfb0ccb4888f5503681))
+* Add option for multiplexed sessions with partitioned operations ([#3635](https://github.com/googleapis/java-spanner/issues/3635)) ([dc89b4d](https://github.com/googleapis/java-spanner/commit/dc89b4d7663f0e40a9169b21243f2d94f2fc5749))
+* Add option to indicate that a statement is the last in a transaction ([#3647](https://github.com/googleapis/java-spanner/issues/3647)) ([b04ea80](https://github.com/googleapis/java-spanner/commit/b04ea804cfa9551b4d7c49cd83f0ef1120942423))
+* Adding gfe_latencies metric to built-in metrics ([#3490](https://github.com/googleapis/java-spanner/issues/3490)) ([314dadc](https://github.com/googleapis/java-spanner/commit/314dadc31f4a5aa798d45886db7231c1bd8b7a91))
+* **spanner:** Support multiplexed session for read-write transactions ([#3608](https://github.com/googleapis/java-spanner/issues/3608)) ([bda78ed](https://github.com/googleapis/java-spanner/commit/bda78edaba827acf974c87c335868a6f8caa38f2))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.53.0 ([20a3d0d](https://github.com/googleapis/java-spanner/commit/20a3d0da41509ffca66c77de6771fc8080930613))
+* **spanner:** End spans for read-write methods ([#3629](https://github.com/googleapis/java-spanner/issues/3629)) ([4a1f99c](https://github.com/googleapis/java-spanner/commit/4a1f99c6bb872ffc08e60d3843e4cdfc4efa2690))
+* **spanner:** Release resources in TransactionManager ([#3638](https://github.com/googleapis/java-spanner/issues/3638)) ([e0a3e5b](https://github.com/googleapis/java-spanner/commit/e0a3e5bd169e28e349a2dc92f86a2a9b5510f8f6))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.43.0 ([#3642](https://github.com/googleapis/java-spanner/issues/3642)) ([c12968a](https://github.com/googleapis/java-spanner/commit/c12968a5f6dad95017d9867d96d4f19a26643a07))
+
 ## [6.86.0](https://github.com/googleapis/java-spanner/compare/v6.85.0...v6.86.0) (2025-01-31)
 
 
