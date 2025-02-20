@@ -93,7 +93,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           assertFalse(resultSet.next());
         }
       }
-      if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
+      if (isMultiplexedSessionsEnabledForPartitionedOps(connection.getSpanner())) {
+        assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+      } else if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
         assertEquals(3, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       } else {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
@@ -155,7 +157,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
         readTimestamps.add(connection.getReadTimestamp());
         connection.commit();
       }
-      if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
+      if (isMultiplexedSessionsEnabledForPartitionedOps(connection.getSpanner())) {
+        assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+      } else if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
         assertEquals(3, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       } else {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
@@ -228,6 +232,10 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           if (createSessionRequestCounts == expectedCreateSessionsRPC + 1) {
             isMultiplexedSessionCreated = true;
           }
+        } else if (isMultiplexedSessionsEnabledForPartitionedOps(connection.getSpanner())
+            && isMultiplexedSessionCreated) {
+          // When multiplexed session will be reused for each iteration.
+          assertEquals(0, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
         } else {
           assertEquals(
               expectedCreateSessionsRPC,
@@ -261,6 +269,7 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
     String prefix = dialect == Dialect.POSTGRESQL ? "spanner." : "";
 
     int maxPartitions = 5;
+    boolean isMultiplexedSessionCreated = false;
     try (Connection connection = createConnection()) {
       connection.execute(Statement.of("set autocommit=true"));
       assertTrue(connection.isAutocommit());
@@ -284,7 +293,6 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           assertFalse(resultSet.next());
         }
 
-        boolean isMultiplexedSessionCreated = false;
         for (boolean useLiteral : new boolean[] {true, false}) {
           try (ResultSet partitions =
               connection.executeQuery(
@@ -328,6 +336,10 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
             if (createSessionRequestCounts == expectedCreateSessionsRPC + 1) {
               isMultiplexedSessionCreated = true;
             }
+          } else if (isMultiplexedSessionsEnabledForPartitionedOps(connection.getSpanner())
+              && isMultiplexedSessionCreated) {
+            // When multiplexed session will be reused for each iteration.
+            assertEquals(0, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
           } else {
             assertEquals(
                 expectedCreateSessionsRPC,
@@ -570,7 +582,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           assertEquals(maxPartitions * generatedRowCount, rowCount);
         }
       }
-      if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
+      if (isMultiplexedSessionsEnabledForPartitionedOps(connection.getSpanner())) {
+        assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+      } else if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
         assertEquals(3, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       } else {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
@@ -679,7 +693,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           assertEquals(maxPartitions * generatedRowCount, rowCount);
         }
       }
-      if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
+      if (isMultiplexedSessionsEnabledForPartitionedOps(connection.getSpanner())) {
+        assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+      } else if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
         assertEquals(6, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       } else {
         assertEquals(5, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
@@ -758,7 +774,10 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           exception
               .getMessage()
               .contains("Partition query is not supported for read/write transaction"));
-      if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
+
+      if (isMultiplexedSessionsEnabledForPartitionedOps(connection.getSpanner())) {
+        assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+      } else if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
         assertEquals(3, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       } else {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
