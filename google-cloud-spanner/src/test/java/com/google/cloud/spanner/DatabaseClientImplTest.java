@@ -4708,6 +4708,7 @@ public class DatabaseClientImplTest {
             col++);
         assertAsString("2023-01-11", resultSet, col++);
         assertAsString("2023-01-11T11:55:18.123456789Z", resultSet, col++);
+        assertAsString("P-6Y-8M-198DT23H59M12.345678900S", resultSet, col++);
         if (dialect == Dialect.POSTGRESQL) {
           // Check PG_OID value
           assertAsString("100", resultSet, col++);
@@ -4752,6 +4753,8 @@ public class DatabaseClientImplTest {
             ImmutableList.of("2023-01-11T11:55:18.123456789Z", "NULL", "2023-01-12T11:55:18Z"),
             resultSet,
             col++);
+        assertAsString(
+            ImmutableList.of("P1Y2M3DT-1H-2M-3.456789S", "NULL", "P1Y"), resultSet, col++);
         if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
           assertAsString(Base64.getEncoder().encodeToString(info.toByteArray()), resultSet, col++);
           assertAsString(String.valueOf(Genre.JAZZ_VALUE), resultSet, col++);
@@ -5285,6 +5288,10 @@ public class DatabaseClientImplTest {
             .addValues(
                 com.google.protobuf.Value.newBuilder()
                     .setStringValue("2023-01-11T11:55:18.123456789Z")
+                    .build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setStringValue("P-7Y4M-198DT24H-1M12.3456789S")
                     .build());
     if (dialect == Dialect.POSTGRESQL) {
       // Add PG_OID value
@@ -5462,6 +5469,21 @@ public class DatabaseClientImplTest {
                             com.google.protobuf.Value.newBuilder()
                                 .setStringValue("2023-01-12T11:55:18Z")
                                 .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("P1Y2M3DT-1H-2M-3.456789S")
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setStringValue("P1Y").build())
                         .build()));
 
     if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
