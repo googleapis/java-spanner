@@ -695,6 +695,8 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       }
       if (isMultiplexedSessionsEnabledForPartitionedOps(connection.getSpanner())) {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+      } else if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
+        assertEquals(6, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       } else {
         assertEquals(5, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       }
