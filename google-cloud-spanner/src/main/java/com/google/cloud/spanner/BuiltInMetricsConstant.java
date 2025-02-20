@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.XGoogSpannerRequestId.REQUEST_ID;
+
 import com.google.api.core.InternalApi;
 import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.common.collect.ImmutableList;
@@ -26,7 +28,9 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.View;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,6 +98,8 @@ public class BuiltInMetricsConstant {
       AttributeKey.stringKey("directpath_enabled");
   public static final AttributeKey<String> DIRECT_PATH_USED_KEY =
       AttributeKey.stringKey("directpath_used");
+  public static final AttributeKey<String> REQUEST_ID_KEY = AttributeKey.stringKey(REQUEST_ID);
+  public static Set<String> ALLOWED_EXEMPLARS_ATTRIBUTES = new HashSet<>(Arrays.asList(REQUEST_ID));
 
   // IP address prefixes allocated for DirectPath backends.
   public static final String DP_IPV6_PREFIX = "2001:4860:8040";
@@ -168,6 +174,7 @@ public class BuiltInMetricsConstant {
         Aggregation.sum(),
         InstrumentType.COUNTER,
         "1");
+    defineSpannerView(views);
     defineGRPCView(views);
     return views.build();
   }
@@ -197,6 +204,19 @@ public class BuiltInMetricsConstant {
             .setAggregation(aggregation)
             .setAttributeFilter(attributesFilter)
             .build();
+    viewMap.put(selector, view);
+  }
+
+  private static void defineSpannerView(ImmutableMap.Builder<InstrumentSelector, View> viewMap) {
+    InstrumentSelector selector =
+        InstrumentSelector.builder()
+            .setMeterName(BuiltInMetricsConstant.SPANNER_METER_NAME)
+            .build();
+    Set<String> attributesFilter =
+        BuiltInMetricsConstant.COMMON_ATTRIBUTES.stream()
+            .map(AttributeKey::getKey)
+            .collect(Collectors.toSet());
+    View view = View.builder().setAttributeFilter(attributesFilter).build();
     viewMap.put(selector, view);
   }
 

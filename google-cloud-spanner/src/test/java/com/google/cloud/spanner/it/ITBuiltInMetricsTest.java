@@ -20,11 +20,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.monitoring.v3.MetricServiceClient;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Stopwatch;
 import com.google.monitoring.v3.ListTimeSeriesRequest;
@@ -55,8 +51,13 @@ public class ITBuiltInMetricsTest {
 
   private static MetricServiceClient metricClient;
 
-  private static String[] METRICS = {
-    "operation_latencies", "attempt_latencies", "operation_count", "attempt_count",
+  private static final String[] METRICS = {
+    "operation_latencies",
+    "attempt_latencies",
+    "operation_count",
+    "attempt_count",
+    "gfe_latencies",
+    "afe_latencies"
   };
 
   @BeforeClass
@@ -120,7 +121,7 @@ public class ITBuiltInMetricsTest {
         response = metricClient.listTimeSeriesCallable().call(request);
       }
 
-      assertWithMessage("Metric" + metric + "didn't return any data.")
+      assertWithMessage("Metric " + metric + " didn't return any data.")
           .that(response.getTimeSeriesCount())
           .isGreaterThan(0);
     }
