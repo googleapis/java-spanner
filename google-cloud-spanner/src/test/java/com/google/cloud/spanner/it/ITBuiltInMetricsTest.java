@@ -89,9 +89,11 @@ public class ITBuiltInMetricsTest {
             .setEndTime(Timestamps.fromMillis(end.toEpochMilli()))
             .build();
 
-    client
-        .readWriteTransaction()
-        .run(transaction -> transaction.executeQuery(Statement.of("Select 1")));
+    for (int i = 0; i < 100; i++) {
+      client
+          .readWriteTransaction()
+          .run(transaction -> transaction.executeQuery(Statement.of("Select 1")));
+    }
 
     for (String metric : METRICS) {
       String metricFilter =

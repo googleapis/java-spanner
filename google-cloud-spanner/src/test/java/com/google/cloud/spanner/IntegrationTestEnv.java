@@ -128,9 +128,9 @@ public class IntegrationTestEnv extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
+    SpannerOptions.enableOpenTelemetryTraces();
     this.initializeConfig();
     assumeFalse(alwaysCreateNewInstance && isCloudDevel());
-
     this.config.setUp();
     SpannerOptions options = config.spannerOptions();
     if (testEnvOptions.stream()
