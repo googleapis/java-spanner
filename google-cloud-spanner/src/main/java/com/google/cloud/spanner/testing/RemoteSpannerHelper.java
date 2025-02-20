@@ -19,6 +19,8 @@ package com.google.cloud.spanner.testing;
 import com.google.api.client.util.BackOff;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.opentelemetry.trace.TraceConfiguration;
+import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -32,6 +34,12 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -220,6 +228,8 @@ public class RemoteSpannerHelper {
    * using this will be created in the given instance.
    */
   public static RemoteSpannerHelper create(InstanceId instanceId) {
+    SpannerOptions.enableOpenTelemetryTraces();
+    // createTraceExporter(instanceId.getProject());
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId(instanceId.getProject())
@@ -237,5 +247,35 @@ public class RemoteSpannerHelper {
   public static RemoteSpannerHelper create(SpannerOptions options, InstanceId instanceId) {
     Spanner client = options.getService();
     return new RemoteSpannerHelper(options, instanceId, client);
+  }
+
+  public static OpenTelemetry createTraceExporter() {
+    // Tried with separate OT object for Traces. In this case exemplars are coming up but not linked
+    // to correct trace id.
+    Resource resource =
+        Resource.getDefault().merge(Resource.builder().put("service.name", "surbhi").build());
+
+    io.opentelemetry.sdk.trace.export.SpanExporter traceExporter =
+        TraceExporter.createWithConfiguration(TraceConfiguration.builder().build());
+
+    // Using a batch span processor
+    // You can use `.setScheduleDelay()`, `.setExporterTimeout()`,
+    // `.setMaxQueueSize`(), and `.setMaxExportBatchSize()` to further customize.
+    BatchSpanProcessor otlpGrpcSpanProcessor = BatchSpanProcessor.builder(traceExporter).build();
+
+    // Create a new tracer provider
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder()
+            // Use Otlp exporter or any other exporter of your choice.
+            .addSpanProcessor(otlpGrpcSpanProcessor)
+            .setResource(resource)
+            .setSampler(Sampler.traceIdRatioBased(1))
+            .build();
+
+    // Export to a collector that is expecting OTLP using gRPC.
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).build();
+
+    return openTelemetry;
   }
 }

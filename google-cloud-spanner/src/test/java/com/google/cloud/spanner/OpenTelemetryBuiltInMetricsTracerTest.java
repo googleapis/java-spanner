@@ -40,6 +40,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -115,6 +116,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   @Override
   public void createSpannerInstance() {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
+
+    ApiTracerFactory metricsTracerFactory =
+        new BuiltInMetricsTracerFactory(
+            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+            attributes,
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), true));
     // Set a quick polling algorithm to prevent this from slowing down the test unnecessarily.
     builder
         .getDatabaseAdminStubSettingsBuilder()
