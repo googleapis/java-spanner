@@ -332,8 +332,7 @@ public abstract class AbstractMockServerTest {
     if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
       return false;
     }
-    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps()
-        && spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps();
   }
 
   boolean isMultiplexedSessionsEnabledForRW(Spanner spanner) {

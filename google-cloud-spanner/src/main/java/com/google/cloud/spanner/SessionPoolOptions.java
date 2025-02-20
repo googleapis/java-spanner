@@ -360,7 +360,7 @@ public class SessionPoolOptions {
   @VisibleForTesting
   @InternalApi
   public boolean getUseMultiplexedSessionPartitionedOps() {
-    return useMultiplexedSessionForPartitionedOps;
+    return getUseMultiplexedSession() && useMultiplexedSessionForPartitionedOps;
   }
 
   private static Boolean getUseMultiplexedSessionFromEnvVariable() {
