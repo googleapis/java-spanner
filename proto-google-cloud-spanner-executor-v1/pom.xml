@@ -64,6 +64,7 @@
           <?m2e ignore?>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.6.0</version>
         </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
