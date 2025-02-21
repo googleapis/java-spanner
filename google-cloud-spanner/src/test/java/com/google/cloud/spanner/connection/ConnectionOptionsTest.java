@@ -1216,18 +1216,19 @@ public class ConnectionOptionsTest {
   @Test
   public void testExternalHostPatterns() {
     Matcher matcherWithoutInstance =
-        EXTERNAL_HOST_PATTERN.matcher("spanner://localhost:15000/databases/test-db");
+        EXTERNAL_HOST_PATTERN.matcher("cloudspanner://localhost:15000/databases/test-db");
     assertTrue(matcherWithoutInstance.matches());
     assertNull(matcherWithoutInstance.group("INSTANCEGROUP"));
     assertEquals("test-db", matcherWithoutInstance.group("DATABASEGROUP"));
     Matcher matcherWithProperty =
         EXTERNAL_HOST_PATTERN.matcher(
-            "spanner://localhost:15000/instances/default/databases/singers-db?usePlainText=true");
+            "cloudspanner://localhost:15000/instances/default/databases/singers-db?usePlainText=true");
     assertTrue(matcherWithProperty.matches());
     assertEquals("default", matcherWithProperty.group("INSTANCEGROUP"));
     assertEquals("singers-db", matcherWithProperty.group("DATABASEGROUP"));
     Matcher matcherWithoutPort =
-        EXTERNAL_HOST_PATTERN.matcher("spanner://localhost/instances/default/databases/test-db");
+        EXTERNAL_HOST_PATTERN.matcher(
+            "cloudspanner://localhost/instances/default/databases/test-db");
     assertTrue(matcherWithoutPort.matches());
     assertEquals("default", matcherWithoutPort.group("INSTANCEGROUP"));
     assertEquals("test-db", matcherWithoutPort.group("DATABASEGROUP"));
@@ -1241,10 +1242,15 @@ public class ConnectionOptionsTest {
             ImmutableMap.of()));
     Matcher matcherWithProject =
         EXTERNAL_HOST_PATTERN.matcher(
-            "spanner://localhost:15000/projects/default/instances/default/databases/singers-db");
+            "cloudspanner://localhost:15000/projects/default/instances/default/databases/singers-db");
     assertFalse(matcherWithProject.matches());
     Matcher matcherWithoutHost =
-        EXTERNAL_HOST_PATTERN.matcher("spanner:/instances/default/databases/singers-db");
+        EXTERNAL_HOST_PATTERN.matcher("cloudspanner:/instances/default/databases/singers-db");
     assertFalse(matcherWithoutHost.matches());
+    Matcher matcherWithPrefixSpanner =
+        EXTERNAL_HOST_PATTERN.matcher("spanner://localhost:15000/databases/test-db");
+    assertTrue(matcherWithPrefixSpanner.matches());
+    assertNull(matcherWithPrefixSpanner.group("INSTANCEGROUP"));
+    assertEquals("test-db", matcherWithPrefixSpanner.group("DATABASEGROUP"));
   }
 }
