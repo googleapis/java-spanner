@@ -34,6 +34,8 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
 import com.google.api.gax.tracing.OpencensusTracerFactory;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
@@ -79,8 +81,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +97,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -110,6 +116,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String CLOUD_SPANNER_HOST_FORMAT = ".*\\.googleapis\\.com.*";
+  private static final Pattern CLOUD_SPANNER_HOST_PATTERN =
+      Pattern.compile(CLOUD_SPANNER_HOST_FORMAT);
   private static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
           "https://www.googleapis.com/auth/spanner.admin",
@@ -799,6 +808,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
+    String externalHostTokenPath = System.getenv("EXTERNAL_HOST_AUTH_TOKEN");
+    if (builder.isExternalHost && externalHostTokenPath != null) {
+      String token;
+      try {
+        token =
+            Base64.getEncoder()
+                .encodeToString(Files.readAllBytes(Paths.get(externalHostTokenPath)));
+      } catch (IOException e) {
+        throw SpannerExceptionFactory.newSpannerException(e);
+      }
+      credentials = new GoogleCredentials(new AccessToken(token, null));
+    }
   }
 
   /**
@@ -967,6 +988,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
+    private boolean isExternalHost = false;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1459,6 +1481,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public Builder setHost(String host) {
       super.setHost(host);
+      if (this.emulatorHost == null && !CLOUD_SPANNER_HOST_PATTERN.matcher(host).matches()) {
+        this.isExternalHost = true;
+      }
       // Setting a host should override any SPANNER_EMULATOR_HOST setting.
       setEmulatorHost(null);
       return this;
