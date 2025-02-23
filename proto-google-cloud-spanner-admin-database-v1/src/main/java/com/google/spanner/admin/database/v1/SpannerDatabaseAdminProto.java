@@ -461,7 +461,7 @@ public final class SpannerDatabaseAdminProto {
           + "ackupSchedules\032x\312A\026spanner.googleapis.co"
           + "m\322A\\https://www.googleapis.com/auth/clou"
           + "d-platform,https://www.googleapis.com/au"
-          + "th/spanner.adminB\330\002\n$com.google.spanner."
+          + "th/spanner.adminB\326\003\n$com.google.spanner."
           + "admin.database.v1B\031SpannerDatabaseAdminP"
           + "rotoP\001ZFcloud.google.com/go/spanner/admi"
           + "n/database/apiv1/databasepb;databasepb\252\002"
@@ -470,7 +470,10 @@ public final class SpannerDatabaseAdminProto {
           + "\352\002+Google::Cloud::Spanner::Admin::Databa"
           + "se::V1\352AJ\n\037spanner.googleapis.com/Instan"
           + "ce\022\'projects/{project}/instances/{instan"
-          + "ce}b\006proto3"
+          + "ce}\352A{\n(spanner.googleapis.com/InstanceP"
+          + "artition\022Oprojects/{project}/instances/{"
+          + "instance}/instancePartitions/{instance_p"
+          + "artition}b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

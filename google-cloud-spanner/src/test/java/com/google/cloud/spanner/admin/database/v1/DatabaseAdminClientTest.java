@@ -51,6 +51,7 @@ import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
 import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupInstancePartition;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.BackupScheduleName;
@@ -1013,6 +1014,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1081,6 +1083,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1149,6 +1152,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1221,6 +1225,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1293,6 +1298,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1365,6 +1371,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1437,6 +1444,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1491,6 +1499,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1545,6 +1554,7 @@ public class DatabaseAdminClientTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
