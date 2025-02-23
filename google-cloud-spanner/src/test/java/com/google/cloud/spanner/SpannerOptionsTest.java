@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerOptions.CLOUD_SPANNER_HOST_PATTERN;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1163,5 +1164,12 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .build();
     assertEquals(GlobalOpenTelemetry.get(), options.getOpenTelemetry());
+  }
+
+  @Test
+  public void testCloudSpannerHostPattern() {
+    assertTrue(CLOUD_SPANNER_HOST_PATTERN.matcher("https://spanner.googleapis.com").matches());
+    assertTrue(CLOUD_SPANNER_HOST_PATTERN.matcher("https://product-area.googleapis.com").matches());
+    assertFalse(CLOUD_SPANNER_HOST_PATTERN.matcher("https://some-company.com").matches());
   }
 }

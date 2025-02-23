@@ -117,8 +117,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
   private static final String CLOUD_SPANNER_HOST_FORMAT = ".*\\.googleapis\\.com.*";
-  private static final Pattern CLOUD_SPANNER_HOST_PATTERN =
-      Pattern.compile(CLOUD_SPANNER_HOST_FORMAT);
+
+  @VisibleForTesting
+  static final Pattern CLOUD_SPANNER_HOST_PATTERN = Pattern.compile(CLOUD_SPANNER_HOST_FORMAT);
+
   private static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
           "https://www.googleapis.com/auth/spanner.admin",
