@@ -1169,7 +1169,8 @@ public class SpannerOptionsTest {
   @Test
   public void testCloudSpannerHostPattern() {
     assertTrue(CLOUD_SPANNER_HOST_PATTERN.matcher("https://spanner.googleapis.com").matches());
-    assertTrue(CLOUD_SPANNER_HOST_PATTERN.matcher("https://product-area.googleapis.com").matches());
-    assertFalse(CLOUD_SPANNER_HOST_PATTERN.matcher("https://some-company.com").matches());
+    assertTrue(
+        CLOUD_SPANNER_HOST_PATTERN.matcher("https://product-area.googleapis.com:443").matches());
+    assertFalse(CLOUD_SPANNER_HOST_PATTERN.matcher("https://some-company.com:443").matches());
   }
 }
