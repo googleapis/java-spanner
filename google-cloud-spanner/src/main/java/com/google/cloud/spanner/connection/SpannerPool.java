@@ -363,14 +363,10 @@ public class SpannerPool {
   @VisibleForTesting
   Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
     ConnectionSpannerOptions.Builder builder = ConnectionSpannerOptions.newBuilder();
-    if (options.usesEmulator()) {
-      builder.setEmulatorHost(key.host);
-    } else {
-      builder.setHost(key.host);
-    }
     builder
         .setUseVirtualThreads(key.useVirtualGrpcTransportThreads)
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
+        .setHost(key.host)
         .setProjectId(key.projectId)
         // Use lazy decoding, so we can use the protobuf values for calculating the checksum that is
         // needed for read/write transactions.
@@ -410,6 +406,9 @@ public class SpannerPool {
     }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);
+    }
+    if (options.usesEmulator()) {
+      builder.setEmulatorHost(key.host);
     }
     return builder.build().getService();
   }
