@@ -58,6 +58,7 @@ import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -810,18 +811,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
-    String externalHostTokenPath = System.getenv("SPANNER_EXTERNAL_HOST_AUTH_TOKEN");
-    if (builder.isExternalHost && builder.emulatorHost == null && externalHostTokenPath != null) {
-      String token;
-      try {
-        token =
-            Base64.getEncoder()
-                .encodeToString(Files.readAllBytes(Paths.get(externalHostTokenPath)));
-      } catch (IOException e) {
-        throw SpannerExceptionFactory.newSpannerException(e);
-      }
-      credentials = new GoogleCredentials(new AccessToken(token, null));
-    }
   }
 
   /**
@@ -1483,7 +1472,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public Builder setHost(String host) {
       super.setHost(host);
-      if (this.emulatorHost == null && !CLOUD_SPANNER_HOST_PATTERN.matcher(host).matches()) {
+      if (!CLOUD_SPANNER_HOST_PATTERN.matcher(host).matches()) {
         this.isExternalHost = true;
       }
       // Setting a host should override any SPANNER_EMULATOR_HOST setting.
@@ -1656,6 +1645,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
+      } else if (isExternalHost && credentials == null) {
+        String externalHostTokenPath = System.getenv("SPANNER_EXTERNAL_HOST_AUTH_TOKEN");
+        if (!Strings.isNullOrEmpty(externalHostTokenPath)) {
+          String token;
+          try {
+            token =
+                Base64.getEncoder()
+                    .encodeToString(Files.readAllBytes(Paths.get(externalHostTokenPath)));
+          } catch (IOException e) {
+            throw SpannerExceptionFactory.newSpannerException(e);
+          }
+          credentials = GoogleCredentials.create(new AccessToken(token, null));
+        }
       }
       if (this.numChannels == null) {
         this.numChannels =

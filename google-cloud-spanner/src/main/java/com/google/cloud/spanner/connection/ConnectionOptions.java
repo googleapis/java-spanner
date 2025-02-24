@@ -82,9 +82,12 @@ import com.google.common.collect.Sets;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -921,6 +924,7 @@ public class ConnectionOptions {
             getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR),
             usePlainText,
             System.getenv());
+    String externalHostTokenPath = System.getenv("SPANNER_EXTERNAL_HOST_AUTH_TOKEN");
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
     // any credentials and is using a plain text connection, we should not try to get the
     // credentials from the environment, but default to NoCredentials.
@@ -935,6 +939,16 @@ public class ConnectionOptions {
       this.credentials =
           new GoogleCredentials(
               new AccessToken(getInitialConnectionPropertyValue(OAUTH_TOKEN), null));
+    } else if (isExternalHost && !Strings.isNullOrEmpty(externalHostTokenPath)) {
+      String token;
+      try {
+        token =
+            Base64.getEncoder()
+                .encodeToString(Files.readAllBytes(Paths.get(externalHostTokenPath)));
+      } catch (IOException e) {
+        throw SpannerExceptionFactory.newSpannerException(e);
+      }
+      this.credentials = GoogleCredentials.create(new AccessToken(token, null));
     } else if (getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER) != null) {
       try {
         this.credentials = getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER).getCredentials();

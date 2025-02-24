@@ -407,9 +407,6 @@ public class SpannerPool {
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);
     }
-    if (options.usesEmulator()) {
-      builder.setEmulatorHost(key.host);
-    }
     return builder.build().getService();
   }
 
