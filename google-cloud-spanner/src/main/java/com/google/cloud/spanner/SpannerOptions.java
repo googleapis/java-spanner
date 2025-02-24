@@ -740,6 +740,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   protected SpannerOptions(Builder builder) {
     super(SpannerFactory.class, SpannerRpcFactory.class, builder, new SpannerDefaults());
+    if (builder.emulatorHost != null) {
+      builder.setHost(builder.emulatorHost);
+    }
     numChannels = builder.numChannels == null ? DEFAULT_CHANNELS : builder.numChannels;
     Preconditions.checkArgument(
         numChannels >= 1 && numChannels <= MAX_CHANNELS,
