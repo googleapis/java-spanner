@@ -810,7 +810,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
-    String externalHostTokenPath = System.getenv("EXTERNAL_HOST_AUTH_TOKEN");
+    String externalHostTokenPath = System.getenv("SPANNER_EXTERNAL_HOST_AUTH_TOKEN");
     if (builder.isExternalHost && builder.emulatorHost == null && externalHostTokenPath != null) {
       String token;
       try {
