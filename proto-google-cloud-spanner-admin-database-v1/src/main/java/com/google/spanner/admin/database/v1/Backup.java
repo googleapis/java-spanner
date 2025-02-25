@@ -48,6 +48,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
     backupSchedules_ = com.google.protobuf.LazyStringArrayList.emptyList();
     incrementalBackupChainId_ = "";
+    instancePartitions_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -1355,6 +1356,107 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         : oldestVersionTime_;
   }
 
+  public static final int INSTANCE_PARTITIONS_FIELD_NUMBER = 19;
+
+  @SuppressWarnings("serial")
+  private java.util.List<com.google.spanner.admin.database.v1.BackupInstancePartition>
+      instancePartitions_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public java.util.List<com.google.spanner.admin.database.v1.BackupInstancePartition>
+      getInstancePartitionsList() {
+    return instancePartitions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public java.util.List<
+          ? extends com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder>
+      getInstancePartitionsOrBuilderList() {
+    return instancePartitions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public int getInstancePartitionsCount() {
+    return instancePartitions_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.BackupInstancePartition getInstancePartitions(
+      int index) {
+    return instancePartitions_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder
+      getInstancePartitionsOrBuilder(int index) {
+    return instancePartitions_.get(index);
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1425,6 +1527,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     }
     if (((bitField0_ & 0x00000020) != 0)) {
       output.writeMessage(18, getOldestVersionTime());
+    }
+    for (int i = 0; i < instancePartitions_.size(); i++) {
+      output.writeMessage(19, instancePartitions_.get(i));
     }
     getUnknownFields().writeTo(output);
   }
@@ -1509,6 +1614,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (((bitField0_ & 0x00000020) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(18, getOldestVersionTime());
     }
+    for (int i = 0; i < instancePartitions_.size(); i++) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(19, instancePartitions_.get(i));
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1561,6 +1670,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (hasOldestVersionTime()) {
       if (!getOldestVersionTime().equals(other.getOldestVersionTime())) return false;
     }
+    if (!getInstancePartitionsList().equals(other.getInstancePartitionsList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -1627,6 +1737,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (hasOldestVersionTime()) {
       hash = (37 * hash) + OLDEST_VERSION_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getOldestVersionTime().hashCode();
+    }
+    if (getInstancePartitionsCount() > 0) {
+      hash = (37 * hash) + INSTANCE_PARTITIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getInstancePartitionsList().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -1775,6 +1889,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         getEncryptionInformationFieldBuilder();
         getMaxExpireTimeFieldBuilder();
         getOldestVersionTimeFieldBuilder();
+        getInstancePartitionsFieldBuilder();
       }
     }
 
@@ -1830,6 +1945,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         oldestVersionTimeBuilder_.dispose();
         oldestVersionTimeBuilder_ = null;
       }
+      if (instancePartitionsBuilder_ == null) {
+        instancePartitions_ = java.util.Collections.emptyList();
+      } else {
+        instancePartitions_ = null;
+        instancePartitionsBuilder_.clear();
+      }
+      bitField0_ = (bitField0_ & ~0x00040000);
       return this;
     }
 
@@ -1874,6 +1996,15 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         result.encryptionInformation_ = encryptionInformation_;
       } else {
         result.encryptionInformation_ = encryptionInformationBuilder_.build();
+      }
+      if (instancePartitionsBuilder_ == null) {
+        if (((bitField0_ & 0x00040000) != 0)) {
+          instancePartitions_ = java.util.Collections.unmodifiableList(instancePartitions_);
+          bitField0_ = (bitField0_ & ~0x00040000);
+        }
+        result.instancePartitions_ = instancePartitions_;
+      } else {
+        result.instancePartitions_ = instancePartitionsBuilder_.build();
       }
     }
 
@@ -2099,6 +2230,33 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (other.hasOldestVersionTime()) {
         mergeOldestVersionTime(other.getOldestVersionTime());
       }
+      if (instancePartitionsBuilder_ == null) {
+        if (!other.instancePartitions_.isEmpty()) {
+          if (instancePartitions_.isEmpty()) {
+            instancePartitions_ = other.instancePartitions_;
+            bitField0_ = (bitField0_ & ~0x00040000);
+          } else {
+            ensureInstancePartitionsIsMutable();
+            instancePartitions_.addAll(other.instancePartitions_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.instancePartitions_.isEmpty()) {
+          if (instancePartitionsBuilder_.isEmpty()) {
+            instancePartitionsBuilder_.dispose();
+            instancePartitionsBuilder_ = null;
+            instancePartitions_ = other.instancePartitions_;
+            bitField0_ = (bitField0_ & ~0x00040000);
+            instancePartitionsBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getInstancePartitionsFieldBuilder()
+                    : null;
+          } else {
+            instancePartitionsBuilder_.addAllMessages(other.instancePartitions_);
+          }
+        }
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -2245,6 +2403,20 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00020000;
                 break;
               } // case 146
+            case 154:
+              {
+                com.google.spanner.admin.database.v1.BackupInstancePartition m =
+                    input.readMessage(
+                        com.google.spanner.admin.database.v1.BackupInstancePartition.parser(),
+                        extensionRegistry);
+                if (instancePartitionsBuilder_ == null) {
+                  ensureInstancePartitionsIsMutable();
+                  instancePartitions_.add(m);
+                } else {
+                  instancePartitionsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 154
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -5719,6 +5891,467 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         oldestVersionTime_ = null;
       }
       return oldestVersionTimeBuilder_;
+    }
+
+    private java.util.List<com.google.spanner.admin.database.v1.BackupInstancePartition>
+        instancePartitions_ = java.util.Collections.emptyList();
+
+    private void ensureInstancePartitionsIsMutable() {
+      if (!((bitField0_ & 0x00040000) != 0)) {
+        instancePartitions_ =
+            new java.util.ArrayList<com.google.spanner.admin.database.v1.BackupInstancePartition>(
+                instancePartitions_);
+        bitField0_ |= 0x00040000;
+      }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.BackupInstancePartition,
+            com.google.spanner.admin.database.v1.BackupInstancePartition.Builder,
+            com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder>
+        instancePartitionsBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.BackupInstancePartition>
+        getInstancePartitionsList() {
+      if (instancePartitionsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(instancePartitions_);
+      } else {
+        return instancePartitionsBuilder_.getMessageList();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public int getInstancePartitionsCount() {
+      if (instancePartitionsBuilder_ == null) {
+        return instancePartitions_.size();
+      } else {
+        return instancePartitionsBuilder_.getCount();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.BackupInstancePartition getInstancePartitions(
+        int index) {
+      if (instancePartitionsBuilder_ == null) {
+        return instancePartitions_.get(index);
+      } else {
+        return instancePartitionsBuilder_.getMessage(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setInstancePartitions(
+        int index, com.google.spanner.admin.database.v1.BackupInstancePartition value) {
+      if (instancePartitionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.set(index, value);
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setInstancePartitions(
+        int index,
+        com.google.spanner.admin.database.v1.BackupInstancePartition.Builder builderForValue) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addInstancePartitions(
+        com.google.spanner.admin.database.v1.BackupInstancePartition value) {
+      if (instancePartitionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.add(value);
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addInstancePartitions(
+        int index, com.google.spanner.admin.database.v1.BackupInstancePartition value) {
+      if (instancePartitionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.add(index, value);
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addInstancePartitions(
+        com.google.spanner.admin.database.v1.BackupInstancePartition.Builder builderForValue) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.add(builderForValue.build());
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addInstancePartitions(
+        int index,
+        com.google.spanner.admin.database.v1.BackupInstancePartition.Builder builderForValue) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addAllInstancePartitions(
+        java.lang.Iterable<? extends com.google.spanner.admin.database.v1.BackupInstancePartition>
+            values) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, instancePartitions_);
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearInstancePartitions() {
+      if (instancePartitionsBuilder_ == null) {
+        instancePartitions_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00040000);
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder removeInstancePartitions(int index) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.remove(index);
+        onChanged();
+      } else {
+        instancePartitionsBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.BackupInstancePartition.Builder
+        getInstancePartitionsBuilder(int index) {
+      return getInstancePartitionsFieldBuilder().getBuilder(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder
+        getInstancePartitionsOrBuilder(int index) {
+      if (instancePartitionsBuilder_ == null) {
+        return instancePartitions_.get(index);
+      } else {
+        return instancePartitionsBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<
+            ? extends com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder>
+        getInstancePartitionsOrBuilderList() {
+      if (instancePartitionsBuilder_ != null) {
+        return instancePartitionsBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(instancePartitions_);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.BackupInstancePartition.Builder
+        addInstancePartitionsBuilder() {
+      return getInstancePartitionsFieldBuilder()
+          .addBuilder(
+              com.google.spanner.admin.database.v1.BackupInstancePartition.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.BackupInstancePartition.Builder
+        addInstancePartitionsBuilder(int index) {
+      return getInstancePartitionsFieldBuilder()
+          .addBuilder(
+              index,
+              com.google.spanner.admin.database.v1.BackupInstancePartition.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The instance partition(s) storing the backup.
+     *
+     * This is the same as the list of the instance partition(s) that the database
+     * had footprint in at the backup's `version_time`.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.BackupInstancePartition.Builder>
+        getInstancePartitionsBuilderList() {
+      return getInstancePartitionsFieldBuilder().getBuilderList();
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.BackupInstancePartition,
+            com.google.spanner.admin.database.v1.BackupInstancePartition.Builder,
+            com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder>
+        getInstancePartitionsFieldBuilder() {
+      if (instancePartitionsBuilder_ == null) {
+        instancePartitionsBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                com.google.spanner.admin.database.v1.BackupInstancePartition,
+                com.google.spanner.admin.database.v1.BackupInstancePartition.Builder,
+                com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder>(
+                instancePartitions_,
+                ((bitField0_ & 0x00040000) != 0),
+                getParentForChildren(),
+                isClean());
+        instancePartitions_ = null;
+      }
+      return instancePartitionsBuilder_;
     }
 
     @java.lang.Override

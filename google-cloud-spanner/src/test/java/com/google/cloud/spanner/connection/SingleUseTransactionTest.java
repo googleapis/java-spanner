@@ -404,6 +404,8 @@ public class SingleUseTransactionTest {
 
     final TransactionContext txContext = mock(TransactionContext.class);
     when(txContext.executeUpdate(Statement.of(VALID_UPDATE))).thenReturn(VALID_UPDATE_COUNT);
+    when(txContext.executeUpdate(Statement.of(VALID_UPDATE), Options.lastStatement()))
+        .thenReturn(VALID_UPDATE_COUNT);
     when(txContext.executeUpdate(Statement.of(SLOW_UPDATE)))
         .thenAnswer(
             invocation -> {
@@ -411,6 +413,9 @@ public class SingleUseTransactionTest {
               return VALID_UPDATE_COUNT;
             });
     when(txContext.executeUpdate(Statement.of(INVALID_UPDATE)))
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "invalid update"));
+    when(txContext.executeUpdate(Statement.of(INVALID_UPDATE), Options.lastStatement()))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "invalid update"));
     SimpleTransactionManager txManager = new SimpleTransactionManager(txContext, commitBehavior);
