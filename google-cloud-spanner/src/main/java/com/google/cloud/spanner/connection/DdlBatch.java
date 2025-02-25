@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_SEQUENCE_KIND;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -45,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 
 /**
@@ -61,11 +63,13 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   private final List<String> statements = new ArrayList<>();
   private UnitOfWorkState state = UnitOfWorkState.STARTED;
   private final byte[] protoDescriptors;
+  private final ConnectionState connectionState;
 
   static class Builder extends AbstractBaseUnitOfWork.Builder<Builder, DdlBatch> {
     private DdlClient ddlClient;
     private DatabaseClient dbClient;
     private byte[] protoDescriptors;
+    private ConnectionState connectionState;
 
     private Builder() {}
 
@@ -86,6 +90,11 @@ class DdlBatch extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setConnectionState(ConnectionState connectionState) {
+      this.connectionState = connectionState;
+      return this;
+    }
+
     @Override
     DdlBatch build() {
       Preconditions.checkState(ddlClient != null, "No DdlClient specified");
@@ -103,6 +112,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     this.ddlClient = builder.ddlClient;
     this.dbClient = builder.dbClient;
     this.protoDescriptors = builder.protoDescriptors;
+    this.connectionState = Preconditions.checkNotNull(builder.connectionState);
   }
 
   @Override
@@ -235,17 +245,25 @@ class DdlBatch extends AbstractBaseUnitOfWork {
       Callable<long[]> callable =
           () -> {
             try {
-              OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-                  ddlClient.executeDdl(statements, protoDescriptors);
+              AtomicReference<OperationFuture<Void, UpdateDatabaseDdlMetadata>> operationReference =
+                  new AtomicReference<>();
               try {
-                // Wait until the operation has finished.
-                getWithStatementTimeout(operation, RUN_BATCH_STATEMENT);
+                ddlClient.runWithRetryForMissingDefaultSequenceKind(
+                    () -> {
+                      OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+                          ddlClient.executeDdl(statements, protoDescriptors);
+                      operationReference.set(operation);
+                      // Wait until the operation has finished.
+                      getWithStatementTimeout(operation, RUN_BATCH_STATEMENT);
+                    },
+                    connectionState.getValue(DEFAULT_SEQUENCE_KIND).getValue(),
+                    dbClient.getDialect());
                 long[] updateCounts = new long[statements.size()];
                 Arrays.fill(updateCounts, 1L);
                 state = UnitOfWorkState.RAN;
                 return updateCounts;
               } catch (SpannerException e) {
-                long[] updateCounts = extractUpdateCounts(operation);
+                long[] updateCounts = extractUpdateCounts(operationReference.get());
                 throw SpannerExceptionFactory.newSpannerBatchUpdateException(
                     e.getErrorCode(), e.getMessage(), updateCounts);
               }

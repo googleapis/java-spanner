@@ -22,6 +22,8 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.MissingDefaultSequenceKindException;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -29,6 +31,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Convenience class for executing Data Definition Language statements on transactions that support
@@ -130,5 +133,36 @@ class DdlClient {
     return tokens.length >= 2
         && tokens[0].equalsIgnoreCase("CREATE")
         && tokens[1].equalsIgnoreCase("DATABASE");
+  }
+
+  void runWithRetryForMissingDefaultSequenceKind(
+      Runnable runnable, String defaultSequenceKind, Dialect dialect) {
+    try {
+      runnable.run();
+    } catch (Throwable t) {
+      SpannerException spannerException = SpannerExceptionFactory.asSpannerException(t);
+      if (!Strings.isNullOrEmpty(defaultSequenceKind)
+          && spannerException instanceof MissingDefaultSequenceKindException) {
+        setDefaultSequenceKind(defaultSequenceKind, dialect);
+        runnable.run();
+        return;
+      }
+      throw t;
+    }
+  }
+
+  private void setDefaultSequenceKind(String defaultSequenceKind, Dialect dialect) {
+    String ddl =
+        dialect == Dialect.POSTGRESQL
+            ? "alter database \"%s\" set spanner.default_sequence_kind = '%s'"
+            : "alter database `%s` set options (default_sequence_kind='%s')";
+    ddl = String.format(ddl, databaseName, defaultSequenceKind);
+    try {
+      executeDdl(ddl, null).get();
+    } catch (ExecutionException executionException) {
+      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+    } catch (InterruptedException interruptedException) {
+      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+    }
   }
 }

@@ -27,6 +27,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATC
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIRECTED_READ;
 import static com.google.cloud.spanner.connection.ConnectionProperties.KEEP_TRANSACTION_ALIVE;
@@ -759,6 +760,16 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !isTransactionStarted(), "Cannot set DdlInTransactionMode while a transaction is active");
     setConnectionPropertyValue(DDL_IN_TRANSACTION_MODE, ddlInTransactionMode);
+  }
+
+  @Override
+  public String getDefaultSequenceKind() {
+    return getConnectionPropertyValue(DEFAULT_SEQUENCE_KIND);
+  }
+
+  @Override
+  public void setDefaultSequenceKind(String defaultSequenceKind) {
+    setConnectionPropertyValue(DEFAULT_SEQUENCE_KIND, defaultSequenceKind);
   }
 
   @Override
@@ -2152,13 +2163,9 @@ class ConnectionImpl implements Connection {
               .setDdlClient(ddlClient)
               .setDatabaseClient(dbClient)
               .setBatchClient(batchClient)
-              .setReadOnly(getConnectionPropertyValue(READONLY))
-              .setReadOnlyStaleness(getConnectionPropertyValue(READ_ONLY_STALENESS))
-              .setAutocommitDmlMode(getConnectionPropertyValue(AUTOCOMMIT_DML_MODE))
+              .setConnectionState(connectionState)
               .setTransactionRetryListeners(transactionRetryListeners)
-              .setReturnCommitStats(getConnectionPropertyValue(RETURN_COMMIT_STATS))
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
-              .setMaxCommitDelay(getConnectionPropertyValue(MAX_COMMIT_DELAY))
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setSpan(
@@ -2230,6 +2237,7 @@ class ConnectionImpl implements Connection {
               .withStatementExecutor(statementExecutor)
               .setSpan(createSpanForUnitOfWork(DDL_BATCH))
               .setProtoDescriptors(getProtoDescriptors())
+              .setConnectionState(connectionState)
               .build();
         default:
       }

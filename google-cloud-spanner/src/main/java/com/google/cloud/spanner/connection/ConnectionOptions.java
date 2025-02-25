@@ -242,6 +242,7 @@ public class ConnectionOptions {
   static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   static final DdlInTransactionMode DEFAULT_DDL_IN_TRANSACTION_MODE =
       DdlInTransactionMode.ALLOW_IN_EMPTY_TRANSACTION;
+  static final String DEFAULT_DEFAULT_SEQUENCE_KIND = null;
   static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   static final boolean DEFAULT_LENIENT = false;
   static final boolean DEFAULT_ROUTE_TO_LEADER = true;
@@ -324,6 +325,7 @@ public class ConnectionOptions {
   public static final String RPC_PRIORITY_NAME = "rpcPriority";
 
   public static final String DDL_IN_TRANSACTION_MODE_PROPERTY_NAME = "ddlInTransactionMode";
+  public static final String DEFAULT_SEQUENCE_KIND_PROPERTY_NAME = "defaultSequenceKind";
   /** Dialect to use for a connection. */
   static final String DIALECT_PROPERTY_NAME = "dialect";
   /** Name of the 'databaseRole' connection property. */
