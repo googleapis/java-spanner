@@ -855,7 +855,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default String getMonitoringHost() {
       return null;
     }
+
+    default GoogleCredentials getDefaultExternalHostCredentials() {
+      return null;
+    }
   }
+
+  static final String DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS =
+      "SPANNER_EXTERNAL_HOST_AUTH_TOKEN";
 
   /**
    * Default implementation of {@link SpannerEnvironment}. Reads all configuration from environment
@@ -911,6 +918,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public String getMonitoringHost() {
       return System.getenv(SPANNER_MONITORING_HOST);
+    }
+
+    @Override
+    public GoogleCredentials getDefaultExternalHostCredentials() {
+      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
     }
   }
 
@@ -1646,18 +1658,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       } else if (isExternalHost && credentials == null) {
-        String externalHostTokenPath = System.getenv("SPANNER_EXTERNAL_HOST_AUTH_TOKEN");
-        if (!Strings.isNullOrEmpty(externalHostTokenPath)) {
-          String token;
-          try {
-            token =
-                Base64.getEncoder()
-                    .encodeToString(Files.readAllBytes(Paths.get(externalHostTokenPath)));
-          } catch (IOException e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
-          credentials = GoogleCredentials.create(new AccessToken(token, null));
-        }
+        credentials = environment.getDefaultExternalHostCredentials();
       }
       if (this.numChannels == null) {
         this.numChannels =
@@ -1696,6 +1697,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public static void useDefaultEnvironment() {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
+  @InternalApi
+  public static GoogleCredentials getDefaultExternalHostCredentialsFromSysEnv() {
+    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
+  }
+
+  private static @Nullable GoogleCredentials getOAuthTokenFromFile(@Nullable String file) {
+    if (!Strings.isNullOrEmpty(file)) {
+      String token;
+      try {
+        token = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(file)));
+      } catch (IOException e) {
+        throw SpannerExceptionFactory.newSpannerException(e);
+      }
+      return GoogleCredentials.create(new AccessToken(token, null));
+    }
+    return null;
   }
 
   /**
