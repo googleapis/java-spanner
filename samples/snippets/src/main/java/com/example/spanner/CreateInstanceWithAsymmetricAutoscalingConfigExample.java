@@ -90,7 +90,7 @@ class CreateInstanceWithAsymmetricAutoscalingConfigExample {
                 .setInstanceId(instanceId)
                 .setInstance(instance)
                 .build()).get();
-        System.out.printf("Autoscaler instance %s was successfully created%n",
+        System.out.printf("Asymmetric Autoscaling instance %s was successfully created%n",
             instanceResult.getName());
       } catch (ExecutionException e) {
         System.out.printf(

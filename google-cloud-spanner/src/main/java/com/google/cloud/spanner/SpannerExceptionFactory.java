@@ -265,6 +265,9 @@ public final class SpannerExceptionFactory {
       if (cause instanceof ApiException) {
         return ((ApiException) cause).getErrorDetails();
       }
+      if (cause instanceof SpannerException) {
+        return ((SpannerException) cause).getErrorDetails();
+      }
       prevCause = cause;
       cause = cause.getCause();
     }
