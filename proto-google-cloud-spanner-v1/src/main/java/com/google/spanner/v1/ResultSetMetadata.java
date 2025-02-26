@@ -23,7 +23,8 @@ package com.google.spanner.v1;
  *
  *
  * <pre>
- * Metadata about a [ResultSet][google.spanner.v1.ResultSet] or [PartialResultSet][google.spanner.v1.PartialResultSet].
+ * Metadata about a [ResultSet][google.spanner.v1.ResultSet] or
+ * [PartialResultSet][google.spanner.v1.PartialResultSet].
  * </pre>
  *
  * Protobuf type {@code google.spanner.v1.ResultSetMetadata}
@@ -69,7 +70,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * Indicates the field names and types for the rows in the result
-   * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+   * set. For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
    *
    *     "fields": [
@@ -91,7 +92,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * Indicates the field names and types for the rows in the result
-   * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+   * set. For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
    *
    *     "fields": [
@@ -113,7 +114,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * Indicates the field names and types for the rows in the result
-   * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+   * set. For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
    *
    *     "fields": [
@@ -455,7 +456,8 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
-   * Metadata about a [ResultSet][google.spanner.v1.ResultSet] or [PartialResultSet][google.spanner.v1.PartialResultSet].
+   * Metadata about a [ResultSet][google.spanner.v1.ResultSet] or
+   * [PartialResultSet][google.spanner.v1.PartialResultSet].
    * </pre>
    *
    * Protobuf type {@code google.spanner.v1.ResultSetMetadata}
@@ -701,7 +703,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
@@ -722,7 +724,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
@@ -747,7 +749,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
@@ -776,7 +778,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
@@ -802,7 +804,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
@@ -836,7 +838,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
@@ -862,7 +864,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
@@ -883,7 +885,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
@@ -906,7 +908,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Indicates the field names and types for the rows in the result
-     * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+     * set. For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
      *
      *     "fields": [
