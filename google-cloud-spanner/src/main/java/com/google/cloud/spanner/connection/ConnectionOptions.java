@@ -921,6 +921,8 @@ public class ConnectionOptions {
             getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR),
             usePlainText,
             System.getenv());
+    GoogleCredentials defaultExternalHostCredentials =
+        SpannerOptions.getDefaultExternalHostCredentialsFromSysEnv();
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
     // any credentials and is using a plain text connection, we should not try to get the
     // credentials from the environment, but default to NoCredentials.
@@ -935,6 +937,8 @@ public class ConnectionOptions {
       this.credentials =
           new GoogleCredentials(
               new AccessToken(getInitialConnectionPropertyValue(OAUTH_TOKEN), null));
+    } else if (isExternalHost && defaultExternalHostCredentials != null) {
+      this.credentials = defaultExternalHostCredentials;
     } else if (getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER) != null) {
       try {
         this.credentials = getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER).getCredentials();

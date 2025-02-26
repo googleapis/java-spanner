@@ -34,6 +34,8 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
 import com.google.api.gax.tracing.OpencensusTracerFactory;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
@@ -56,6 +58,7 @@ import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -79,8 +82,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +98,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -110,6 +117,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String CLOUD_SPANNER_HOST_FORMAT = ".*\\.googleapis\\.com.*";
+
+  @VisibleForTesting
+  static final Pattern CLOUD_SPANNER_HOST_PATTERN = Pattern.compile(CLOUD_SPANNER_HOST_FORMAT);
+
   private static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
           "https://www.googleapis.com/auth/spanner.admin",
@@ -843,7 +855,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default String getMonitoringHost() {
       return null;
     }
+
+    default GoogleCredentials getDefaultExternalHostCredentials() {
+      return null;
+    }
   }
+
+  static final String DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS =
+      "SPANNER_EXTERNAL_HOST_AUTH_TOKEN";
 
   /**
    * Default implementation of {@link SpannerEnvironment}. Reads all configuration from environment
@@ -899,6 +918,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public String getMonitoringHost() {
       return System.getenv(SPANNER_MONITORING_HOST);
+    }
+
+    @Override
+    public GoogleCredentials getDefaultExternalHostCredentials() {
+      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
     }
   }
 
@@ -967,6 +991,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
+    private boolean isExternalHost = false;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1459,6 +1484,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public Builder setHost(String host) {
       super.setHost(host);
+      if (!CLOUD_SPANNER_HOST_PATTERN.matcher(host).matches()) {
+        this.isExternalHost = true;
+      }
       // Setting a host should override any SPANNER_EMULATOR_HOST setting.
       setEmulatorHost(null);
       return this;
@@ -1629,6 +1657,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
+      } else if (isExternalHost && credentials == null) {
+        credentials = environment.getDefaultExternalHostCredentials();
       }
       if (this.numChannels == null) {
         this.numChannels =
@@ -1667,6 +1697,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public static void useDefaultEnvironment() {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
+  @InternalApi
+  public static GoogleCredentials getDefaultExternalHostCredentialsFromSysEnv() {
+    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
+  }
+
+  private static @Nullable GoogleCredentials getOAuthTokenFromFile(@Nullable String file) {
+    if (!Strings.isNullOrEmpty(file)) {
+      String token;
+      try {
+        token = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(file)));
+      } catch (IOException e) {
+        throw SpannerExceptionFactory.newSpannerException(e);
+      }
+      return GoogleCredentials.create(new AccessToken(token, null));
+    }
+    return null;
   }
 
   /**
