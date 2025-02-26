@@ -123,8 +123,8 @@ class JavaClientRunner extends AbstractRunner {
         SessionPoolOptionsHelper.setUseMultiplexedSession(
                 SessionPoolOptions.newBuilder(), useMultiplexedSession)
             .build();
-    SpannerOptions.enableOpenTelemetryMetrics();
-    SpannerOptions.enableOpenTelemetryTraces();
+//    SpannerOptions.enableOpenTelemetryMetrics();
+//    SpannerOptions.enableOpenTelemetryTraces();
 
     SpannerOptions options =
         SpannerOptions.newBuilder()
