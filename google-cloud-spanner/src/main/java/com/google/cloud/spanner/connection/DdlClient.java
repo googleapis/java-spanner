@@ -32,6 +32,8 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * Convenience class for executing Data Definition Language statements on transactions that support
@@ -136,15 +138,26 @@ class DdlClient {
   }
 
   void runWithRetryForMissingDefaultSequenceKind(
-      Runnable runnable, String defaultSequenceKind, Dialect dialect) {
+      Consumer<Integer> runnable,
+      String defaultSequenceKind,
+      Dialect dialect,
+      AtomicReference<OperationFuture<Void, UpdateDatabaseDdlMetadata>> operationReference) {
     try {
-      runnable.run();
+      runnable.accept(0);
     } catch (Throwable t) {
       SpannerException spannerException = SpannerExceptionFactory.asSpannerException(t);
       if (!Strings.isNullOrEmpty(defaultSequenceKind)
           && spannerException instanceof MissingDefaultSequenceKindException) {
         setDefaultSequenceKind(defaultSequenceKind, dialect);
-        runnable.run();
+        int restartIndex = 0;
+        if (operationReference.get() != null) {
+          try {
+            UpdateDatabaseDdlMetadata metadata = operationReference.get().getMetadata().get();
+            restartIndex = metadata.getCommitTimestampsCount();
+          } catch (Throwable ignore) {
+          }
+        }
+        runnable.accept(restartIndex);
         return;
       }
       throw t;

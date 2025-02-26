@@ -119,7 +119,7 @@ public class DdlBatchTest {
       when(ddlClient.executeDdl(anyList(), any())).thenReturn(operation);
       doCallRealMethod()
           .when(ddlClient)
-          .runWithRetryForMissingDefaultSequenceKind(any(), any(), any());
+          .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -265,7 +265,9 @@ public class DdlBatchTest {
     SpannerException exception =
         SpannerExceptionFactory.newSpannerException(ErrorCode.FAILED_PRECONDITION, "test");
     doThrow(exception).when(client).executeDdl(anyList(), isNull());
-    doCallRealMethod().when(client).runWithRetryForMissingDefaultSequenceKind(any(), any(), any());
+    doCallRealMethod()
+        .when(client)
+        .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
     batch = createSubject(client);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
@@ -479,7 +481,9 @@ public class DdlBatchTest {
             new ExecutionException(
                 "ddl statement failed", Status.INVALID_ARGUMENT.asRuntimeException()));
     when(operationFuture.getMetadata()).thenReturn(metadataFuture);
-    doCallRealMethod().when(client).runWithRetryForMissingDefaultSequenceKind(any(), any(), any());
+    doCallRealMethod()
+        .when(client)
+        .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
     when(client.executeDdl(argThat(isListOfStringsWithSize(2)), isNull()))
         .thenReturn(operationFuture);
     DdlBatch batch =
@@ -511,7 +515,9 @@ public class DdlBatchTest {
   @Test
   public void testFailedAfterFirstStatement() throws InterruptedException, ExecutionException {
     DdlClient client = mock(DdlClient.class);
-    doCallRealMethod().when(client).runWithRetryForMissingDefaultSequenceKind(any(), any(), any());
+    doCallRealMethod()
+        .when(client)
+        .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
     UpdateDatabaseDdlMetadata metadata =
         UpdateDatabaseDdlMetadata.newBuilder()
             .addCommitTimestamps(

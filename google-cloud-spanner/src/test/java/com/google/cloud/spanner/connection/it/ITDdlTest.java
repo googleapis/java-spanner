@@ -36,6 +36,7 @@ import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Before;
@@ -172,9 +173,35 @@ public class ITDdlTest extends ITAbstractSpannerTest {
       connection.execute(statement2);
       SpannerBatchUpdateException exception =
           assertThrows(SpannerBatchUpdateException.class, connection::runBatch);
-      assertEquals(0, Arrays.stream(exception.getUpdateCounts()).sum());
+      long updateCount = Arrays.stream(exception.getUpdateCounts()).sum();
+      // The emulator refuses the entire batch. Spanner executes the first statement and fails on
+      // the second statement.
+      if (EmulatorSpannerHelper.isUsingEmulator()) {
+        assertEquals(0, updateCount);
+      } else {
+        assertEquals(1, updateCount);
+      }
 
       // Setting a default sequence kind on the connection should make the statement succeed.
+      connection.setDefaultSequenceKind("bit_reversed_positive");
+      connection.startBatchDdl();
+      if (updateCount == 0) {
+        connection.execute(statement1);
+      }
+      connection.execute(statement2);
+      connection.runBatch();
+    }
+  }
+
+  @Test
+  public void testDefaultSequenceKindRetriesBatchCorrectly() {
+    try (Connection connection = createConnection()) {
+      Statement statement1 =
+          Statement.of("create table testseq1 (id1 int64 primary key, value string(max))");
+      Statement statement2 =
+          Statement.of(
+              "create table testseq2 (id2 int64 auto_increment primary key, value string(max))");
+
       connection.setDefaultSequenceKind("bit_reversed_positive");
       connection.startBatchDdl();
       connection.execute(statement1);

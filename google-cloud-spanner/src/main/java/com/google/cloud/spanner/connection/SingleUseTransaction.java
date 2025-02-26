@@ -64,6 +64,7 @@ import io.opentelemetry.context.Scope;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 
 /**
@@ -387,13 +388,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                 executeCreateDatabase(ddl);
               } else {
                 ddlClient.runWithRetryForMissingDefaultSequenceKind(
-                    () -> {
+                    restartIndex -> {
                       OperationFuture<?, ?> operation =
                           ddlClient.executeDdl(ddl.getSqlWithoutComments(), protoDescriptors);
                       getWithStatementTimeout(operation, ddl);
                     },
                     connectionState.getValue(DEFAULT_SEQUENCE_KIND).getValue(),
-                    dbClient.getDialect());
+                    dbClient.getDialect(),
+                    new AtomicReference<>());
               }
               state = UnitOfWorkState.COMMITTED;
               return null;

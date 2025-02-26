@@ -249,15 +249,18 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                   new AtomicReference<>();
               try {
                 ddlClient.runWithRetryForMissingDefaultSequenceKind(
-                    () -> {
+                    restartIndex -> {
                       OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-                          ddlClient.executeDdl(statements, protoDescriptors);
+                          ddlClient.executeDdl(
+                              statements.subList(restartIndex, statements.size()),
+                              protoDescriptors);
                       operationReference.set(operation);
                       // Wait until the operation has finished.
                       getWithStatementTimeout(operation, RUN_BATCH_STATEMENT);
                     },
                     connectionState.getValue(DEFAULT_SEQUENCE_KIND).getValue(),
-                    dbClient.getDialect());
+                    dbClient.getDialect(),
+                    operationReference);
                 long[] updateCounts = new long[statements.size()];
                 Arrays.fill(updateCounts, 1L);
                 state = UnitOfWorkState.RAN;

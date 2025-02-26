@@ -314,7 +314,7 @@ public class SingleUseTransactionTest {
       when(ddlClient.executeDdl(anyList(), any())).thenReturn(operation);
       doCallRealMethod()
           .when(ddlClient)
-          .runWithRetryForMissingDefaultSequenceKind(any(), any(), any());
+          .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
