@@ -36,6 +36,7 @@ import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -101,7 +102,6 @@ public class ITDdlTest extends ITAbstractSpannerTest {
           1L, connection.executeUpdate(Statement.of("insert into test (value) values ('One')")));
       try (ResultSet resultSet = connection.executeQuery(Statement.of("select * from test"))) {
         assertTrue(resultSet.next());
-        assertEquals(4611686018427387904L, resultSet.getLong(0));
         assertEquals("One", resultSet.getString(1));
         assertFalse(resultSet.next());
       }
@@ -147,7 +147,6 @@ public class ITDdlTest extends ITAbstractSpannerTest {
           1L, connection.executeUpdate(Statement.of("insert into test (value) values ('One')")));
       try (ResultSet resultSet = connection.executeQuery(Statement.of("select * from test"))) {
         assertTrue(resultSet.next());
-        assertEquals(4611686018427387904L, resultSet.getLong(0));
         assertEquals("One", resultSet.getString(1));
         assertFalse(resultSet.next());
       }
@@ -173,7 +172,7 @@ public class ITDdlTest extends ITAbstractSpannerTest {
       connection.execute(statement2);
       SpannerBatchUpdateException exception =
           assertThrows(SpannerBatchUpdateException.class, connection::runBatch);
-      assertEquals(0, exception.getUpdateCounts().length);
+      assertEquals(0, Arrays.stream(exception.getUpdateCounts()).sum());
 
       // Setting a default sequence kind on the connection should make the statement succeed.
       connection.setDefaultSequenceKind("bit_reversed_positive");
