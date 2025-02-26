@@ -246,6 +246,7 @@ class JavaClientRunner extends AbstractRunner {
     switch (transactionType) {
       case READ_ONLY_STALE_READ:
         executeSingleUseReadOnlyStaleReadTransaction(client, staleReadSeconds, skipTrailers);
+        break;
       case READ_ONLY_SINGLE_USE:
         executeSingleUseReadOnlyTransaction(client, skipTrailers);
         break;
