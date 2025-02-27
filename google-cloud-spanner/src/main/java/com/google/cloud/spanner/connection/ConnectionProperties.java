@@ -41,6 +41,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CRED
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATABASE_ROLE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DDL_IN_TRANSACTION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_API_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_END_TO_END_TRACING;
@@ -61,6 +62,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_RETR
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ROUTE_TO_LEADER;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_RPC_PRIORITY;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_SEQUENCE_KIND_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_TRACK_CONNECTION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_TRACK_SESSION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_USER_AGENT;
@@ -531,6 +533,15 @@ public class ConnectionProperties {
           DdlInTransactionMode.values(),
           DdlInTransactionModeConverter.INSTANCE,
           Context.USER);
+  static final ConnectionProperty<String> DEFAULT_SEQUENCE_KIND =
+      create(
+          DEFAULT_SEQUENCE_KIND_PROPERTY_NAME,
+          "The default sequence kind that should be used for the database. "
+              + "This property is only used when a DDL statement that requires a default "
+              + "sequence kind is executed on this connection.",
+          DEFAULT_DEFAULT_SEQUENCE_KIND,
+          StringValueConverter.INSTANCE,
+          Context.USER);
   static final ConnectionProperty<Duration> MAX_COMMIT_DELAY =
       create(
           "maxCommitDelay",
@@ -615,16 +626,10 @@ public class ConnectionProperties {
       T[] validValues,
       ClientSideStatementValueConverter<T> converter,
       Context context) {
-    try {
-      ConnectionProperty<T> property =
-          ConnectionProperty.create(
-              name, description, defaultValue, validValues, converter, context);
-      CONNECTION_PROPERTIES_BUILDER.put(property.getKey(), property);
-      return property;
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
-    return null;
+    ConnectionProperty<T> property =
+        ConnectionProperty.create(name, description, defaultValue, validValues, converter, context);
+    CONNECTION_PROPERTIES_BUILDER.put(property.getKey(), property);
+    return property;
   }
 
   /** Parse the connection properties that can be found in the given connection URL. */
