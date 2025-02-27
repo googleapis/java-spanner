@@ -52,6 +52,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private TimeUnit streamWaitTimeoutUnit;
   private long streamWaitTimeoutValue;
   private SpannerException error;
+  private boolean done;
 
   @VisibleForTesting
   GrpcStreamIterator(int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
@@ -166,11 +167,17 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     @Override
     public void onPartialResultSet(PartialResultSet results) {
       addToStream(results);
+      if (results.getLast()) {
+        done = true;
+        addToStream(END_OF_STREAM);
+      }
     }
 
     @Override
     public void onCompleted() {
-      addToStream(END_OF_STREAM);
+      if (!done) {
+        addToStream(END_OF_STREAM);
+      }
     }
 
     @Override
