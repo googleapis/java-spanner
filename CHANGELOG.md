@@ -1,5 +1,58 @@
 # Changelog
 
+## [6.87.0](https://github.com/googleapis/java-spanner/compare/v6.86.0...v6.87.0) (2025-02-20)
+
+
+### Features
+
+* Add AddSplitPoints API ([a5ebcd3](https://github.com/googleapis/java-spanner/commit/a5ebcd343a67c57d61362cfb0ccb4888f5503681))
+* Add option for multiplexed sessions with partitioned operations ([#3635](https://github.com/googleapis/java-spanner/issues/3635)) ([dc89b4d](https://github.com/googleapis/java-spanner/commit/dc89b4d7663f0e40a9169b21243f2d94f2fc5749))
+* Add option to indicate that a statement is the last in a transaction ([#3647](https://github.com/googleapis/java-spanner/issues/3647)) ([b04ea80](https://github.com/googleapis/java-spanner/commit/b04ea804cfa9551b4d7c49cd83f0ef1120942423))
+* Adding gfe_latencies metric to built-in metrics ([#3490](https://github.com/googleapis/java-spanner/issues/3490)) ([314dadc](https://github.com/googleapis/java-spanner/commit/314dadc31f4a5aa798d45886db7231c1bd8b7a91))
+* **spanner:** Support multiplexed session for read-write transactions ([#3608](https://github.com/googleapis/java-spanner/issues/3608)) ([bda78ed](https://github.com/googleapis/java-spanner/commit/bda78edaba827acf974c87c335868a6f8caa38f2))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.53.0 ([20a3d0d](https://github.com/googleapis/java-spanner/commit/20a3d0da41509ffca66c77de6771fc8080930613))
+* **spanner:** End spans for read-write methods ([#3629](https://github.com/googleapis/java-spanner/issues/3629)) ([4a1f99c](https://github.com/googleapis/java-spanner/commit/4a1f99c6bb872ffc08e60d3843e4cdfc4efa2690))
+* **spanner:** Release resources in TransactionManager ([#3638](https://github.com/googleapis/java-spanner/issues/3638)) ([e0a3e5b](https://github.com/googleapis/java-spanner/commit/e0a3e5bd169e28e349a2dc92f86a2a9b5510f8f6))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.43.0 ([#3642](https://github.com/googleapis/java-spanner/issues/3642)) ([c12968a](https://github.com/googleapis/java-spanner/commit/c12968a5f6dad95017d9867d96d4f19a26643a07))
+
+## [6.86.0](https://github.com/googleapis/java-spanner/compare/v6.85.0...v6.86.0) (2025-01-31)
+
+
+### Features
+
+* Add sample for asymmetric autoscaling instances ([#3562](https://github.com/googleapis/java-spanner/issues/3562)) ([3584b81](https://github.com/googleapis/java-spanner/commit/3584b81a27bfcdd071fbf7e0d40dfa840ea88151))
+* Support graph and pipe queries in Connection API ([#3586](https://github.com/googleapis/java-spanner/issues/3586)) ([71c3063](https://github.com/googleapis/java-spanner/commit/71c306346d5b3805f55d5698cf8867d5f4ae519e))
+
+
+### Bug Fixes
+
+* Always add instance-id for built-in metrics ([#3612](https://github.com/googleapis/java-spanner/issues/3612)) ([705b627](https://github.com/googleapis/java-spanner/commit/705b627646f1679b7d1c4c1f86a853872cf8bfd5))
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.51.1 ([3e27251](https://github.com/googleapis/java-spanner/commit/3e272510970d1951b74c4ec9425f1a890790ddb3))
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.52.0 ([bf69673](https://github.com/googleapis/java-spanner/commit/bf69673886dbe040292214ed6e64997a230441f6))
+* **spanner:** Moved mTLSContext configurator from builder to construtor ([#3605](https://github.com/googleapis/java-spanner/issues/3605)) ([ac7c30b](https://github.com/googleapis/java-spanner/commit/ac7c30bfb14bdafc11675c2a120effde4a71c922))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.42.0 ([#3616](https://github.com/googleapis/java-spanner/issues/3616)) ([2ea59f0](https://github.com/googleapis/java-spanner/commit/2ea59f05225f2dba2effb503e6abddcfdb6fe6ee))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.46.0 ([#3530](https://github.com/googleapis/java-spanner/issues/3530)) ([d505850](https://github.com/googleapis/java-spanner/commit/d5058504b94501cabd75ad5e7030404b63c3f8b4))
+
+
+### Documentation
+
+* Clarify how async updates can overtake each other ([#3581](https://github.com/googleapis/java-spanner/issues/3581)) ([1be250f](https://github.com/googleapis/java-spanner/commit/1be250fea686f3a41739c9c8aa474ed956b130e4))
+* Fix typo timzeone -&gt; timezone ([bf69673](https://github.com/googleapis/java-spanner/commit/bf69673886dbe040292214ed6e64997a230441f6))
+* Fixed parameter arguments for AbstractResultSet's Listener's on TransactionMetadata doc ([#3602](https://github.com/googleapis/java-spanner/issues/3602)) ([1f143a4](https://github.com/googleapis/java-spanner/commit/1f143a4b7b899aec8cf58546f7540a41d1c73731))
+* **samples:** Add samples and tests for change streams transaction exclusion ([#3098](https://github.com/googleapis/java-spanner/issues/3098)) ([1f81600](https://github.com/googleapis/java-spanner/commit/1f816009abdbfb32bb26686d8fdb2a771216004e))
+
 ## [6.85.0](https://github.com/googleapis/java-spanner/compare/v6.84.0...v6.85.0) (2025-01-10)
 
 

@@ -124,6 +124,12 @@ class DatabaseClientImpl implements DatabaseClient {
         && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsForRWSupported();
   }
 
+  private boolean canUseMultiplexedSessionsForPartitionedOps() {
+    return this.useMultiplexedSessionPartitionedOps
+        && this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsForPartitionedOpsSupported();
+  }
+
   @Override
   public Dialect getDialect() {
     return pool.getDialect();
@@ -189,6 +195,9 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
+      if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
+        return getMultiplexedSessionDatabaseClient().batchWriteAtLeastOnce(mutationGroups, options);
+      }
       return runWithSessionRetry(session -> session.batchWriteAtLeastOnce(mutationGroups, options));
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -320,8 +329,15 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
-    if (useMultiplexedSessionPartitionedOps) {
-      return getMultiplexedSession().executePartitionedUpdate(stmt, options);
+
+    if (canUseMultiplexedSessionsForPartitionedOps()) {
+      try {
+        return getMultiplexedSession().executePartitionedUpdate(stmt, options);
+      } catch (SpannerException e) {
+        if (!multiplexedSessionDatabaseClient.maybeMarkUnimplementedForPartitionedOps(e)) {
+          throw e;
+        }
+      }
     }
     return executePartitionedUpdateWithPooledSession(stmt, options);
   }

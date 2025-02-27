@@ -863,6 +863,18 @@ public interface Connection extends AutoCloseable {
   void setDdlInTransactionMode(DdlInTransactionMode ddlInTransactionMode);
 
   /**
+   * Returns the default sequence kind that will be set for this database if a DDL statement is
+   * executed that uses auto_increment or serial.
+   */
+  String getDefaultSequenceKind();
+
+  /**
+   * Sets the default sequence kind that will be set for this database if a DDL statement is
+   * executed that uses auto_increment or serial.
+   */
+  void setDefaultSequenceKind(String defaultSequenceKind);
+
+  /**
    * Creates a savepoint with the given name.
    *
    * <p>The uniqueness constraints on a savepoint name depends on the database dialect that is used:

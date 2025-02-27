@@ -64,11 +64,10 @@ public interface ResultSetOrBuilder
    *
    * <pre>
    * Each element in `rows` is a row whose format is defined by
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith element
-   * in each row matches the ith field in
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements are
-   * encoded based on type as described
-   * [here][google.spanner.v1.TypeCode].
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith
+   * element in each row matches the ith field in
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements
+   * are encoded based on type as described [here][google.spanner.v1.TypeCode].
    * </pre>
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
@@ -79,11 +78,10 @@ public interface ResultSetOrBuilder
    *
    * <pre>
    * Each element in `rows` is a row whose format is defined by
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith element
-   * in each row matches the ith field in
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements are
-   * encoded based on type as described
-   * [here][google.spanner.v1.TypeCode].
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith
+   * element in each row matches the ith field in
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements
+   * are encoded based on type as described [here][google.spanner.v1.TypeCode].
    * </pre>
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
@@ -94,11 +92,10 @@ public interface ResultSetOrBuilder
    *
    * <pre>
    * Each element in `rows` is a row whose format is defined by
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith element
-   * in each row matches the ith field in
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements are
-   * encoded based on type as described
-   * [here][google.spanner.v1.TypeCode].
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith
+   * element in each row matches the ith field in
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements
+   * are encoded based on type as described [here][google.spanner.v1.TypeCode].
    * </pre>
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
@@ -109,11 +106,10 @@ public interface ResultSetOrBuilder
    *
    * <pre>
    * Each element in `rows` is a row whose format is defined by
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith element
-   * in each row matches the ith field in
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements are
-   * encoded based on type as described
-   * [here][google.spanner.v1.TypeCode].
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith
+   * element in each row matches the ith field in
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements
+   * are encoded based on type as described [here][google.spanner.v1.TypeCode].
    * </pre>
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
@@ -124,11 +120,10 @@ public interface ResultSetOrBuilder
    *
    * <pre>
    * Each element in `rows` is a row whose format is defined by
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith element
-   * in each row matches the ith field in
-   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements are
-   * encoded based on type as described
-   * [here][google.spanner.v1.TypeCode].
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. The ith
+   * element in each row matches the ith field in
+   * [metadata.row_type][google.spanner.v1.ResultSetMetadata.row_type]. Elements
+   * are encoded based on type as described [here][google.spanner.v1.TypeCode].
    * </pre>
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
@@ -144,8 +139,9 @@ public interface ResultSetOrBuilder
    * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
    * DML statements always produce stats containing the number of rows
    * modified, unless executed using the
-   * [ExecuteSqlRequest.QueryMode.PLAN][google.spanner.v1.ExecuteSqlRequest.QueryMode.PLAN] [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
-   * Other fields may or may not be populated, based on the
+   * [ExecuteSqlRequest.QueryMode.PLAN][google.spanner.v1.ExecuteSqlRequest.QueryMode.PLAN]
+   * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
+   * Other fields might or might not be populated, based on the
    * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
    * </pre>
    *
@@ -163,8 +159,9 @@ public interface ResultSetOrBuilder
    * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
    * DML statements always produce stats containing the number of rows
    * modified, unless executed using the
-   * [ExecuteSqlRequest.QueryMode.PLAN][google.spanner.v1.ExecuteSqlRequest.QueryMode.PLAN] [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
-   * Other fields may or may not be populated, based on the
+   * [ExecuteSqlRequest.QueryMode.PLAN][google.spanner.v1.ExecuteSqlRequest.QueryMode.PLAN]
+   * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
+   * Other fields might or might not be populated, based on the
    * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
    * </pre>
    *
@@ -182,8 +179,9 @@ public interface ResultSetOrBuilder
    * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
    * DML statements always produce stats containing the number of rows
    * modified, unless executed using the
-   * [ExecuteSqlRequest.QueryMode.PLAN][google.spanner.v1.ExecuteSqlRequest.QueryMode.PLAN] [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
-   * Other fields may or may not be populated, based on the
+   * [ExecuteSqlRequest.QueryMode.PLAN][google.spanner.v1.ExecuteSqlRequest.QueryMode.PLAN]
+   * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
+   * Other fields might or might not be populated, based on the
    * [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
    * </pre>
    *
@@ -195,13 +193,10 @@ public interface ResultSetOrBuilder
    *
    *
    * <pre>
-   * Optional. A precommit token will be included if the read-write transaction
-   * is on a multiplexed session.
-   * The precommit token with the highest sequence number from this transaction
-   * attempt should be passed to the
+   * Optional. A precommit token is included if the read-write transaction is on
+   * a multiplexed session. Pass the precommit token with the highest sequence
+   * number from this transaction attempt to the
    * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>
@@ -215,13 +210,10 @@ public interface ResultSetOrBuilder
    *
    *
    * <pre>
-   * Optional. A precommit token will be included if the read-write transaction
-   * is on a multiplexed session.
-   * The precommit token with the highest sequence number from this transaction
-   * attempt should be passed to the
+   * Optional. A precommit token is included if the read-write transaction is on
+   * a multiplexed session. Pass the precommit token with the highest sequence
+   * number from this transaction attempt to the
    * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>
@@ -235,13 +227,10 @@ public interface ResultSetOrBuilder
    *
    *
    * <pre>
-   * Optional. A precommit token will be included if the read-write transaction
-   * is on a multiplexed session.
-   * The precommit token with the highest sequence number from this transaction
-   * attempt should be passed to the
+   * Optional. A precommit token is included if the read-write transaction is on
+   * a multiplexed session. Pass the precommit token with the highest sequence
+   * number from this transaction attempt to the
    * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>

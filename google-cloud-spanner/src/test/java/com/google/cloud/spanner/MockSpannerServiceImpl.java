@@ -1936,7 +1936,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     if (session.getMultiplexed()
         && options.getModeCase() == ModeCase.READ_WRITE
-        && mutationKey != null) {
+        && mutationKey != null
+        && mutationKey != com.google.spanner.v1.Mutation.getDefaultInstance()) {
       // Mutation only case in a read-write transaction.
       builder.setPrecommitToken(getTransactionPrecommitToken(transactionId));
     }

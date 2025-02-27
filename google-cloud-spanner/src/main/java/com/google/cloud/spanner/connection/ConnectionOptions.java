@@ -242,6 +242,7 @@ public class ConnectionOptions {
   static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   static final DdlInTransactionMode DEFAULT_DDL_IN_TRANSACTION_MODE =
       DdlInTransactionMode.ALLOW_IN_EMPTY_TRANSACTION;
+  static final String DEFAULT_DEFAULT_SEQUENCE_KIND = null;
   static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   static final boolean DEFAULT_LENIENT = false;
   static final boolean DEFAULT_ROUTE_TO_LEADER = true;
@@ -324,6 +325,7 @@ public class ConnectionOptions {
   public static final String RPC_PRIORITY_NAME = "rpcPriority";
 
   public static final String DDL_IN_TRANSACTION_MODE_PROPERTY_NAME = "ddlInTransactionMode";
+  public static final String DEFAULT_SEQUENCE_KIND_PROPERTY_NAME = "defaultSequenceKind";
   /** Dialect to use for a connection. */
   static final String DIALECT_PROPERTY_NAME = "dialect";
   /** Name of the 'databaseRole' connection property. */
@@ -640,10 +642,10 @@ public class ConnectionOptions {
 
     /** Spanner {@link ConnectionOptions} URI format. */
     public static final String SPANNER_URI_FORMAT =
-        "(?:cloudspanner:)(?<HOSTGROUP>//[\\w.-]+(?:\\.[\\w\\.-]+)*[\\w\\-\\._~:/?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=.]+)?/projects/(?<PROJECTGROUP>(([a-z]|[-.:]|[0-9])+|(DEFAULT_PROJECT_ID)))(/instances/(?<INSTANCEGROUP>([a-z]|[-]|[0-9])+)(/databases/(?<DATABASEGROUP>([a-z]|[-]|[_]|[0-9])+))?)?(?:[?|;].*)?";
+        "(?:(?:spanner|cloudspanner):)(?<HOSTGROUP>//[\\w.-]+(?:\\.[\\w\\.-]+)*[\\w\\-\\._~:/?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=.]+)?/projects/(?<PROJECTGROUP>(([a-z]|[-.:]|[0-9])+|(DEFAULT_PROJECT_ID)))(/instances/(?<INSTANCEGROUP>([a-z]|[-]|[0-9])+)(/databases/(?<DATABASEGROUP>([a-z]|[-]|[_]|[0-9])+))?)?(?:[?|;].*)?";
 
     public static final String EXTERNAL_HOST_FORMAT =
-        "(?:cloudspanner:)(?<HOSTGROUP>//[\\w.-]+(?::\\d+)?)(/instances/(?<INSTANCEGROUP>[a-z0-9-]+))?(/databases/(?<DATABASEGROUP>[a-z0-9_-]+))(?:[?;].*)?";
+        "(?:(?:spanner|cloudspanner):)(?<HOSTGROUP>//[\\w.-]+(?::\\d+)?)(/instances/(?<INSTANCEGROUP>[a-z0-9-]+))?(/databases/(?<DATABASEGROUP>[a-z0-9_-]+))(?:[?;].*)?";
     private static final String SPANNER_URI_REGEX = "(?is)^" + SPANNER_URI_FORMAT + "$";
 
     @VisibleForTesting
@@ -921,6 +923,8 @@ public class ConnectionOptions {
             getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR),
             usePlainText,
             System.getenv());
+    GoogleCredentials defaultExternalHostCredentials =
+        SpannerOptions.getDefaultExternalHostCredentialsFromSysEnv();
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
     // any credentials and is using a plain text connection, we should not try to get the
     // credentials from the environment, but default to NoCredentials.
@@ -935,6 +939,8 @@ public class ConnectionOptions {
       this.credentials =
           new GoogleCredentials(
               new AccessToken(getInitialConnectionPropertyValue(OAUTH_TOKEN), null));
+    } else if (isExternalHost && defaultExternalHostCredentials != null) {
+      this.credentials = defaultExternalHostCredentials;
     } else if (getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER) != null) {
       try {
         this.credentials = getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER).getCredentials();
