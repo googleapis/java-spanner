@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.Interval;
 import com.google.cloud.spanner.SingerProto.Genre;
 import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.common.io.BaseEncoding;
@@ -34,6 +35,7 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +70,8 @@ public class RandomResultSetGenerator {
                     : Type.newBuilder().setCode(TypeCode.JSON).build(),
                 Type.newBuilder().setCode(TypeCode.BYTES).build(),
                 Type.newBuilder().setCode(TypeCode.DATE).build(),
-                Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()));
+                Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
+                Type.newBuilder().setCode(TypeCode.INTERVAL).build()));
     if (dialect == Dialect.POSTGRESQL) {
       types.add(
           Type.newBuilder()
@@ -127,6 +130,10 @@ public class RandomResultSetGenerator {
             Type.newBuilder()
                 .setCode(TypeCode.ARRAY)
                 .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.INTERVAL))
                 .build()));
 
     appendProtoTypes(types, dialect);
@@ -292,6 +299,14 @@ public class RandomResultSetGenerator {
                       .setNanos(random.nextInt(1000_000_000))
                       .build());
           builder.setStringValue(Timestamp.fromProto(ts).toString());
+          break;
+        case INTERVAL:
+          int months = random.nextInt(120000 * 2) - 120000;
+          int days = random.nextInt(3660000 * 2) - 3660000;
+          long nanos = random.nextLong() - random.nextLong();
+          Interval interval =
+              Interval.fromMonthsDaysNanos(months, days, new BigInteger(String.valueOf(nanos)));
+          builder.setStringValue(interval.toISO8601());
           break;
         case STRUCT:
         case TYPE_CODE_UNSPECIFIED:
