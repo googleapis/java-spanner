@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.88.0](https://github.com/googleapis/java-spanner/compare/v6.87.0...v6.88.0) (2025-02-27)
+
+
+### Features
+
+* Add a last field in the PartialResultSet ([7c714be](https://github.com/googleapis/java-spanner/commit/7c714be10eb345f2d8f566d752f6de615061c4da))
+* Automatically set default sequence kind in JDBC and PGAdapter ([#3658](https://github.com/googleapis/java-spanner/issues/3658)) ([e8abf33](https://github.com/googleapis/java-spanner/commit/e8abf338b85e95f185ab2875a804134523f84de3))
+* Default authentication support for external hosts ([#3656](https://github.com/googleapis/java-spanner/issues/3656)) ([ace11d5](https://github.com/googleapis/java-spanner/commit/ace11d5d928fb567b16560263ae95aa9cd916e22))
+* **spanner:** A new enum `IsolationLevel` is added ([3fd33ba](https://github.com/googleapis/java-spanner/commit/3fd33ba9c5fab43ed475ed3cff9d60c008843981))
+* **spanner:** Add instance partitions field in backup proto ([3fd33ba](https://github.com/googleapis/java-spanner/commit/3fd33ba9c5fab43ed475ed3cff9d60c008843981))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.54.0 ([57497ad](https://github.com/googleapis/java-spanner/commit/57497ad00c62f152f493645f382530cf0eedf19e))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.44.0 ([#3665](https://github.com/googleapis/java-spanner/issues/3665)) ([3543548](https://github.com/googleapis/java-spanner/commit/35435488f87ebd59179698e8f74578b41eb219da))
+
 ## [6.87.0](https://github.com/googleapis/java-spanner/compare/v6.86.0...v6.87.0) (2025-02-20)
 
 
