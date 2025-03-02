@@ -1569,49 +1569,55 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   // Tests the behavior of the server-side kill switch for read-write multiplexed sessions.
   @Test
   public void testPartitionedQuery_receivesUnimplemented_fallsBackToRegularSession() {
-    mockSpanner.setPartitionQueryExecutionTime(
-        SimulatedExecutionTime.ofException(
-            Status.INVALID_ARGUMENT
-                .withDescription(
-                    "Partitioned operations are not supported with multiplexed sessions")
-                .asRuntimeException()));
-    BatchClientImpl client = (BatchClientImpl) spanner.getBatchClient(DatabaseId.of("p", "i", "d"));
+    try {
+      mockSpanner.setPartitionQueryExecutionTime(
+          SimulatedExecutionTime.ofException(
+              Status.INVALID_ARGUMENT
+                  .withDescription(
+                      "Partitioned operations are not supported with multiplexed sessions")
+                  .asRuntimeException()));
+      BatchClientImpl client =
+          (BatchClientImpl) spanner.getBatchClient(DatabaseId.of("p", "i", "d"));
 
-    try (BatchReadOnlyTransaction transaction =
-        client.batchReadOnlyTransaction(TimestampBound.strong())) {
-      // Partitioned Query should fail
-      SpannerException spannerException =
-          assertThrows(
-              SpannerException.class,
-              () -> {
-                transaction.partitionQuery(PartitionOptions.getDefaultInstance(), STATEMENT);
-              });
-      assertEquals(ErrorCode.INVALID_ARGUMENT, spannerException.getErrorCode());
+      try (BatchReadOnlyTransaction transaction =
+          client.batchReadOnlyTransaction(TimestampBound.strong())) {
+        // Partitioned Query should fail
+        SpannerException spannerException =
+            assertThrows(
+                SpannerException.class,
+                () -> {
+                  transaction.partitionQuery(PartitionOptions.getDefaultInstance(), STATEMENT);
+                });
+        assertEquals(ErrorCode.INVALID_ARGUMENT, spannerException.getErrorCode());
 
-      // Verify that we received one PartitionQueryRequest.
-      List<PartitionQueryRequest> partitionQueryRequests =
-          mockSpanner.getRequestsOfType(PartitionQueryRequest.class);
-      assertEquals(1, partitionQueryRequests.size());
-      // Verify the requests were executed using multiplexed sessions
-      Session session2 = mockSpanner.getSession(partitionQueryRequests.get(0).getSession());
-      assertNotNull(session2);
-      assertTrue(session2.getMultiplexed());
-      assertTrue(client.unimplementedForPartitionedOps.get());
-    }
-    try (BatchReadOnlyTransaction transaction =
-        client.batchReadOnlyTransaction(TimestampBound.strong())) {
-      // Partitioned Query should fail
-      transaction.partitionQuery(PartitionOptions.getDefaultInstance(), STATEMENT);
+        // Verify that we received one PartitionQueryRequest.
+        List<PartitionQueryRequest> partitionQueryRequests =
+            mockSpanner.getRequestsOfType(PartitionQueryRequest.class);
+        assertEquals(1, partitionQueryRequests.size());
+        // Verify the requests were executed using multiplexed sessions
+        Session session2 = mockSpanner.getSession(partitionQueryRequests.get(0).getSession());
+        assertNotNull(session2);
+        assertTrue(session2.getMultiplexed());
+        assertTrue(BatchClientImpl.unimplementedForPartitionedOps.get());
+      }
+      try (BatchReadOnlyTransaction transaction =
+          client.batchReadOnlyTransaction(TimestampBound.strong())) {
+        // Partitioned Query should fail
+        transaction.partitionQuery(PartitionOptions.getDefaultInstance(), STATEMENT);
 
-      // // Verify that we received two PartitionQueryRequest. and it uses a regular session due to
-      // fallback.
-      List<PartitionQueryRequest> partitionQueryRequests =
-          mockSpanner.getRequestsOfType(PartitionQueryRequest.class);
-      assertEquals(2, partitionQueryRequests.size());
-      // Verify the requests are not executed using multiplexed sessions
-      Session session2 = mockSpanner.getSession(partitionQueryRequests.get(1).getSession());
-      assertNotNull(session2);
-      assertFalse(session2.getMultiplexed());
+        // // Verify that we received two PartitionQueryRequest. and it uses a regular session due
+        // to
+        // fallback.
+        List<PartitionQueryRequest> partitionQueryRequests =
+            mockSpanner.getRequestsOfType(PartitionQueryRequest.class);
+        assertEquals(2, partitionQueryRequests.size());
+        // Verify the requests are not executed using multiplexed sessions
+        Session session2 = mockSpanner.getSession(partitionQueryRequests.get(1).getSession());
+        assertNotNull(session2);
+        assertFalse(session2.getMultiplexed());
+      }
+    } finally {
+      BatchClientImpl.unimplementedForPartitionedOps.set(false);
     }
   }
 
