@@ -63,8 +63,9 @@ public interface ResultSet extends AutoCloseable, StructReader {
   void close();
 
   /**
-   * Returns the {@link ResultSetStats} for the query only if the query was executed in either the
-   * {@code PLAN} or the {@code PROFILE} mode via the {@link ReadContext#analyzeQuery(Statement,
+   * Returns the {@link ResultSetStats} for the query only if the query was executed in {@code
+   * PLAN}, {@code PROFILE}, {@code WITH_STATS} or the {@code WITH_PLAN_AND_STATS} mode via the
+   * {@link ReadContext#analyzeQuery(Statement,
    * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode)} method or for DML statements in {@link
    * ReadContext#executeQuery(Statement, QueryOption...)}. Attempts to call this method on a {@code
    * ResultSet} not obtained from {@code analyzeQuery} or {@code executeQuery} will return a {@code

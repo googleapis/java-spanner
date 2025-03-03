@@ -3539,6 +3539,40 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testWithStatsQueryModeWithAnalyzeQuery() {
+    // Use a Spanner instance with MinSession=0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+        try (ResultSet rs =
+            tx.analyzeQuery(
+                Statement.newBuilder(SELECT1.getSql())
+                    .build(),
+                QueryAnalyzeMode.WITH_STATS)) {
+          // Just iterate over the results to execute the query.
+          consumeResults(rs);
+        }
+      }
+      // Check that the last query was executed using a custom optimizer version and statistics
+      // package.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assertThat(requests).isNotEmpty();
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
+      ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
+      assertThat(request.getQueryMode()).isEqualTo(QueryMode.WITH_STATS);
+    }
+  }
+
+  @Test
   public void testBackendPartitionQueryOptions() {
     // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.

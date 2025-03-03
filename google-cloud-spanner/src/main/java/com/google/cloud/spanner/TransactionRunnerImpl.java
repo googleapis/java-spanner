@@ -878,6 +878,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         case PROFILE:
           queryMode = QueryMode.PROFILE;
           break;
+        case WITH_STATS:
+          queryMode = QueryMode.WITH_STATS;
+          break;
+        case WITH_PLAN_AND_STATS:
+          queryMode = QueryMode.WITH_PLAN_AND_STATS;
+          break;
         default:
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "Unknown analyze mode: " + analyzeMode);
