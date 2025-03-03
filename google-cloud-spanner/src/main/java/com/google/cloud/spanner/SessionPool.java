@@ -2447,6 +2447,9 @@ class SessionPool {
       Attributes attributes,
       AtomicLong numMultiplexedSessionsAcquired,
       AtomicLong numMultiplexedSessionsReleased) {
+    if (poolOptions.getUseMultiplexedSession()) {
+      return null;
+    }
     SessionPool pool =
         new SessionPool(
             poolOptions,
