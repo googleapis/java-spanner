@@ -176,6 +176,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -3046,6 +3047,26 @@ public class CloudClientExecutor extends CloudExecutor {
                       com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.DATE).build());
                 }
                 break;
+              case UUID:
+                {
+                  com.google.spanner.executor.v1.ValueList.Builder builder =
+                      com.google.spanner.executor.v1.ValueList.newBuilder();
+                  List<UUID> values = struct.getUuidList(i);
+                  for (UUID uuidValue : values) {
+                    com.google.spanner.executor.v1.Value.Builder valueProto =
+                        com.google.spanner.executor.v1.Value.newBuilder();
+                    if (uuidValue == null) {
+                      builder.addValue(valueProto.setIsNull(true).build());
+                    } else {
+                      builder.addValue(
+                          valueProto.setStringValue(uuidValue.toString()).build());
+                    }
+                  }
+                  value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.UUID).build());
+                }
+                break;
               case TIMESTAMP:
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
@@ -3229,6 +3250,7 @@ public class CloudClientExecutor extends CloudExecutor {
           case BYTES:
           case FLOAT64:
           case DATE:
+          case UUID:
           case TIMESTAMP:
           case NUMERIC:
           case JSON:
@@ -3316,6 +3338,9 @@ public class CloudClientExecutor extends CloudExecutor {
       case DATE:
         return com.google.cloud.spanner.Value.date(
             value.hasIsNull() ? null : dateFromDays(value.getDateDaysValue()));
+      case UUID:
+        return com.google.cloud.spanner.Value.uuid(
+            value.hasIsNull() ? null : UUID.fromString(value.getStringValue()));
       case NUMERIC:
         {
           if (value.hasIsNull()) {
@@ -3439,6 +3464,20 @@ public class CloudClientExecutor extends CloudExecutor {
                           .map(com.google.spanner.executor.v1.Value::getDateDaysValue)
                           .collect(Collectors.toList()),
                       CloudClientExecutor::dateFromDays));
+            }
+          case UUID:
+            if (value.hasIsNull()) {
+              return com.google.cloud.spanner.Value.uuidArray(null);
+            } else {
+              return com.google.cloud.spanner.Value.uuidArray(
+                  unmarshallValueList(
+                      value.getArrayValue().getValueList().stream()
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
+                          .collect(Collectors.toList()),
+                      value.getArrayValue().getValueList().stream()
+                          .map(com.google.spanner.executor.v1.Value::getStringValue)
+                          .collect(Collectors.toList()),
+                      UUID::fromString));
             }
           case NUMERIC:
             {
@@ -3605,6 +3644,8 @@ public class CloudClientExecutor extends CloudExecutor {
         return com.google.cloud.spanner.Type.float64();
       case DATE:
         return com.google.cloud.spanner.Type.date();
+      case UUID:
+        return com.google.cloud.spanner.Type.uuid();
       case TIMESTAMP:
         return com.google.cloud.spanner.Type.timestamp();
       case NUMERIC:
@@ -3661,6 +3702,8 @@ public class CloudClientExecutor extends CloudExecutor {
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.TIMESTAMP).build();
       case DATE:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.DATE).build();
+      case UUID:
+        return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.UUID).build();
       case NUMERIC:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.NUMERIC).build();
       case PG_NUMERIC:
