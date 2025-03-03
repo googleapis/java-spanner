@@ -299,7 +299,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 ? multiplexedSessionDatabaseClient.getNumSessionsReleased()
                 : new AtomicLong();
         SessionPool pool = null;
-        if (!useMultiplexedSession) {
+        if (!useMultiplexedSession || !useMultiplexedSessionForRW) {
           pool =
               SessionPool.createPool(
                   getOptions(),

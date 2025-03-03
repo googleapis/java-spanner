@@ -24,6 +24,7 @@ import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
@@ -90,6 +91,11 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @VisibleForTesting
   PooledSessionFuture getSession() {
+    if (pool == null) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.FAILED_PRECONDITION,
+          "Session pool is not available when using multiplexed sessions.");
+    }
     return pool.getSession();
   }
 
@@ -132,12 +138,16 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public Dialect getDialect() {
+    if (canUseMultiplexedSessions()) return this.multiplexedSessionDatabaseClient.getDialect();
     return pool.getDialect();
   }
 
   @Override
   @Nullable
   public String getDatabaseRole() {
+    if (canUseMultiplexedSessions()) {
+      return this.multiplexedSessionDatabaseClient.getDatabaseRole();
+    }
     return pool.getDatabaseRole();
   }
 
@@ -368,7 +378,7 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   boolean isValid() {
-    return pool.isValid()
+    return (pool == null || pool.isValid())
         && (multiplexedSessionDatabaseClient == null
             || multiplexedSessionDatabaseClient.isValid()
             || !multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported());
@@ -378,6 +388,9 @@ class DatabaseClientImpl implements DatabaseClient {
     if (this.multiplexedSessionDatabaseClient != null) {
       // This method is non-blocking.
       this.multiplexedSessionDatabaseClient.close();
+    }
+    if (pool == null) {
+      return Futures.immediateFuture(null);
     }
     return pool.closeAsync(closedException);
   }
