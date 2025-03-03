@@ -3058,8 +3058,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     if (uuidValue == null) {
                       builder.addValue(valueProto.setIsNull(true).build());
                     } else {
-                      builder.addValue(
-                          valueProto.setStringValue(uuidValue.toString()).build());
+                      builder.addValue(valueProto.setStringValue(uuidValue.toString()).build());
                     }
                   }
                   value.setArrayValue(builder.build());
