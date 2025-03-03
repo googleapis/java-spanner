@@ -37,6 +37,9 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions;
+import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions.TransactionOptionsBuilder;
 import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
@@ -765,6 +768,35 @@ public class SpannerOptionsTest {
                 .build()
                 .getMonitoringHost())
         .isEqualTo(metricsEndpoint);
+  }
+
+  @Test
+  public void testTransactionOptions() {
+    TransactionOptions transactionOptions =
+        TransactionOptionsBuilder.newBuilder()
+            .setIsolationLevel(Options.serializableIsolationLevel())
+            .build();
+    assertNull(SpannerOptions.newBuilder().setProjectId("p").build().getTransactionOptions());
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setDefaultTransactionOptions(transactionOptions)
+                .build()
+                .getTransactionOptions())
+        .isEqualTo(new TransactionOption[] {Options.serializableIsolationLevel()});
+  }
+
+  @Test
+  public void testTransactionOptionsWithError() {
+    assertNull(SpannerOptions.newBuilder().setProjectId("p").build().getTransactionOptions());
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                TransactionOptionsBuilder.newBuilder()
+                    .setIsolationLevel(Options.commitStats())
+                    .build());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
   }
 
   @Test

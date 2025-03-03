@@ -98,6 +98,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
@@ -1928,6 +1929,9 @@ public class DatabaseClientImplTest {
         .isEqualTo("app=spanner,env=test,action=read");
     assertThat(request.getRequestOptions().getTransactionTag())
         .isEqualTo("app=spanner,env=test,action=txn");
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        request.getTransaction().getBegin().getIsolationLevel());
   }
 
   @Test
@@ -1950,6 +1954,9 @@ public class DatabaseClientImplTest {
     assertNotNull(request.getTransaction().getBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
     assertFalse(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        request.getTransaction().getBegin().getIsolationLevel());
   }
 
   @Test
@@ -1976,6 +1983,9 @@ public class DatabaseClientImplTest {
     assertNotNull(request.getTransaction().getBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
     assertFalse(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        request.getTransaction().getBegin().getIsolationLevel());
   }
 
   @Test
@@ -2049,6 +2059,9 @@ public class DatabaseClientImplTest {
     assertNotNull(beginTransaction.getOptions());
     assertTrue(beginTransaction.getOptions().hasReadWrite());
     assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        beginTransaction.getOptions().getIsolationLevel());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -2079,6 +2092,9 @@ public class DatabaseClientImplTest {
     assertNotNull(beginTransaction.getOptions());
     assertTrue(beginTransaction.getOptions().hasReadWrite());
     assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        beginTransaction.getOptions().getIsolationLevel());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -2114,6 +2130,9 @@ public class DatabaseClientImplTest {
     assertNotNull(beginTransaction.getOptions());
     assertTrue(beginTransaction.getOptions().hasReadWrite());
     assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        beginTransaction.getOptions().getIsolationLevel());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);

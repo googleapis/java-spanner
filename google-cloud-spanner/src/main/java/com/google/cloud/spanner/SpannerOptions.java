@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
 import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+import static com.google.cloud.spanner.Options.TransactionOption.isValidIsolationLevelOption;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
@@ -31,8 +32,10 @@ import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
+import com.google.api.gax.tracing.MetricsTracer;
 import com.google.api.gax.tracing.OpencensusTracerFactory;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -45,6 +48,7 @@ import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.DirectedReadOption;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
@@ -178,6 +182,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
+  private final TransactionOption[] transactionOptions;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -807,6 +812,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
+    transactionOptions = builder.transactionOptions;
   }
 
   /**
@@ -988,6 +994,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
     private boolean isExperimentalHost = false;
+    private TransactionOption[] transactionOptions;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1056,6 +1063,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
+      this.transactionOptions = options.transactionOptions;
     }
 
     @Override
@@ -1645,6 +1653,52 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    public static class TransactionOptions {
+      private final List<TransactionOption> transactionOptions = new ArrayList<>();
+
+      private TransactionOptions() {}
+
+      TransactionOption[] getTransactionOptions() {
+        return transactionOptions.toArray(new TransactionOption[0]);
+      }
+
+      public static class TransactionOptionsBuilder {
+
+        private final List<TransactionOption> transactionOptions = new ArrayList<>();
+        private static final String INVALID_ISOLATION_LEVEL_MESSAGE =
+            "Either repeatable read or serializable isolation level is allowed";
+
+        public static TransactionOptionsBuilder newBuilder() {
+          return new TransactionOptionsBuilder();
+        }
+
+        public TransactionOptionsBuilder setIsolationLevel(TransactionOption transactionOption) {
+          if (!isValidIsolationLevelOption.test(transactionOption)) {
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.INVALID_ARGUMENT, INVALID_ISOLATION_LEVEL_MESSAGE);
+          }
+          transactionOptions.removeIf(isValidIsolationLevelOption);
+          transactionOptions.add(transactionOption);
+          return this;
+        }
+
+        public TransactionOptions build() {
+          TransactionOptions options = new TransactionOptions();
+          options.transactionOptions.addAll(this.transactionOptions);
+          return options;
+        }
+      }
+    }
+
+    /**
+     * Sets the default transaction options. Only Isolation level option is supported via
+     * TransactionOptions.
+     */
+    public Builder setDefaultTransactionOptions(TransactionOptions transactionOptions) {
+      this.transactionOptions = transactionOptions.getTransactionOptions();
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1988,6 +2042,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   /** Returns the override metrics Host. */
   String getMonitoringHost() {
     return monitoringHost;
+  }
+
+  TransactionOption[] getTransactionOptions() {
+    return transactionOptions;
   }
 
   @BetaApi
