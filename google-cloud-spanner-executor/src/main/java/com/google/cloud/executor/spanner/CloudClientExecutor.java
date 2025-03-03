@@ -2897,6 +2897,9 @@ public class CloudClientExecutor extends CloudExecutor {
           case DATE:
             value.setDateDaysValue(daysFromDate(struct.getDate(i)));
             break;
+          case UUID:
+            value.setStringValue(struct.getUuid(i).toString());
+            break;
           case NUMERIC:
             String ascii = struct.getBigDecimal(i).toPlainString();
             value.setStringValue(ascii);
