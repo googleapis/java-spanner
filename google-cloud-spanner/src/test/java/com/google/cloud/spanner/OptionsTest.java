@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -28,12 +29,14 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.spanner.Options.RpcLockHint;
 import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -117,7 +120,7 @@ public class OptionsTest {
     assertThat(options.equals(options)).isTrue();
     assertThat(options.equals(null)).isFalse();
     assertThat(options.equals(this)).isFalse();
-
+    assertNull(options.isolationLevel());
     assertThat(options.hashCode()).isEqualTo(31);
   }
 
@@ -373,6 +376,14 @@ public class OptionsTest {
     Options options = Options.fromTransactionOptions(Options.priority(priority));
     assertTrue(options.hasPriority());
     assertEquals("priority: " + priority + " ", options.toString());
+  }
+
+  @Test
+  public void testTransactionOptionsIsolationLevel() {
+    Options options = Options.fromTransactionOptions(Options.repeatableReadIsolationLevel());
+    assertEquals(options.isolationLevel(), IsolationLevel.REPEATABLE_READ);
+    assertEquals(
+        "isolationLevel: " + IsolationLevel.REPEATABLE_READ.name() + " ", options.toString());
   }
 
   @Test
@@ -773,6 +784,26 @@ public class OptionsTest {
   }
 
   @Test
+  public void transactionOptionsIsolationLevel() {
+    Options option1 = Options.fromTransactionOptions(Options.repeatableReadIsolationLevel());
+    Options option2 = Options.fromTransactionOptions(Options.repeatableReadIsolationLevel());
+    Options option3 = Options.fromTransactionOptions();
+
+    assertEquals(option1, option2);
+    assertEquals(option1.hashCode(), option2.hashCode());
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+
+    assertEquals(option1.isolationLevel(), IsolationLevel.REPEATABLE_READ);
+    assertThat(option1.toString())
+        .contains("isolationLevel: " + IsolationLevel.REPEATABLE_READ.name());
+
+    assertNull(option3.isolationLevel());
+    assertThat(option3.toString())
+        .doesNotContain("isolationLevel: " + IsolationLevel.REPEATABLE_READ.name());
+  }
+
+  @Test
   public void updateOptionsExcludeTxnFromChangeStreams() {
     Options option1 = Options.fromUpdateOptions(Options.excludeTxnFromChangeStreams());
     Options option2 = Options.fromUpdateOptions(Options.excludeTxnFromChangeStreams());
@@ -806,5 +837,47 @@ public class OptionsTest {
 
     assertNull(option3.isLastStatement());
     assertThat(option3.toString()).doesNotContain("lastStatement: true");
+  }
+
+  @Test
+  public void testTransactionOptionCombineMutuallyExclusiveOptions() {
+    TransactionOption priorityOption = Options.priority(RpcPriority.HIGH);
+    TransactionOption[] primaryOptions = {Options.commitStats(), priorityOption};
+    TransactionOption[] spannerOptions = {Options.repeatableReadIsolationLevel()};
+    assertArrayEquals(
+        TransactionOption.combine(primaryOptions, spannerOptions),
+        new TransactionOption[] {
+          Options.commitStats(), priorityOption, Options.repeatableReadIsolationLevel()
+        });
+  }
+
+  @Test
+  public void testTransactionOptionCombine_PrimaryOptionWithIsolationLevel() {
+    TransactionOption[] primaryOptions = {
+      Options.commitStats(), Options.serializableIsolationLevel()
+    };
+    TransactionOption[] spannerOptions = {Options.repeatableReadIsolationLevel()};
+    assertArrayEquals(
+        TransactionOption.combine(primaryOptions, spannerOptions),
+        new TransactionOption[] {Options.commitStats(), Options.serializableIsolationLevel()});
+  }
+
+  @Test
+  public void testTransactionOptionCombine_WithNoSpannerOptions() {
+    TransactionOption[] primaryOptions = {
+      Options.commitStats(), Options.serializableIsolationLevel()
+    };
+    assertArrayEquals(
+        TransactionOption.combine(primaryOptions, null),
+        new TransactionOption[] {Options.commitStats(), Options.serializableIsolationLevel()});
+  }
+
+  @Test
+  public void testOptions_WithMultipleDifferentIsolationLevels() {
+    TransactionOption[] transactionOptions = {
+      Options.repeatableReadIsolationLevel(), Options.serializableIsolationLevel()
+    };
+    Options options = Options.fromTransactionOptions(transactionOptions);
+    assertEquals(options.isolationLevel(), IsolationLevel.SERIALIZABLE);
   }
 }

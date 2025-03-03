@@ -111,6 +111,10 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#repeatableReadIsolationLevel()}: Request Repeatable Read Isolation Level
+   *       from the backend.
+   *   <li>{@link Options#serializableIsolationLevel()}: Request Serializable Isolation Level from
+   *       the backend.
    * </ul>
    *
    * @return a response with the timestamp at which the write was committed
@@ -186,6 +190,10 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#repeatableReadIsolationLevel()}: Request Repeatable Read Isolation Level
+   *       from the backend.
+   *   <li>{@link Options#serializableIsolationLevel()}: Request Serializable Isolation Level from
+   *       the backend.
    * </ul>
    *
    * @return a response with the timestamp at which the write was committed
@@ -414,6 +422,10 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#repeatableReadIsolationLevel()}: Request Repeatable Read Isolation Level
+   *       from the backend.
+   *   <li>{@link Options#serializableIsolationLevel()}: Request Serializable Isolation Level from
+   *       the backend.
    * </ul>
    */
   TransactionRunner readWriteTransaction(TransactionOption... options);
@@ -454,6 +466,10 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#repeatableReadIsolationLevel()}: Request Repeatable Read Isolation Level
+   *       from the backend.
+   *   <li>{@link Options#serializableIsolationLevel()}: Request Serializable Isolation Level from
+   *       the backend.
    * </ul>
    */
   TransactionManager transactionManager(TransactionOption... options);
@@ -494,6 +510,10 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#repeatableReadIsolationLevel()}: Request Repeatable Read Isolation Level
+   *       from the backend.
+   *   <li>{@link Options#serializableIsolationLevel()}: Request Serializable Isolation Level from
+   *       the backend.
    * </ul>
    */
   AsyncRunner runAsync(TransactionOption... options);
@@ -548,6 +568,10 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#repeatableReadIsolationLevel()}: Request Repeatable Read Isolation Level
+   *       from the backend.
+   *   <li>{@link Options#serializableIsolationLevel()}: Request Serializable Isolation Level from
+   *       the backend.
    * </ul>
    */
   AsyncTransactionManager transactionManagerAsync(TransactionOption... options);

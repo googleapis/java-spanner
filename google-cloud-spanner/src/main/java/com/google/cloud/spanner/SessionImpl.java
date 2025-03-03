@@ -83,6 +83,9 @@ class SessionImpl implements Session {
         && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
       readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
     }
+    if (options.isolationLevel() != null) {
+      transactionOptions.setIsolationLevel(options.isolationLevel());
+    }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
   }
@@ -239,7 +242,10 @@ class SessionImpl implements Session {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
     Mutation.toProtoAndReturnRandomMutation(mutations, mutationsProto);
-    Options options = Options.fromTransactionOptions(transactionOptions);
+    Options options =
+        Options.fromTransactionOptions(
+            TransactionOption.combine(
+                transactionOptions, this.spanner.getOptions().getTransactionOptions()));
     final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
             .setSession(getName())
@@ -251,6 +257,9 @@ class SessionImpl implements Session {
             .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance());
     if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       transactionOptionsBuilder.setExcludeTxnFromChangeStreams(true);
+    }
+    if (options.isolationLevel() != null) {
+      transactionOptionsBuilder.setIsolationLevel(options.isolationLevel());
     }
     requestBuilder.setSingleUseTransaction(transactionOptionsBuilder);
 
@@ -396,22 +405,37 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    return setActive(new TransactionRunnerImpl(this, options));
+    return setActive(
+        new TransactionRunnerImpl(
+            this,
+            TransactionOption.combine(options, this.spanner.getOptions().getTransactionOptions())));
   }
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
-    return new AsyncRunnerImpl(setActive(new TransactionRunnerImpl(this, options)));
+    return new AsyncRunnerImpl(
+        setActive(
+            new TransactionRunnerImpl(
+                this,
+                TransactionOption.combine(
+                    options, this.spanner.getOptions().getTransactionOptions()))));
   }
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    return new TransactionManagerImpl(this, currentSpan, tracer, options);
+    return new TransactionManagerImpl(
+        this,
+        currentSpan,
+        tracer,
+        TransactionOption.combine(options, this.spanner.getOptions().getTransactionOptions()));
   }
 
   @Override
   public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
-    return new AsyncTransactionManagerImpl(this, currentSpan, options);
+    return new AsyncTransactionManagerImpl(
+        this,
+        currentSpan,
+        TransactionOption.combine(options, this.spanner.getOptions().getTransactionOptions()));
   }
 
   @Override
