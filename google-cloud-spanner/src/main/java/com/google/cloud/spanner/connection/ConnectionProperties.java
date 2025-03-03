@@ -22,6 +22,8 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_D
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_PARTITION_MODE_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CHANNEL_PROVIDER_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_CERTIFICATE_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_KEY_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CREDENTIALS_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CREDENTIALS_PROVIDER_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DATABASE_ROLE_PROPERTY_NAME;
@@ -33,10 +35,13 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CHANNEL_PROVIDER;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_CERTIFICATE;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_KEY;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CREDENTIALS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATABASE_ROLE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DDL_IN_TRANSACTION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_API_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_END_TO_END_TRACING;
@@ -57,6 +62,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_RETR
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ROUTE_TO_LEADER;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_RPC_PRIORITY;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_SEQUENCE_KIND_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_TRACK_CONNECTION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_TRACK_SESSION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_USER_AGENT;
@@ -192,6 +198,20 @@ public class ConnectionProperties {
           BooleanConverter.INSTANCE,
           Context.STARTUP);
 
+  static final ConnectionProperty<String> CLIENT_CERTIFICATE =
+      create(
+          CLIENT_CERTIFICATE_PROPERTY_NAME,
+          "Specifies the file path to the client certificate required for establishing an mTLS connection.",
+          DEFAULT_CLIENT_CERTIFICATE,
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
+  static final ConnectionProperty<String> CLIENT_KEY =
+      create(
+          CLIENT_KEY_PROPERTY_NAME,
+          "Specifies the file path to the client private key required for establishing an mTLS connection.",
+          DEFAULT_CLIENT_KEY,
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<String> CREDENTIALS_URL =
       create(
           CREDENTIALS_PROPERTY_NAME,
@@ -513,6 +533,15 @@ public class ConnectionProperties {
           DdlInTransactionMode.values(),
           DdlInTransactionModeConverter.INSTANCE,
           Context.USER);
+  static final ConnectionProperty<String> DEFAULT_SEQUENCE_KIND =
+      create(
+          DEFAULT_SEQUENCE_KIND_PROPERTY_NAME,
+          "The default sequence kind that should be used for the database. "
+              + "This property is only used when a DDL statement that requires a default "
+              + "sequence kind is executed on this connection.",
+          DEFAULT_DEFAULT_SEQUENCE_KIND,
+          StringValueConverter.INSTANCE,
+          Context.USER);
   static final ConnectionProperty<Duration> MAX_COMMIT_DELAY =
       create(
           "maxCommitDelay",
@@ -597,16 +626,10 @@ public class ConnectionProperties {
       T[] validValues,
       ClientSideStatementValueConverter<T> converter,
       Context context) {
-    try {
-      ConnectionProperty<T> property =
-          ConnectionProperty.create(
-              name, description, defaultValue, validValues, converter, context);
-      CONNECTION_PROPERTIES_BUILDER.put(property.getKey(), property);
-      return property;
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
-    return null;
+    ConnectionProperty<T> property =
+        ConnectionProperty.create(name, description, defaultValue, validValues, converter, context);
+    CONNECTION_PROPERTIES_BUILDER.put(property.getKey(), property);
+    return property;
   }
 
   /** Parse the connection properties that can be found in the given connection URL. */

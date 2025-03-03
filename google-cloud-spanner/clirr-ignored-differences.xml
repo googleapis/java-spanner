@@ -856,6 +856,30 @@
     <className>com/google/cloud/spanner/connection/TransactionRetryListener</className>
     <method>void retryDmlAsPartitionedDmlFailed(java.util.UUID, com.google.cloud.spanner.Statement, java.lang.Throwable)</method>
   </difference>
+
+  <!-- Added transaction runner. -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.lang.Object runTransaction(com.google.cloud.spanner.connection.Connection$TransactionCallable)</method>
+  </difference>
   
-  
+  <!-- Added external host option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>com.google.auth.oauth2.GoogleCredentials getDefaultExternalHostCredentials()</method>
+  </difference>
+
+  <!-- Default sequence kind -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDefaultSequenceKind(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.lang.String getDefaultSequenceKind()</method>
+  </difference>
 </differences>

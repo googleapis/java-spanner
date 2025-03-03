@@ -83,6 +83,8 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
       assertEquals(0, exception.getSuppressed().length);
     }
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
+    assertTrue(request.getLastStatement());
     assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
@@ -108,6 +110,7 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
     ExecuteSqlRequest transactionalRequest =
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertTrue(transactionalRequest.getTransaction().getBegin().hasReadWrite());
+    assertTrue(transactionalRequest.getLastStatement());
 
     // Partitioned DML uses an explicit BeginTransaction RPC.
     assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
@@ -117,6 +120,7 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
     ExecuteSqlRequest partitionedDmlRequest =
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(1);
     assertTrue(partitionedDmlRequest.getTransaction().hasId());
+    assertFalse(partitionedDmlRequest.getLastStatement());
 
     // Partitioned DML transactions are not committed.
     assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
@@ -163,6 +167,7 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
     ExecuteSqlRequest transactionalRequest =
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertTrue(transactionalRequest.getTransaction().getBegin().hasReadWrite());
+    assertTrue(transactionalRequest.getLastStatement());
 
     // Partitioned DML uses an explicit BeginTransaction RPC.
     assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
@@ -172,6 +177,7 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
     ExecuteSqlRequest partitionedDmlRequest =
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(1);
     assertTrue(partitionedDmlRequest.getTransaction().hasId());
+    assertFalse(partitionedDmlRequest.getLastStatement());
 
     // Partitioned DML transactions are not committed.
     assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));

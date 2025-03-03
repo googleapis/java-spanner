@@ -83,6 +83,7 @@ public class SessionPoolOptions {
 
   // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
+  private final boolean skipVerifyingBeginTransactionForMuxRW;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -132,6 +133,7 @@ public class SessionPoolOptions {
             ? useMultiplexedSessionFromEnvVariablePartitionedOps
             : builder.useMultiplexedSessionPartitionedOps;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
+    this.skipVerifyingBeginTransactionForMuxRW = builder.skipVerifyingBeginTransactionForMuxRW;
   }
 
   @Override
@@ -169,8 +171,10 @@ public class SessionPoolOptions {
         && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
         && Objects.equals(this.useMultiplexedSessionForRW, other.useMultiplexedSessionForRW)
         && Objects.equals(
-            this.multiplexedSessionMaintenanceDuration,
-            other.multiplexedSessionMaintenanceDuration);
+            this.multiplexedSessionMaintenanceDuration, other.multiplexedSessionMaintenanceDuration)
+        && Objects.equals(
+            this.skipVerifyingBeginTransactionForMuxRW,
+            other.skipVerifyingBeginTransactionForMuxRW);
   }
 
   @Override
@@ -199,7 +203,8 @@ public class SessionPoolOptions {
         this.poolMaintainerClock,
         this.useMultiplexedSession,
         this.useMultiplexedSessionForRW,
-        this.multiplexedSessionMaintenanceDuration);
+        this.multiplexedSessionMaintenanceDuration,
+        this.skipVerifyingBeginTransactionForMuxRW);
   }
 
   public Builder toBuilder() {
@@ -355,7 +360,7 @@ public class SessionPoolOptions {
   @VisibleForTesting
   @InternalApi
   public boolean getUseMultiplexedSessionPartitionedOps() {
-    return useMultiplexedSessionForPartitionedOps;
+    return getUseMultiplexedSession() && useMultiplexedSessionForPartitionedOps;
   }
 
   private static Boolean getUseMultiplexedSessionFromEnvVariable() {
@@ -365,9 +370,7 @@ public class SessionPoolOptions {
   @VisibleForTesting
   @InternalApi
   protected static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
-    // Checks the value of env, GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS
-    // This returns null until Partitioned Operations is supported.
-    return null;
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS");
   }
 
   private static Boolean parseBooleanEnvVariable(String variableName) {
@@ -385,11 +388,17 @@ public class SessionPoolOptions {
   private static Boolean getUseMultiplexedSessionForRWFromEnvVariable() {
     // Checks the value of env, GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
     // This returns null until RW is supported.
-    return null;
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW");
   }
 
   Duration getMultiplexedSessionMaintenanceDuration() {
     return multiplexedSessionMaintenanceDuration;
+  }
+
+  @VisibleForTesting
+  @InternalApi
+  boolean getSkipVerifyBeginTransactionForMuxRW() {
+    return skipVerifyingBeginTransactionForMuxRW;
   }
 
   public static Builder newBuilder() {
@@ -607,6 +616,7 @@ public class SessionPoolOptions {
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
+    private boolean skipVerifyingBeginTransactionForMuxRW = false;
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
@@ -650,6 +660,7 @@ public class SessionPoolOptions {
       this.useMultiplexedSessionPartitionedOps = options.useMultiplexedSessionForPartitionedOps;
       this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
+      this.skipVerifyingBeginTransactionForMuxRW = options.skipVerifyingBeginTransactionForMuxRW;
     }
 
     /**
@@ -869,6 +880,18 @@ public class SessionPoolOptions {
     Builder setMultiplexedSessionMaintenanceDuration(
         Duration multiplexedSessionMaintenanceDuration) {
       this.multiplexedSessionMaintenanceDuration = multiplexedSessionMaintenanceDuration;
+      return this;
+    }
+
+    // The additional BeginTransaction RPC for multiplexed session read-write is causing
+    // unexpected behavior in mock Spanner tests that rely on mocking the BeginTransaction RPC.
+    // Invoking this method with `true` skips sending the BeginTransaction RPC when the multiplexed
+    // session is created for the first time during client initialization.
+    // This is only used for tests.
+    @VisibleForTesting
+    Builder setSkipVerifyingBeginTransactionForMuxRW(
+        boolean skipVerifyingBeginTransactionForMuxRW) {
+      this.skipVerifyingBeginTransactionForMuxRW = skipVerifyingBeginTransactionForMuxRW;
       return this;
     }
 

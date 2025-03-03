@@ -27,6 +27,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -178,9 +180,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     AsyncTransactionManager manager = client().transactionManagerAsync();
     TransactionContext txn = manager.beginAsync().get();
     txn.executeUpdateAsync(UPDATE_STATEMENT).get();
-    final TransactionSelector selector =
-        ((TransactionContextImpl) ((SessionPoolTransactionContext) txn).delegate)
-            .getTransactionSelector();
+    if (txn instanceof SessionPoolTransactionContext) {
+      txn = ((SessionPoolTransactionContext) txn).delegate;
+    }
+    TransactionContextImpl impl = (TransactionContextImpl) txn;
+    final TransactionSelector selector = impl.getTransactionSelector();
 
     SpannerApiFutures.get(manager.closeAsync());
     // The mock server should already have the Rollback request, as we are waiting for the returned
@@ -247,6 +251,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerIsNonBlocking() throws Exception {
+    // TODO: Remove this condition once DelayedAsyncTransactionManager is made non-blocking with
+    // multiplexed sessions.
+    assumeFalse(
+        "DelayedAsyncTransactionManager is currently blocking with multiplexed sessions.",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     mockSpanner.freeze();
     try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
@@ -358,7 +367,22 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             ExecuteSqlRequest.class,
             ExecuteSqlRequest.class,
             CommitRequest.class);
-    if (isMultiplexedSessionsEnabled()) {
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionForRW =
+        ImmutableList.of(
+            CreateSessionRequest.class,
+            // The first update that fails. This will cause a transaction retry.
+            ExecuteSqlRequest.class,
+            // The retry will use an explicit BeginTransaction call.
+            BeginTransactionRequest.class,
+            // The first update will again fail, but now there is a transaction id, so the
+            // transaction can continue.
+            ExecuteSqlRequest.class,
+            ExecuteSqlRequest.class,
+            CommitRequest.class);
+    if (isMultiplexedSessionsEnabledForRW()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionForRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
       assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
@@ -501,14 +525,25 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           // The server may receive 1 or 2 commit requests depending on whether the call to
           // commitAsync() already knows that the transaction has aborted. If it does, it will not
           // attempt to call the Commit RPC and instead directly propagate the Aborted error.
-          assertThat(mockSpanner.getRequestTypes())
-              .containsAtLeast(
-                  BatchCreateSessionsRequest.class,
-                  ExecuteSqlRequest.class,
-                  // The retry will use a BeginTransaction RPC.
-                  BeginTransactionRequest.class,
-                  ExecuteSqlRequest.class,
-                  CommitRequest.class);
+          if (isMultiplexedSessionsEnabledForRW()) {
+            assertThat(mockSpanner.getRequestTypes())
+                .containsAtLeast(
+                    CreateSessionRequest.class,
+                    ExecuteSqlRequest.class,
+                    // The retry will use a BeginTransaction RPC.
+                    BeginTransactionRequest.class,
+                    ExecuteSqlRequest.class,
+                    CommitRequest.class);
+          } else {
+            assertThat(mockSpanner.getRequestTypes())
+                .containsAtLeast(
+                    BatchCreateSessionsRequest.class,
+                    ExecuteSqlRequest.class,
+                    // The retry will use a BeginTransaction RPC.
+                    BeginTransactionRequest.class,
+                    ExecuteSqlRequest.class,
+                    CommitRequest.class);
+          }
           break;
         } catch (AbortedException e) {
           transactionContextFuture = manager.resetForRetryAsync();
@@ -556,7 +591,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                   executor)
               .commitAsync()
               .get();
-          if (isMultiplexedSessionsEnabled()) {
+          if (isMultiplexedSessionsEnabledForRW()) {
+            assertThat(mockSpanner.getRequestTypes())
+                .containsExactly(
+                    CreateSessionRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
+          } else if (isMultiplexedSessionsEnabled()) {
             assertThat(mockSpanner.getRequestTypes())
                 .containsExactly(
                     CreateSessionRequest.class,
@@ -600,6 +639,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerIsNonBlockingWithBatchUpdate() throws Exception {
+    // TODO: Remove this condition once DelayedAsyncTransactionManager is made non-blocking with
+    // multiplexed sessions.
+    assumeFalse(
+        "DelayedAsyncTransactionManager is currently blocking with multiplexed sessions.",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     mockSpanner.freeze();
     try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
@@ -677,7 +721,16 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             ExecuteBatchDmlRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
-    if (isMultiplexedSessionsEnabled()) {
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
+        ImmutableList.of(
+            CreateSessionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            ExecuteBatchDmlRequest.class,
+            CommitRequest.class);
+    if (isMultiplexedSessionsEnabledForRW()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
       assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
@@ -721,7 +774,17 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
-    if (isMultiplexedSessionsEnabled()) {
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
+        ImmutableList.of(
+            CreateSessionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            CommitRequest.class);
+    if (isMultiplexedSessionsEnabledForRW()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
       assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
@@ -763,7 +826,20 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
-    if (isMultiplexedSessionsEnabled()) {
+    // When requests run using multiplexed session with read-write enabled, the
+    // BatchCreateSessionsRequest will not be
+    // triggered because we are creating an empty pool during initialization.
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
+        ImmutableList.of(
+            CreateSessionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            CommitRequest.class);
+    if (isMultiplexedSessionsEnabledForRW()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
       assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
@@ -824,7 +900,18 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
-    if (isMultiplexedSessionsEnabled()) {
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
+        ImmutableList.of(
+            CreateSessionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            CommitRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            CommitRequest.class);
+    if (isMultiplexedSessionsEnabledForRW()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
       assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
@@ -866,27 +953,50 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(attempt.get()).isEqualTo(2);
     List<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
     // Remove the CreateSession requests for multiplexed sessions, as those are not relevant for
-    // this test.
-    requests.removeIf(request -> request == CreateSessionRequest.class);
+    // this test if multiplexed session for read-write is not enabled.
+    if (!isMultiplexedSessionsEnabledForRW()) {
+      requests.removeIf(request -> request == CreateSessionRequest.class);
+    }
     int size = Iterables.size(requests);
     assertThat(size).isIn(Range.closed(5, 6));
     if (size == 5) {
-      assertThat(requests)
-          .containsExactly(
-              BatchCreateSessionsRequest.class,
-              ExecuteBatchDmlRequest.class,
-              BeginTransactionRequest.class,
-              ExecuteBatchDmlRequest.class,
-              CommitRequest.class);
+      if (isMultiplexedSessionsEnabledForRW()) {
+        assertThat(requests)
+            .containsExactly(
+                CreateSessionRequest.class,
+                ExecuteBatchDmlRequest.class,
+                BeginTransactionRequest.class,
+                ExecuteBatchDmlRequest.class,
+                CommitRequest.class);
+      } else {
+        assertThat(requests)
+            .containsExactly(
+                BatchCreateSessionsRequest.class,
+                ExecuteBatchDmlRequest.class,
+                BeginTransactionRequest.class,
+                ExecuteBatchDmlRequest.class,
+                CommitRequest.class);
+      }
     } else {
-      assertThat(requests)
-          .containsExactly(
-              BatchCreateSessionsRequest.class,
-              ExecuteBatchDmlRequest.class,
-              CommitRequest.class,
-              BeginTransactionRequest.class,
-              ExecuteBatchDmlRequest.class,
-              CommitRequest.class);
+      if (isMultiplexedSessionsEnabledForRW()) {
+        assertThat(requests)
+            .containsExactly(
+                CreateSessionRequest.class,
+                ExecuteBatchDmlRequest.class,
+                CommitRequest.class,
+                BeginTransactionRequest.class,
+                ExecuteBatchDmlRequest.class,
+                CommitRequest.class);
+      } else {
+        assertThat(requests)
+            .containsExactly(
+                BatchCreateSessionsRequest.class,
+                ExecuteBatchDmlRequest.class,
+                CommitRequest.class,
+                BeginTransactionRequest.class,
+                ExecuteBatchDmlRequest.class,
+                CommitRequest.class);
+      }
     }
   }
 
@@ -917,7 +1027,13 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
-    if (isMultiplexedSessionsEnabled()) {
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
+        ImmutableList.of(
+            CreateSessionRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    if (isMultiplexedSessionsEnabledForRW()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
       assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
@@ -948,7 +1064,13 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     ImmutableList<Class<? extends Message>> expectedRequests =
         ImmutableList.of(
             BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
-    if (isMultiplexedSessionsEnabled()) {
+    ImmutableList<Class<? extends Message>> expectedRequestsWithMultiplexedSessionsRW =
+        ImmutableList.of(
+            CreateSessionRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    if (isMultiplexedSessionsEnabledForRW()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactlyElementsIn(expectedRequestsWithMultiplexedSessionsRW);
+    } else if (isMultiplexedSessionsEnabled()) {
       assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
       assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
@@ -1084,10 +1206,48 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     }
   }
 
+  @Test
+  public void testAbandonedAsyncTransactionManager_rollbackFails() throws Exception {
+    mockSpanner.setRollbackExecutionTime(
+        SimulatedExecutionTime.ofException(Status.PERMISSION_DENIED.asRuntimeException()));
+
+    boolean gotException = false;
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, Long> updateCount =
+              transactionContextFuture.then(
+                  (transactionContext, ignored) ->
+                      transactionContext.executeUpdateAsync(UPDATE_STATEMENT),
+                  executor);
+          assertEquals(1L, updateCount.get().longValue());
+          // Break without committing or rolling back the transaction.
+          break;
+        } catch (AbortedException e) {
+          transactionContextFuture = manager.resetForRetryAsync();
+        }
+      }
+    } catch (SpannerException spannerException) {
+      // The error from the automatically executed Rollback is surfaced when the
+      // AsyncTransactionManager is closed.
+      assertEquals(ErrorCode.PERMISSION_DENIED, spannerException.getErrorCode());
+      gotException = true;
+    }
+    assertTrue(gotException);
+  }
+
   private boolean isMultiplexedSessionsEnabled() {
     if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
       return false;
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+  }
+
+  private boolean isMultiplexedSessionsEnabledForRW() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }
