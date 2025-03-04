@@ -789,4 +789,22 @@ public class OptionsTest {
     assertNull(option3.withExcludeTxnFromChangeStreams());
     assertThat(option3.toString()).doesNotContain("withExcludeTxnFromChangeStreams: true");
   }
+
+  @Test
+  public void testLastStatement() {
+    Options option1 = Options.fromUpdateOptions(Options.lastStatement());
+    Options option2 = Options.fromUpdateOptions(Options.lastStatement());
+    Options option3 = Options.fromUpdateOptions();
+
+    assertEquals(option1, option2);
+    assertEquals(option1.hashCode(), option2.hashCode());
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+
+    assertTrue(option1.isLastStatement());
+    assertThat(option1.toString()).contains("lastStatement: true");
+
+    assertNull(option3.isLastStatement());
+    assertThat(option3.toString()).doesNotContain("lastStatement: true");
+  }
 }

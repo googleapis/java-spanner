@@ -354,7 +354,8 @@ public class ConnectionImplTest {
                   public <T> T run(TransactionCallable<T> callable) {
                     commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
                     TransactionContext transaction = mock(TransactionContext.class);
-                    when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+                    when(transaction.executeUpdate(Statement.of(UPDATE), Options.lastStatement()))
+                        .thenReturn(1L);
                     try {
                       return callable.run(transaction);
                     } catch (Exception e) {

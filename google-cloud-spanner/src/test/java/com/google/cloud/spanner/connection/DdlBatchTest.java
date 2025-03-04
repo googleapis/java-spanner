@@ -30,6 +30,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -59,6 +60,7 @@ import io.opentelemetry.api.trace.Span;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -115,6 +117,9 @@ public class DdlBatchTest {
       when(operation.getMetadata()).thenReturn(metadataFuture);
       when(ddlClient.executeDdl(anyString(), any())).thenReturn(operation);
       when(ddlClient.executeDdl(anyList(), any())).thenReturn(operation);
+      doCallRealMethod()
+          .when(ddlClient)
+          .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -135,6 +140,7 @@ public class DdlBatchTest {
         .setDatabaseClient(dbClient)
         .withStatementExecutor(new StatementExecutor())
         .setSpan(Span.getInvalid())
+        .setConnectionState(new ConnectionState(new HashMap<>()))
         .build();
   }
 
@@ -256,9 +262,12 @@ public class DdlBatchTest {
     assertThat(batch.isActive(), is(false));
 
     DdlClient client = mock(DdlClient.class);
-    SpannerException exception = mock(SpannerException.class);
-    when(exception.getErrorCode()).thenReturn(ErrorCode.FAILED_PRECONDITION);
+    SpannerException exception =
+        SpannerExceptionFactory.newSpannerException(ErrorCode.FAILED_PRECONDITION, "test");
     doThrow(exception).when(client).executeDdl(anyList(), isNull());
+    doCallRealMethod()
+        .when(client)
+        .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
     batch = createSubject(client);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
@@ -380,6 +389,7 @@ public class DdlBatchTest {
             .withStatementExecutor(new StatementExecutor())
             .setSpan(Span.getInvalid())
             .setProtoDescriptors(null)
+            .setConnectionState(new ConnectionState(new HashMap<>()))
             .build();
     batch.executeDdlAsync(CallType.SYNC, statement);
     batch.executeDdlAsync(CallType.SYNC, statement);
@@ -406,6 +416,7 @@ public class DdlBatchTest {
             .withStatementExecutor(new StatementExecutor())
             .setSpan(Span.getInvalid())
             .setProtoDescriptors(protoDescriptors)
+            .setConnectionState(new ConnectionState(new HashMap<>()))
             .build();
     batch.executeDdlAsync(CallType.SYNC, statement);
     batch.executeDdlAsync(CallType.SYNC, statement);
@@ -437,6 +448,7 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .setSpan(Span.getInvalid())
+            .setConnectionState(new ConnectionState(new HashMap<>()))
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,
@@ -469,6 +481,9 @@ public class DdlBatchTest {
             new ExecutionException(
                 "ddl statement failed", Status.INVALID_ARGUMENT.asRuntimeException()));
     when(operationFuture.getMetadata()).thenReturn(metadataFuture);
+    doCallRealMethod()
+        .when(client)
+        .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
     when(client.executeDdl(argThat(isListOfStringsWithSize(2)), isNull()))
         .thenReturn(operationFuture);
     DdlBatch batch =
@@ -477,6 +492,7 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .setSpan(Span.getInvalid())
+            .setConnectionState(new ConnectionState(new HashMap<>()))
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,
@@ -499,6 +515,9 @@ public class DdlBatchTest {
   @Test
   public void testFailedAfterFirstStatement() throws InterruptedException, ExecutionException {
     DdlClient client = mock(DdlClient.class);
+    doCallRealMethod()
+        .when(client)
+        .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
     UpdateDatabaseDdlMetadata metadata =
         UpdateDatabaseDdlMetadata.newBuilder()
             .addCommitTimestamps(
@@ -521,6 +540,7 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .setSpan(Span.getInvalid())
+            .setConnectionState(new ConnectionState(new HashMap<>()))
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,

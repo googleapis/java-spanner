@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.Instance.Edition;
 import java.util.concurrent.ExecutionException;
 
 class CreateInstanceWithAutoscalingConfigExample {
@@ -62,6 +63,7 @@ class CreateInstanceWithAutoscalingConfigExample {
             .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
             .setAutoscalingConfig(autoscalingConfig)
             .setDisplayName("Descriptive name")
+            .setEdition(Edition.ENTERPRISE)
             .build();
     OperationFuture<Instance, CreateInstanceMetadata> operation =
         instanceAdminClient.createInstance(instanceInfo);

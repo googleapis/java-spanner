@@ -29,31 +29,31 @@ public class BuiltInOpenTelemetryMetricsProviderTest {
   @Test
   public void testGenerateClientHashWithSimpleUid() {
     String clientUid = "testClient";
-    verifyHash(BuiltInOpenTelemetryMetricsProvider.generateClientHash(clientUid));
+    verifyHash(BuiltInMetricsProvider.generateClientHash(clientUid));
   }
 
   @Test
   public void testGenerateClientHashWithEmptyUid() {
     String clientUid = "";
-    verifyHash(BuiltInOpenTelemetryMetricsProvider.generateClientHash(clientUid));
+    verifyHash(BuiltInMetricsProvider.generateClientHash(clientUid));
   }
 
   @Test
   public void testGenerateClientHashWithNullUid() {
     String clientUid = null;
-    verifyHash(BuiltInOpenTelemetryMetricsProvider.generateClientHash(clientUid));
+    verifyHash(BuiltInMetricsProvider.generateClientHash(clientUid));
   }
 
   @Test
   public void testGenerateClientHashWithLongUid() {
     String clientUid = "aVeryLongUniqueClientIdentifierThatIsUnusuallyLong";
-    verifyHash(BuiltInOpenTelemetryMetricsProvider.generateClientHash(clientUid));
+    verifyHash(BuiltInMetricsProvider.generateClientHash(clientUid));
   }
 
   @Test
   public void testGenerateClientHashWithSpecialCharacters() {
     String clientUid = "273d60f2-5604-42f1-b687-f5f1b975fd07@2316645@test#";
-    verifyHash(BuiltInOpenTelemetryMetricsProvider.generateClientHash(clientUid));
+    verifyHash(BuiltInMetricsProvider.generateClientHash(clientUid));
   }
 
   private void verifyHash(String hash) {

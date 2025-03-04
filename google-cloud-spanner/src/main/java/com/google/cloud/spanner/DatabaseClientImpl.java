@@ -124,6 +124,12 @@ class DatabaseClientImpl implements DatabaseClient {
         && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsForRWSupported();
   }
 
+  private boolean canUseMultiplexedSessionsForPartitionedOps() {
+    return this.useMultiplexedSessionPartitionedOps
+        && this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsForPartitionedOpsSupported();
+  }
+
   @Override
   public Dialect getDialect() {
     return pool.getDialect();
@@ -323,8 +329,15 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
-    if (useMultiplexedSessionPartitionedOps) {
-      return getMultiplexedSession().executePartitionedUpdate(stmt, options);
+
+    if (canUseMultiplexedSessionsForPartitionedOps()) {
+      try {
+        return getMultiplexedSession().executePartitionedUpdate(stmt, options);
+      } catch (SpannerException e) {
+        if (!multiplexedSessionDatabaseClient.maybeMarkUnimplementedForPartitionedOps(e)) {
+          throw e;
+        }
+      }
     }
     return executePartitionedUpdateWithPooledSession(stmt, options);
   }

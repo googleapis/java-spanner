@@ -1247,5 +1247,27 @@ public class ConnectionOptionsTest {
     Matcher matcherWithoutHost =
         EXTERNAL_HOST_PATTERN.matcher("cloudspanner:/instances/default/databases/singers-db");
     assertFalse(matcherWithoutHost.matches());
+    Matcher matcherWithPrefixSpanner =
+        EXTERNAL_HOST_PATTERN.matcher("spanner://localhost:15000/databases/test-db");
+    assertTrue(matcherWithPrefixSpanner.matches());
+    assertNull(matcherWithPrefixSpanner.group("INSTANCEGROUP"));
+    assertEquals("test-db", matcherWithPrefixSpanner.group("DATABASEGROUP"));
+  }
+
+  @Test
+  public void testBuildWithValidURIWithPrefixSpanner() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "spanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autocommit=false;readonly=true");
+    builder.setCredentialsUrl(FILE_TEST_PATH);
+    ConnectionOptions options = builder.build();
+    assertThat(options.getHost()).isEqualTo(DEFAULT_HOST);
+    assertThat(options.getProjectId()).isEqualTo("test-project-123");
+    assertThat(options.getInstanceId()).isEqualTo("test-instance-123");
+    assertThat(options.getDatabaseName()).isEqualTo("test-database-123");
+    assertThat(options.getCredentials())
+        .isEqualTo(new CredentialsService().createCredentials(FILE_TEST_PATH));
+    assertThat(options.isAutocommit()).isEqualTo(false);
+    assertThat(options.isReadOnly()).isEqualTo(true);
   }
 }

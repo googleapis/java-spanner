@@ -18,6 +18,9 @@ package com.google.cloud.spanner.connection;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -28,6 +31,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
@@ -82,12 +86,12 @@ public class AutocommitDmlModeTest {
                 .setCredentials(NoCredentials.getInstance())
                 .setUri(URI)
                 .build())) {
-      assertThat(connection.isAutocommit(), is(true));
-      assertThat(connection.isReadOnly(), is(false));
-      assertThat(connection.getAutocommitDmlMode(), is(AutocommitDmlMode.TRANSACTIONAL));
+      assertTrue(connection.isAutocommit());
+      assertFalse(connection.isReadOnly());
+      assertEquals(AutocommitDmlMode.TRANSACTIONAL, connection.getAutocommitDmlMode());
 
       connection.execute(Statement.of(UPDATE));
-      verify(txContext).executeUpdate(Statement.of(UPDATE));
+      verify(txContext).executeUpdate(Statement.of(UPDATE), Options.lastStatement());
       verify(dbClient, never()).executePartitionedUpdate(Statement.of(UPDATE));
     }
   }

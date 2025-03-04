@@ -10,6 +10,9 @@
         "grpc": {
           "libraryClient": "DatabaseAdminClient",
           "rpcs": {
+            "AddSplitPoints": {
+              "methods": ["addSplitPoints", "addSplitPoints", "addSplitPoints", "addSplitPointsCallable"]
+            },
             "CopyBackup": {
               "methods": ["copyBackupAsync", "copyBackupAsync", "copyBackupAsync", "copyBackupAsync", "copyBackupAsync", "copyBackupOperationCallable", "copyBackupCallable"]
             },

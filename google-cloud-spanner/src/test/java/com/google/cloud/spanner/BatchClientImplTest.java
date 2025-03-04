@@ -102,6 +102,7 @@ public final class BatchClientImplTest {
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(gapicRpc, spannerOptions);
     client = new BatchClientImpl(spanner.getSessionClient(db), isMultiplexedSession);
+    BatchClientImpl.unimplementedForPartitionedOps.set(false);
   }
 
   @SuppressWarnings("unchecked")

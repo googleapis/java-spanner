@@ -55,7 +55,7 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public void close() {
-    closeAsync();
+    SpannerApiFutures.get(closeAsync());
   }
 
   @Override
@@ -183,6 +183,10 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public TransactionContextFuture resetForRetryAsync() {
+    if (txn == null || !txn.isAborted() && txnState != TransactionState.ABORTED) {
+      throw new IllegalStateException(
+          "resetForRetry can only be called if the previous attempt aborted");
+    }
     return new TransactionContextFutureImpl(this, internalBeginAsync(false));
   }
 

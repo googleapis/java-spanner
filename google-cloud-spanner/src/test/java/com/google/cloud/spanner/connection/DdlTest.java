@@ -17,15 +17,20 @@
 package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.MissingDefaultSequenceKindException;
+import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.longrunning.Operation;
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
+import com.google.rpc.Code;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -62,6 +67,21 @@ public class DdlTest extends AbstractMockServerTest {
             .setName("projects/proj/instances/inst/databases/db/operations/1")
             .setDone(true)
             .setResponse(Any.pack(Empty.getDefaultInstance()))
+            .build());
+  }
+
+  private void addUpdateDdlResponse(com.google.rpc.Status error) {
+    mockDatabaseAdmin.addResponse(
+        Operation.newBuilder()
+            .setMetadata(
+                Any.pack(
+                    UpdateDatabaseDdlMetadata.newBuilder()
+                        .setDatabase("projects/proj/instances/inst/databases/db")
+                        .build()))
+            .setName("projects/proj/instances/inst/databases/db/operations/1")
+            .setDone(true)
+            // .setResponse(Any.pack(Empty.getDefaultInstance()))
+            .setError(error)
             .build());
   }
 
@@ -229,5 +249,115 @@ public class DdlTest extends AbstractMockServerTest {
         }
       }
     }
+  }
+
+  @Test
+  public void testMissingDefaultSequenceKindException() {
+    addUpdateDdlResponse(
+        com.google.rpc.Status.newBuilder()
+            .setCode(Code.INVALID_ARGUMENT_VALUE)
+            .setMessage(
+                "The sequence kind of an identity column id2 is not specified. "
+                    + "Please specify the sequence kind explicitly or set the database option `default_sequence_kind`.")
+            .build());
+    try (Connection connection = createConnection()) {
+      assertNull(connection.getDefaultSequenceKind());
+      assertThrows(
+          MissingDefaultSequenceKindException.class,
+          () ->
+              connection.execute(
+                  Statement.of("create table foo (id2 int64 auto_increment primary key")));
+    }
+    // The request should not be retried.
+    assertEquals(1, mockDatabaseAdmin.getRequests().size());
+  }
+
+  @Test
+  public void testSetsDefaultSequenceKindAndRetriesStatement() {
+    addUpdateDdlResponse(
+        com.google.rpc.Status.newBuilder()
+            .setCode(Code.INVALID_ARGUMENT_VALUE)
+            .setMessage(
+                "The sequence kind of an identity column id2 is not specified. "
+                    + "Please specify the sequence kind explicitly or set the database option `default_sequence_kind`.")
+            .build());
+    // This will be the response for the 'alter database' statement.
+    addUpdateDdlResponse();
+    // This will be the response for the 'create table' statement after the retry.
+    addUpdateDdlResponse();
+    try (Connection connection = createConnection()) {
+      connection.setDefaultSequenceKind("bit_reversed_positive");
+      connection.execute(Statement.of("create table foo (id2 int64 auto_increment primary key"));
+    }
+    List<AbstractMessage> requests = mockDatabaseAdmin.getRequests();
+    assertEquals(3, requests.size());
+    assertEquals(
+        "create table foo (id2 int64 auto_increment primary key",
+        ((UpdateDatabaseDdlRequest) requests.get(0)).getStatements(0));
+    assertEquals(
+        "alter database `db` set options (default_sequence_kind='bit_reversed_positive')",
+        ((UpdateDatabaseDdlRequest) requests.get(1)).getStatements(0));
+    assertEquals(
+        "create table foo (id2 int64 auto_increment primary key",
+        ((UpdateDatabaseDdlRequest) requests.get(2)).getStatements(0));
+  }
+
+  @Test
+  public void testMissingDefaultSequenceKindExceptionInBatch() {
+    addUpdateDdlResponse(
+        com.google.rpc.Status.newBuilder()
+            .setCode(Code.INVALID_ARGUMENT_VALUE)
+            .setMessage(
+                "The sequence kind of an identity column id2 is not specified. "
+                    + "Please specify the sequence kind explicitly or set the database option `default_sequence_kind`.")
+            .build());
+    try (Connection connection = createConnection()) {
+      assertNull(connection.getDefaultSequenceKind());
+      connection.startBatchDdl();
+      connection.execute(Statement.of("create table foo (id2 int64 auto_increment primary key"));
+      SpannerBatchUpdateException exception =
+          assertThrows(SpannerBatchUpdateException.class, connection::runBatch);
+    }
+    // The request should not be retried.
+    assertEquals(1, mockDatabaseAdmin.getRequests().size());
+  }
+
+  @Test
+  public void testSetsDefaultSequenceKindAndRetriesBatch() {
+    addUpdateDdlResponse(
+        com.google.rpc.Status.newBuilder()
+            .setCode(Code.INVALID_ARGUMENT_VALUE)
+            .setMessage(
+                "The sequence kind of an identity column id2 is not specified. "
+                    + "Please specify the sequence kind explicitly or set the database option `default_sequence_kind`.")
+            .build());
+    // This will be the response for the 'alter database' statement.
+    addUpdateDdlResponse();
+    // This will be the response for the 'create table' statements after the retry.
+    addUpdateDdlResponse();
+    try (Connection connection = createConnection()) {
+      connection.setDefaultSequenceKind("bit_reversed_positive");
+      connection.startBatchDdl();
+      connection.execute(Statement.of("create table foo (id1 int64 auto_increment primary key"));
+      connection.execute(Statement.of("create table bar (id2 int64 auto_increment primary key"));
+      connection.runBatch();
+    }
+    List<AbstractMessage> requests = mockDatabaseAdmin.getRequests();
+    assertEquals(3, requests.size());
+    assertEquals(
+        "create table foo (id1 int64 auto_increment primary key",
+        ((UpdateDatabaseDdlRequest) requests.get(0)).getStatements(0));
+    assertEquals(
+        "create table bar (id2 int64 auto_increment primary key",
+        ((UpdateDatabaseDdlRequest) requests.get(0)).getStatements(1));
+    assertEquals(
+        "alter database `db` set options (default_sequence_kind='bit_reversed_positive')",
+        ((UpdateDatabaseDdlRequest) requests.get(1)).getStatements(0));
+    assertEquals(
+        "create table foo (id1 int64 auto_increment primary key",
+        ((UpdateDatabaseDdlRequest) requests.get(0)).getStatements(0));
+    assertEquals(
+        "create table bar (id2 int64 auto_increment primary key",
+        ((UpdateDatabaseDdlRequest) requests.get(0)).getStatements(1));
   }
 }

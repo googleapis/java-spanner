@@ -635,6 +635,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setStats(ResultSetStats.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setLast(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
     ExecuteSqlRequest request =
@@ -861,6 +862,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setStats(ResultSetStats.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setLast(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
     ReadRequest request =

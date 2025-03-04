@@ -895,4 +895,83 @@ public interface BackupOrBuilder
    * </code>
    */
   com.google.protobuf.TimestampOrBuilder getOldestVersionTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  java.util.List<com.google.spanner.admin.database.v1.BackupInstancePartition>
+      getInstancePartitionsList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.BackupInstancePartition getInstancePartitions(int index);
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  int getInstancePartitionsCount();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  java.util.List<? extends com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder>
+      getInstancePartitionsOrBuilderList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The instance partition(s) storing the backup.
+   *
+   * This is the same as the list of the instance partition(s) that the database
+   * had footprint in at the backup's `version_time`.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.BackupInstancePartition instance_partitions = 19 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.BackupInstancePartitionOrBuilder
+      getInstancePartitionsOrBuilder(int index);
 }
