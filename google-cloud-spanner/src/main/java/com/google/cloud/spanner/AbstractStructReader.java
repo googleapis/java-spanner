@@ -314,7 +314,7 @@ public abstract class AbstractStructReader implements StructReader {
   public UUID getUuid(String columnName) {
     final int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.uuid(), columnName);
-    return getUuid(columnIndex);
+    return getUuidInternal(columnIndex);
   }
 
   @Override
@@ -611,7 +611,7 @@ public abstract class AbstractStructReader implements StructReader {
   public List<UUID> getUuidList(String columnName) {
     final int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.array(Type.uuid()), columnName);
-    return getUuidList(columnIndex);
+    return getUuidListInternal(columnIndex);
   }
 
   @Override

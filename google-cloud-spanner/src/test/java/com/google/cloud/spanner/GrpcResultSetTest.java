@@ -754,9 +754,6 @@ public class GrpcResultSetTest {
             .build());
     consumer.onCompleted();
 
-    Value value = Value.uuid(uuid);
-    com.google.protobuf.Value diff_value = value.toProto();
-
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getUuid(0)).isEqualTo(uuid);
   }
