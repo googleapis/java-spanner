@@ -1390,6 +1390,58 @@ public class ITQueryTest {
   }
 
   @Test
+  public void analyzeWithStats() {
+    assumeFalse("Emulator does not support Analyze WithStats", isUsingEmulator());
+
+    String query = "SELECT 1 AS data UNION ALL SELECT 2 AS data ORDER BY data";
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      // "Statements with set operations and ORDER BY are not supported"
+      query = "SELECT 1 AS data UNION ALL SELECT 2 AS data";
+    }
+    Statement statement = Statement.of(query);
+    ResultSet resultSet =
+        statement.analyzeQuery(
+            getClient(dialect.dialect).singleUse(TimestampBound.strong()),
+            QueryAnalyzeMode.WITH_STATS);
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getType()).isEqualTo(Type.struct(StructField.of("data", Type.int64())));
+    assertThat(resultSet.getLong(0)).isEqualTo(1);
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getLong(0)).isEqualTo(2);
+    assertThat(resultSet.next()).isFalse();
+    ResultSetStats receivedStats = resultSet.getStats();
+    assertThat(receivedStats).isNotNull();
+    assertThat(receivedStats.hasQueryPlan()).isFalse();
+    assertThat(receivedStats.hasQueryStats()).isTrue();
+  }
+
+  @Test
+  public void analyzeWithPlanAndStats() {
+    assumeFalse("Emulator does not support Analyze WithPlanAndStats", isUsingEmulator());
+
+    String query = "SELECT 1 AS data UNION ALL SELECT 2 AS data ORDER BY data";
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      // "Statements with set operations and ORDER BY are not supported"
+      query = "SELECT 1 AS data UNION ALL SELECT 2 AS data";
+    }
+    Statement statement = Statement.of(query);
+    ResultSet resultSet =
+        statement.analyzeQuery(
+            getClient(dialect.dialect).singleUse(TimestampBound.strong()),
+            QueryAnalyzeMode.WITH_PLAN_AND_STATS);
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getType()).isEqualTo(Type.struct(StructField.of("data", Type.int64())));
+    assertThat(resultSet.getLong(0)).isEqualTo(1);
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getLong(0)).isEqualTo(2);
+    assertThat(resultSet.next()).isFalse();
+    ResultSetStats receivedStats = resultSet.getStats();
+    assertThat(receivedStats).isNotNull();
+    assertThat(receivedStats.hasQueryPlan()).isTrue();
+    assertThat(receivedStats.hasQueryStats()).isTrue();
+  }
+
+  @Test
   public void testSelectArrayOfStructs() {
     assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     try (ResultSet resultSet =

@@ -359,6 +359,54 @@ public class ReadOnlyTransactionTest {
   }
 
   @Test
+  public void testWithStatsQuery() {
+    for (TimestampBound staleness : getTestTimestampBounds()) {
+      ParsedStatement parsedStatement = mock(ParsedStatement.class);
+      when(parsedStatement.getType()).thenReturn(StatementType.QUERY);
+      when(parsedStatement.isQuery()).thenReturn(true);
+      Statement statement = Statement.of("SELECT * FROM FOO");
+      when(parsedStatement.getStatement()).thenReturn(statement);
+      when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
+
+      ReadOnlyTransaction transaction = createSubject(staleness);
+      ResultSet rs =
+          get(
+              transaction.executeQueryAsync(
+                  CallType.SYNC, parsedStatement, AnalyzeMode.WITH_STATS));
+      assertThat(rs, is(notNullValue()));
+      // get all results and then get the stats
+      while (rs.next()) {
+        // do nothing
+      }
+      assertThat(rs.getStats(), is(notNullValue()));
+    }
+  }
+
+  @Test
+  public void testWithPlanAndStatsQuery() {
+    for (TimestampBound staleness : getTestTimestampBounds()) {
+      ParsedStatement parsedStatement = mock(ParsedStatement.class);
+      when(parsedStatement.getType()).thenReturn(StatementType.QUERY);
+      when(parsedStatement.isQuery()).thenReturn(true);
+      Statement statement = Statement.of("SELECT * FROM FOO");
+      when(parsedStatement.getStatement()).thenReturn(statement);
+      when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
+
+      ReadOnlyTransaction transaction = createSubject(staleness);
+      ResultSet rs =
+          get(
+              transaction.executeQueryAsync(
+                  CallType.SYNC, parsedStatement, AnalyzeMode.WITH_PLAN_AND_STATS));
+      assertThat(rs, is(notNullValue()));
+      // get all results and then get the stats
+      while (rs.next()) {
+        // do nothing
+      }
+      assertThat(rs.getStats(), is(notNullValue()));
+    }
+  }
+
+  @Test
   public void testProfileQuery() {
     for (TimestampBound staleness : getTestTimestampBounds()) {
       ParsedStatement parsedStatement = mock(ParsedStatement.class);

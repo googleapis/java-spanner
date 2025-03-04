@@ -269,6 +269,42 @@ public class ReadWriteTransactionTest {
   }
 
   @Test
+  public void testWithStatsQuery() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.QUERY);
+    when(parsedStatement.isQuery()).thenReturn(true);
+    Statement statement = Statement.of("SELECT * FROM FOO");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject();
+    ResultSet rs =
+        get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.WITH_STATS));
+    assertThat(rs, is(notNullValue()));
+    while (rs.next()) {
+      // do nothing
+    }
+    assertThat(rs.getStats(), is(notNullValue()));
+  }
+
+  @Test
+  public void testWithPlanAndStatsQuery() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.QUERY);
+    when(parsedStatement.isQuery()).thenReturn(true);
+    Statement statement = Statement.of("SELECT * FROM FOO");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject();
+    ResultSet rs =
+        get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.WITH_STATS));
+    assertThat(rs, is(notNullValue()));
+    while (rs.next()) {
+      // do nothing
+    }
+    assertThat(rs.getStats(), is(notNullValue()));
+  }
+
+  @Test
   public void testExecuteUpdate() {
     ParsedStatement parsedStatement = mock(ParsedStatement.class);
     when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);

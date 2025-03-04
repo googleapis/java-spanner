@@ -3555,9 +3555,7 @@ public class DatabaseClientImplTest {
       try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
         try (ResultSet rs =
             tx.analyzeQuery(
-                Statement.newBuilder(SELECT1.getSql())
-                    .build(),
-                QueryAnalyzeMode.WITH_STATS)) {
+                Statement.newBuilder(SELECT1.getSql()).build(), QueryAnalyzeMode.WITH_STATS)) {
           // Just iterate over the results to execute the query.
           consumeResults(rs);
         }
