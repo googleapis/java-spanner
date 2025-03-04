@@ -327,4 +327,18 @@ public abstract class AbstractMockServerTest {
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
+
+  boolean isMultiplexedSessionsEnabledForPartitionedOps(Spanner spanner) {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps();
+  }
+
+  boolean isMultiplexedSessionsEnabledForRW(Spanner spanner) {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
+  }
 }

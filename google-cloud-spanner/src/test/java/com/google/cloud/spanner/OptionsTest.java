@@ -25,11 +25,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.spanner.Options.RpcLockHint;
 import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import org.junit.Test;
@@ -83,7 +85,8 @@ public class OptionsTest {
             Options.prefetchChunks(1),
             Options.dataBoostEnabled(true),
             Options.directedRead(DIRECTED_READ_OPTIONS),
-            Options.orderBy(RpcOrderBy.NO_ORDER));
+            Options.orderBy(RpcOrderBy.NO_ORDER),
+            Options.lockHint(Options.RpcLockHint.SHARED));
     assertThat(options.hasLimit()).isTrue();
     assertThat(options.limit()).isEqualTo(10);
     assertThat(options.hasPrefetchChunks()).isTrue();
@@ -92,6 +95,7 @@ public class OptionsTest {
     assertTrue(options.dataBoostEnabled());
     assertTrue(options.hasDirectedReadOptions());
     assertTrue(options.hasOrderBy());
+    assertTrue(options.hasLockHint());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
   }
 
@@ -107,6 +111,7 @@ public class OptionsTest {
     assertThat(options.hasDataBoostEnabled()).isFalse();
     assertThat(options.hasDirectedReadOptions()).isFalse();
     assertThat(options.hasOrderBy()).isFalse();
+    assertThat(options.hasLockHint()).isFalse();
     assertNull(options.withExcludeTxnFromChangeStreams());
     assertThat(options.toString()).isEqualTo("");
     assertThat(options.equals(options)).isTrue();
@@ -189,7 +194,8 @@ public class OptionsTest {
             Options.tag(tag),
             Options.dataBoostEnabled(true),
             Options.directedRead(DIRECTED_READ_OPTIONS),
-            Options.orderBy(RpcOrderBy.NO_ORDER));
+            Options.orderBy(RpcOrderBy.NO_ORDER),
+            Options.lockHint(RpcLockHint.SHARED));
 
     assertThat(options.toString())
         .isEqualTo(
@@ -207,11 +213,15 @@ public class OptionsTest {
                 + " "
                 + "orderBy: "
                 + RpcOrderBy.NO_ORDER
+                + " "
+                + "lockHint: "
+                + RpcLockHint.SHARED
                 + " ");
     assertThat(options.tag()).isEqualTo(tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
     assertEquals(OrderBy.ORDER_BY_NO_ORDER, options.orderBy());
+    assertEquals(LockHint.LOCK_HINT_SHARED, options.lockHint());
   }
 
   @Test
@@ -374,6 +384,14 @@ public class OptionsTest {
   }
 
   @Test
+  public void testReadOptionsLockHint() {
+    RpcLockHint lockHint = RpcLockHint.SHARED;
+    Options options = Options.fromReadOptions(Options.lockHint(lockHint));
+    assertTrue(options.hasLockHint());
+    assertEquals("lockHint: " + lockHint + " ", options.toString());
+  }
+
+  @Test
   public void testReadOptionsWithOrderByEquality() {
     Options optionsWithNoOrderBy1 = Options.fromReadOptions(Options.orderBy(RpcOrderBy.NO_ORDER));
     Options optionsWithNoOrderBy2 = Options.fromReadOptions(Options.orderBy(RpcOrderBy.NO_ORDER));
@@ -381,6 +399,19 @@ public class OptionsTest {
 
     Options optionsWithPkOrder = Options.fromReadOptions(Options.orderBy(RpcOrderBy.PRIMARY_KEY));
     assertFalse(optionsWithNoOrderBy1.equals(optionsWithPkOrder));
+  }
+
+  @Test
+  public void testReadOptionsWithLockHintEquality() {
+    Options optionsWithSharedLockHint1 =
+        Options.fromReadOptions(Options.lockHint(RpcLockHint.SHARED));
+    Options optionsWithSharedLockHint2 =
+        Options.fromReadOptions(Options.lockHint(RpcLockHint.SHARED));
+    assertEquals(optionsWithSharedLockHint1, optionsWithSharedLockHint2);
+
+    Options optionsWithExclusiveLock =
+        Options.fromReadOptions(Options.lockHint(RpcLockHint.EXCLUSIVE));
+    assertNotEquals(optionsWithSharedLockHint1, optionsWithExclusiveLock);
   }
 
   @Test
@@ -757,5 +788,23 @@ public class OptionsTest {
 
     assertNull(option3.withExcludeTxnFromChangeStreams());
     assertThat(option3.toString()).doesNotContain("withExcludeTxnFromChangeStreams: true");
+  }
+
+  @Test
+  public void testLastStatement() {
+    Options option1 = Options.fromUpdateOptions(Options.lastStatement());
+    Options option2 = Options.fromUpdateOptions(Options.lastStatement());
+    Options option3 = Options.fromUpdateOptions();
+
+    assertEquals(option1, option2);
+    assertEquals(option1.hashCode(), option2.hashCode());
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+
+    assertTrue(option1.isLastStatement());
+    assertThat(option1.toString()).contains("lastStatement: true");
+
+    assertNull(option3.isLastStatement());
+    assertThat(option3.toString()).doesNotContain("lastStatement: true");
   }
 }

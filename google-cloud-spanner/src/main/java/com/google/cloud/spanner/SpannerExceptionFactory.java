@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MissingDefaultSequenceKindException.isMissingDefaultSequenceKindException;
 import static com.google.cloud.spanner.TransactionMutationLimitExceededException.isTransactionMutationLimitException;
 
 import com.google.api.gax.grpc.GrpcStatusCode;
@@ -265,6 +266,9 @@ public final class SpannerExceptionFactory {
       if (cause instanceof ApiException) {
         return ((ApiException) cause).getErrorDetails();
       }
+      if (cause instanceof SpannerException) {
+        return ((SpannerException) cause).getErrorDetails();
+      }
       prevCause = cause;
       cause = cause.getCause();
     }
@@ -332,6 +336,9 @@ public final class SpannerExceptionFactory {
         if (isTransactionMutationLimitException(cause)) {
           return new TransactionMutationLimitExceededException(
               token, code, message, cause, apiException);
+        }
+        if (isMissingDefaultSequenceKindException(apiException)) {
+          return new MissingDefaultSequenceKindException(token, code, message, cause, apiException);
         }
         // Fall through to the default.
       default:

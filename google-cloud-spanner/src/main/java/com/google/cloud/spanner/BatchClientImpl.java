@@ -22,6 +22,7 @@ import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Struct;
@@ -35,6 +36,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
@@ -58,6 +60,13 @@ public class BatchClientImpl implements BatchClient {
 
   @GuardedBy("multiplexedSessionLock")
   private final AtomicReference<SessionImpl> multiplexedSessionReference;
+
+  /**
+   * This flag is set to true if the server return UNIMPLEMENTED when partitioned transaction is
+   * executed on a multiplexed session. TODO: Remove once this is guaranteed to be available.
+   */
+  @VisibleForTesting
+  static final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
 
   BatchClientImpl(SessionClient sessionClient, boolean isMultiplexedSessionEnabled) {
     this.sessionClient = checkNotNull(sessionClient);
@@ -85,7 +94,7 @@ public class BatchClientImpl implements BatchClient {
   @Override
   public BatchReadOnlyTransaction batchReadOnlyTransaction(TimestampBound bound) {
     SessionImpl session;
-    if (isMultiplexedSessionEnabled) {
+    if (canUseMultiplexedSession()) {
       session = getMultiplexedSession();
     } else {
       session = sessionClient.createSession();
@@ -129,6 +138,10 @@ public class BatchClientImpl implements BatchClient {
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
         batchTransactionId);
+  }
+
+  private boolean canUseMultiplexedSession() {
+    return isMultiplexedSessionEnabled && !unimplementedForPartitionedOps.get();
   }
 
   private SessionImpl getMultiplexedSession() {
@@ -216,15 +229,26 @@ public class BatchClientImpl implements BatchClient {
       builder.setPartitionOptions(pbuilder.build());
 
       final PartitionReadRequest request = builder.build();
-      PartitionResponse response = rpc.partitionRead(request, options);
-      ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
-      for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
-        Partition partition =
-            Partition.createReadPartition(
-                p.getPartitionToken(), partitionOptions, table, index, keys, columns, readOptions);
-        partitions.add(partition);
+      try {
+        PartitionResponse response = rpc.partitionRead(request, options);
+        ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
+        for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
+          Partition partition =
+              Partition.createReadPartition(
+                  p.getPartitionToken(),
+                  partitionOptions,
+                  table,
+                  index,
+                  keys,
+                  columns,
+                  readOptions);
+          partitions.add(partition);
+        }
+        return partitions.build();
+      } catch (SpannerException e) {
+        maybeMarkUnimplementedForPartitionedOps(e);
+        throw e;
       }
-      return partitions.build();
     }
 
     @Override
@@ -256,15 +280,27 @@ public class BatchClientImpl implements BatchClient {
       builder.setPartitionOptions(pbuilder.build());
 
       final PartitionQueryRequest request = builder.build();
-      PartitionResponse response = rpc.partitionQuery(request, options);
-      ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
-      for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
-        Partition partition =
-            Partition.createQueryPartition(
-                p.getPartitionToken(), partitionOptions, statement, queryOptions);
-        partitions.add(partition);
+      try {
+        PartitionResponse response = rpc.partitionQuery(request, options);
+        ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
+        for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
+          Partition partition =
+              Partition.createQueryPartition(
+                  p.getPartitionToken(), partitionOptions, statement, queryOptions);
+          partitions.add(partition);
+        }
+        return partitions.build();
+      } catch (SpannerException e) {
+        maybeMarkUnimplementedForPartitionedOps(e);
+        throw e;
       }
-      return partitions.build();
+    }
+
+    void maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
+      if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
+          spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
+        unimplementedForPartitionedOps.set(true);
+      }
     }
 
     @Override
