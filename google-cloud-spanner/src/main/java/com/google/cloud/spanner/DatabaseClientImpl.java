@@ -27,6 +27,9 @@ import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
@@ -40,6 +43,8 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
   @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
+  private final int dbId;
+  private final AtomicInteger nthRequest;
 
   final boolean useMultiplexedSessionBlindWrite;
 
@@ -86,6 +91,15 @@ class DatabaseClientImpl implements DatabaseClient {
     this.tracer = tracer;
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
     this.commonAttributes = commonAttributes;
+
+    this.dbId = this.dbIdFromClientId(this.clientId);
+    this.nthRequest = new AtomicInteger(0);
+  }
+
+  private int dbIdFromClientId(String clientId) {
+    int i = clientId.indexOf("-");
+    String strWithValue = clientId.substring(i + 1);
+    return Integer.parseInt(strWithValue);
   }
 
   @VisibleForTesting
@@ -179,14 +193,32 @@ class DatabaseClientImpl implements DatabaseClient {
         return getMultiplexedSessionDatabaseClient()
             .writeAtLeastOnceWithOptions(mutations, options);
       }
+
+      int nthRequest = this.nextNthRequest();
+      int channelId = 1; /* TODO: infer the channelId from the gRPC channel of the session */
+      XGoogSpannerRequestId reqId = XGoogSpannerRequestId.of(this.dbId, channelId, nthRequest, 0);
+
       return runWithSessionRetry(
-          session -> session.writeAtLeastOnceWithOptions(mutations, options));
+          (session) -> {
+            reqId.incrementAttempt();
+            // TODO: Update the channelId depending on the session that is inferred.
+            ArrayList<TransactionOption> allOptions = new ArrayList<>();
+            allOptions.add(new Options.RequestIdOption(reqId));
+            allOptions.addAll(Arrays.asList(options));
+
+            return session.writeAtLeastOnceWithOptions(
+                mutations, allOptions.toArray(new TransactionOption[0]));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
     } finally {
       span.end();
     }
+  }
+
+  private int nextNthRequest() {
+    return this.nthRequest.addAndGet(1);
   }
 
   @Override

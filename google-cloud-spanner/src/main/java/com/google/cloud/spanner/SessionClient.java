@@ -133,6 +133,7 @@ class SessionClient implements AutoCloseable {
             .getTracer()
             .getCurrentSpan()
             .addAnnotation(String.format("Creating %d sessions", sessionCount));
+
         while (remainingSessionsToCreate > 0) {
           try {
             sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint);
@@ -387,6 +388,10 @@ class SessionClient implements AutoCloseable {
             .spanBuilderWithExplicitParent(SpannerImpl.BATCH_CREATE_SESSIONS_REQUEST, parent);
     span.addAnnotation(String.format("Requesting %d sessions", sessionCount));
     try (IScope s = spanner.getTracer().withSpan(span)) {
+      // TODO: Infer the caller client if possible else create separate
+      // outside counter for such asynchronous operations and then also
+      // increment the operations for each asynchronous operation.
+      XGoogSpannerRequestId reqId = XGoogSpannerRequestId.of(1, 1, 1, 1);
       List<com.google.spanner.v1.Session> sessions =
           spanner
               .getRpc()
@@ -395,7 +400,7 @@ class SessionClient implements AutoCloseable {
                   sessionCount,
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
-                  options);
+                  reqId.withOptions(options));
       span.addAnnotation(
           String.format(
               "Request for %d sessions returned %d sessions", sessionCount, sessions.size()));

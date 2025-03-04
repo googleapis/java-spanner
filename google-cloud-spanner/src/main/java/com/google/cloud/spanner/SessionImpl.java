@@ -261,6 +261,7 @@ class SessionImpl implements Session {
               .setNanos(options.maxCommitDelay().getNano())
               .build());
     }
+
     RequestOptions commitRequestOptions = getRequestOptions(transactionOptions);
 
     if (commitRequestOptions != null) {
@@ -269,8 +270,14 @@ class SessionImpl implements Session {
     CommitRequest request = requestBuilder.build();
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
     try (IScope s = tracer.withSpan(span)) {
+      // Inject the request id into the request options.
+      XGoogSpannerRequestId reqId = options.reqId();
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
-          () -> new CommitResponse(spanner.getRpc().commit(request, getOptions())));
+          () -> {
+            reqId.incrementAttempt();
+            return new CommitResponse(
+                spanner.getRpc().commit(request, reqId.withOptions(getOptions())));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -423,7 +430,11 @@ class SessionImpl implements Session {
   public void close() {
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
-      spanner.getRpc().deleteSession(getName(), getOptions());
+      // TODO: Infer the caller client if possible else create separate
+      // outside counter for such asynchronous operations and then also
+      // increment the operations for each asynchronous operation.
+      XGoogSpannerRequestId reqId = XGoogSpannerRequestId.of(1, 2, 1, 1);
+      spanner.getRpc().deleteSession(getName(), reqId.withOptions(options));
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;

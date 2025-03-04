@@ -18,8 +18,15 @@ package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import io.grpc.Metadata;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
+import io.grpc.ServerInterceptor;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.Test;
@@ -50,5 +57,41 @@ public class XGoogSpannerRequestIdTest {
     String str = XGoogSpannerRequestId.of(1, 2, 3, 4).toString();
     Matcher m = XGoogSpannerRequestIdTest.REGEX_RAND_PROCESS_ID.matcher(str);
     assertTrue(m.matches());
+  }
+
+  public static class ServerHeaderEnforcer implements ServerInterceptor {
+    private List<String> gotValues;
+
+    ServerHeaderEnforcer() {
+      this.gotValues = new ArrayList<String>();
+    }
+
+    @Override
+    public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
+        ServerCall<ReqT, RespT> call,
+        final Metadata requestHeaders,
+        ServerCallHandler<ReqT, RespT> next) {
+      // Firstly assert and validate that at least we've got a requestId.
+      String gotReqId = requestHeaders.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+      assertNotNull(gotReqId);
+      Matcher m = XGoogSpannerRequestIdTest.REGEX_RAND_PROCESS_ID.matcher(gotReqId);
+      String message =
+          String.format(
+              "%s lacks %s in %s",
+              call.getMethodDescriptor().getFullMethodName(),
+              XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(),
+              gotReqId);
+      System.out.println("\033[32mMessage: " + message + "\033[00m");
+      assertTrue(m.matches());
+
+      this.gotValues.add(gotReqId);
+
+      // Finally proceed with the call.
+      return next.startCall(call, requestHeaders);
+    }
+
+    public String[] accumulatedValues() {
+      return this.gotValues.toArray(new String[0]);
+    }
   }
 }
