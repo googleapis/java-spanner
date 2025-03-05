@@ -24,6 +24,7 @@ import com.google.api.core.ObsoleteApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.grpc.ExperimentalApi;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
@@ -34,6 +35,7 @@ public class SessionPoolOptions {
   private static final int DEFAULT_MAX_SESSIONS = 400;
   private static final int DEFAULT_MIN_SESSIONS = 100;
   private static final int DEFAULT_INC_STEP = 25;
+  private static final int EXPERIMENTAL_HOST_MIN_SESSIONS = 0;
   private static final ActionOnExhaustion DEFAULT_ACTION = ActionOnExhaustion.BLOCK;
   private final int minSessions;
   private final int maxSessions;
@@ -89,7 +91,10 @@ public class SessionPoolOptions {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
     // We allow that to prevent code that only sets a value for maxSessions to break if the
     // maxSessions value is less than the default for minSessions.
-    this.minSessions = Math.min(builder.minSessions, builder.maxSessions);
+    this.minSessions =
+        builder.isExperimentalHost
+            ? EXPERIMENTAL_HOST_MIN_SESSIONS
+            : Math.min(builder.minSessions, builder.maxSessions);
     this.maxSessions = builder.maxSessions;
     this.incStep = builder.incStep;
     this.maxIdleSessions = builder.maxIdleSessions;
@@ -114,26 +119,33 @@ public class SessionPoolOptions {
     // useMultiplexedSession priority => Environment var > private setter > client default
     Boolean useMultiplexedSessionFromEnvVariable = getUseMultiplexedSessionFromEnvVariable();
     this.useMultiplexedSession =
-        (useMultiplexedSessionFromEnvVariable != null)
-            ? useMultiplexedSessionFromEnvVariable
-            : builder.useMultiplexedSession;
+        builder.isExperimentalHost
+            ? true
+            : ((useMultiplexedSessionFromEnvVariable != null)
+                ? useMultiplexedSessionFromEnvVariable
+                : builder.useMultiplexedSession);
     // useMultiplexedSessionForRW priority => Environment var > private setter > client default
     Boolean useMultiplexedSessionForRWFromEnvVariable =
         getUseMultiplexedSessionForRWFromEnvVariable();
     this.useMultiplexedSessionForRW =
-        (useMultiplexedSessionForRWFromEnvVariable != null)
-            ? useMultiplexedSessionForRWFromEnvVariable
-            : builder.useMultiplexedSessionForRW;
+        builder.isExperimentalHost
+            ? true
+            : ((useMultiplexedSessionForRWFromEnvVariable != null)
+                ? useMultiplexedSessionForRWFromEnvVariable
+                : builder.useMultiplexedSessionForRW);
     // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client
     // default
     Boolean useMultiplexedSessionFromEnvVariablePartitionedOps =
         getUseMultiplexedSessionFromEnvVariablePartitionedOps();
     this.useMultiplexedSessionForPartitionedOps =
-        (useMultiplexedSessionFromEnvVariablePartitionedOps != null)
-            ? useMultiplexedSessionFromEnvVariablePartitionedOps
-            : builder.useMultiplexedSessionPartitionedOps;
+        builder.isExperimentalHost
+            ? true
+            : ((useMultiplexedSessionFromEnvVariablePartitionedOps != null)
+                ? useMultiplexedSessionFromEnvVariablePartitionedOps
+                : builder.useMultiplexedSessionPartitionedOps);
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
-    this.skipVerifyingBeginTransactionForMuxRW = builder.skipVerifyingBeginTransactionForMuxRW;
+    this.skipVerifyingBeginTransactionForMuxRW =
+        builder.isExperimentalHost ? true : builder.skipVerifyingBeginTransactionForMuxRW;
   }
 
   @Override
@@ -617,6 +629,7 @@ public class SessionPoolOptions {
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
     private boolean skipVerifyingBeginTransactionForMuxRW = false;
+    private boolean isExperimentalHost = false;
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
@@ -810,6 +823,12 @@ public class SessionPoolOptions {
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
               .build();
+      return this;
+    }
+
+    @ExperimentalApi("")
+    public Builder setExperimentalHost() {
+      this.isExperimentalHost = true;
       return this;
     }
 

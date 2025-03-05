@@ -98,7 +98,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -117,10 +116,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
-  private static final String CLOUD_SPANNER_HOST_FORMAT = ".*\\.googleapis\\.com.*";
-
-  @VisibleForTesting
-  static final Pattern CLOUD_SPANNER_HOST_PATTERN = Pattern.compile(CLOUD_SPANNER_HOST_FORMAT);
+  private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
 
   private static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
@@ -991,7 +987,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
-    private boolean isExternalHost = false;
+    private boolean isExperimentalHost = false;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1484,11 +1480,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public Builder setHost(String host) {
       super.setHost(host);
-      if (!CLOUD_SPANNER_HOST_PATTERN.matcher(host).matches()) {
-        this.isExternalHost = true;
-      }
       // Setting a host should override any SPANNER_EMULATOR_HOST setting.
       setEmulatorHost(null);
+      return this;
+    }
+
+    @ExperimentalApi("")
+    public Builder setExperimentalHost(String host) {
+      super.setHost(host);
+      super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
+      setSessionPoolOption(SessionPoolOptions.newBuilder().setExperimentalHost().build());
+      this.isExperimentalHost = true;
       return this;
     }
 
@@ -1657,7 +1659,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-      } else if (isExternalHost && credentials == null) {
+      } else if (isExperimentalHost && credentials == null) {
         credentials = environment.getDefaultExternalHostCredentials();
       }
       if (this.numChannels == null) {
