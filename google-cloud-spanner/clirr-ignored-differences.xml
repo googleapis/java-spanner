@@ -568,16 +568,6 @@
 
   <!-- UUID -->
   <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>java.util.UUID getUuidInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>java.util.List getUuidListInternal(int)</method>
-  </difference>
-  <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/StructReader</className>
     <method>java.util.UUID getUuid(int)</method>

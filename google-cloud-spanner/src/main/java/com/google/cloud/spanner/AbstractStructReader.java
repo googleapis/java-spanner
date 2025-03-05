@@ -68,7 +68,9 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Date getDateInternal(int columnIndex);
 
-  protected abstract UUID getUuidInternal(int columnIndex);
+  protected UUID getUuidInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
     throw new UnsupportedOperationException("Not implemented");
@@ -131,7 +133,9 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract List<Date> getDateListInternal(int columnIndex);
 
-  protected abstract List<UUID> getUuidListInternal(int columnIndex);
+  protected List<UUID> getUuidListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract List<Struct> getStructListInternal(int columnIndex);
 
