@@ -34,7 +34,17 @@ public interface ReadContext extends AutoCloseable {
     /** Retrieves only the query plan information. No result data is returned. */
     PLAN,
     /** Retrieves both query plan and query execution statistics along with the result data. */
-    PROFILE
+    PROFILE,
+    /**
+     * Retrieves the overall (but not operator-level) execution statistics along with the result
+     * data.
+     */
+    WITH_STATS,
+    /**
+     * Retrieves the query plan, overall (but not operator-level) execution statistics along with
+     * the result data.
+     */
+    WITH_PLAN_AND_STATS
   }
   /**
    * Reads zero or more rows from a database.
