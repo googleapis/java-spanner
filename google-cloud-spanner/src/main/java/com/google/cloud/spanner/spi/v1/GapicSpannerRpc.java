@@ -193,6 +193,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -368,6 +369,10 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
       if (isAttemptDirectPathXds) {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
+        // This will let the credentials try to fetch a hard-bound access token if the runtime
+        // environment supports it.
+        defaultChannelProviderBuilder.setAllowHardBoundTokenTypes(
+            Collections.singletonList(InstantiatingGrpcChannelProvider.HardBoundTokenTypes.ALTS));
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
       }
       if (options.isUseVirtualThreads()) {
