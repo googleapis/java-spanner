@@ -826,7 +826,7 @@ public class SessionPoolOptions {
       return this;
     }
 
-    @ExperimentalApi("")
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
     public Builder setExperimentalHost() {
       this.isExperimentalHost = true;
       return this;

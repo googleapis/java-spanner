@@ -1485,7 +1485,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    @ExperimentalApi("")
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
     public Builder setExperimentalHost(String host) {
       super.setHost(host);
       super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
