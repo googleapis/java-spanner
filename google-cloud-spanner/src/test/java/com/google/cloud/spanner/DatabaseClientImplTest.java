@@ -105,6 +105,7 @@ import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Server;
+import io.grpc.ServerInterceptors;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -119,6 +120,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -152,6 +154,7 @@ public class DatabaseClientImplTest {
   private static final String DATABASE_NAME =
       String.format(
           "projects/%s/instances/%s/databases/%s", TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE);
+  private static XGoogSpannerRequestIdTest.ServerHeaderEnforcer xGoogReqIdInterceptor;
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
@@ -220,13 +223,16 @@ public class DatabaseClientImplTest {
         StatementResult.query(SELECT1_FROM_TABLE, MockSpannerTestUtil.SELECT1_RESULTSET));
     mockSpanner.setBatchWriteResult(BATCH_WRITE_RESPONSES);
 
+    Set<String> checkMethods =
+        new HashSet(Arrays.asList("google.spanner.v1.Spanner/BatchCreateSessions"));
+    xGoogReqIdInterceptor = new XGoogSpannerRequestIdTest.ServerHeaderEnforcer(checkMethods);
     executor = Executors.newSingleThreadExecutor();
     String uniqueName = InProcessServerBuilder.generateName();
     server =
         InProcessServerBuilder.forName(uniqueName)
             // We need to use a real executor for timeouts to occur.
             .scheduledExecutorService(new ScheduledThreadPoolExecutor(1))
-            .addService(mockSpanner)
+            .addService(ServerInterceptors.intercept(mockSpanner, xGoogReqIdInterceptor))
             .build()
             .start();
     channelProvider = LocalChannelProvider.create(uniqueName);
@@ -5165,6 +5171,63 @@ public class DatabaseClientImplTest {
           mockSpanner.clearRequests();
         }
       }
+    }
+  }
+
+  @Test
+  public void testSelect1HasXGoogRequestIdHeader() {
+    SingerInfo info = SingerInfo.newBuilder().setSingerId(1).build();
+    Statement statement = Statement.of("SELECT * FROM FOO");
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            statement,
+            com.google.spanner.v1.ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("a1")
+                                        .setType(
+                                            Type.newBuilder()
+                                                .setCodeValue(Integer.MAX_VALUE)
+                                                .build())
+                                        .build())
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("b1")
+                                        .setType(
+                                            Type.newBuilder()
+                                                .setCodeValue(Integer.MAX_VALUE)
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setListValue(
+                                    ListValue.newBuilder()
+                                        .addValues(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNumberValue(6.626)
+                                                .build())
+                                        .addValues(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNumberValue(-6.626)
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build()));
+
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertAsString(ImmutableList.of("6.626", "-6.626"), resultSet, 0);
     }
   }
 

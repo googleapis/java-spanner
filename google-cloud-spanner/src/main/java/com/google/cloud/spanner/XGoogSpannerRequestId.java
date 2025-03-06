@@ -17,9 +17,13 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.InternalApi;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import io.grpc.Metadata;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @InternalApi
@@ -27,6 +31,9 @@ public class XGoogSpannerRequestId {
   // 1. Generate the random process Id singleton.
   @VisibleForTesting
   static final String RAND_PROCESS_ID = XGoogSpannerRequestId.generateRandProcessId();
+
+  public static final Metadata.Key<String> REQUEST_HEADER_KEY =
+      Metadata.Key.of("x-goog-spanner-request-id", Metadata.ASCII_STRING_MARSHALLER);
 
   @VisibleForTesting
   static final long VERSION = 1; // The version of the specification being implemented.
@@ -79,6 +86,18 @@ public class XGoogSpannerRequestId {
         && Objects.equals(this.nthChannelId, otherReqId.nthChannelId)
         && Objects.equals(this.nthRequest, otherReqId.nthRequest)
         && Objects.equals(this.attempt, otherReqId.attempt);
+  }
+
+  public void incrementAttempt() {
+    this.attempt++;
+  }
+
+  @SuppressWarnings("unchecked")
+  public Map withOptions(Map options) {
+    Map copyOptions = new HashMap<>();
+    copyOptions.putAll(options);
+    copyOptions.put(SpannerRpc.Option.REQUEST_ID, this.toString());
+    return copyOptions;
   }
 
   @Override
