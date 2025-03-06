@@ -35,7 +35,7 @@ public class SessionPoolOptions {
   private static final int DEFAULT_MAX_SESSIONS = 400;
   private static final int DEFAULT_MIN_SESSIONS = 100;
   private static final int DEFAULT_INC_STEP = 25;
-  private static final int EXPERIMENTAL_HOST_MIN_SESSIONS = 0;
+  private static final int EXPERIMENTAL_HOST_REGULAR_SESSIONS = 0;
   private static final ActionOnExhaustion DEFAULT_ACTION = ActionOnExhaustion.BLOCK;
   private final int minSessions;
   private final int maxSessions;
@@ -93,9 +93,10 @@ public class SessionPoolOptions {
     // maxSessions value is less than the default for minSessions.
     this.minSessions =
         builder.isExperimentalHost
-            ? EXPERIMENTAL_HOST_MIN_SESSIONS
+            ? EXPERIMENTAL_HOST_REGULAR_SESSIONS
             : Math.min(builder.minSessions, builder.maxSessions);
-    this.maxSessions = builder.maxSessions;
+    this.maxSessions =
+        builder.isExperimentalHost ? EXPERIMENTAL_HOST_REGULAR_SESSIONS : builder.maxSessions;
     this.incStep = builder.incStep;
     this.maxIdleSessions = builder.maxIdleSessions;
     this.writeSessionsFraction = builder.writeSessionsFraction;
