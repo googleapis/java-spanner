@@ -27,6 +27,10 @@ import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
@@ -40,6 +44,8 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
   @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
+  private final int dbId;
+  private final AtomicInteger nthRequest;
 
   final boolean useMultiplexedSessionBlindWrite;
 
@@ -86,6 +92,18 @@ class DatabaseClientImpl implements DatabaseClient {
     this.tracer = tracer;
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
     this.commonAttributes = commonAttributes;
+
+    this.dbId = this.dbIdFromClientId(this.clientId);
+    this.nthRequest = new AtomicInteger(0);
+  }
+
+  private int dbIdFromClientId(String clientId) {
+    int i = clientId.indexOf("-");
+    String strWithValue = clientId.substring(i + 1);
+    if (Objects.equals(strWithValue, "")) {
+      strWithValue = "0";
+    }
+    return Integer.parseInt(strWithValue);
   }
 
   @VisibleForTesting
@@ -183,8 +201,20 @@ class DatabaseClientImpl implements DatabaseClient {
         return getMultiplexedSessionDatabaseClient()
             .writeAtLeastOnceWithOptions(mutations, options);
       }
+
+      int nthRequest = this.nextNthRequest();
+      int channelId = 1; /* TODO: infer the channelId from the gRPC channel of the session */
+      XGoogSpannerRequestId reqId = XGoogSpannerRequestId.of(this.dbId, channelId, nthRequest, 0);
+
       return runWithSessionRetry(
-          session -> session.writeAtLeastOnceWithOptions(mutations, options));
+          (session) -> {
+            reqId.incrementAttempt();
+            // TODO: Update the channelId depending on the session that is inferred.
+            ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
+            allOptions.add(new Options.RequestIdOption(reqId));
+            return session.writeAtLeastOnceWithOptions(
+                mutations, allOptions.toArray(new TransactionOption[0]));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -193,16 +223,38 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
+  private int nextNthRequest() {
+    return this.nthRequest.incrementAndGet();
+  }
+
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       final Iterable<MutationGroup> mutationGroups, final TransactionOption... options)
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
+      XGoogSpannerRequestId reqId =
+          XGoogSpannerRequestId.of(this.dbId, 1 /*TODO:channelId*/, this.nextNthRequest(), 0);
+      System.out.println("\033[35mbatchWriteAtLeastOnceReq: " + reqId.toString() + "\033[00m");
       if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
-        return getMultiplexedSessionDatabaseClient().batchWriteAtLeastOnce(mutationGroups, options);
+        reqId.incrementAttempt();
+        ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
+        allOptions.add(new Options.RequestIdOption(reqId));
+        return getMultiplexedSessionDatabaseClient()
+            .batchWriteAtLeastOnce(mutationGroups, allOptions.toArray(new TransactionOption[0]));
       }
-      return runWithSessionRetry(session -> session.batchWriteAtLeastOnce(mutationGroups, options));
+      return runWithSessionRetry(
+          (session) -> {
+            reqId.incrementAttempt();
+            ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
+            System.out.println(
+                "\033[35mbatchWriteAtLeastOnce:: session.class: "
+                    + session.getClass()
+                    + "\033[00m");
+            allOptions.add(new Options.RequestIdOption(reqId));
+            return session.batchWriteAtLeastOnce(
+                mutationGroups, allOptions.toArray(new TransactionOption[0]));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -350,7 +402,15 @@ class DatabaseClientImpl implements DatabaseClient {
       final Statement stmt, final UpdateOption... options) {
     ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
+      XGoogSpannerRequestId reqId =
+          XGoogSpannerRequestId.of(this.dbId, 1 /*TODO: channelId*/, this.nextNthRequest(), 0);
+      return runWithSessionRetry(
+          (session) -> {
+            reqId.incrementAttempt();
+            ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
+            allOptions.add(new Options.RequestIdOption(reqId));
+            return session.executePartitionedUpdate(stmt, allOptions.toArray(new UpdateOption[0]));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();

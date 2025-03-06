@@ -489,7 +489,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture;
           final ISpan opSpan = tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span);
           try (IScope ignore = tracer.withSpan(opSpan)) {
-            commitFuture = rpc.commitAsync(commitRequest, getTransactionChannelHint());
+            XGoogSpannerRequestId reqId =
+                session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 0);
+            reqId.incrementAttempt();
+            commitFuture =
+                rpc.commitAsync(commitRequest, reqId.withOptions(getTransactionChannelHint()));
           }
           session.markUsed(clock.instant());
           commitFuture.addListener(
@@ -916,8 +920,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           getExecuteSqlRequestBuilder(
               statement, queryMode, options, /* withTransactionSelector = */ true);
       try {
+        XGoogSpannerRequestId reqId =
+            session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 1);
         com.google.spanner.v1.ResultSet resultSet =
-            rpc.executeQuery(builder.build(), getTransactionChannelHint(), isRouteToLeader());
+            rpc.executeQuery(
+                builder.build(), reqId.withOptions(getTransactionChannelHint()), isRouteToLeader());
         session.markUsed(clock.instant());
         if (resultSet.getMetadata().hasTransaction()) {
           onTransactionMetadata(
@@ -1049,8 +1056,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         final ExecuteBatchDmlRequest.Builder builder =
             getExecuteBatchDmlRequestBuilder(statements, options);
         try {
+          XGoogSpannerRequestId reqId =
+              session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 1);
           com.google.spanner.v1.ExecuteBatchDmlResponse response =
-              rpc.executeBatchDml(builder.build(), getTransactionChannelHint());
+              rpc.executeBatchDml(builder.build(), reqId.withOptions(getTransactionChannelHint()));
           session.markUsed(clock.instant());
           long[] results = new long[response.getResultSetsCount()];
           for (int i = 0; i < response.getResultSetsCount(); ++i) {
@@ -1111,7 +1120,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           // Register the update as an async operation that must finish before the transaction may
           // commit.
           increaseAsyncOperations();
-          response = rpc.executeBatchDmlAsync(builder.build(), getTransactionChannelHint());
+          XGoogSpannerRequestId reqId =
+              session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 1);
+          response =
+              rpc.executeBatchDmlAsync(
+                  builder.build(), reqId.withOptions(getTransactionChannelHint()));
           session.markUsed(clock.instant());
         } catch (Throwable t) {
           decreaseAsyncOperations();
