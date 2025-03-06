@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Client for creating single sessions and batches of sessions. */
@@ -175,6 +176,12 @@ class SessionClient implements AutoCloseable {
   private final DatabaseId db;
   private final Attributes commonAttributes;
 
+  // SessionClient is created long before a DatabaseClientImpl is created,
+  // as batch sessions are firstly created then later attached to each Client.
+  private static AtomicInteger NTH_ID = new AtomicInteger(0);
+  private final int nthId;
+  private final AtomicInteger nthRequest;
+
   @GuardedBy("this")
   private volatile long sessionChannelCounter;
 
@@ -187,6 +194,8 @@ class SessionClient implements AutoCloseable {
     this.executorFactory = executorFactory;
     this.executor = executorFactory.get();
     this.commonAttributes = spanner.getTracer().createCommonAttributes(db);
+    this.nthId = SessionClient.NTH_ID.incrementAndGet();
+    this.nthRequest = new AtomicInteger(0);
   }
 
   @Override
@@ -207,11 +216,15 @@ class SessionClient implements AutoCloseable {
     // The sessionChannelCounter could overflow, but that will just flip it to Integer.MIN_VALUE,
     // which is also a valid channel hint.
     final Map<SpannerRpc.Option, ?> options;
+    final long channelId;
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
+      channelId = sessionChannelCounter;
     }
     ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION, this.commonAttributes);
     try (IScope s = spanner.getTracer().withSpan(span)) {
+      XGoogSpannerRequestId reqId =
+          XGoogSpannerRequestId.of(this.nthId, this.nthRequest.incrementAndGet(), channelId, 1);
       com.google.spanner.v1.Session session =
           spanner
               .getRpc()
@@ -219,7 +232,7 @@ class SessionClient implements AutoCloseable {
                   db.getName(),
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
-                  options);
+                  reqId.withOptions(options));
       SessionReference sessionReference =
           new SessionReference(
               session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
@@ -388,10 +401,8 @@ class SessionClient implements AutoCloseable {
             .spanBuilderWithExplicitParent(SpannerImpl.BATCH_CREATE_SESSIONS_REQUEST, parent);
     span.addAnnotation(String.format("Requesting %d sessions", sessionCount));
     try (IScope s = spanner.getTracer().withSpan(span)) {
-      // TODO: Infer the caller client if possible else create separate
-      // outside counter for such asynchronous operations and then also
-      // increment the operations for each asynchronous operation.
-      XGoogSpannerRequestId reqId = XGoogSpannerRequestId.of(1, 1, 1, 1);
+      XGoogSpannerRequestId reqId =
+          XGoogSpannerRequestId.of(this.nthId, this.nthRequest.incrementAndGet(), channelHint, 1);
       List<com.google.spanner.v1.Session> sessions =
           spanner
               .getRpc()

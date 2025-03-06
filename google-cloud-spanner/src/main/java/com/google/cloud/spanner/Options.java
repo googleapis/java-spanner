@@ -1028,7 +1028,8 @@ public final class Options implements Serializable {
     }
   }
 
-  static final class RequestIdOption extends InternalOption implements TransactionOption {
+  static final class RequestIdOption extends InternalOption
+      implements UpdateOption, TransactionOption {
     private final XGoogSpannerRequestId reqId;
 
     RequestIdOption(XGoogSpannerRequestId reqId) {

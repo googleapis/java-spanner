@@ -27,6 +27,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.Test;
@@ -61,9 +62,11 @@ public class XGoogSpannerRequestIdTest {
 
   public static class ServerHeaderEnforcer implements ServerInterceptor {
     private List<String> gotValues;
+    private Set<String> checkMethods;
 
-    ServerHeaderEnforcer() {
+    ServerHeaderEnforcer(Set<String> checkMethods) {
       this.gotValues = new ArrayList<String>();
+      this.checkMethods = checkMethods;
     }
 
     @Override
@@ -71,17 +74,23 @@ public class XGoogSpannerRequestIdTest {
         ServerCall<ReqT, RespT> call,
         final Metadata requestHeaders,
         ServerCallHandler<ReqT, RespT> next) {
+      String methodName = call.getMethodDescriptor().getFullMethodName();
+      if (!this.checkMethods.contains(methodName)) {
+        return next.startCall(call, requestHeaders);
+      }
+
       // Firstly assert and validate that at least we've got a requestId.
       String gotReqId = requestHeaders.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
-      assertNotNull(gotReqId);
       Matcher m = XGoogSpannerRequestIdTest.REGEX_RAND_PROCESS_ID.matcher(gotReqId);
-      String message =
-          String.format(
-              "%s lacks %s in %s",
-              call.getMethodDescriptor().getFullMethodName(),
-              XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(),
-              gotReqId);
-      System.out.println("\033[32mMessage: " + message + "\033[00m");
+      if (!m.matches()) {
+        String message =
+            String.format(
+                "%s lacks %s", methodName, XGoogSpannerRequestId.REQUEST_HEADER_KEY.name());
+        System.out.println("\033[31mMessage: " + message + "\033[00m");
+      } else {
+        System.out.println("\033[32mMessage: " + methodName + " has " + gotReqId + "\033[00m");
+      }
+      assertNotNull(gotReqId);
       assertTrue(m.matches());
 
       this.gotValues.add(gotReqId);

@@ -2047,7 +2047,6 @@ public class GapicSpannerRpc implements SpannerRpc {
             .withStreamWaitTimeoutDuration(waitTimeout)
             .withStreamIdleTimeoutDuration(idleTimeout);
 
-    // TODO: Infer the x-goog-spanner-request-id header and inject it in accordingly.
     CallContextConfigurator configurator = SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY.get();
     ApiCallContext apiCallContextFromContext = null;
     if (configurator != null) {
@@ -2058,6 +2057,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   GrpcCallContext withRequestId(GrpcCallContext context, Map options, String methodName) {
     String reqId = (String) options.get(Option.REQUEST_ID);
+    if (reqId == null) {
+      return context;
+    }
+
     System.out.println("\033[32moptions.reqId: " + reqId + "\033[00m " + methodName);
     Map<String, List<String>> withReqId =
         ImmutableMap.of(

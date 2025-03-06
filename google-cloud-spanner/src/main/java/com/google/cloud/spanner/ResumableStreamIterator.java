@@ -243,6 +243,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
           && (finished || !safeToRetry || !buffer.getLast().getResumeToken().isEmpty())) {
         return buffer.pop();
       }
+
       try {
         if (stream.hasNext()) {
           PartialResultSet next = stream.next();

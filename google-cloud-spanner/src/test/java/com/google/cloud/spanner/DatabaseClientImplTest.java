@@ -120,6 +120,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -222,7 +223,9 @@ public class DatabaseClientImplTest {
         StatementResult.query(SELECT1_FROM_TABLE, MockSpannerTestUtil.SELECT1_RESULTSET));
     mockSpanner.setBatchWriteResult(BATCH_WRITE_RESPONSES);
 
-    xGoogReqIdInterceptor = new XGoogSpannerRequestIdTest.ServerHeaderEnforcer();
+    Set<String> checkMethods =
+        new HashSet(Arrays.asList("google.spanner.v1.Spanner/BatchCreateSessions"));
+    xGoogReqIdInterceptor = new XGoogSpannerRequestIdTest.ServerHeaderEnforcer(checkMethods);
     executor = Executors.newSingleThreadExecutor();
     String uniqueName = InProcessServerBuilder.generateName();
     server =

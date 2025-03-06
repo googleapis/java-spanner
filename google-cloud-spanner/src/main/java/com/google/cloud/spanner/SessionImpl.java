@@ -423,7 +423,8 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
-    return spanner.getRpc().asyncDeleteSession(getName(), getOptions());
+    XGoogSpannerRequestId reqId = XGoogSpannerRequestId.of(1, 2, 1, 1);
+    return spanner.getRpc().asyncDeleteSession(getName(), reqId.withOptions(options));
   }
 
   @Override
