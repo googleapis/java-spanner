@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.SpannerOptions.CLOUD_SPANNER_HOST_PATTERN;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1167,10 +1166,17 @@ public class SpannerOptionsTest {
   }
 
   @Test
-  public void testCloudSpannerHostPattern() {
-    assertTrue(CLOUD_SPANNER_HOST_PATTERN.matcher("https://spanner.googleapis.com").matches());
-    assertTrue(
-        CLOUD_SPANNER_HOST_PATTERN.matcher("https://product-area.googleapis.com:443").matches());
-    assertFalse(CLOUD_SPANNER_HOST_PATTERN.matcher("https://some-company.com:443").matches());
+  public void testExperimentalHostOptions() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setExperimentalHost("localhost:8080")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    assertEquals("default", options.getProjectId());
+    assertEquals("localhost:8080", options.getHost());
+    assertEquals(0, options.getSessionPoolOptions().getMinSessions());
+    assertTrue(options.getSessionPoolOptions().getUseMultiplexedSession());
+    assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionForRW());
+    assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());
   }
 }

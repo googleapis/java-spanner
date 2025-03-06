@@ -1270,4 +1270,39 @@ public class ConnectionOptionsTest {
     assertThat(options.isAutocommit()).isEqualTo(false);
     assertThat(options.isReadOnly()).isEqualTo(true);
   }
+
+  @Test
+  public void testExperimentalHost() {
+    ConnectionOptions.Builder builderWithoutExperimentalHostParam = ConnectionOptions.newBuilder();
+    builderWithoutExperimentalHostParam.setUri(
+        "spanner://localhost:15000/instances/default/databases/singers-db;usePlainText=true");
+    ConnectionOptions optionsWithoutExperimentalHostParam =
+        builderWithoutExperimentalHostParam.build();
+    assertFalse(optionsWithoutExperimentalHostParam.isExperimentalHost());
+    assertEquals(0, optionsWithoutExperimentalHostParam.getSessionPoolOptions().getMinSessions());
+    assertTrue(
+        optionsWithoutExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSession());
+    assertTrue(
+        optionsWithoutExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionForRW());
+    assertTrue(
+        optionsWithoutExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionPartitionedOps());
+
+    ConnectionOptions.Builder builderWithExperimentalHostParam = ConnectionOptions.newBuilder();
+    builderWithExperimentalHostParam.setUri(
+        "spanner://localhost:15000/projects/default/instances/default/databases/singers-db;usePlainText=true;isExperimentalHost=true");
+    ConnectionOptions optionsWithExperimentalHostParam = builderWithExperimentalHostParam.build();
+    assertTrue(optionsWithExperimentalHostParam.isExperimentalHost());
+    assertEquals(0, optionsWithExperimentalHostParam.getSessionPoolOptions().getMinSessions());
+    assertTrue(optionsWithExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSession());
+    assertTrue(
+        optionsWithExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSessionForRW());
+    assertTrue(
+        optionsWithExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionPartitionedOps());
+  }
 }

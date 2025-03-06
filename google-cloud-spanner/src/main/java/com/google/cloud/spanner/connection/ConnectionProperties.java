@@ -47,6 +47,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENAB
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_END_TO_END_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENDPOINT;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_IS_EXPERIMENTAL_HOST;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_LENIENT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_MAX_PARTITIONED_PARALLELISM;
@@ -76,6 +77,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_END_T
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_EXTENDED_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENCODED_CREDENTIALS_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENDPOINT_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.IS_EXPERIMENTAL_HOST_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.KEEP_TRANSACTION_ALIVE_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.LENIENT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME;
@@ -197,7 +199,14 @@ public class ConnectionProperties {
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
-
+  static final ConnectionProperty<Boolean> IS_EXPERIMENTAL_HOST =
+      create(
+          IS_EXPERIMENTAL_HOST_PROPERTY_NAME,
+          "Set this value to true for communication with a Experimental Host.",
+          DEFAULT_IS_EXPERIMENTAL_HOST,
+          BOOLEANS,
+          BooleanConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<String> CLIENT_CERTIFICATE =
       create(
           CLIENT_CERTIFICATE_PROPERTY_NAME,
