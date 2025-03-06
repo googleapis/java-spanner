@@ -71,6 +71,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
+import com.google.cloud.spanner.XGoogSpannerRequestId;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminCallableFactory;
@@ -88,6 +89,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.RateLimiter;
@@ -2023,6 +2025,8 @@ public class GapicSpannerRpc implements SpannerRpc {
         // Set channel affinity in GAX.
         context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
       }
+      String methodName = method.getFullMethodName();
+      context = withRequestId(context, options, methodName);
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.
@@ -2046,12 +2050,26 @@ public class GapicSpannerRpc implements SpannerRpc {
         context
             .withStreamWaitTimeoutDuration(waitTimeout)
             .withStreamIdleTimeoutDuration(idleTimeout);
+
     CallContextConfigurator configurator = SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY.get();
     ApiCallContext apiCallContextFromContext = null;
     if (configurator != null) {
       apiCallContextFromContext = configurator.configure(context, request, method);
     }
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
+  }
+
+  GrpcCallContext withRequestId(GrpcCallContext context, Map options, String methodName) {
+    String reqId = (String) options.get(Option.REQUEST_ID);
+    if (reqId == null) {
+      return context;
+    }
+
+    System.out.println("\033[32moptions.reqId: " + reqId + "\033[00m " + methodName);
+    Map<String, List<String>> withReqId =
+        ImmutableMap.of(
+            XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(), Collections.singletonList(reqId));
+    return context.withExtraHeaders(withReqId);
   }
 
   void registerResponseObserver(SpannerResponseObserver responseObserver) {
