@@ -5175,59 +5175,20 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testSelect1HasXGoogRequestIdHeader() {
-    SingerInfo info = SingerInfo.newBuilder().setSingerId(1).build();
-    Statement statement = Statement.of("SELECT * FROM FOO");
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            statement,
-            com.google.spanner.v1.ResultSet.newBuilder()
-                .setMetadata(
-                    ResultSetMetadata.newBuilder()
-                        .setRowType(
-                            StructType.newBuilder()
-                                .addFields(
-                                    Field.newBuilder()
-                                        .setName("a1")
-                                        .setType(
-                                            Type.newBuilder()
-                                                .setCodeValue(Integer.MAX_VALUE)
-                                                .build())
-                                        .build())
-                                .addFields(
-                                    Field.newBuilder()
-                                        .setName("b1")
-                                        .setType(
-                                            Type.newBuilder()
-                                                .setCodeValue(Integer.MAX_VALUE)
-                                                .build())
-                                        .build())
-                                .build())
-                        .build())
-                .addRows(
-                    ListValue.newBuilder()
-                        .addValues(
-                            com.google.protobuf.Value.newBuilder()
-                                .setListValue(
-                                    ListValue.newBuilder()
-                                        .addValues(
-                                            com.google.protobuf.Value.newBuilder()
-                                                .setNumberValue(6.626)
-                                                .build())
-                                        .addValues(
-                                            com.google.protobuf.Value.newBuilder()
-                                                .setNumberValue(-6.626)
-                                                .build())
-                                        .build())
-                                .build())
-                        .build())
-                .build()));
-
+  public void testSelectHasXGoogRequestIdHeader() {
+    Statement statement =
+        Statement.newBuilder("select id from test where b=@p1")
+            .bind("p1")
+            .toBytesArray(
+                Arrays.asList(ByteArray.copyFrom("test1"), null, ByteArray.copyFrom("test2")))
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, SELECT1_RESULTSET));
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
       assertTrue(resultSet.next());
-      assertAsString(ImmutableList.of("6.626", "-6.626"), resultSet, 0);
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
     }
   }
 
