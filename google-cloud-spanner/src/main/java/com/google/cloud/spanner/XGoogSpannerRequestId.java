@@ -104,4 +104,17 @@ public class XGoogSpannerRequestId {
   public int hashCode() {
     return Objects.hash(this.nthClientId, this.nthChannelId, this.nthRequest, this.attempt);
   }
+
+  public interface RequestIdCreator {
+    XGoogSpannerRequestId nextRequestId(long channelId, int attempt);
+  }
+
+  public static class NoopRequestIdCreator implements RequestIdCreator {
+    NoopRequestIdCreator() {}
+
+    @Override
+    public XGoogSpannerRequestId nextRequestId(long channelId, int attempt) {
+      return XGoogSpannerRequestId.of(1, 1, 1, 0);
+    }
+  }
 }

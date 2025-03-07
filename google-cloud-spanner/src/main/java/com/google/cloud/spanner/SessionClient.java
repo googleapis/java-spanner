@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Client for creating single sessions and batches of sessions. */
-class SessionClient implements AutoCloseable {
+class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCreator {
   static class SessionId {
     private static final PathTemplate NAME_TEMPLATE =
         PathTemplate.create(
@@ -210,6 +210,11 @@ class SessionClient implements AutoCloseable {
     return db;
   }
 
+  @Override
+  public XGoogSpannerRequestId nextRequestId(long channelId, int attempt) {
+    return XGoogSpannerRequestId.of(this.nthId, this.nthRequest.incrementAndGet(), channelId, 1);
+  }
+
   /** Create a single session. */
   SessionImpl createSession() {
     // The sessionChannelCounter could overflow, but that will just flip it to Integer.MIN_VALUE,
@@ -222,8 +227,7 @@ class SessionClient implements AutoCloseable {
     }
     ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION, this.commonAttributes);
     try (IScope s = spanner.getTracer().withSpan(span)) {
-      XGoogSpannerRequestId reqId =
-          XGoogSpannerRequestId.of(this.nthId, this.nthRequest.incrementAndGet(), channelId, 1);
+      XGoogSpannerRequestId reqId = this.nextRequestId(channelId, 1);
       com.google.spanner.v1.Session session =
           spanner
               .getRpc()
@@ -235,7 +239,9 @@ class SessionClient implements AutoCloseable {
       SessionReference sessionReference =
           new SessionReference(
               session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
-      return new SessionImpl(spanner, sessionReference);
+      SessionImpl sessionImpl = new SessionImpl(spanner, sessionReference);
+      sessionImpl.setRequestIdCreator(this);
+      return sessionImpl;
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -286,6 +292,7 @@ class SessionClient implements AutoCloseable {
               spanner,
               new SessionReference(
                   session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
+      sessionImpl.setRequestIdCreator(this);
       span.addAnnotation(
           String.format("Request for %d multiplexed session returned %d session", 1, 1));
       return sessionImpl;
@@ -417,14 +424,13 @@ class SessionClient implements AutoCloseable {
       span.end();
       List<SessionImpl> res = new ArrayList<>(sessionCount);
       for (com.google.spanner.v1.Session session : sessions) {
-        res.add(
+        SessionImpl sessionImpl =
             new SessionImpl(
                 spanner,
                 new SessionReference(
-                    session.getName(),
-                    session.getCreateTime(),
-                    session.getMultiplexed(),
-                    options)));
+                    session.getName(), session.getCreateTime(), session.getMultiplexed(), options));
+        sessionImpl.setRequestIdCreator(this);
+        res.add(sessionImpl);
       }
       return res;
     } catch (RuntimeException e) {
@@ -440,6 +446,8 @@ class SessionClient implements AutoCloseable {
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    return new SessionImpl(spanner, new SessionReference(name, options));
+    SessionImpl sessionImpl = new SessionImpl(spanner, new SessionReference(name, options));
+    sessionImpl.setRequestIdCreator(this);
+    return sessionImpl;
   }
 }

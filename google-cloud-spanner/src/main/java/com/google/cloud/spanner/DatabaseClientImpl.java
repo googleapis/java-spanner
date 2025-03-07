@@ -27,8 +27,8 @@ import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
@@ -202,7 +202,8 @@ class DatabaseClientImpl implements DatabaseClient {
           (session) -> {
             reqId.incrementAttempt();
             // TODO: Update the channelId depending on the session that is inferred.
-            List<TransactionOption> allOptions = Arrays.asList(options);
+            ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
+            System.out.println("\033[35msession.class: " + session.getClass() + "\033[00m");
             allOptions.add(new Options.RequestIdOption(reqId));
             return session.writeAtLeastOnceWithOptions(
                 mutations, allOptions.toArray(new TransactionOption[0]));

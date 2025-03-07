@@ -272,6 +272,7 @@ public class DatabaseClientImplTest {
     spanner.close();
     spannerWithEmptySessionPool.close();
     mockSpanner.reset();
+    xGoogReqIdInterceptor.reset();
     mockSpanner.removeAllExecutionTimes();
   }
 
@@ -1408,6 +1409,12 @@ public class DatabaseClientImplTest {
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(2, commitRequests.size());
+
+    String[] gotRequestIds = xGoogReqIdInterceptor.accumulatedValues();
+    String[] wantRequestIds = {"a", "b"};
+    System.out.println("\033[33mGot: " + gotRequestIds.toString() + "\033[00m");
+    assertEquals(gotRequestIds, wantRequestIds);
+    assertEquals(2, gotRequestIds.length);
   }
 
   @Test

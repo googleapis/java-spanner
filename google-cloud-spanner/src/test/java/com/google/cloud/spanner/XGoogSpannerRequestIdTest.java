@@ -102,5 +102,9 @@ public class XGoogSpannerRequestIdTest {
     public String[] accumulatedValues() {
       return this.gotValues.toArray(new String[0]);
     }
+
+    public void reset() {
+      this.gotValues.clear();
+    }
   }
 }
