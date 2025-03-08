@@ -282,6 +282,7 @@ class SessionImpl implements Session {
     CommitRequest request = requestBuilder.build();
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
     try (IScope s = tracer.withSpan(span)) {
+      // TODO: Derive the channelId from the session being used currently.
       XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* channelId */, 0);
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
           () -> {

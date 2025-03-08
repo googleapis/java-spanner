@@ -22,22 +22,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import io.grpc.Metadata;
+import io.grpc.MethodDescriptor.MethodType;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class XGoogSpannerRequestIdTest {
-  private static final Pattern REGEX_RAND_PROCESS_ID =
-      Pattern.compile("1.([0-9a-z]{16})(\\.\\d+){3}\\.(\\d+)$");
 
   @Test
   public void testEquals() {
@@ -56,16 +56,22 @@ public class XGoogSpannerRequestIdTest {
   @Test
   public void testEnsureHexadecimalFormatForRandProcessID() {
     String str = XGoogSpannerRequestId.of(1, 2, 3, 4).toString();
-    Matcher m = XGoogSpannerRequestIdTest.REGEX_RAND_PROCESS_ID.matcher(str);
+    Matcher m = XGoogSpannerRequestId.REGEX.matcher(str);
     assertTrue(m.matches());
   }
 
   public static class ServerHeaderEnforcer implements ServerInterceptor {
+    private Map<String, CopyOnWriteArrayList<XGoogSpannerRequestId>> unaryResults;
+    private Map<String, CopyOnWriteArrayList<XGoogSpannerRequestId>> streamingResults;
     private List<String> gotValues;
     private Set<String> checkMethods;
 
     ServerHeaderEnforcer(Set<String> checkMethods) {
-      this.gotValues = new ArrayList<String>();
+      this.gotValues = new CopyOnWriteArrayList<String>();
+      this.unaryResults =
+          new ConcurrentHashMap<String, CopyOnWriteArrayList<XGoogSpannerRequestId>>();
+      this.streamingResults =
+          new ConcurrentHashMap<String, CopyOnWriteArrayList<XGoogSpannerRequestId>>();
       this.checkMethods = checkMethods;
     }
 
@@ -74,26 +80,31 @@ public class XGoogSpannerRequestIdTest {
         ServerCall<ReqT, RespT> call,
         final Metadata requestHeaders,
         ServerCallHandler<ReqT, RespT> next) {
+      boolean isUnary = call.getMethodDescriptor().getType() == MethodType.UNARY;
       String methodName = call.getMethodDescriptor().getFullMethodName();
+      String gotReqIdStr = requestHeaders.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
       if (!this.checkMethods.contains(methodName)) {
+        // System.out.println(
+        //     "\033[35mBypassing " + methodName + " but has " + gotReqIdStr + "\033[00m");
         return next.startCall(call, requestHeaders);
       }
 
-      // Firstly assert and validate that at least we've got a requestId.
-      String gotReqId = requestHeaders.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
-      Matcher m = XGoogSpannerRequestIdTest.REGEX_RAND_PROCESS_ID.matcher(gotReqId);
-      if (!m.matches()) {
-        String message =
-            String.format(
-                "%s lacks %s", methodName, XGoogSpannerRequestId.REQUEST_HEADER_KEY.name());
-        System.out.println("\033[31mMessage: " + message + "\033[00m");
-      } else {
-        System.out.println("\033[32mMessage: " + methodName + " has " + gotReqId + "\033[00m");
+      Map<String, CopyOnWriteArrayList<XGoogSpannerRequestId>> saver = this.streamingResults;
+      if (isUnary) {
+        saver = this.unaryResults;
       }
-      assertNotNull(gotReqId);
+
+      // Firstly assert and validate that at least we've got a requestId.
+      Matcher m = XGoogSpannerRequestId.REGEX.matcher(gotReqIdStr);
+      assertNotNull(gotReqIdStr);
       assertTrue(m.matches());
 
-      this.gotValues.add(gotReqId);
+      XGoogSpannerRequestId reqId = XGoogSpannerRequestId.of(gotReqIdStr);
+      if (!saver.containsKey(methodName)) {
+        saver.put(methodName, new CopyOnWriteArrayList<XGoogSpannerRequestId>());
+      }
+
+      saver.get(methodName).add(reqId);
 
       // Finally proceed with the call.
       return next.startCall(call, requestHeaders);
@@ -103,8 +114,23 @@ public class XGoogSpannerRequestIdTest {
       return this.gotValues.toArray(new String[0]);
     }
 
+    public void assertIntegrity() {
+      this.unaryResults.forEach(
+          (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
+            // System.out.println("\033[36munary.method: " + method + "\033[00m");
+            XGoogSpannerRequestId.assertMonotonicityOfIds(method, values);
+          });
+      this.streamingResults.forEach(
+          (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
+            // System.out.println("\033[36mstreaming.method: " + method + "\033[00m");
+            XGoogSpannerRequestId.assertMonotonicityOfIds(method, values);
+          });
+    }
+
     public void reset() {
       this.gotValues.clear();
+      this.unaryResults.clear();
+      this.streamingResults.clear();
     }
   }
 }

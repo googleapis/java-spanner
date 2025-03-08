@@ -2065,7 +2065,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       return context;
     }
 
-    System.out.println("\033[32moptions.reqId: " + reqId + "\033[00m " + methodName);
     Map<String, List<String>> withReqId =
         ImmutableMap.of(
             XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(), Collections.singletonList(reqId));

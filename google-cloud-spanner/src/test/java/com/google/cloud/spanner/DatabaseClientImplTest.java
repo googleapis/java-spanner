@@ -5196,6 +5196,8 @@ public class DatabaseClientImplTest {
       assertTrue(resultSet.next());
       assertEquals(1L, resultSet.getLong(0));
       assertFalse(resultSet.next());
+    } finally {
+      xGoogReqIdInterceptor.assertIntegrity();
     }
   }
 
