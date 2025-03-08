@@ -60,6 +60,7 @@ import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
@@ -589,8 +590,11 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (metricsOptions.getNamePrefix().equals("")) {
       metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
     }
+    GcpChannelPoolOptions.Builder channelPoolOptionsBuilder =
+        GcpChannelPoolOptions.newBuilder().setDynamicScaling(0, 100, Duration.ofMinutes(30L));
     return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
         .withMetricsOptions(metricsOptionsBuilder.build())
+        .withChannelPoolOptions(channelPoolOptionsBuilder.build())
         .build();
   }
 
