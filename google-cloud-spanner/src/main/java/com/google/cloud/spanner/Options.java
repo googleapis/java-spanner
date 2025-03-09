@@ -24,10 +24,7 @@ import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /** Specifies options for various spanner operations */
 public final class Options implements Serializable {
@@ -135,29 +132,7 @@ public final class Options implements Serializable {
   public interface QueryOption {}
 
   /** Marker interface to mark options applicable to write operations */
-  public interface TransactionOption {
-    Predicate<TransactionOption> isValidIsolationLevelOption =
-        txnOption ->
-            txnOption instanceof RepeatableReadOption || txnOption instanceof SerializableOption;
-
-    /**
-     * Combines two arrays of TransactionOption, with primaryOptions taking precedence in case of
-     * conflicts. Note that {@link
-     * com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions} supports only the {@link
-     * IsolationLevel} TransactionOption, meaning spannerOptions will contain a maximum of one
-     * TransactionOption.
-     */
-    static TransactionOption[] combine(
-        TransactionOption[] primaryOptions, TransactionOption[] spannerOptions) {
-      if (spannerOptions == null
-          || Arrays.stream(primaryOptions).anyMatch(isValidIsolationLevelOption)) {
-        return primaryOptions;
-      } else {
-        return Stream.concat(Arrays.stream(primaryOptions), Arrays.stream(spannerOptions))
-            .toArray(TransactionOption[]::new);
-      }
-    }
-  }
+  public interface TransactionOption {}
 
   /** Marker interface to mark options applicable to update operation. */
   public interface UpdateOption {}
@@ -186,19 +161,10 @@ public final class Options implements Serializable {
   }
 
   /**
-   * Specifying this instructs the transaction to request Repeatable Read Isolation Level from the
-   * backend.
+   * Specifying this instructs the transaction to request {@link IsolationLevel} from the backend.
    */
-  public static TransactionOption repeatableReadIsolationLevel() {
-    return REPEATABLE_READ_OPTION;
-  }
-
-  /**
-   * Specifying this instructs the transaction to request Serializable Isolation Level from the
-   * backend.
-   */
-  public static TransactionOption serializableIsolationLevel() {
-    return SERIALIZABLE_OPTION;
+  public static IsolationLevelOption isolationLevelOption(IsolationLevel isolationLevel) {
+    return new IsolationLevelOption(isolationLevel);
   }
 
   /**
@@ -532,25 +498,19 @@ public final class Options implements Serializable {
     }
   }
 
-  /** Option to request REPEATABLE READ isolation level for read/write transactions. */
-  static final class RepeatableReadOption extends InternalOption implements TransactionOption {
+  /** Option to set isolation level for read/write transactions. */
+  static final class IsolationLevelOption extends InternalOption implements TransactionOption {
+    private final IsolationLevel isolationLevel;
+
+    public IsolationLevelOption(IsolationLevel isolationLevel) {
+      this.isolationLevel = isolationLevel;
+    }
+
     @Override
     void appendToOptions(Options options) {
-      options.isolationLevel = IsolationLevel.REPEATABLE_READ;
+      options.isolationLevel = isolationLevel;
     }
   }
-
-  static final RepeatableReadOption REPEATABLE_READ_OPTION = new RepeatableReadOption();
-
-  /** Option to request SERIALIZABLE isolation level for read/write transactions. */
-  static final class SerializableOption extends InternalOption implements TransactionOption {
-    @Override
-    void appendToOptions(Options options) {
-      options.isolationLevel = IsolationLevel.SERIALIZABLE;
-    }
-  }
-
-  static final SerializableOption SERIALIZABLE_OPTION = new SerializableOption();
 
   private boolean withCommitStats;
 
