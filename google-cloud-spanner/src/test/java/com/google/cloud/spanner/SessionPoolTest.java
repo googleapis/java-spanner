@@ -88,6 +88,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.TransactionOptions;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
@@ -1478,6 +1479,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(
               SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
       final SessionImpl closedSession = mock(SessionImpl.class);
+      when(closedSession.defaultTransactionOptions())
+          .thenReturn(TransactionOptions.getDefaultInstance());
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
       when(closedSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);

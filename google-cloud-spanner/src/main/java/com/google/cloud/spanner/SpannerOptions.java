@@ -44,8 +44,10 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.DirectedReadOption;
+import com.google.cloud.spanner.Options.IsolationLevelOption;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -182,6 +184,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
+  private final TransactionOptions transactionOptions;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -811,6 +814,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
+    transactionOptions = builder.transactionOptions;
   }
 
   /**
@@ -992,6 +996,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
     private boolean isExternalHost = false;
+    private TransactionOptions transactionOptions;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1060,6 +1065,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
+      this.transactionOptions = options.transactionOptions;
     }
 
     @Override
@@ -1643,6 +1649,45 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    public static class TransactionOptions {
+      private com.google.spanner.v1.TransactionOptions transactionOptions;
+
+      private TransactionOptions() {}
+
+      com.google.spanner.v1.TransactionOptions getTransactionOptions() {
+        return transactionOptions;
+      }
+
+      public static class TransactionOptionsBuilder {
+        private IsolationLevelOption isolationLevelOption;
+
+        public static TransactionOptionsBuilder newBuilder() {
+          return new TransactionOptionsBuilder();
+        }
+
+        public TransactionOptionsBuilder setIsolationLevel(IsolationLevelOption option) {
+          this.isolationLevelOption = option;
+          return this;
+        }
+
+        public TransactionOptions build() {
+          TransactionOptions transactionOptions = new TransactionOptions();
+          transactionOptions.transactionOptions =
+              com.google.spanner.v1.TransactionOptions.newBuilder()
+                  .setIsolationLevel(
+                      Options.fromTransactionOptions(isolationLevelOption).isolationLevel())
+                  .build();
+          return transactionOptions;
+        }
+      }
+    }
+
+    /** Sets the default transaction options. */
+    public Builder setDefaultTransactionOptions(TransactionOptions transactionOptions) {
+      this.transactionOptions = transactionOptions;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1986,6 +2031,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   /** Returns the override metrics Host. */
   String getMonitoringHost() {
     return monitoringHost;
+  }
+
+  public TransactionOptions getDefaultTransactionOptions() {
+    return transactionOptions;
   }
 
   @BetaApi

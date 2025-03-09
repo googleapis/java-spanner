@@ -30,6 +30,7 @@ import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionOption;
+import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
@@ -44,7 +45,6 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
-import com.google.spanner.v1.TransactionOptions;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,19 +69,25 @@ class SessionImpl implements Session {
     }
   }
 
-  static TransactionOptions createReadWriteTransactionOptions(
+  static com.google.spanner.v1.TransactionOptions createReadWriteTransactionOptions(
       Options options, ByteString previousTransactionId) {
-    TransactionOptions.Builder transactionOptions = TransactionOptions.newBuilder();
+    com.google.spanner.v1.TransactionOptions.Builder transactionOptions =
+        com.google.spanner.v1.TransactionOptions.newBuilder();
     if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       transactionOptions.setExcludeTxnFromChangeStreams(true);
     }
-    TransactionOptions.ReadWrite.Builder readWrite = TransactionOptions.ReadWrite.newBuilder();
+    com.google.spanner.v1.TransactionOptions.ReadWrite.Builder readWrite =
+        com.google.spanner.v1.TransactionOptions.ReadWrite.newBuilder();
     if (options.withOptimisticLock() == Boolean.TRUE) {
-      readWrite.setReadLockMode(TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
+      readWrite.setReadLockMode(
+          com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
     }
     if (previousTransactionId != null
         && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
       readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
+    }
+    if (options.isolationLevel() != null) {
+      transactionOptions.setIsolationLevel(options.isolationLevel());
     }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
@@ -193,6 +199,14 @@ class SessionImpl implements Session {
     sessionReference.markUsed(instant);
   }
 
+  com.google.spanner.v1.TransactionOptions defaultTransactionOptions() {
+    TransactionOptions transactionOptions =
+        this.spanner.getOptions().getDefaultTransactionOptions();
+    return transactionOptions != null
+        ? transactionOptions.getTransactionOptions()
+        : com.google.spanner.v1.TransactionOptions.getDefaultInstance();
+  }
+
   public DatabaseId getDatabaseId() {
     return sessionReference.getDatabaseId();
   }
@@ -246,13 +260,17 @@ class SessionImpl implements Session {
             .setReturnCommitStats(options.withCommitStats())
             .addAllMutations(mutationsProto);
 
-    TransactionOptions.Builder transactionOptionsBuilder =
-        TransactionOptions.newBuilder()
-            .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance());
+    com.google.spanner.v1.TransactionOptions.Builder transactionOptionsBuilder =
+        com.google.spanner.v1.TransactionOptions.newBuilder()
+            .setReadWrite(com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance());
     if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       transactionOptionsBuilder.setExcludeTxnFromChangeStreams(true);
     }
-    requestBuilder.setSingleUseTransaction(transactionOptionsBuilder);
+    if (options.isolationLevel() != null) {
+      transactionOptionsBuilder.setIsolationLevel(options.isolationLevel());
+    }
+    requestBuilder.setSingleUseTransaction(
+        this.defaultTransactionOptions().toBuilder().mergeFrom(transactionOptionsBuilder.build()));
 
     if (options.hasMaxCommitDelay()) {
       requestBuilder.setMaxCommitDelay(
@@ -444,7 +462,11 @@ class SessionImpl implements Session {
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(
-                createReadWriteTransactionOptions(transactionOptions, previousTransactionId));
+                defaultTransactionOptions()
+                    .toBuilder()
+                    .mergeFrom(
+                        createReadWriteTransactionOptions(
+                            transactionOptions, previousTransactionId)));
     if (sessionReference.getIsMultiplexed() && mutation != null) {
       requestBuilder.setMutationKey(mutation);
     }
@@ -489,7 +511,6 @@ class SessionImpl implements Session {
         .setOptions(options)
         .setTransactionId(null)
         .setPreviousTransactionId(previousTransactionId)
-        .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))

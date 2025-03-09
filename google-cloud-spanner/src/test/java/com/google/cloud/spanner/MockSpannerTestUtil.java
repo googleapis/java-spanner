@@ -50,7 +50,8 @@ public class MockSpannerTestUtil {
           .setMetadata(SELECT1_METADATA)
           .build();
   public static final Statement SELECT1_FROM_TABLE = Statement.of("SELECT 1 FROM FOO WHERE 1=1");
-
+  static final Statement INVALID_SELECT_STATEMENT =
+      Statement.of("SELECT * FROM NON_EXISTENT_TABLE");
   static final String TEST_PROJECT = "my-project";
   static final String TEST_INSTANCE = "my-instance";
   static final String TEST_DATABASE = "my-database";
