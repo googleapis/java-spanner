@@ -16,12 +16,13 @@
 
 package com.google.cloud.spanner;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
+import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.TypeCode;
@@ -81,8 +82,7 @@ public class ExperimentalHostMockServerTest extends AbstractMockServerTest {
       ResultSet resultSet = dbClient.singleUse().executeQuery(Statement.of(SQL_QUERY));
       while (resultSet.next()) {}
 
-      // In case BatchCreateSessions is called getSessions size is 100
-      assertEquals(0, (mockSpanner.getSessions()).size());
+      assertFalse(mockSpanner.getRequestTypes().contains(BatchCreateSessionsRequest.class));
     }
   }
 }
