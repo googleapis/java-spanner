@@ -49,7 +49,7 @@ public class IntervalTest {
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
     assertEquals(
-        BigInteger.valueOf(10).multiply(Interval.NANOS_PER_SECOND), interval.getNanoseconds());
+        BigInteger.valueOf(10000000000L), interval.getNanoseconds());
   }
 
   @Test
@@ -58,7 +58,7 @@ public class IntervalTest {
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
     assertEquals(
-        BigInteger.valueOf(10).multiply(Interval.NANOS_PER_MILLISECOND), interval.getNanoseconds());
+        BigInteger.valueOf(10000000L), interval.getNanoseconds());
   }
 
   @Test
@@ -67,7 +67,7 @@ public class IntervalTest {
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
     assertEquals(
-        BigInteger.valueOf(10).multiply(Interval.NANOS_PER_MICROSECOND), interval.getNanoseconds());
+        BigInteger.valueOf(10000), interval.getNanoseconds());
   }
 
   @Test
@@ -262,8 +262,8 @@ public class IntervalTest {
   public void testGetNanoseconds() {
     Interval interval1 =
         Interval.fromMonthsDaysNanos(
-            10, 20, BigInteger.valueOf(30 * Interval.NANOS_PER_MICRO + 40));
-    assertEquals(30 * Interval.NANOS_PER_MICRO + 40, interval1.getNanoseconds().longValueExact());
+            10, 20, BigInteger.valueOf(30 * Interval.NANOS_PER_MICROSECOND + 40));
+    assertEquals(30040, interval1.getNanoseconds().longValueExact());
 
     Interval interval2 = Interval.fromMonthsDaysNanos(0, 0, BigInteger.valueOf(123456789));
     assertEquals(123456789, interval2.getNanoseconds().longValueExact());

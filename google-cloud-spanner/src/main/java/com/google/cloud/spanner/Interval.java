@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
  * broken into two components microseconds and nanoFractions, where nanoFractions can range from
  * [-999, 999]. Internally, Spanner supports Interval value with the following range of individual
  * fields: months: [-120000, 120000] days: [-3660000, 3660000] nanoseconds: [-316224000000000000000,
- * 316224000000000000000] Interval value created outside the specified domain will return error when
+ * 316224000000000000000]. Interval value created outside the specified domain will return error when
  * sent to Spanner backend.
  */
 @Immutable
@@ -43,21 +43,19 @@ public class Interval implements Serializable {
   public static final long SECONDS_PER_MINUTE = 60;
   public static final long SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
   public static final long MILLIS_PER_SECOND = 1000;
-  public static final long MICROS_PER_MILLI = 1000;
-  public static final long NANOS_PER_MICRO = 1000;
-  public static final long MICROS_PER_SECOND = MICROS_PER_MILLI * MILLIS_PER_SECOND;
+  public static final long MICROS_PER_MILLISECOND = 1000;
+  public static final long MICROS_PER_SECOND = MICROS_PER_MILLISECOND * MILLIS_PER_SECOND;
   public static final long MICROS_PER_MINUTE = SECONDS_PER_MINUTE * MICROS_PER_SECOND;
   public static final long MICROS_PER_HOUR = SECONDS_PER_HOUR * MICROS_PER_SECOND;
-  public static final BigInteger NANOS_PER_MICROSECOND =
-      BigInteger.valueOf(MICROS_PER_SECOND * NANOS_PER_MICRO);
+  public static final long NANOS_PER_MICROSECOND = 1000;
   public static final BigInteger NANOS_PER_MILLISECOND =
-      BigInteger.valueOf(MILLIS_PER_SECOND * NANOS_PER_MICRO);
+      BigInteger.valueOf(MICROS_PER_MILLISECOND * NANOS_PER_MICROSECOND);
   public static final BigInteger NANOS_PER_SECOND =
-      BigInteger.valueOf(MICROS_PER_SECOND * NANOS_PER_MICRO);
+      BigInteger.valueOf(MICROS_PER_SECOND * NANOS_PER_MICROSECOND);
   public static final BigInteger NANOS_PER_MINUTE =
-      BigInteger.valueOf(MICROS_PER_MINUTE * NANOS_PER_MICRO);
+      BigInteger.valueOf(MICROS_PER_MINUTE * NANOS_PER_MICROSECOND);
   public static final BigInteger NANOS_PER_HOUR =
-      BigInteger.valueOf(MICROS_PER_HOUR * NANOS_PER_MICRO);
+      BigInteger.valueOf(MICROS_PER_HOUR * NANOS_PER_MICROSECOND);
   public static final Interval ZERO = Interval.builder().build();
 
   /** Regex to parse ISO8601 interval format- `P[n]Y[n]M[n]DT[n]H[n]M[n([.,][fraction])]S` */
@@ -115,7 +113,7 @@ public class Interval implements Serializable {
   /** Creates an interval with specified number of microseconds. */
   public static Interval ofMicroseconds(long micros) {
     return builder()
-        .setNanoseconds(BigInteger.valueOf(micros).multiply(NANOS_PER_MICROSECOND))
+        .setNanoseconds(BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICROSECOND)))
         .build();
   }
 
