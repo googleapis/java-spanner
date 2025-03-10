@@ -32,6 +32,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EN
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENCODED_CREDENTIALS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENDPOINT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.IS_EXPERIMENTAL_HOST;
 import static com.google.cloud.spanner.connection.ConnectionProperties.LENIENT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_PARTITIONED_PARALLELISM;
@@ -221,6 +222,7 @@ public class ConnectionOptions {
   private static final LocalConnectionChecker LOCAL_CONNECTION_CHECKER =
       new LocalConnectionChecker();
   static final boolean DEFAULT_USE_PLAIN_TEXT = false;
+  static final boolean DEFAULT_IS_EXPERIMENTAL_HOST = false;
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
   static final boolean DEFAULT_RETRY_ABORTS_INTERNALLY = true;
@@ -260,6 +262,8 @@ public class ConnectionOptions {
   static final boolean DEFAULT_AUTO_BATCH_DML = false;
   static final long DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT = 1L;
   static final boolean DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION = true;
+  private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
+  private static final String DEFAULT_EXPERIMENTAL_HOST_INSTANCE_ID = "default";
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -268,6 +272,8 @@ public class ConnectionOptions {
   private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
   /** Use plain text is only for local testing purposes. */
   static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
+  /** Connect to a Experimental Host * */
+  static final String IS_EXPERIMENTAL_HOST_PROPERTY_NAME = "isExperimentalHost";
   /** Client certificate path to establish mTLS */
   static final String CLIENT_CERTIFICATE_PROPERTY_NAME = "clientCertificate";
   /** Client key path to establish mTLS */
@@ -444,6 +450,10 @@ public class ConnectionOptions {
                       USE_PLAIN_TEXT_PROPERTY_NAME,
                       "Use a plain text communication channel (i.e. non-TLS) for communicating with the server (true/false). Set this value to true for communication with the Cloud Spanner emulator.",
                       DEFAULT_USE_PLAIN_TEXT),
+                  ConnectionProperty.createBooleanProperty(
+                      IS_EXPERIMENTAL_HOST_PROPERTY_NAME,
+                      "Set this value to true for communication with an Experimental Host.",
+                      DEFAULT_IS_EXPERIMENTAL_HOST),
                   ConnectionProperty.createStringProperty(
                       CLIENT_CERTIFICATE_PROPERTY_NAME,
                       "Specifies the file path to the client certificate required for establishing an mTLS connection."),
@@ -664,7 +674,7 @@ public class ConnectionOptions {
       return SPANNER_URI_PATTERN.matcher(uri).matches();
     }
 
-    private boolean isValidExternalHostUri(String uri) {
+    private boolean isValidExperimentalHostUri(String uri) {
       return EXTERNAL_HOST_PATTERN.matcher(uri).matches();
     }
 
@@ -725,7 +735,7 @@ public class ConnectionOptions {
      * @return this builder
      */
     public Builder setUri(String uri) {
-      if (!isValidExternalHostUri(uri)) {
+      if (!isValidExperimentalHostUri(uri)) {
         Preconditions.checkArgument(
             isValidUri(uri),
             "The specified URI is not a valid Cloud Spanner connection URI. Please specify a URI in the format \"cloudspanner:[//host[:port]]/projects/project-id[/instances/instance-id[/databases/database-name]][\\?property-name=property-value[;property-name=property-value]*]?\"");
@@ -857,10 +867,10 @@ public class ConnectionOptions {
 
   private ConnectionOptions(Builder builder) {
     Matcher matcher;
-    boolean isExternalHost = false;
-    if (builder.isValidExternalHostUri(builder.uri)) {
+    boolean isExperimentalHostPattern = false;
+    if (builder.isValidExperimentalHostUri(builder.uri)) {
       matcher = Builder.EXTERNAL_HOST_PATTERN.matcher(builder.uri);
-      isExternalHost = true;
+      isExperimentalHostPattern = true;
     } else {
       matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
     }
@@ -923,8 +933,8 @@ public class ConnectionOptions {
             getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR),
             usePlainText,
             System.getenv());
-    GoogleCredentials defaultExternalHostCredentials =
-        SpannerOptions.getDefaultExternalHostCredentialsFromSysEnv();
+    GoogleCredentials defaultExperimentalHostCredentials =
+        SpannerOptions.getDefaultExperimentalCredentialsFromSysEnv();
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
     // any credentials and is using a plain text connection, we should not try to get the
     // credentials from the environment, but default to NoCredentials.
@@ -939,8 +949,9 @@ public class ConnectionOptions {
       this.credentials =
           new GoogleCredentials(
               new AccessToken(getInitialConnectionPropertyValue(OAUTH_TOKEN), null));
-    } else if (isExternalHost && defaultExternalHostCredentials != null) {
-      this.credentials = defaultExternalHostCredentials;
+    } else if ((isExperimentalHostPattern || isExperimentalHost())
+        && defaultExperimentalHostCredentials != null) {
+      this.credentials = defaultExperimentalHostCredentials;
     } else if (getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER) != null) {
       try {
         this.credentials = getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER).getCredentials();
@@ -981,16 +992,19 @@ public class ConnectionOptions {
       this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
     } else if (builder.sessionPoolOptions != null) {
       this.sessionPoolOptions = builder.sessionPoolOptions;
+    } else if (isExperimentalHostPattern || isExperimentalHost()) {
+      this.sessionPoolOptions =
+          SessionPoolOptions.newBuilder().setExperimentalHost().setAutoDetectDialect(true).build();
     } else {
       this.sessionPoolOptions = SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build();
     }
 
-    String projectId = "default";
+    String projectId = EXPERIMENTAL_HOST_PROJECT_ID;
     String instanceId = matcher.group(Builder.INSTANCE_GROUP);
-    if (!isExternalHost) {
+    if (!isExperimentalHost() && !isExperimentalHostPattern) {
       projectId = matcher.group(Builder.PROJECT_GROUP);
-    } else if (instanceId == null) {
-      instanceId = "default";
+    } else if (instanceId == null && isExperimentalHost()) {
+      instanceId = DEFAULT_EXPERIMENTAL_HOST_INSTANCE_ID;
     }
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
       projectId = getDefaultProjectId(this.credentials);
@@ -1309,6 +1323,10 @@ public class ConnectionOptions {
   boolean isUsePlainText() {
     return getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR)
         || getInitialConnectionPropertyValue(USE_PLAIN_TEXT);
+  }
+
+  boolean isExperimentalHost() {
+    return getInitialConnectionPropertyValue(IS_EXPERIMENTAL_HOST);
   }
 
   String getClientCertificate() {
