@@ -1173,8 +1173,8 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .build();
     assertEquals("default", options.getProjectId());
-    assertEquals("localhost:8080", options.getHost());
     assertEquals(0, options.getSessionPoolOptions().getMinSessions());
+    assertEquals(0, options.getSessionPoolOptions().getMaxSessions());
     assertTrue(options.getSessionPoolOptions().getUseMultiplexedSession());
     assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionForRW());
     assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());

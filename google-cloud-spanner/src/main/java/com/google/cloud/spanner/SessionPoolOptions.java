@@ -24,7 +24,6 @@ import com.google.api.core.ObsoleteApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.grpc.ExperimentalApi;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
@@ -121,8 +120,7 @@ public class SessionPoolOptions {
     Boolean useMultiplexedSessionFromEnvVariable = getUseMultiplexedSessionFromEnvVariable();
     this.useMultiplexedSession =
         builder.isExperimentalHost
-            ? true
-            : ((useMultiplexedSessionFromEnvVariable != null)
+            || ((useMultiplexedSessionFromEnvVariable != null)
                 ? useMultiplexedSessionFromEnvVariable
                 : builder.useMultiplexedSession);
     // useMultiplexedSessionForRW priority => Environment var > private setter > client default
@@ -130,8 +128,7 @@ public class SessionPoolOptions {
         getUseMultiplexedSessionForRWFromEnvVariable();
     this.useMultiplexedSessionForRW =
         builder.isExperimentalHost
-            ? true
-            : ((useMultiplexedSessionForRWFromEnvVariable != null)
+            || ((useMultiplexedSessionForRWFromEnvVariable != null)
                 ? useMultiplexedSessionForRWFromEnvVariable
                 : builder.useMultiplexedSessionForRW);
     // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client
@@ -140,13 +137,12 @@ public class SessionPoolOptions {
         getUseMultiplexedSessionFromEnvVariablePartitionedOps();
     this.useMultiplexedSessionForPartitionedOps =
         builder.isExperimentalHost
-            ? true
-            : ((useMultiplexedSessionFromEnvVariablePartitionedOps != null)
+            || ((useMultiplexedSessionFromEnvVariablePartitionedOps != null)
                 ? useMultiplexedSessionFromEnvVariablePartitionedOps
                 : builder.useMultiplexedSessionPartitionedOps);
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
     this.skipVerifyingBeginTransactionForMuxRW =
-        builder.isExperimentalHost ? true : builder.skipVerifyingBeginTransactionForMuxRW;
+        builder.isExperimentalHost || builder.skipVerifyingBeginTransactionForMuxRW;
   }
 
   @Override
@@ -827,7 +823,7 @@ public class SessionPoolOptions {
       return this;
     }
 
-    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
+    @InternalApi
     public Builder setExperimentalHost() {
       this.isExperimentalHost = true;
       return this;

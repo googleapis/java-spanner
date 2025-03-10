@@ -852,13 +852,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return null;
     }
 
-    default GoogleCredentials getDefaultExternalHostCredentials() {
+    default GoogleCredentials getDefaultExperimentalHostCredentials() {
       return null;
     }
   }
 
-  static final String DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS =
-      "SPANNER_EXTERNAL_HOST_AUTH_TOKEN";
+  static final String DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS =
+      "SPANNER_EXPERIMENTAL_HOST_AUTH_TOKEN";
 
   /**
    * Default implementation of {@link SpannerEnvironment}. Reads all configuration from environment
@@ -917,8 +917,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
-    public GoogleCredentials getDefaultExternalHostCredentials() {
-      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
+    public GoogleCredentials getDefaultExperimentalHostCredentials() {
+      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
     }
   }
 
@@ -1532,7 +1532,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Configures mTLS authentication using the provided client certificate and key files. mTLS is
-     * only supported for external spanner hosts.
+     * only supported for experimental spanner hosts.
      *
      * @param clientCertificate Path to the client certificate file.
      * @param clientCertificateKey Path to the client private key file.
@@ -1660,7 +1660,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       } else if (isExperimentalHost && credentials == null) {
-        credentials = environment.getDefaultExternalHostCredentials();
+        credentials = environment.getDefaultExperimentalHostCredentials();
       }
       if (this.numChannels == null) {
         this.numChannels =
@@ -1702,8 +1702,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   @InternalApi
-  public static GoogleCredentials getDefaultExternalHostCredentialsFromSysEnv() {
-    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
+  public static GoogleCredentials getDefaultExperimentalCredentialsFromSysEnv() {
+    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
   }
 
   private static @Nullable GoogleCredentials getOAuthTokenFromFile(@Nullable String file) {

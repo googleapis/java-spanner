@@ -452,7 +452,7 @@ public class ConnectionOptions {
                       DEFAULT_USE_PLAIN_TEXT),
                   ConnectionProperty.createBooleanProperty(
                       IS_EXPERIMENTAL_HOST_PROPERTY_NAME,
-                      "Set this value to true for communication with a Experimental Host.",
+                      "Set this value to true for communication with an Experimental Host.",
                       DEFAULT_IS_EXPERIMENTAL_HOST),
                   ConnectionProperty.createStringProperty(
                       CLIENT_CERTIFICATE_PROPERTY_NAME,
@@ -674,7 +674,7 @@ public class ConnectionOptions {
       return SPANNER_URI_PATTERN.matcher(uri).matches();
     }
 
-    private boolean isValidExternalHostUri(String uri) {
+    private boolean isValidExperimentalHostUri(String uri) {
       return EXTERNAL_HOST_PATTERN.matcher(uri).matches();
     }
 
@@ -735,7 +735,7 @@ public class ConnectionOptions {
      * @return this builder
      */
     public Builder setUri(String uri) {
-      if (!isValidExternalHostUri(uri)) {
+      if (!isValidExperimentalHostUri(uri)) {
         Preconditions.checkArgument(
             isValidUri(uri),
             "The specified URI is not a valid Cloud Spanner connection URI. Please specify a URI in the format \"cloudspanner:[//host[:port]]/projects/project-id[/instances/instance-id[/databases/database-name]][\\?property-name=property-value[;property-name=property-value]*]?\"");
@@ -868,7 +868,7 @@ public class ConnectionOptions {
   private ConnectionOptions(Builder builder) {
     Matcher matcher;
     boolean isExperimentalHostPattern = false;
-    if (builder.isValidExternalHostUri(builder.uri)) {
+    if (builder.isValidExperimentalHostUri(builder.uri)) {
       matcher = Builder.EXTERNAL_HOST_PATTERN.matcher(builder.uri);
       isExperimentalHostPattern = true;
     } else {
@@ -933,8 +933,8 @@ public class ConnectionOptions {
             getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR),
             usePlainText,
             System.getenv());
-    GoogleCredentials defaultExternalHostCredentials =
-        SpannerOptions.getDefaultExternalHostCredentialsFromSysEnv();
+    GoogleCredentials defaultExperimentalHostCredentials =
+        SpannerOptions.getDefaultExperimentalCredentialsFromSysEnv();
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
     // any credentials and is using a plain text connection, we should not try to get the
     // credentials from the environment, but default to NoCredentials.
@@ -950,8 +950,8 @@ public class ConnectionOptions {
           new GoogleCredentials(
               new AccessToken(getInitialConnectionPropertyValue(OAUTH_TOKEN), null));
     } else if ((isExperimentalHostPattern || isExperimentalHost())
-        && defaultExternalHostCredentials != null) {
-      this.credentials = defaultExternalHostCredentials;
+        && defaultExperimentalHostCredentials != null) {
+      this.credentials = defaultExperimentalHostCredentials;
     } else if (getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER) != null) {
       try {
         this.credentials = getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER).getCredentials();
@@ -1003,7 +1003,7 @@ public class ConnectionOptions {
     String instanceId = matcher.group(Builder.INSTANCE_GROUP);
     if (!isExperimentalHost() && !isExperimentalHostPattern) {
       projectId = matcher.group(Builder.PROJECT_GROUP);
-    } else if (instanceId == null) {
+    } else if (instanceId == null && isExperimentalHost()) {
       instanceId = DEFAULT_EXPERIMENTAL_HOST_INSTANCE_ID;
     }
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
