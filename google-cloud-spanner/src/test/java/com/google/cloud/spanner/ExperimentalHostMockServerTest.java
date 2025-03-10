@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for samples that use an in-mem mock server instead of running on real Cloud Spanner. */
 @RunWith(JUnit4.class)
 public class ExperimentalHostMockServerTest extends AbstractMockServerTest {
 
