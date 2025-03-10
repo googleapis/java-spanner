@@ -369,10 +369,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
       if (isAttemptDirectPathXds) {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
-        // This will let the credentials try to fetch a hard-bound access token if the runtime
-        // environment supports it.
-        defaultChannelProviderBuilder.setAllowHardBoundTokenTypes(
-            Collections.singletonList(InstantiatingGrpcChannelProvider.HardBoundTokenTypes.ALTS));
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
       }
       if (options.isUseVirtualThreads()) {
