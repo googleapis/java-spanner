@@ -1,30 +1,42 @@
+/*
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.SpannerApiFutures.get;
+import static com.google.cloud.spanner.MockSpannerTestUtil.INVALID_SELECT_STATEMENT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
+import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_RESULTSET;
+import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
-import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
-import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options.IsolationLevelOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions.TransactionOptionsBuilder;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.ListValue;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ReadRequest;
-import com.google.spanner.v1.ResultSetMetadata;
-import com.google.spanner.v1.StructType;
-import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
-import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -33,6 +45,7 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.function.Consumer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -43,44 +56,15 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplWithTransactionOptionsTest {
-
+  private static final IsolationLevelOption SERIALIZABLE_ISOLATION_OPTION =
+      Options.isolationLevelOption(IsolationLevel.SERIALIZABLE);
+  private static final IsolationLevelOption RR_ISOLATION_OPTION =
+      Options.isolationLevelOption(IsolationLevel.REPEATABLE_READ);
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static ExecutorService executor;
   private static LocalChannelProvider channelProvider;
-  private static final Statement UPDATE_STATEMENT =
-      Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
-  private static final Statement INVALID_UPDATE_STATEMENT =
-      Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
-  private static final Statement INVALID_SELECT_STATEMENT =
-      Statement.of("SELECT * FROM NON_EXISTENT_TABLE");
-  private static final long UPDATE_COUNT = 1L;
-  private static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
-  private static final ResultSetMetadata SELECT1_METADATA =
-      ResultSetMetadata.newBuilder()
-          .setRowType(
-              StructType.newBuilder()
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("COL1")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.INT64)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
-  private static final com.google.spanner.v1.ResultSet SELECT1_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
-                  .build())
-          .setMetadata(SELECT1_METADATA)
-          .build();
   private Spanner spanner;
-  private Spanner spannerWithRepeatableReadOption;
-  private Spanner spannerWithSerializableOption;
   private DatabaseClient client;
   private DatabaseClient clientWithRepeatableReadOption;
   private DatabaseClient clientWithSerializableOption;
@@ -91,10 +75,6 @@ public class DatabaseClientImplWithTransactionOptionsTest {
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
-    mockSpanner.putStatementResult(
-        StatementResult.exception(
-            INVALID_UPDATE_STATEMENT,
-            Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_SELECT_STATEMENT,
@@ -131,334 +111,208 @@ public class DatabaseClientImplWithTransactionOptionsTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     spanner = spannerOptionsBuilder.build().getService();
-    spannerWithRepeatableReadOption =
-        spannerOptionsBuilder
-            .setDefaultTransactionOptions(
-                TransactionOptionsBuilder.newBuilder()
-                    .setIsolationLevel(Options.repeatableReadIsolationLevel())
-                    .build())
-            .build()
-            .getService();
-    spannerWithSerializableOption =
-        spannerOptionsBuilder
-            .setDefaultTransactionOptions(
-                TransactionOptionsBuilder.newBuilder()
-                    .setIsolationLevel(Options.serializableIsolationLevel())
-                    .build())
-            .build()
-            .getService();
     client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     clientWithRepeatableReadOption =
-        spannerWithRepeatableReadOption.getDatabaseClient(
-            DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+        spannerOptionsBuilder
+            .setDefaultTransactionOptions(
+                TransactionOptionsBuilder.newBuilder()
+                    .setIsolationLevel(RR_ISOLATION_OPTION)
+                    .build())
+            .build()
+            .getService()
+            .getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     clientWithSerializableOption =
-        spannerWithSerializableOption.getDatabaseClient(
-            DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+        spannerOptionsBuilder
+            .setDefaultTransactionOptions(
+                TransactionOptionsBuilder.newBuilder()
+                    .setIsolationLevel(SERIALIZABLE_ISOLATION_OPTION)
+                    .build())
+            .build()
+            .getService()
+            .getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+  }
+
+  private void executeTest(
+      Consumer<DatabaseClient> testAction, IsolationLevel expectedIsolationLevel) {
+    testAction.accept(client);
+    validateIsolationLevel(expectedIsolationLevel);
+  }
+
+  private void executeTestWithRR(
+      Consumer<DatabaseClient> testAction, IsolationLevel expectedIsolationLevel) {
+    testAction.accept(clientWithRepeatableReadOption);
+    validateIsolationLevel(expectedIsolationLevel);
+  }
+
+  private void executeTestWithSerializable(
+      Consumer<DatabaseClient> testAction, IsolationLevel expectedIsolationLevel) {
+    testAction.accept(clientWithSerializableOption);
+    validateIsolationLevel(expectedIsolationLevel);
   }
 
   @After
   public void tearDown() {
     spanner.close();
-    spannerWithRepeatableReadOption.close();
-    spannerWithSerializableOption.close();
   }
 
   @Test
   public void testWrite_WithNoIsolationLevel() {
-    Timestamp timestamp =
-        client.write(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
-    assertNotNull(timestamp);
-    validateIsolationLevel(IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED);
+    executeTest(
+        MockSpannerTestActions::writeInsertMutation, IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED);
   }
 
   @Test
   public void testWrite_WithRRSpannerOptions() {
-    Timestamp timestamp =
-        clientWithRepeatableReadOption.write(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
-    assertNotNull(timestamp);
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTestWithRR(MockSpannerTestActions::writeInsertMutation, IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void testWriteWithOptions_WithRRSpannerOptions() {
-    clientWithRepeatableReadOption.writeWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.priority(RpcPriority.HIGH));
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTestWithRR(
+        c ->
+            MockSpannerTestActions.writeInsertMutationWithOptions(
+                c, Options.priority(RpcPriority.HIGH)),
+        IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void testWriteWithOptions_WithSerializableTxnOption() {
-    clientWithRepeatableReadOption.writeWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.serializableIsolationLevel());
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTestWithRR(
+        c ->
+            MockSpannerTestActions.writeInsertMutationWithOptions(c, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE);
   }
 
   @Test
   public void testWriteAtLeastOnce_WithSerializableSpannerOptions() {
-    Timestamp timestamp =
-        clientWithSerializableOption.writeAtLeastOnce(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
-    assertNotNull(timestamp);
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTestWithSerializable(
+        MockSpannerTestActions::writeAtLeastOnceInsertMutation, IsolationLevel.SERIALIZABLE);
   }
 
   @Test
   public void testWriteAtLeastOnceWithOptions_WithRRTxnOption() {
-    clientWithSerializableOption.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.repeatableReadIsolationLevel());
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTestWithSerializable(
+        c ->
+            MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+                c, RR_ISOLATION_OPTION),
+        IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void testReadWriteTxn_WithRRSpannerOption_batchUpdate() {
-    TransactionRunner runner = clientWithRepeatableReadOption.readWriteTransaction();
-    runner.run(transaction -> transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT)));
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTestWithRR(
+        MockSpannerTestActions::executeBatchUpdateTransaction, IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void testReadWriteTxn_WithSerializableTxnOption_batchUpdate() {
-    TransactionRunner runner =
-        clientWithRepeatableReadOption.readWriteTransaction(Options.serializableIsolationLevel());
-    runner.run(transaction -> transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT)));
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTestWithRR(
+        c -> MockSpannerTestActions.executeBatchUpdateTransaction(c, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE);
   }
 
   @Test
   public void testPartitionedDML_WithRRSpannerOption() {
-    clientWithRepeatableReadOption.executePartitionedUpdate(UPDATE_STATEMENT);
-    validateIsolationLevel(IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED);
+    executeTestWithRR(
+        MockSpannerTestActions::executePartitionedUpdate,
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED);
   }
 
   @Test
   public void testCommit_WithSerializableTxnOption() {
-    TransactionRunner runner = client.readWriteTransaction(Options.serializableIsolationLevel());
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
-
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTest(
+        c -> MockSpannerTestActions.commitDeleteTransaction(c, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE);
   }
 
   @Test
   public void testTransactionManagerCommit_WithRRTxnOption() {
-    try (TransactionManager manager =
-        clientWithSerializableOption.transactionManager(Options.repeatableReadIsolationLevel())) {
-      TransactionContext transaction = manager.begin();
-      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-      manager.commit();
-    }
-
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTestWithSerializable(
+        c -> MockSpannerTestActions.transactionManagerCommit(c, RR_ISOLATION_OPTION),
+        IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void testAsyncRunnerCommit_WithRRSpannerOption() {
-    AsyncRunner runner = clientWithRepeatableReadOption.runAsync();
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
-
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTestWithRR(
+        c -> MockSpannerTestActions.asyncRunnerCommit(c, executor), IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void testAsyncTransactionManagerCommit_WithSerializableTxnOption() {
-    try (AsyncTransactionManager manager =
-        clientWithRepeatableReadOption.transactionManagerAsync(
-            Options.serializableIsolationLevel())) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
-
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTestWithRR(
+        c ->
+            MockSpannerTestActions.transactionManagerAsyncCommit(
+                c, executor, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE);
   }
 
   @Test
   public void testReadWriteTxn_WithNoOptions() {
-    client
-        .readWriteTransaction()
-        .run(
-            transaction -> {
-              try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                while (rs.next()) {
-                  assertEquals(rs.getLong(0), 1);
-                }
-              }
-              return null;
-            });
-    validateIsolationLevel(IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED);
+    executeTest(MockSpannerTestActions::executeSelect1, IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED);
   }
 
   @Test
   public void executeSqlWithRWTransactionOptions_RepeatableRead() {
-    client
-        .readWriteTransaction(Options.repeatableReadIsolationLevel())
-        .run(
-            transaction -> {
-              try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                while (rs.next()) {
-                  assertEquals(rs.getLong(0), 1);
-                }
-              }
-              return null;
-            });
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTest(
+        c -> MockSpannerTestActions.executeSelect1(c, RR_ISOLATION_OPTION),
+        IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void
       executeSqlWithDefaultSpannerOptions_SerializableAndRWTransactionOptions_RepeatableRead() {
-    clientWithSerializableOption
-        .readWriteTransaction(Options.repeatableReadIsolationLevel())
-        .run(
-            transaction -> {
-              try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                while (rs.next()) {
-                  assertEquals(rs.getLong(0), 1);
-                }
-              }
-              return null;
-            });
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTestWithSerializable(
+        c -> MockSpannerTestActions.executeSelect1(c, RR_ISOLATION_OPTION),
+        IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void
       executeSqlWithDefaultSpannerOptions_RepeatableReadAndRWTransactionOptions_Serializable() {
-    clientWithRepeatableReadOption
-        .readWriteTransaction(Options.serializableIsolationLevel())
-        .run(
-            transaction -> {
-              try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                while (rs.next()) {
-                  assertEquals(rs.getLong(0), 1);
-                }
-              }
-              return null;
-            });
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTestWithRR(
+        c -> MockSpannerTestActions.executeSelect1(c, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE);
   }
 
   @Test
   public void executeSqlWithDefaultSpannerOptions_RepeatableReadAndNoRWTransactionOptions() {
-    clientWithRepeatableReadOption
-        .readWriteTransaction()
-        .run(
-            transaction -> {
-              try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                while (rs.next()) {
-                  assertEquals(rs.getLong(0), 1);
-                }
-              }
-              return null;
-            });
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTestWithRR(MockSpannerTestActions::executeSelect1, IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void executeSqlWithRWTransactionOptions_Serializable() {
-    client
-        .readWriteTransaction(Options.serializableIsolationLevel())
-        .run(
-            transaction -> {
-              try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                while (rs.next()) {
-                  assertEquals(rs.getLong(0), 1);
-                }
-              }
-              return null;
-            });
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTest(
+        c -> MockSpannerTestActions.executeSelect1(c, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE);
   }
 
   @Test
   public void readWithRWTransactionOptions_RepeatableRead() {
-    client
-        .readWriteTransaction(Options.repeatableReadIsolationLevel())
-        .run(
-            transaction -> {
-              try (ResultSet rs =
-                  transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
-                while (rs.next()) {
-                  assertEquals(rs.getLong(0), 1);
-                }
-              }
-              return null;
-            });
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTest(
+        c -> MockSpannerTestActions.executeReadFoo(c, RR_ISOLATION_OPTION),
+        IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void readWithRWTransactionOptions_Serializable() {
-    client
-        .readWriteTransaction(Options.serializableIsolationLevel())
-        .run(
-            transaction -> {
-              try (ResultSet rs =
-                  transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
-                while (rs.next()) {
-                  assertEquals(rs.getLong(0), 1);
-                }
-              }
-              return null;
-            });
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTest(
+        c -> MockSpannerTestActions.executeReadFoo(c, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE);
   }
 
   @Test
   public void beginTransactionWithRWTransactionOptions_RepeatableRead() {
-    client
-        .readWriteTransaction(Options.repeatableReadIsolationLevel())
-        .run(
-            transaction -> {
-              try (ResultSet rs = transaction.executeQuery(INVALID_SELECT_STATEMENT)) {
-                SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
-                assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
-              }
-              return transaction.executeUpdate(UPDATE_STATEMENT);
-            });
-    validateIsolationLevel(IsolationLevel.REPEATABLE_READ);
+    executeTest(
+        c -> MockSpannerTestActions.executeInvalidAndValidSql(c, RR_ISOLATION_OPTION),
+        IsolationLevel.REPEATABLE_READ);
   }
 
   @Test
   public void beginTransactionWithRWTransactionOptions_Serializable() {
-    client
-        .readWriteTransaction(Options.serializableIsolationLevel())
-        .run(
-            transaction -> {
-              try (ResultSet rs = transaction.executeQuery(INVALID_SELECT_STATEMENT)) {
-                SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
-                assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
-              }
-              return transaction.executeUpdate(UPDATE_STATEMENT);
-            });
-    validateIsolationLevel(IsolationLevel.SERIALIZABLE);
+    executeTest(
+        c -> MockSpannerTestActions.executeInvalidAndValidSql(c, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE);
   }
 
   private void validateIsolationLevel(IsolationLevel isolationLevel) {
@@ -493,5 +347,6 @@ public class DatabaseClientImplWithTransactionOptionsTest {
         break;
       }
     }
+    assertTrue("No gRPC call is made", foundMatchingRequest);
   }
 }

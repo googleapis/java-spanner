@@ -49,7 +49,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.RpcLockHint;
@@ -1346,10 +1345,7 @@ public class DatabaseClientImplTest {
   public void testWrite() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Timestamp timestamp =
-        client.write(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeInsertMutation(client);
     assertNotNull(timestamp);
 
     List<BeginTransactionRequest> beginTransactions =
@@ -1376,10 +1372,7 @@ public class DatabaseClientImplTest {
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-    Timestamp timestamp =
-        client.write(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeInsertMutation(client);
     assertNotNull(timestamp);
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -1395,10 +1388,7 @@ public class DatabaseClientImplTest {
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-    Timestamp timestamp =
-        client.writeAtLeastOnce(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeAtLeastOnceInsertMutation(client);
     assertNotNull(timestamp);
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -1409,10 +1399,8 @@ public class DatabaseClientImplTest {
   public void testWriteWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.priority(RpcPriority.HIGH));
+    MockSpannerTestActions.writeInsertMutationWithOptions(
+        client, Options.priority(RpcPriority.HIGH));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -1447,10 +1435,8 @@ public class DatabaseClientImplTest {
   public void testWriteWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.excludeTxnFromChangeStreams());
+    MockSpannerTestActions.writeInsertMutationWithOptions(
+        client, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -1465,10 +1451,7 @@ public class DatabaseClientImplTest {
   public void testWriteAtLeastOnce() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Timestamp timestamp =
-        client.writeAtLeastOnce(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeAtLeastOnceInsertMutation(client);
     assertNotNull(timestamp);
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -1508,10 +1491,8 @@ public class DatabaseClientImplTest {
   public void testWriteAtLeastOnceWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.priority(RpcPriority.LOW));
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.priority(RpcPriority.LOW));
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -1527,10 +1508,8 @@ public class DatabaseClientImplTest {
   public void testWriteAtLeastOnceWithTagOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.tag("app=spanner,env=test"));
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.tag("app=spanner,env=test"));
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -1547,10 +1526,8 @@ public class DatabaseClientImplTest {
   public void testWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.excludeTxnFromChangeStreams());
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.excludeTxnFromChangeStreams());
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -2016,13 +1993,8 @@ public class DatabaseClientImplTest {
   public void testCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner =
-        client.readWriteTransaction(Options.tag("app=spanner,env=test,action=commit"));
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(
+        client, Options.tag("app=spanner,env=test,action=commit"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2045,12 +2017,8 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (TransactionManager manager =
-        client.transactionManager(Options.tag("app=spanner,env=test,action=manager"))) {
-      TransactionContext transaction = manager.begin();
-      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-      manager.commit();
-    }
+    MockSpannerTestActions.transactionManagerCommit(
+        client, Options.tag("app=spanner,env=test,action=manager"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2076,14 +2044,8 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.tag("app=spanner,env=test,action=runner"));
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
+    MockSpannerTestActions.asyncRunnerCommit(
+        client, executor, Options.tag("app=spanner,env=test,action=runner"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2109,19 +2071,8 @@ public class DatabaseClientImplTest {
   public void testAsyncTransactionManagerCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.tag("app=spanner,env=test,action=manager"))) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(
+        client, executor, Options.tag("app=spanner,env=test,action=manager"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2162,8 +2113,8 @@ public class DatabaseClientImplTest {
   public void testReadWriteTxnWithExcludeTxnFromChangeStreams_batchUpdate() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
-    runner.run(transaction -> transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT)));
+    MockSpannerTestActions.executeBatchUpdateTransaction(
+        client, Options.excludeTxnFromChangeStreams());
 
     List<ExecuteBatchDmlRequest> requests =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
@@ -2193,12 +2144,7 @@ public class DatabaseClientImplTest {
   public void testCommitWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(client, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2213,12 +2159,7 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (TransactionManager manager =
-        client.transactionManager(Options.excludeTxnFromChangeStreams())) {
-      TransactionContext transaction = manager.begin();
-      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-      manager.commit();
-    }
+    MockSpannerTestActions.transactionManagerCommit(client, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2233,14 +2174,8 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.excludeTxnFromChangeStreams());
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
+    MockSpannerTestActions.asyncRunnerCommit(
+        client, executor, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2255,19 +2190,8 @@ public class DatabaseClientImplTest {
   public void testAsyncTransactionManagerCommitWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.excludeTxnFromChangeStreams())) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(
+        client, executor, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -4196,12 +4120,7 @@ public class DatabaseClientImplTest {
   public void testCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction(Options.priority(RpcPriority.HIGH));
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(client, Options.priority(RpcPriority.HIGH));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4214,12 +4133,7 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (TransactionManager manager =
-        client.transactionManager(Options.priority(RpcPriority.HIGH))) {
-      TransactionContext transaction = manager.begin();
-      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-      manager.commit();
-    }
+    MockSpannerTestActions.transactionManagerCommit(client, Options.priority(RpcPriority.HIGH));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4232,14 +4146,7 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.priority(RpcPriority.HIGH));
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
+    MockSpannerTestActions.asyncRunnerCommit(client, executor, Options.priority(RpcPriority.HIGH));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4252,19 +4159,8 @@ public class DatabaseClientImplTest {
   public void testAsyncTransactionManagerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.priority(RpcPriority.HIGH))) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(
+        client, executor, Options.priority(RpcPriority.HIGH));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4277,12 +4173,7 @@ public class DatabaseClientImplTest {
   public void testCommitWithoutMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction();
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(client);
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4294,13 +4185,8 @@ public class DatabaseClientImplTest {
   public void testCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner =
-        client.readWriteTransaction(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(
+        client, Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4315,11 +4201,8 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionManager manager =
-        client.transactionManager(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
-    TransactionContext transaction = manager.begin();
-    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-    manager.commit();
+    MockSpannerTestActions.transactionManagerCommit(
+        client, Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4334,14 +4217,8 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
+    MockSpannerTestActions.asyncRunnerCommit(
+        client, executor, Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4356,19 +4233,8 @@ public class DatabaseClientImplTest {
   public void testAsyncTransactionManagerCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)))) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(
+        client, executor, Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
