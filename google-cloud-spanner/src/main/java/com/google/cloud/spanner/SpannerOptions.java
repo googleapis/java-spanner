@@ -44,10 +44,8 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.DirectedReadOption;
-import com.google.cloud.spanner.Options.IsolationLevelOption;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
-import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -68,6 +66,8 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.grpc.CallCredentials;
 import io.grpc.CompressorRegistry;
 import io.grpc.Context;
@@ -180,7 +180,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
-  private final TransactionOptions transactionOptions;
+  private final TransactionOptions defaultTransactionOptions;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -810,7 +810,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
-    transactionOptions = builder.transactionOptions;
+    defaultTransactionOptions = builder.defaultTransactionOptions;
   }
 
   /**
@@ -992,7 +992,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
     private boolean isExperimentalHost = false;
-    private TransactionOptions transactionOptions;
+    private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1061,7 +1061,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
-      this.transactionOptions = options.transactionOptions;
+      this.defaultTransactionOptions = options.defaultTransactionOptions;
     }
 
     @Override
@@ -1651,42 +1651,52 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    public static class TransactionOptions {
-      private com.google.spanner.v1.TransactionOptions transactionOptions;
+    /**
+     * Provides the default read-write transaction options for all databases, limited to setting the
+     * {@link IsolationLevel}. These defaults are overridden by any explicit {@link
+     * com.google.cloud.spanner.Options.TransactionOption} provided through {@link DatabaseClient}.
+     *
+     * <p>Example Usage:
+     *
+     * <pre>{@code
+     * DefaultReadWriteTransactionOptions options = DefaultReadWriteTransactionOptions.newBuilder()
+     * .setIsolationLevel(IsolationLevel.SERIALIZABLE)
+     * .build();
+     * }</pre>
+     */
+    public static class DefaultReadWriteTransactionOptions {
+      private final TransactionOptions defaultTransactionOptions;
 
-      private TransactionOptions() {}
-
-      com.google.spanner.v1.TransactionOptions getTransactionOptions() {
-        return transactionOptions;
+      private DefaultReadWriteTransactionOptions(TransactionOptions defaultTransactionOptions) {
+        this.defaultTransactionOptions = defaultTransactionOptions;
       }
 
-      public static class TransactionOptionsBuilder {
-        private IsolationLevelOption isolationLevelOption;
+      public static DefaultReadWriteTransactionOptionsBuilder newBuilder() {
+        return new DefaultReadWriteTransactionOptionsBuilder();
+      }
 
-        public static TransactionOptionsBuilder newBuilder() {
-          return new TransactionOptionsBuilder();
-        }
+      public static class DefaultReadWriteTransactionOptionsBuilder {
+        private final TransactionOptions.Builder transactionOptionsBuilder =
+            TransactionOptions.newBuilder();
 
-        public TransactionOptionsBuilder setIsolationLevel(IsolationLevelOption option) {
-          this.isolationLevelOption = option;
+        public DefaultReadWriteTransactionOptionsBuilder setIsolationLevel(
+            IsolationLevel isolationLevel) {
+          transactionOptionsBuilder.setIsolationLevel(isolationLevel);
           return this;
         }
 
-        public TransactionOptions build() {
-          TransactionOptions transactionOptions = new TransactionOptions();
-          transactionOptions.transactionOptions =
-              com.google.spanner.v1.TransactionOptions.newBuilder()
-                  .setIsolationLevel(
-                      Options.fromTransactionOptions(isolationLevelOption).isolationLevel())
-                  .build();
-          return transactionOptions;
+        public DefaultReadWriteTransactionOptions build() {
+          return new DefaultReadWriteTransactionOptions(transactionOptionsBuilder.build());
         }
       }
     }
 
-    /** Sets the default transaction options. */
-    public Builder setDefaultTransactionOptions(TransactionOptions transactionOptions) {
-      this.transactionOptions = transactionOptions;
+    /** Sets the {@link DefaultReadWriteTransactionOptions} for read-write transactions. */
+    public Builder setDefaultTransactionOptions(
+        DefaultReadWriteTransactionOptions defaultReadWriteTransactionOptions) {
+      Preconditions.checkNotNull(
+          defaultReadWriteTransactionOptions, "DefaultReadWriteTransactionOptions cannot be null");
+      this.defaultTransactionOptions = defaultReadWriteTransactionOptions.defaultTransactionOptions;
       return this;
     }
 
@@ -2036,7 +2046,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   public TransactionOptions getDefaultTransactionOptions() {
-    return transactionOptions;
+    return defaultTransactionOptions;
   }
 
   @BetaApi

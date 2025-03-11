@@ -27,9 +27,9 @@ import static org.junit.Assert.assertTrue;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.Options.IsolationLevelOption;
 import com.google.cloud.spanner.Options.RpcPriority;
-import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions.TransactionOptionsBuilder;
+import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.SpannerOptions.Builder.DefaultReadWriteTransactionOptions;
 import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -55,16 +55,20 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class DatabaseClientImplWithTransactionOptionsTest {
-  private static final IsolationLevelOption SERIALIZABLE_ISOLATION_OPTION =
+public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
+  private static final TransactionOption SERIALIZABLE_ISOLATION_OPTION =
       Options.isolationLevelOption(IsolationLevel.SERIALIZABLE);
-  private static final IsolationLevelOption RR_ISOLATION_OPTION =
+  private static final TransactionOption RR_ISOLATION_OPTION =
       Options.isolationLevelOption(IsolationLevel.REPEATABLE_READ);
+  private static final DatabaseId DATABASE_ID =
+      DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static ExecutorService executor;
   private static LocalChannelProvider channelProvider;
   private Spanner spanner;
+  private Spanner spannerWithRR;
+  private Spanner spannerWithSerializable;
   private DatabaseClient client;
   private DatabaseClient clientWithRepeatableReadOption;
   private DatabaseClient clientWithSerializableOption;
@@ -111,25 +115,25 @@ public class DatabaseClientImplWithTransactionOptionsTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     spanner = spannerOptionsBuilder.build().getService();
-    client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-    clientWithRepeatableReadOption =
+    spannerWithRR =
         spannerOptionsBuilder
             .setDefaultTransactionOptions(
-                TransactionOptionsBuilder.newBuilder()
-                    .setIsolationLevel(RR_ISOLATION_OPTION)
+                DefaultReadWriteTransactionOptions.newBuilder()
+                    .setIsolationLevel(IsolationLevel.REPEATABLE_READ)
                     .build())
             .build()
-            .getService()
-            .getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-    clientWithSerializableOption =
+            .getService();
+    spannerWithSerializable =
         spannerOptionsBuilder
             .setDefaultTransactionOptions(
-                TransactionOptionsBuilder.newBuilder()
-                    .setIsolationLevel(SERIALIZABLE_ISOLATION_OPTION)
+                DefaultReadWriteTransactionOptions.newBuilder()
+                    .setIsolationLevel(IsolationLevel.SERIALIZABLE)
                     .build())
             .build()
-            .getService()
-            .getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+            .getService();
+    client = spanner.getDatabaseClient(DATABASE_ID);
+    clientWithRepeatableReadOption = spannerWithRR.getDatabaseClient(DATABASE_ID);
+    clientWithSerializableOption = spannerWithSerializable.getDatabaseClient(DATABASE_ID);
   }
 
   private void executeTest(
@@ -153,6 +157,8 @@ public class DatabaseClientImplWithTransactionOptionsTest {
   @After
   public void tearDown() {
     spanner.close();
+    spannerWithRR.close();
+    spannerWithSerializable.close();
   }
 
   @Test
