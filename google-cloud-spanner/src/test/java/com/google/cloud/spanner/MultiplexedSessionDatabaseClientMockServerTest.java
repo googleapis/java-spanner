@@ -345,10 +345,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-    Timestamp timestamp =
-        client.writeAtLeastOnce(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeAtLeastOnceInsertMutation(client);
     assertNotNull(timestamp);
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -366,10 +363,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   public void testWriteAtLeastOnce() {
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-    Timestamp timestamp =
-        client.writeAtLeastOnce(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeAtLeastOnceInsertMutation(client);
     assertNotNull(timestamp);
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -419,10 +413,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   public void testWriteAtLeastOnceWithOptions() {
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.priority(RpcPriority.LOW));
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.priority(RpcPriority.LOW));
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -443,10 +435,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   public void testWriteAtLeastOnceWithTagOptions() {
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.tag("app=spanner,env=test"));
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.tag("app=spanner,env=test"));
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -468,10 +458,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   public void testWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.excludeTxnFromChangeStreams());
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.excludeTxnFromChangeStreams());
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -585,10 +573,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-    Timestamp timestamp =
-        client.write(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeInsertMutation(client);
     assertNotNull(timestamp);
 
     List<BeginTransactionRequest> beginTransactionRequests =
@@ -1223,15 +1208,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Test verifies mutation-only case within a R/W transaction via AsyncRunner.
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-    AsyncRunner runner = client.runAsync();
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            MoreExecutors.directExecutor()));
-
+    MockSpannerTestActions.asyncRunnerCommit(client, MoreExecutors.directExecutor());
     // Verify that the mutation key is set in BeginTransactionRequest
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -1255,18 +1232,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Test verifies mutation-only case within a R/W transaction via AsyncTransactionManager.
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  MoreExecutors.directExecutor())
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(client, MoreExecutors.directExecutor());
 
     // Verify that the mutation key is set in BeginTransactionRequest
     List<BeginTransactionRequest> beginTransactions =

@@ -37,7 +37,6 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
-import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions;
 import com.google.cloud.spanner.SpannerOptions.Builder.TransactionOptions.TransactionOptionsBuilder;
 import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
@@ -64,6 +63,7 @@ import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -774,29 +774,17 @@ public class SpannerOptionsTest {
   public void testTransactionOptions() {
     TransactionOptions transactionOptions =
         TransactionOptionsBuilder.newBuilder()
-            .setIsolationLevel(Options.serializableIsolationLevel())
+            .setIsolationLevel(Options.isolationLevelOption(IsolationLevel.SERIALIZABLE))
             .build();
-    assertNull(SpannerOptions.newBuilder().setProjectId("p").build().getTransactionOptions());
+    assertNull(
+        SpannerOptions.newBuilder().setProjectId("p").build().getDefaultTransactionOptions());
     assertThat(
             SpannerOptions.newBuilder()
                 .setProjectId("p")
                 .setDefaultTransactionOptions(transactionOptions)
                 .build()
-                .getTransactionOptions())
-        .isEqualTo(new TransactionOption[] {Options.serializableIsolationLevel()});
-  }
-
-  @Test
-  public void testTransactionOptionsWithError() {
-    assertNull(SpannerOptions.newBuilder().setProjectId("p").build().getTransactionOptions());
-    SpannerException e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                TransactionOptionsBuilder.newBuilder()
-                    .setIsolationLevel(Options.commitStats())
-                    .build());
-    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+                .getDefaultTransactionOptions())
+        .isEqualTo(transactionOptions);
   }
 
   @Test
