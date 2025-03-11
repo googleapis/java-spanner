@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package spanner.experimental;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+
+// AccessToken is returned by the LoginService after a successful login.
+message AccessToken {
+  // The username of the logged in user.
+  string username = 1;
+  // The creation time of the access token.
+  google.protobuf.Timestamp creation_time = 2;
+  // The expiration time of the access token, this will be checked by the
+  // server.
+  google.protobuf.Timestamp expiration_time = 3;
+  // The signature of the access token, this will be verified by the server.
+  bytes signature = 4;
+}
+
+// InitialScramRequest is used to start the SCRAM handshake, it will contain the
+// nonce provided by the client.
+message InitialScramRequest {
+  // Nonce provided by the client.
+  bytes client_nonce = 1;
+}
+
+// FinalScramRequest is used to complete the SCRAM handshake, it will contain
+// the credential provided by the client.
+message FinalScramRequest {
+  // The credential provided by the client.
+  bytes credential = 1;
+}
+
+// InitialScramResponse is returned by the server so that the client can
+// generate the credential.
+message InitialScramResponse {
+  // The salt to use when hashing the password.
+  bytes salt = 1;
+  // The number of iterations to use when hashing the password.
+  uint32 iteration_count = 2;
+  // Nonce provided by the server.
+  bytes server_nonce = 3;
+}
+
+// FinalScramResponse is returned by the server after it has verified the
+// client credential.
+message FinalScramResponse {
+  // The server_signature from the server.
+  bytes server_signature = 1;
+}
+
+// LoginRequest is used to authenticate the user, and if successful, return an
+// access token.
+message LoginRequest {
+  // The username of the user to log in.
+  string username = 1;
+
+  oneof request {
+    InitialScramRequest initial_scram_request = 2;
+    FinalScramRequest final_scram_request = 3;
+  }
+}
+
+// LoginResponse contains the information the client needs to call the
+// Spanner API.
+message LoginResponse {
+  // The access token for the logged in user.  This should be included in
+  // requests to the Spanner API.
+  AccessToken access_token = 1;
+  oneof response {
+    InitialScramResponse initial_scram_response = 2;
+    FinalScramResponse final_scram_response = 3;
+  }
+}
+
+service LoginService {
+  // Performs the login for rfc5802 authentication.
+  rpc Login(stream LoginRequest) returns (stream LoginResponse);
+}
