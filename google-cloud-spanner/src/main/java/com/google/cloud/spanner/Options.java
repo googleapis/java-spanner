@@ -163,7 +163,7 @@ public final class Options implements Serializable {
   /**
    * Specifying this instructs the transaction to request {@link IsolationLevel} from the backend.
    */
-  public static TransactionOption isolationLevelOption(IsolationLevel isolationLevel) {
+  public static TransactionOption isolationLevel(IsolationLevel isolationLevel) {
     return new IsolationLevelOption(isolationLevel);
   }
 
