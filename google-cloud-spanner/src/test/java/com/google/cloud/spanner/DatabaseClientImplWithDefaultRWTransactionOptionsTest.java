@@ -57,9 +57,9 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   private static final TransactionOption SERIALIZABLE_ISOLATION_OPTION =
-      Options.isolationLevelOption(IsolationLevel.SERIALIZABLE);
+      Options.isolationLevel(IsolationLevel.SERIALIZABLE);
   private static final TransactionOption RR_ISOLATION_OPTION =
-      Options.isolationLevelOption(IsolationLevel.REPEATABLE_READ);
+      Options.isolationLevel(IsolationLevel.REPEATABLE_READ);
   private static final DatabaseId DATABASE_ID =
       DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
   private static MockSpannerServiceImpl mockSpanner;
