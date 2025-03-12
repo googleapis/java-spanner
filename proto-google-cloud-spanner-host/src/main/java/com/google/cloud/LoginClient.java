@@ -35,7 +35,7 @@ public class LoginClient {
   private String clientCertificate = null;
   private String clientCertificateKey = null;
 
-  private static final long TOKEN_REFRESH_THRESHOLD_SECONDS = 30; // Refresh 5 minutes before expiry
+  private static final long TOKEN_REFRESH_THRESHOLD_SECONDS = 300; // Refresh 5 minutes before expiry
 
   public LoginClient(String username, String password, String endpoint) throws Exception {
     this(username, password, endpoint, null, null);
