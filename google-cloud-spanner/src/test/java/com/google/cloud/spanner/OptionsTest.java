@@ -382,8 +382,7 @@ public class OptionsTest {
   @Test
   public void testTransactionOptionsIsolationLevel() {
     Options options =
-        Options.fromTransactionOptions(
-            Options.isolationLevelOption(IsolationLevel.REPEATABLE_READ));
+        Options.fromTransactionOptions(Options.isolationLevel(IsolationLevel.REPEATABLE_READ));
     assertEquals(options.isolationLevel(), IsolationLevel.REPEATABLE_READ);
     assertEquals(
         "isolationLevel: " + IsolationLevel.REPEATABLE_READ.name() + " ", options.toString());
@@ -789,11 +788,9 @@ public class OptionsTest {
   @Test
   public void transactionOptionsIsolationLevel() {
     Options option1 =
-        Options.fromTransactionOptions(
-            Options.isolationLevelOption(IsolationLevel.REPEATABLE_READ));
+        Options.fromTransactionOptions(Options.isolationLevel(IsolationLevel.REPEATABLE_READ));
     Options option2 =
-        Options.fromTransactionOptions(
-            Options.isolationLevelOption(IsolationLevel.REPEATABLE_READ));
+        Options.fromTransactionOptions(Options.isolationLevel(IsolationLevel.REPEATABLE_READ));
     Options option3 = Options.fromTransactionOptions();
 
     assertEquals(option1, option2);
@@ -870,8 +867,8 @@ public class OptionsTest {
   @Test
   public void testOptions_WithMultipleDifferentIsolationLevels() {
     TransactionOption[] transactionOptions = {
-      Options.isolationLevelOption(IsolationLevel.REPEATABLE_READ),
-      Options.isolationLevelOption(IsolationLevel.SERIALIZABLE)
+      Options.isolationLevel(IsolationLevel.REPEATABLE_READ),
+      Options.isolationLevel(IsolationLevel.SERIALIZABLE)
     };
     Options options = Options.fromTransactionOptions(transactionOptions);
     assertEquals(options.isolationLevel(), IsolationLevel.SERIALIZABLE);

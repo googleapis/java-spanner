@@ -1652,8 +1652,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Provides the default read-write transaction options for all databases. These defaults are overridden by any explicit {@link
-     * com.google.cloud.spanner.Options.TransactionOption} provided through {@link DatabaseClient}.
+     * Provides the default read-write transaction options for all databases. These defaults are
+     * overridden by any explicit {@link com.google.cloud.spanner.Options.TransactionOption}
+     * provided through {@link DatabaseClient}.
      *
      * <p>Example Usage:
      *
