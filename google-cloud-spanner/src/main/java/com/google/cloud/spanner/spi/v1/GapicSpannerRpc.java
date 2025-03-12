@@ -590,12 +590,24 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (metricsOptions.getNamePrefix().equals("")) {
       metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
     }
-    GcpChannelPoolOptions.Builder channelPoolOptionsBuilder =
-        GcpChannelPoolOptions.newBuilder().setDynamicScaling(0, 100, Duration.ofMinutes(30L));
-    return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
-        .withMetricsOptions(metricsOptionsBuilder.build())
-        .withChannelPoolOptions(channelPoolOptionsBuilder.build())
-        .build();
+    GcpManagedChannelOptions.Builder channelOptionsBuilder =
+        GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
+            .withMetricsOptions(metricsOptionsBuilder.build());
+
+    boolean isMultiplexedSessionEnabledForAllTransactions =
+        options.getSessionPoolOptions().getUseMultiplexedSession()
+            && options.getSessionPoolOptions().getUseMultiplexedSessionForRW()
+            && options.getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps();
+    if (isMultiplexedSessionEnabledForAllTransactions) {
+      // When multiplexed session is enabled for all the transactions then enable dynamic channel
+      // pooling by default.
+      // TODO: What if backend throws an unimplemented error and the transactions fallback to using
+      // regular sessions? Is there a way to disable dynamic scaling on the fly?
+      GcpChannelPoolOptions.Builder channelPoolOptionsBuilder =
+          GcpChannelPoolOptions.newBuilder().setDynamicScaling(0, 100, Duration.ofMinutes(30L));
+      channelOptionsBuilder.withChannelPoolOptions(channelPoolOptionsBuilder.build());
+    }
+    return channelOptionsBuilder.build();
   }
 
   @SuppressWarnings("rawtypes")
