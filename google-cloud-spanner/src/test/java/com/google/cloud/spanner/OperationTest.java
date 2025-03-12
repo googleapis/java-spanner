@@ -31,12 +31,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
-import org.threeten.bp.Duration;
 
 /** Unit tests for {@link Operation}. */
 @RunWith(JUnit4.class)
@@ -160,8 +160,8 @@ public class OperationTest {
 
     op =
         op.waitFor(
-            RetryOption.totalTimeout(Duration.ofSeconds(3)),
-            RetryOption.initialRetryDelay(Duration.ZERO));
+            RetryOption.totalTimeoutDuration(Duration.ofSeconds(3)),
+            RetryOption.initialRetryDelayDuration(Duration.ZERO));
 
     assertThat(op.getName()).isEqualTo("op1");
     assertThat(op.isDone()).isTrue();
@@ -181,8 +181,8 @@ public class OperationTest {
             SpannerException.class,
             () ->
                 op.waitFor(
-                    RetryOption.totalTimeout(Duration.ofMillis(100L)),
-                    RetryOption.initialRetryDelay(Duration.ZERO)));
+                    RetryOption.totalTimeoutDuration(Duration.ofMillis(100L)),
+                    RetryOption.initialRetryDelayDuration(Duration.ZERO)));
     assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
   }
 }

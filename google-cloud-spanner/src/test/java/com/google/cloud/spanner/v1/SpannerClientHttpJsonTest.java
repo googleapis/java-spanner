@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -607,6 +607,7 @@ public class SpannerClientHttpJsonTest {
             .setRequestOptions(RequestOptions.newBuilder().build())
             .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
+            .setLastStatement(true)
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -650,6 +651,7 @@ public class SpannerClientHttpJsonTest {
               .setRequestOptions(RequestOptions.newBuilder().build())
               .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
+              .setLastStatement(true)
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -687,6 +689,7 @@ public class SpannerClientHttpJsonTest {
             .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
             .setSeqno(109325920)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setLastStatements(true)
             .build();
 
     ExecuteBatchDmlResponse actualResponse = client.executeBatchDml(request);
@@ -723,6 +726,7 @@ public class SpannerClientHttpJsonTest {
               .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
               .setSeqno(109325920)
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setLastStatements(true)
               .build();
       client.executeBatchDml(request);
       Assert.fail("No exception raised");

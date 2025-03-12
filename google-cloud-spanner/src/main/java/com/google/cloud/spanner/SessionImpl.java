@@ -45,13 +45,13 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
-import org.threeten.bp.Instant;
 
 /**
  * Implementation of {@link Session}. Sessions are managed internally by the client library, and
@@ -203,7 +203,7 @@ class SessionImpl implements Session {
     PartitionedDmlTransaction txn =
         new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker());
     return txn.executeStreamingPartitionedUpdate(
-        stmt, spanner.getOptions().getPartitionedDmlTimeout(), options);
+        stmt, spanner.getOptions().getPartitionedDmlTimeoutDuration(), options);
   }
 
   @Override
@@ -238,7 +238,7 @@ class SessionImpl implements Session {
       throws SpannerException {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-    Mutation.toProto(mutations, mutationsProto);
+    Mutation.toProtoAndReturnRandomMutation(mutations, mutationsProto);
     Options options = Options.fromTransactionOptions(transactionOptions);
     final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
@@ -321,6 +321,7 @@ class SessionImpl implements Session {
       throw SpannerExceptionFactory.newSpannerException(e);
     } finally {
       span.end();
+      onTransactionDone();
     }
   }
 
@@ -431,19 +432,23 @@ class SessionImpl implements Session {
     }
   }
 
-  ApiFuture<ByteString> beginTransactionAsync(
+  ApiFuture<Transaction> beginTransactionAsync(
       Options transactionOptions,
       boolean routeToLeader,
       Map<SpannerRpc.Option, ?> channelHint,
-      ByteString previousTransactionId) {
-    final SettableApiFuture<ByteString> res = SettableApiFuture.create();
+      ByteString previousTransactionId,
+      com.google.spanner.v1.Mutation mutation) {
+    final SettableApiFuture<Transaction> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
-    final BeginTransactionRequest request =
+    BeginTransactionRequest.Builder requestBuilder =
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(
-                createReadWriteTransactionOptions(transactionOptions, previousTransactionId))
-            .build();
+                createReadWriteTransactionOptions(transactionOptions, previousTransactionId));
+    if (sessionReference.getIsMultiplexed() && mutation != null) {
+      requestBuilder.setMutationKey(mutation);
+    }
+    final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
       requestFuture = spanner.getRpc().beginTransactionAsync(request, channelHint, routeToLeader);
@@ -457,7 +462,7 @@ class SessionImpl implements Session {
                   ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
             }
             span.end();
-            res.set(txn.getId());
+            res.set(txn);
           } catch (ExecutionException e) {
             span.setStatus(e);
             span.end();

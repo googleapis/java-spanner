@@ -153,7 +153,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final SavepointSupport savepointSupport;
   private int transactionRetryAttempts;
   private int successfulRetries;
-  private final List<TransactionRetryListener> transactionRetryListeners;
   private volatile ApiFuture<TransactionContext> txContextFuture;
   private boolean canUseSingleUseRead;
   private volatile SettableApiFuture<CommitResponse> commitResponseFuture;
@@ -203,7 +202,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private boolean returnCommitStats;
     private Duration maxCommitDelay;
     private SavepointSupport savepointSupport;
-    private List<TransactionRetryListener> transactionRetryListeners;
 
     private Builder() {}
 
@@ -253,19 +251,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       return this;
     }
 
-    Builder setTransactionRetryListeners(List<TransactionRetryListener> listeners) {
-      Preconditions.checkNotNull(listeners);
-      this.transactionRetryListeners = listeners;
-      return this;
-    }
-
     @Override
     ReadWriteTransaction build() {
       Preconditions.checkState(dbClient != null, "No DatabaseClient client specified");
       Preconditions.checkState(
           retryAbortsInternally != null, "RetryAbortsInternally is not specified");
       Preconditions.checkState(
-          transactionRetryListeners != null, "TransactionRetryListeners are not specified");
+          hasTransactionRetryListeners(), "TransactionRetryListeners are not specified");
       Preconditions.checkState(savepointSupport != null, "SavepointSupport is not specified");
       return new ReadWriteTransaction(this);
     }
@@ -301,7 +293,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.keepAliveLock = this.keepTransactionAlive ? new ReentrantLock() : null;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.savepointSupport = builder.savepointSupport;
-    this.transactionRetryListeners = builder.transactionRetryListeners;
     this.transactionOptions = extractOptions(builder);
   }
 
@@ -1268,6 +1259,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       return ApiFutures.immediateFuture(null);
     }
+  }
+
+  @Override
+  public void resetForRetry() {
+    txContextFuture = ApiFutures.immediateFuture(txManager.resetForRetry());
   }
 
   @Override

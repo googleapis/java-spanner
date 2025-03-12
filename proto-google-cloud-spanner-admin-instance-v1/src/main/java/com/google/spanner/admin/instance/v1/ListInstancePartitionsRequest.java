@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,9 @@ public final class ListInstancePartitionsRequest extends com.google.protobuf.Gen
    *
    * <pre>
    * Required. The instance whose instance partitions should be listed. Values
-   * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance}
+   * = '-'` to list instance partitions for all Instances in a project, e.g.,
+   * `projects/myproject/instances/-`.
    * </pre>
    *
    * <code>
@@ -101,7 +103,9 @@ public final class ListInstancePartitionsRequest extends com.google.protobuf.Gen
    *
    * <pre>
    * Required. The instance whose instance partitions should be listed. Values
-   * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance}
+   * = '-'` to list instance partitions for all Instances in a project, e.g.,
+   * `projects/myproject/instances/-`.
    * </pre>
    *
    * <code>
@@ -724,7 +728,9 @@ public final class ListInstancePartitionsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * Required. The instance whose instance partitions should be listed. Values
-     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance}
+     * = '-'` to list instance partitions for all Instances in a project, e.g.,
+     * `projects/myproject/instances/-`.
      * </pre>
      *
      * <code>
@@ -749,7 +755,9 @@ public final class ListInstancePartitionsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * Required. The instance whose instance partitions should be listed. Values
-     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance}
+     * = '-'` to list instance partitions for all Instances in a project, e.g.,
+     * `projects/myproject/instances/-`.
      * </pre>
      *
      * <code>
@@ -774,7 +782,9 @@ public final class ListInstancePartitionsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * Required. The instance whose instance partitions should be listed. Values
-     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance}
+     * = '-'` to list instance partitions for all Instances in a project, e.g.,
+     * `projects/myproject/instances/-`.
      * </pre>
      *
      * <code>
@@ -798,7 +808,9 @@ public final class ListInstancePartitionsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * Required. The instance whose instance partitions should be listed. Values
-     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance}
+     * = '-'` to list instance partitions for all Instances in a project, e.g.,
+     * `projects/myproject/instances/-`.
      * </pre>
      *
      * <code>
@@ -818,7 +830,9 @@ public final class ListInstancePartitionsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * Required. The instance whose instance partitions should be listed. Values
-     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`. Use `{instance}
+     * = '-'` to list instance partitions for all Instances in a project, e.g.,
+     * `projects/myproject/instances/-`.
      * </pre>
      *
      * <code>

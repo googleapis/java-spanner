@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
@@ -242,12 +244,63 @@ public class AbstractReadContextTest {
   }
 
   @Test
+  public void testGetReadRequestBuilderWithLockHint() {
+    ReadRequest request =
+        ReadRequest.newBuilder()
+            .setSession(
+                SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+            .setTransaction(TransactionSelector.newBuilder().build())
+            .setTable("table110115790")
+            .setIndex("index100346066")
+            .addAllColumns(new ArrayList<String>())
+            .setLockHintValue(2)
+            .build();
+    assertEquals(LockHint.LOCK_HINT_EXCLUSIVE, request.getLockHint());
+  }
+
+  @Test
   public void testGetExecuteBatchDmlRequestBuilderWithPriority() {
     ExecuteBatchDmlRequest.Builder request =
         context.getExecuteBatchDmlRequestBuilder(
             Collections.singleton(Statement.of("SELECT * FROM FOO")),
             Options.fromQueryOptions(Options.priority(RpcPriority.LOW)));
     assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testExecuteSqlLastStatement() {
+    assertFalse(
+        context
+            .getExecuteSqlRequestBuilder(
+                Statement.of("insert into test (id) values (1)"),
+                QueryMode.NORMAL,
+                Options.fromUpdateOptions(),
+                false)
+            .getLastStatement());
+    assertTrue(
+        context
+            .getExecuteSqlRequestBuilder(
+                Statement.of("insert into test (id) values (1)"),
+                QueryMode.NORMAL,
+                Options.fromUpdateOptions(Options.lastStatement()),
+                false)
+            .getLastStatement());
+  }
+
+  @Test
+  public void testExecuteBatchDmlLastStatement() {
+    assertFalse(
+        context
+            .getExecuteBatchDmlRequestBuilder(
+                Collections.singleton(Statement.of("insert into test (id) values (1)")),
+                Options.fromUpdateOptions())
+            .getLastStatements());
+    assertTrue(
+        context
+            .getExecuteBatchDmlRequestBuilder(
+                Collections.singleton(Statement.of("insert into test (id) values (1)")),
+                Options.fromUpdateOptions(Options.lastStatement()))
+            .getLastStatements());
   }
 
   public void executeSqlRequestBuilderWithRequestOptions() {

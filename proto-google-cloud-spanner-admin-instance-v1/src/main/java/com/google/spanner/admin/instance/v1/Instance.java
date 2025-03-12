@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     displayName_ = "";
     replicaComputeCapacity_ = java.util.Collections.emptyList();
     state_ = 0;
+    instanceType_ = 0;
     endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
     edition_ = 0;
+    defaultBackupScheduleType_ = 0;
   }
 
   @java.lang.Override
@@ -248,6 +250,172 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
+   * The type of this instance. The type can be used to distinguish product
+   * variants, that can affect aspects like: usage restrictions, quotas and
+   * billing. Currently this is used to distinguish FREE_INSTANCE vs PROVISIONED
+   * instances.
+   * </pre>
+   *
+   * Protobuf enum {@code google.spanner.admin.instance.v1.Instance.InstanceType}
+   */
+  public enum InstanceType implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     *
+     *
+     * <pre>
+     * Not specified.
+     * </pre>
+     *
+     * <code>INSTANCE_TYPE_UNSPECIFIED = 0;</code>
+     */
+    INSTANCE_TYPE_UNSPECIFIED(0),
+    /**
+     *
+     *
+     * <pre>
+     * Provisioned instances have dedicated resources, standard usage limits and
+     * support.
+     * </pre>
+     *
+     * <code>PROVISIONED = 1;</code>
+     */
+    PROVISIONED(1),
+    /**
+     *
+     *
+     * <pre>
+     * Free instances provide no guarantee for dedicated resources,
+     * [node_count, processing_units] should be 0. They come
+     * with stricter usage limits and limited support.
+     * </pre>
+     *
+     * <code>FREE_INSTANCE = 2;</code>
+     */
+    FREE_INSTANCE(2),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     *
+     *
+     * <pre>
+     * Not specified.
+     * </pre>
+     *
+     * <code>INSTANCE_TYPE_UNSPECIFIED = 0;</code>
+     */
+    public static final int INSTANCE_TYPE_UNSPECIFIED_VALUE = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Provisioned instances have dedicated resources, standard usage limits and
+     * support.
+     * </pre>
+     *
+     * <code>PROVISIONED = 1;</code>
+     */
+    public static final int PROVISIONED_VALUE = 1;
+    /**
+     *
+     *
+     * <pre>
+     * Free instances provide no guarantee for dedicated resources,
+     * [node_count, processing_units] should be 0. They come
+     * with stricter usage limits and limited support.
+     * </pre>
+     *
+     * <code>FREE_INSTANCE = 2;</code>
+     */
+    public static final int FREE_INSTANCE_VALUE = 2;
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static InstanceType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static InstanceType forNumber(int value) {
+      switch (value) {
+        case 0:
+          return INSTANCE_TYPE_UNSPECIFIED;
+        case 1:
+          return PROVISIONED;
+        case 2:
+          return FREE_INSTANCE;
+        default:
+          return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<InstanceType> internalGetValueMap() {
+      return internalValueMap;
+    }
+
+    private static final com.google.protobuf.Internal.EnumLiteMap<InstanceType> internalValueMap =
+        new com.google.protobuf.Internal.EnumLiteMap<InstanceType>() {
+          public InstanceType findValueByNumber(int number) {
+            return InstanceType.forNumber(number);
+          }
+        };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+      return getDescriptor();
+    }
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+      return com.google.spanner.admin.instance.v1.Instance.getDescriptor().getEnumTypes().get(1);
+    }
+
+    private static final InstanceType[] VALUES = values();
+
+    public static InstanceType valueOf(com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private InstanceType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:google.spanner.admin.instance.v1.Instance.InstanceType)
+  }
+
+  /**
+   *
+   *
+   * <pre>
    * The edition selected for this instance. Different editions provide
    * different capabilities at different price points.
    * </pre>
@@ -400,7 +568,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
-      return com.google.spanner.admin.instance.v1.Instance.getDescriptor().getEnumTypes().get(1);
+      return com.google.spanner.admin.instance.v1.Instance.getDescriptor().getEnumTypes().get(2);
     }
 
     private static final Edition[] VALUES = values();
@@ -422,6 +590,177 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
 
     // @@protoc_insertion_point(enum_scope:google.spanner.admin.instance.v1.Instance.Edition)
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Indicates the
+   * [default backup
+   * schedule](https://cloud.google.com/spanner/docs/backup#default-backup-schedules)
+   * behavior for new databases within the instance.
+   * </pre>
+   *
+   * Protobuf enum {@code google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType}
+   */
+  public enum DefaultBackupScheduleType implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     *
+     *
+     * <pre>
+     * Not specified.
+     * </pre>
+     *
+     * <code>DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED = 0;</code>
+     */
+    DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED(0),
+    /**
+     *
+     *
+     * <pre>
+     * A default backup schedule isn't created automatically when a new database
+     * is created in the instance.
+     * </pre>
+     *
+     * <code>NONE = 1;</code>
+     */
+    NONE(1),
+    /**
+     *
+     *
+     * <pre>
+     * A default backup schedule is created automatically when a new database
+     * is created in the instance. The default backup schedule creates a full
+     * backup every 24 hours. These full backups are retained for 7 days.
+     * You can edit or delete the default backup schedule once it's created.
+     * </pre>
+     *
+     * <code>AUTOMATIC = 2;</code>
+     */
+    AUTOMATIC(2),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     *
+     *
+     * <pre>
+     * Not specified.
+     * </pre>
+     *
+     * <code>DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED = 0;</code>
+     */
+    public static final int DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED_VALUE = 0;
+    /**
+     *
+     *
+     * <pre>
+     * A default backup schedule isn't created automatically when a new database
+     * is created in the instance.
+     * </pre>
+     *
+     * <code>NONE = 1;</code>
+     */
+    public static final int NONE_VALUE = 1;
+    /**
+     *
+     *
+     * <pre>
+     * A default backup schedule is created automatically when a new database
+     * is created in the instance. The default backup schedule creates a full
+     * backup every 24 hours. These full backups are retained for 7 days.
+     * You can edit or delete the default backup schedule once it's created.
+     * </pre>
+     *
+     * <code>AUTOMATIC = 2;</code>
+     */
+    public static final int AUTOMATIC_VALUE = 2;
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static DefaultBackupScheduleType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static DefaultBackupScheduleType forNumber(int value) {
+      switch (value) {
+        case 0:
+          return DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED;
+        case 1:
+          return NONE;
+        case 2:
+          return AUTOMATIC;
+        default:
+          return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<DefaultBackupScheduleType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+
+    private static final com.google.protobuf.Internal.EnumLiteMap<DefaultBackupScheduleType>
+        internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<DefaultBackupScheduleType>() {
+              public DefaultBackupScheduleType findValueByNumber(int number) {
+                return DefaultBackupScheduleType.forNumber(number);
+              }
+            };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+      return getDescriptor();
+    }
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+      return com.google.spanner.admin.instance.v1.Instance.getDescriptor().getEnumTypes().get(3);
+    }
+
+    private static final DefaultBackupScheduleType[] VALUES = values();
+
+    public static DefaultBackupScheduleType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private DefaultBackupScheduleType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType)
   }
 
   private int bitField0_;
@@ -614,9 +953,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * This might be zero in API responses for instances that are not yet in the
    * `READY` state.
    *
-   * If the instance has varying node count across replicas (achieved by
-   * setting asymmetric_autoscaling_options in autoscaling config), the
-   * node_count here is the maximum node count across all replicas.
    *
    * For more information, see
    * [Compute capacity, nodes, and processing
@@ -651,10 +987,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * This might be zero in API responses for instances that are not yet in the
    * `READY` state.
    *
-   * If the instance has varying processing units per replica
-   * (achieved by setting asymmetric_autoscaling_options in autoscaling config),
-   * the processing_units here is the maximum processing units across all
-   * replicas.
    *
    * For more information, see
    * [Compute capacity, nodes and processing
@@ -1063,6 +1395,43 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     return map.get(key);
   }
 
+  public static final int INSTANCE_TYPE_FIELD_NUMBER = 10;
+  private int instanceType_ = 0;
+  /**
+   *
+   *
+   * <pre>
+   * The `InstanceType` of the current instance.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+   *
+   * @return The enum numeric value on the wire for instanceType.
+   */
+  @java.lang.Override
+  public int getInstanceTypeValue() {
+    return instanceType_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The `InstanceType` of the current instance.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+   *
+   * @return The instanceType.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.Instance.InstanceType getInstanceType() {
+    com.google.spanner.admin.instance.v1.Instance.InstanceType result =
+        com.google.spanner.admin.instance.v1.Instance.InstanceType.forNumber(instanceType_);
+    return result == null
+        ? com.google.spanner.admin.instance.v1.Instance.InstanceType.UNRECOGNIZED
+        : result;
+  }
+
   public static final int ENDPOINT_URIS_FIELD_NUMBER = 8;
 
   @SuppressWarnings("serial")
@@ -1225,6 +1594,60 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     return updateTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : updateTime_;
   }
 
+  public static final int FREE_INSTANCE_METADATA_FIELD_NUMBER = 13;
+  private com.google.spanner.admin.instance.v1.FreeInstanceMetadata freeInstanceMetadata_;
+  /**
+   *
+   *
+   * <pre>
+   * Free instance metadata. Only populated for free instances.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+   * </code>
+   *
+   * @return Whether the freeInstanceMetadata field is set.
+   */
+  @java.lang.Override
+  public boolean hasFreeInstanceMetadata() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Free instance metadata. Only populated for free instances.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+   * </code>
+   *
+   * @return The freeInstanceMetadata.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.FreeInstanceMetadata getFreeInstanceMetadata() {
+    return freeInstanceMetadata_ == null
+        ? com.google.spanner.admin.instance.v1.FreeInstanceMetadata.getDefaultInstance()
+        : freeInstanceMetadata_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Free instance metadata. Only populated for free instances.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.FreeInstanceMetadataOrBuilder
+      getFreeInstanceMetadataOrBuilder() {
+    return freeInstanceMetadata_ == null
+        ? com.google.spanner.admin.instance.v1.FreeInstanceMetadata.getDefaultInstance()
+        : freeInstanceMetadata_;
+  }
+
   public static final int EDITION_FIELD_NUMBER = 20;
   private int edition_ = 0;
   /**
@@ -1266,6 +1689,67 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         : result;
   }
 
+  public static final int DEFAULT_BACKUP_SCHEDULE_TYPE_FIELD_NUMBER = 23;
+  private int defaultBackupScheduleType_ = 0;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Controls the default backup schedule behavior for new databases
+   * within the instance. By default, a backup schedule is created automatically
+   * when a new database is created in a new instance.
+   *
+   * Note that the `AUTOMATIC` value isn't permitted for free instances,
+   * as backups and backup schedules aren't supported for free instances.
+   *
+   * In the `GetInstance` or `ListInstances` response, if the value of
+   * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+   * create a default backup schedule for new databases in the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for defaultBackupScheduleType.
+   */
+  @java.lang.Override
+  public int getDefaultBackupScheduleTypeValue() {
+    return defaultBackupScheduleType_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Controls the default backup schedule behavior for new databases
+   * within the instance. By default, a backup schedule is created automatically
+   * when a new database is created in a new instance.
+   *
+   * Note that the `AUTOMATIC` value isn't permitted for free instances,
+   * as backups and backup schedules aren't supported for free instances.
+   *
+   * In the `GetInstance` or `ListInstances` response, if the value of
+   * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+   * create a default backup schedule for new databases in the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The defaultBackupScheduleType.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+      getDefaultBackupScheduleType() {
+    com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType result =
+        com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.forNumber(
+            defaultBackupScheduleType_);
+    return result == null
+        ? com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.UNRECOGNIZED
+        : result;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1304,11 +1788,19 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (processingUnits_ != 0) {
       output.writeInt32(9, processingUnits_);
     }
+    if (instanceType_
+        != com.google.spanner.admin.instance.v1.Instance.InstanceType.INSTANCE_TYPE_UNSPECIFIED
+            .getNumber()) {
+      output.writeEnum(10, instanceType_);
+    }
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(11, getCreateTime());
     }
     if (((bitField0_ & 0x00000004) != 0)) {
       output.writeMessage(12, getUpdateTime());
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      output.writeMessage(13, getFreeInstanceMetadata());
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(17, getAutoscalingConfig());
@@ -1319,6 +1811,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (edition_
         != com.google.spanner.admin.instance.v1.Instance.Edition.EDITION_UNSPECIFIED.getNumber()) {
       output.writeEnum(20, edition_);
+    }
+    if (defaultBackupScheduleType_
+        != com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+            .DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED
+            .getNumber()) {
+      output.writeEnum(23, defaultBackupScheduleType_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -1366,11 +1864,20 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (processingUnits_ != 0) {
       size += com.google.protobuf.CodedOutputStream.computeInt32Size(9, processingUnits_);
     }
+    if (instanceType_
+        != com.google.spanner.admin.instance.v1.Instance.InstanceType.INSTANCE_TYPE_UNSPECIFIED
+            .getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(10, instanceType_);
+    }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getCreateTime());
     }
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(12, getUpdateTime());
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(13, getFreeInstanceMetadata());
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(17, getAutoscalingConfig());
@@ -1383,6 +1890,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (edition_
         != com.google.spanner.admin.instance.v1.Instance.Edition.EDITION_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(20, edition_);
+    }
+    if (defaultBackupScheduleType_
+        != com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+            .DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED
+            .getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(23, defaultBackupScheduleType_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -1413,6 +1926,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
     if (state_ != other.state_) return false;
     if (!internalGetLabels().equals(other.internalGetLabels())) return false;
+    if (instanceType_ != other.instanceType_) return false;
     if (!getEndpointUrisList().equals(other.getEndpointUrisList())) return false;
     if (hasCreateTime() != other.hasCreateTime()) return false;
     if (hasCreateTime()) {
@@ -1422,7 +1936,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (hasUpdateTime()) {
       if (!getUpdateTime().equals(other.getUpdateTime())) return false;
     }
+    if (hasFreeInstanceMetadata() != other.hasFreeInstanceMetadata()) return false;
+    if (hasFreeInstanceMetadata()) {
+      if (!getFreeInstanceMetadata().equals(other.getFreeInstanceMetadata())) return false;
+    }
     if (edition_ != other.edition_) return false;
+    if (defaultBackupScheduleType_ != other.defaultBackupScheduleType_) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -1458,6 +1977,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + LABELS_FIELD_NUMBER;
       hash = (53 * hash) + internalGetLabels().hashCode();
     }
+    hash = (37 * hash) + INSTANCE_TYPE_FIELD_NUMBER;
+    hash = (53 * hash) + instanceType_;
     if (getEndpointUrisCount() > 0) {
       hash = (37 * hash) + ENDPOINT_URIS_FIELD_NUMBER;
       hash = (53 * hash) + getEndpointUrisList().hashCode();
@@ -1470,8 +1991,14 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + UPDATE_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getUpdateTime().hashCode();
     }
+    if (hasFreeInstanceMetadata()) {
+      hash = (37 * hash) + FREE_INSTANCE_METADATA_FIELD_NUMBER;
+      hash = (53 * hash) + getFreeInstanceMetadata().hashCode();
+    }
     hash = (37 * hash) + EDITION_FIELD_NUMBER;
     hash = (53 * hash) + edition_;
+    hash = (37 * hash) + DEFAULT_BACKUP_SCHEDULE_TYPE_FIELD_NUMBER;
+    hash = (53 * hash) + defaultBackupScheduleType_;
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1638,6 +2165,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         getAutoscalingConfigFieldBuilder();
         getCreateTimeFieldBuilder();
         getUpdateTimeFieldBuilder();
+        getFreeInstanceMetadataFieldBuilder();
       }
     }
 
@@ -1664,6 +2192,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       state_ = 0;
       internalGetMutableLabels().clear();
+      instanceType_ = 0;
       endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
       createTime_ = null;
       if (createTimeBuilder_ != null) {
@@ -1675,7 +2204,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         updateTimeBuilder_.dispose();
         updateTimeBuilder_ = null;
       }
+      freeInstanceMetadata_ = null;
+      if (freeInstanceMetadataBuilder_ != null) {
+        freeInstanceMetadataBuilder_.dispose();
+        freeInstanceMetadataBuilder_ = null;
+      }
       edition_ = 0;
+      defaultBackupScheduleType_ = 0;
       return this;
     }
 
@@ -1756,19 +2291,32 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         result.labels_.makeImmutable();
       }
       if (((from_bitField0_ & 0x00000200) != 0)) {
+        result.instanceType_ = instanceType_;
+      }
+      if (((from_bitField0_ & 0x00000400) != 0)) {
         endpointUris_.makeImmutable();
         result.endpointUris_ = endpointUris_;
       }
-      if (((from_bitField0_ & 0x00000400) != 0)) {
+      if (((from_bitField0_ & 0x00000800) != 0)) {
         result.createTime_ = createTimeBuilder_ == null ? createTime_ : createTimeBuilder_.build();
         to_bitField0_ |= 0x00000002;
       }
-      if (((from_bitField0_ & 0x00000800) != 0)) {
+      if (((from_bitField0_ & 0x00001000) != 0)) {
         result.updateTime_ = updateTimeBuilder_ == null ? updateTime_ : updateTimeBuilder_.build();
         to_bitField0_ |= 0x00000004;
       }
-      if (((from_bitField0_ & 0x00001000) != 0)) {
+      if (((from_bitField0_ & 0x00002000) != 0)) {
+        result.freeInstanceMetadata_ =
+            freeInstanceMetadataBuilder_ == null
+                ? freeInstanceMetadata_
+                : freeInstanceMetadataBuilder_.build();
+        to_bitField0_ |= 0x00000008;
+      }
+      if (((from_bitField0_ & 0x00004000) != 0)) {
         result.edition_ = edition_;
+      }
+      if (((from_bitField0_ & 0x00008000) != 0)) {
+        result.defaultBackupScheduleType_ = defaultBackupScheduleType_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1874,10 +2422,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       internalGetMutableLabels().mergeFrom(other.internalGetLabels());
       bitField0_ |= 0x00000100;
+      if (other.instanceType_ != 0) {
+        setInstanceTypeValue(other.getInstanceTypeValue());
+      }
       if (!other.endpointUris_.isEmpty()) {
         if (endpointUris_.isEmpty()) {
           endpointUris_ = other.endpointUris_;
-          bitField0_ |= 0x00000200;
+          bitField0_ |= 0x00000400;
         } else {
           ensureEndpointUrisIsMutable();
           endpointUris_.addAll(other.endpointUris_);
@@ -1890,8 +2441,14 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (other.hasUpdateTime()) {
         mergeUpdateTime(other.getUpdateTime());
       }
+      if (other.hasFreeInstanceMetadata()) {
+        mergeFreeInstanceMetadata(other.getFreeInstanceMetadata());
+      }
       if (other.edition_ != 0) {
         setEditionValue(other.getEditionValue());
+      }
+      if (other.defaultBackupScheduleType_ != 0) {
+        setDefaultBackupScheduleTypeValue(other.getDefaultBackupScheduleTypeValue());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -1974,18 +2531,31 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00000010;
                 break;
               } // case 72
+            case 80:
+              {
+                instanceType_ = input.readEnum();
+                bitField0_ |= 0x00000200;
+                break;
+              } // case 80
             case 90:
               {
                 input.readMessage(getCreateTimeFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000400;
+                bitField0_ |= 0x00000800;
                 break;
               } // case 90
             case 98:
               {
                 input.readMessage(getUpdateTimeFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000800;
+                bitField0_ |= 0x00001000;
                 break;
               } // case 98
+            case 106:
+              {
+                input.readMessage(
+                    getFreeInstanceMetadataFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 106
             case 138:
               {
                 input.readMessage(
@@ -2010,9 +2580,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
             case 160:
               {
                 edition_ = input.readEnum();
-                bitField0_ |= 0x00001000;
+                bitField0_ |= 0x00004000;
                 break;
               } // case 160
+            case 184:
+              {
+                defaultBackupScheduleType_ = input.readEnum();
+                bitField0_ |= 0x00008000;
+                break;
+              } // case 184
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -2412,9 +2988,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * This might be zero in API responses for instances that are not yet in the
      * `READY` state.
      *
-     * If the instance has varying node count across replicas (achieved by
-     * setting asymmetric_autoscaling_options in autoscaling config), the
-     * node_count here is the maximum node count across all replicas.
      *
      * For more information, see
      * [Compute capacity, nodes, and processing
@@ -2445,9 +3018,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * This might be zero in API responses for instances that are not yet in the
      * `READY` state.
      *
-     * If the instance has varying node count across replicas (achieved by
-     * setting asymmetric_autoscaling_options in autoscaling config), the
-     * node_count here is the maximum node count across all replicas.
      *
      * For more information, see
      * [Compute capacity, nodes, and processing
@@ -2482,9 +3052,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * This might be zero in API responses for instances that are not yet in the
      * `READY` state.
      *
-     * If the instance has varying node count across replicas (achieved by
-     * setting asymmetric_autoscaling_options in autoscaling config), the
-     * node_count here is the maximum node count across all replicas.
      *
      * For more information, see
      * [Compute capacity, nodes, and processing
@@ -2520,10 +3087,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * This might be zero in API responses for instances that are not yet in the
      * `READY` state.
      *
-     * If the instance has varying processing units per replica
-     * (achieved by setting asymmetric_autoscaling_options in autoscaling config),
-     * the processing_units here is the maximum processing units across all
-     * replicas.
      *
      * For more information, see
      * [Compute capacity, nodes and processing
@@ -2555,10 +3118,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * This might be zero in API responses for instances that are not yet in the
      * `READY` state.
      *
-     * If the instance has varying processing units per replica
-     * (achieved by setting asymmetric_autoscaling_options in autoscaling config),
-     * the processing_units here is the maximum processing units across all
-     * replicas.
      *
      * For more information, see
      * [Compute capacity, nodes and processing
@@ -2594,10 +3153,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * This might be zero in API responses for instances that are not yet in the
      * `READY` state.
      *
-     * If the instance has varying processing units per replica
-     * (achieved by setting asymmetric_autoscaling_options in autoscaling config),
-     * the processing_units here is the maximum processing units across all
-     * replicas.
      *
      * For more information, see
      * [Compute capacity, nodes and processing
@@ -3719,6 +4274,99 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
+    private int instanceType_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * The `InstanceType` of the current instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+     *
+     * @return The enum numeric value on the wire for instanceType.
+     */
+    @java.lang.Override
+    public int getInstanceTypeValue() {
+      return instanceType_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The `InstanceType` of the current instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+     *
+     * @param value The enum numeric value on the wire for instanceType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setInstanceTypeValue(int value) {
+      instanceType_ = value;
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The `InstanceType` of the current instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+     *
+     * @return The instanceType.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.Instance.InstanceType getInstanceType() {
+      com.google.spanner.admin.instance.v1.Instance.InstanceType result =
+          com.google.spanner.admin.instance.v1.Instance.InstanceType.forNumber(instanceType_);
+      return result == null
+          ? com.google.spanner.admin.instance.v1.Instance.InstanceType.UNRECOGNIZED
+          : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The `InstanceType` of the current instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+     *
+     * @param value The instanceType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setInstanceType(
+        com.google.spanner.admin.instance.v1.Instance.InstanceType value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00000200;
+      instanceType_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The `InstanceType` of the current instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.InstanceType instance_type = 10;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearInstanceType() {
+      bitField0_ = (bitField0_ & ~0x00000200);
+      instanceType_ = 0;
+      onChanged();
+      return this;
+    }
+
     private com.google.protobuf.LazyStringArrayList endpointUris_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
 
@@ -3726,7 +4374,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (!endpointUris_.isModifiable()) {
         endpointUris_ = new com.google.protobuf.LazyStringArrayList(endpointUris_);
       }
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
     }
     /**
      *
@@ -3806,7 +4454,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       ensureEndpointUrisIsMutable();
       endpointUris_.set(index, value);
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3828,7 +4476,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       ensureEndpointUrisIsMutable();
       endpointUris_.add(value);
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3847,7 +4495,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllEndpointUris(java.lang.Iterable<java.lang.String> values) {
       ensureEndpointUrisIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, endpointUris_);
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3864,7 +4512,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder clearEndpointUris() {
       endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000200);
+      bitField0_ = (bitField0_ & ~0x00000400);
       ;
       onChanged();
       return this;
@@ -3888,7 +4536,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureEndpointUrisIsMutable();
       endpointUris_.add(value);
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3913,7 +4561,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the createTime field is set.
      */
     public boolean hasCreateTime() {
-      return ((bitField0_ & 0x00000400) != 0);
+      return ((bitField0_ & 0x00000800) != 0);
     }
     /**
      *
@@ -3957,7 +4605,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         createTimeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000800;
       onChanged();
       return this;
     }
@@ -3978,7 +4626,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         createTimeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000800;
       onChanged();
       return this;
     }
@@ -3995,7 +4643,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
       if (createTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00000400) != 0)
+        if (((bitField0_ & 0x00000800) != 0)
             && createTime_ != null
             && createTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           getCreateTimeBuilder().mergeFrom(value);
@@ -4006,7 +4654,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         createTimeBuilder_.mergeFrom(value);
       }
       if (createTime_ != null) {
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000800;
         onChanged();
       }
       return this;
@@ -4023,7 +4671,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearCreateTime() {
-      bitField0_ = (bitField0_ & ~0x00000400);
+      bitField0_ = (bitField0_ & ~0x00000800);
       createTime_ = null;
       if (createTimeBuilder_ != null) {
         createTimeBuilder_.dispose();
@@ -4044,7 +4692,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000800;
       onChanged();
       return getCreateTimeFieldBuilder().getBuilder();
     }
@@ -4116,7 +4764,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the updateTime field is set.
      */
     public boolean hasUpdateTime() {
-      return ((bitField0_ & 0x00000800) != 0);
+      return ((bitField0_ & 0x00001000) != 0);
     }
     /**
      *
@@ -4160,7 +4808,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         updateTimeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00001000;
       onChanged();
       return this;
     }
@@ -4181,7 +4829,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         updateTimeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00001000;
       onChanged();
       return this;
     }
@@ -4198,7 +4846,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeUpdateTime(com.google.protobuf.Timestamp value) {
       if (updateTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00000800) != 0)
+        if (((bitField0_ & 0x00001000) != 0)
             && updateTime_ != null
             && updateTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           getUpdateTimeBuilder().mergeFrom(value);
@@ -4209,7 +4857,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         updateTimeBuilder_.mergeFrom(value);
       }
       if (updateTime_ != null) {
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00001000;
         onChanged();
       }
       return this;
@@ -4226,7 +4874,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearUpdateTime() {
-      bitField0_ = (bitField0_ & ~0x00000800);
+      bitField0_ = (bitField0_ & ~0x00001000);
       updateTime_ = null;
       if (updateTimeBuilder_ != null) {
         updateTimeBuilder_.dispose();
@@ -4247,7 +4895,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getUpdateTimeBuilder() {
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00001000;
       onChanged();
       return getUpdateTimeFieldBuilder().getBuilder();
     }
@@ -4299,6 +4947,206 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       return updateTimeBuilder_;
     }
 
+    private com.google.spanner.admin.instance.v1.FreeInstanceMetadata freeInstanceMetadata_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.FreeInstanceMetadata,
+            com.google.spanner.admin.instance.v1.FreeInstanceMetadata.Builder,
+            com.google.spanner.admin.instance.v1.FreeInstanceMetadataOrBuilder>
+        freeInstanceMetadataBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     *
+     * @return Whether the freeInstanceMetadata field is set.
+     */
+    public boolean hasFreeInstanceMetadata() {
+      return ((bitField0_ & 0x00002000) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     *
+     * @return The freeInstanceMetadata.
+     */
+    public com.google.spanner.admin.instance.v1.FreeInstanceMetadata getFreeInstanceMetadata() {
+      if (freeInstanceMetadataBuilder_ == null) {
+        return freeInstanceMetadata_ == null
+            ? com.google.spanner.admin.instance.v1.FreeInstanceMetadata.getDefaultInstance()
+            : freeInstanceMetadata_;
+      } else {
+        return freeInstanceMetadataBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     */
+    public Builder setFreeInstanceMetadata(
+        com.google.spanner.admin.instance.v1.FreeInstanceMetadata value) {
+      if (freeInstanceMetadataBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        freeInstanceMetadata_ = value;
+      } else {
+        freeInstanceMetadataBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     */
+    public Builder setFreeInstanceMetadata(
+        com.google.spanner.admin.instance.v1.FreeInstanceMetadata.Builder builderForValue) {
+      if (freeInstanceMetadataBuilder_ == null) {
+        freeInstanceMetadata_ = builderForValue.build();
+      } else {
+        freeInstanceMetadataBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     */
+    public Builder mergeFreeInstanceMetadata(
+        com.google.spanner.admin.instance.v1.FreeInstanceMetadata value) {
+      if (freeInstanceMetadataBuilder_ == null) {
+        if (((bitField0_ & 0x00002000) != 0)
+            && freeInstanceMetadata_ != null
+            && freeInstanceMetadata_
+                != com.google.spanner.admin.instance.v1.FreeInstanceMetadata.getDefaultInstance()) {
+          getFreeInstanceMetadataBuilder().mergeFrom(value);
+        } else {
+          freeInstanceMetadata_ = value;
+        }
+      } else {
+        freeInstanceMetadataBuilder_.mergeFrom(value);
+      }
+      if (freeInstanceMetadata_ != null) {
+        bitField0_ |= 0x00002000;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     */
+    public Builder clearFreeInstanceMetadata() {
+      bitField0_ = (bitField0_ & ~0x00002000);
+      freeInstanceMetadata_ = null;
+      if (freeInstanceMetadataBuilder_ != null) {
+        freeInstanceMetadataBuilder_.dispose();
+        freeInstanceMetadataBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.FreeInstanceMetadata.Builder
+        getFreeInstanceMetadataBuilder() {
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return getFreeInstanceMetadataFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.FreeInstanceMetadataOrBuilder
+        getFreeInstanceMetadataOrBuilder() {
+      if (freeInstanceMetadataBuilder_ != null) {
+        return freeInstanceMetadataBuilder_.getMessageOrBuilder();
+      } else {
+        return freeInstanceMetadata_ == null
+            ? com.google.spanner.admin.instance.v1.FreeInstanceMetadata.getDefaultInstance()
+            : freeInstanceMetadata_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Free instance metadata. Only populated for free instances.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.FreeInstanceMetadata free_instance_metadata = 13;
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.FreeInstanceMetadata,
+            com.google.spanner.admin.instance.v1.FreeInstanceMetadata.Builder,
+            com.google.spanner.admin.instance.v1.FreeInstanceMetadataOrBuilder>
+        getFreeInstanceMetadataFieldBuilder() {
+      if (freeInstanceMetadataBuilder_ == null) {
+        freeInstanceMetadataBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.instance.v1.FreeInstanceMetadata,
+                com.google.spanner.admin.instance.v1.FreeInstanceMetadata.Builder,
+                com.google.spanner.admin.instance.v1.FreeInstanceMetadataOrBuilder>(
+                getFreeInstanceMetadata(), getParentForChildren(), isClean());
+        freeInstanceMetadata_ = null;
+      }
+      return freeInstanceMetadataBuilder_;
+    }
+
     private int edition_ = 0;
     /**
      *
@@ -4333,7 +5181,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder setEditionValue(int value) {
       edition_ = value;
-      bitField0_ |= 0x00001000;
+      bitField0_ |= 0x00004000;
       onChanged();
       return this;
     }
@@ -4376,7 +5224,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-      bitField0_ |= 0x00001000;
+      bitField0_ |= 0x00004000;
       edition_ = value.getNumber();
       onChanged();
       return this;
@@ -4395,8 +5243,158 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearEdition() {
-      bitField0_ = (bitField0_ & ~0x00001000);
+      bitField0_ = (bitField0_ & ~0x00004000);
       edition_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int defaultBackupScheduleType_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup schedule behavior for new databases
+     * within the instance. By default, a backup schedule is created automatically
+     * when a new database is created in a new instance.
+     *
+     * Note that the `AUTOMATIC` value isn't permitted for free instances,
+     * as backups and backup schedules aren't supported for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+     * create a default backup schedule for new databases in the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The enum numeric value on the wire for defaultBackupScheduleType.
+     */
+    @java.lang.Override
+    public int getDefaultBackupScheduleTypeValue() {
+      return defaultBackupScheduleType_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup schedule behavior for new databases
+     * within the instance. By default, a backup schedule is created automatically
+     * when a new database is created in a new instance.
+     *
+     * Note that the `AUTOMATIC` value isn't permitted for free instances,
+     * as backups and backup schedules aren't supported for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+     * create a default backup schedule for new databases in the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The enum numeric value on the wire for defaultBackupScheduleType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultBackupScheduleTypeValue(int value) {
+      defaultBackupScheduleType_ = value;
+      bitField0_ |= 0x00008000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup schedule behavior for new databases
+     * within the instance. By default, a backup schedule is created automatically
+     * when a new database is created in a new instance.
+     *
+     * Note that the `AUTOMATIC` value isn't permitted for free instances,
+     * as backups and backup schedules aren't supported for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+     * create a default backup schedule for new databases in the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The defaultBackupScheduleType.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType
+        getDefaultBackupScheduleType() {
+      com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType result =
+          com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.forNumber(
+              defaultBackupScheduleType_);
+      return result == null
+          ? com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.UNRECOGNIZED
+          : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup schedule behavior for new databases
+     * within the instance. By default, a backup schedule is created automatically
+     * when a new database is created in a new instance.
+     *
+     * Note that the `AUTOMATIC` value isn't permitted for free instances,
+     * as backups and backup schedules aren't supported for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+     * create a default backup schedule for new databases in the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The defaultBackupScheduleType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultBackupScheduleType(
+        com.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00008000;
+      defaultBackupScheduleType_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Controls the default backup schedule behavior for new databases
+     * within the instance. By default, a backup schedule is created automatically
+     * when a new database is created in a new instance.
+     *
+     * Note that the `AUTOMATIC` value isn't permitted for free instances,
+     * as backups and backup schedules aren't supported for free instances.
+     *
+     * In the `GetInstance` or `ListInstances` response, if the value of
+     * `default_backup_schedule_type` isn't set, or set to `NONE`, Spanner doesn't
+     * create a default backup schedule for new databases in the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType default_backup_schedule_type = 23 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDefaultBackupScheduleType() {
+      bitField0_ = (bitField0_ & ~0x00008000);
+      defaultBackupScheduleType_ = 0;
       onChanged();
       return this;
     }

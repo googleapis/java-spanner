@@ -43,6 +43,7 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,11 +52,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-import org.threeten.bp.Instant;
 
 /** Default implementation of the Cloud Spanner interface. */
 class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
@@ -106,6 +107,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @GuardedBy("this")
   private final Map<DatabaseId, DatabaseClientImpl> dbClients = new HashMap<>();
+
+  @GuardedBy("dbBatchClientLock")
+  private final Map<DatabaseId, BatchClientImpl> dbBatchClients = new HashMap<>();
+
+  private final ReentrantLock dbBatchClientLock = new ReentrantLock();
 
   private final CloseableExecutorProvider asyncExecutorProvider;
 
@@ -308,7 +314,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 pool,
                 getOptions().getSessionPoolOptions().getUseMultiplexedSessionBlindWrite(),
                 multiplexedSessionDatabaseClient,
-                useMultiplexedSessionForRW);
+                getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps(),
+                useMultiplexedSessionForRW,
+                this.tracer.createCommonAttributes(db));
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -321,19 +329,39 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       SessionPool pool,
       boolean useMultiplexedSessionBlindWrite,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient,
-      boolean useMultiplexedSessionForRW) {
+      boolean useMultiplexedSessionPartitionedOps,
+      boolean useMultiplexedSessionForRW,
+      Attributes commonAttributes) {
     return new DatabaseClientImpl(
         clientId,
         pool,
         useMultiplexedSessionBlindWrite,
         multiplexedSessionClient,
+        useMultiplexedSessionPartitionedOps,
         tracer,
-        useMultiplexedSessionForRW);
+        useMultiplexedSessionForRW,
+        commonAttributes);
   }
 
   @Override
   public BatchClient getBatchClient(DatabaseId db) {
-    return new BatchClientImpl(getSessionClient(db));
+    if (getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps()) {
+      this.dbBatchClientLock.lock();
+      try {
+        if (this.dbBatchClients.containsKey(db)) {
+          return this.dbBatchClients.get(db);
+        }
+        BatchClientImpl batchClient =
+            new BatchClientImpl(
+                getSessionClient(db), /*useMultiplexedSessionPartitionedOps=*/ true);
+        this.dbBatchClients.put(db, batchClient);
+        return batchClient;
+      } finally {
+        this.dbBatchClientLock.unlock();
+      }
+    }
+    return new BatchClientImpl(
+        getSessionClient(db), /*useMultiplexedSessionPartitionedOps=*/ false);
   }
 
   @Override

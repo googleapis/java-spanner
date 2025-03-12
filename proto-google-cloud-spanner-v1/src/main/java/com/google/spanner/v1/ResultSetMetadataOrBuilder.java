@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public interface ResultSetMetadataOrBuilder
    *
    * <pre>
    * Indicates the field names and types for the rows in the result
-   * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+   * set. For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
    *
    *     "fields": [
@@ -48,7 +48,7 @@ public interface ResultSetMetadataOrBuilder
    *
    * <pre>
    * Indicates the field names and types for the rows in the result
-   * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+   * set. For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
    *
    *     "fields": [
@@ -67,7 +67,7 @@ public interface ResultSetMetadataOrBuilder
    *
    * <pre>
    * Indicates the field names and types for the rows in the result
-   * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
+   * set. For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
    *
    *     "fields": [

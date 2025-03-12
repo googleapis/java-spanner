@@ -835,6 +835,21 @@ public interface Connection extends AutoCloseable {
    */
   ApiFuture<Void> rollbackAsync();
 
+  /** Functional interface for the {@link #runTransaction(TransactionCallable)} method. */
+  interface TransactionCallable<T> {
+    /** This method is invoked with a fresh transaction on the connection. */
+    T run(Connection transaction);
+  }
+
+  /**
+   * Runs the given callable in a transaction. The transaction type is determined by the current
+   * state of the connection. That is; if the connection is in read/write mode, the transaction type
+   * will be a read/write transaction. If the connection is in read-only mode, it will be a
+   * read-only transaction. The transaction will automatically be retried if it is aborted by
+   * Spanner.
+   */
+  <T> T runTransaction(TransactionCallable<T> callable);
+
   /** Returns the current savepoint support for this connection. */
   SavepointSupport getSavepointSupport();
 
@@ -846,6 +861,18 @@ public interface Connection extends AutoCloseable {
 
   /** Sets how the connection should behave if a DDL statement is executed during a transaction. */
   void setDdlInTransactionMode(DdlInTransactionMode ddlInTransactionMode);
+
+  /**
+   * Returns the default sequence kind that will be set for this database if a DDL statement is
+   * executed that uses auto_increment or serial.
+   */
+  String getDefaultSequenceKind();
+
+  /**
+   * Sets the default sequence kind that will be set for this database if a DDL statement is
+   * executed that uses auto_increment or serial.
+   */
+  void setDefaultSequenceKind(String defaultSequenceKind);
 
   /**
    * Creates a savepoint with the given name.

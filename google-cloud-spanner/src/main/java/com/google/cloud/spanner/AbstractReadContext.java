@@ -58,6 +58,7 @@ import com.google.spanner.v1.TransactionSelector;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -67,6 +68,7 @@ import javax.annotation.concurrent.GuardedBy;
  */
 abstract class AbstractReadContext
     implements ReadContext, AbstractResultSet.Listener, SessionTransaction {
+  private static final Logger logger = Logger.getLogger(AbstractReadContext.class.getName());
 
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractReadContext> {
     private SessionImpl session;
@@ -696,6 +698,9 @@ abstract class AbstractReadContext
     if (!isReadOnly()) {
       builder.setSeqno(getSeqNo());
     }
+    if (options.hasLastStatement()) {
+      builder.setLastStatement(options.isLastStatement());
+    }
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
     return builder;
@@ -741,6 +746,9 @@ abstract class AbstractReadContext
     if (selector != null) {
       builder.setTransaction(selector);
     }
+    if (options.hasLastStatement()) {
+      builder.setLastStatements(options.isLastStatement());
+    }
     builder.setSeqno(getSeqNo());
     builder.setRequestOptions(buildRequestOptions(options));
     return builder;
@@ -768,9 +776,14 @@ abstract class AbstractReadContext
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override
-          CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
+          CloseableIterator<PartialResultSet> startStream(
+              @Nullable ByteString resumeToken,
+              AsyncResultSet.StreamMessageListener streamListener) {
             GrpcStreamIterator stream =
                 new GrpcStreamIterator(statement, prefetchChunks, cancelQueryWhenClientIsClosed);
+            if (streamListener != null) {
+              stream.registerListener(streamListener);
+            }
             if (partitionToken != null) {
               request.setPartitionToken(partitionToken);
             }
@@ -791,7 +804,6 @@ abstract class AbstractReadContext
                     getTransactionChannelHint(),
                     isRouteToLeader());
             session.markUsed(clock.instant());
-            call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
           }
@@ -947,6 +959,15 @@ abstract class AbstractReadContext
     } else if (defaultDirectedReadOptions != null) {
       builder.setDirectedReadOptions(defaultDirectedReadOptions);
     }
+    if (readOptions.hasLockHint()) {
+      if (isReadOnly()) {
+        logger.warning(
+            "Lock hint is only supported for ReadWrite transactions. "
+                + "Overriding lock hint to default unspecified.");
+      } else {
+        builder.setLockHint(readOptions.lockHint());
+      }
+    }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
@@ -955,13 +976,19 @@ abstract class AbstractReadContext
             SpannerImpl.READ,
             span,
             tracer,
+            tracer.createTableAttributes(table, readOptions),
             session.getErrorHandler(),
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
           @Override
-          CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
+          CloseableIterator<PartialResultSet> startStream(
+              @Nullable ByteString resumeToken,
+              AsyncResultSet.StreamMessageListener streamListener) {
             GrpcStreamIterator stream =
                 new GrpcStreamIterator(prefetchChunks, cancelQueryWhenClientIsClosed);
+            if (streamListener != null) {
+              stream.registerListener(streamListener);
+            }
             TransactionSelector selector = null;
             if (resumeToken != null) {
               builder.setResumeToken(resumeToken);
@@ -980,7 +1007,6 @@ abstract class AbstractReadContext
                     getTransactionChannelHint(),
                     isRouteToLeader());
             session.markUsed(clock.instant());
-            call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;
           }

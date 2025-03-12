@@ -92,7 +92,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
                   SessionPoolOptions.newBuilder()
                       .setMinSessions(minSessions)
                       .setMaxSessions(maxSessions)
-                      .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20))
+                      .setWaitForMinSessionsDuration(Duration.ofSeconds(20))
                       .build())
               .setHost(SERVER_URL)
               .setNumChannels(NUM_GRPC_CHANNELS)
@@ -168,7 +168,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     collectResultsAndPrint(service, results, TOTAL_WRITES_PER_RUN);
   }
 
-  private List<java.time.Duration> runBenchmarksForSingleUseQueries(
+  private List<Duration> runBenchmarksForSingleUseQueries(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
     // Execute one query to make sure everything has been warmed up.
@@ -186,7 +186,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     }
   }
 
-  private java.time.Duration executeSingleUseQuery(final BenchmarkState server) {
+  private Duration executeSingleUseQuery(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs = server.client.singleUse().executeQuery(getRandomisedReadStatement())) {
@@ -198,7 +198,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     return watch.elapsed();
   }
 
-  private List<java.time.Duration> runBenchmarkForUpdates(
+  private List<Duration> runBenchmarkForUpdates(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
     // Execute one query to make sure everything has been warmed up.
@@ -237,7 +237,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
       List<ListenableFuture<List<Duration>>> results,
       int numOperationsPerThread)
       throws Exception {
-    final List<java.time.Duration> collectResults =
+    final List<Duration> collectResults =
         collectResults(
             service, results, numOperationsPerThread * PARALLEL_THREADS, Duration.ofMinutes(60));
     printResults(collectResults);

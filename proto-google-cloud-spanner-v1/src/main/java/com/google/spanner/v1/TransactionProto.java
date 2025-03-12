@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,43 +68,48 @@ public final class TransactionProto {
       "\n#google/spanner/v1/transaction.proto\022\021g"
           + "oogle.spanner.v1\032\037google/api/field_behav"
           + "ior.proto\032\036google/protobuf/duration.prot"
-          + "o\032\037google/protobuf/timestamp.proto\"\316\006\n\022T"
+          + "o\032\037google/protobuf/timestamp.proto\"\367\007\n\022T"
           + "ransactionOptions\022E\n\nread_write\030\001 \001(\0132/."
           + "google.spanner.v1.TransactionOptions.Rea"
           + "dWriteH\000\022O\n\017partitioned_dml\030\003 \001(\01324.goog"
           + "le.spanner.v1.TransactionOptions.Partiti"
           + "onedDmlH\000\022C\n\tread_only\030\002 \001(\0132..google.sp"
           + "anner.v1.TransactionOptions.ReadOnlyH\000\022\'"
-          + "\n\037exclude_txn_from_change_streams\030\005 \001(\010\032"
-          + "\354\001\n\tReadWrite\022T\n\016read_lock_mode\030\001 \001(\0162<."
-          + "google.spanner.v1.TransactionOptions.Rea"
-          + "dWrite.ReadLockMode\0228\n+multiplexed_sessi"
-          + "on_previous_transaction_id\030\002 \001(\014B\003\340A\001\"O\n"
-          + "\014ReadLockMode\022\036\n\032READ_LOCK_MODE_UNSPECIF"
-          + "IED\020\000\022\017\n\013PESSIMISTIC\020\001\022\016\n\nOPTIMISTIC\020\002\032\020"
-          + "\n\016PartitionedDml\032\250\002\n\010ReadOnly\022\020\n\006strong\030"
-          + "\001 \001(\010H\000\0228\n\022min_read_timestamp\030\002 \001(\0132\032.go"
-          + "ogle.protobuf.TimestampH\000\0222\n\rmax_stalene"
-          + "ss\030\003 \001(\0132\031.google.protobuf.DurationH\000\0224\n"
-          + "\016read_timestamp\030\004 \001(\0132\032.google.protobuf."
-          + "TimestampH\000\0224\n\017exact_staleness\030\005 \001(\0132\031.g"
-          + "oogle.protobuf.DurationH\000\022\035\n\025return_read"
-          + "_timestamp\030\006 \001(\010B\021\n\017timestamp_boundB\006\n\004m"
-          + "ode\"\233\001\n\013Transaction\022\n\n\002id\030\001 \001(\014\0222\n\016read_"
-          + "timestamp\030\002 \001(\0132\032.google.protobuf.Timest"
-          + "amp\022L\n\017precommit_token\030\003 \001(\01323.google.sp"
-          + "anner.v1.MultiplexedSessionPrecommitToke"
-          + "n\"\244\001\n\023TransactionSelector\022;\n\nsingle_use\030"
-          + "\001 \001(\0132%.google.spanner.v1.TransactionOpt"
-          + "ionsH\000\022\014\n\002id\030\002 \001(\014H\000\0226\n\005begin\030\003 \001(\0132%.go"
-          + "ogle.spanner.v1.TransactionOptionsH\000B\n\n\010"
-          + "selector\"L\n MultiplexedSessionPrecommitT"
-          + "oken\022\027\n\017precommit_token\030\001 \001(\014\022\017\n\007seq_num"
-          + "\030\002 \001(\005B\263\001\n\025com.google.spanner.v1B\020Transa"
-          + "ctionProtoP\001Z5cloud.google.com/go/spanne"
-          + "r/apiv1/spannerpb;spannerpb\252\002\027Google.Clo"
-          + "ud.Spanner.V1\312\002\027Google\\Cloud\\Spanner\\V1\352"
-          + "\002\032Google::Cloud::Spanner::V1b\006proto3"
+          + "\n\037exclude_txn_from_change_streams\030\005 \001(\010\022"
+          + "M\n\017isolation_level\030\006 \001(\01624.google.spanne"
+          + "r.v1.TransactionOptions.IsolationLevel\032\354"
+          + "\001\n\tReadWrite\022T\n\016read_lock_mode\030\001 \001(\0162<.g"
+          + "oogle.spanner.v1.TransactionOptions.Read"
+          + "Write.ReadLockMode\0228\n+multiplexed_sessio"
+          + "n_previous_transaction_id\030\002 \001(\014B\003\340A\001\"O\n\014"
+          + "ReadLockMode\022\036\n\032READ_LOCK_MODE_UNSPECIFI"
+          + "ED\020\000\022\017\n\013PESSIMISTIC\020\001\022\016\n\nOPTIMISTIC\020\002\032\020\n"
+          + "\016PartitionedDml\032\250\002\n\010ReadOnly\022\020\n\006strong\030\001"
+          + " \001(\010H\000\0228\n\022min_read_timestamp\030\002 \001(\0132\032.goo"
+          + "gle.protobuf.TimestampH\000\0222\n\rmax_stalenes"
+          + "s\030\003 \001(\0132\031.google.protobuf.DurationH\000\0224\n\016"
+          + "read_timestamp\030\004 \001(\0132\032.google.protobuf.T"
+          + "imestampH\000\0224\n\017exact_staleness\030\005 \001(\0132\031.go"
+          + "ogle.protobuf.DurationH\000\022\035\n\025return_read_"
+          + "timestamp\030\006 \001(\010B\021\n\017timestamp_bound\"X\n\016Is"
+          + "olationLevel\022\037\n\033ISOLATION_LEVEL_UNSPECIF"
+          + "IED\020\000\022\020\n\014SERIALIZABLE\020\001\022\023\n\017REPEATABLE_RE"
+          + "AD\020\002B\006\n\004mode\"\233\001\n\013Transaction\022\n\n\002id\030\001 \001(\014"
+          + "\0222\n\016read_timestamp\030\002 \001(\0132\032.google.protob"
+          + "uf.Timestamp\022L\n\017precommit_token\030\003 \001(\01323."
+          + "google.spanner.v1.MultiplexedSessionPrec"
+          + "ommitToken\"\244\001\n\023TransactionSelector\022;\n\nsi"
+          + "ngle_use\030\001 \001(\0132%.google.spanner.v1.Trans"
+          + "actionOptionsH\000\022\014\n\002id\030\002 \001(\014H\000\0226\n\005begin\030\003"
+          + " \001(\0132%.google.spanner.v1.TransactionOpti"
+          + "onsH\000B\n\n\010selector\"L\n MultiplexedSessionP"
+          + "recommitToken\022\027\n\017precommit_token\030\001 \001(\014\022\017"
+          + "\n\007seq_num\030\002 \001(\005B\263\001\n\025com.google.spanner.v"
+          + "1B\020TransactionProtoP\001Z5cloud.google.com/"
+          + "go/spanner/apiv1/spannerpb;spannerpb\252\002\027G"
+          + "oogle.Cloud.Spanner.V1\312\002\027Google\\Cloud\\Sp"
+          + "anner\\V1\352\002\032Google::Cloud::Spanner::V1b\006p"
+          + "roto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -120,7 +125,12 @@ public final class TransactionProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_TransactionOptions_descriptor,
             new java.lang.String[] {
-              "ReadWrite", "PartitionedDml", "ReadOnly", "ExcludeTxnFromChangeStreams", "Mode",
+              "ReadWrite",
+              "PartitionedDml",
+              "ReadOnly",
+              "ExcludeTxnFromChangeStreams",
+              "IsolationLevel",
+              "Mode",
             });
     internal_static_google_spanner_v1_TransactionOptions_ReadWrite_descriptor =
         internal_static_google_spanner_v1_TransactionOptions_descriptor.getNestedTypes().get(0);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,20 +60,20 @@ public final class TypeProto {
           + "pe_fqn\030\005 \001(\t\"\177\n\nStructType\0223\n\006fields\030\001 \003"
           + "(\0132#.google.spanner.v1.StructType.Field\032"
           + "<\n\005Field\022\014\n\004name\030\001 \001(\t\022%\n\004type\030\002 \001(\0132\027.g"
-          + "oogle.spanner.v1.Type*\325\001\n\010TypeCode\022\031\n\025TY"
+          + "oogle.spanner.v1.Type*\337\001\n\010TypeCode\022\031\n\025TY"
           + "PE_CODE_UNSPECIFIED\020\000\022\010\n\004BOOL\020\001\022\t\n\005INT64"
           + "\020\002\022\013\n\007FLOAT64\020\003\022\013\n\007FLOAT32\020\017\022\r\n\tTIMESTAM"
           + "P\020\004\022\010\n\004DATE\020\005\022\n\n\006STRING\020\006\022\t\n\005BYTES\020\007\022\t\n\005"
           + "ARRAY\020\010\022\n\n\006STRUCT\020\t\022\013\n\007NUMERIC\020\n\022\010\n\004JSON"
-          + "\020\013\022\t\n\005PROTO\020\r\022\010\n\004ENUM\020\016\022\014\n\010INTERVAL\020\020*d\n"
-          + "\022TypeAnnotationCode\022$\n TYPE_ANNOTATION_C"
-          + "ODE_UNSPECIFIED\020\000\022\016\n\nPG_NUMERIC\020\002\022\014\n\010PG_"
-          + "JSONB\020\003\022\n\n\006PG_OID\020\004B\254\001\n\025com.google.spann"
-          + "er.v1B\tTypeProtoP\001Z5cloud.google.com/go/"
-          + "spanner/apiv1/spannerpb;spannerpb\252\002\027Goog"
-          + "le.Cloud.Spanner.V1\312\002\027Google\\Cloud\\Spann"
-          + "er\\V1\352\002\032Google::Cloud::Spanner::V1b\006prot"
-          + "o3"
+          + "\020\013\022\t\n\005PROTO\020\r\022\010\n\004ENUM\020\016\022\014\n\010INTERVAL\020\020\022\010\n"
+          + "\004UUID\020\021*d\n\022TypeAnnotationCode\022$\n TYPE_AN"
+          + "NOTATION_CODE_UNSPECIFIED\020\000\022\016\n\nPG_NUMERI"
+          + "C\020\002\022\014\n\010PG_JSONB\020\003\022\n\n\006PG_OID\020\004B\254\001\n\025com.go"
+          + "ogle.spanner.v1B\tTypeProtoP\001Z5cloud.goog"
+          + "le.com/go/spanner/apiv1/spannerpb;spanne"
+          + "rpb\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\C"
+          + "loud\\Spanner\\V1\352\002\032Google::Cloud::Spanner"
+          + "::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

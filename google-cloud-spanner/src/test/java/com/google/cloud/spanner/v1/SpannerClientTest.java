@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -565,6 +565,7 @@ public class SpannerClientTest {
             .setRequestOptions(RequestOptions.newBuilder().build())
             .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
+            .setLastStatement(true)
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -587,6 +588,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
     Assert.assertEquals(request.getDirectedReadOptions(), actualRequest.getDirectedReadOptions());
     Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
+    Assert.assertEquals(request.getLastStatement(), actualRequest.getLastStatement());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
@@ -614,6 +616,7 @@ public class SpannerClientTest {
               .setRequestOptions(RequestOptions.newBuilder().build())
               .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
+              .setLastStatement(true)
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -632,6 +635,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setStats(ResultSetStats.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setLast(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
     ExecuteSqlRequest request =
@@ -649,6 +653,7 @@ public class SpannerClientTest {
             .setRequestOptions(RequestOptions.newBuilder().build())
             .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
+            .setLastStatement(true)
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -681,6 +686,7 @@ public class SpannerClientTest {
             .setRequestOptions(RequestOptions.newBuilder().build())
             .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
+            .setLastStatement(true)
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -717,6 +723,7 @@ public class SpannerClientTest {
             .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
             .setSeqno(109325920)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setLastStatements(true)
             .build();
 
     ExecuteBatchDmlResponse actualResponse = client.executeBatchDml(request);
@@ -731,6 +738,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getStatementsList(), actualRequest.getStatementsList());
     Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getLastStatements(), actualRequest.getLastStatements());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
@@ -751,6 +759,7 @@ public class SpannerClientTest {
               .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
               .setSeqno(109325920)
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setLastStatements(true)
               .build();
       client.executeBatchDml(request);
       Assert.fail("No exception raised");
@@ -853,6 +862,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setStats(ResultSetStats.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setLast(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
     ReadRequest request =

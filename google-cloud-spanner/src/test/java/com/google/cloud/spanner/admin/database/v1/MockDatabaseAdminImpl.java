@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Empty;
+import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupRequest;
@@ -509,6 +511,27 @@ public class MockDatabaseAdminImpl extends DatabaseAdminImplBase {
                   "Unrecognized response type %s for method ListDatabaseRoles, expected %s or %s",
                   response == null ? "null" : response.getClass().getName(),
                   ListDatabaseRolesResponse.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void addSplitPoints(
+      AddSplitPointsRequest request, StreamObserver<AddSplitPointsResponse> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof AddSplitPointsResponse) {
+      requests.add(request);
+      responseObserver.onNext(((AddSplitPointsResponse) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method AddSplitPoints, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  AddSplitPointsResponse.class.getName(),
                   Exception.class.getName())));
     }
   }

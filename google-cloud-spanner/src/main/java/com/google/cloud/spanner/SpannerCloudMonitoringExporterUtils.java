@@ -23,7 +23,9 @@ import static com.google.api.MetricDescriptor.ValueType.DISTRIBUTION;
 import static com.google.api.MetricDescriptor.ValueType.DOUBLE;
 import static com.google.api.MetricDescriptor.ValueType.INT64;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.GAX_METER_NAME;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_METER_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_PROMOTED_RESOURCE_LABELS;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_RESOURCE_TYPE;
 
@@ -66,12 +68,17 @@ class SpannerCloudMonitoringExporterUtils {
     return pointData.getAttributes().get(PROJECT_ID_KEY);
   }
 
+  static String getInstanceId(PointData pointData) {
+    return pointData.getAttributes().get(INSTANCE_ID_KEY);
+  }
+
   static List<TimeSeries> convertToSpannerTimeSeries(List<MetricData> collection) {
     List<TimeSeries> allTimeSeries = new ArrayList<>();
 
     for (MetricData metricData : collection) {
-      // Get common metrics data from GAX library
-      if (!metricData.getInstrumentationScopeInfo().getName().equals(GAX_METER_NAME)) {
+      // Get metrics data from GAX library and Spanner library
+      if (!(metricData.getInstrumentationScopeInfo().getName().equals(GAX_METER_NAME)
+          || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME))) {
         // Filter out metric data for instruments that are not part of the spanner metrics list
         continue;
       }

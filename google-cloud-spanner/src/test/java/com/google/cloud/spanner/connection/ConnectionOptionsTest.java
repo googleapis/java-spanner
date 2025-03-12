@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionOptions.Builder.EXTERNAL_HOST_PATTERN;
 import static com.google.cloud.spanner.connection.ConnectionOptions.Builder.SPANNER_URI_PATTERN;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENDPOINT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.determineHost;
@@ -1210,5 +1211,98 @@ public class ConnectionOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .build()
             .isEnableApiTracing());
+  }
+
+  @Test
+  public void testExternalHostPatterns() {
+    Matcher matcherWithoutInstance =
+        EXTERNAL_HOST_PATTERN.matcher("cloudspanner://localhost:15000/databases/test-db");
+    assertTrue(matcherWithoutInstance.matches());
+    assertNull(matcherWithoutInstance.group("INSTANCEGROUP"));
+    assertEquals("test-db", matcherWithoutInstance.group("DATABASEGROUP"));
+    Matcher matcherWithProperty =
+        EXTERNAL_HOST_PATTERN.matcher(
+            "cloudspanner://localhost:15000/instances/default/databases/singers-db?usePlainText=true");
+    assertTrue(matcherWithProperty.matches());
+    assertEquals("default", matcherWithProperty.group("INSTANCEGROUP"));
+    assertEquals("singers-db", matcherWithProperty.group("DATABASEGROUP"));
+    Matcher matcherWithoutPort =
+        EXTERNAL_HOST_PATTERN.matcher(
+            "cloudspanner://localhost/instances/default/databases/test-db");
+    assertTrue(matcherWithoutPort.matches());
+    assertEquals("default", matcherWithoutPort.group("INSTANCEGROUP"));
+    assertEquals("test-db", matcherWithoutPort.group("DATABASEGROUP"));
+    assertEquals(
+        "http://localhost:15000",
+        determineHost(
+            matcherWithoutPort,
+            DEFAULT_ENDPOINT,
+            /* autoConfigEmulator= */ true,
+            /* usePlainText= */ true,
+            ImmutableMap.of()));
+    Matcher matcherWithProject =
+        EXTERNAL_HOST_PATTERN.matcher(
+            "cloudspanner://localhost:15000/projects/default/instances/default/databases/singers-db");
+    assertFalse(matcherWithProject.matches());
+    Matcher matcherWithoutHost =
+        EXTERNAL_HOST_PATTERN.matcher("cloudspanner:/instances/default/databases/singers-db");
+    assertFalse(matcherWithoutHost.matches());
+    Matcher matcherWithPrefixSpanner =
+        EXTERNAL_HOST_PATTERN.matcher("spanner://localhost:15000/databases/test-db");
+    assertTrue(matcherWithPrefixSpanner.matches());
+    assertNull(matcherWithPrefixSpanner.group("INSTANCEGROUP"));
+    assertEquals("test-db", matcherWithPrefixSpanner.group("DATABASEGROUP"));
+  }
+
+  @Test
+  public void testBuildWithValidURIWithPrefixSpanner() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "spanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autocommit=false;readonly=true");
+    builder.setCredentialsUrl(FILE_TEST_PATH);
+    ConnectionOptions options = builder.build();
+    assertThat(options.getHost()).isEqualTo(DEFAULT_HOST);
+    assertThat(options.getProjectId()).isEqualTo("test-project-123");
+    assertThat(options.getInstanceId()).isEqualTo("test-instance-123");
+    assertThat(options.getDatabaseName()).isEqualTo("test-database-123");
+    assertThat(options.getCredentials())
+        .isEqualTo(new CredentialsService().createCredentials(FILE_TEST_PATH));
+    assertThat(options.isAutocommit()).isEqualTo(false);
+    assertThat(options.isReadOnly()).isEqualTo(true);
+  }
+
+  @Test
+  public void testExperimentalHost() {
+    ConnectionOptions.Builder builderWithoutExperimentalHostParam = ConnectionOptions.newBuilder();
+    builderWithoutExperimentalHostParam.setUri(
+        "spanner://localhost:15000/instances/default/databases/singers-db;usePlainText=true");
+    ConnectionOptions optionsWithoutExperimentalHostParam =
+        builderWithoutExperimentalHostParam.build();
+    assertFalse(optionsWithoutExperimentalHostParam.isExperimentalHost());
+    assertEquals(0, optionsWithoutExperimentalHostParam.getSessionPoolOptions().getMinSessions());
+    assertTrue(
+        optionsWithoutExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSession());
+    assertTrue(
+        optionsWithoutExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionForRW());
+    assertTrue(
+        optionsWithoutExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionPartitionedOps());
+
+    ConnectionOptions.Builder builderWithExperimentalHostParam = ConnectionOptions.newBuilder();
+    builderWithExperimentalHostParam.setUri(
+        "spanner://localhost:15000/projects/default/instances/default/databases/singers-db;usePlainText=true;isExperimentalHost=true");
+    ConnectionOptions optionsWithExperimentalHostParam = builderWithExperimentalHostParam.build();
+    assertTrue(optionsWithExperimentalHostParam.isExperimentalHost());
+    assertEquals(0, optionsWithExperimentalHostParam.getSessionPoolOptions().getMinSessions());
+    assertTrue(optionsWithExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSession());
+    assertTrue(
+        optionsWithExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSessionForRW());
+    assertTrue(
+        optionsWithExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionPartitionedOps());
   }
 }

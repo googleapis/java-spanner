@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -361,7 +361,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     super(builder);
   }
 
-  private TransactionOptions() {}
+  private TransactionOptions() {
+    isolationLevel_ = 0;
+  }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
@@ -382,6 +384,203 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         .ensureFieldAccessorsInitialized(
             com.google.spanner.v1.TransactionOptions.class,
             com.google.spanner.v1.TransactionOptions.Builder.class);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * `IsolationLevel` is used when setting `isolation_level` for a transaction.
+   * </pre>
+   *
+   * Protobuf enum {@code google.spanner.v1.TransactionOptions.IsolationLevel}
+   */
+  public enum IsolationLevel implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     *
+     *
+     * <pre>
+     * Default value.
+     *
+     * If the value is not specified, the `SERIALIZABLE` isolation level is
+     * used.
+     * </pre>
+     *
+     * <code>ISOLATION_LEVEL_UNSPECIFIED = 0;</code>
+     */
+    ISOLATION_LEVEL_UNSPECIFIED(0),
+    /**
+     *
+     *
+     * <pre>
+     * All transactions appear as if they executed in a serial order, even if
+     * some of the reads, writes, and other operations of distinct transactions
+     * actually occurred in parallel. Spanner assigns commit timestamps that
+     * reflect the order of committed transactions to implement this property.
+     * Spanner offers a stronger guarantee than serializability called external
+     * consistency. For further details, please refer to
+     * https://cloud.google.com/spanner/docs/true-time-external-consistency#serializability.
+     * </pre>
+     *
+     * <code>SERIALIZABLE = 1;</code>
+     */
+    SERIALIZABLE(1),
+    /**
+     *
+     *
+     * <pre>
+     * All reads performed during the transaction observe a consistent snapshot
+     * of the database, and the transaction will only successfully commit in the
+     * absence of conflicts between its updates and any concurrent updates that
+     * have occurred since that snapshot. Consequently, in contrast to
+     * `SERIALIZABLE` transactions, only write-write conflicts are detected in
+     * snapshot transactions.
+     *
+     * This isolation level does not support Read-only and Partitioned DML
+     * transactions.
+     *
+     * When `REPEATABLE_READ` is specified on a read-write transaction, the
+     * locking semantics default to `OPTIMISTIC`.
+     * </pre>
+     *
+     * <code>REPEATABLE_READ = 2;</code>
+     */
+    REPEATABLE_READ(2),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     *
+     *
+     * <pre>
+     * Default value.
+     *
+     * If the value is not specified, the `SERIALIZABLE` isolation level is
+     * used.
+     * </pre>
+     *
+     * <code>ISOLATION_LEVEL_UNSPECIFIED = 0;</code>
+     */
+    public static final int ISOLATION_LEVEL_UNSPECIFIED_VALUE = 0;
+    /**
+     *
+     *
+     * <pre>
+     * All transactions appear as if they executed in a serial order, even if
+     * some of the reads, writes, and other operations of distinct transactions
+     * actually occurred in parallel. Spanner assigns commit timestamps that
+     * reflect the order of committed transactions to implement this property.
+     * Spanner offers a stronger guarantee than serializability called external
+     * consistency. For further details, please refer to
+     * https://cloud.google.com/spanner/docs/true-time-external-consistency#serializability.
+     * </pre>
+     *
+     * <code>SERIALIZABLE = 1;</code>
+     */
+    public static final int SERIALIZABLE_VALUE = 1;
+    /**
+     *
+     *
+     * <pre>
+     * All reads performed during the transaction observe a consistent snapshot
+     * of the database, and the transaction will only successfully commit in the
+     * absence of conflicts between its updates and any concurrent updates that
+     * have occurred since that snapshot. Consequently, in contrast to
+     * `SERIALIZABLE` transactions, only write-write conflicts are detected in
+     * snapshot transactions.
+     *
+     * This isolation level does not support Read-only and Partitioned DML
+     * transactions.
+     *
+     * When `REPEATABLE_READ` is specified on a read-write transaction, the
+     * locking semantics default to `OPTIMISTIC`.
+     * </pre>
+     *
+     * <code>REPEATABLE_READ = 2;</code>
+     */
+    public static final int REPEATABLE_READ_VALUE = 2;
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static IsolationLevel valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static IsolationLevel forNumber(int value) {
+      switch (value) {
+        case 0:
+          return ISOLATION_LEVEL_UNSPECIFIED;
+        case 1:
+          return SERIALIZABLE;
+        case 2:
+          return REPEATABLE_READ;
+        default:
+          return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<IsolationLevel> internalGetValueMap() {
+      return internalValueMap;
+    }
+
+    private static final com.google.protobuf.Internal.EnumLiteMap<IsolationLevel> internalValueMap =
+        new com.google.protobuf.Internal.EnumLiteMap<IsolationLevel>() {
+          public IsolationLevel findValueByNumber(int number) {
+            return IsolationLevel.forNumber(number);
+          }
+        };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+      return getDescriptor();
+    }
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+      return com.google.spanner.v1.TransactionOptions.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final IsolationLevel[] VALUES = values();
+
+    public static IsolationLevel valueOf(com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private IsolationLevel(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:google.spanner.v1.TransactionOptions.IsolationLevel)
   }
 
   public interface ReadWriteOrBuilder
@@ -496,7 +695,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Default value.
        *
-       * If the value is not specified, the pessimistic read lock is used.
+       * * If isolation level is `REPEATABLE_READ`, then it is an error to
+       *   specify `read_lock_mode`. Locking semantics default to `OPTIMISTIC`.
+       *   No validation checks are done for reads, except for:
+       *     1. reads done as part of queries that use `SELECT FOR UPDATE`
+       *     2. reads done as part of statements with a `LOCK_SCANNED_RANGES`
+       *        hint
+       *     3. reads done as part of DML statements
+       *   to validate that the data that was served at the snapshot time is
+       *   unchanged at commit time.
+       * * At all other isolation levels, if `read_lock_mode` is the default
+       *   value, then pessimistic read lock is used.
        * </pre>
        *
        * <code>READ_LOCK_MODE_UNSPECIFIED = 0;</code>
@@ -509,6 +718,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Pessimistic lock mode.
        *
        * Read locks are acquired immediately on read.
+       * Semantics described only applies to `SERIALIZABLE` isolation.
        * </pre>
        *
        * <code>PESSIMISTIC = 1;</code>
@@ -523,6 +733,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Locks for reads within the transaction are not acquired on read.
        * Instead the locks are acquired on a commit to validate that
        * read/queried data has not changed since the transaction started.
+       * Semantics described only applies to `SERIALIZABLE` isolation.
        * </pre>
        *
        * <code>OPTIMISTIC = 2;</code>
@@ -537,7 +748,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Default value.
        *
-       * If the value is not specified, the pessimistic read lock is used.
+       * * If isolation level is `REPEATABLE_READ`, then it is an error to
+       *   specify `read_lock_mode`. Locking semantics default to `OPTIMISTIC`.
+       *   No validation checks are done for reads, except for:
+       *     1. reads done as part of queries that use `SELECT FOR UPDATE`
+       *     2. reads done as part of statements with a `LOCK_SCANNED_RANGES`
+       *        hint
+       *     3. reads done as part of DML statements
+       *   to validate that the data that was served at the snapshot time is
+       *   unchanged at commit time.
+       * * At all other isolation levels, if `read_lock_mode` is the default
+       *   value, then pessimistic read lock is used.
        * </pre>
        *
        * <code>READ_LOCK_MODE_UNSPECIFIED = 0;</code>
@@ -550,6 +771,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Pessimistic lock mode.
        *
        * Read locks are acquired immediately on read.
+       * Semantics described only applies to `SERIALIZABLE` isolation.
        * </pre>
        *
        * <code>PESSIMISTIC = 1;</code>
@@ -564,6 +786,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Locks for reads within the transaction are not acquired on read.
        * Instead the locks are acquired on a commit to validate that
        * read/queried data has not changed since the transaction started.
+       * Semantics described only applies to `SERIALIZABLE` isolation.
        * </pre>
        *
        * <code>OPTIMISTIC = 2;</code>
@@ -4777,6 +5000,43 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     return excludeTxnFromChangeStreams_;
   }
 
+  public static final int ISOLATION_LEVEL_FIELD_NUMBER = 6;
+  private int isolationLevel_ = 0;
+  /**
+   *
+   *
+   * <pre>
+   * Isolation level for the transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.TransactionOptions.IsolationLevel isolation_level = 6;</code>
+   *
+   * @return The enum numeric value on the wire for isolationLevel.
+   */
+  @java.lang.Override
+  public int getIsolationLevelValue() {
+    return isolationLevel_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Isolation level for the transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.TransactionOptions.IsolationLevel isolation_level = 6;</code>
+   *
+   * @return The isolationLevel.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions.IsolationLevel getIsolationLevel() {
+    com.google.spanner.v1.TransactionOptions.IsolationLevel result =
+        com.google.spanner.v1.TransactionOptions.IsolationLevel.forNumber(isolationLevel_);
+    return result == null
+        ? com.google.spanner.v1.TransactionOptions.IsolationLevel.UNRECOGNIZED
+        : result;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -4802,6 +5062,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
     if (excludeTxnFromChangeStreams_ != false) {
       output.writeBool(5, excludeTxnFromChangeStreams_);
+    }
+    if (isolationLevel_
+        != com.google.spanner.v1.TransactionOptions.IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED
+            .getNumber()) {
+      output.writeEnum(6, isolationLevel_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -4831,6 +5096,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       size +=
           com.google.protobuf.CodedOutputStream.computeBoolSize(5, excludeTxnFromChangeStreams_);
     }
+    if (isolationLevel_
+        != com.google.spanner.v1.TransactionOptions.IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED
+            .getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(6, isolationLevel_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -4847,6 +5117,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     com.google.spanner.v1.TransactionOptions other = (com.google.spanner.v1.TransactionOptions) obj;
 
     if (getExcludeTxnFromChangeStreams() != other.getExcludeTxnFromChangeStreams()) return false;
+    if (isolationLevel_ != other.isolationLevel_) return false;
     if (!getModeCase().equals(other.getModeCase())) return false;
     switch (modeCase_) {
       case 1:
@@ -4874,6 +5145,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + EXCLUDE_TXN_FROM_CHANGE_STREAMS_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getExcludeTxnFromChangeStreams());
+    hash = (37 * hash) + ISOLATION_LEVEL_FIELD_NUMBER;
+    hash = (53 * hash) + isolationLevel_;
     switch (modeCase_) {
       case 1:
         hash = (37 * hash) + READ_WRITE_FIELD_NUMBER;
@@ -5362,6 +5635,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         readOnlyBuilder_.clear();
       }
       excludeTxnFromChangeStreams_ = false;
+      isolationLevel_ = 0;
       modeCase_ = 0;
       mode_ = null;
       return this;
@@ -5403,6 +5677,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.excludeTxnFromChangeStreams_ = excludeTxnFromChangeStreams_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.isolationLevel_ = isolationLevel_;
       }
     }
 
@@ -5467,6 +5744,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       if (other == com.google.spanner.v1.TransactionOptions.getDefaultInstance()) return this;
       if (other.getExcludeTxnFromChangeStreams() != false) {
         setExcludeTxnFromChangeStreams(other.getExcludeTxnFromChangeStreams());
+      }
+      if (other.isolationLevel_ != 0) {
+        setIsolationLevelValue(other.getIsolationLevelValue());
       }
       switch (other.getModeCase()) {
         case READ_WRITE:
@@ -5539,6 +5819,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
                 bitField0_ |= 0x00000008;
                 break;
               } // case 40
+            case 48:
+              {
+                isolationLevel_ = input.readEnum();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 48
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -6400,6 +6686,99 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     public Builder clearExcludeTxnFromChangeStreams() {
       bitField0_ = (bitField0_ & ~0x00000008);
       excludeTxnFromChangeStreams_ = false;
+      onChanged();
+      return this;
+    }
+
+    private int isolationLevel_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Isolation level for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.IsolationLevel isolation_level = 6;</code>
+     *
+     * @return The enum numeric value on the wire for isolationLevel.
+     */
+    @java.lang.Override
+    public int getIsolationLevelValue() {
+      return isolationLevel_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Isolation level for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.IsolationLevel isolation_level = 6;</code>
+     *
+     * @param value The enum numeric value on the wire for isolationLevel to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIsolationLevelValue(int value) {
+      isolationLevel_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Isolation level for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.IsolationLevel isolation_level = 6;</code>
+     *
+     * @return The isolationLevel.
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.IsolationLevel getIsolationLevel() {
+      com.google.spanner.v1.TransactionOptions.IsolationLevel result =
+          com.google.spanner.v1.TransactionOptions.IsolationLevel.forNumber(isolationLevel_);
+      return result == null
+          ? com.google.spanner.v1.TransactionOptions.IsolationLevel.UNRECOGNIZED
+          : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Isolation level for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.IsolationLevel isolation_level = 6;</code>
+     *
+     * @param value The isolationLevel to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIsolationLevel(
+        com.google.spanner.v1.TransactionOptions.IsolationLevel value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00000010;
+      isolationLevel_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Isolation level for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.IsolationLevel isolation_level = 6;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearIsolationLevel() {
+      bitField0_ = (bitField0_ & ~0x00000010);
+      isolationLevel_ = 0;
       onChanged();
       return this;
     }

@@ -22,6 +22,7 @@ import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Struct;
@@ -30,16 +31,58 @@ import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.PartitionResponse;
 import com.google.spanner.v1.TransactionSelector;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 
 /** Default implementation for Batch Client interface. */
 public class BatchClientImpl implements BatchClient {
   private final SessionClient sessionClient;
 
-  BatchClientImpl(SessionClient sessionClient) {
+  private final boolean isMultiplexedSessionEnabled;
+
+  /** Lock to protect the multiplexed session. */
+  private final ReentrantLock multiplexedSessionLock = new ReentrantLock();
+
+  /** The duration before we try to replace the multiplexed session. The default is 7 days. */
+  private final Duration sessionExpirationDuration;
+
+  /** The expiration date/time of the current multiplexed session. */
+  @GuardedBy("multiplexedSessionLock")
+  private final AtomicReference<Instant> expirationDate;
+
+  @GuardedBy("multiplexedSessionLock")
+  private final AtomicReference<SessionImpl> multiplexedSessionReference;
+
+  /**
+   * This flag is set to true if the server return UNIMPLEMENTED when partitioned transaction is
+   * executed on a multiplexed session. TODO: Remove once this is guaranteed to be available.
+   */
+  @VisibleForTesting
+  static final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
+
+  BatchClientImpl(SessionClient sessionClient, boolean isMultiplexedSessionEnabled) {
     this.sessionClient = checkNotNull(sessionClient);
+    this.isMultiplexedSessionEnabled = isMultiplexedSessionEnabled;
+    this.sessionExpirationDuration =
+        Duration.ofMillis(
+            sessionClient
+                .getSpanner()
+                .getOptions()
+                .getSessionPoolOptions()
+                .getMultiplexedSessionMaintenanceDuration()
+                .toMillis());
+    // Initialize the expiration date to the start of time to avoid unnecessary null checks.
+    // This also ensured that a new session is created on first request.
+    this.expirationDate = new AtomicReference<>(Instant.MIN);
+    this.multiplexedSessionReference = new AtomicReference<>();
   }
 
   @Override
@@ -50,7 +93,12 @@ public class BatchClientImpl implements BatchClient {
 
   @Override
   public BatchReadOnlyTransaction batchReadOnlyTransaction(TimestampBound bound) {
-    SessionImpl session = sessionClient.createSession();
+    SessionImpl session;
+    if (canUseMultiplexedSession()) {
+      session = getMultiplexedSession();
+    } else {
+      session = sessionClient.createSession();
+    }
     return new BatchReadOnlyTransactionImpl(
         MultiUseReadOnlyTransaction.newBuilder()
             .setSession(session)
@@ -90,6 +138,24 @@ public class BatchClientImpl implements BatchClient {
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
         batchTransactionId);
+  }
+
+  private boolean canUseMultiplexedSession() {
+    return isMultiplexedSessionEnabled && !unimplementedForPartitionedOps.get();
+  }
+
+  private SessionImpl getMultiplexedSession() {
+    this.multiplexedSessionLock.lock();
+    try {
+      if (Clock.systemUTC().instant().isAfter(this.expirationDate.get())
+          || this.multiplexedSessionReference.get() == null) {
+        this.multiplexedSessionReference.set(this.sessionClient.createMultiplexedSession());
+        this.expirationDate.set(Clock.systemUTC().instant().plus(this.sessionExpirationDuration));
+      }
+      return this.multiplexedSessionReference.get();
+    } finally {
+      this.multiplexedSessionLock.unlock();
+    }
   }
 
   private static class BatchReadOnlyTransactionImpl extends MultiUseReadOnlyTransaction
@@ -163,15 +229,26 @@ public class BatchClientImpl implements BatchClient {
       builder.setPartitionOptions(pbuilder.build());
 
       final PartitionReadRequest request = builder.build();
-      PartitionResponse response = rpc.partitionRead(request, options);
-      ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
-      for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
-        Partition partition =
-            Partition.createReadPartition(
-                p.getPartitionToken(), partitionOptions, table, index, keys, columns, readOptions);
-        partitions.add(partition);
+      try {
+        PartitionResponse response = rpc.partitionRead(request, options);
+        ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
+        for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
+          Partition partition =
+              Partition.createReadPartition(
+                  p.getPartitionToken(),
+                  partitionOptions,
+                  table,
+                  index,
+                  keys,
+                  columns,
+                  readOptions);
+          partitions.add(partition);
+        }
+        return partitions.build();
+      } catch (SpannerException e) {
+        maybeMarkUnimplementedForPartitionedOps(e);
+        throw e;
       }
-      return partitions.build();
     }
 
     @Override
@@ -203,15 +280,27 @@ public class BatchClientImpl implements BatchClient {
       builder.setPartitionOptions(pbuilder.build());
 
       final PartitionQueryRequest request = builder.build();
-      PartitionResponse response = rpc.partitionQuery(request, options);
-      ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
-      for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
-        Partition partition =
-            Partition.createQueryPartition(
-                p.getPartitionToken(), partitionOptions, statement, queryOptions);
-        partitions.add(partition);
+      try {
+        PartitionResponse response = rpc.partitionQuery(request, options);
+        ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
+        for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
+          Partition partition =
+              Partition.createQueryPartition(
+                  p.getPartitionToken(), partitionOptions, statement, queryOptions);
+          partitions.add(partition);
+        }
+        return partitions.build();
+      } catch (SpannerException e) {
+        maybeMarkUnimplementedForPartitionedOps(e);
+        throw e;
       }
-      return partitions.build();
+    }
+
+    void maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
+      if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
+          spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
+        unimplementedForPartitionedOps.set(true);
+      }
     }
 
     @Override

@@ -16,13 +16,17 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+
 import com.google.api.core.InternalApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
-import org.threeten.bp.Duration;
 
 /** Options for the session pool used by {@code DatabaseClient}. */
 public class SessionPoolOptions {
@@ -30,6 +34,7 @@ public class SessionPoolOptions {
   private static final int DEFAULT_MAX_SESSIONS = 400;
   private static final int DEFAULT_MIN_SESSIONS = 100;
   private static final int DEFAULT_INC_STEP = 25;
+  private static final int EXPERIMENTAL_HOST_REGULAR_SESSIONS = 0;
   private static final ActionOnExhaustion DEFAULT_ACTION = ActionOnExhaustion.BLOCK;
   private final int minSessions;
   private final int maxSessions;
@@ -48,7 +53,7 @@ public class SessionPoolOptions {
 
   private final ActionOnExhaustion actionOnExhaustion;
   private final long loopFrequency;
-  private final java.time.Duration multiplexedSessionMaintenanceLoopFrequency;
+  private final Duration multiplexedSessionMaintenanceLoopFrequency;
   private final int keepAliveIntervalMinutes;
   private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
@@ -73,23 +78,24 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSession;
 
-  /**
-   * Controls whether multiplexed session is enabled for blind write or not. This is only used for
-   * systest soak. TODO: Remove when multiplexed session for blind write is released.
-   */
-  private final boolean useMultiplexedSessionBlindWrite;
-
   private final boolean useMultiplexedSessionForRW;
+
+  private final boolean useMultiplexedSessionForPartitionedOps;
 
   // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
+  private final boolean skipVerifyingBeginTransactionForMuxRW;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
     // We allow that to prevent code that only sets a value for maxSessions to break if the
     // maxSessions value is less than the default for minSessions.
-    this.minSessions = Math.min(builder.minSessions, builder.maxSessions);
-    this.maxSessions = builder.maxSessions;
+    this.minSessions =
+        builder.isExperimentalHost
+            ? EXPERIMENTAL_HOST_REGULAR_SESSIONS
+            : Math.min(builder.minSessions, builder.maxSessions);
+    this.maxSessions =
+        builder.isExperimentalHost ? EXPERIMENTAL_HOST_REGULAR_SESSIONS : builder.maxSessions;
     this.incStep = builder.incStep;
     this.maxIdleSessions = builder.maxIdleSessions;
     this.writeSessionsFraction = builder.writeSessionsFraction;
@@ -113,18 +119,30 @@ public class SessionPoolOptions {
     // useMultiplexedSession priority => Environment var > private setter > client default
     Boolean useMultiplexedSessionFromEnvVariable = getUseMultiplexedSessionFromEnvVariable();
     this.useMultiplexedSession =
-        (useMultiplexedSessionFromEnvVariable != null)
-            ? useMultiplexedSessionFromEnvVariable
-            : builder.useMultiplexedSession;
-    this.useMultiplexedSessionBlindWrite = builder.useMultiplexedSessionBlindWrite;
+        builder.isExperimentalHost
+            || ((useMultiplexedSessionFromEnvVariable != null)
+                ? useMultiplexedSessionFromEnvVariable
+                : builder.useMultiplexedSession);
     // useMultiplexedSessionForRW priority => Environment var > private setter > client default
     Boolean useMultiplexedSessionForRWFromEnvVariable =
         getUseMultiplexedSessionForRWFromEnvVariable();
     this.useMultiplexedSessionForRW =
-        (useMultiplexedSessionForRWFromEnvVariable != null)
-            ? useMultiplexedSessionForRWFromEnvVariable
-            : builder.useMultiplexedSessionForRW;
+        builder.isExperimentalHost
+            || ((useMultiplexedSessionForRWFromEnvVariable != null)
+                ? useMultiplexedSessionForRWFromEnvVariable
+                : builder.useMultiplexedSessionForRW);
+    // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client
+    // default
+    Boolean useMultiplexedSessionFromEnvVariablePartitionedOps =
+        getUseMultiplexedSessionFromEnvVariablePartitionedOps();
+    this.useMultiplexedSessionForPartitionedOps =
+        builder.isExperimentalHost
+            || ((useMultiplexedSessionFromEnvVariablePartitionedOps != null)
+                ? useMultiplexedSessionFromEnvVariablePartitionedOps
+                : builder.useMultiplexedSessionPartitionedOps);
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
+    this.skipVerifyingBeginTransactionForMuxRW =
+        builder.isExperimentalHost || builder.skipVerifyingBeginTransactionForMuxRW;
   }
 
   @Override
@@ -162,8 +180,10 @@ public class SessionPoolOptions {
         && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
         && Objects.equals(this.useMultiplexedSessionForRW, other.useMultiplexedSessionForRW)
         && Objects.equals(
-            this.multiplexedSessionMaintenanceDuration,
-            other.multiplexedSessionMaintenanceDuration);
+            this.multiplexedSessionMaintenanceDuration, other.multiplexedSessionMaintenanceDuration)
+        && Objects.equals(
+            this.skipVerifyingBeginTransactionForMuxRW,
+            other.skipVerifyingBeginTransactionForMuxRW);
   }
 
   @Override
@@ -191,9 +211,9 @@ public class SessionPoolOptions {
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock,
         this.useMultiplexedSession,
-        this.useMultiplexedSessionBlindWrite,
         this.useMultiplexedSessionForRW,
-        this.multiplexedSessionMaintenanceDuration);
+        this.multiplexedSessionMaintenanceDuration,
+        this.skipVerifyingBeginTransactionForMuxRW);
   }
 
   public Builder toBuilder() {
@@ -236,7 +256,7 @@ public class SessionPoolOptions {
     return loopFrequency;
   }
 
-  java.time.Duration getMultiplexedSessionMaintenanceLoopFrequency() {
+  Duration getMultiplexedSessionMaintenanceLoopFrequency() {
     return this.multiplexedSessionMaintenanceLoopFrequency;
   }
 
@@ -244,7 +264,13 @@ public class SessionPoolOptions {
     return keepAliveIntervalMinutes;
   }
 
-  public Duration getRemoveInactiveSessionAfter() {
+  /** This method is obsolete. Use {@link #getRemoveInactiveSessionAfterDuration()} instead. */
+  @ObsoleteApi("Use getRemoveInactiveSessionAfterDuration() instead")
+  public org.threeten.bp.Duration getRemoveInactiveSessionAfter() {
+    return toThreetenDuration(getRemoveInactiveSessionAfterDuration());
+  }
+
+  public Duration getRemoveInactiveSessionAfterDuration() {
     return removeInactiveSessionAfter;
   }
 
@@ -329,7 +355,7 @@ public class SessionPoolOptions {
   @VisibleForTesting
   @InternalApi
   protected boolean getUseMultiplexedSessionBlindWrite() {
-    return getUseMultiplexedSession() && useMultiplexedSessionBlindWrite;
+    return getUseMultiplexedSession();
   }
 
   @VisibleForTesting
@@ -340,17 +366,29 @@ public class SessionPoolOptions {
     return getUseMultiplexedSession() && useMultiplexedSessionForRW;
   }
 
+  @VisibleForTesting
+  @InternalApi
+  public boolean getUseMultiplexedSessionPartitionedOps() {
+    return getUseMultiplexedSession() && useMultiplexedSessionForPartitionedOps;
+  }
+
   private static Boolean getUseMultiplexedSessionFromEnvVariable() {
-    String useMultiplexedSessionFromEnvVariable =
-        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
-    if (useMultiplexedSessionFromEnvVariable != null
-        && useMultiplexedSessionFromEnvVariable.length() > 0) {
-      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)
-          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)) {
-        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+  }
+
+  @VisibleForTesting
+  @InternalApi
+  protected static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS");
+  }
+
+  private static Boolean parseBooleanEnvVariable(String variableName) {
+    String envVariable = System.getenv(variableName);
+    if (envVariable != null && envVariable.length() > 0) {
+      if ("true".equalsIgnoreCase(envVariable) || "false".equalsIgnoreCase(envVariable)) {
+        return Boolean.parseBoolean(envVariable);
       } else {
-        throw new IllegalArgumentException(
-            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS should be either true or false.");
+        throw new IllegalArgumentException(variableName + " should be either true or false.");
       }
     }
     return null;
@@ -359,11 +397,17 @@ public class SessionPoolOptions {
   private static Boolean getUseMultiplexedSessionForRWFromEnvVariable() {
     // Checks the value of env, GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
     // This returns null until RW is supported.
-    return null;
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW");
   }
 
   Duration getMultiplexedSessionMaintenanceDuration() {
     return multiplexedSessionMaintenanceDuration;
+  }
+
+  @VisibleForTesting
+  @InternalApi
+  boolean getSkipVerifyBeginTransactionForMuxRW() {
+    return skipVerifyingBeginTransactionForMuxRW;
   }
 
   public static Builder newBuilder() {
@@ -548,8 +592,7 @@ public class SessionPoolOptions {
     private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
-    private java.time.Duration multiplexedSessionMaintenanceLoopFrequency =
-        java.time.Duration.ofMinutes(10);
+    private Duration multiplexedSessionMaintenanceLoopFrequency = Duration.ofMinutes(10);
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
@@ -568,17 +611,22 @@ public class SessionPoolOptions {
     // Set useMultiplexedSession to true to make multiplexed session the default.
     private boolean useMultiplexedSession = false;
 
-    // TODO: Remove when multiplexed session for blind write is released.
-    private boolean useMultiplexedSessionBlindWrite = false;
-
     // This field controls the default behavior of session management for RW operations in Java
     // client.
     // Set useMultiplexedSessionForRW to true to make multiplexed session for RW operations the
     // default.
     private boolean useMultiplexedSessionForRW = false;
 
+    // This field controls the default behavior of session management for Partitioned operations in
+    // Java client.
+    // Set useMultiplexedSessionPartitionedOps to true to make multiplexed session for Partitioned
+    // operations the default.
+    private boolean useMultiplexedSessionPartitionedOps = false;
+
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
+    private boolean skipVerifyingBeginTransactionForMuxRW = false;
+    private boolean isExperimentalHost = false;
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
@@ -618,10 +666,11 @@ public class SessionPoolOptions {
       this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.useMultiplexedSession = options.useMultiplexedSession;
-      this.useMultiplexedSessionBlindWrite = options.useMultiplexedSessionBlindWrite;
       this.useMultiplexedSessionForRW = options.useMultiplexedSessionForRW;
+      this.useMultiplexedSessionPartitionedOps = options.useMultiplexedSessionForPartitionedOps;
       this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
+      this.skipVerifyingBeginTransactionForMuxRW = options.skipVerifyingBeginTransactionForMuxRW;
     }
 
     /**
@@ -678,7 +727,7 @@ public class SessionPoolOptions {
       return this;
     }
 
-    Builder setMultiplexedSessionMaintenanceLoopFrequency(java.time.Duration frequency) {
+    Builder setMultiplexedSessionMaintenanceLoopFrequency(Duration frequency) {
       this.multiplexedSessionMaintenanceLoopFrequency = frequency;
       return this;
     }
@@ -689,7 +738,16 @@ public class SessionPoolOptions {
       return this;
     }
 
-    public Builder setRemoveInactiveSessionAfter(Duration duration) {
+    /**
+     * This method is obsolete. Use {@link #setRemoveInactiveSessionAfterDuration(Duration)}
+     * instead.
+     */
+    @ObsoleteApi("Use setRemoveInactiveSessionAfterDuration(Duration) instead")
+    public Builder setRemoveInactiveSessionAfter(org.threeten.bp.Duration duration) {
+      return setRemoveInactiveSessionAfterDuration(toJavaTimeDuration(duration));
+    }
+
+    public Builder setRemoveInactiveSessionAfterDuration(Duration duration) {
       this.removeInactiveSessionAfter = duration;
       return this;
     }
@@ -720,7 +778,8 @@ public class SessionPoolOptions {
      *
      * <p>By default the requests are blocked for 60s and will fail with a `SpannerException` with
      * error code `ResourceExhausted` if this timeout is exceeded. If you wish to block for a
-     * different period use the option {@link Builder#setAcquireSessionTimeout(Duration)} ()}
+     * different period use the option {@link Builder#setAcquireSessionTimeoutDuration(Duration)}
+     * ()}
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
@@ -761,6 +820,12 @@ public class SessionPoolOptions {
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
               .build();
+      return this;
+    }
+
+    @InternalApi
+    public Builder setExperimentalHost() {
+      this.isExperimentalHost = true;
       return this;
     }
 
@@ -808,17 +873,6 @@ public class SessionPoolOptions {
     }
 
     /**
-     * This method enables multiplexed sessions for blind writes. This method will be removed in the
-     * future when multiplexed sessions has been made the default for all operations.
-     */
-    @InternalApi
-    @VisibleForTesting
-    Builder setUseMultiplexedSessionBlindWrite(boolean useMultiplexedSessionBlindWrite) {
-      this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
-      return this;
-    }
-
-    /**
      * Sets whether the client should use multiplexed session for R/W operations or not. This method
      * is intentionally package-private and intended for internal use.
      */
@@ -829,10 +883,31 @@ public class SessionPoolOptions {
       return this;
     }
 
+    /**
+     * Sets whether the client should use multiplexed session for Partitioned operations or not.
+     * This method is intentionally package-private and intended for internal use.
+     */
+    Builder setUseMultiplexedSessionPartitionedOps(boolean useMultiplexedSessionPartitionedOps) {
+      this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
+      return this;
+    }
+
     @VisibleForTesting
     Builder setMultiplexedSessionMaintenanceDuration(
         Duration multiplexedSessionMaintenanceDuration) {
       this.multiplexedSessionMaintenanceDuration = multiplexedSessionMaintenanceDuration;
+      return this;
+    }
+
+    // The additional BeginTransaction RPC for multiplexed session read-write is causing
+    // unexpected behavior in mock Spanner tests that rely on mocking the BeginTransaction RPC.
+    // Invoking this method with `true` skips sending the BeginTransaction RPC when the multiplexed
+    // session is created for the first time during client initialization.
+    // This is only used for tests.
+    @VisibleForTesting
+    Builder setSkipVerifyingBeginTransactionForMuxRW(
+        boolean skipVerifyingBeginTransactionForMuxRW) {
+      this.skipVerifyingBeginTransactionForMuxRW = skipVerifyingBeginTransactionForMuxRW;
       return this;
     }
 
@@ -908,6 +983,12 @@ public class SessionPoolOptions {
       return this;
     }
 
+    /** This method is obsolete. Use {@link #setWaitForMinSessionsDuration(Duration)} instead. */
+    @ObsoleteApi("Use setWaitForMinSessionsDuration(Duration) instead")
+    public Builder setWaitForMinSessions(org.threeten.bp.Duration waitForMinSessions) {
+      return setWaitForMinSessionsDuration(toJavaTimeDuration(waitForMinSessions));
+    }
+
     /**
      * If greater than zero, waits for the session pool to have at least {@link
      * SessionPoolOptions#minSessions} before returning the database client to the caller. Note that
@@ -918,16 +999,22 @@ public class SessionPoolOptions {
      *
      * <p>Defaults to zero (initialization is done asynchronously).
      */
-    public Builder setWaitForMinSessions(Duration waitForMinSessions) {
+    public Builder setWaitForMinSessionsDuration(Duration waitForMinSessions) {
       this.waitForMinSessions = waitForMinSessions;
       return this;
+    }
+
+    /** This method is obsolete. Use {@link #setAcquireSessionTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use setAcquireSessionTimeoutDuration(Duration) instead")
+    public Builder setAcquireSessionTimeout(org.threeten.bp.Duration acquireSessionTimeout) {
+      return setAcquireSessionTimeoutDuration(toJavaTimeDuration(acquireSessionTimeout));
     }
 
     /**
      * If greater than zero, we wait for said duration when no sessions are available in the {@link
      * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
      */
-    public Builder setAcquireSessionTimeout(Duration acquireSessionTimeout) {
+    public Builder setAcquireSessionTimeoutDuration(Duration acquireSessionTimeout) {
       try {
         if (acquireSessionTimeout != null) {
           Preconditions.checkArgument(
