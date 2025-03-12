@@ -17,8 +17,8 @@
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-    <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
-    <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
+    <spanner.testenv.instance>projects/span-cloud-testing/instances/manu-demo1-mr-nam6</spanner.testenv.instance>
+    <spanner.gce.config.project_id>span-cloud-testing</spanner.gce.config.project_id>
     <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
   </properties>
 
@@ -455,6 +455,24 @@
       <artifactId>opentelemetry-sdk-testing</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.cloud.opentelemetry</groupId>
+      <artifactId>exporter-trace</artifactId>
+      <version>0.33.0</version>
+      <scope>test</scope>
+    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>com.google.cloud</groupId>-->
+<!--      <artifactId>google-cloud-trace</artifactId>-->
+<!--      <version>2.53.0</version>-->
+<!--      <scope>test</scope>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>com.google.api.grpc</groupId>-->
+<!--      <artifactId>proto-google-cloud-trace-v1</artifactId>-->
+<!--      <version>2.53.0</version>-->
+<!--      <scope>test</scope>-->
+<!--    </dependency>-->
   </dependencies>
   <profiles>
     <profile>
