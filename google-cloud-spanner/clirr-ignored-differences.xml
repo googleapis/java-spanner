@@ -566,6 +566,48 @@
     <method>java.util.List getFloat32Array()</method>
   </difference>
 
+  <!-- UUID -->
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/AbstractStructReader</className>
+    <method>java.util.UUID getUuidInternal(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/AbstractStructReader</className>
+    <method>java.util.List getUuidListInternal(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.UUID getUuid(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.UUID getUuid(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getUuidList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getUuidList(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.UUID getUuid()</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.List getUuidArray()</method>
+  </difference>
+
   <!-- (Internal change, use stream timeout) -->
   <difference>
     <differenceType>7012</differenceType>
