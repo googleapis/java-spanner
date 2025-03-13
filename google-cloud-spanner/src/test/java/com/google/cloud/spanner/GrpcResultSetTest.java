@@ -494,7 +494,7 @@ public class GrpcResultSetTest {
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.next()).isFalse();
     ResultSetStats receivedStats = resultSet.getStats();
-    assertThat(stats).isEqualTo(receivedStats);
+    assertThat(receivedStats).isEqualTo(stats);
     resultSet.close();
   }
 

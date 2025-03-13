@@ -183,7 +183,7 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
   @Test
   public void test06_AnalyzeUpdate() {
     assumeFalse(
-        "Emulator does not support PLAN, PROFILE, WITH_STATS AND WITH_PLAN_AND_STATS",
+        "Emulator does not support PLAN, PROFILE, WITH_STATS, AND WITH_PLAN_AND_STATS",
         EmulatorSpannerHelper.isUsingEmulator());
 
     // PLAN should not execute the update.

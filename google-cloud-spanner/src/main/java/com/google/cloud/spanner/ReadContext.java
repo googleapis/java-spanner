@@ -33,7 +33,11 @@ public interface ReadContext extends AutoCloseable {
   enum QueryAnalyzeMode {
     /** Retrieves only the query plan information. No result data is returned. */
     PLAN,
-    /** Retrieves both query plan and query execution statistics along with the result data. */
+    /**
+     * Retrieves the query plan, overall execution statistics, operator level execution statistics
+     * along with the result data. This has a performance overhead compared to the other modes. It
+     * isn't recommended to use this mode for production traffic.
+     */
     PROFILE,
     /**
      * Retrieves the overall (but not operator-level) execution statistics along with the result
