@@ -3966,7 +3966,7 @@ public class DatabaseClientImplTest {
     try {
       // Simulate session creation failures on the backend.
       mockSpanner.setCreateSessionExecutionTime(
-          SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
+          SimulatedExecutionTime.ofStickyException(Status.PERMISSION_DENIED.asRuntimeException()));
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
       mockSpanner.freeze();
@@ -3975,8 +3975,8 @@ public class DatabaseClientImplTest {
               DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
         mockSpanner.unfreeze();
-        SpannerException e = assertThrows(SpannerException.class, rs::next);
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+        SpannerException exception = assertThrows(SpannerException.class, rs::next);
+        assertEquals(ErrorCode.PERMISSION_DENIED, exception.getErrorCode());
       }
     } finally {
       mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
@@ -4515,6 +4515,8 @@ public class DatabaseClientImplTest {
   public void testGetDialect_FailsDirectlyIfDatabaseNotFound() {
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
@@ -4530,6 +4532,8 @@ public class DatabaseClientImplTest {
   @Test
   public void testGetDialectDefaultPreloaded_FailsDirectlyIfDatabaseNotFound() {
     mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+    mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     try (Spanner spanner =
         this.spanner

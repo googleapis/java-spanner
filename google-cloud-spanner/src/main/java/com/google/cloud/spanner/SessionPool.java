@@ -2256,13 +2256,9 @@ class SessionPool {
   @VisibleForTesting
   static final Statement DETERMINE_DIALECT_STATEMENT =
       Statement.newBuilder(
-              "SELECT 'POSTGRESQL' AS DIALECT\n"
-                  + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
-                  + "WHERE SCHEMA_NAME='information_schema'\n"
-                  + "UNION ALL\n"
-                  + "SELECT 'GOOGLE_STANDARD_SQL' AS DIALECT\n"
-                  + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
-                  + "WHERE SCHEMA_NAME='INFORMATION_SCHEMA' AND CATALOG_NAME=''")
+              "select option_value "
+                  + "from information_schema.database_options "
+                  + "where option_name='database_dialect'")
           .build();
 
   private final SessionPoolOptions options;
@@ -3211,7 +3207,9 @@ class SessionPool {
           if (allSessions.size() >= minSessions) {
             waitOnMinSessionsLatch.countDown();
           }
-          if (options.isAutoDetectDialect() && !detectDialectStarted) {
+          if (options.isAutoDetectDialect()
+              && !detectDialectStarted
+              && !options.getUseMultiplexedSession()) {
             // Get the dialect of the underlying database if that has not yet been done. Note that
             // this method will release the session into the pool once it is done.
             detectDialectStarted = true;
