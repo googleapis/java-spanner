@@ -27,11 +27,6 @@ import com.google.cloud.Timestamp;
 abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClient {
 
   @Override
-  public Dialect getDialect() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public String getDatabaseRole() {
     throw new UnsupportedOperationException();
   }
