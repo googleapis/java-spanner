@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.89.0](https://github.com/googleapis/java-spanner/compare/v6.88.0...v6.89.0) (2025-03-14)
+
+
+### Features
+
+* Enable ALTS hard bound token in DirectPath ([#3645](https://github.com/googleapis/java-spanner/issues/3645)) ([42cc961](https://github.com/googleapis/java-spanner/commit/42cc9616fa74c765d5716fd948dc0823df0a07a6))
+* Next release from main branch is 6.89.0 ([#3669](https://github.com/googleapis/java-spanner/issues/3669)) ([7a8a29b](https://github.com/googleapis/java-spanner/commit/7a8a29be40258294cafd13b1df7df5ea349a675d))
+
+
+### Bug Fixes
+
+* Revert the ALTS bound token enablement ([#3679](https://github.com/googleapis/java-spanner/issues/3679)) ([183c1f0](https://github.com/googleapis/java-spanner/commit/183c1f0e228a927a575596a38a01d63bb8eb6943))
+
+
+### Performance Improvements
+
+* Get database dialect using multiplexed session ([#3684](https://github.com/googleapis/java-spanner/issues/3684)) ([f641a40](https://github.com/googleapis/java-spanner/commit/f641a40ed515a6559718c2fe2757c322f037d83b))
+
 ## [6.88.0](https://github.com/googleapis/java-spanner/compare/v6.87.0...v6.88.0) (2025-02-27)
 
 
