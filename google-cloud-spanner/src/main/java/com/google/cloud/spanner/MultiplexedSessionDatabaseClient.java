@@ -277,6 +277,13 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
                     .getSkipVerifyBeginTransactionForMuxRW()) {
               verifyBeginTransactionWithRWOnMultiplexedSessionAsync(session.getName());
             }
+            if (sessionClient
+                .getSpanner()
+                .getOptions()
+                .getSessionPoolOptions()
+                .isAutoDetectDialect()) {
+              MAINTAINER_SERVICE.submit(() -> getDialect());
+            }
           }
 
           @Override
@@ -510,6 +517,30 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       }
       this.channelUsage.set(channel);
       return channel;
+    }
+  }
+
+  private final AbstractLazyInitializer<Dialect> dialectSupplier =
+      new AbstractLazyInitializer<Dialect>() {
+        @Override
+        protected Dialect initialize() {
+          try (ResultSet dialectResultSet =
+              singleUse().executeQuery(SessionPool.DETERMINE_DIALECT_STATEMENT)) {
+            if (dialectResultSet.next()) {
+              return Dialect.fromName(dialectResultSet.getString(0));
+            }
+          }
+          // This should not really happen, but it is the safest fallback value.
+          return Dialect.GOOGLE_STANDARD_SQL;
+        }
+      };
+
+  @Override
+  public Dialect getDialect() {
+    try {
+      return dialectSupplier.get();
+    } catch (Exception exception) {
+      throw SpannerExceptionFactory.asSpannerException(exception);
     }
   }
 

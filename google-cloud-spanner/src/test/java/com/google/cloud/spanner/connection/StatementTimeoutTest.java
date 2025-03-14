@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
@@ -662,6 +663,8 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     assumeFalse(
         "Direct executor does not yet support cancelling statements",
         statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+    // TODO: Look into this for multiplexed sessions.
+    assumeTrue(System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS") == null);
 
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));

@@ -132,6 +132,10 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public Dialect getDialect() {
+    MultiplexedSessionDatabaseClient client = getMultiplexedSessionDatabaseClient();
+    if (client != null) {
+      return client.getDialect();
+    }
     return pool.getDialect();
   }
 

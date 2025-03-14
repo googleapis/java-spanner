@@ -674,6 +674,8 @@ public class ConnectionTest {
     public void testGetDialect_DatabaseNotFound() throws Exception {
       mockSpanner.setBatchCreateSessionsExecutionTime(
           SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
       try (Connection connection = createConnection()) {
         SpannerException exception = assertThrows(SpannerException.class, connection::getDialect);
         assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());

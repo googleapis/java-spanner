@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -198,6 +199,8 @@ public abstract class AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1_STATEMENT, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
 
     futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
     exceptionRunnableParentHandlers =
