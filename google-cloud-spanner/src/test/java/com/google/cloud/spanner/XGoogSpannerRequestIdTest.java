@@ -26,6 +26,7 @@ import io.grpc.MethodDescriptor.MethodType;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,6 +126,55 @@ public class XGoogSpannerRequestIdTest {
             // System.out.println("\033[36mstreaming.method: " + method + "\033[00m");
             XGoogSpannerRequestId.assertMonotonicityOfIds(method, values);
           });
+    }
+
+    public static class methodAndRequestId {
+      String method;
+      String requestId;
+
+      public methodAndRequestId(String method, String requestId) {
+        this.method = method;
+        this.requestId = requestId;
+      }
+
+      public String toString() {
+        return "{" + this.method + ":" + this.requestId + "}";
+      }
+    }
+
+    public methodAndRequestId[] accumulatedUnaryValues() {
+      List<methodAndRequestId> accumulated = new ArrayList();
+      this.unaryResults.forEach(
+          (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
+            for (int i = 0; i < values.size(); i++) {
+              accumulated.add(new methodAndRequestId(method, values.get(i).toString()));
+            }
+          });
+      return accumulated.toArray(new methodAndRequestId[0]);
+    }
+
+    public methodAndRequestId[] accumulatedStreamingValues() {
+      List<methodAndRequestId> accumulated = new ArrayList();
+      this.streamingResults.forEach(
+          (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
+            for (int i = 0; i < values.size(); i++) {
+              accumulated.add(new methodAndRequestId(method, values.get(i).toString()));
+            }
+          });
+      return accumulated.toArray(new methodAndRequestId[0]);
+    }
+
+    public void printAccumulatedValues() {
+      methodAndRequestId[] unary = this.accumulatedUnaryValues();
+      System.out.println("accumulatedUnaryvalues");
+      for (int i = 0; i < unary.length; i++) {
+        System.out.println("\t" + unary[i].toString());
+      }
+      methodAndRequestId[] streaming = this.accumulatedStreamingValues();
+      System.out.println("accumulatedStreaminvalues");
+      for (int i = 0; i < streaming.length; i++) {
+        System.out.println("\t" + streaming[i].toString());
+      }
     }
 
     public void reset() {

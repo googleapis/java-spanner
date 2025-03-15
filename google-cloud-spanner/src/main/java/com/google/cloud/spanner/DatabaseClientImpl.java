@@ -29,6 +29,7 @@ import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
@@ -99,6 +100,9 @@ class DatabaseClientImpl implements DatabaseClient {
   private int dbIdFromClientId(String clientId) {
     int i = clientId.indexOf("-");
     String strWithValue = clientId.substring(i + 1);
+    if (Objects.equals(strWithValue, "")) {
+      strWithValue = "0";
+    }
     return Integer.parseInt(strWithValue);
   }
 

@@ -2061,7 +2061,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   GrpcCallContext withRequestId(GrpcCallContext context, Map options, String methodName) {
     String reqId = (String) options.get(Option.REQUEST_ID);
-    if (reqId == null) {
+    if (reqId == null || Objects.equals(reqId, "")) {
       return context;
     }
 

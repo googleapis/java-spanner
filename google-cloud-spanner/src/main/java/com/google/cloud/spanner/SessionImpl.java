@@ -130,7 +130,7 @@ class SessionImpl implements Session {
   }
 
   SessionImpl(SpannerImpl spanner, SessionReference sessionReference, int channelHint) {
-    this(spanner, sessionReference, channelHint, null);
+    this(spanner, sessionReference, channelHint, new XGoogSpannerRequestId.NoopRequestIdCreator());
   }
 
   SessionImpl(
