@@ -643,8 +643,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           if (tx == null) {
             return TransactionSelector.newBuilder()
                 .setBegin(
-                    SessionImpl.createReadWriteTransactionOptions(
-                        options, getPreviousTransactionId()))
+                    this.session
+                        .defaultTransactionOptions()
+                        .toBuilder()
+                        .mergeFrom(
+                            SessionImpl.createReadWriteTransactionOptions(
+                                options, getPreviousTransactionId())))
                 .build();
           } else {
             // Wait for the transaction to come available. The tx.get() call will fail with an

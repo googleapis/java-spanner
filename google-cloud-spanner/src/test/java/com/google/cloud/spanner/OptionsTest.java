@@ -28,12 +28,16 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.spanner.Options.RpcLockHint;
 import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -117,7 +121,7 @@ public class OptionsTest {
     assertThat(options.equals(options)).isTrue();
     assertThat(options.equals(null)).isFalse();
     assertThat(options.equals(this)).isFalse();
-
+    assertNull(options.isolationLevel());
     assertThat(options.hashCode()).isEqualTo(31);
   }
 
@@ -373,6 +377,15 @@ public class OptionsTest {
     Options options = Options.fromTransactionOptions(Options.priority(priority));
     assertTrue(options.hasPriority());
     assertEquals("priority: " + priority + " ", options.toString());
+  }
+
+  @Test
+  public void testTransactionOptionsIsolationLevel() {
+    Options options =
+        Options.fromTransactionOptions(Options.isolationLevel(IsolationLevel.REPEATABLE_READ));
+    assertEquals(options.isolationLevel(), IsolationLevel.REPEATABLE_READ);
+    assertEquals(
+        "isolationLevel: " + IsolationLevel.REPEATABLE_READ.name() + " ", options.toString());
   }
 
   @Test
@@ -773,6 +786,28 @@ public class OptionsTest {
   }
 
   @Test
+  public void transactionOptionsIsolationLevel() {
+    Options option1 =
+        Options.fromTransactionOptions(Options.isolationLevel(IsolationLevel.REPEATABLE_READ));
+    Options option2 =
+        Options.fromTransactionOptions(Options.isolationLevel(IsolationLevel.REPEATABLE_READ));
+    Options option3 = Options.fromTransactionOptions();
+
+    assertEquals(option1, option2);
+    assertEquals(option1.hashCode(), option2.hashCode());
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+
+    assertEquals(option1.isolationLevel(), IsolationLevel.REPEATABLE_READ);
+    assertThat(option1.toString())
+        .contains("isolationLevel: " + IsolationLevel.REPEATABLE_READ.name());
+
+    assertNull(option3.isolationLevel());
+    assertThat(option3.toString())
+        .doesNotContain("isolationLevel: " + IsolationLevel.REPEATABLE_READ.name());
+  }
+
+  @Test
   public void updateOptionsExcludeTxnFromChangeStreams() {
     Options option1 = Options.fromUpdateOptions(Options.excludeTxnFromChangeStreams());
     Options option2 = Options.fromUpdateOptions(Options.excludeTxnFromChangeStreams());
@@ -806,5 +841,36 @@ public class OptionsTest {
 
     assertNull(option3.isLastStatement());
     assertThat(option3.toString()).doesNotContain("lastStatement: true");
+  }
+
+  @Test
+  public void testTransactionOptionCombine_WithNoSpannerOptions() {
+    com.google.spanner.v1.TransactionOptions primaryOptions =
+        com.google.spanner.v1.TransactionOptions.newBuilder()
+            .setIsolationLevel(IsolationLevel.SERIALIZABLE)
+            .setExcludeTxnFromChangeStreams(true)
+            .setReadWrite(ReadWrite.newBuilder().setReadLockMode(ReadLockMode.PESSIMISTIC))
+            .build();
+    com.google.spanner.v1.TransactionOptions spannerOptions =
+        com.google.spanner.v1.TransactionOptions.newBuilder()
+            .setIsolationLevel(IsolationLevel.REPEATABLE_READ)
+            .build();
+    com.google.spanner.v1.TransactionOptions combinedOptions =
+        spannerOptions.toBuilder().mergeFrom(primaryOptions).build();
+    assertEquals(combinedOptions.getIsolationLevel(), IsolationLevel.SERIALIZABLE);
+    assertTrue(combinedOptions.getExcludeTxnFromChangeStreams());
+    assertEquals(
+        combinedOptions.getReadWrite(),
+        ReadWrite.newBuilder().setReadLockMode(ReadLockMode.PESSIMISTIC).build());
+  }
+
+  @Test
+  public void testOptions_WithMultipleDifferentIsolationLevels() {
+    TransactionOption[] transactionOptions = {
+      Options.isolationLevel(IsolationLevel.REPEATABLE_READ),
+      Options.isolationLevel(IsolationLevel.SERIALIZABLE)
+    };
+    Options options = Options.fromTransactionOptions(transactionOptions);
+    assertEquals(options.isolationLevel(), IsolationLevel.SERIALIZABLE);
   }
 }
