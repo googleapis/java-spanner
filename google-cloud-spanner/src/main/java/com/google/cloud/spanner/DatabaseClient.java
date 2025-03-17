@@ -415,8 +415,7 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
-   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the
-   *       transaction
+   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the transaction
    * </ul>
    */
   TransactionRunner readWriteTransaction(TransactionOption... options);
@@ -457,8 +456,7 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
-   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the
-   *       transaction
+   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the transaction
    * </ul>
    */
   TransactionManager transactionManager(TransactionOption... options);
@@ -499,8 +497,7 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
-   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the
-   *       transaction
+   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the transaction
    * </ul>
    */
   AsyncRunner runAsync(TransactionOption... options);
@@ -555,8 +552,7 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
-   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the
-   *       transaction
+   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the transaction
    * </ul>
    */
   AsyncTransactionManager transactionManagerAsync(TransactionOption... options);
