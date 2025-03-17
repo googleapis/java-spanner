@@ -86,40 +86,40 @@ class JavaClientRunner extends AbstractRunner {
       int staleReadSeconds) {
     // setup open telemetry metrics and traces
     // setup open telemetry metrics and traces
-    SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
-    SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-            .setResource(
-                Resource.create(
-                    Attributes.of(
-                        AttributeKey.stringKey("service.name"),
-                        "Java-MultiplexedSession-Benchmark")))
-            .setSampler(Sampler.alwaysOn())
-            .build();
-    MetricExporter cloudMonitoringExporter =
-        GoogleCloudMetricExporter.createWithDefaultConfiguration();
-    SdkMeterProvider sdkMeterProvider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(PeriodicMetricReader.create(cloudMonitoringExporter))
-            .build();
-    OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setMeterProvider(sdkMeterProvider)
-            .setTracerProvider(tracerProvider)
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .buildAndRegisterGlobal();
+    // SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
+    // SdkTracerProvider tracerProvider =
+    //     SdkTracerProvider.builder()
+    //         .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+    //         .setResource(
+    //             Resource.create(
+    //                 Attributes.of(
+    //                     AttributeKey.stringKey("service.name"),
+    //                     "Java-MultiplexedSession-Benchmark")))
+    //         .setSampler(Sampler.alwaysOn())
+    //         .build();
+    // MetricExporter cloudMonitoringExporter =
+    //     GoogleCloudMetricExporter.createWithDefaultConfiguration();
+    // SdkMeterProvider sdkMeterProvider =
+    //     SdkMeterProvider.builder()
+    //         .registerMetricReader(PeriodicMetricReader.create(cloudMonitoringExporter))
+    //         .build();
+    // OpenTelemetry openTelemetry =
+    //     OpenTelemetrySdk.builder()
+    //         .setMeterProvider(sdkMeterProvider)
+    //         .setTracerProvider(tracerProvider)
+    //         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+    //         .buildAndRegisterGlobal();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptionsHelper.setUseMultiplexedSession(
                 SessionPoolOptions.newBuilder(), useMultiplexedSession)
             .build();
-    SpannerOptions.enableOpenTelemetryMetrics();
-    SpannerOptions.enableOpenTelemetryTraces();
+    // SpannerOptions.enableOpenTelemetryMetrics();
+    // SpannerOptions.enableOpenTelemetryTraces();
 
     SpannerOptions options =
         SpannerOptions.newBuilder()
-            .setOpenTelemetry(openTelemetry)
-            .setEnableEndToEndTracing(true)
+            // .setOpenTelemetry(openTelemetry)
+            // .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
             .setHost(SERVER_URL)
@@ -139,7 +139,7 @@ class JavaClientRunner extends AbstractRunner {
       throw SpannerExceptionFactory.asSpannerException(t);
     }
 
-    sdkMeterProvider.close();
+    // sdkMeterProvider.close();
   }
 
   private void executeBenchmarkAndPrintResults(
