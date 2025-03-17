@@ -20,6 +20,8 @@ import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -28,12 +30,15 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TimestampBound;
 import com.google.common.base.Stopwatch;
+import io.grpc.CallOptions.Key;
+import io.grpc.Metadata;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -44,29 +49,41 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 class JavaClientRunner extends AbstractRunner {
   private final DatabaseId databaseId;
+  private final ConcurrentHashMap<String, Long> concurrentHashMap;
+  private final Key<String> trackingKey = Key.create("tracking-uuid");
+  private static final Metadata.Key<String> SERVER_TIMING_HEADER_KEY =
+      Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER);
+  private static final String SERVER_TIMING_HEADER_PREFIX = "gfet4t7; dur=";
   private long numNullValues;
   private long numNonNullValues;
 
   JavaClientRunner(DatabaseId databaseId) {
     this.databaseId = databaseId;
+    this.concurrentHashMap = new ConcurrentHashMap<>();
   }
 
   @Override
-  public List<Duration> execute(
+  public void execute(
       TransactionType transactionType,
       int numClients,
       int numOperations,
       int waitMillis,
-      boolean useMultiplexedSession) {
+      boolean useMultiplexedSession,
+      int warmUpMinutes,
+      int staleReadSeconds) {
     // setup open telemetry metrics and traces
     // setup open telemetry metrics and traces
     SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
@@ -90,49 +107,69 @@ class JavaClientRunner extends AbstractRunner {
         OpenTelemetrySdk.builder()
             .setMeterProvider(sdkMeterProvider)
             .setTracerProvider(tracerProvider)
-            .build();
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .buildAndRegisterGlobal();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptionsHelper.setUseMultiplexedSession(
                 SessionPoolOptions.newBuilder(), useMultiplexedSession)
             .build();
     SpannerOptions.enableOpenTelemetryMetrics();
     SpannerOptions.enableOpenTelemetryTraces();
+
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setOpenTelemetry(openTelemetry)
+            .setEnableEndToEndTracing(true)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
             .setHost(SERVER_URL)
             .build();
-    // Register query stats metric.
-    // This should be done once before start recording the data.
-    Meter meter = openTelemetry.getMeter("cloud.google.com/java");
-    DoubleHistogram endToEndLatencies =
-        meter
-            .histogramBuilder("spanner/end_end_elapsed")
-            .setDescription("The execution of end to end latency")
-            .setUnit("ms")
-            .build();
     try (Spanner spanner = options.getService()) {
       DatabaseClient databaseClient = spanner.getDatabaseClient(databaseId);
-
-      List<Future<List<Duration>>> results = new ArrayList<>(numClients);
-      ExecutorService service = Executors.newFixedThreadPool(numClients);
-      for (int client = 0; client < numClients; client++) {
-        results.add(
-            service.submit(
-                () ->
-                    runBenchmark(
-                        databaseClient,
-                        transactionType,
-                        numOperations,
-                        waitMillis,
-                        endToEndLatencies)));
-      }
-      return collectResults(service, results, numClients, numOperations);
+      executeBenchmarkAndPrintResults(
+          numClients,
+          databaseClient,
+          transactionType,
+          numOperations,
+          waitMillis,
+          warmUpMinutes,
+          staleReadSeconds,
+          true);
     } catch (Throwable t) {
       throw SpannerExceptionFactory.asSpannerException(t);
     }
+
+    sdkMeterProvider.close();
+  }
+
+  private void executeBenchmarkAndPrintResults(
+      int numClients,
+      DatabaseClient databaseClient,
+      TransactionType transactionType,
+      int numOperations,
+      int waitMillis,
+      int warmUpMinutes,
+      int staleReadSeconds,
+      boolean doWarmUp)
+      throws Exception {
+    List<Future<List<Duration>>> results = new ArrayList<>(numClients);
+    ExecutorService service = Executors.newFixedThreadPool(numClients);
+    operationStarted(false);
+    for (int client = 0; client < numClients; client++) {
+      results.add(
+          service.submit(
+              () ->
+                  runBenchmark(
+                      databaseClient,
+                      transactionType,
+                      numOperations,
+                      waitMillis,
+                      warmUpMinutes,
+                      staleReadSeconds,
+                      doWarmUp)));
+    }
+    LatencyBenchmark.printResults(
+        "Performance Results", collectResults(service, results, numClients, numOperations));
   }
 
   private List<Duration> runBenchmark(
@@ -140,16 +177,23 @@ class JavaClientRunner extends AbstractRunner {
       TransactionType transactionType,
       int numOperations,
       int waitMillis,
-      DoubleHistogram endToEndLatencies) {
-    List<Duration> results = new ArrayList<>(numOperations);
+      int warmUpMinutes,
+      int staleReadSeconds,
+      boolean doWarmUp) {
+    List<Duration> results = new ArrayList<>();
     // Execute one query to make sure everything has been warmed up.
-    executeTransaction(databaseClient, transactionType, endToEndLatencies);
-
-    for (int i = 0; i < numOperations; i++) {
+    Instant endTime = Instant.now().plus(warmUpMinutes, ChronoUnit.MINUTES);
+    setWarmUpEndTime(endTime);
+    while (Instant.now().isBefore(endTime) && doWarmUp) {
+      executeTransaction(databaseClient, staleReadSeconds, transactionType);
+    }
+    endTime = Instant.now().plus(numOperations, ChronoUnit.MINUTES);
+    setOperationEndTime(endTime);
+    operationStarted(true);
+    while (Instant.now().isBefore(endTime)) {
       try {
         randomWait(waitMillis);
-        results.add(executeTransaction(databaseClient, transactionType, endToEndLatencies));
-        incOperations();
+        results.add(executeTransaction(databaseClient, staleReadSeconds, transactionType));
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
       }
@@ -158,9 +202,12 @@ class JavaClientRunner extends AbstractRunner {
   }
 
   private Duration executeTransaction(
-      DatabaseClient client, TransactionType transactionType, DoubleHistogram endToEndLatencies) {
+      DatabaseClient client, int staleReadSeconds, TransactionType transactionType) {
     Stopwatch watch = Stopwatch.createStarted();
     switch (transactionType) {
+      case READ_ONLY_STALE_READ:
+        executeSingleUseReadOnlyStaleReadTransaction(client, staleReadSeconds);
+        break;
       case READ_ONLY_SINGLE_USE:
         executeSingleUseReadOnlyTransaction(client);
         break;
@@ -171,13 +218,35 @@ class JavaClientRunner extends AbstractRunner {
         executeReadWriteTransaction(client);
         break;
     }
-    Duration elapsedTime = watch.elapsed();
-    endToEndLatencies.record(elapsedTime.toMillis());
-    return elapsedTime;
+    return watch.elapsed();
+  }
+
+  private void executeSingleUseReadOnlyStaleReadTransaction(
+      DatabaseClient client, int staleReadSeconds) {
+    List<String> columns = new ArrayList<>();
+    columns.add(ID_COLUMN_NAME);
+    try (ResultSet resultSet =
+        client
+            .singleUse(TimestampBound.ofExactStaleness(staleReadSeconds, TimeUnit.SECONDS))
+            .read(
+                TABLE_NAME,
+                KeySet.singleKey(com.google.cloud.spanner.Key.of(getRandomReadKey())),
+                columns)) {
+      while (resultSet.next()) {
+        for (int i = 0; i < resultSet.getColumnCount(); i++) {
+          if (resultSet.isNull(i)) {
+            numNullValues++;
+          } else {
+            numNonNullValues++;
+          }
+        }
+      }
+    }
   }
 
   private void executeSingleUseReadOnlyTransaction(DatabaseClient client) {
-    try (ResultSet resultSet = client.singleUse().executeQuery(getRandomisedReadStatement())) {
+    try (ResultSet resultSet =
+        client.singleUse().executeQuery(getRandomisedReadStatement(), Options.tag("uuid"))) {
       while (resultSet.next()) {
         for (int i = 0; i < resultSet.getColumnCount(); i++) {
           if (resultSet.isNull(i)) {
@@ -222,6 +291,10 @@ class JavaClientRunner extends AbstractRunner {
     client
         .readWriteTransaction()
         .run(transaction -> transaction.executeUpdate(getRandomisedUpdateStatement()));
+  }
+
+  static int getRandomReadKey() {
+    return ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
   }
 
   static Statement getRandomisedReadStatement() {

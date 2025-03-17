@@ -16,20 +16,20 @@
 
 package com.google.cloud.spanner.benchmark;
 
-import java.time.Duration;
-import java.util.List;
-
 public interface BenchmarkRunner {
   enum TransactionType {
     READ_ONLY_SINGLE_USE,
     READ_ONLY_MULTI_USE,
-    READ_WRITE
+    READ_WRITE,
+    READ_ONLY_STALE_READ
   }
 
-  List<Duration> execute(
+  void execute(
       TransactionType transactionType,
       int numClients,
       int numOperations,
       int waitMillis,
-      boolean useMultiplexedSession);
+      boolean useMultiplexedSession,
+      int warmUpMinutes,
+      int staleReadMinutes);
 }

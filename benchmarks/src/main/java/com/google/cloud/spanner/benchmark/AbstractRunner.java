@@ -16,8 +16,9 @@
 
 package com.google.cloud.spanner.benchmark;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -25,34 +26,54 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 abstract class AbstractRunner implements BenchmarkRunner {
-  static final int TOTAL_RECORDS = 1000000;
-  static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
-  static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
+  static final int TOTAL_RECORDS = 100000;
+  static final int READ_RANGE = 99;
+  static final String TABLE_NAME = "Employees";
+  static final String SELECT_QUERY = "SELECT ID FROM Employees WHERE ID=@id";
+  static final String UPDATE_QUERY = "UPDATE Employees SET NAME=SAKTHI WHERE ID = @id";
   static final String ID_COLUMN_NAME = "id";
-  static final String SERVER_URL = "https://staging-wrenchworks.sandbox.googleapis.com";
+  static final String SERVER_URL = "https://spanner.googleapis.com";
 
-  private final AtomicInteger operationCounter = new AtomicInteger();
+  private final AtomicReference<Instant> operationEndTime = new AtomicReference<>();
 
-  protected void incOperations() {
-    operationCounter.incrementAndGet();
+  private final AtomicBoolean operationStarted = new AtomicBoolean();
+
+  private final AtomicReference<Instant> warmUpEndTime = new AtomicReference<>();
+
+  protected void setOperationEndTime(Instant instant) {
+    operationEndTime.set(instant);
   }
 
-  protected List<Duration> collectResults(
+  protected void operationStarted(boolean started) {
+    operationStarted.set(started);
+  }
+
+  protected void setWarmUpEndTime(Instant instant) {
+    warmUpEndTime.set(instant);
+  }
+
+  protected List<Integer> collectResults(
       ExecutorService service,
       List<Future<List<Duration>>> results,
       int numClients,
       int numOperations)
       throws Exception {
-    int totalOperations = numClients * numOperations;
     service.shutdown();
     while (!service.isTerminated()) {
-      //noinspection BusyWait
       Thread.sleep(1000L);
-      System.out.printf("\r%d/%d", operationCounter.get(), totalOperations);
+      if (operationStarted.get()) {
+        //noinspection BusyWait
+        System.out.printf("\rOperation Ends in %s", showTime(operationEndTime.get()));
+      } else if (warmUpEndTime.get() != null) {
+        System.out.printf("\rWarm up ends in %s", showTime(warmUpEndTime.get()));
+      }
     }
+    System.out.print("\r\r");
     System.out.println();
     if (!service.awaitTermination(60L, TimeUnit.MINUTES)) {
       throw new TimeoutException();
@@ -61,7 +82,14 @@ abstract class AbstractRunner implements BenchmarkRunner {
     for (Future<List<Duration>> result : results) {
       allResults.addAll(result.get());
     }
-    return allResults;
+    return allResults.stream().map(Duration::getNano).collect(Collectors.toList());
+  }
+
+  private String showTime(Instant endTime) {
+    long totalSeconds = ChronoUnit.SECONDS.between(Instant.now(), endTime);
+    long totalMinutes = ChronoUnit.MINUTES.between(Instant.now(), endTime);
+
+    return String.format("%s-%s", totalMinutes, totalSeconds - (totalMinutes * 60));
   }
 
   protected void randomWait(int waitMillis) throws InterruptedException {
@@ -70,11 +98,5 @@ abstract class AbstractRunner implements BenchmarkRunner {
     }
     int randomMillis = ThreadLocalRandom.current().nextInt(waitMillis * 2);
     Thread.sleep(randomMillis);
-  }
-
-  protected String generateRandomString() {
-    byte[] bytes = new byte[64];
-    ThreadLocalRandom.current().nextBytes(bytes);
-    return new String(bytes, StandardCharsets.UTF_8);
   }
 }

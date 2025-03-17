@@ -34,7 +34,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <junixsocket.version>2.10.1</junixsocket.version>
-    <opentelemetry.version>1.45.0</opentelemetry.version>
+    <opentelemetry.version>1.47.0</opentelemetry.version>
   </properties>
 
   <dependencies>
@@ -49,12 +49,12 @@
     <dependency>
       <groupId>com.google.cloud.opentelemetry</groupId>
       <artifactId>exporter-trace</artifactId>
-      <version>0.33.0</version>
+      <version>0.32.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud.opentelemetry</groupId>
       <artifactId>exporter-metrics</artifactId>
-      <version>0.33.0</version>
+      <version>0.32.0</version>
     </dependency>
     <!-- OpenTelemetry test dependencies -->
     <dependency>
@@ -91,8 +91,13 @@
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-monitoring</artifactId>
+      <version>3.57.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.84.0</version>
+      <version>6.88.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
@@ -115,11 +120,6 @@
       <artifactId>junixsocket-common</artifactId>
       <version>${junixsocket.version}</version>
     </dependency>
-    <dependency>
-      <groupId>commons-cli</groupId>
-      <artifactId>commons-cli</artifactId>
-      <version>1.9.0</version>
-    </dependency>
 
     <dependency>
       <groupId>junit</groupId>
@@ -130,6 +130,38 @@
   </dependencies>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.3.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
