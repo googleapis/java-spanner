@@ -26,6 +26,7 @@ import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.IntegrationTestEnv.TestEnvOptions;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerOptions;
@@ -43,6 +44,8 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -56,8 +59,9 @@ import org.junit.runners.JUnit4;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITEndToEndTracingTest {
-
-  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+  public static Collection<TestEnvOptions> testEnvOptions =
+      Arrays.asList(TestEnvOptions.USE_END_TO_END_TRACING);
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv(testEnvOptions);
   private static DatabaseClient googleStandardSQLClient;
 
   static {

@@ -38,6 +38,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -79,8 +81,20 @@ public class IntegrationTestEnv extends ExternalResource {
   private final boolean alwaysCreateNewInstance;
   private RemoteSpannerHelper testHelper;
 
+  private Collection<TestEnvOptions> testEnvOptions = Collections.emptyList();
+
+  public enum TestEnvOptions {
+    USE_END_TO_END_TRACING;
+    // TODO : Move alwaysCreateNewInstance to TestEnvOptions
+  }
+
   public IntegrationTestEnv() {
     this(false);
+  }
+
+  public IntegrationTestEnv(Collection<TestEnvOptions> testEnvOptions) {
+    this(false);
+    this.testEnvOptions = testEnvOptions;
   }
 
   public IntegrationTestEnv(final boolean alwaysCreateNewInstance) {
@@ -119,10 +133,15 @@ public class IntegrationTestEnv extends ExternalResource {
     assumeFalse(alwaysCreateNewInstance && isCloudDevel());
 
     this.config.setUp();
-    // OpenTelemetry set up for enabling End to End tracing for all integration test env.
-    // The gRPC stub and connections are created during test env set up using SpannerOptions and are
-    // reused for executing statements.
-    SpannerOptions options = spannerOptionsWithEndToEndTracing();
+    SpannerOptions options = config.spannerOptions();
+    if (testEnvOptions.stream()
+        .anyMatch(testEnvOption -> TestEnvOptions.USE_END_TO_END_TRACING.equals(testEnvOption))) {
+      // OpenTelemetry set up for enabling End to End tracing for all integration test env.
+      // The gRPC stub and connections are created during test env set up using SpannerOptions and
+      // are
+      // reused for executing statements.
+      options = spannerOptionsWithEndToEndTracing(options);
+    }
     String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
     InstanceId instanceId;
     if (!instanceProperty.isEmpty() && !alwaysCreateNewInstance) {
@@ -147,11 +166,10 @@ public class IntegrationTestEnv extends ExternalResource {
     }
   }
 
-  public SpannerOptions spannerOptionsWithEndToEndTracing() {
+  public SpannerOptions spannerOptionsWithEndToEndTracing(SpannerOptions options) {
     GlobalOpenTelemetry.resetForTest(); // reset global context for test
     assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
 
-    SpannerOptions options = config.spannerOptions();
     TraceConfiguration.Builder traceConfigurationBuilder = TraceConfiguration.builder();
     if (options.getCredentials() != null) {
       traceConfigurationBuilder.setCredentials(options.getCredentials());
