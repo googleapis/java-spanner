@@ -83,6 +83,9 @@ class SessionImpl implements Session {
         && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
       readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
     }
+    if (options.isolationLevel() != null) {
+      transactionOptions.setIsolationLevel(options.isolationLevel());
+    }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
   }
@@ -193,6 +196,10 @@ class SessionImpl implements Session {
     sessionReference.markUsed(instant);
   }
 
+  TransactionOptions defaultTransactionOptions() {
+    return this.spanner.getOptions().getDefaultTransactionOptions();
+  }
+
   public DatabaseId getDatabaseId() {
     return sessionReference.getDatabaseId();
   }
@@ -252,7 +259,11 @@ class SessionImpl implements Session {
     if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       transactionOptionsBuilder.setExcludeTxnFromChangeStreams(true);
     }
-    requestBuilder.setSingleUseTransaction(transactionOptionsBuilder);
+    if (options.isolationLevel() != null) {
+      transactionOptionsBuilder.setIsolationLevel(options.isolationLevel());
+    }
+    requestBuilder.setSingleUseTransaction(
+        defaultTransactionOptions().toBuilder().mergeFrom(transactionOptionsBuilder.build()));
 
     if (options.hasMaxCommitDelay()) {
       requestBuilder.setMaxCommitDelay(
@@ -444,7 +455,11 @@ class SessionImpl implements Session {
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(
-                createReadWriteTransactionOptions(transactionOptions, previousTransactionId));
+                defaultTransactionOptions()
+                    .toBuilder()
+                    .mergeFrom(
+                        createReadWriteTransactionOptions(
+                            transactionOptions, previousTransactionId)));
     if (sessionReference.getIsMultiplexed() && mutation != null) {
       requestBuilder.setMutationKey(mutation);
     }
@@ -489,7 +504,6 @@ class SessionImpl implements Session {
         .setOptions(options)
         .setTransactionId(null)
         .setPreviousTransactionId(previousTransactionId)
-        .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))

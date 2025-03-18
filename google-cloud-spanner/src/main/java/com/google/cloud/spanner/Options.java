@@ -21,6 +21,7 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.Objects;
@@ -157,6 +158,13 @@ public final class Options implements Serializable {
    */
   public static TransactionOption optimisticLock() {
     return OPTIMISTIC_LOCK_OPTION;
+  }
+
+  /**
+   * Specifying this instructs the transaction to request {@link IsolationLevel} from the backend.
+   */
+  public static TransactionOption isolationLevel(IsolationLevel isolationLevel) {
+    return new IsolationLevelOption(isolationLevel);
   }
 
   /**
@@ -490,6 +498,20 @@ public final class Options implements Serializable {
     }
   }
 
+  /** Option to set isolation level for read/write transactions. */
+  static final class IsolationLevelOption extends InternalOption implements TransactionOption {
+    private final IsolationLevel isolationLevel;
+
+    public IsolationLevelOption(IsolationLevel isolationLevel) {
+      this.isolationLevel = isolationLevel;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.isolationLevel = isolationLevel;
+    }
+  }
+
   private boolean withCommitStats;
 
   private Duration maxCommitDelay;
@@ -512,6 +534,7 @@ public final class Options implements Serializable {
   private RpcOrderBy orderBy;
   private RpcLockHint lockHint;
   private Boolean lastStatement;
+  private IsolationLevel isolationLevel;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -664,6 +687,10 @@ public final class Options implements Serializable {
     return lockHint == null ? null : lockHint.proto;
   }
 
+  IsolationLevel isolationLevel() {
+    return isolationLevel;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -726,6 +753,9 @@ public final class Options implements Serializable {
     if (lockHint != null) {
       b.append("lockHint: ").append(lockHint).append(' ');
     }
+    if (isolationLevel != null) {
+      b.append("isolationLevel: ").append(isolationLevel).append(' ');
+    }
     return b.toString();
   }
 
@@ -767,7 +797,8 @@ public final class Options implements Serializable {
         && Objects.equals(directedReadOptions(), that.directedReadOptions())
         && Objects.equals(orderBy(), that.orderBy())
         && Objects.equals(isLastStatement(), that.isLastStatement())
-        && Objects.equals(lockHint(), that.lockHint());
+        && Objects.equals(lockHint(), that.lockHint())
+        && Objects.equals(isolationLevel(), that.isolationLevel());
   }
 
   @Override
@@ -832,6 +863,9 @@ public final class Options implements Serializable {
     }
     if (lockHint != null) {
       result = 31 * result + lockHint.hashCode();
+    }
+    if (isolationLevel != null) {
+      result = 31 * result + isolationLevel.hashCode();
     }
     return result;
   }

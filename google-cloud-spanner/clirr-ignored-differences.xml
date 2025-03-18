@@ -880,6 +880,16 @@
     <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
     <method>com.google.auth.oauth2.GoogleCredentials getDefaultExperimentalHostCredentials()</method>
   </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>com.google.auth.oauth2.GoogleCredentials getDefaultExternalHostCredentials()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions</className>
+    <method>com.google.auth.oauth2.GoogleCredentials getDefaultExternalHostCredentialsFromSysEnv()</method>
+  </difference>
 
   <!-- Default sequence kind -->
   <difference>
