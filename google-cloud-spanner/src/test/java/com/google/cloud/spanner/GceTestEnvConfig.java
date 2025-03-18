@@ -58,7 +58,6 @@ public class GceTestEnvConfig implements TestEnvConfig {
   private final SpannerOptions options;
 
   public GceTestEnvConfig() {
-    System.setProperty(GCE_PROJECT_ID,"span-cloud-testing");
     String projectId = System.getProperty(GCE_PROJECT_ID, "");
     String serverUrl = System.getProperty(GCE_SERVER_URL, "");
     String credentialsFile = System.getProperty(GCE_CREDENTIALS_FILE, "");
