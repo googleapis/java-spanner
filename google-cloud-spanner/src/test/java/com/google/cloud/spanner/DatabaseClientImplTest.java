@@ -49,9 +49,9 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options.RpcLockHint;
 import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
@@ -90,12 +90,14 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
@@ -111,6 +113,8 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -135,8 +139,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
-import org.threeten.bp.Instant;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
@@ -270,6 +272,9 @@ public class DatabaseClientImplTest {
   @Test
   public void
       testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
+    assumeFalse(
+        "Session pool maintainer test skipped for multiplexed sessions",
+        isMultiplexedSessionsEnabledForRW());
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -347,6 +352,9 @@ public class DatabaseClientImplTest {
   @Test
   public void
       testPoolMaintainer_whenInactiveTransactionAndSessionExistsOnBackend_removeSessionsFromPool() {
+    assumeFalse(
+        "Session leaks tests are skipped for multiplexed sessions",
+        isMultiplexedSessionsEnabledForRW());
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -482,6 +490,9 @@ public class DatabaseClientImplTest {
    */
   @Test
   public void testPoolMaintainer_whenPDMLFollowedByInactiveTransaction_removeSessionsFromPool() {
+    assumeFalse(
+        "Session leaks tests are skipped for multiplexed sessions",
+        isMultiplexedSessionsEnabledForRW());
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -1334,10 +1345,7 @@ public class DatabaseClientImplTest {
   public void testWrite() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Timestamp timestamp =
-        client.write(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeInsertMutation(client);
     assertNotNull(timestamp);
 
     List<BeginTransactionRequest> beginTransactions =
@@ -1364,10 +1372,7 @@ public class DatabaseClientImplTest {
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-    Timestamp timestamp =
-        client.write(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeInsertMutation(client);
     assertNotNull(timestamp);
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -1383,10 +1388,7 @@ public class DatabaseClientImplTest {
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-    Timestamp timestamp =
-        client.writeAtLeastOnce(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeAtLeastOnceInsertMutation(client);
     assertNotNull(timestamp);
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -1397,10 +1399,8 @@ public class DatabaseClientImplTest {
   public void testWriteWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.priority(RpcPriority.HIGH));
+    MockSpannerTestActions.writeInsertMutationWithOptions(
+        client, Options.priority(RpcPriority.HIGH));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -1435,10 +1435,8 @@ public class DatabaseClientImplTest {
   public void testWriteWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.excludeTxnFromChangeStreams());
+    MockSpannerTestActions.writeInsertMutationWithOptions(
+        client, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -1453,10 +1451,7 @@ public class DatabaseClientImplTest {
   public void testWriteAtLeastOnce() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Timestamp timestamp =
-        client.writeAtLeastOnce(
-            Collections.singletonList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    Timestamp timestamp = MockSpannerTestActions.writeAtLeastOnceInsertMutation(client);
     assertNotNull(timestamp);
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -1496,10 +1491,8 @@ public class DatabaseClientImplTest {
   public void testWriteAtLeastOnceWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.priority(RpcPriority.LOW));
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.priority(RpcPriority.LOW));
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -1515,10 +1508,8 @@ public class DatabaseClientImplTest {
   public void testWriteAtLeastOnceWithTagOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.tag("app=spanner,env=test"));
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.tag("app=spanner,env=test"));
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -1535,10 +1526,8 @@ public class DatabaseClientImplTest {
   public void testWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.writeAtLeastOnceWithOptions(
-        Collections.singletonList(
-            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-        Options.excludeTxnFromChangeStreams());
+    MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+        client, Options.excludeTxnFromChangeStreams());
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
@@ -1746,6 +1735,53 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testUnsupportedTransactionWithLockHintOption() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .read(
+                READ_TABLE_NAME,
+                KeySet.singleKey(Key.of(1L)),
+                READ_COLUMN_NAMES,
+                Options.lockHint(RpcLockHint.EXCLUSIVE))) {
+      consumeResults(resultSet);
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    // lock hint is only supported in  ReadWriteTransaction
+    assertEquals(LockHint.LOCK_HINT_UNSPECIFIED, request.getLockHint());
+  }
+
+  @Test
+  public void testReadWriteTransactionWithLockHint() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.lockHint(RpcLockHint.EXCLUSIVE))) {
+            consumeResults(resultSet);
+          }
+          return null;
+        });
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertEquals(LockHint.LOCK_HINT_EXCLUSIVE, request.getLockHint());
+  }
+
+  @Test
   public void testExecuteReadWithDirectedReadOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -1870,6 +1906,9 @@ public class DatabaseClientImplTest {
         .isEqualTo("app=spanner,env=test,action=read");
     assertThat(request.getRequestOptions().getTransactionTag())
         .isEqualTo("app=spanner,env=test,action=txn");
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        request.getTransaction().getBegin().getIsolationLevel());
   }
 
   @Test
@@ -1892,6 +1931,9 @@ public class DatabaseClientImplTest {
     assertNotNull(request.getTransaction().getBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
     assertFalse(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        request.getTransaction().getBegin().getIsolationLevel());
   }
 
   @Test
@@ -1918,6 +1960,9 @@ public class DatabaseClientImplTest {
     assertNotNull(request.getTransaction().getBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
     assertFalse(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        request.getTransaction().getBegin().getIsolationLevel());
   }
 
   @Test
@@ -1948,13 +1993,8 @@ public class DatabaseClientImplTest {
   public void testCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner =
-        client.readWriteTransaction(Options.tag("app=spanner,env=test,action=commit"));
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(
+        client, Options.tag("app=spanner,env=test,action=commit"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -1977,12 +2017,8 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (TransactionManager manager =
-        client.transactionManager(Options.tag("app=spanner,env=test,action=manager"))) {
-      TransactionContext transaction = manager.begin();
-      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-      manager.commit();
-    }
+    MockSpannerTestActions.transactionManagerCommit(
+        client, Options.tag("app=spanner,env=test,action=manager"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -1991,6 +2027,9 @@ public class DatabaseClientImplTest {
     assertNotNull(beginTransaction.getOptions());
     assertTrue(beginTransaction.getOptions().hasReadWrite());
     assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        beginTransaction.getOptions().getIsolationLevel());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -2005,14 +2044,8 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.tag("app=spanner,env=test,action=runner"));
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
+    MockSpannerTestActions.asyncRunnerCommit(
+        client, executor, Options.tag("app=spanner,env=test,action=runner"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2021,6 +2054,9 @@ public class DatabaseClientImplTest {
     assertNotNull(beginTransaction.getOptions());
     assertTrue(beginTransaction.getOptions().hasReadWrite());
     assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        beginTransaction.getOptions().getIsolationLevel());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -2035,19 +2071,8 @@ public class DatabaseClientImplTest {
   public void testAsyncTransactionManagerCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.tag("app=spanner,env=test,action=manager"))) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(
+        client, executor, Options.tag("app=spanner,env=test,action=manager"));
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2056,6 +2081,9 @@ public class DatabaseClientImplTest {
     assertNotNull(beginTransaction.getOptions());
     assertTrue(beginTransaction.getOptions().hasReadWrite());
     assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        beginTransaction.getOptions().getIsolationLevel());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -2085,8 +2113,8 @@ public class DatabaseClientImplTest {
   public void testReadWriteTxnWithExcludeTxnFromChangeStreams_batchUpdate() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
-    runner.run(transaction -> transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT)));
+    MockSpannerTestActions.executeBatchUpdateTransaction(
+        client, Options.excludeTxnFromChangeStreams());
 
     List<ExecuteBatchDmlRequest> requests =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
@@ -2116,12 +2144,7 @@ public class DatabaseClientImplTest {
   public void testCommitWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(client, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2136,12 +2159,7 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (TransactionManager manager =
-        client.transactionManager(Options.excludeTxnFromChangeStreams())) {
-      TransactionContext transaction = manager.begin();
-      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-      manager.commit();
-    }
+    MockSpannerTestActions.transactionManagerCommit(client, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2156,14 +2174,8 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.excludeTxnFromChangeStreams());
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
+    MockSpannerTestActions.asyncRunnerCommit(
+        client, executor, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2178,19 +2190,8 @@ public class DatabaseClientImplTest {
   public void testAsyncTransactionManagerCommitWithExcludeTxnFromChangeStreams() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.excludeTxnFromChangeStreams())) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(
+        client, executor, Options.excludeTxnFromChangeStreams());
 
     List<BeginTransactionRequest> beginTransactions =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
@@ -2852,10 +2853,10 @@ public class DatabaseClientImplTest {
     mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(20, 0));
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRpcTimeout(Duration.ofMillis(1L))
-            .setMaxRpcTimeout(Duration.ofMillis(1L))
+            .setInitialRpcTimeoutDuration(Duration.ofMillis(1L))
+            .setMaxRpcTimeoutDuration(Duration.ofMillis(1L))
             .setMaxAttempts(1)
-            .setTotalTimeout(Duration.ofMillis(1L))
+            .setTotalTimeoutDuration(Duration.ofMillis(1L))
             .build();
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
@@ -2868,7 +2869,8 @@ public class DatabaseClientImplTest {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
-      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofHours(2L));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeoutDuration())
+          .isEqualTo(Duration.ofHours(2L));
 
       // PDML should not timeout with these settings.
       long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
@@ -2900,11 +2902,12 @@ public class DatabaseClientImplTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value.
-    builder.setPartitionedDmlTimeout(Duration.ofMillis(10L));
+    builder.setPartitionedDmlTimeoutDuration(Duration.ofMillis(10L));
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofMillis(10L));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeoutDuration())
+          .isEqualTo(Duration.ofMillis(10L));
       // PDML should time out with these settings.
       mockSpanner.setExecuteSqlExecutionTime(
           SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
@@ -2933,7 +2936,7 @@ public class DatabaseClientImplTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value to a value that should allow the statement to be executed.
-    builder.setPartitionedDmlTimeout(Duration.ofMillis(5000L));
+    builder.setPartitionedDmlTimeoutDuration(Duration.ofMillis(5000L));
     // Set the ExecuteSql RPC timeout value to a value lower than the time needed to execute the
     // statement. The higher timeout value that is set above should be respected, and the value for
     // the ExecuteSQL RPC should be ignored specifically for Partitioned DML.
@@ -2946,10 +2949,10 @@ public class DatabaseClientImplTest {
                 .executeSqlSettings()
                 .getRetrySettings()
                 .toBuilder()
-                .setInitialRpcTimeout(Duration.ofMillis(10L))
-                .setMaxRpcTimeout(Duration.ofMillis(10L))
-                .setInitialRetryDelay(Duration.ofMillis(1L))
-                .setMaxRetryDelay(Duration.ofMillis(1L))
+                .setInitialRpcTimeoutDuration(Duration.ofMillis(10L))
+                .setMaxRpcTimeoutDuration(Duration.ofMillis(10L))
+                .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+                .setMaxRetryDelayDuration(Duration.ofMillis(1L))
                 .build());
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
@@ -3051,7 +3054,7 @@ public class DatabaseClientImplTest {
                 .setSessionPoolOption(
                     SessionPoolOptions.newBuilder()
                         .setMinSessions(0)
-                        .setWaitForMinSessions(waitForMinSessions)
+                        .setWaitForMinSessionsDuration(waitForMinSessions)
                         .build())
                 .build()
                 .getService()) {
@@ -3082,14 +3085,20 @@ public class DatabaseClientImplTest {
                         .readWriteTransaction()
                         .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
             // No additional requests should have been sent by the client.
-            // Note that in case of the use of multiplexed sessions, then we have 2 requests:
-            // 1. BatchCreateSessions for the session pool.
-            // 2. CreateSession for the multiplexed session.
-            assertThat(mockSpanner.getRequests())
-                .hasSize(
-                    spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()
-                        ? 2
-                        : 1);
+            if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()
+                && !spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+              // Note that in case of the use of multiplexed sessions for read-only alone, then we
+              // have 2 requests:
+              // 1. BatchCreateSessions for the session pool.
+              // 2. CreateSession for the multiplexed session.
+              assertThat(mockSpanner.getRequests()).hasSize(2);
+            } else {
+              // Note that in case of the use of regular sessions, then we have 1 request:
+              // BatchCreateSessions for the session pool.
+              // Note that in case of the use of multiplexed sessions for read-write, then we have 1
+              // request: CreateSession for the multiplexed session.
+              assertThat(mockSpanner.getRequests()).hasSize(1);
+            }
           }
         }
         mockSpanner.reset();
@@ -3209,9 +3218,16 @@ public class DatabaseClientImplTest {
               ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
         }
 
-        assertThrows(
-            ResourceNotFoundException.class,
-            () -> dbClient.readWriteTransaction().run(transaction -> null));
+        if (!spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
+          // We only verify this for read-write transactions if we are not using multiplexed
+          // sessions. For multiplexed sessions, we don't need any special handling, as deleting the
+          // database will also invalidate the multiplexed session, and trying to continue to use it
+          // will continue to return an error.
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> dbClient.readWriteTransaction().run(transaction -> null));
+        }
+
         assertThat(mockSpanner.getRequests()).isEmpty();
         // Now get a new database client. Normally multiple calls to Spanner#getDatabaseClient will
         // return the same instance, but not when the instance has been invalidated by a
@@ -3298,13 +3314,18 @@ public class DatabaseClientImplTest {
       Thread.sleep(1L);
     }
     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+    int expectedMinSessions =
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()
+            ? minSessions
+            : minSessions - 1;
     Long res =
         client
             .readWriteTransaction()
             .allowNestedTransaction()
             .run(
                 transaction -> {
-                  assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                  assertThat(client.pool.getNumberOfSessionsInPool())
+                      .isEqualTo(expectedMinSessions);
                   return transaction.executeUpdate(UPDATE_STATEMENT);
                 });
     assertThat(res).isEqualTo(UPDATE_COUNT);
@@ -3331,6 +3352,9 @@ public class DatabaseClientImplTest {
     }
     assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
     assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+    // When read-write transaction uses multiplexed sessions, then sessions are not checked out from
+    // the session pool.
+    int expectedMinSessions = isMultiplexedSessionsEnabledForRW() ? minSessions : minSessions - 1;
     Long res =
         client1
             .readWriteTransaction()
@@ -3339,7 +3363,8 @@ public class DatabaseClientImplTest {
                 transaction -> {
                   // Client1 should have 1 session checked out.
                   // Client2 should have 0 sessions checked out.
-                  assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                  assertThat(client1.pool.getNumberOfSessionsInPool())
+                      .isEqualTo(expectedMinSessions);
                   assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
                   Long add =
                       client2
@@ -3348,9 +3373,9 @@ public class DatabaseClientImplTest {
                               transaction1 -> {
                                 // Both clients should now have 1 session checked out.
                                 assertThat(client1.pool.getNumberOfSessionsInPool())
-                                    .isEqualTo(minSessions - 1);
+                                    .isEqualTo(expectedMinSessions);
                                 assertThat(client2.pool.getNumberOfSessionsInPool())
-                                    .isEqualTo(minSessions - 1);
+                                    .isEqualTo(expectedMinSessions);
                                 try (ResultSet rs = transaction1.executeQuery(SELECT1)) {
                                   if (rs.next()) {
                                     return rs.getLong(0);
@@ -3737,7 +3762,9 @@ public class DatabaseClientImplTest {
               .setChannelProvider(channelProvider)
               .setCredentials(NoCredentials.getInstance())
               .setSessionPoolOption(
-                  SessionPoolOptions.newBuilder().setWaitForMinSessions(waitForMinSessions).build())
+                  SessionPoolOptions.newBuilder()
+                      .setWaitForMinSessionsDuration(waitForMinSessions)
+                      .build())
               .build()
               .getService()) {
         DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
@@ -3836,7 +3863,7 @@ public class DatabaseClientImplTest {
         .withValue(
             SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY,
             SpannerCallContextTimeoutConfigurator.create()
-                .withExecuteQueryTimeout(Duration.ofNanos(1L)))
+                .withExecuteQueryTimeoutDuration(Duration.ofNanos(1L)))
         .run(
             () -> {
               // Query should fail with a timeout.
@@ -3882,7 +3909,7 @@ public class DatabaseClientImplTest {
     try {
       // Simulate session creation failures on the backend.
       mockSpanner.setCreateSessionExecutionTime(
-          SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
+          SimulatedExecutionTime.ofStickyException(Status.PERMISSION_DENIED.asRuntimeException()));
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
       mockSpanner.freeze();
@@ -3891,8 +3918,8 @@ public class DatabaseClientImplTest {
               DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
         mockSpanner.unfreeze();
-        SpannerException e = assertThrows(SpannerException.class, rs::next);
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+        SpannerException exception = assertThrows(SpannerException.class, rs::next);
+        assertEquals(ErrorCode.PERMISSION_DENIED, exception.getErrorCode());
       }
     } finally {
       mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
@@ -4093,12 +4120,7 @@ public class DatabaseClientImplTest {
   public void testCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction(Options.priority(RpcPriority.HIGH));
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(client, Options.priority(RpcPriority.HIGH));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4111,12 +4133,7 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (TransactionManager manager =
-        client.transactionManager(Options.priority(RpcPriority.HIGH))) {
-      TransactionContext transaction = manager.begin();
-      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-      manager.commit();
-    }
+    MockSpannerTestActions.transactionManagerCommit(client, Options.priority(RpcPriority.HIGH));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4129,14 +4146,7 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.priority(RpcPriority.HIGH));
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
+    MockSpannerTestActions.asyncRunnerCommit(client, executor, Options.priority(RpcPriority.HIGH));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4149,19 +4159,8 @@ public class DatabaseClientImplTest {
   public void testAsyncTransactionManagerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.priority(RpcPriority.HIGH))) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(
+        client, executor, Options.priority(RpcPriority.HIGH));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4174,12 +4173,7 @@ public class DatabaseClientImplTest {
   public void testCommitWithoutMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction();
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(client);
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4191,13 +4185,8 @@ public class DatabaseClientImplTest {
   public void testCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner =
-        client.readWriteTransaction(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
-    runner.run(
-        transaction -> {
-          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-          return null;
-        });
+    MockSpannerTestActions.commitDeleteTransaction(
+        client, Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4212,11 +4201,8 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionManager manager =
-        client.transactionManager(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
-    TransactionContext transaction = manager.begin();
-    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-    manager.commit();
+    MockSpannerTestActions.transactionManagerCommit(
+        client, Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4231,14 +4217,8 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
-    get(
-        runner.runAsync(
-            txn -> {
-              txn.buffer(Mutation.delete("TEST", KeySet.all()));
-              return ApiFutures.immediateFuture(null);
-            },
-            executor));
+    MockSpannerTestActions.asyncRunnerCommit(
+        client, executor, Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4253,19 +4233,8 @@ public class DatabaseClientImplTest {
   public void testAsyncTransactionManagerCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)))) {
-      TransactionContextFuture transaction = manager.beginAsync();
-      get(
-          transaction
-              .then(
-                  (txn, input) -> {
-                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                    return ApiFutures.immediateFuture(null);
-                  },
-                  executor)
-              .commitAsync());
-    }
+    MockSpannerTestActions.transactionManagerAsyncCommit(
+        client, executor, Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -4431,6 +4400,8 @@ public class DatabaseClientImplTest {
   public void testGetDialect_FailsDirectlyIfDatabaseNotFound() {
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
@@ -4446,6 +4417,8 @@ public class DatabaseClientImplTest {
   @Test
   public void testGetDialectDefaultPreloaded_FailsDirectlyIfDatabaseNotFound() {
     mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+    mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     try (Spanner spanner =
         this.spanner
@@ -4956,7 +4929,7 @@ public class DatabaseClientImplTest {
           @Override
           public <ReqT, RespT> ApiCallContext configure(
               ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
-            return context.withStreamWaitTimeout(Duration.ofNanos(1L));
+            return context.withStreamWaitTimeoutDuration(Duration.ofNanos(1L));
           }
         };
     Context context =
@@ -4983,7 +4956,7 @@ public class DatabaseClientImplTest {
           @Override
           public <ReqT, RespT> ApiCallContext configure(
               ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
-            return context.withStreamWaitTimeout(Duration.ZERO);
+            return context.withStreamWaitTimeoutDuration(Duration.ZERO);
           }
         };
     Context context =
@@ -5002,12 +4975,12 @@ public class DatabaseClientImplTest {
   public void testRetryOnResourceExhausted() {
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRpcTimeout(Duration.ofSeconds(60L))
-            .setMaxRpcTimeout(Duration.ofSeconds(60L))
-            .setTotalTimeout(Duration.ofSeconds(60L))
+            .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+            .setMaxRpcTimeoutDuration(Duration.ofSeconds(60L))
+            .setTotalTimeoutDuration(Duration.ofSeconds(60L))
             .setRpcTimeoutMultiplier(1.0d)
-            .setInitialRetryDelay(Duration.ZERO)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setInitialRetryDelayDuration(Duration.ZERO)
+            .setMaxRetryDelayDuration(Duration.ZERO)
             .setMaxAttempts(100)
             .build();
     SpannerOptions.Builder builder =
@@ -5086,6 +5059,9 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testSessionPoolExhaustedError_containsStackTraces() {
+    assumeFalse(
+        "Session pool tests are skipped for multiplexed sessions",
+        isMultiplexedSessionsEnabledForRW());
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
@@ -5096,7 +5072,7 @@ public class DatabaseClientImplTest {
                     .setFailIfPoolExhausted()
                     .setMinSessions(2)
                     .setMaxSessions(4)
-                    .setWaitForMinSessions(Duration.ofSeconds(10L))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
                     .build())
             .build()
             .getService()) {
@@ -5445,5 +5421,12 @@ public class DatabaseClientImplTest {
       return false;
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+  }
+
+  private boolean isMultiplexedSessionsEnabledForRW() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }

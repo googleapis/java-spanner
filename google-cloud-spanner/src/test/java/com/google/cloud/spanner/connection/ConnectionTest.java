@@ -36,6 +36,8 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.connection.ConnectionOptions.Builder;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -417,6 +419,11 @@ public class ConnectionTest {
       return super.getBaseUrl() + ";maxSessions=1";
     }
 
+    @Override
+    protected Builder configureConnectionOptions(Builder builder) {
+      return builder.setStatementExecutorType(StatementExecutorType.PLATFORM_THREAD);
+    }
+
     @Test
     public void testMaxSessions()
         throws InterruptedException, TimeoutException, ExecutionException {
@@ -666,6 +673,8 @@ public class ConnectionTest {
     @Test
     public void testGetDialect_DatabaseNotFound() throws Exception {
       mockSpanner.setBatchCreateSessionsExecutionTime(
+          SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+      mockSpanner.setCreateSessionExecutionTime(
           SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
       try (Connection connection = createConnection()) {
         SpannerException exception = assertThrows(SpannerException.class, connection::getDialect);

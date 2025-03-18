@@ -16,18 +16,16 @@
 
 package com.google.cloud.spanner;
 
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import com.google.api.core.InternalApi;
 
-class BuiltInOpenTelemetryMetricsView {
+/** Streaming implementation of ResultSet that supports streaming of chunks */
+interface StreamingResultSet extends ResultSet {
 
-  private BuiltInOpenTelemetryMetricsView() {}
-
-  /** Register built-in metrics on the {@link SdkMeterProviderBuilder} with credentials. */
-  static void registerBuiltinMetrics(
-      MetricExporter metricExporter, SdkMeterProviderBuilder builder) {
-    BuiltInMetricsConstant.getAllViews().forEach(builder::registerView);
-    builder.registerMetricReader(PeriodicMetricReader.create(metricExporter));
-  }
+  /**
+   * Returns the {@link boolean} for this {@link ResultSet}. This method will be used by
+   * AsyncResultSet internally to initiate gRPC streaming. This method should not be called by the
+   * users.
+   */
+  @InternalApi
+  boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener);
 }

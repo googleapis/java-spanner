@@ -30,6 +30,7 @@ import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -44,7 +45,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
@@ -56,7 +56,9 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
         .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
         .setCredentials(NoCredentials.getInstance())
         .setSessionPoolOption(
-            SessionPoolOptions.newBuilder().setWaitForMinSessions(Duration.ofSeconds(5L)).build())
+            SessionPoolOptions.newBuilder()
+                .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
+                .build())
         .build()
         .getService();
   }

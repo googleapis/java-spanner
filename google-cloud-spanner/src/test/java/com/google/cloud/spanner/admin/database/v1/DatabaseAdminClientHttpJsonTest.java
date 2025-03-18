@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,9 @@ import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupInstancePartition;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.BackupScheduleName;
@@ -67,6 +69,7 @@ import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreInfo;
+import com.google.spanner.admin.database.v1.SplitPoints;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1097,6 +1100,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1166,6 +1170,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1235,6 +1240,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1307,6 +1313,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1379,6 +1386,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1451,6 +1459,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1523,6 +1532,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -1583,6 +1593,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -1643,6 +1654,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -1665,6 +1677,7 @@ public class DatabaseAdminClientHttpJsonTest {
             .addAllBackupSchedules(new ArrayList<String>())
             .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
             .setOldestVersionTime(Timestamp.newBuilder().build())
+            .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
             .build();
     FieldMask updateMask = FieldMask.newBuilder().build();
 
@@ -1713,6 +1726,7 @@ public class DatabaseAdminClientHttpJsonTest {
               .addAllBackupSchedules(new ArrayList<String>())
               .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
               .setOldestVersionTime(Timestamp.newBuilder().build())
+              .addAllInstancePartitions(new ArrayList<BackupInstancePartition>())
               .build();
       FieldMask updateMask = FieldMask.newBuilder().build();
       client.updateBackup(backup, updateMask);
@@ -2448,6 +2462,92 @@ public class DatabaseAdminClientHttpJsonTest {
     try {
       String parent = "projects/project-9347/instances/instance-9347/databases/database-9347";
       client.listDatabaseRoles(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void addSplitPointsTest() throws Exception {
+    AddSplitPointsResponse expectedResponse = AddSplitPointsResponse.newBuilder().build();
+    mockService.addResponse(expectedResponse);
+
+    DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    List<SplitPoints> splitPoints = new ArrayList<>();
+
+    AddSplitPointsResponse actualResponse = client.addSplitPoints(database, splitPoints);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<String> actualRequests = mockService.getRequestPaths();
+    Assert.assertEquals(1, actualRequests.size());
+
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
+    Assert.assertTrue(
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
+  }
+
+  @Test
+  public void addSplitPointsExceptionTest() throws Exception {
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
+
+    try {
+      DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      List<SplitPoints> splitPoints = new ArrayList<>();
+      client.addSplitPoints(database, splitPoints);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void addSplitPointsTest2() throws Exception {
+    AddSplitPointsResponse expectedResponse = AddSplitPointsResponse.newBuilder().build();
+    mockService.addResponse(expectedResponse);
+
+    String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
+    List<SplitPoints> splitPoints = new ArrayList<>();
+
+    AddSplitPointsResponse actualResponse = client.addSplitPoints(database, splitPoints);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<String> actualRequests = mockService.getRequestPaths();
+    Assert.assertEquals(1, actualRequests.size());
+
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
+    Assert.assertTrue(
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
+  }
+
+  @Test
+  public void addSplitPointsExceptionTest2() throws Exception {
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
+
+    try {
+      String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
+      List<SplitPoints> splitPoints = new ArrayList<>();
+      client.addSplitPoints(database, splitPoints);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.

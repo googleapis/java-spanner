@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -521,4 +521,25 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The dataBoostEnabled.
    */
   boolean getDataBoostEnabled();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If set to true, this statement marks the end of the transaction.
+   * The transaction should be committed or aborted after this statement
+   * executes, and attempts to execute any other requests against this
+   * transaction (including reads and queries) will be rejected.
+   *
+   * For DML statements, setting this option may cause some error reporting to
+   * be deferred until commit time (e.g. validation of unique constraints).
+   * Given this, successful execution of a DML statement should not be assumed
+   * until a subsequent Commit call completes successfully.
+   * </pre>
+   *
+   * <code>bool last_statement = 17 [(.google.api.field_behavior) = OPTIONAL];</code>
+   *
+   * @return The lastStatement.
+   */
+  boolean getLastStatement();
 }

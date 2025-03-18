@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.TypeRegistry;
+import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
@@ -879,6 +881,43 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .build())
               .build();
 
+  private static final ApiMethodDescriptor<AddSplitPointsRequest, AddSplitPointsResponse>
+      addSplitPointsMethodDescriptor =
+          ApiMethodDescriptor.<AddSplitPointsRequest, AddSplitPointsResponse>newBuilder()
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/AddSplitPoints")
+              .setHttpMethod("POST")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<AddSplitPointsRequest>newBuilder()
+                      .setPath(
+                          "/v1/{database=projects/*/instances/*/databases/*}:addSplitPoints",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<AddSplitPointsRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "database", request.getDatabase());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<AddSplitPointsRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("*", request.toBuilder().clearDatabase().build(), true))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<AddSplitPointsResponse>newBuilder()
+                      .setDefaultInstance(AddSplitPointsResponse.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
   private static final ApiMethodDescriptor<CreateBackupScheduleRequest, BackupSchedule>
       createBackupScheduleMethodDescriptor =
           ApiMethodDescriptor.<CreateBackupScheduleRequest, BackupSchedule>newBuilder()
@@ -1113,6 +1152,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
       listDatabaseRolesCallable;
   private final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
       listDatabaseRolesPagedCallable;
+  private final UnaryCallable<AddSplitPointsRequest, AddSplitPointsResponse> addSplitPointsCallable;
   private final UnaryCallable<CreateBackupScheduleRequest, BackupSchedule>
       createBackupScheduleCallable;
   private final UnaryCallable<GetBackupScheduleRequest, BackupSchedule> getBackupScheduleCallable;
@@ -1474,6 +1514,18 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       return builder.build();
                     })
                 .build();
+    HttpJsonCallSettings<AddSplitPointsRequest, AddSplitPointsResponse>
+        addSplitPointsTransportSettings =
+            HttpJsonCallSettings.<AddSplitPointsRequest, AddSplitPointsResponse>newBuilder()
+                .setMethodDescriptor(addSplitPointsMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("database", String.valueOf(request.getDatabase()));
+                      return builder.build();
+                    })
+                .build();
     HttpJsonCallSettings<CreateBackupScheduleRequest, BackupSchedule>
         createBackupScheduleTransportSettings =
             HttpJsonCallSettings.<CreateBackupScheduleRequest, BackupSchedule>newBuilder()
@@ -1664,6 +1716,9 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
             listDatabaseRolesTransportSettings,
             settings.listDatabaseRolesSettings(),
             clientContext);
+    this.addSplitPointsCallable =
+        callableFactory.createUnaryCallable(
+            addSplitPointsTransportSettings, settings.addSplitPointsSettings(), clientContext);
     this.createBackupScheduleCallable =
         callableFactory.createUnaryCallable(
             createBackupScheduleTransportSettings,
@@ -1722,6 +1777,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
     methodDescriptors.add(listDatabaseOperationsMethodDescriptor);
     methodDescriptors.add(listBackupOperationsMethodDescriptor);
     methodDescriptors.add(listDatabaseRolesMethodDescriptor);
+    methodDescriptors.add(addSplitPointsMethodDescriptor);
     methodDescriptors.add(createBackupScheduleMethodDescriptor);
     methodDescriptors.add(getBackupScheduleMethodDescriptor);
     methodDescriptors.add(updateBackupScheduleMethodDescriptor);
@@ -1901,6 +1957,11 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
   public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
       listDatabaseRolesPagedCallable() {
     return listDatabaseRolesPagedCallable;
+  }
+
+  @Override
+  public UnaryCallable<AddSplitPointsRequest, AddSplitPointsResponse> addSplitPointsCallable() {
+    return addSplitPointsCallable;
   }
 
   @Override

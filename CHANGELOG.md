@@ -1,5 +1,247 @@
 # Changelog
 
+## [6.88.0](https://github.com/googleapis/java-spanner/compare/v6.87.0...v6.88.0) (2025-02-27)
+
+
+### Features
+
+* Add a last field in the PartialResultSet ([7c714be](https://github.com/googleapis/java-spanner/commit/7c714be10eb345f2d8f566d752f6de615061c4da))
+* Automatically set default sequence kind in JDBC and PGAdapter ([#3658](https://github.com/googleapis/java-spanner/issues/3658)) ([e8abf33](https://github.com/googleapis/java-spanner/commit/e8abf338b85e95f185ab2875a804134523f84de3))
+* Default authentication support for external hosts ([#3656](https://github.com/googleapis/java-spanner/issues/3656)) ([ace11d5](https://github.com/googleapis/java-spanner/commit/ace11d5d928fb567b16560263ae95aa9cd916e22))
+* **spanner:** A new enum `IsolationLevel` is added ([3fd33ba](https://github.com/googleapis/java-spanner/commit/3fd33ba9c5fab43ed475ed3cff9d60c008843981))
+* **spanner:** Add instance partitions field in backup proto ([3fd33ba](https://github.com/googleapis/java-spanner/commit/3fd33ba9c5fab43ed475ed3cff9d60c008843981))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.54.0 ([57497ad](https://github.com/googleapis/java-spanner/commit/57497ad00c62f152f493645f382530cf0eedf19e))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.44.0 ([#3665](https://github.com/googleapis/java-spanner/issues/3665)) ([3543548](https://github.com/googleapis/java-spanner/commit/35435488f87ebd59179698e8f74578b41eb219da))
+
+## [6.87.0](https://github.com/googleapis/java-spanner/compare/v6.86.0...v6.87.0) (2025-02-20)
+
+
+### Features
+
+* Add AddSplitPoints API ([a5ebcd3](https://github.com/googleapis/java-spanner/commit/a5ebcd343a67c57d61362cfb0ccb4888f5503681))
+* Add option for multiplexed sessions with partitioned operations ([#3635](https://github.com/googleapis/java-spanner/issues/3635)) ([dc89b4d](https://github.com/googleapis/java-spanner/commit/dc89b4d7663f0e40a9169b21243f2d94f2fc5749))
+* Add option to indicate that a statement is the last in a transaction ([#3647](https://github.com/googleapis/java-spanner/issues/3647)) ([b04ea80](https://github.com/googleapis/java-spanner/commit/b04ea804cfa9551b4d7c49cd83f0ef1120942423))
+* Adding gfe_latencies metric to built-in metrics ([#3490](https://github.com/googleapis/java-spanner/issues/3490)) ([314dadc](https://github.com/googleapis/java-spanner/commit/314dadc31f4a5aa798d45886db7231c1bd8b7a91))
+* **spanner:** Support multiplexed session for read-write transactions ([#3608](https://github.com/googleapis/java-spanner/issues/3608)) ([bda78ed](https://github.com/googleapis/java-spanner/commit/bda78edaba827acf974c87c335868a6f8caa38f2))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.53.0 ([20a3d0d](https://github.com/googleapis/java-spanner/commit/20a3d0da41509ffca66c77de6771fc8080930613))
+* **spanner:** End spans for read-write methods ([#3629](https://github.com/googleapis/java-spanner/issues/3629)) ([4a1f99c](https://github.com/googleapis/java-spanner/commit/4a1f99c6bb872ffc08e60d3843e4cdfc4efa2690))
+* **spanner:** Release resources in TransactionManager ([#3638](https://github.com/googleapis/java-spanner/issues/3638)) ([e0a3e5b](https://github.com/googleapis/java-spanner/commit/e0a3e5bd169e28e349a2dc92f86a2a9b5510f8f6))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.43.0 ([#3642](https://github.com/googleapis/java-spanner/issues/3642)) ([c12968a](https://github.com/googleapis/java-spanner/commit/c12968a5f6dad95017d9867d96d4f19a26643a07))
+
+## [6.86.0](https://github.com/googleapis/java-spanner/compare/v6.85.0...v6.86.0) (2025-01-31)
+
+
+### Features
+
+* Add sample for asymmetric autoscaling instances ([#3562](https://github.com/googleapis/java-spanner/issues/3562)) ([3584b81](https://github.com/googleapis/java-spanner/commit/3584b81a27bfcdd071fbf7e0d40dfa840ea88151))
+* Support graph and pipe queries in Connection API ([#3586](https://github.com/googleapis/java-spanner/issues/3586)) ([71c3063](https://github.com/googleapis/java-spanner/commit/71c306346d5b3805f55d5698cf8867d5f4ae519e))
+
+
+### Bug Fixes
+
+* Always add instance-id for built-in metrics ([#3612](https://github.com/googleapis/java-spanner/issues/3612)) ([705b627](https://github.com/googleapis/java-spanner/commit/705b627646f1679b7d1c4c1f86a853872cf8bfd5))
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.51.1 ([3e27251](https://github.com/googleapis/java-spanner/commit/3e272510970d1951b74c4ec9425f1a890790ddb3))
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.52.0 ([bf69673](https://github.com/googleapis/java-spanner/commit/bf69673886dbe040292214ed6e64997a230441f6))
+* **spanner:** Moved mTLSContext configurator from builder to construtor ([#3605](https://github.com/googleapis/java-spanner/issues/3605)) ([ac7c30b](https://github.com/googleapis/java-spanner/commit/ac7c30bfb14bdafc11675c2a120effde4a71c922))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.42.0 ([#3616](https://github.com/googleapis/java-spanner/issues/3616)) ([2ea59f0](https://github.com/googleapis/java-spanner/commit/2ea59f05225f2dba2effb503e6abddcfdb6fe6ee))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.46.0 ([#3530](https://github.com/googleapis/java-spanner/issues/3530)) ([d505850](https://github.com/googleapis/java-spanner/commit/d5058504b94501cabd75ad5e7030404b63c3f8b4))
+
+
+### Documentation
+
+* Clarify how async updates can overtake each other ([#3581](https://github.com/googleapis/java-spanner/issues/3581)) ([1be250f](https://github.com/googleapis/java-spanner/commit/1be250fea686f3a41739c9c8aa474ed956b130e4))
+* Fix typo timzeone -&gt; timezone ([bf69673](https://github.com/googleapis/java-spanner/commit/bf69673886dbe040292214ed6e64997a230441f6))
+* Fixed parameter arguments for AbstractResultSet's Listener's on TransactionMetadata doc ([#3602](https://github.com/googleapis/java-spanner/issues/3602)) ([1f143a4](https://github.com/googleapis/java-spanner/commit/1f143a4b7b899aec8cf58546f7540a41d1c73731))
+* **samples:** Add samples and tests for change streams transaction exclusion ([#3098](https://github.com/googleapis/java-spanner/issues/3098)) ([1f81600](https://github.com/googleapis/java-spanner/commit/1f816009abdbfb32bb26686d8fdb2a771216004e))
+
+## [6.85.0](https://github.com/googleapis/java-spanner/compare/v6.84.0...v6.85.0) (2025-01-10)
+
+
+### Features
+
+* Add gcp client attributes in OpenTelemetry traces ([#3595](https://github.com/googleapis/java-spanner/issues/3595)) ([7893f24](https://github.com/googleapis/java-spanner/commit/7893f2499f6a43e4e80ec78a9f0da5beedb6967a))
+* Add LockHint feature ([#3588](https://github.com/googleapis/java-spanner/issues/3588)) ([326442b](https://github.com/googleapis/java-spanner/commit/326442bca41700debcbeb67b6bd11fc36bd4f26d))
+* **spanner:** MTLS setup for spanner external host clients ([#3574](https://github.com/googleapis/java-spanner/issues/3574)) ([f8dd152](https://github.com/googleapis/java-spanner/commit/f8dd15272f2a250c5b57c9f2527d03dbd557d717))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.56.0 ([#3563](https://github.com/googleapis/java-spanner/issues/3563)) ([e4d0b0f](https://github.com/googleapis/java-spanner/commit/e4d0b0ffa2308c8d949630b52c67e3b79c4491fb))
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.57.0 ([#3592](https://github.com/googleapis/java-spanner/issues/3592)) ([a7542da](https://github.com/googleapis/java-spanner/commit/a7542daff466226221eeb9a885a2e67a99adb678))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.41.1 ([#3589](https://github.com/googleapis/java-spanner/issues/3589)) ([2cd4238](https://github.com/googleapis/java-spanner/commit/2cd42388370dac004bfd807f6aede3ba45456706))
+* Update dependency com.google.cloud.opentelemetry:exporter-trace to v0.33.0 ([#3455](https://github.com/googleapis/java-spanner/issues/3455)) ([70649dc](https://github.com/googleapis/java-spanner/commit/70649dc2f64aa06404893cc6a36716fc366c83e7))
+* Update dependency com.google.re2j:re2j to v1.8 ([#3594](https://github.com/googleapis/java-spanner/issues/3594)) ([0f2013d](https://github.com/googleapis/java-spanner/commit/0f2013d66d3fd14e6be019cda6745ddc32032091))
+* Update googleapis/sdk-platform-java action to v2.51.1 ([#3591](https://github.com/googleapis/java-spanner/issues/3591)) ([3daa1a0](https://github.com/googleapis/java-spanner/commit/3daa1a0c735000845558a1d3612257a7d0524350))
+
+## [6.84.0](https://github.com/googleapis/java-spanner/compare/v6.83.0...v6.84.0) (2025-01-06)
+
+
+### Features
+
+* Add support for ARRAY&lt;STRUCT&gt; to CloudCilentExecutor ([#3544](https://github.com/googleapis/java-spanner/issues/3544)) ([6cbaf7e](https://github.com/googleapis/java-spanner/commit/6cbaf7ec6502d04fc0a0c09720e2054bd10bead9))
+* Add transaction runner for connections ([#3559](https://github.com/googleapis/java-spanner/issues/3559)) ([5a1be3d](https://github.com/googleapis/java-spanner/commit/5a1be3dedeafa6858502eadc7918820b9cd90f68))
+* Exposing InstanceType in Instance configuration (to define PROVISIONED or FREE spanner instance) ([8d295c4](https://github.com/googleapis/java-spanner/commit/8d295c4a4030b4e97b1d653cc3baf412864f3042))
+* Improve tracing by adding attributes ([#3576](https://github.com/googleapis/java-spanner/issues/3576)) ([eee333b](https://github.com/googleapis/java-spanner/commit/eee333b51fa69123e011dfbd2a0896fd31ac10dc))
+* **spanner:** Add jdbc support for external hosts ([#3536](https://github.com/googleapis/java-spanner/issues/3536)) ([801346a](https://github.com/googleapis/java-spanner/commit/801346a1b2efe7d0144f7442e1568eb5b02ddcbc))
+
+
+### Bug Fixes
+
+* AsyncTransactionManager did not always close the session ([#3580](https://github.com/googleapis/java-spanner/issues/3580)) ([d9813a0](https://github.com/googleapis/java-spanner/commit/d9813a05240b966f444168d3b8c30da9d27a8cc4))
+* Retry specific internal errors ([#3565](https://github.com/googleapis/java-spanner/issues/3565)) ([b9ce1a6](https://github.com/googleapis/java-spanner/commit/b9ce1a6fcbd11373a5cc82807af15c1cca0dd48e))
+* Update max_in_use_session at 10 mins interval ([#3570](https://github.com/googleapis/java-spanner/issues/3570)) ([cc1753d](https://github.com/googleapis/java-spanner/commit/cc1753da72b3e508f8fea8a6d19e1ed3f34e3602))
+
+
+### Dependencies
+
+* Update opentelemetry.version to v1.45.0 ([#3531](https://github.com/googleapis/java-spanner/issues/3531)) ([78c82ed](https://github.com/googleapis/java-spanner/commit/78c82edb4fcc4a5a9a372225ca429038c3b34955))
+
+## [6.83.0](https://github.com/googleapis/java-spanner/compare/v6.82.0...v6.83.0) (2024-12-13)
+
+
+### Features
+
+* Add Metrics host for built in metrics ([#3519](https://github.com/googleapis/java-spanner/issues/3519)) ([4ed455a](https://github.com/googleapis/java-spanner/commit/4ed455a43edf7ff8d138ce4d40a52d3224383b14))
+* Add opt-in for using multiplexed sessions for blind writes ([#3540](https://github.com/googleapis/java-spanner/issues/3540)) ([216f53e](https://github.com/googleapis/java-spanner/commit/216f53e4cbc0150078ece7785da33b342a6ab082))
+* Add UUID in Spanner TypeCode enum ([41f83dc](https://github.com/googleapis/java-spanner/commit/41f83dcf046f955ec289d4e976f40a03922054cb))
+* Introduce java.time variables and methods ([#3495](https://github.com/googleapis/java-spanner/issues/3495)) ([8a7d533](https://github.com/googleapis/java-spanner/commit/8a7d533ded21b9b94992b68c702c08bb84474e1b))
+* **spanner:** Support multiplexed session for Partitioned operations ([#3231](https://github.com/googleapis/java-spanner/issues/3231)) ([4501a3e](https://github.com/googleapis/java-spanner/commit/4501a3ea69a9346e8b95edf6f94ff839b509ec73))
+* Support 'set local' for retry_aborts_internally ([#3532](https://github.com/googleapis/java-spanner/issues/3532)) ([331942f](https://github.com/googleapis/java-spanner/commit/331942f51b11660b9de9c8fe8aacd6f60ac254b5))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.51.0 ([41f83dc](https://github.com/googleapis/java-spanner/commit/41f83dcf046f955ec289d4e976f40a03922054cb))
+
+
+### Dependencies
+
+* Update sdk platform java dependencies ([#3549](https://github.com/googleapis/java-spanner/issues/3549)) ([6235f0f](https://github.com/googleapis/java-spanner/commit/6235f0f2c223718c537addc450fa5910d1500271))
+
+## [6.82.0](https://github.com/googleapis/java-spanner/compare/v6.81.2...v6.82.0) (2024-12-04)
+
+
+### Features
+
+* Add option for retrying DML as PDML ([#3480](https://github.com/googleapis/java-spanner/issues/3480)) ([b545557](https://github.com/googleapis/java-spanner/commit/b545557b1a27868aeb5115b3947d42db015cc00e))
+* Add the last statement option to ExecuteSqlRequest and ExecuteBatchDmlRequest ([76ab801](https://github.com/googleapis/java-spanner/commit/76ab8011b0aa03e5bb98e375595358732cde31b7))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.50.0 ([76ab801](https://github.com/googleapis/java-spanner/commit/76ab8011b0aa03e5bb98e375595358732cde31b7))
+* Shutdown built in metrics meter provider ([#3518](https://github.com/googleapis/java-spanner/issues/3518)) ([c935e2e](https://github.com/googleapis/java-spanner/commit/c935e2eff780100273bc35c11458485c9bb05230))
+* **spanner:** GetEdition() is returning null for Instance ([#3496](https://github.com/googleapis/java-spanner/issues/3496)) ([77cb585](https://github.com/googleapis/java-spanner/commit/77cb585d57fd30f953b0ffb80be124e3cb1c6f39))
+
+
+### Dependencies
+
+* Update dependency commons-io:commons-io to v2.18.0 ([#3492](https://github.com/googleapis/java-spanner/issues/3492)) ([5c8b3ad](https://github.com/googleapis/java-spanner/commit/5c8b3ade163b4cdb81a53f5dcf777ebba48ef265))
+
+
+### Documentation
+
+* Add Multi Region Encryption samples ([#3524](https://github.com/googleapis/java-spanner/issues/3524)) ([316f971](https://github.com/googleapis/java-spanner/commit/316f97146a1fb9f120b642421ec1196be9abddf0))
+
+## [6.81.2](https://github.com/googleapis/java-spanner/compare/v6.81.1...v6.81.2) (2024-11-20)
+
+
+### Bug Fixes
+
+* Directpath enabled attribute ([#3477](https://github.com/googleapis/java-spanner/issues/3477)) ([ea1ebad](https://github.com/googleapis/java-spanner/commit/ea1ebadd1ef5d2a343e7117828cae71a798c38eb))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.55.0 ([#3482](https://github.com/googleapis/java-spanner/issues/3482)) ([bf350b0](https://github.com/googleapis/java-spanner/commit/bf350b024592312b0a00a04c2ab6d3d2312ea686))
+* Update dependency com.google.api.grpc:proto-google-cloud-trace-v1 to v2.53.0 ([#3454](https://github.com/googleapis/java-spanner/issues/3454)) ([8729b30](https://github.com/googleapis/java-spanner/commit/8729b30a1043a7e77b0277036c70c7c2616d0b47))
+* Update dependency com.google.cloud:google-cloud-trace to v2.53.0 ([#3464](https://github.com/googleapis/java-spanner/issues/3464)) ([a507e4c](https://github.com/googleapis/java-spanner/commit/a507e4c89bb59d154881812f10cab02d68325a08))
+* Update dependency com.google.cloud:google-cloud-trace to v2.54.0 ([#3488](https://github.com/googleapis/java-spanner/issues/3488)) ([1d1fecf](https://github.com/googleapis/java-spanner/commit/1d1fecf04a4e800c9b756324914cb1feed7c9866))
+* Update googleapis/sdk-platform-java action to v2.50.0 ([#3475](https://github.com/googleapis/java-spanner/issues/3475)) ([e992f18](https://github.com/googleapis/java-spanner/commit/e992f18a651ec034b89aa214cb87ec43f33f2f79))
+* Update sdk platform java dependencies ([#3476](https://github.com/googleapis/java-spanner/issues/3476)) ([acb6446](https://github.com/googleapis/java-spanner/commit/acb6446cb952bdbc54ca1b6c53dc466c72cb55b0))
+
+## [6.81.1](https://github.com/googleapis/java-spanner/compare/v6.81.0...v6.81.1) (2024-11-11)
+
+
+### Bug Fixes
+
+* Client built in metrics. Skip export if instance id is null ([#3447](https://github.com/googleapis/java-spanner/issues/3447)) ([8b2e5ef](https://github.com/googleapis/java-spanner/commit/8b2e5ef5bb391e5a4d4df3cb45d6a3f722a8cfbe))
+* **spanner:** Avoid blocking thread in AsyncResultSet ([#3446](https://github.com/googleapis/java-spanner/issues/3446)) ([7c82f1c](https://github.com/googleapis/java-spanner/commit/7c82f1c7823d4d529a70c0da231d2593f00b638b))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.54.0 ([#3437](https://github.com/googleapis/java-spanner/issues/3437)) ([7e28326](https://github.com/googleapis/java-spanner/commit/7e283261961d6435488ed668133dc3bdd238d402))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.54.0 ([#3438](https://github.com/googleapis/java-spanner/issues/3438)) ([fa18894](https://github.com/googleapis/java-spanner/commit/fa188942c506c85f4c628a8b442b0ee2e6cb845f))
+* Update dependency com.google.cloud:google-cloud-trace to v2.53.0 ([#3440](https://github.com/googleapis/java-spanner/issues/3440)) ([314eeb8](https://github.com/googleapis/java-spanner/commit/314eeb823e14c386ea6e65caae8c80e908e05600))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.44.1 ([#3452](https://github.com/googleapis/java-spanner/issues/3452)) ([6518eea](https://github.com/googleapis/java-spanner/commit/6518eea2921006f1aa431e02754118e3d3d3b620))
+* Update opentelemetry.version to v1.44.1 ([#3451](https://github.com/googleapis/java-spanner/issues/3451)) ([d9b0271](https://github.com/googleapis/java-spanner/commit/d9b0271603dd14c51954532054b134419150625a))
+
+
+### Documentation
+
+* Update samples' README.md to ensure given ([#3420](https://github.com/googleapis/java-spanner/issues/3420)) ([663a974](https://github.com/googleapis/java-spanner/commit/663a974dc2a52d773deb620b0bc65f0049f63693))
+
+## [6.81.0](https://github.com/googleapis/java-spanner/compare/v6.80.1...v6.81.0) (2024-11-01)
+
+
+### Features
+
+* Client built in metrics ([#3408](https://github.com/googleapis/java-spanner/issues/3408)) ([6a36103](https://github.com/googleapis/java-spanner/commit/6a3610379d1d0eee741d5ef4b30e811ff5a67bc0))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.54.0 ([#3439](https://github.com/googleapis/java-spanner/issues/3439)) ([cdec63f](https://github.com/googleapis/java-spanner/commit/cdec63f84ef9b615adf19e4611b2dc223eec687b))
+
+## [6.80.1](https://github.com/googleapis/java-spanner/compare/v6.80.0...v6.80.1) (2024-10-28)
+
+
+### Dependencies
+
+* Update googleapis/sdk-platform-java action to v2.49.0 ([#3430](https://github.com/googleapis/java-spanner/issues/3430)) ([beb788c](https://github.com/googleapis/java-spanner/commit/beb788c05d099a0c5edeabb7ed63f4a6a7a24c16))
+* Update sdk platform java dependencies ([#3431](https://github.com/googleapis/java-spanner/issues/3431)) ([eef03e9](https://github.com/googleapis/java-spanner/commit/eef03e9e5a5ce9d4fcf9728d6b14630bbb99afce))
+
+## [6.80.0](https://github.com/googleapis/java-spanner/compare/v6.79.0...v6.80.0) (2024-10-25)
+
+
+### Features
+
+* Enabling endToEndTracing support in Connection API ([#3412](https://github.com/googleapis/java-spanner/issues/3412)) ([16cc6ee](https://github.com/googleapis/java-spanner/commit/16cc6eed58cf735026d7757a28f61f29821a14bf))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.38.0 ([#3424](https://github.com/googleapis/java-spanner/issues/3424)) ([b727453](https://github.com/googleapis/java-spanner/commit/b727453b93d1089f76e1b908255610cc2796da43))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.43.0 ([#3399](https://github.com/googleapis/java-spanner/issues/3399)) ([a755c6c](https://github.com/googleapis/java-spanner/commit/a755c6c2f44cc3eb0f5a54cd58244cebc62b7a4f))
+* Update dependency io.opentelemetry:opentelemetry-sdk-testing to v1.43.0 ([#3398](https://github.com/googleapis/java-spanner/issues/3398)) ([693243a](https://github.com/googleapis/java-spanner/commit/693243afae34610441345645f627bf199e8ddb8b))
+* Update googleapis/sdk-platform-java action to v2.48.0 ([#3422](https://github.com/googleapis/java-spanner/issues/3422)) ([d5d1f55](https://github.com/googleapis/java-spanner/commit/d5d1f55d7e8e8f9aa89b7ab9e5f5bd0464bf0e1a))
+
+
+### Documentation
+
+* Fix tracing sample to exit when completed, and use custom monitored resource for export ([#3287](https://github.com/googleapis/java-spanner/issues/3287)) ([ddb65b1](https://github.com/googleapis/java-spanner/commit/ddb65b197a6f311c2bb8ec9856ea968f3a31d62a))
+
 ## [6.79.0](https://github.com/googleapis/java-spanner/compare/v6.78.0...v6.79.0) (2024-10-11)
 
 

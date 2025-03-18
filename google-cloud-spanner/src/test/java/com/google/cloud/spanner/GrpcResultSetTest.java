@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserialize;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -45,6 +46,7 @@ import com.google.spanner.v1.Transaction;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -56,7 +58,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 /** Unit tests for {@link GrpcResultSet}. */
 @RunWith(JUnit4.class)
@@ -91,7 +92,7 @@ public class GrpcResultSetTest {
         new SpannerRpc.StreamingCall() {
           @Override
           public ApiCallContext getCallContext() {
-            return GrpcCallContext.createDefault().withStreamWaitTimeout(streamWaitTimeout);
+            return GrpcCallContext.createDefault().withStreamWaitTimeoutDuration(streamWaitTimeout);
           }
 
           @Override
@@ -1160,5 +1161,59 @@ public class GrpcResultSetTest {
         () -> {
           resultSet.getProtoEnum(0, Genre::forNumber);
         });
+  }
+
+  @Test
+  public void verifyResultSetWithLastTrue() {
+    long[] longArray = {111, 333, 444, 0, -1, -2234, Long.MAX_VALUE, Long.MIN_VALUE};
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.int64())))))
+            .addValues(Value.int64Array(longArray).toProto())
+            .setLast(false)
+            .build());
+    assertTrue(resultSet.next());
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.int64())))))
+            .addValues(Value.int64Array(longArray).toProto())
+            .setLast(true)
+            .build());
+    assertTrue(resultSet.next());
+    assertFalse(resultSet.next());
+    consumer.onCompleted();
+  }
+
+  @Test
+  public void shouldThrowDeadlineExceededIfLastTrueIsNotReceived() {
+    long[] longArray = {111, 333, 444, 0, -1, -2234, Long.MAX_VALUE, Long.MIN_VALUE};
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.int64())))))
+            .addValues(Value.int64Array(longArray).toProto())
+            .setLast(false)
+            .build());
+    assertTrue(resultSet.next());
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.int64())))))
+            .addValues(Value.int64Array(longArray).toProto())
+            .setLast(false)
+            .build());
+    assertTrue(resultSet.next());
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            () -> {
+              assertThat(resultSet.next()).isFalse();
+            });
+    assertEquals("DEADLINE_EXCEEDED: stream wait timeout", spannerException.getMessage());
+    consumer.onCompleted();
   }
 }

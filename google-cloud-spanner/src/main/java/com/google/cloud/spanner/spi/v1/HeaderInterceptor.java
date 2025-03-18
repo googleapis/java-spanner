@@ -56,6 +56,7 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -70,9 +71,11 @@ class HeaderInterceptor implements ClientInterceptor {
       DatabaseName.of("undefined-project", "undefined-instance", "undefined-database");
   private static final Metadata.Key<String> SERVER_TIMING_HEADER_KEY =
       Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER);
-  private static final String SERVER_TIMING_HEADER_PREFIX = "gfet4t7; dur=";
+  private static final String GFE_TIMING_HEADER = "gfet4t7";
   private static final Metadata.Key<String> GOOGLE_CLOUD_RESOURCE_PREFIX_KEY =
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
+  private static final Pattern SERVER_TIMING_PATTERN =
+      Pattern.compile("(?<metricName>[a-zA-Z0-9_-]+);\\s*dur=(?<duration>\\d+)");
   private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN =
       Pattern.compile(
           ".*projects/(?<project>\\p{ASCII}[^/]*)(/instances/(?<instance>\\p{ASCII}[^/]*))?(/databases/(?<database>\\p{ASCII}[^/]*))?");
@@ -93,8 +96,12 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
-  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
+  private final Supplier<Boolean> directPathEnabledSupplier;
+
+  HeaderInterceptor(
+      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
     this.spannerRpcMetrics = spannerRpcMetrics;
+    this.directPathEnabledSupplier = directPathEnabledSupplier;
   }
 
   @Override
@@ -115,15 +122,15 @@ class HeaderInterceptor implements ClientInterceptor {
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
           Map<String, String> builtInMetricsAttributes =
               getBuiltInMetricAttributes(key, databaseName);
+          addBuiltInMetricAttributes(compositeTracer, builtInMetricsAttributes);
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
-                  addBuiltInMetricAttributes(
-                      compositeTracer, builtInMetricsAttributes, isDirectPathUsed);
-                  processHeader(metadata, tagContext, attributes, span);
+                  addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
+                  processHeader(metadata, tagContext, attributes, span, compositeTracer);
                   super.onHeaders(metadata);
                 }
               },
@@ -137,29 +144,61 @@ class HeaderInterceptor implements ClientInterceptor {
   }
 
   private void processHeader(
-      Metadata metadata, TagContext tagContext, Attributes attributes, Span span) {
+      Metadata metadata,
+      TagContext tagContext,
+      Attributes attributes,
+      Span span,
+      CompositeTracer compositeTracer) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
-    if (serverTiming != null && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
-      try {
-        long latency = Long.parseLong(serverTiming.substring(SERVER_TIMING_HEADER_PREFIX.length()));
-        measureMap.put(SPANNER_GFE_LATENCY, latency);
+    try {
+      // Previous implementation parsed the GFE latency directly using:
+      // long latency = Long.parseLong(serverTiming.substring("gfet4t7; dur=".length()));
+      // This approach assumed the serverTiming header contained exactly one metric "gfet4t7".
+      // If additional metrics were introduced in the header, older versions of the library
+      // would fail to parse it correctly. To make the parsing more robust, the logic has been
+      // updated to handle multiple metrics gracefully.
+
+      Map<String, Long> serverTimingMetrics = parseServerTimingHeader(serverTiming);
+      if (serverTimingMetrics.containsKey(GFE_TIMING_HEADER)) {
+        long gfeLatency = serverTimingMetrics.get(GFE_TIMING_HEADER);
+
+        measureMap.put(SPANNER_GFE_LATENCY, gfeLatency);
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
         measureMap.record(tagContext);
 
-        spannerRpcMetrics.recordGfeLatency(latency, attributes);
+        spannerRpcMetrics.recordGfeLatency(gfeLatency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
+        if (compositeTracer != null) {
+          compositeTracer.recordGFELatency(gfeLatency);
+        }
 
         if (span != null) {
-          span.setAttribute("gfe_latency", String.valueOf(latency));
+          span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
         }
-      } catch (NumberFormatException e) {
-        LOGGER.log(LEVEL, "Invalid server-timing object in header: {}", serverTiming);
+      } else {
+        measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
+        spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
       }
-    } else {
-      spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
-      measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
+    } catch (NumberFormatException e) {
+      LOGGER.log(LEVEL, "Invalid server-timing object in header: {}", serverTiming);
     }
+  }
+
+  private Map<String, Long> parseServerTimingHeader(String serverTiming) {
+    Map<String, Long> serverTimingMetrics = new HashMap<>();
+    if (serverTiming != null) {
+      Matcher matcher = SERVER_TIMING_PATTERN.matcher(serverTiming);
+      while (matcher.find()) {
+        String metricName = matcher.group("metricName");
+        String durationStr = matcher.group("duration");
+
+        if (metricName != null && durationStr != null) {
+          serverTimingMetrics.put(metricName, Long.valueOf(durationStr));
+        }
+      }
+    }
+    return serverTimingMetrics;
   }
 
   private DatabaseName extractDatabaseName(Metadata headers) throws ExecutionException {
@@ -228,21 +267,25 @@ class HeaderInterceptor implements ClientInterceptor {
           attributes.put(BuiltInMetricsConstant.DATABASE_KEY.getKey(), databaseName.getDatabase());
           attributes.put(
               BuiltInMetricsConstant.INSTANCE_ID_KEY.getKey(), databaseName.getInstance());
+          attributes.put(
+              BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY.getKey(),
+              String.valueOf(this.directPathEnabledSupplier.get()));
           return attributes;
         });
   }
 
   private void addBuiltInMetricAttributes(
-      CompositeTracer compositeTracer,
-      Map<String, String> builtInMetricsAttributes,
-      Boolean isDirectPathUsed) {
+      CompositeTracer compositeTracer, Map<String, String> builtInMetricsAttributes) {
     if (compositeTracer != null) {
-      // Direct Path used attribute
-      Map<String, String> attributes = new HashMap<>(builtInMetricsAttributes);
-      attributes.put(
-          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
+      compositeTracer.addAttributes(builtInMetricsAttributes);
+    }
+  }
 
-      compositeTracer.addAttributes(attributes);
+  private void addDirectPathUsedAttribute(
+      CompositeTracer compositeTracer, Boolean isDirectPathUsed) {
+    if (compositeTracer != null) {
+      compositeTracer.addAttributes(
+          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
     }
   }
 

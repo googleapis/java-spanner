@@ -113,8 +113,8 @@ integration-directpath-enabled)
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
-      -Dspanner.gce.config.project_id=gcloud-devel \
-      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-directpath \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-java-client-directpath \
+      -Dspanner.gce.config.project_id=span-cloud-testing \
       -fae \
       verify
     RETURN_CODE=$?
@@ -206,12 +206,17 @@ slowtests)
     verify
   RETURN_CODE=$?
   ;;
-samples)
+samples|samples-slow-tests)
     SAMPLES_DIR=samples
+    PROFILES=''
     # only run ITs in snapshot/ on presubmit PRs. run ITs in all 3 samples/ subdirectories otherwise.
     if [[ ! -z ${KOKORO_GITHUB_PULL_REQUEST_NUMBER} ]]
     then
       SAMPLES_DIR=samples/snapshot
+    elif [[ ${JOB_TYPE} = 'samples-slow-tests' ]]
+    then
+      SAMPLES_DIR=samples/snippets
+      PROFILES='-Pslow-tests,!integration-tests'
     fi
 
     if [[ -f ${SAMPLES_DIR}/pom.xml ]]
@@ -227,6 +232,7 @@ samples)
           -DtrimStackTrace=false \
           -Dclirr.skip=true \
           -Denforcer.skip=true \
+          ${PROFILES} \
           -fae \
           verify
         RETURN_CODE=$?

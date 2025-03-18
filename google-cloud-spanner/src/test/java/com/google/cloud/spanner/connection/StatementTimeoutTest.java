@@ -16,13 +16,12 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
@@ -35,6 +34,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Collections2;
 import com.google.longrunning.Operation;
@@ -46,6 +46,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -55,12 +56,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class StatementTimeoutTest extends AbstractMockServerTest {
 
   private static final String SLOW_SELECT = "SELECT foo FROM bar";
@@ -85,10 +89,24 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
    */
   private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 50;
 
+  // Set a global timeout to ensure that tests that freeze the mock serer fail within a reasonable
+  // amount of time if they misbehave.
+  @Rule public Timeout globalTimeout = Timeout.seconds(10);
+
+  @Parameters(name = "statementExecutorType = {0}")
+  public static Object[] parameters() {
+    return StatementExecutorType.values();
+  }
+
+  @SuppressWarnings("ClassEscapesDefinedScope")
+  @Parameter
+  public StatementExecutorType statementExecutorType;
+
   protected ITConnection createConnection() {
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
             .setUri(getBaseUrl() + ";trackSessionLeaks=false")
+            .setStatementExecutorType(statementExecutorType)
             .setConfigurator(
                 optionsConfigurator ->
                     optionsConfigurator
@@ -97,10 +115,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
                         .setPollingAlgorithm(
                             OperationTimedPollAlgorithm.create(
                                 RetrySettings.newBuilder()
-                                    .setInitialRetryDelay(Duration.ofMillis(1L))
-                                    .setMaxRetryDelay(Duration.ofMillis(1L))
+                                    .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+                                    .setMaxRetryDelayDuration(Duration.ofMillis(1L))
                                     .setRetryDelayMultiplier(1.0)
-                                    .setTotalTimeout(Duration.ofMinutes(10L))
+                                    .setTotalTimeoutDuration(Duration.ofMinutes(10L))
                                     .build())))
             .build();
     return createITConnection(options);
@@ -410,7 +428,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       }
 
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      SpannerException e = assertThrows(SpannerException.class, () -> connection.commit());
+      SpannerException e = assertThrows(SpannerException.class, connection::commit);
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
@@ -600,10 +618,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     try {
       Stopwatch watch = Stopwatch.createStarted();
       while (Collections2.filter(
-                  mockDatabaseAdmin.getRequests(),
-                  input -> input.getClass().equals(UpdateDatabaseDdlRequest.class))
-              .size()
-          == 0) {
+              mockDatabaseAdmin.getRequests(),
+              input -> input.getClass().equals(UpdateDatabaseDdlRequest.class))
+          .isEmpty()) {
+        //noinspection BusyWait
         Thread.sleep(1L);
         if (watch.elapsed(TimeUnit.MILLISECONDS) > EXECUTION_TIME_SLOW_STATEMENT) {
           throw new TimeoutException("Timeout while waiting for DDL request");
@@ -618,6 +636,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadOnlyAutocommit() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -643,6 +665,12 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadOnlyAutocommitMultipleStatements() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+    // TODO: Look into this for multiplexed sessions.
+    assumeTrue(System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS") == null);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -657,10 +685,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
               connection.cancel();
             });
 
-        SpannerException e =
+        SpannerException exception =
             assertThrows(
                 SpannerException.class, () -> connection.executeQuery(SELECT_RANDOM_STATEMENT));
-        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.CANCELLED)));
+        assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
 
         mockSpanner.removeAllExecutionTimes();
         connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
@@ -675,6 +703,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadOnlyTransactional() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -700,6 +732,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadOnlyTransactionalMultipleStatements() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -737,6 +773,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteAutocommit() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -761,6 +801,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteAutocommitMultipleStatements() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -792,6 +836,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteAutocommitSlowUpdate() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -815,6 +863,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteAutocommitSlowCommit() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -838,6 +890,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteTransactional() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -862,6 +918,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelReadWriteTransactionalMultipleStatements() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
@@ -928,6 +988,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelDdlBatch() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     addSlowMockDdlOperation();
 
     try (Connection connection = createConnection()) {
@@ -941,7 +1005,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
               waitForDdlRequestOnServer();
               connection.cancel();
             });
-        SpannerException e = assertThrows(SpannerException.class, () -> connection.runBatch());
+        SpannerException e = assertThrows(SpannerException.class, connection::runBatch);
         assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
       } finally {
         executor.shutdownNow();
@@ -951,6 +1015,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testCancelDdlAutocommit() {
+    assumeFalse(
+        "Direct executor does not yet support cancelling statements",
+        statementExecutorType == StatementExecutorType.DIRECT_EXECUTOR);
+
     addSlowMockDdlOperation();
 
     try (Connection connection = createConnection()) {
@@ -1015,10 +1083,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       connection.startBatchDdl();
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
 
-      // the following statement will NOT timeout as the statement is only buffered locally
+      // the following statement will NOT time out as the statement is only buffered locally
       connection.execute(Statement.of(SLOW_DDL));
-      // the runBatch() statement sends the statement to the server and should timeout
-      SpannerException e = assertThrows(SpannerException.class, () -> connection.runBatch());
+      // the runBatch() statement sends the statement to the server and should time out
+      SpannerException e = assertThrows(SpannerException.class, connection::runBatch);
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
@@ -1035,7 +1103,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       for (int i = 0; i < 2; i++) {
         connection.startBatchDdl();
         connection.execute(Statement.of(SLOW_DDL));
-        SpannerException e = assertThrows(SpannerException.class, () -> connection.runBatch());
+        SpannerException e = assertThrows(SpannerException.class, connection::runBatch);
         assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
       }
       // try to do a new DDL statement that is fast.

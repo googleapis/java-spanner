@@ -31,6 +31,8 @@ import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.protobuf.util.Timestamps;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -39,8 +41,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
-import org.threeten.bp.Instant;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
@@ -82,10 +82,14 @@ public class ITBuiltInMetricsTest {
 
     String metricFilter =
         String.format(
-            "metric.type=\"spanner.googleapis.com/client/%s\" "
-                + "AND resource.labels.instance=\"%s\" AND metric.labels.method=\"Spanner.ExecuteStreamingSql\""
+            "metric.type=\"spanner.googleapis.com/client/%s\""
+                + " AND resource.type=\"spanner_instance\""
+                + " AND metric.labels.method=\"Spanner.Commit\""
+                + " AND resource.labels.instance_id=\"%s\""
                 + " AND metric.labels.database=\"%s\"",
-            "operation_latencies", env.getTestHelper().getInstanceId(), db.getId());
+            "operation_latencies",
+            db.getId().getInstanceId().getInstance(),
+            db.getId().getDatabase());
 
     ListTimeSeriesRequest.Builder requestBuilder =
         ListTimeSeriesRequest.newBuilder()

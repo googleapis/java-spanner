@@ -9895,6 +9895,680 @@ set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set retry_aborts_internally =/-false;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+SET LOCAL RETRY_ABORTS_INTERNALLY = TRUE;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+   set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+			set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+
+
+
+set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = true  ;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = true		;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = true
+
+;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set   local   retry_aborts_internally   =   true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set	local	retry_aborts_internally	=	true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set
+local
+retry_aborts_internally
+=
+true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true bar;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true%;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =%true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true_;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =_true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true&;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =&true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true$;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =$true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true@;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =@true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true!;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =!true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true*;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =*true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true(;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =(true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true);
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =)true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true-;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =-true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true+;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =+true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true-#;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =-#true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true/;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =/true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true\;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =\true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true?;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =?true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true-/;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =-/true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true/#;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =/#true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set local retry_aborts_internally = true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = true/-;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =/-true;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+SET LOCAL RETRY_ABORTS_INTERNALLY = FALSE;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+   set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+			set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+
+
+
+set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = false  ;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = false		;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set local retry_aborts_internally = false
+
+;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set   local   retry_aborts_internally   =   false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set	local	retry_aborts_internally	=	false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set
+local
+retry_aborts_internally
+=
+false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false bar;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false%;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =%false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false_;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =_false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false&;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =&false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false$;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =$false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false@;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =@false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false!;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =!false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false*;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =*false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false(;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =(false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false);
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =)false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false-;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =-false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false+;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =+false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false-#;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =-#false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false/;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =/false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false\;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =\false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false?;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =?false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false-/;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =-/false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false/#;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =/#false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set local retry_aborts_internally = false;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally = false/-;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set local retry_aborts_internally =/-false;
+NEW_CONNECTION;
 set autocommit_dml_mode='PARTITIONED_NON_ATOMIC';
 NEW_CONNECTION;
 SET AUTOCOMMIT_DML_MODE='PARTITIONED_NON_ATOMIC';
@@ -10290,6 +10964,204 @@ set autocommit_dml_mode='TRANSACTIONAL'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-autocommit_dml_mode='TRANSACTIONAL';
+NEW_CONNECTION;
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+SET AUTOCOMMIT_DML_MODE='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+set autocommit_dml_mode='transactional_with_fallback_to_partitioned_non_atomic';
+NEW_CONNECTION;
+   set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+			set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+
+
+
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'  ;
+NEW_CONNECTION;
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'		;
+NEW_CONNECTION;
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'
+
+;
+NEW_CONNECTION;
+set   autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+set	autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+set
+autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-autocommit_dml_mode='TRANSACTIONAL_WITH_FALLBACK_TO_PARTITIONED_NON_ATOMIC';
 NEW_CONNECTION;
 set statement_timeout=null;
 NEW_CONNECTION;

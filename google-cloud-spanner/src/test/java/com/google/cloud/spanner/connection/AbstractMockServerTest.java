@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -198,6 +199,8 @@ public abstract class AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1_STATEMENT, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
 
     futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
     exceptionRunnableParentHandlers =
@@ -283,12 +286,18 @@ public abstract class AbstractMockServerTest {
         ConnectionOptions.newBuilder()
             .setUri(getBaseUrl() + additionalUrlOptions)
             .setStatementExecutionInterceptors(interceptors);
+    configureConnectionOptions(builder);
     ConnectionOptions options = builder.build();
     ITConnection connection = createITConnection(options);
     for (TransactionRetryListener listener : transactionRetryListeners) {
       connection.addTransactionRetryListener(listener);
     }
     return connection;
+  }
+
+  protected ConnectionOptions.Builder configureConnectionOptions(
+      ConnectionOptions.Builder builder) {
+    return builder;
   }
 
   protected String getBaseUrl() {
@@ -320,5 +329,19 @@ public abstract class AbstractMockServerTest {
       return false;
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+  }
+
+  boolean isMultiplexedSessionsEnabledForPartitionedOps(Spanner spanner) {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps();
+  }
+
+  boolean isMultiplexedSessionsEnabledForRW(Spanner spanner) {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
   }
 }

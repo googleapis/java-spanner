@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.longrunning.stub.GrpcOperationsStub;
 import com.google.protobuf.Empty;
+import com.google.spanner.admin.database.v1.AddSplitPointsRequest;
+import com.google.spanner.admin.database.v1.AddSplitPointsResponse;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
@@ -285,6 +287,17 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListDatabaseRolesResponse.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<AddSplitPointsRequest, AddSplitPointsResponse>
+      addSplitPointsMethodDescriptor =
+          MethodDescriptor.<AddSplitPointsRequest, AddSplitPointsResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/AddSplitPoints")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(AddSplitPointsRequest.getDefaultInstance()))
+              .setResponseMarshaller(
+                  ProtoUtils.marshaller(AddSplitPointsResponse.getDefaultInstance()))
+              .build();
+
   private static final MethodDescriptor<CreateBackupScheduleRequest, BackupSchedule>
       createBackupScheduleMethodDescriptor =
           MethodDescriptor.<CreateBackupScheduleRequest, BackupSchedule>newBuilder()
@@ -386,6 +399,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
       listDatabaseRolesCallable;
   private final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
       listDatabaseRolesPagedCallable;
+  private final UnaryCallable<AddSplitPointsRequest, AddSplitPointsResponse> addSplitPointsCallable;
   private final UnaryCallable<CreateBackupScheduleRequest, BackupSchedule>
       createBackupScheduleCallable;
   private final UnaryCallable<GetBackupScheduleRequest, BackupSchedule> getBackupScheduleCallable;
@@ -645,6 +659,17 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                       return builder.build();
                     })
                 .build();
+    GrpcCallSettings<AddSplitPointsRequest, AddSplitPointsResponse>
+        addSplitPointsTransportSettings =
+            GrpcCallSettings.<AddSplitPointsRequest, AddSplitPointsResponse>newBuilder()
+                .setMethodDescriptor(addSplitPointsMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("database", String.valueOf(request.getDatabase()));
+                      return builder.build();
+                    })
+                .build();
     GrpcCallSettings<CreateBackupScheduleRequest, BackupSchedule>
         createBackupScheduleTransportSettings =
             GrpcCallSettings.<CreateBackupScheduleRequest, BackupSchedule>newBuilder()
@@ -828,6 +853,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             listDatabaseRolesTransportSettings,
             settings.listDatabaseRolesSettings(),
             clientContext);
+    this.addSplitPointsCallable =
+        callableFactory.createUnaryCallable(
+            addSplitPointsTransportSettings, settings.addSplitPointsSettings(), clientContext);
     this.createBackupScheduleCallable =
         callableFactory.createUnaryCallable(
             createBackupScheduleTransportSettings,
@@ -1034,6 +1062,11 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
   public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
       listDatabaseRolesPagedCallable() {
     return listDatabaseRolesPagedCallable;
+  }
+
+  @Override
+  public UnaryCallable<AddSplitPointsRequest, AddSplitPointsResponse> addSplitPointsCallable() {
+    return addSplitPointsCallable;
   }
 
   @Override

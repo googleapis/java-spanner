@@ -16,11 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Options.TransactionOption;
-import com.google.cloud.spanner.Options.UpdateOption;
-import com.google.spanner.v1.BatchWriteResponse;
 
 /**
  * Base class for the Multiplexed Session {@link DatabaseClient} implementation. Throws {@link
@@ -31,11 +27,6 @@ import com.google.spanner.v1.BatchWriteResponse;
 abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClient {
 
   @Override
-  public Dialect getDialect() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public String getDatabaseRole() {
     throw new UnsupportedOperationException();
   }
@@ -43,17 +34,5 @@ abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClien
   @Override
   public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
     return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
-  }
-
-  @Override
-  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
-      Iterable<MutationGroup> mutationGroups, TransactionOption... options)
-      throws SpannerException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
-    throw new UnsupportedOperationException();
   }
 }

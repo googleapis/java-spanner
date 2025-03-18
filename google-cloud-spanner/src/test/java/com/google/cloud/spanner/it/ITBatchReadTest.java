@@ -19,11 +19,9 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.extractConnectionUrl;
 import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.getKeyFile;
 import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.hasValidKeyFile;
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
@@ -96,10 +94,7 @@ public class ITBatchReadTest {
   public static List<DialectTestParameter> data() {
     List<DialectTestParameter> params = new ArrayList<>();
     params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
-    // PG dialect tests are not supported by the emulator
-    if (!isUsingEmulator()) {
-      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
-    }
+    params.add(new DialectTestParameter(Dialect.POSTGRESQL));
     return params;
   }
 
@@ -135,30 +130,28 @@ public class ITBatchReadTest {
     List<DatabaseClient> databaseClients = new ArrayList<>();
     databaseClients.add(env.getTestHelper().getDatabaseClient(googleStandardDatabase));
 
-    if (!isUsingEmulator()) {
-      postgreSQLDatabase =
-          env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
-      env.getTestHelper()
-          .getClient()
-          .getDatabaseAdminClient()
-          .updateDatabaseDdl(
-              env.getTestHelper().getInstanceId().getInstance(),
-              postgreSQLDatabase.getId().getDatabase(),
-              ImmutableList.of(
-                  "CREATE TABLE "
-                      + TABLE_NAME
-                      + " ("
-                      + "  Key           bigint not null primary key,"
-                      + "  Data          bytea,"
-                      + "  Fingerprint   bigint,"
-                      + "  Size          bigint"
-                      + ")",
-                  "CREATE INDEX " + INDEX_NAME + " ON " + TABLE_NAME + "(Fingerprint)"),
-              null)
-          .get();
-      postgreSQLBatchClient = env.getTestHelper().getBatchClient(postgreSQLDatabase);
-      databaseClients.add(env.getTestHelper().getDatabaseClient(postgreSQLDatabase));
-    }
+    postgreSQLDatabase =
+        env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
+    env.getTestHelper()
+        .getClient()
+        .getDatabaseAdminClient()
+        .updateDatabaseDdl(
+            env.getTestHelper().getInstanceId().getInstance(),
+            postgreSQLDatabase.getId().getDatabase(),
+            ImmutableList.of(
+                "CREATE TABLE "
+                    + TABLE_NAME
+                    + " ("
+                    + "  Key           bigint not null primary key,"
+                    + "  Data          bytea,"
+                    + "  Fingerprint   bigint,"
+                    + "  Size          bigint"
+                    + ")",
+                "CREATE INDEX " + INDEX_NAME + " ON " + TABLE_NAME + "(Fingerprint)"),
+            null)
+        .get();
+    postgreSQLBatchClient = env.getTestHelper().getBatchClient(postgreSQLDatabase);
+    databaseClients.add(env.getTestHelper().getDatabaseClient(postgreSQLDatabase));
 
     List<Integer> rows = manyRows();
     numRows = rows.size();
@@ -188,7 +181,9 @@ public class ITBatchReadTest {
           totalSize = 0;
         }
       }
-      dbClient.write(mutations);
+      if (!mutations.isEmpty()) {
+        dbClient.write(mutations);
+      }
     }
     // Our read/queries are executed with some staleness.
     Thread.sleep(2 * STALENESS_MILLISEC);
@@ -210,9 +205,6 @@ public class ITBatchReadTest {
 
   @Test
   public void read() {
-    assumeFalse(
-        "PostgreSQL does not support the PartitionRead RPC", dialect.dialect == Dialect.POSTGRESQL);
-
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
@@ -229,9 +221,6 @@ public class ITBatchReadTest {
 
   @Test
   public void readUsingIndex() {
-    assumeFalse(
-        "PostgreSQL does not support the PartitionRead RPC", dialect.dialect == Dialect.POSTGRESQL);
-
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
     batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
@@ -258,8 +247,6 @@ public class ITBatchReadTest {
 
   @Test
   public void dataBoostRead() {
-    assumeFalse("Emulator does not support data boost read", isUsingEmulator());
-
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
@@ -312,7 +299,6 @@ public class ITBatchReadTest {
 
   @Test
   public void dataBoostQuery() {
-    assumeFalse("Emulator does not support data boost query", isUsingEmulator());
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();

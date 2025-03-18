@@ -87,6 +87,8 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.TransactionOptions;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
@@ -104,6 +106,9 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -132,9 +137,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
-import org.threeten.bp.Instant;
-import org.threeten.bp.temporal.ChronoUnit;
 
 /** Tests for SessionPool that mock out the underlying stub. */
 @RunWith(Parameterized.class)
@@ -313,7 +315,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         options
             .toBuilder()
             .setMinSessions(2)
-            .setWaitForMinSessions(Duration.ofSeconds(10L))
+            .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
             .build();
     pool = createPool();
     pool.maybeWaitOnMinSessions();
@@ -349,7 +351,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               options
                   .toBuilder()
                   .setMinSessions(2)
-                  .setWaitForMinSessions(Duration.ofSeconds(10L))
+                  .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
                   .build();
           pool = createPool();
           pool.maybeWaitOnMinSessions();
@@ -397,7 +399,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                       .toBuilder()
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
-                      .setWaitForMinSessions(Duration.ofSeconds(10L))
+                      .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
                       .build();
               pool = createPool();
               pool.maybeWaitOnMinSessions();
@@ -1477,6 +1479,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(
               SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
       final SessionImpl closedSession = mock(SessionImpl.class);
+      when(closedSession.defaultTransactionOptions())
+          .thenReturn(TransactionOptions.getDefaultInstance());
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
       when(closedSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
@@ -1497,7 +1501,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(closedSession.newTransaction(eq(Options.fromTransactionOptions()), any()))
           .thenReturn(closedTransactionContext);
-      when(closedSession.beginTransactionAsync(any(), eq(true), any(), any()))
+      when(closedSession.beginTransactionAsync(any(), eq(true), any(), any(), any()))
           .thenThrow(sessionNotFound);
       when(closedSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
@@ -1513,8 +1517,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);
       when(openSession.newTransaction(eq(Options.fromTransactionOptions()), any()))
           .thenReturn(openTransactionContext);
-      when(openSession.beginTransactionAsync(any(), eq(true), any(), any()))
-          .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
+      Transaction txn = Transaction.newBuilder().setId(ByteString.copyFromUtf8("open-txn")).build();
+      when(openSession.beginTransactionAsync(any(), eq(true), any(), any(), any()))
+          .thenReturn(ApiFutures.immediateFuture(txn));
       when(openSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(span);
@@ -2210,7 +2215,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SessionPoolOptions.newBuilder()
             .setMinSessions(minSessions)
             .setMaxSessions(minSessions + 1)
-            .setWaitForMinSessions(Duration.ofSeconds(5))
+            .setWaitForMinSessionsDuration(Duration.ofSeconds(5))
             .build();
     doAnswer(
             invocation ->
@@ -2239,10 +2244,58 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SessionPoolOptions.newBuilder()
             .setMinSessions(minSessions + 1)
             .setMaxSessions(minSessions + 1)
-            .setWaitForMinSessions(Duration.ofMillis(100))
+            .setWaitForMinSessionsDuration(Duration.ofMillis(100))
             .build();
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     pool.maybeWaitOnMinSessions();
+  }
+
+  @Test
+  public void reset_maxSessionsInUse() {
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setPoolMaintainerClock(clock)
+            .build();
+    setupForLongRunningTransactionsCleanup(options);
+
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+
+    // All 3 sessions used. 100% of pool utilised.
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+
+    // complete the async tasks
+    readSession1.get().setEligibleForLongRunning(false);
+    readSession2.get().setEligibleForLongRunning(false);
+    readSession3.get().setEligibleForLongRunning(true);
+
+    assertEquals(3, pool.getMaxSessionsInUse());
+    assertEquals(3, pool.getNumberOfSessionsInUse());
+
+    // Release 1 session
+    readSession1.get().close();
+
+    // Verify that numSessionsInUse reduces to 2 while maxSessionsInUse remain 3
+    assertEquals(3, pool.getMaxSessionsInUse());
+    assertEquals(2, pool.getNumberOfSessionsInUse());
+
+    // ensure that the lastResetTime for maxSessionsInUse > 10 minutes
+    when(clock.instant()).thenReturn(Instant.now().plus(11, ChronoUnit.MINUTES));
+
+    pool.poolMaintainer.maintainPool();
+
+    // Verify that maxSessionsInUse is reset to numSessionsInUse
+    assertEquals(2, pool.getMaxSessionsInUse());
+    assertEquals(2, pool.getNumberOfSessionsInUse());
   }
 
   private void mockKeepAlive(ReadContext context) {

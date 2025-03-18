@@ -58,6 +58,7 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.TransactionOptions;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -160,6 +161,8 @@ public class TransactionRunnerImplTest {
   public void usesPreparedTransaction() {
     SpannerOptions options = mock(SpannerOptions.class);
     when(options.getNumChannels()).thenReturn(4);
+    when(options.getDefaultTransactionOptions())
+        .thenReturn(TransactionOptions.getDefaultInstance());
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(new TestExecutorFactory());
     when(options.getTransportOptions()).thenReturn(transportOptions);
@@ -186,6 +189,21 @@ public class TransactionRunnerImplTest {
                         .setCreateTime(
                             Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
+    when(rpc.createSession(
+            Mockito.anyString(),
+            Mockito.anyString(),
+            Mockito.anyMap(),
+            Mockito.eq(null),
+            Mockito.eq(true)))
+        .thenAnswer(
+            invocation ->
+                Session.newBuilder()
+                    .setName(invocation.getArguments()[0] + "/sessions/1")
+                    .setMultiplexed(true)
+                    .setCreateTime(
+                        com.google.protobuf.Timestamp.newBuilder()
+                            .setSeconds(System.currentTimeMillis() * 1000))
+                    .build());
     when(rpc.beginTransactionAsync(
             Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
@@ -301,7 +319,8 @@ public class TransactionRunnerImplTest {
   public void inlineBegin() {
     SpannerImpl spanner = mock(SpannerImpl.class);
     SpannerOptions options = mock(SpannerOptions.class);
-
+    when(options.getDefaultTransactionOptions())
+        .thenReturn(TransactionOptions.getDefaultInstance());
     when(spanner.getRpc()).thenReturn(rpc);
     when(spanner.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());

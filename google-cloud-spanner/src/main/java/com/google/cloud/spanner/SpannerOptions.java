@@ -16,6 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+
 import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
@@ -30,9 +33,9 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
-import com.google.api.gax.tracing.MetricsTracerFactory;
-import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.api.gax.tracing.OpencensusTracerFactory;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
@@ -55,6 +58,7 @@ import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -62,23 +66,34 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.grpc.CallCredentials;
 import io.grpc.CompressorRegistry;
 import io.grpc.Context;
 import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -88,7 +103,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */
 public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
@@ -104,6 +118,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
+
   private static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
           "https://www.googleapis.com/auth/spanner.admin",
@@ -136,8 +152,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
-  private final BuiltInOpenTelemetryMetricsProvider builtInOpenTelemetryMetricsProvider =
-      BuiltInOpenTelemetryMetricsProvider.INSTANCE;
+  private final BuiltInMetricsProvider builtInMetricsProvider = BuiltInMetricsProvider.INSTANCE;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
@@ -164,6 +179,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableBuiltInMetrics;
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
+  private final String monitoringHost;
+  private final TransactionOptions defaultTransactionOptions;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -379,116 +396,223 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         case BATCH_UPDATE:
           return batchUpdateTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(batchUpdateTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(batchUpdateTimeout);
         case COMMIT:
           return commitTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(commitTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(commitTimeout);
         case EXECUTE_QUERY:
           return executeQueryTimeout == null
               ? null
               : GrpcCallContext.createDefault()
-                  .withTimeout(executeQueryTimeout)
-                  .withStreamWaitTimeout(executeQueryTimeout);
+                  .withTimeoutDuration(executeQueryTimeout)
+                  .withStreamWaitTimeoutDuration(executeQueryTimeout);
         case EXECUTE_UPDATE:
           return executeUpdateTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(executeUpdateTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(executeUpdateTimeout);
         case PARTITION_QUERY:
           return partitionQueryTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(partitionQueryTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(partitionQueryTimeout);
         case PARTITION_READ:
           return partitionReadTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(partitionReadTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(partitionReadTimeout);
         case READ:
           return readTimeout == null
               ? null
               : GrpcCallContext.createDefault()
-                  .withTimeout(readTimeout)
-                  .withStreamWaitTimeout(readTimeout);
+                  .withTimeoutDuration(readTimeout)
+                  .withStreamWaitTimeoutDuration(readTimeout);
         case ROLLBACK:
           return rollbackTimeout == null
               ? null
-              : GrpcCallContext.createDefault().withTimeout(rollbackTimeout);
+              : GrpcCallContext.createDefault().withTimeoutDuration(rollbackTimeout);
         default:
       }
       return null;
     }
 
-    public Duration getCommitTimeout() {
+    /** This method is obsolete. Use {@link #getCommitTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getCommitTimeoutDuration() instead.")
+    public org.threeten.bp.Duration getCommitTimeout() {
+      return toThreetenDuration(getCommitTimeoutDuration());
+    }
+
+    public Duration getCommitTimeoutDuration() {
       return commitTimeout;
     }
 
-    public SpannerCallContextTimeoutConfigurator withCommitTimeout(Duration commitTimeout) {
+    /** This method is obsolete. Use {@link #withCommitTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withCommitTimeoutDuration() instead.")
+    public SpannerCallContextTimeoutConfigurator withCommitTimeout(
+        org.threeten.bp.Duration commitTimeout) {
+      return withCommitTimeoutDuration(toJavaTimeDuration(commitTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withCommitTimeoutDuration(Duration commitTimeout) {
       this.commitTimeout = commitTimeout;
       return this;
     }
 
-    public Duration getRollbackTimeout() {
+    /** This method is obsolete. Use {@link #getRollbackTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getRollbackTimeoutDuration() instead.")
+    public org.threeten.bp.Duration getRollbackTimeout() {
+      return toThreetenDuration(getRollbackTimeoutDuration());
+    }
+
+    public Duration getRollbackTimeoutDuration() {
       return rollbackTimeout;
     }
 
-    public SpannerCallContextTimeoutConfigurator withRollbackTimeout(Duration rollbackTimeout) {
+    /** This method is obsolete. Use {@link #withRollbackTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withRollbackTimeoutDuration() instead.")
+    public SpannerCallContextTimeoutConfigurator withRollbackTimeout(
+        org.threeten.bp.Duration rollbackTimeout) {
+      return withRollbackTimeoutDuration(toJavaTimeDuration(rollbackTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withRollbackTimeoutDuration(
+        Duration rollbackTimeout) {
       this.rollbackTimeout = rollbackTimeout;
       return this;
     }
 
-    public Duration getExecuteQueryTimeout() {
+    /** This method is obsolete. Use {@link #getExecuteQueryTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getExecuteQueryTimeoutDuration() instead.")
+    public org.threeten.bp.Duration getExecuteQueryTimeout() {
+      return toThreetenDuration(getExecuteQueryTimeoutDuration());
+    }
+
+    public Duration getExecuteQueryTimeoutDuration() {
       return executeQueryTimeout;
     }
 
+    /** This method is obsolete. Use {@link #withExecuteQueryTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withExecuteQueryTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withExecuteQueryTimeout(
+        org.threeten.bp.Duration executeQueryTimeout) {
+      return withExecuteQueryTimeoutDuration(toJavaTimeDuration(executeQueryTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withExecuteQueryTimeoutDuration(
         Duration executeQueryTimeout) {
       this.executeQueryTimeout = executeQueryTimeout;
       return this;
     }
 
-    public Duration getExecuteUpdateTimeout() {
+    /** This method is obsolete. Use {@link #getExecuteUpdateTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getExecuteUpdateTimeoutDuration() instead")
+    public org.threeten.bp.Duration getExecuteUpdateTimeout() {
+      return toThreetenDuration(getExecuteUpdateTimeoutDuration());
+    }
+
+    public Duration getExecuteUpdateTimeoutDuration() {
       return executeUpdateTimeout;
     }
 
+    /** This method is obsolete. Use {@link #withExecuteUpdateTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withExecuteUpdateTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withExecuteUpdateTimeout(
+        org.threeten.bp.Duration executeUpdateTimeout) {
+      return withExecuteUpdateTimeoutDuration(toJavaTimeDuration(executeUpdateTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withExecuteUpdateTimeoutDuration(
         Duration executeUpdateTimeout) {
       this.executeUpdateTimeout = executeUpdateTimeout;
       return this;
     }
 
-    public Duration getBatchUpdateTimeout() {
+    /** This method is obsolete. Use {@link #getBatchUpdateTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getBatchUpdateTimeoutDuration() instead")
+    public org.threeten.bp.Duration getBatchUpdateTimeout() {
+      return toThreetenDuration(getBatchUpdateTimeoutDuration());
+    }
+
+    public Duration getBatchUpdateTimeoutDuration() {
       return batchUpdateTimeout;
     }
 
+    /** This method is obsolete. Use {@link #withBatchUpdateTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withBatchUpdateTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withBatchUpdateTimeout(
+        org.threeten.bp.Duration batchUpdateTimeout) {
+      return withBatchUpdateTimeoutDuration(toJavaTimeDuration(batchUpdateTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withBatchUpdateTimeoutDuration(
         Duration batchUpdateTimeout) {
       this.batchUpdateTimeout = batchUpdateTimeout;
       return this;
     }
 
-    public Duration getReadTimeout() {
+    /** This method is obsolete. Use {@link #getReadTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getReadTimeoutDuration() instead")
+    public org.threeten.bp.Duration getReadTimeout() {
+      return toThreetenDuration(getReadTimeoutDuration());
+    }
+
+    public Duration getReadTimeoutDuration() {
       return readTimeout;
     }
 
-    public SpannerCallContextTimeoutConfigurator withReadTimeout(Duration readTimeout) {
+    /** This method is obsolete. Use {@link #withReadTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withReadTimeoutDuration() instead")
+    public SpannerCallContextTimeoutConfigurator withReadTimeout(
+        org.threeten.bp.Duration readTimeout) {
+      return withReadTimeoutDuration(toJavaTimeDuration(readTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withReadTimeoutDuration(Duration readTimeout) {
       this.readTimeout = readTimeout;
       return this;
     }
 
-    public Duration getPartitionQueryTimeout() {
+    /** This method is obsolete. Use {@link #getPartitionQueryTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getPartitionQueryTimeoutDuration() instead")
+    public org.threeten.bp.Duration getPartitionQueryTimeout() {
+      return toThreetenDuration(getPartitionQueryTimeoutDuration());
+    }
+
+    public Duration getPartitionQueryTimeoutDuration() {
       return partitionQueryTimeout;
     }
 
+    /**
+     * This method is obsolete. Use {@link #withPartitionQueryTimeoutDuration(Duration)} instead.
+     */
+    @ObsoleteApi("Use withPartitionQueryTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withPartitionQueryTimeout(
+        org.threeten.bp.Duration partitionQueryTimeout) {
+      return withPartitionQueryTimeoutDuration(toJavaTimeDuration(partitionQueryTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withPartitionQueryTimeoutDuration(
         Duration partitionQueryTimeout) {
       this.partitionQueryTimeout = partitionQueryTimeout;
       return this;
     }
 
-    public Duration getPartitionReadTimeout() {
+    /** This method is obsolete. Use {@link #getPartitionReadTimeoutDuration()} instead. */
+    @ObsoleteApi("Use getPartitionReadTimeoutDuration() instead")
+    public org.threeten.bp.Duration getPartitionReadTimeout() {
+      return toThreetenDuration(getPartitionReadTimeoutDuration());
+    }
+
+    public Duration getPartitionReadTimeoutDuration() {
       return partitionReadTimeout;
     }
 
+    /** This method is obsolete. Use {@link #withPartitionReadTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use withPartitionReadTimeoutDuration() instead")
     public SpannerCallContextTimeoutConfigurator withPartitionReadTimeout(
+        org.threeten.bp.Duration partitionReadTimeout) {
+      return withPartitionReadTimeoutDuration(toJavaTimeDuration(partitionReadTimeout));
+    }
+
+    public SpannerCallContextTimeoutConfigurator withPartitionReadTimeoutDuration(
         Duration partitionReadTimeout) {
       this.partitionReadTimeout = partitionReadTimeout;
       return this;
@@ -625,7 +749,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
-    channelConfigurator = builder.channelConfigurator;
+    if (builder.mTLSContext != null) {
+      channelConfigurator =
+          channelBuilder -> {
+            if (builder.channelConfigurator != null) {
+              channelBuilder = builder.channelConfigurator.apply(channelBuilder);
+            }
+            if (channelBuilder instanceof NettyChannelBuilder) {
+              ((NettyChannelBuilder) channelBuilder).sslContext(builder.mTLSContext);
+            }
+            return channelBuilder;
+          };
+    } else {
+      channelConfigurator = builder.channelConfigurator;
+    }
     interceptorProvider = builder.interceptorProvider;
     sessionPoolOptions =
         builder.sessionPoolOptions != null
@@ -672,6 +809,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableExtendedTracing = builder.enableExtendedTracing;
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
+    monitoringHost = builder.monitoringHost;
+    defaultTransactionOptions = builder.defaultTransactionOptions;
   }
 
   /**
@@ -706,13 +845,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     default boolean isEnableBuiltInMetrics() {
-      return false;
+      return true;
     }
 
     default boolean isEnableEndToEndTracing() {
       return false;
     }
+
+    default String getMonitoringHost() {
+      return null;
+    }
+
+    default GoogleCredentials getDefaultExperimentalHostCredentials() {
+      return null;
+    }
   }
+
+  static final String DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS =
+      "SPANNER_EXPERIMENTAL_HOST_AUTH_TOKEN";
 
   /**
    * Default implementation of {@link SpannerEnvironment}. Reads all configuration from environment
@@ -725,9 +875,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
-    private static final String SPANNER_ENABLE_BUILTIN_METRICS = "SPANNER_ENABLE_BUILTIN_METRICS";
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
+    private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
+    private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
 
     private SpannerEnvironmentImpl() {}
 
@@ -756,14 +907,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @Override
     public boolean isEnableBuiltInMetrics() {
-      // The environment variable SPANNER_ENABLE_BUILTIN_METRICS is used for testing and will be
-      // removed in the future.
-      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_BUILTIN_METRICS));
+      return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_BUILTIN_METRICS));
     }
 
     @Override
     public boolean isEnableEndToEndTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_END_TO_END_TRACING));
+    }
+
+    @Override
+    public String getMonitoringHost() {
+      return System.getenv(SPANNER_MONITORING_HOST);
+    }
+
+    @Override
+    public GoogleCredentials getDefaultExperimentalHostCredentials() {
+      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
     }
   }
 
@@ -775,9 +934,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.DIRECT;
     static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
         RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofSeconds(5L))
+            .setInitialRetryDelayDuration(Duration.ofSeconds(5L))
             .setRetryDelayMultiplier(2.0)
-            .setMaxRetryDelay(Duration.ofSeconds(60L))
+            .setMaxRetryDelayDuration(Duration.ofSeconds(60L))
             .setMaxAttempts(10)
             .build();
     private final ImmutableSet<String> allowedClientLibTokens =
@@ -828,8 +987,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
-    private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
+    private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
+    private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
+    private SslContext mTLSContext = null;
+    private boolean isExperimentalHost = false;
+    private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -840,13 +1003,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       OperationTimedPollAlgorithm longRunningPollingAlgorithm =
           OperationTimedPollAlgorithm.create(
               RetrySettings.newBuilder()
-                  .setInitialRpcTimeout(Duration.ofSeconds(60L))
-                  .setMaxRpcTimeout(Duration.ofSeconds(600L))
-                  .setInitialRetryDelay(Duration.ofSeconds(20L))
-                  .setMaxRetryDelay(Duration.ofSeconds(45L))
+                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
+                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
                   .setRetryDelayMultiplier(1.5)
                   .setRpcTimeoutMultiplier(1.5)
-                  .setTotalTimeout(Duration.ofHours(48L))
+                  .setTotalTimeoutDuration(Duration.ofHours(48L))
                   .build());
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
@@ -897,6 +1060,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableExtendedTracing = options.enableExtendedTracing;
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
+      this.monitoringHost = options.monitoringHost;
+      this.defaultTransactionOptions = options.defaultTransactionOptions;
     }
 
     @Override
@@ -1114,11 +1279,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return databaseAdminStubSettingsBuilder;
     }
 
+    /** This method is obsolete. Use {@link #setPartitionedDmlTimeoutDuration(Duration)} instead. */
+    @ObsoleteApi("Use setPartitionedDmlTimeoutDuration(Duration) instead")
+    public Builder setPartitionedDmlTimeout(org.threeten.bp.Duration timeout) {
+      return setPartitionedDmlTimeoutDuration(toJavaTimeDuration(timeout));
+    }
+
     /**
      * Sets a timeout specifically for Partitioned DML statements executed through {@link
      * DatabaseClient#executePartitionedUpdate(Statement, UpdateOption...)}. The default is 2 hours.
      */
-    public Builder setPartitionedDmlTimeout(Duration timeout) {
+    public Builder setPartitionedDmlTimeoutDuration(Duration timeout) {
       this.partitionedDmlTimeout = timeout;
       return this;
     }
@@ -1320,6 +1491,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
+    public Builder setExperimentalHost(String host) {
+      super.setHost(host);
+      super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
+      setSessionPoolOption(SessionPoolOptions.newBuilder().setExperimentalHost().build());
+      this.isExperimentalHost = true;
+      return this;
+    }
+
     /**
      * Enables gRPC-GCP extension with the default settings. Do not set
      * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
@@ -1353,6 +1533,27 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setEmulatorHost(String emulatorHost) {
       this.emulatorHost = emulatorHost;
+      return this;
+    }
+
+    /**
+     * Configures mTLS authentication using the provided client certificate and key files. mTLS is
+     * only supported for experimental spanner hosts.
+     *
+     * @param clientCertificate Path to the client certificate file.
+     * @param clientCertificateKey Path to the client private key file.
+     * @throws SpannerException If an error occurs while configuring the mTLS context
+     */
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3574")
+    public Builder useClientCert(String clientCertificate, String clientCertificateKey) {
+      try {
+        this.mTLSContext =
+            GrpcSslContexts.forClient()
+                .keyManager(new File(clientCertificate), new File(clientCertificateKey))
+                .build();
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
       return this;
     }
 
@@ -1410,9 +1611,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /** Enabling this will enable built in metrics for each individual RPC execution. */
-    Builder setEnableBuiltInMetrics(boolean enableBuiltInMetrics) {
+    /**
+     * Sets whether to enable or disable built in metrics for Data client operations. Built in
+     * metrics are enabled by default.
+     */
+    public Builder setBuiltInMetricsEnabled(boolean enableBuiltInMetrics) {
       this.enableBuiltInMetrics = enableBuiltInMetrics;
+      return this;
+    }
+
+    /** Sets the monitoring host to be used for Built-in client side metrics */
+    public Builder setMonitoringHost(String monitoringHost) {
+      this.monitoringHost = monitoringHost;
       return this;
     }
 
@@ -1441,6 +1651,55 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Provides the default read-write transaction options for all databases. These defaults are
+     * overridden by any explicit {@link com.google.cloud.spanner.Options.TransactionOption}
+     * provided through {@link DatabaseClient}.
+     *
+     * <p>Example Usage:
+     *
+     * <pre>{@code
+     * DefaultReadWriteTransactionOptions options = DefaultReadWriteTransactionOptions.newBuilder()
+     * .setIsolationLevel(IsolationLevel.SERIALIZABLE)
+     * .build();
+     * }</pre>
+     */
+    public static class DefaultReadWriteTransactionOptions {
+      private final TransactionOptions defaultTransactionOptions;
+
+      private DefaultReadWriteTransactionOptions(TransactionOptions defaultTransactionOptions) {
+        this.defaultTransactionOptions = defaultTransactionOptions;
+      }
+
+      public static DefaultReadWriteTransactionOptionsBuilder newBuilder() {
+        return new DefaultReadWriteTransactionOptionsBuilder();
+      }
+
+      public static class DefaultReadWriteTransactionOptionsBuilder {
+        private final TransactionOptions.Builder transactionOptionsBuilder =
+            TransactionOptions.newBuilder();
+
+        public DefaultReadWriteTransactionOptionsBuilder setIsolationLevel(
+            IsolationLevel isolationLevel) {
+          transactionOptionsBuilder.setIsolationLevel(isolationLevel);
+          return this;
+        }
+
+        public DefaultReadWriteTransactionOptions build() {
+          return new DefaultReadWriteTransactionOptions(transactionOptionsBuilder.build());
+        }
+      }
+    }
+
+    /** Sets the {@link DefaultReadWriteTransactionOptions} for read-write transactions. */
+    public Builder setDefaultTransactionOptions(
+        DefaultReadWriteTransactionOptions defaultReadWriteTransactionOptions) {
+      Preconditions.checkNotNull(
+          defaultReadWriteTransactionOptions, "DefaultReadWriteTransactionOptions cannot be null");
+      this.defaultTransactionOptions = defaultReadWriteTransactionOptions.defaultTransactionOptions;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1455,6 +1714,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
+      } else if (isExperimentalHost && credentials == null) {
+        credentials = environment.getDefaultExperimentalHostCredentials();
       }
       if (this.numChannels == null) {
         this.numChannels =
@@ -1493,6 +1754,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public static void useDefaultEnvironment() {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
+  @InternalApi
+  public static GoogleCredentials getDefaultExperimentalCredentialsFromSysEnv() {
+    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
+  }
+
+  private static @Nullable GoogleCredentials getOAuthTokenFromFile(@Nullable String file) {
+    if (!Strings.isNullOrEmpty(file)) {
+      String token;
+      try {
+        token = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(file)));
+      } catch (IOException e) {
+        throw SpannerExceptionFactory.newSpannerException(e);
+      }
+      return GoogleCredentials.create(new AccessToken(token, null));
+    }
+    return null;
   }
 
   /**
@@ -1622,7 +1901,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return databaseAdminStubSettings;
   }
 
-  public Duration getPartitionedDmlTimeout() {
+  public org.threeten.bp.Duration getPartitionedDmlTimeout() {
+    return toThreetenDuration(getPartitionedDmlTimeoutDuration());
+  }
+
+  public Duration getPartitionedDmlTimeoutDuration() {
     return partitionedDmlTimeout;
   }
 
@@ -1648,6 +1931,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public CallCredentialsProvider getCallCredentialsProvider() {
     return callCredentialsProvider;
+  }
+
+  private boolean usesNoCredentials() {
+    return Objects.equals(getCredentials(), NoCredentials.getInstance());
   }
 
   public String getCompressorName() {
@@ -1697,7 +1984,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     // Add Metrics Tracer factory if built in metrics are enabled and if the client is data client
     // and if emulator is not enabled.
-    if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled) {
+    if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled && !usesNoCredentials()) {
       ApiTracerFactory metricsTracerFactory = createMetricsApiTracerFactory();
       if (metricsTracerFactory != null) {
         apiTracerFactories.add(metricsTracerFactory);
@@ -1725,13 +2012,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
-        this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
-            this.getProjectId(), getCredentials());
+        this.builtInMetricsProvider.getOrCreateOpenTelemetry(
+            this.getProjectId(), getCredentials(), this.monitoringHost);
 
     return openTelemetry != null
-        ? new MetricsTracerFactory(
-            new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            builtInOpenTelemetryMetricsProvider.createClientAttributes(
+        ? new BuiltInMetricsTracerFactory(
+            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+            builtInMetricsProvider.createClientAttributes(
                 this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
         : null;
   }
@@ -1749,8 +2036,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Returns true if an {@link com.google.api.gax.tracing.MetricsTracer} should be created and set
    * on the Spanner client.
    */
-  boolean isEnableBuiltInMetrics() {
+  public boolean isEnableBuiltInMetrics() {
     return enableBuiltInMetrics;
+  }
+
+  /** Returns the override metrics Host. */
+  String getMonitoringHost() {
+    return monitoringHost;
+  }
+
+  public TransactionOptions getDefaultTransactionOptions() {
+    return defaultTransactionOptions;
   }
 
   @BetaApi
