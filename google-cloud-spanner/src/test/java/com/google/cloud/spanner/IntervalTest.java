@@ -48,8 +48,7 @@ public class IntervalTest {
     Interval interval = Interval.ofSeconds(10);
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
-    assertEquals(
-        BigInteger.valueOf(10000000000L), interval.getNanoseconds());
+    assertEquals(BigInteger.valueOf(10000000000L), interval.getNanoseconds());
   }
 
   @Test
@@ -57,8 +56,7 @@ public class IntervalTest {
     Interval interval = Interval.ofMilliseconds(10);
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
-    assertEquals(
-        BigInteger.valueOf(10000000L), interval.getNanoseconds());
+    assertEquals(BigInteger.valueOf(10000000L), interval.getNanoseconds());
   }
 
   @Test
@@ -66,8 +64,7 @@ public class IntervalTest {
     Interval interval = Interval.ofMicroseconds(10);
     assertEquals(0, interval.getMonths());
     assertEquals(0, interval.getDays());
-    assertEquals(
-        BigInteger.valueOf(10000), interval.getNanoseconds());
+    assertEquals(BigInteger.valueOf(10000), interval.getNanoseconds());
   }
 
   @Test

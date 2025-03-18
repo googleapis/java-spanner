@@ -29,8 +29,8 @@ import org.jetbrains.annotations.NotNull;
  * broken into two components microseconds and nanoFractions, where nanoFractions can range from
  * [-999, 999]. Internally, Spanner supports Interval value with the following range of individual
  * fields: months: [-120000, 120000] days: [-3660000, 3660000] nanoseconds: [-316224000000000000000,
- * 316224000000000000000]. Interval value created outside the specified domain will return error when
- * sent to Spanner backend.
+ * 316224000000000000000]. Interval value created outside the specified domain will return error
+ * when sent to Spanner backend.
  */
 @Immutable
 public class Interval implements Serializable {
@@ -113,7 +113,8 @@ public class Interval implements Serializable {
   /** Creates an interval with specified number of microseconds. */
   public static Interval ofMicroseconds(long micros) {
     return builder()
-        .setNanoseconds(BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICROSECOND)))
+        .setNanoseconds(
+            BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICROSECOND)))
         .build();
   }
 
