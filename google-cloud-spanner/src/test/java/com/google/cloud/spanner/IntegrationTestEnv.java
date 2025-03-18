@@ -121,10 +121,11 @@ public class IntegrationTestEnv extends ExternalResource {
     assumeFalse(alwaysCreateNewInstance && isCloudDevel());
 
     this.config.setUp();
-    // OpenTelemetry with End to End tracing enabled for all integration test env. The grpc stub and connections are created during env set up using SpannerOptions and are reused for executing statements.
+    // OpenTelemetry set up for enabling End to End tracing for all integration test env.
+    // The grpc stub and connections are created during test env set up using SpannerOptions and are
+    // reused for executing statements.
     SpannerOptions options = spannerOptionsWithEndToEndTracing();
     String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
-    instanceProperty = "projects/span-cloud-testing/instances/manu-demo1-mr-nam6";
     InstanceId instanceId;
     if (!instanceProperty.isEmpty() && !alwaysCreateNewInstance) {
       instanceId = InstanceId.of(instanceProperty);
