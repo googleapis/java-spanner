@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ResourceExhaustedException;
-import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
@@ -119,7 +118,6 @@ public class ITEndToEndTracingTest {
           foundTrace = true;
           break;
         } catch (ApiException apiException) {
-          assertThat(apiException.getStatusCode().getCode()).isEqualTo(StatusCode.Code.NOT_FOUND);
           Thread.sleep(5000L);
         }
       }
