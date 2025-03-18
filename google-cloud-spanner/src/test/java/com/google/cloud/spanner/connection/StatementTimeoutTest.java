@@ -27,16 +27,18 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Collections2;
 import com.google.longrunning.Operation;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Any;
@@ -47,6 +49,9 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -108,18 +113,23 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
             .setUri(getBaseUrl() + ";trackSessionLeaks=false")
             .setStatementExecutorType(statementExecutorType)
             .setConfigurator(
-                optionsConfigurator ->
-                    optionsConfigurator
-                        .getDatabaseAdminStubSettingsBuilder()
-                        .updateDatabaseDdlOperationSettings()
-                        .setPollingAlgorithm(
-                            OperationTimedPollAlgorithm.create(
-                                RetrySettings.newBuilder()
-                                    .setInitialRetryDelayDuration(Duration.ofMillis(1L))
-                                    .setMaxRetryDelayDuration(Duration.ofMillis(1L))
-                                    .setRetryDelayMultiplier(1.0)
-                                    .setTotalTimeoutDuration(Duration.ofMinutes(10L))
-                                    .build())))
+                optionsConfigurator -> {
+                  optionsConfigurator
+                      .getDatabaseAdminStubSettingsBuilder()
+                      .updateDatabaseDdlOperationSettings()
+                      .setPollingAlgorithm(
+                          OperationTimedPollAlgorithm.create(
+                              RetrySettings.newBuilder()
+                                  .setInitialRetryDelayDuration(Duration.ofMillis(1L))
+                                  .setMaxRetryDelayDuration(Duration.ofMillis(1L))
+                                  .setRetryDelayMultiplier(1.0)
+                                  .setTotalTimeoutDuration(Duration.ofMinutes(10L))
+                                  .build()));
+                  optionsConfigurator.setSessionPoolOption(
+                      SessionPoolOptions.newBuilder()
+                          .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
+                          .build());
+                })
             .build();
     return createITConnection(options);
   }
@@ -138,6 +148,8 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
   @After
   public void clearExecutionTimes() {
     mockSpanner.removeAllExecutionTimes();
+    SpannerPool.INSTANCE.checkAndCloseSpanners(
+        CheckAndCloseSpannersMode.ERROR, new ForceCloseSpannerFunction(5L, TimeUnit.MILLISECONDS));
   }
 
   @Test
@@ -617,20 +629,20 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
   private void waitForDdlRequestOnServer() {
     try {
       Stopwatch watch = Stopwatch.createStarted();
-      while (Collections2.filter(
-              mockDatabaseAdmin.getRequests(),
-              input -> input.getClass().equals(UpdateDatabaseDdlRequest.class))
-          .isEmpty()) {
+      while (watch.elapsed(TimeUnit.MILLISECONDS) < EXECUTION_TIME_SLOW_STATEMENT) {
+        try {
+          List<AbstractMessage> requests = new ArrayList<>(mockDatabaseAdmin.getRequests());
+          if (requests.stream().anyMatch(request -> request instanceof UpdateDatabaseDdlRequest)) {
+            break;
+          }
+        } catch (ConcurrentModificationException ignore) {
+          // Just ignore and retry.
+        }
         //noinspection BusyWait
         Thread.sleep(1L);
-        if (watch.elapsed(TimeUnit.MILLISECONDS) > EXECUTION_TIME_SLOW_STATEMENT) {
-          throw new TimeoutException("Timeout while waiting for DDL request");
-        }
       }
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
-    } catch (TimeoutException e) {
-      throw SpannerExceptionFactory.propagateTimeout(e);
     }
   }
 
@@ -1010,6 +1022,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       } finally {
         executor.shutdownNow();
       }
+      connection.closeAsync();
     }
   }
 
@@ -1036,6 +1049,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       } finally {
         executor.shutdownNow();
       }
+      connection.closeAsync();
     }
   }
 
@@ -1049,6 +1063,8 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       SpannerException e =
           assertThrows(SpannerException.class, () -> connection.execute(Statement.of(SLOW_DDL)));
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+
+      connection.closeAsync();
     }
   }
 
