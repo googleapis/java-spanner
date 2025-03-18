@@ -89,8 +89,7 @@ public class ITEndToEndTracingTest {
     selectValueQuery = "SELECT @p1 + @p1 ";
   }
 
-  private void assertTrace(String traceId)
-      throws IOException, InterruptedException {
+  private void assertTrace(String traceId) throws IOException, InterruptedException {
     TraceServiceSettings settings =
         env.getTestHelper().getOptions().getCredentials() == null
             ? TraceServiceSettings.newBuilder().build()
