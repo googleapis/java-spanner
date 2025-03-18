@@ -34,6 +34,7 @@ public class SessionPoolOptions {
   private static final int DEFAULT_MAX_SESSIONS = 400;
   private static final int DEFAULT_MIN_SESSIONS = 100;
   private static final int DEFAULT_INC_STEP = 25;
+  private static final int EXPERIMENTAL_HOST_REGULAR_SESSIONS = 0;
   private static final ActionOnExhaustion DEFAULT_ACTION = ActionOnExhaustion.BLOCK;
   private final int minSessions;
   private final int maxSessions;
@@ -89,8 +90,12 @@ public class SessionPoolOptions {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
     // We allow that to prevent code that only sets a value for maxSessions to break if the
     // maxSessions value is less than the default for minSessions.
-    this.minSessions = Math.min(builder.minSessions, builder.maxSessions);
-    this.maxSessions = builder.maxSessions;
+    this.minSessions =
+        builder.isExperimentalHost
+            ? EXPERIMENTAL_HOST_REGULAR_SESSIONS
+            : Math.min(builder.minSessions, builder.maxSessions);
+    this.maxSessions =
+        builder.isExperimentalHost ? EXPERIMENTAL_HOST_REGULAR_SESSIONS : builder.maxSessions;
     this.incStep = builder.incStep;
     this.maxIdleSessions = builder.maxIdleSessions;
     this.writeSessionsFraction = builder.writeSessionsFraction;
@@ -114,26 +119,30 @@ public class SessionPoolOptions {
     // useMultiplexedSession priority => Environment var > private setter > client default
     Boolean useMultiplexedSessionFromEnvVariable = getUseMultiplexedSessionFromEnvVariable();
     this.useMultiplexedSession =
-        (useMultiplexedSessionFromEnvVariable != null)
-            ? useMultiplexedSessionFromEnvVariable
-            : builder.useMultiplexedSession;
+        builder.isExperimentalHost
+            || ((useMultiplexedSessionFromEnvVariable != null)
+                ? useMultiplexedSessionFromEnvVariable
+                : builder.useMultiplexedSession);
     // useMultiplexedSessionForRW priority => Environment var > private setter > client default
     Boolean useMultiplexedSessionForRWFromEnvVariable =
         getUseMultiplexedSessionForRWFromEnvVariable();
     this.useMultiplexedSessionForRW =
-        (useMultiplexedSessionForRWFromEnvVariable != null)
-            ? useMultiplexedSessionForRWFromEnvVariable
-            : builder.useMultiplexedSessionForRW;
+        builder.isExperimentalHost
+            || ((useMultiplexedSessionForRWFromEnvVariable != null)
+                ? useMultiplexedSessionForRWFromEnvVariable
+                : builder.useMultiplexedSessionForRW);
     // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client
     // default
     Boolean useMultiplexedSessionFromEnvVariablePartitionedOps =
         getUseMultiplexedSessionFromEnvVariablePartitionedOps();
     this.useMultiplexedSessionForPartitionedOps =
-        (useMultiplexedSessionFromEnvVariablePartitionedOps != null)
-            ? useMultiplexedSessionFromEnvVariablePartitionedOps
-            : builder.useMultiplexedSessionPartitionedOps;
+        builder.isExperimentalHost
+            || ((useMultiplexedSessionFromEnvVariablePartitionedOps != null)
+                ? useMultiplexedSessionFromEnvVariablePartitionedOps
+                : builder.useMultiplexedSessionPartitionedOps);
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
-    this.skipVerifyingBeginTransactionForMuxRW = builder.skipVerifyingBeginTransactionForMuxRW;
+    this.skipVerifyingBeginTransactionForMuxRW =
+        builder.isExperimentalHost || builder.skipVerifyingBeginTransactionForMuxRW;
   }
 
   @Override
@@ -617,6 +626,7 @@ public class SessionPoolOptions {
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
     private boolean skipVerifyingBeginTransactionForMuxRW = false;
+    private boolean isExperimentalHost = false;
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
@@ -810,6 +820,12 @@ public class SessionPoolOptions {
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
               .build();
+      return this;
+    }
+
+    @InternalApi
+    public Builder setExperimentalHost() {
+      this.isExperimentalHost = true;
       return this;
     }
 

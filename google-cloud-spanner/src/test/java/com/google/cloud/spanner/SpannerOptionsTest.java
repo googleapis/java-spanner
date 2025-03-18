@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.SpannerOptions.CLOUD_SPANNER_HOST_PATTERN;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,6 +37,7 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.spanner.SpannerOptions.Builder.DefaultReadWriteTransactionOptions;
 import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
@@ -62,6 +62,7 @@ import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -769,6 +770,24 @@ public class SpannerOptionsTest {
   }
 
   @Test
+  public void testTransactionOptions() {
+    DefaultReadWriteTransactionOptions transactionOptions =
+        DefaultReadWriteTransactionOptions.newBuilder()
+            .setIsolationLevel(IsolationLevel.SERIALIZABLE)
+            .build();
+    assertNotNull(
+        SpannerOptions.newBuilder().setProjectId("p").build().getDefaultTransactionOptions());
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setDefaultTransactionOptions(transactionOptions)
+                .build()
+                .getDefaultTransactionOptions()
+                .getIsolationLevel())
+        .isEqualTo(IsolationLevel.SERIALIZABLE);
+  }
+
+  @Test
   public void testSetDirectedReadOptions() {
     final DirectedReadOptions directedReadOptions =
         DirectedReadOptions.newBuilder()
@@ -1167,10 +1186,17 @@ public class SpannerOptionsTest {
   }
 
   @Test
-  public void testCloudSpannerHostPattern() {
-    assertTrue(CLOUD_SPANNER_HOST_PATTERN.matcher("https://spanner.googleapis.com").matches());
-    assertTrue(
-        CLOUD_SPANNER_HOST_PATTERN.matcher("https://product-area.googleapis.com:443").matches());
-    assertFalse(CLOUD_SPANNER_HOST_PATTERN.matcher("https://some-company.com:443").matches());
+  public void testExperimentalHostOptions() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setExperimentalHost("localhost:8080")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    assertEquals("default", options.getProjectId());
+    assertEquals(0, options.getSessionPoolOptions().getMinSessions());
+    assertEquals(0, options.getSessionPoolOptions().getMaxSessions());
+    assertTrue(options.getSessionPoolOptions().getUseMultiplexedSession());
+    assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionForRW());
+    assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());
   }
 }
