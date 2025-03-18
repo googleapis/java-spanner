@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserialize;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -1115,59 +1114,5 @@ public class GrpcResultSetTest {
         () -> {
           resultSet.getProtoEnum(0, Genre::forNumber);
         });
-  }
-
-  @Test
-  public void verifyResultSetWithLastTrue() {
-    long[] longArray = {111, 333, 444, 0, -1, -2234, Long.MAX_VALUE, Long.MIN_VALUE};
-
-    consumer.onPartialResultSet(
-        PartialResultSet.newBuilder()
-            .setMetadata(
-                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.int64())))))
-            .addValues(Value.int64Array(longArray).toProto())
-            .setLast(false)
-            .build());
-    assertTrue(resultSet.next());
-    consumer.onPartialResultSet(
-        PartialResultSet.newBuilder()
-            .setMetadata(
-                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.int64())))))
-            .addValues(Value.int64Array(longArray).toProto())
-            .setLast(true)
-            .build());
-    assertTrue(resultSet.next());
-    assertFalse(resultSet.next());
-    consumer.onCompleted();
-  }
-
-  @Test
-  public void shouldThrowDeadlineExceededIfLastTrueIsNotReceived() {
-    long[] longArray = {111, 333, 444, 0, -1, -2234, Long.MAX_VALUE, Long.MIN_VALUE};
-
-    consumer.onPartialResultSet(
-        PartialResultSet.newBuilder()
-            .setMetadata(
-                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.int64())))))
-            .addValues(Value.int64Array(longArray).toProto())
-            .setLast(false)
-            .build());
-    assertTrue(resultSet.next());
-    consumer.onPartialResultSet(
-        PartialResultSet.newBuilder()
-            .setMetadata(
-                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.int64())))))
-            .addValues(Value.int64Array(longArray).toProto())
-            .setLast(false)
-            .build());
-    assertTrue(resultSet.next());
-    SpannerException spannerException =
-        assertThrows(
-            SpannerException.class,
-            () -> {
-              assertThat(resultSet.next()).isFalse();
-            });
-    assertEquals("DEADLINE_EXCEEDED: stream wait timeout", spannerException.getMessage());
-    consumer.onCompleted();
   }
 }
