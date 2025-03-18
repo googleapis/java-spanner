@@ -52,15 +52,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Integration tests for End to End Tracing.
- */
+/** Integration tests for End to End Tracing. */
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITEndToEndTracingTest {
 
-  @ClassRule
-  public static IntegrationTestEnv env = new IntegrationTestEnv();
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static DatabaseClient googleStandardSQLClient;
 
   static {
@@ -92,24 +89,30 @@ public class ITEndToEndTracingTest {
     selectValueQuery = "SELECT @p1 + @p1 ";
   }
 
-  private void assertTrace(String spanName, String traceid)
+  private void assertTrace(String traceId)
       throws IOException, InterruptedException {
-    TraceServiceSettings settings = env.getTestHelper().getOptions().getCredentials() == null
-        ? TraceServiceSettings.newBuilder().build() : TraceServiceSettings.newBuilder()
-        .setCredentialsProvider(
-            FixedCredentialsProvider.create(env.getTestHelper().getOptions().getCredentials()))
-        .build();
+    TraceServiceSettings settings =
+        env.getTestHelper().getOptions().getCredentials() == null
+            ? TraceServiceSettings.newBuilder().build()
+            : TraceServiceSettings.newBuilder()
+                .setCredentialsProvider(
+                    FixedCredentialsProvider.create(
+                        env.getTestHelper().getOptions().getCredentials()))
+                .build();
     try (TraceServiceClient client = TraceServiceClient.create(settings)) {
       // It can take a few seconds before the trace is visible.
       Thread.sleep(5000L);
       boolean foundTrace = false;
       for (int attempts = 0; attempts < 2; attempts++) {
         try {
-          Trace clientTrace = client.getTrace(env.getTestHelper().getInstanceId().getProject(),
-              traceid);
+          Trace clientTrace =
+              client.getTrace(env.getTestHelper().getInstanceId().getProject(), traceId);
           // Assert Spanner Frontend Trace is present
-          assertTrue(clientTrace.getSpansList().stream().anyMatch(
-              span -> "CloudSpannerOperation.ExecuteStreamingQuery".equals(span.getName())));
+          assertTrue(
+              clientTrace.getSpansList().stream()
+                  .anyMatch(
+                      span ->
+                          "CloudSpannerOperation.ExecuteStreamingQuery".equals(span.getName())));
           foundTrace = true;
           break;
         } catch (ApiException apiException) {
@@ -119,7 +122,8 @@ public class ITEndToEndTracingTest {
       }
       assertTrue(foundTrace);
     } catch (ResourceExhaustedException resourceExhaustedException) {
-      if (resourceExhaustedException.getMessage()
+      if (resourceExhaustedException
+          .getMessage()
           .contains("Quota exceeded for quota metric 'Read requests (free)'")) {
         // Ignore and allow the test to succeed.
         System.out.println("RESOURCE_EXHAUSTED error ignored");
@@ -141,16 +145,16 @@ public class ITEndToEndTracingTest {
   @Test
   public void simpleSelect() throws IOException, InterruptedException {
     Tracer tracer = GlobalOpenTelemetry.getTracer(ITEndToEndTracingTest.class.getName());
-    String spanName = "simpleSelect";
-    Span span = tracer.spanBuilder(spanName).startSpan();
+    Span span = tracer.spanBuilder("simpleSelect").startSpan();
     Scope scope = span.makeCurrent();
     Type rowType = Type.struct(StructField.of("", Type.int64()));
-    Struct row = executeWithRowResultType(
-        Statement.newBuilder(selectValueQuery).bind("p1").to(1234).build(), rowType);
+    Struct row =
+        executeWithRowResultType(
+            Statement.newBuilder(selectValueQuery).bind("p1").to(1234).build(), rowType);
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getLong(0)).isEqualTo(2468);
     scope.close();
     span.end();
-    assertTrace(spanName, span.getSpanContext().getTraceId());
+    assertTrace(span.getSpanContext().getTraceId());
   }
 }

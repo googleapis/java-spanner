@@ -57,9 +57,7 @@ import org.junit.rules.ExternalResource;
  */
 public class IntegrationTestEnv extends ExternalResource {
 
-  /**
-   * Names a property that provides the class name of the {@link TestEnvConfig} to use.
-   */
+  /** Names a property that provides the class name of the {@link TestEnvConfig} to use. */
   public static final String TEST_ENV_CONFIG_CLASS_NAME = "spanner.testenv.config.class";
 
   public static final String CONFIG_CLASS = System.getProperty(TEST_ENV_CONFIG_CLASS_NAME, null);
@@ -158,27 +156,31 @@ public class IntegrationTestEnv extends ExternalResource {
     if (options.getCredentials() != null) {
       traceConfigurationBuilder.setCredentials(options.getCredentials());
     }
-    SpanExporter traceExporter = TraceExporter.createWithConfiguration(
-        traceConfigurationBuilder.setProjectId(options.getProjectId()).build());
+    SpanExporter traceExporter =
+        TraceExporter.createWithConfiguration(
+            traceConfigurationBuilder.setProjectId(options.getProjectId()).build());
 
     String serviceName =
         "java-spanner-jdbc-integration-tests-" + ThreadLocalRandom.current().nextInt();
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-        // Always sample in this test to ensure we know what we get.
-        .setSampler(Sampler.alwaysOn())
-        .setResource(Resource.builder().put("service.name", serviceName).build())
-        .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-        .build();
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder()
+            // Always sample in this test to ensure we know what we get.
+            .setSampler(Sampler.alwaysOn())
+            .setResource(Resource.builder().put("service.name", serviceName).build())
+            .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+            .build();
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(sdkTracerProvider)
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .buildAndRegisterGlobal();
     SpannerOptions.enableOpenTelemetryTraces();
-    return options.toBuilder().setOpenTelemetry(openTelemetry).setEnableEndToEndTracing(true)
+    return options
+        .toBuilder()
+        .setOpenTelemetry(openTelemetry)
+        .setEnableEndToEndTracing(true)
         .build();
   }
-
 
   RemoteSpannerHelper createTestHelper(SpannerOptions options, InstanceId instanceId)
       throws Throwable {
@@ -265,9 +267,9 @@ public class IntegrationTestEnv extends ExternalResource {
       return false;
     }
     return exception
-        .getMessage()
-        .contains(
-            "Quota exceeded for quota metric 'Instance create requests' and limit 'Instance create requests per minute'")
+            .getMessage()
+            .contains(
+                "Quota exceeded for quota metric 'Instance create requests' and limit 'Instance create requests per minute'")
         || exception.getMessage().matches(".*cannot add \\d+ nodes in region.*");
   }
 
