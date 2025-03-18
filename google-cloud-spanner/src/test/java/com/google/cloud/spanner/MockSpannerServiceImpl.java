@@ -2302,6 +2302,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       throws InterruptedException, TimeoutException {
     Stopwatch watch = Stopwatch.createStarted();
     while (countRequestsOfType(type) == 0) {
+      //noinspection BusyWait
       Thread.sleep(1L);
       if (watch.elapsed(TimeUnit.MILLISECONDS) > timeoutMillis) {
         throw new TimeoutException(

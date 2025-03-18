@@ -24,7 +24,6 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Ticker;
@@ -40,6 +39,7 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -54,7 +54,7 @@ import javax.annotation.concurrent.GuardedBy;
  * opened and closed, and which {@link Spanner} objects could be closed.
  *
  * <p>Call the method {@link SpannerPool#closeSpannerPool()} at the end of your application to
- * gracefully shutdown all instances in the pool.
+ * gracefully shut down all instances in the pool.
  */
 public class SpannerPool {
   // TODO: create separate Client Lib Token for the Connection API.
