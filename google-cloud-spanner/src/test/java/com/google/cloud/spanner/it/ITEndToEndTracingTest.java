@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -46,13 +62,14 @@ public class ITEndToEndTracingTest {
   @ClassRule
   public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static DatabaseClient googleStandardSQLClient;
-  private String selectValueQuery;
 
   static {
     SpannerOptionsHelper.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryMetrics();
     SpannerOptions.enableOpenTelemetryTraces();
   }
+
+  private String selectValueQuery;
 
   @BeforeClass
   public static void setUp() {
@@ -65,26 +82,23 @@ public class ITEndToEndTracingTest {
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
   }
 
-  @Before
-  public void initSelectValueQuery() {
-    selectValueQuery = "SELECT @p1 + @p1 ";
-  }
-
   @AfterClass
   public static void teardown() {
     ConnectionOptions.closeSpanner();
   }
 
+  @Before
+  public void initSelectValueQuery() {
+    selectValueQuery = "SELECT @p1 + @p1 ";
+  }
+
   private void assertTrace(String spanName, String traceid)
       throws IOException, InterruptedException {
-    TraceServiceSettings settings =
-        env.getTestHelper().getOptions().getCredentials() == null
-            ? TraceServiceSettings.newBuilder().build()
-            : TraceServiceSettings.newBuilder()
-                .setCredentialsProvider(
-                    FixedCredentialsProvider.create(
-                        env.getTestHelper().getOptions().getCredentials()))
-                .build();
+    TraceServiceSettings settings = env.getTestHelper().getOptions().getCredentials() == null
+        ? TraceServiceSettings.newBuilder().build() : TraceServiceSettings.newBuilder()
+        .setCredentialsProvider(
+            FixedCredentialsProvider.create(env.getTestHelper().getOptions().getCredentials()))
+        .build();
     try (TraceServiceClient client = TraceServiceClient.create(settings)) {
       // It can take a few seconds before the trace is visible.
       Thread.sleep(5000L);
@@ -105,8 +119,7 @@ public class ITEndToEndTracingTest {
       }
       assertTrue(foundTrace);
     } catch (ResourceExhaustedException resourceExhaustedException) {
-      if (resourceExhaustedException
-          .getMessage()
+      if (resourceExhaustedException.getMessage()
           .contains("Quota exceeded for quota metric 'Read requests (free)'")) {
         // Ignore and allow the test to succeed.
         System.out.println("RESOURCE_EXHAUSTED error ignored");
@@ -117,8 +130,7 @@ public class ITEndToEndTracingTest {
   }
 
   private Struct executeWithRowResultType(Statement statement, Type expectedRowType) {
-    ResultSet resultSet =
-        statement.executeQuery(googleStandardSQLClient.singleUse());
+    ResultSet resultSet = statement.executeQuery(googleStandardSQLClient.singleUse());
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getType()).isEqualTo(expectedRowType);
     Struct row = resultSet.getCurrentRowAsStruct();

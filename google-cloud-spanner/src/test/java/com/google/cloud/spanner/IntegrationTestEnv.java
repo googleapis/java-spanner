@@ -122,7 +122,7 @@ public class IntegrationTestEnv extends ExternalResource {
 
     this.config.setUp();
     // OpenTelemetry set up for enabling End to End tracing for all integration test env.
-    // The grpc stub and connections are created during test env set up using SpannerOptions and are
+    // The gRPC stub and connections are created during test env set up using SpannerOptions and are
     // reused for executing statements.
     SpannerOptions options = spannerOptionsWithEndToEndTracing();
     String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
