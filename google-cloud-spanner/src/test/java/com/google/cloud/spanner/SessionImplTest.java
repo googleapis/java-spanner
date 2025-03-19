@@ -48,6 +48,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.TransactionOptions;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
@@ -90,6 +91,8 @@ public class SessionImplTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     when(spannerOptions.getNumChannels()).thenReturn(4);
+    when(spannerOptions.getDefaultTransactionOptions())
+        .thenReturn(TransactionOptions.getDefaultInstance());
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
