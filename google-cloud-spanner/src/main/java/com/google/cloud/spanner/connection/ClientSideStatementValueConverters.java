@@ -33,6 +33,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.TransactionOptions;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
@@ -379,6 +380,33 @@ class ClientSideStatementValueConverters {
         }
       }
       return null;
+    }
+  }
+
+  /**
+   * Converter for converting strings to {@link
+   * com.google.spanner.v1.TransactionOptions.IsolationLevel} values.
+   */
+  static class IsolationLevelConverter
+      implements ClientSideStatementValueConverter<TransactionOptions.IsolationLevel> {
+    static final IsolationLevelConverter INSTANCE = new IsolationLevelConverter();
+
+    private final CaseInsensitiveEnumMap<TransactionOptions.IsolationLevel> values =
+        new CaseInsensitiveEnumMap<>(TransactionOptions.IsolationLevel.class);
+
+    private IsolationLevelConverter() {}
+
+    /** Constructor needed for reflection. */
+    public IsolationLevelConverter(String allowedValues) {}
+
+    @Override
+    public Class<TransactionOptions.IsolationLevel> getParameterClass() {
+      return TransactionOptions.IsolationLevel.class;
+    }
+
+    @Override
+    public TransactionOptions.IsolationLevel convert(String value) {
+      return values.get(value);
     }
   }
 

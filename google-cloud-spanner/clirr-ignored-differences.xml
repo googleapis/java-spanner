@@ -850,4 +850,16 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.String getDefaultSequenceKind()</method>
   </difference>
+  
+  <!-- Default isolation level -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDefaultIsolationLevel(com.google.spanner.v1.TransactionOptions$IsolationLevel)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.spanner.v1.TransactionOptions$IsolationLevel getDefaultIsolationLevel()</method>
+  </difference>
 </differences>
