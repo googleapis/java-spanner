@@ -53,7 +53,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -427,6 +426,8 @@ public class ITQueryTest {
 
   @Test
   public void bindInterval() {
+    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
+    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
     Interval d = Interval.parseFromString("P1Y2M3DT4H5M6.789123S");
     Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(d), Type.interval());
     assertThat(row.isNull(0)).isFalse();
@@ -435,6 +436,8 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalNull() {
+    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
+    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").to((Interval) null), Type.interval());
@@ -837,6 +840,8 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalArray() {
+    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
+    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
     Interval d1 = Interval.parseFromString("P-1Y-2M-3DT4H5M6.789123S");
     Interval d2 = Interval.parseFromString("P1Y2M3DT-4H-5M-6.789123S");
     Struct row =
@@ -849,6 +854,8 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalArrayEmpty() {
+    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
+    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -861,6 +868,8 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalArrayNull() {
+    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
+    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toIntervalArray(null),
@@ -1019,6 +1028,7 @@ public class ITQueryTest {
   }
 
   private Struct structValue() {
+    // TODO: Add test for interval once interval is supported in emulator.
     return Struct.newBuilder()
         .set("f_int")
         .to(10)
@@ -1032,8 +1042,6 @@ public class ITQueryTest {
         .to(Date.fromYearMonthDay(1, 3, 1))
         .set("f_string")
         .to("hello")
-        .set("f_interval")
-        .to(Interval.fromMonthsDaysNanos(100, 200, BigInteger.valueOf(5000000L)))
         .set("f_bytes")
         .to(ByteArray.copyFrom("bytes"))
         .build();
@@ -1042,6 +1050,7 @@ public class ITQueryTest {
   @Test
   public void bindStruct() {
     assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    // TODO: Add test for interval once interval is supported in emulator.
     Struct p = structValue();
     String query =
         "SELECT "
@@ -1051,7 +1060,6 @@ public class ITQueryTest {
             + "@p.f_timestamp,"
             + "@p.f_date,"
             + "@p.f_string,"
-            + "@p.f_interval,"
             + "@p.f_bytes";
 
     Struct row =
