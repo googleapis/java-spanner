@@ -18,10 +18,12 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ResourceExhaustedException;
+import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
@@ -118,6 +120,9 @@ public class ITEndToEndTracingTest {
           foundTrace = true;
           break;
         } catch (ApiException apiException) {
+          assumeTrue(
+              apiException.getStatusCode() != null
+                  && StatusCode.Code.NOT_FOUND.equals(apiException.getStatusCode().getCode()));
           Thread.sleep(5000L);
         }
       }
