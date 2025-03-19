@@ -66,6 +66,8 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.grpc.CallCredentials;
 import io.grpc.CompressorRegistry;
 import io.grpc.Context;
@@ -98,7 +100,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -117,10 +118,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
-  private static final String CLOUD_SPANNER_HOST_FORMAT = ".*\\.googleapis\\.com.*";
-
-  @VisibleForTesting
-  static final Pattern CLOUD_SPANNER_HOST_PATTERN = Pattern.compile(CLOUD_SPANNER_HOST_FORMAT);
+  private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
 
   private static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
@@ -182,6 +180,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
+  private final TransactionOptions defaultTransactionOptions;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -811,6 +810,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
+    defaultTransactionOptions = builder.defaultTransactionOptions;
   }
 
   /**
@@ -856,13 +856,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return null;
     }
 
-    default GoogleCredentials getDefaultExternalHostCredentials() {
+    default GoogleCredentials getDefaultExperimentalHostCredentials() {
       return null;
     }
   }
 
-  static final String DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS =
-      "SPANNER_EXTERNAL_HOST_AUTH_TOKEN";
+  static final String DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS =
+      "SPANNER_EXPERIMENTAL_HOST_AUTH_TOKEN";
 
   /**
    * Default implementation of {@link SpannerEnvironment}. Reads all configuration from environment
@@ -921,8 +921,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
-    public GoogleCredentials getDefaultExternalHostCredentials() {
-      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
+    public GoogleCredentials getDefaultExperimentalHostCredentials() {
+      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
     }
   }
 
@@ -991,7 +991,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
-    private boolean isExternalHost = false;
+    private boolean isExperimentalHost = false;
+    private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1060,6 +1061,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
+      this.defaultTransactionOptions = options.defaultTransactionOptions;
     }
 
     @Override
@@ -1484,11 +1486,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public Builder setHost(String host) {
       super.setHost(host);
-      if (!CLOUD_SPANNER_HOST_PATTERN.matcher(host).matches()) {
-        this.isExternalHost = true;
-      }
       // Setting a host should override any SPANNER_EMULATOR_HOST setting.
       setEmulatorHost(null);
+      return this;
+    }
+
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
+    public Builder setExperimentalHost(String host) {
+      super.setHost(host);
+      super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
+      setSessionPoolOption(SessionPoolOptions.newBuilder().setExperimentalHost().build());
+      this.isExperimentalHost = true;
       return this;
     }
 
@@ -1530,7 +1538,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Configures mTLS authentication using the provided client certificate and key files. mTLS is
-     * only supported for external spanner hosts.
+     * only supported for experimental spanner hosts.
      *
      * @param clientCertificate Path to the client certificate file.
      * @param clientCertificateKey Path to the client private key file.
@@ -1643,6 +1651,55 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Provides the default read-write transaction options for all databases. These defaults are
+     * overridden by any explicit {@link com.google.cloud.spanner.Options.TransactionOption}
+     * provided through {@link DatabaseClient}.
+     *
+     * <p>Example Usage:
+     *
+     * <pre>{@code
+     * DefaultReadWriteTransactionOptions options = DefaultReadWriteTransactionOptions.newBuilder()
+     * .setIsolationLevel(IsolationLevel.SERIALIZABLE)
+     * .build();
+     * }</pre>
+     */
+    public static class DefaultReadWriteTransactionOptions {
+      private final TransactionOptions defaultTransactionOptions;
+
+      private DefaultReadWriteTransactionOptions(TransactionOptions defaultTransactionOptions) {
+        this.defaultTransactionOptions = defaultTransactionOptions;
+      }
+
+      public static DefaultReadWriteTransactionOptionsBuilder newBuilder() {
+        return new DefaultReadWriteTransactionOptionsBuilder();
+      }
+
+      public static class DefaultReadWriteTransactionOptionsBuilder {
+        private final TransactionOptions.Builder transactionOptionsBuilder =
+            TransactionOptions.newBuilder();
+
+        public DefaultReadWriteTransactionOptionsBuilder setIsolationLevel(
+            IsolationLevel isolationLevel) {
+          transactionOptionsBuilder.setIsolationLevel(isolationLevel);
+          return this;
+        }
+
+        public DefaultReadWriteTransactionOptions build() {
+          return new DefaultReadWriteTransactionOptions(transactionOptionsBuilder.build());
+        }
+      }
+    }
+
+    /** Sets the {@link DefaultReadWriteTransactionOptions} for read-write transactions. */
+    public Builder setDefaultTransactionOptions(
+        DefaultReadWriteTransactionOptions defaultReadWriteTransactionOptions) {
+      Preconditions.checkNotNull(
+          defaultReadWriteTransactionOptions, "DefaultReadWriteTransactionOptions cannot be null");
+      this.defaultTransactionOptions = defaultReadWriteTransactionOptions.defaultTransactionOptions;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1657,8 +1714,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-      } else if (isExternalHost && credentials == null) {
-        credentials = environment.getDefaultExternalHostCredentials();
+      } else if (isExperimentalHost && credentials == null) {
+        credentials = environment.getDefaultExperimentalHostCredentials();
       }
       if (this.numChannels == null) {
         this.numChannels =
@@ -1700,8 +1757,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   @InternalApi
-  public static GoogleCredentials getDefaultExternalHostCredentialsFromSysEnv() {
-    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
+  public static GoogleCredentials getDefaultExperimentalCredentialsFromSysEnv() {
+    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
   }
 
   private static @Nullable GoogleCredentials getOAuthTokenFromFile(@Nullable String file) {
@@ -1986,6 +2043,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   /** Returns the override metrics Host. */
   String getMonitoringHost() {
     return monitoringHost;
+  }
+
+  public TransactionOptions getDefaultTransactionOptions() {
+    return defaultTransactionOptions;
   }
 
   @BetaApi
