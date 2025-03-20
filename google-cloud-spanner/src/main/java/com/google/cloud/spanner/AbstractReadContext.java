@@ -618,6 +618,12 @@ abstract class AbstractReadContext
       case PLAN:
         return executeQueryInternal(
             statement, com.google.spanner.v1.ExecuteSqlRequest.QueryMode.PLAN);
+      case WITH_STATS:
+        return executeQueryInternal(
+            statement, com.google.spanner.v1.ExecuteSqlRequest.QueryMode.WITH_STATS);
+      case WITH_PLAN_AND_STATS:
+        return executeQueryInternal(
+            statement, com.google.spanner.v1.ExecuteSqlRequest.QueryMode.WITH_PLAN_AND_STATS);
       default:
         throw new IllegalStateException(
             "Unknown value for QueryAnalyzeMode : " + readContextQueryMode);
