@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.util.Objects;
 
 /**
@@ -40,15 +42,30 @@ class PgTransactionMode {
   }
 
   enum IsolationLevel {
-    ISOLATION_LEVEL_DEFAULT("ISOLATION LEVEL DEFAULT", "DEFAULT"),
-    ISOLATION_LEVEL_SERIALIZABLE("ISOLATION LEVEL SERIALIZABLE", "SERIALIZABLE");
+    ISOLATION_LEVEL_DEFAULT(
+        "ISOLATION LEVEL DEFAULT",
+        "DEFAULT",
+        TransactionOptions.IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED),
+    ISOLATION_LEVEL_SERIALIZABLE(
+        "ISOLATION LEVEL SERIALIZABLE",
+        "SERIALIZABLE",
+        TransactionOptions.IsolationLevel.SERIALIZABLE),
+    ISOLATION_LEVEL_REPEATABLE_READ(
+        "ISOLATION LEVEL REPEATABLE READ",
+        "REPEATABLE READ",
+        TransactionOptions.IsolationLevel.REPEATABLE_READ);
 
     private final String statementString;
     private final String shortStatementString;
+    private final TransactionOptions.IsolationLevel spannerIsolationLevel;
 
-    IsolationLevel(String statement, String shortStatementString) {
+    IsolationLevel(
+        String statement,
+        String shortStatementString,
+        TransactionOptions.IsolationLevel spannerIsolationLevel) {
       this.statementString = statement;
       this.shortStatementString = shortStatementString;
+      this.spannerIsolationLevel = spannerIsolationLevel;
     }
 
     /**
@@ -65,6 +82,10 @@ class PgTransactionMode {
 
     public String getShortStatementString() {
       return shortStatementString;
+    }
+
+    public TransactionOptions.IsolationLevel getSpannerIsolationLevel() {
+      return spannerIsolationLevel;
     }
 
     @Override
