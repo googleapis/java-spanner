@@ -112,6 +112,7 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.PlanNode;
 import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.TransactionOptions;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -443,8 +444,13 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementBeginTransaction() {
-    getConnection().beginTransaction();
+  public StatementResult statementBeginTransaction(
+      TransactionOptions.IsolationLevel isolationLevel) {
+    if (isolationLevel != null) {
+      getConnection().beginTransaction(isolationLevel);
+    } else {
+      getConnection().beginTransaction();
+    }
     return noResult(BEGIN);
   }
 

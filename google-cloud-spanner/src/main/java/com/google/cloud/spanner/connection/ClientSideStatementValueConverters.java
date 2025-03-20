@@ -394,7 +394,7 @@ class ClientSideStatementValueConverters {
     private final CaseInsensitiveEnumMap<TransactionOptions.IsolationLevel> values =
         new CaseInsensitiveEnumMap<>(TransactionOptions.IsolationLevel.class);
 
-    private IsolationLevelConverter() {}
+    IsolationLevelConverter() {}
 
     /** Constructor needed for reflection. */
     public IsolationLevelConverter(String allowedValues) {}
@@ -406,6 +406,11 @@ class ClientSideStatementValueConverters {
 
     @Override
     public TransactionOptions.IsolationLevel convert(String value) {
+      if (value != null) {
+        // This ensures that 'repeatable read' is translated to 'repeatable_read'. The text between
+        // 'repeatable' and 'read' can be any number of valid whitespace characters.
+        value = value.trim().replaceFirst("\\s+", "_");
+      }
       return values.get(value);
     }
   }
