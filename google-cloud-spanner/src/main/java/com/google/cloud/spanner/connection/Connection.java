@@ -296,7 +296,8 @@ public interface Connection extends AutoCloseable {
   void cancel();
 
   /**
-   * Begins a new transaction for this connection.
+   * Begins a new transaction for this connection. The transaction will use the default isolation
+   * level of this connection.
    *
    * <ul>
    *   <li>Calling this method on a connection that has no transaction and that is
@@ -314,8 +315,15 @@ public interface Connection extends AutoCloseable {
   void beginTransaction();
 
   /**
+   * Same as {@link #beginTransaction()}, but this transaction will use the given isolation level,
+   * instead of the default isolation level of this connection.
+   */
+  void beginTransaction(IsolationLevel isolationLevel);
+
+  /**
    * Begins a new transaction for this connection. This method is guaranteed to be non-blocking. The
-   * returned {@link ApiFuture} will be done when the transaction has been initialized.
+   * returned {@link ApiFuture} will be done when the transaction has been initialized. The
+   * transaction will use the default isolation level of this connection.
    *
    * <ul>
    *   <li>Calling this method on a connection that has no transaction and that is
@@ -331,6 +339,12 @@ public interface Connection extends AutoCloseable {
    * </ul>
    */
   ApiFuture<Void> beginTransactionAsync();
+
+  /**
+   * Same as {@link #beginTransactionAsync()}, but this transaction will use the given isolation
+   * level, instead of the default isolation level of this connection.
+   */
+  ApiFuture<Void> beginTransactionAsync(IsolationLevel isolationLevel);
 
   /**
    * Sets the transaction mode to use for current transaction. This method may only be called when
