@@ -67,7 +67,6 @@ public class ITEndToEndTracingTest {
 
   static {
     SpannerOptionsHelper.resetActiveTracingFramework();
-    SpannerOptions.enableOpenTelemetryMetrics();
     SpannerOptions.enableOpenTelemetryTraces();
   }
 
@@ -116,7 +115,7 @@ public class ITEndToEndTracingTest {
               clientTrace.getSpansList().stream()
                   .anyMatch(
                       span ->
-                          "CloudSpannerOperation.ExecuteStreamingQuery".equals(span.getName())));
+                          "Spanner.ExecuteStreamingSql".equals(span.getName())));
           foundTrace = true;
           break;
         } catch (ApiException apiException) {
