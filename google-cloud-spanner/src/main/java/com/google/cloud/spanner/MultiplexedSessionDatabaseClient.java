@@ -89,17 +89,17 @@ class MultiplexedSessionTransactionRunner implements TransactionRunner {
 
   @Override
   public Timestamp getCommitTimestamp() {
-    return null;
+    return this.transactionRunner.getCommitTimestamp();
   }
 
   @Override
   public CommitResponse getCommitResponse() {
-    return null;
+    return this.transactionRunner.getCommitResponse();
   }
 
   @Override
   public TransactionRunner allowNestedTransaction() {
-    return null;
+    return this.transactionRunner.allowNestedTransaction();
   }
 }
 
