@@ -27,6 +27,8 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPool.PooledSessionReplacementHandler;
+import com.google.cloud.spanner.SessionPool.SessionPoolTransactionRunner;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -52,6 +54,56 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+class MultiplexedSessionTransactionRunner implements TransactionRunner {
+  private final SessionPool sessionPool;
+  private final TransactionRunnerImpl transactionRunner;
+  private final TransactionOption[] options;
+
+  public MultiplexedSessionTransactionRunner(SessionImpl session, SessionPool sessionPool, TransactionOption... options) {
+    this.sessionPool = sessionPool;
+    this.transactionRunner = new TransactionRunnerImpl(session, options); // Uses multiplexed session initially
+    session.setActive(this.transactionRunner);
+    this.options = options;
+  }
+
+  @Override
+  public <T> T run(TransactionCallable<T> callable) {
+    boolean useRegularSession = false;
+    while (true) {
+      try {
+        if (useRegularSession) {
+          TransactionRunner runner = new SessionPoolTransactionRunner(sessionPool.getSession(), null, options);
+          return runner.run(callable);
+        } else {
+          return transactionRunner.run(callable); // Run using multiplexed session
+        }
+      } catch (SpannerException e) {
+        if (e.getErrorCode() == ErrorCode.UNIMPLEMENTED) {
+          useRegularSession = true; // Switch to regular session
+        } else {
+          throw e; // Other errors propagate
+        }
+      }
+    }
+  }
+
+  @Override
+  public Timestamp getCommitTimestamp() {
+    return null;
+  }
+
+  @Override
+  public CommitResponse getCommitResponse() {
+    return null;
+  }
+
+  @Override
+  public TransactionRunner allowNestedTransaction() {
+    return null;
+  }
+}
+
+
 /**
  * {@link DatabaseClient} implementation that uses a single multiplexed session to execute
  * transactions.
@@ -75,6 +127,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     private final int singleUseChannelHint;
 
     private boolean done;
+    private SessionPool pool;
 
     MultiplexedSessionTransaction(
         MultiplexedSessionDatabaseClient client,
@@ -82,11 +135,22 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         SessionReference sessionReference,
         int singleUseChannelHint,
         boolean singleUse) {
+      this(client, span, sessionReference, singleUseChannelHint, singleUse, null);
+    }
+
+    MultiplexedSessionTransaction(
+        MultiplexedSessionDatabaseClient client,
+        ISpan span,
+        SessionReference sessionReference,
+        int singleUseChannelHint,
+        boolean singleUse,
+        SessionPool pool) {
       super(client.sessionClient.getSpanner(), sessionReference, singleUseChannelHint);
       this.client = client;
       this.singleUse = singleUse;
       this.singleUseChannelHint = singleUseChannelHint;
       this.client.numSessionsAcquired.incrementAndGet();
+      this.pool = pool;
       setCurrentSpan(span);
     }
 
@@ -133,6 +197,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       onTransactionDone();
       return response;
     }
+
+    @Override
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      return new MultiplexedSessionTransactionRunner(this, pool, options);
+    }
+
 
     @Override
     void onTransactionDone() {
@@ -225,6 +295,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    */
   @VisibleForTesting final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
 
+  private SessionPool pool;
+
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
     this(sessionClient, Clock.systemUTC());
   }
@@ -297,6 +369,10 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     maybeWaitForSessionCreation(
         sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
         initialSessionReferenceFuture);
+  }
+
+  void setPool(SessionPool pool) {
+    this.pool = pool;
   }
 
   private static void maybeWaitForSessionCreation(
@@ -489,7 +565,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
           // any special handling of such errors.
           multiplexedSessionReference.get().get(),
           singleUse ? getSingleUseChannelHint() : NO_CHANNEL_HINT,
-          singleUse);
+          singleUse,
+          this.pool);
     } catch (ExecutionException executionException) {
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
     } catch (InterruptedException interruptedException) {

@@ -332,6 +332,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       boolean useMultiplexedSessionPartitionedOps,
       boolean useMultiplexedSessionForRW,
       Attributes commonAttributes) {
+    if (multiplexedSessionClient != null) {
+      multiplexedSessionClient.setPool(pool);
+    }
     return new DatabaseClientImpl(
         clientId,
         pool,
