@@ -40,7 +40,6 @@ import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
 import com.google.devtools.cloudtrace.v1.Trace;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -48,7 +47,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -70,7 +68,7 @@ public class ITEndToEndTracingTest {
     SpannerOptions.enableOpenTelemetryTraces();
   }
 
-  private String selectValueQuery;
+  private static String selectValueQuery = "SELECT @p1 + @p1";
 
   @BeforeClass
   public static void setUp() {
@@ -88,11 +86,6 @@ public class ITEndToEndTracingTest {
     ConnectionOptions.closeSpanner();
   }
 
-  @Before
-  public void initSelectValueQuery() {
-    selectValueQuery = "SELECT @p1 + @p1 ";
-  }
-
   private void assertTrace(String traceId) throws IOException, InterruptedException {
     TraceServiceSettings settings =
         env.getTestHelper().getOptions().getCredentials() == null
@@ -104,18 +97,15 @@ public class ITEndToEndTracingTest {
                 .build();
     try (TraceServiceClient client = TraceServiceClient.create(settings)) {
       // It can take a few seconds before the trace is visible.
-      Thread.sleep(15000);
+      Thread.sleep(10000);
       boolean foundTrace = false;
       for (int attempts = 0; attempts < 2; attempts++) {
         try {
-          Trace clientTrace =
-              client.getTrace(env.getTestHelper().getInstanceId().getProject(), traceId);
+          Trace trace = client.getTrace(env.getTestHelper().getInstanceId().getProject(), traceId);
           // Assert Spanner Frontend Trace is present
           assertTrue(
-              clientTrace.getSpansList().stream()
-                  .anyMatch(
-                      span ->
-                          "Spanner.ExecuteStreamingSql".equals(span.getName())));
+              trace.getSpansList().stream()
+                  .anyMatch(span -> "Spanner.ExecuteStreamingSql".equals(span.getName())));
           foundTrace = true;
           break;
         } catch (ApiException apiException) {
@@ -149,7 +139,11 @@ public class ITEndToEndTracingTest {
 
   @Test
   public void simpleSelect() throws IOException, InterruptedException {
-    Tracer tracer = GlobalOpenTelemetry.getTracer(ITEndToEndTracingTest.class.getName());
+    Tracer tracer =
+        env.getTestHelper()
+            .getOptions()
+            .getOpenTelemetry()
+            .getTracer(ITEndToEndTracingTest.class.getName());
     Span span = tracer.spanBuilder("simpleSelect").startSpan();
     Scope scope = span.makeCurrent();
     Type rowType = Type.struct(StructField.of("", Type.int64()));

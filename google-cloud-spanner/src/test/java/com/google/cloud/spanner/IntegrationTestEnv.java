@@ -29,7 +29,6 @@ import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -167,7 +166,6 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   public SpannerOptions spannerOptionsWithEndToEndTracing(SpannerOptions options) {
-    GlobalOpenTelemetry.resetForTest(); // reset global context for test
     assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
 
     TraceConfiguration.Builder traceConfigurationBuilder = TraceConfiguration.builder();
@@ -178,8 +176,7 @@ public class IntegrationTestEnv extends ExternalResource {
         TraceExporter.createWithConfiguration(
             traceConfigurationBuilder.setProjectId(options.getProjectId()).build());
 
-    String serviceName =
-        "java-spanner-jdbc-integration-tests-" + ThreadLocalRandom.current().nextInt();
+    String serviceName = "java-spanner-integration-tests-" + ThreadLocalRandom.current().nextInt();
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
             // Always sample in this test to ensure we know what we get.
@@ -191,7 +188,7 @@ public class IntegrationTestEnv extends ExternalResource {
         OpenTelemetrySdk.builder()
             .setTracerProvider(sdkTracerProvider)
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .buildAndRegisterGlobal();
+            .build();
     SpannerOptions.enableOpenTelemetryTraces();
     return options
         .toBuilder()
