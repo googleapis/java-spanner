@@ -27,6 +27,7 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
@@ -1971,6 +1972,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return createApiTracerFactory(false, false);
   }
 
+  public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
+    this.builtInMetricsProvider.enableGrpcMetrics(
+        channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+  }
+
   public ApiTracerFactory getApiTracerFactory(boolean isAdminClient, boolean isEmulatorEnabled) {
     return createApiTracerFactory(isAdminClient, isEmulatorEnabled);
   }
@@ -2018,8 +2024,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return openTelemetry != null
         ? new BuiltInMetricsTracerFactory(
             new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            builtInMetricsProvider.createClientAttributes(
-                this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
+            new HashMap<>())
         : null;
   }
 

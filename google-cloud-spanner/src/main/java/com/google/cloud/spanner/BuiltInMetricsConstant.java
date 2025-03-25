@@ -21,11 +21,13 @@ import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.View;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,6 +38,7 @@ public class BuiltInMetricsConstant {
   public static final String METER_NAME = "spanner.googleapis.com/internal/client";
   public static final String GAX_METER_NAME = OpenTelemetryMetricsRecorder.GAX_METER_NAME;
   static final String SPANNER_METER_NAME = "spanner-java";
+  static final String GRPC_METER_NAME = "grpc-java";
   static final String GFE_LATENCIES_NAME = "gfe_latencies";
   static final String OPERATION_LATENCIES_NAME = "operation_latencies";
   static final String ATTEMPT_LATENCIES_NAME = "attempt_latencies";
@@ -66,12 +69,7 @@ public class BuiltInMetricsConstant {
 
   // These metric labels will be promoted to the spanner monitored resource fields
   public static final Set<AttributeKey<String>> SPANNER_PROMOTED_RESOURCE_LABELS =
-      ImmutableSet.of(
-          PROJECT_ID_KEY,
-          INSTANCE_ID_KEY,
-          INSTANCE_CONFIG_ID_KEY,
-          LOCATION_ID_KEY,
-          CLIENT_HASH_KEY);
+      ImmutableSet.of(INSTANCE_ID_KEY);
 
   public static final AttributeKey<String> DATABASE_KEY = AttributeKey.stringKey("database");
   public static final AttributeKey<String> CLIENT_UID_KEY = AttributeKey.stringKey("client_uid");
@@ -102,6 +100,11 @@ public class BuiltInMetricsConstant {
           DIRECT_PATH_ENABLED_KEY,
           DIRECT_PATH_USED_KEY);
 
+  public static final Set<String> GRPC_ATTRIBUTES =
+      ImmutableSet.of(
+          "grpc_lb_rls_data_plane_target",
+          "grpc_lb_pick_result");
+
   static Aggregation AGGREGATION_WITH_MILLIS_HISTOGRAM =
       Aggregation.explicitBucketHistogram(
           ImmutableList.of(
@@ -110,6 +113,21 @@ public class BuiltInMetricsConstant {
               160.0, 200.0, 250.0, 300.0, 400.0, 500.0, 650.0, 800.0, 1000.0, 2000.0, 5000.0,
               10000.0, 20000.0, 50000.0, 100000.0, 200000.0, 400000.0, 800000.0, 1600000.0,
               3200000.0));
+
+  static final Collection<String> GRPC_METRICS_TO_ENABLE =
+      ImmutableList.of(
+          "grpc.lb.rls.default_target_picks",
+          "grpc.lb.rls.target_picks",
+          "grpc.xds_client.server_failure",
+          "grpc.xds_client.resource_updates_invalid");
+
+  static final Collection<String> GRPC_METRICS_ENABLED_BY_DEFAULT =
+      ImmutableList.of(
+          "grpc.client.attempt.sent_total_compressed_message_size",
+          "grpc.client.attempt.rcvd_total_compressed_message_size",
+          "grpc.client.attempt.started",
+          "grpc.client.attempt.duration",
+          "grpc.client.call.duration");
 
   static Map<InstrumentSelector, View> getAllViews() {
     ImmutableMap.Builder<InstrumentSelector, View> views = ImmutableMap.builder();
@@ -153,6 +171,7 @@ public class BuiltInMetricsConstant {
         Aggregation.sum(),
         InstrumentType.COUNTER,
         "1");
+    defineGRPCView(views);
     return views.build();
   }
 
@@ -182,5 +201,28 @@ public class BuiltInMetricsConstant {
             .setAttributeFilter(attributesFilter)
             .build();
     viewMap.put(selector, view);
+  }
+
+  private static void defineGRPCView(ImmutableMap.Builder<InstrumentSelector, View> viewMap) {
+    for (String metric :
+        ImmutableList.copyOf(Iterables.concat(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE, BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT))) {
+      InstrumentSelector selector =
+          InstrumentSelector.builder()
+              .setName(metric)
+              .setMeterName(BuiltInMetricsConstant.GRPC_METER_NAME)
+              .build();
+      Set<String> attributesFilter =
+          BuiltInMetricsConstant.COMMON_ATTRIBUTES.stream()
+              .map(AttributeKey::getKey)
+              .collect(Collectors.toSet());
+
+      attributesFilter.addAll(BuiltInMetricsConstant.GRPC_ATTRIBUTES);
+      View view =
+          View.builder()
+              .setName(BuiltInMetricsConstant.METER_NAME + '/' + metric.replace(".", "/"))
+              .setAttributeFilter(attributesFilter)
+              .build();
+      viewMap.put(selector, view);
+    }
   }
 }
