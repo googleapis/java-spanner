@@ -272,6 +272,8 @@ public final class ITDmlReturningTest {
     List<Struct> rows = new ArrayList<>();
     final TransactionCallable<Void> callable =
         transaction -> {
+          // Make sure we start with an empty list if the transaction is aborted and retried.
+          rows.clear();
           ResultSet resultSet = transaction.executeQuery(Statement.of(stmt));
           // resultSet.next() returns false, when no more row exists.
           // So, number of times resultSet.next() returns true, is the number of rows
@@ -335,6 +337,7 @@ public final class ITDmlReturningTest {
     List<Struct> rows = new ArrayList<>();
     final TransactionCallable<Void> callable =
         transaction -> {
+          rows.clear();
           AsyncResultSet rs = transaction.executeQueryAsync(Statement.of(stmt));
           rs.setCallback(
               Executors.newSingleThreadExecutor(),

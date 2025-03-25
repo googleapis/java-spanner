@@ -90,6 +90,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
     mockSpanner.clearRequests();
   }
 
+  @SuppressWarnings("ClassEscapesDefinedScope")
   @Override
   public ITConnection createConnection() {
     return createConnection(
@@ -698,9 +699,10 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
       connection.savepoint("s1");
       connection.execute(INSERT_STATEMENT);
       connection.rollbackToSavepoint("s1");
-      mockSpanner.waitForRequestsToContain(RollbackRequest.class, 1000L);
       String keepAliveTagAfterRollback = "test_keep_alive_tag_after_rollback";
       System.setProperty("spanner.connection.keep_alive_query_tag", keepAliveTagAfterRollback);
+      mockSpanner.waitForRequestsToContain(RollbackRequest.class, 1000L);
+      mockSpanner.clearRequests();
 
       // Verify that we don't get any new keep-alive requests from this point.
       Thread.sleep(2L);

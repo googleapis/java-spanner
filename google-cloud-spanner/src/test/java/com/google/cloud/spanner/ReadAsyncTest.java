@@ -201,9 +201,9 @@ public class ReadAsyncTest {
   }
 
   @Test
-  public void tableNotFound() throws Exception {
+  public void tableNotFound() {
     mockSpanner.setStreamingReadExecutionTime(
-        SimulatedExecutionTime.ofException(
+        SimulatedExecutionTime.ofStickyException(
             Status.NOT_FOUND
                 .withDescription("Table not found: BadTableName")
                 .asRuntimeException()));

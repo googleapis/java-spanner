@@ -125,11 +125,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.DirectedReadOptions;
 import java.time.Duration;
 
-/**
- * Utility class that defines all known connection properties. This class will eventually replace
- * the list of {@link com.google.cloud.spanner.connection.ConnectionOptions.ConnectionProperty} in
- * {@link ConnectionOptions}.
- */
+/** Utility class that defines all known connection properties. */
 public class ConnectionProperties {
   private static final ImmutableMap.Builder<String, ConnectionProperty<?>>
       CONNECTION_PROPERTIES_BUILDER = ImmutableMap.builder();
