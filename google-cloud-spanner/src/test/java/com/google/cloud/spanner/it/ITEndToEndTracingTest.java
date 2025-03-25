@@ -104,7 +104,7 @@ public class ITEndToEndTracingTest {
                 .build();
     try (TraceServiceClient client = TraceServiceClient.create(settings)) {
       // It can take a few seconds before the trace is visible.
-      Thread.sleep(5000L);
+      Thread.sleep(15000);
       boolean foundTrace = false;
       for (int attempts = 0; attempts < 2; attempts++) {
         try {
