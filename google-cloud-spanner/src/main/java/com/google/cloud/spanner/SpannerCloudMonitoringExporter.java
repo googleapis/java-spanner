@@ -41,6 +41,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -104,6 +105,18 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(@Nonnull Collection<MetricData> collection) {
+    // Print 
+    collection.stream()
+        .forEach(md -> {
+          System.out.println("Name: " + md.getName()); // Print the name
+
+          md.getData().getPoints().forEach(point -> {
+            System.out.println("Attributes: " + point.getAttributes()); // Print attributes for each point
+          });
+
+          System.out.println("----------------------"); // Separator for readability
+        });
+
     if (client.isShutdown()) {
       logger.log(Level.WARNING, "Exporter is shut down");
       return CompletableResultCode.ofFailure();
@@ -123,7 +136,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     // Log warnings for metrics that will be skipped.
     boolean mustFilter = false;
     if (spannerMetricData.stream()
-        .flatMap(metricData -> metricData.getData().getPoints().stream())
+        .map(metricData -> metricData.getResource())
         .anyMatch(this::shouldSkipPointDataDueToProjectId)) {
       logger.log(
           Level.WARNING, "Some metric data contain a different projectId. These will be skipped.");
@@ -198,15 +211,13 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   }
 
   private boolean shouldSkipMetricData(MetricData metricData) {
-    return metricData.getData().getPoints().stream()
-        .anyMatch(
-            pd ->
-                shouldSkipPointDataDueToProjectId(pd)
-                    || shouldSkipPointDataDueToMissingInstanceId(pd));
+    return shouldSkipPointDataDueToProjectId(metricData.getResource())
+        || metricData.getData().getPoints().stream()
+            .anyMatch(pd -> shouldSkipPointDataDueToMissingInstanceId(pd));
   }
 
-  private boolean shouldSkipPointDataDueToProjectId(PointData pointData) {
-    return !spannerProjectId.equals(SpannerCloudMonitoringExporterUtils.getProjectId(pointData));
+  private boolean shouldSkipPointDataDueToProjectId(Resource resource) {
+    return !spannerProjectId.equals(SpannerCloudMonitoringExporterUtils.getProjectId(resource));
   }
 
   private boolean shouldSkipPointDataDueToMissingInstanceId(PointData pointData) {

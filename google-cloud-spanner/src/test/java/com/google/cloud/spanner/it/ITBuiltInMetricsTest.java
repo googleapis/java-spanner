@@ -44,7 +44,7 @@ import org.junit.runners.JUnit4;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
-@Ignore("Built-in Metrics are not GA'ed yet. Enable this test once the metrics are released")
+// @Ignore("Built-in Metrics are not GA'ed yet. Enable this test once the metrics are released")
 public class ITBuiltInMetricsTest {
 
   private static Database db;

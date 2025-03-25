@@ -23,6 +23,7 @@ import static com.google.api.MetricDescriptor.ValueType.DISTRIBUTION;
 import static com.google.api.MetricDescriptor.ValueType.DOUBLE;
 import static com.google.api.MetricDescriptor.ValueType.INT64;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.GAX_METER_NAME;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.GRPC_METER_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_METER_NAME;
@@ -52,6 +53,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -64,8 +66,8 @@ class SpannerCloudMonitoringExporterUtils {
 
   private SpannerCloudMonitoringExporterUtils() {}
 
-  static String getProjectId(PointData pointData) {
-    return pointData.getAttributes().get(PROJECT_ID_KEY);
+  static String getProjectId(Resource resource) {
+    return resource.getAttributes().get(PROJECT_ID_KEY);
   }
 
   static String getInstanceId(PointData pointData) {
@@ -78,12 +80,26 @@ class SpannerCloudMonitoringExporterUtils {
     for (MetricData metricData : collection) {
       // Get metrics data from GAX library and Spanner library
       if (!(metricData.getInstrumentationScopeInfo().getName().equals(GAX_METER_NAME)
-          || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME))) {
+          || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME)
+          || metricData.getInstrumentationScopeInfo().getName().equals(GRPC_METER_NAME))) {
         // Filter out metric data for instruments that are not part of the spanner metrics list
         continue;
       }
+
+      // Create MonitoredResource Builder
+      MonitoredResource.Builder monitoredResourceBuilder =
+          MonitoredResource.newBuilder().setType(SPANNER_RESOURCE_TYPE);
+
+      Attributes resourceAttributes = metricData.getResource().getAttributes();
+      for (AttributeKey<?> key : resourceAttributes.asMap().keySet()) {
+        monitoredResourceBuilder.putLabels(
+            key.getKey(), String.valueOf(resourceAttributes.get(key)));
+      }
+
       metricData.getData().getPoints().stream()
-          .map(pointData -> convertPointToSpannerTimeSeries(metricData, pointData))
+          .map(
+              pointData ->
+                  convertPointToSpannerTimeSeries(metricData, pointData, monitoredResourceBuilder))
           .forEach(allTimeSeries::add);
     }
 
@@ -91,7 +107,9 @@ class SpannerCloudMonitoringExporterUtils {
   }
 
   private static TimeSeries convertPointToSpannerTimeSeries(
-      MetricData metricData, PointData pointData) {
+      MetricData metricData,
+      PointData pointData,
+      MonitoredResource.Builder monitoredResourceBuilder) {
     TimeSeries.Builder builder =
         TimeSeries.newBuilder()
             .setMetricKind(convertMetricKind(metricData))
@@ -99,8 +117,6 @@ class SpannerCloudMonitoringExporterUtils {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(metricData.getName());
 
     Attributes attributes = pointData.getAttributes();
-    MonitoredResource.Builder monitoredResourceBuilder =
-        MonitoredResource.newBuilder().setType(SPANNER_RESOURCE_TYPE);
 
     for (AttributeKey<?> key : attributes.asMap().keySet()) {
       if (SPANNER_PROMOTED_RESOURCE_LABELS.contains(key)) {
@@ -109,6 +125,8 @@ class SpannerCloudMonitoringExporterUtils {
         metricBuilder.putLabels(key.getKey(), String.valueOf(attributes.get(key)));
       }
     }
+
+    metricBuilder.putAllLabels(BuiltInMetricsProvider.INSTANCE.createClientAttributes());
 
     builder.setResource(monitoredResourceBuilder.build());
     builder.setMetric(metricBuilder.build());
