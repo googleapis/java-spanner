@@ -105,17 +105,24 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(@Nonnull Collection<MetricData> collection) {
-    // Print 
+    // TODO: Remove
     collection.stream()
-        .forEach(md -> {
-          System.out.println("Name: " + md.getName()); // Print the name
+        .filter(md -> "grpc-java".equals(md.getInstrumentationScopeInfo().getName()))
+        .forEach(
+            md -> {
+              System.out.println("Name: " + md.getName()); // Print the name
 
-          md.getData().getPoints().forEach(point -> {
-            System.out.println("Attributes: " + point.getAttributes()); // Print attributes for each point
-          });
+              md.getData()
+                  .getPoints()
+                  .forEach(
+                      point -> {
+                        System.out.println(
+                            "Attributes: "
+                                + point.getAttributes()); // Print attributes for each point
+                      });
 
-          System.out.println("----------------------"); // Separator for readability
-        });
+              System.out.println("----------------------"); // Separator for readability
+            });
 
     if (client.isShutdown()) {
       logger.log(Level.WARNING, "Exporter is shut down");

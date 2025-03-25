@@ -122,7 +122,8 @@ class SpannerCloudMonitoringExporterUtils {
       if (SPANNER_PROMOTED_RESOURCE_LABELS.contains(key)) {
         monitoredResourceBuilder.putLabels(key.getKey(), String.valueOf(attributes.get(key)));
       } else {
-        metricBuilder.putLabels(key.getKey(), String.valueOf(attributes.get(key)));
+        metricBuilder.putLabels(
+            key.getKey().replace(".", "/"), String.valueOf(attributes.get(key)));
       }
     }
 

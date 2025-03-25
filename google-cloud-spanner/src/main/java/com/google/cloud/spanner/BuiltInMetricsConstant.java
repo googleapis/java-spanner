@@ -21,7 +21,6 @@ import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -101,9 +100,7 @@ public class BuiltInMetricsConstant {
           DIRECT_PATH_USED_KEY);
 
   public static final Set<String> GRPC_ATTRIBUTES =
-      ImmutableSet.of(
-          "grpc_lb_rls_data_plane_target",
-          "grpc_lb_pick_result");
+      ImmutableSet.of("grpc.lb.rls.data_plane_target", "grpc.lb.pick_result");
 
   static Aggregation AGGREGATION_WITH_MILLIS_HISTOGRAM =
       Aggregation.explicitBucketHistogram(
@@ -204,8 +201,7 @@ public class BuiltInMetricsConstant {
   }
 
   private static void defineGRPCView(ImmutableMap.Builder<InstrumentSelector, View> viewMap) {
-    for (String metric :
-        ImmutableList.copyOf(Iterables.concat(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE, BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT))) {
+    for (String metric : BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE) {
       InstrumentSelector selector =
           InstrumentSelector.builder()
               .setName(metric)
@@ -215,8 +211,8 @@ public class BuiltInMetricsConstant {
           BuiltInMetricsConstant.COMMON_ATTRIBUTES.stream()
               .map(AttributeKey::getKey)
               .collect(Collectors.toSet());
-
       attributesFilter.addAll(BuiltInMetricsConstant.GRPC_ATTRIBUTES);
+
       View view =
           View.builder()
               .setName(BuiltInMetricsConstant.METER_NAME + '/' + metric.replace(".", "/"))

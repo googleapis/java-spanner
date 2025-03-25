@@ -31,8 +31,6 @@ import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.grpc.ManagedChannelBuilder;
@@ -41,10 +39,8 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -79,7 +75,6 @@ final class BuiltInMetricsProvider {
             SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
             sdkMeterProviderBuilder);
 
-
         sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
         this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
@@ -104,7 +99,7 @@ final class BuiltInMetricsProvider {
         GrpcOpenTelemetry.newBuilder()
             .sdk(this.getOrCreateOpenTelemetry(projectId, credentials, monitoringHost))
             .enableMetrics(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE)
-            // .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT)
+            .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT)
             .build();
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator =
         channelProviderBuilder.getChannelConfigurator();
