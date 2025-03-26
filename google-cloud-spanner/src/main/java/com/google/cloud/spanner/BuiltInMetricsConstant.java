@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @InternalApi
 public class BuiltInMetricsConstant {
@@ -46,14 +47,22 @@ public class BuiltInMetricsConstant {
   static final String OPERATION_COUNT_NAME = "operation_count";
   static final String ATTEMPT_COUNT_NAME = "attempt_count";
 
+  static final Collection<String> GRPC_METRICS_TO_ENABLE =
+      ImmutableList.of(
+          "grpc.lb.rls.default_target_picks",
+          "grpc.lb.rls.target_picks",
+          "grpc.xds_client.server_failure",
+          "grpc.xds_client.resource_updates_invalid");
+
   public static final Set<String> SPANNER_METRICS =
-      ImmutableSet.of(
-              OPERATION_LATENCIES_NAME,
-              ATTEMPT_LATENCIES_NAME,
-              OPERATION_COUNT_NAME,
-              ATTEMPT_COUNT_NAME,
-              GFE_LATENCIES_NAME)
-          .stream()
+      Stream.concat(
+              Stream.of(
+                  OPERATION_LATENCIES_NAME,
+                  ATTEMPT_LATENCIES_NAME,
+                  OPERATION_COUNT_NAME,
+                  ATTEMPT_COUNT_NAME,
+                  GFE_LATENCIES_NAME),
+              GRPC_METRICS_TO_ENABLE.stream())
           .map(m -> METER_NAME + '/' + m)
           .collect(Collectors.toSet());
 
@@ -110,13 +119,6 @@ public class BuiltInMetricsConstant {
               160.0, 200.0, 250.0, 300.0, 400.0, 500.0, 650.0, 800.0, 1000.0, 2000.0, 5000.0,
               10000.0, 20000.0, 50000.0, 100000.0, 200000.0, 400000.0, 800000.0, 1600000.0,
               3200000.0));
-
-  static final Collection<String> GRPC_METRICS_TO_ENABLE =
-      ImmutableList.of(
-          "grpc.lb.rls.default_target_picks",
-          "grpc.lb.rls.target_picks",
-          "grpc.xds_client.server_failure",
-          "grpc.xds_client.resource_updates_invalid");
 
   static final Collection<String> GRPC_METRICS_ENABLED_BY_DEFAULT =
       ImmutableList.of(
