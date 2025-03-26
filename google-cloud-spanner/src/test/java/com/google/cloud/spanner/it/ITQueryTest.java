@@ -426,8 +426,8 @@ public class ITQueryTest {
 
   @Test
   public void bindInterval() {
-    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
-    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Interval d = Interval.parseFromString("P1Y2M3DT4H5M6.789123S");
     Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(d), Type.interval());
     assertThat(row.isNull(0)).isFalse();
@@ -436,8 +436,8 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalNull() {
-    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
-    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").to((Interval) null), Type.interval());
@@ -840,8 +840,8 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalArray() {
-    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
-    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Interval d1 = Interval.parseFromString("P-1Y-2M-3DT4H5M6.789123S");
     Interval d2 = Interval.parseFromString("P1Y2M3DT-4H-5M-6.789123S");
     Struct row =
@@ -854,8 +854,8 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalArrayEmpty() {
-    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
-    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -868,8 +868,8 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalArrayNull() {
-    assumeTrue("Interval is currently only supported in cloud-devel", isUsingCloudDevel());
-    assumeFalse("Emulator does not yet support INTERVAL", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toIntervalArray(null),

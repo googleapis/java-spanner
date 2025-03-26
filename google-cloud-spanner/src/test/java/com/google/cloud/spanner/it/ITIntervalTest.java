@@ -92,8 +92,8 @@ public class ITIntervalTest {
   @BeforeClass
   public static void setUpDatabase()
       throws ExecutionException, InterruptedException, TimeoutException {
-    assumeTrue("Interval is supported only in Cloud-Devel for now", isUsingCloudDevel());
-    assumeFalse("Emulator does not support Interval yet", isUsingEmulator());
+    assumeTrue("INTERVAL is supported only in Cloud-Devel for now", isUsingCloudDevel());
+    assumeFalse("INTERVAL is not yet supported on Emulator", isUsingEmulator());
 
     Database googleStandardSQLDatabase =
         env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA);
@@ -132,16 +132,6 @@ public class ITIntervalTest {
     return Mutation.newInsertOrUpdateBuilder("IntervalTable")
         .set("Key")
         .to(lastKey = uniqueString());
-  }
-
-  private Struct readRow(String table, String key, String... columns) {
-    return client
-        .singleUse(TimestampBound.strong())
-        .readRow(table, Key.of(key), Arrays.asList(columns));
-  }
-
-  private Struct readLastRow(String... columns) {
-    return readRow("IntervalTable", lastKey, columns);
   }
 
   @Test

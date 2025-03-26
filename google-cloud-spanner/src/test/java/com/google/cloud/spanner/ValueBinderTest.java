@@ -333,7 +333,7 @@ public class ValueBinderTest {
     }
 
     public static Interval defaultInterval() {
-      return Interval.ZERO;
+      return Interval.parseFromString("P0Y");
     }
 
     public static boolean[] defaultBooleanArray() {
@@ -398,14 +398,10 @@ public class ValueBinderTest {
         Interval.builder()
             .setMonths(-10)
             .setDays(-100)
-            .setNanoseconds(BigInteger.valueOf(-9999999L))
+            .setNanos(BigInteger.valueOf(-9999999L))
             .build(),
-        Interval.ZERO,
-        Interval.builder()
-            .setMonths(10)
-            .setDays(100)
-            .setNanoseconds(BigInteger.valueOf(9999999L))
-            .build()
+        Interval.parseFromString("P0Y"),
+        Interval.builder().setMonths(10).setDays(100).setNanos(BigInteger.valueOf(9999999L)).build()
       };
     }
 
@@ -414,13 +410,13 @@ public class ValueBinderTest {
           Interval.builder()
               .setMonths(-10)
               .setDays(-100)
-              .setNanoseconds(BigInteger.valueOf(-9999999L))
+              .setNanos(BigInteger.valueOf(-9999999L))
               .build(),
-          Interval.ZERO,
+          Interval.parseFromString("P0Y"),
           Interval.builder()
               .setMonths(10)
               .setDays(100)
-              .setNanoseconds(BigInteger.valueOf(9999999L))
+              .setNanos(BigInteger.valueOf(9999999L))
               .build());
     }
 

@@ -558,7 +558,7 @@ public class GrpcResultSetTest {
             Interval.builder()
                 .setMonths(100)
                 .setDays(10)
-                .setNanoseconds(BigInteger.valueOf(1000010))
+                .setNanos(BigInteger.valueOf(1000010))
                 .build()),
         Value.interval(null),
         Value.stringArray(ImmutableList.of("one", "two")),
@@ -585,7 +585,8 @@ public class GrpcResultSetTest {
         Value.dateArray(null),
         Value.intervalArray(
             ImmutableList.of(
-                Interval.ZERO, Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(30000L)))),
+                Interval.parseFromString("P0Y"),
+                Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(30000L)))),
         Value.intervalArray(null),
         Value.struct(s(null, 30)),
         Value.struct(structType, null),

@@ -36,37 +36,37 @@ import org.jetbrains.annotations.NotNull;
 public class Interval implements Serializable {
   private final int months;
   private final int days;
-  private final BigInteger nanoseconds;
+  private final BigInteger nanos;
 
-  public static final long MONTHS_PER_YEAR = 12;
-  public static final long MINUTES_PER_HOUR = 60;
-  public static final long SECONDS_PER_MINUTE = 60;
-  public static final long SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
-  public static final long MILLIS_PER_SECOND = 1000;
-  public static final long MICROS_PER_MILLISECOND = 1000;
-  public static final long MICROS_PER_SECOND = MICROS_PER_MILLISECOND * MILLIS_PER_SECOND;
-  public static final long MICROS_PER_MINUTE = SECONDS_PER_MINUTE * MICROS_PER_SECOND;
-  public static final long MICROS_PER_HOUR = SECONDS_PER_HOUR * MICROS_PER_SECOND;
-  public static final long NANOS_PER_MICROSECOND = 1000;
-  public static final BigInteger NANOS_PER_MILLISECOND =
-      BigInteger.valueOf(MICROS_PER_MILLISECOND * NANOS_PER_MICROSECOND);
-  public static final BigInteger NANOS_PER_SECOND =
-      BigInteger.valueOf(MICROS_PER_SECOND * NANOS_PER_MICROSECOND);
-  public static final BigInteger NANOS_PER_MINUTE =
-      BigInteger.valueOf(MICROS_PER_MINUTE * NANOS_PER_MICROSECOND);
-  public static final BigInteger NANOS_PER_HOUR =
-      BigInteger.valueOf(MICROS_PER_HOUR * NANOS_PER_MICROSECOND);
-  public static final Interval ZERO = Interval.builder().build();
+  private static final long MONTHS_PER_YEAR = 12;
+  private static final long MINUTES_PER_HOUR = 60;
+  private static final long SECONDS_PER_MINUTE = 60;
+  private static final long SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
+  private static final long MILLIS_PER_SECOND = 1000;
+  private static final long MICROS_PER_MILLI = 1000;
+  private static final long NANOS_PER_MICRO = 1000;
+  private static final long MICROS_PER_SECOND = MICROS_PER_MILLI * MILLIS_PER_SECOND;
+  private static final long MICROS_PER_MINUTE = SECONDS_PER_MINUTE * MICROS_PER_SECOND;
+  private static final long MICROS_PER_HOUR = SECONDS_PER_HOUR * MICROS_PER_SECOND;
+  private static final BigInteger NANOS_PER_MILLI =
+      BigInteger.valueOf(MICROS_PER_MILLI * NANOS_PER_MICRO);
+  private static final BigInteger NANOS_PER_SECOND =
+      BigInteger.valueOf(MICROS_PER_SECOND * NANOS_PER_MICRO);
+  private static final BigInteger NANOS_PER_MINUTE =
+      BigInteger.valueOf(MICROS_PER_MINUTE * NANOS_PER_MICRO);
+  private static final BigInteger NANOS_PER_HOUR =
+      BigInteger.valueOf(MICROS_PER_HOUR * NANOS_PER_MICRO);
+  private static final Interval ZERO = Interval.builder().build();
 
   /** Regex to parse ISO8601 interval format- `P[n]Y[n]M[n]DT[n]H[n]M[n([.,][fraction])]S` */
   private static final Pattern INTERVAL_PATTERN =
       Pattern.compile(
           "^P(?!$)(-?\\d+Y)?(-?\\d+M)?(-?\\d+D)?(T(?=-?[.,]?\\d)(-?\\d+H)?(-?\\d+M)?(-?((\\d+([.,]\\d{1,9})?)|([.,]\\d{1,9}))S)?)?$");
 
-  private Interval(int months, int days, BigInteger nanoseconds) {
+  private Interval(int months, int days, BigInteger nanos) {
     this.months = months;
     this.days = days;
-    this.nanoseconds = nanoseconds;
+    this.nanos = nanos;
   }
 
   /** Returns the months component of the interval. */
@@ -80,8 +80,8 @@ public class Interval implements Serializable {
   }
 
   /** Returns the nanoseconds component of the interval. */
-  public BigInteger getNanoseconds() {
-    return nanoseconds;
+  public BigInteger getNanos() {
+    return nanos;
   }
 
   public static Builder builder() {
@@ -100,32 +100,29 @@ public class Interval implements Serializable {
 
   /** Creates an interval with specified number of seconds. */
   public static Interval ofSeconds(long seconds) {
-    return builder().setNanoseconds(BigInteger.valueOf(seconds).multiply(NANOS_PER_SECOND)).build();
+    return builder().setNanos(BigInteger.valueOf(seconds).multiply(NANOS_PER_SECOND)).build();
   }
 
   /** Creates an interval with specified number of milliseconds. */
-  public static Interval ofMilliseconds(long milliseconds) {
-    return builder()
-        .setNanoseconds(BigInteger.valueOf(milliseconds).multiply(NANOS_PER_MILLISECOND))
-        .build();
+  public static Interval ofMillis(long millis) {
+    return builder().setNanos(BigInteger.valueOf(millis).multiply(NANOS_PER_MILLI)).build();
   }
 
   /** Creates an interval with specified number of microseconds. */
-  public static Interval ofMicroseconds(long micros) {
+  public static Interval ofMicros(long micros) {
     return builder()
-        .setNanoseconds(
-            BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICROSECOND)))
+        .setNanos(BigInteger.valueOf(micros).multiply(BigInteger.valueOf(NANOS_PER_MICRO)))
         .build();
   }
 
   /** Creates an interval with specified number of nanoseconds. */
-  public static Interval ofNanoseconds(@NotNull BigInteger nanos) {
-    return builder().setNanoseconds(nanos).build();
+  public static Interval ofNanos(@NotNull BigInteger nanos) {
+    return builder().setNanos(nanos).build();
   }
 
   /** Creates an interval with specified number of months, days and nanoseconds. */
-  public static Interval fromMonthsDaysNanos(int months, int days, BigInteger nanoseconds) {
-    return builder().setMonths(months).setDays(days).setNanoseconds(nanoseconds).build();
+  public static Interval fromMonthsDaysNanos(int months, int days, BigInteger nanos) {
+    return builder().setMonths(months).setDays(days).setNanos(nanos).build();
   }
 
   private static String getNullOrDefault(Matcher matcher, int groupIdx) {
@@ -133,6 +130,7 @@ public class Interval implements Serializable {
     return value == null ? "0" : value;
   }
 
+  /* Parses ISO8601 duration format string to Interval. */
   public static Interval parseFromString(String interval) {
     Matcher matcher = INTERVAL_PATTERN.matcher(interval);
     if (!matcher.matches()) {
@@ -158,11 +156,11 @@ public class Interval implements Serializable {
     return Interval.builder()
         .setMonths(Math.toIntExact(totalMonths))
         .setDays(Math.toIntExact(days))
-        .setNanoseconds(totalNanos)
+        .setNanos(totalNanos)
         .build();
   }
 
-  /** Converts Interval to ISO8601 Duration Formatted String. */
+  /** Converts Interval to ISO8601 duration format string. */
   public String toISO8601() {
     if (this.equals(ZERO)) {
       return "P0Y";
@@ -187,7 +185,7 @@ public class Interval implements Serializable {
       result.append(String.format("%dD", this.getDays()));
     }
 
-    BigInteger nanos = this.getNanoseconds();
+    BigInteger nanos = this.getNanos();
     BigInteger zero = BigInteger.valueOf(0);
     if (nanos.compareTo(zero) != 0) {
       result.append("T");
@@ -238,7 +236,7 @@ public class Interval implements Serializable {
     Interval anotherInterval = (Interval) rhs;
     return getMonths() == anotherInterval.getMonths()
         && getDays() == anotherInterval.getDays()
-        && getNanoseconds().equals(anotherInterval.getNanoseconds());
+        && getNanos().equals(anotherInterval.getNanos());
   }
 
   @Override
@@ -246,14 +244,14 @@ public class Interval implements Serializable {
     int result = 17;
     result = 31 * result + Integer.valueOf(getMonths()).hashCode();
     result = 31 * result + Integer.valueOf(getDays()).hashCode();
-    result = 31 * result + getNanoseconds().hashCode();
+    result = 31 * result + getNanos().hashCode();
     return result;
   }
 
   public static class Builder {
     private int months = 0;
     private int days = 0;
-    private BigInteger nanoseconds = BigInteger.ZERO;
+    private BigInteger nanos = BigInteger.ZERO;
 
     Builder setMonths(int months) {
       this.months = months;
@@ -265,13 +263,13 @@ public class Interval implements Serializable {
       return this;
     }
 
-    Builder setNanoseconds(BigInteger nanoseconds) {
-      this.nanoseconds = nanoseconds;
+    Builder setNanos(BigInteger nanos) {
+      this.nanos = nanos;
       return this;
     }
 
     public Interval build() {
-      return new Interval(months, days, nanoseconds);
+      return new Interval(months, days, nanos);
     }
   }
 }

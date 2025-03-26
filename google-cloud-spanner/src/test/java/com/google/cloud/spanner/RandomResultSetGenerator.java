@@ -153,7 +153,7 @@ public class RandomResultSetGenerator {
               Interval.builder()
                   .setMonths(random.nextInt(100) - 100)
                   .setDays(random.nextInt(100) - 100)
-                  .setNanoseconds(BigInteger.valueOf(random.nextInt(10000000) - 10000000))
+                  .setNanos(BigInteger.valueOf(random.nextInt(10000000) - 10000000))
                   .build();
           builder.setStringValue(interval.toISO8601());
           break;
