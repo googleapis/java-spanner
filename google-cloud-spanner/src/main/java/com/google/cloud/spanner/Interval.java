@@ -171,16 +171,16 @@ public class Interval implements Serializable {
     StringBuilder result = new StringBuilder();
     result.append("P");
 
-    long months_part = this.getMonths();
-    long years_part = months_part / MONTHS_PER_YEAR;
-    months_part = months_part - years_part * MONTHS_PER_YEAR;
+    long monthsPart = this.getMonths();
+    long yearsPart = monthsPart / MONTHS_PER_YEAR;
+    monthsPart = monthsPart - yearsPart * MONTHS_PER_YEAR;
 
-    if (years_part != 0) {
-      result.append(String.format("%dY", years_part));
+    if (yearsPart != 0) {
+      result.append(String.format("%dY", yearsPart));
     }
 
-    if (months_part != 0) {
-      result.append(String.format("%dM", months_part));
+    if (monthsPart != 0) {
+      result.append(String.format("%dM", monthsPart));
     }
 
     if (this.getDays() != 0) {
@@ -191,28 +191,28 @@ public class Interval implements Serializable {
     BigInteger zero = BigInteger.valueOf(0);
     if (nanos.compareTo(zero) != 0) {
       result.append("T");
-      BigInteger hours_part = nanos.divide(NANOS_PER_HOUR);
-      nanos = nanos.subtract(hours_part.multiply(NANOS_PER_HOUR));
-      if (hours_part.compareTo(zero) != 0) {
-        result.append(String.format("%sH", hours_part));
+      BigInteger hoursPart = nanos.divide(NANOS_PER_HOUR);
+      nanos = nanos.subtract(hoursPart.multiply(NANOS_PER_HOUR));
+      if (hoursPart.compareTo(zero) != 0) {
+        result.append(String.format("%sH", hoursPart));
       }
 
-      BigInteger minutes_part = nanos.divide(NANOS_PER_MINUTE);
-      nanos = nanos.subtract(minutes_part.multiply(NANOS_PER_MINUTE));
-      if (minutes_part.compareTo(zero) != 0) {
-        result.append(String.format("%sM", minutes_part));
+      BigInteger minutesPart = nanos.divide(NANOS_PER_MINUTE);
+      nanos = nanos.subtract(minutesPart.multiply(NANOS_PER_MINUTE));
+      if (minutesPart.compareTo(zero) != 0) {
+        result.append(String.format("%sM", minutesPart));
       }
 
       if (!nanos.equals(zero)) {
-        String seconds_sign = "";
+        String secondsSign = "";
         if (nanos.signum() == -1) {
-          seconds_sign = "-";
+          secondsSign = "-";
           nanos = nanos.negate();
         }
 
         BigInteger seconds_part = nanos.divide(NANOS_PER_SECOND);
         nanos = nanos.subtract(seconds_part.multiply(NANOS_PER_SECOND));
-        result.append(String.format("%s%s", seconds_sign, seconds_part));
+        result.append(String.format("%s%s", secondsSign, seconds_part));
 
         if (!nanos.equals(zero)) {
           result.append(String.format(".%09d", nanos).replaceAll("(0{3})+$", ""));
