@@ -1627,20 +1627,17 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // will then fail.
     mockSpanner.unfreeze();
 
-    SpannerException e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                runner.run(
-                    transaction -> {
-                      ResultSet resultSet = transaction.executeQuery(STATEMENT);
-                      //noinspection StatementWithEmptyBody
-                      while (resultSet.next()) {
-                        // ignore
-                      }
-                      return null;
-                    }));
-    assertEquals(ErrorCode.UNIMPLEMENTED, e.getErrorCode());
+    // The ExecuteStreamingSql call fails with UNIMPLEMENTED error, but the retry should happen
+    // internally with regular session.
+    runner.run(
+        transaction -> {
+          ResultSet resultSet = transaction.executeQuery(STATEMENT);
+          //noinspection StatementWithEmptyBody
+          while (resultSet.next()) {
+            // ignore
+          }
+          return null;
+        });
 
     // Wait until the client sees that MultiplexedSessions are not supported for read-write.
     assertNotNull(client.multiplexedSessionDatabaseClient);
@@ -1667,16 +1664,24 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     // Verify that two ExecuteSqlRequests were received: the first using a multiplexed session and
     // the second using a regular session.
-    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(3, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
 
+    // The ExecuteSqlRequest of the first read-write transaction should use multiplexed session.
     Session session1 = mockSpanner.getSession(requests.get(0).getSession());
     assertNotNull(session1);
     assertTrue(session1.getMultiplexed());
 
+    // Retry of the ExecuteSqlRequest of the first read-write transaction should use regular
+    // session.
     Session session2 = mockSpanner.getSession(requests.get(1).getSession());
     assertNotNull(session2);
     assertFalse(session2.getMultiplexed());
+
+    // The ExecuteSqlRequest of the second read-write transaction should use regular session.
+    Session session3 = mockSpanner.getSession(requests.get(2).getSession());
+    assertNotNull(session3);
+    assertFalse(session3.getMultiplexed());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
@@ -1711,22 +1716,17 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(txn.getId());
     assertFalse(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
 
-    SpannerException e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                client
-                    .readWriteTransaction()
-                    .run(
-                        transaction -> {
-                          ResultSet resultSet = transaction.executeQuery(STATEMENT);
-                          //noinspection StatementWithEmptyBody
-                          while (resultSet.next()) {
-                            // ignore
-                          }
-                          return null;
-                        }));
-    assertEquals(ErrorCode.UNIMPLEMENTED, e.getErrorCode());
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              ResultSet resultSet = transaction.executeQuery(STATEMENT);
+              //noinspection StatementWithEmptyBody
+              while (resultSet.next()) {
+                // ignore
+              }
+              return null;
+            });
 
     // Verify that the previous failed transaction has marked multiplexed session client to be
     // unimplemented for read-write.
@@ -1748,16 +1748,24 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     // Verify that two ExecuteSqlRequests were received: the first using a multiplexed session and
     // the second using a regular session.
-    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(3, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
 
+    // The ExecuteSqlRequest of the first read-write transaction should use multiplexed session.
     Session session1 = mockSpanner.getSession(requests.get(0).getSession());
     assertNotNull(session1);
     assertTrue(session1.getMultiplexed());
 
+    // Retry of the ExecuteSqlRequest of the first read-write transaction should use regular
+    // session.
     Session session2 = mockSpanner.getSession(requests.get(1).getSession());
     assertNotNull(session2);
     assertFalse(session2.getMultiplexed());
+
+    // The ExecuteSqlRequest of the second read-write transaction should use regular session.
+    Session session3 = mockSpanner.getSession(requests.get(1).getSession());
+    assertNotNull(session3);
+    assertFalse(session3.getMultiplexed());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
