@@ -849,6 +849,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return true;
     }
 
+    default boolean isEnableGRPCBuiltInMetrics() {
+      return false;
+    }
+
     default boolean isEnableEndToEndTracing() {
       return false;
     }
@@ -879,6 +883,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
+    private static final String SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS =
+        "SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS";
     private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
 
     private SpannerEnvironmentImpl() {}
@@ -909,6 +915,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableBuiltInMetrics() {
       return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_BUILTIN_METRICS));
+    }
+
+    @Override
+    public boolean isEnableGRPCBuiltInMetrics() {
+      return !Boolean.parseBoolean(
+          System.getenv(SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS));
     }
 
     @Override
@@ -1973,8 +1985,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
-    this.builtInMetricsProvider.enableGrpcMetrics(
-        channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+    if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
+      this.builtInMetricsProvider.enableGrpcMetrics(
+          channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+    }
   }
 
   public ApiTracerFactory getApiTracerFactory(boolean isAdminClient, boolean isEmulatorEnabled) {
