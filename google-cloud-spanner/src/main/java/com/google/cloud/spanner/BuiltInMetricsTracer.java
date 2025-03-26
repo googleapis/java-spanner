@@ -40,6 +40,12 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
 
   private Long gfeLatency = null;
 
+  private Long afeLatency = null;
+
+  private long gfeHeaderMissingCount = 0;
+
+  private long afeHeaderMissingCount = 0;
+
   BuiltInMetricsTracer(
       MethodName methodName, BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
     super(methodName, builtInOpenTelemetryMetricsRecorder);
@@ -56,7 +62,8 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     super.attemptSucceeded();
     if (gfeLatency != null) {
       attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
     }
   }
 
@@ -69,7 +76,8 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     super.attemptCancelled();
     if (gfeLatency != null) {
       attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.CANCELLED.toString());
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
     }
   }
 
@@ -86,7 +94,8 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     super.attemptFailedDuration(error, delay);
     if (gfeLatency != null) {
       attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
     }
   }
 
@@ -102,7 +111,8 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     super.attemptFailedRetriesExhausted(error);
     if (gfeLatency != null) {
       attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
     }
   }
 
@@ -118,12 +128,25 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     super.attemptPermanentFailure(error);
     if (gfeLatency != null) {
       attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
     }
   }
 
   void recordGFELatency(Long gfeLatency) {
     this.gfeLatency = gfeLatency;
+  }
+
+  void recordAFELatency(Long afeLatency) {
+    this.afeLatency = afeLatency;
+  }
+
+  void recordGfeHeaderMissingCount(Long value) {
+    this.gfeHeaderMissingCount = value;
+  }
+
+  void recordAfeHeaderMissingCount(Long value) {
+    this.afeHeaderMissingCount = value;
   }
 
   @Override
