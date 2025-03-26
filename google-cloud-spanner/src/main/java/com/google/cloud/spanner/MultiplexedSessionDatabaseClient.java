@@ -27,7 +27,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
-import com.google.cloud.spanner.SessionPool.PooledSessionReplacementHandler;
 import com.google.cloud.spanner.SessionPool.SessionPoolTransactionRunner;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
@@ -56,30 +55,44 @@ import java.util.concurrent.atomic.AtomicReference;
 
 class MultiplexedSessionTransactionRunner implements TransactionRunner {
   private final SessionPool sessionPool;
-  private final TransactionRunnerImpl transactionRunner;
+  private final TransactionRunnerImpl transactionRunnerForMultiplexedSession;
+  private SessionPoolTransactionRunner transactionRunnerForRegularSession;
   private final TransactionOption[] options;
+  private boolean isUsingMultiplexedSession = true;
 
-  public MultiplexedSessionTransactionRunner(SessionImpl session, SessionPool sessionPool, TransactionOption... options) {
+  public MultiplexedSessionTransactionRunner(
+      SessionImpl multiplexedSession, SessionPool sessionPool, TransactionOption... options) {
     this.sessionPool = sessionPool;
-    this.transactionRunner = new TransactionRunnerImpl(session, options); // Uses multiplexed session initially
-    session.setActive(this.transactionRunner);
+    this.transactionRunnerForMultiplexedSession =
+        new TransactionRunnerImpl(
+            multiplexedSession, options); // Uses multiplexed session initially
+    multiplexedSession.setActive(this.transactionRunnerForMultiplexedSession);
     this.options = options;
+  }
+
+  private TransactionRunner getRunner() {
+    if (this.isUsingMultiplexedSession) {
+      return this.transactionRunnerForMultiplexedSession;
+    } else {
+      if (this.transactionRunnerForRegularSession == null) {
+        this.transactionRunnerForRegularSession =
+            new SessionPoolTransactionRunner<>(
+                sessionPool.getSession(),
+                sessionPool.getPooledSessionReplacementHandler(),
+                options);
+      }
+      return this.transactionRunnerForRegularSession;
+    }
   }
 
   @Override
   public <T> T run(TransactionCallable<T> callable) {
-    boolean useRegularSession = false;
     while (true) {
       try {
-        if (useRegularSession) {
-          TransactionRunner runner = new SessionPoolTransactionRunner(sessionPool.getSession(), null, options);
-          return runner.run(callable);
-        } else {
-          return transactionRunner.run(callable); // Run using multiplexed session
-        }
+        return getRunner().run(callable);
       } catch (SpannerException e) {
         if (e.getErrorCode() == ErrorCode.UNIMPLEMENTED) {
-          useRegularSession = true; // Switch to regular session
+          this.isUsingMultiplexedSession = false;
         } else {
           throw e; // Other errors propagate
         }
@@ -89,20 +102,20 @@ class MultiplexedSessionTransactionRunner implements TransactionRunner {
 
   @Override
   public Timestamp getCommitTimestamp() {
-    return this.transactionRunner.getCommitTimestamp();
+    return getRunner().getCommitTimestamp();
   }
 
   @Override
   public CommitResponse getCommitResponse() {
-    return this.transactionRunner.getCommitResponse();
+    return getRunner().getCommitResponse();
   }
 
   @Override
   public TransactionRunner allowNestedTransaction() {
-    return this.transactionRunner.allowNestedTransaction();
+    getRunner().allowNestedTransaction();
+    return this;
   }
 }
-
 
 /**
  * {@link DatabaseClient} implementation that uses a single multiplexed session to execute
@@ -127,7 +140,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     private final int singleUseChannelHint;
 
     private boolean done;
-    private SessionPool pool;
+    private final SessionPool pool;
 
     MultiplexedSessionTransaction(
         MultiplexedSessionDatabaseClient client,
@@ -202,7 +215,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     public TransactionRunner readWriteTransaction(TransactionOption... options) {
       return new MultiplexedSessionTransactionRunner(this, pool, options);
     }
-
 
     @Override
     void onTransactionDone() {
@@ -576,7 +588,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private DelayedMultiplexedSessionTransaction createDelayedMultiplexSessionTransaction() {
     return new DelayedMultiplexedSessionTransaction(
-        this, tracer.getCurrentSpan(), multiplexedSessionReference.get());
+        this, tracer.getCurrentSpan(), multiplexedSessionReference.get(), this.pool);
   }
 
   private int getSingleUseChannelHint() {
