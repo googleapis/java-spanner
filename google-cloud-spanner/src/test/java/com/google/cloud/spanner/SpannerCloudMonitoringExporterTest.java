@@ -81,7 +81,7 @@ public class SpannerCloudMonitoringExporterTest {
   private static final String instanceId = "fake-instance";
   private static final String locationId = "global";
   private static final String databaseId = "fake-database";
-  private static final String clientName = "spanner-java";
+  private static final String clientName = "spanner-java/";
 
   private static final String clientHash = "spanner-test";
   private static final String instanceConfigId = "fake-instance-config-id";
@@ -93,28 +93,38 @@ public class SpannerCloudMonitoringExporterTest {
   private SpannerCloudMonitoringExporter exporter;
 
   private Attributes attributes;
+
+  private Attributes resourceAttributes;
   private Resource resource;
   private InstrumentationScopeInfo scope;
+
+  private String client_uid;
 
   @Before
   public void setUp() {
     fakeMetricServiceClient = new FakeMetricServiceClient(mockMetricServiceStub);
     exporter = new SpannerCloudMonitoringExporter(projectId, fakeMetricServiceClient);
 
+    this.client_uid = BuiltInMetricsProvider.INSTANCE.createClientAttributes().get("client_uid");
+
     attributes =
         Attributes.builder()
-            .put(PROJECT_ID_KEY, projectId)
             .put(INSTANCE_ID_KEY, instanceId)
-            .put(LOCATION_ID_KEY, locationId)
-            .put(INSTANCE_CONFIG_ID_KEY, instanceConfigId)
             .put(DATABASE_KEY, databaseId)
             .put(CLIENT_NAME_KEY, clientName)
-            .put(CLIENT_HASH_KEY, clientHash)
+            .put(CLIENT_UID_KEY, this.client_uid)
             .put(String.valueOf(DIRECT_PATH_ENABLED_KEY), true)
             .put(String.valueOf(DIRECT_PATH_USED_KEY), true)
             .build();
 
-    resource = Resource.create(Attributes.empty());
+    resourceAttributes =
+        Attributes.builder()
+            .put(PROJECT_ID_KEY, projectId)
+            .put(LOCATION_ID_KEY, locationId)
+            .put(CLIENT_HASH_KEY, clientHash)
+            .put(INSTANCE_CONFIG_ID_KEY, instanceConfigId)
+            .build();
+    resource = Resource.create(resourceAttributes);
 
     scope = InstrumentationScopeInfo.create(GAX_METER_NAME);
   }
@@ -177,8 +187,10 @@ public class SpannerCloudMonitoringExporterTest {
             DIRECT_PATH_ENABLED_KEY.getKey(),
             "true",
             DIRECT_PATH_USED_KEY.getKey(),
-            "true");
-    assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(4);
+            "true",
+            CLIENT_UID_KEY.getKey(),
+            this.client_uid);
+    assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(5);
 
     assertThat(timeSeries.getPoints(0).getValue().getInt64Value()).isEqualTo(fakeValue);
     assertThat(timeSeries.getPoints(0).getInterval().getStartTime().getNanos())
@@ -239,7 +251,7 @@ public class SpannerCloudMonitoringExporterTest {
             INSTANCE_CONFIG_ID_KEY.getKey(), instanceConfigId,
             CLIENT_HASH_KEY.getKey(), clientHash);
 
-    assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(4);
+    assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(5);
     assertThat(timeSeries.getMetric().getLabelsMap())
         .containsExactly(
             DATABASE_KEY.getKey(),
@@ -249,7 +261,9 @@ public class SpannerCloudMonitoringExporterTest {
             DIRECT_PATH_ENABLED_KEY.getKey(),
             "true",
             DIRECT_PATH_USED_KEY.getKey(),
-            "true");
+            "true",
+            CLIENT_UID_KEY.getKey(),
+            this.client_uid);
 
     Distribution distribution = timeSeries.getPoints(0).getValue().getDistributionValue();
     assertThat(distribution.getCount()).isEqualTo(3);
@@ -274,11 +288,7 @@ public class SpannerCloudMonitoringExporterTest {
     Collection<MetricData> toExport = new ArrayList<>();
     for (int i = 0; i < 250; i++) {
       LongPointData longPointData =
-          ImmutableLongPointData.create(
-              startEpoch,
-              endEpoch,
-              attributes.toBuilder().put(CLIENT_UID_KEY, "client_uid" + i).build(),
-              i);
+          ImmutableLongPointData.create(startEpoch, endEpoch, attributes, i);
 
       MetricData longData =
           ImmutableMetricData.createLongSum(
@@ -331,7 +341,7 @@ public class SpannerCloudMonitoringExporterTest {
               DIRECT_PATH_USED_KEY.getKey(),
               "true",
               CLIENT_UID_KEY.getKey(),
-              "client_uid" + i);
+              this.client_uid);
 
       assertThat(timeSeries.getPoints(0).getValue().getInt64Value()).isEqualTo(i);
       assertThat(timeSeries.getPoints(0).getInterval().getStartTime().getNanos())
