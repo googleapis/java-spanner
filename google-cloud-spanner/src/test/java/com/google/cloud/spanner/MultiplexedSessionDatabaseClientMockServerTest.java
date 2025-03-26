@@ -1253,12 +1253,6 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   }
 
   private Spanner setupSpannerForAbortedBeginTransactionTests() {
-    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
-    // is cleared after the first call, so the retry should succeed.
-    mockSpanner.setBeginTransactionExecutionTime(
-        SimulatedExecutionTime.ofException(
-            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
-
     return SpannerOptions.newBuilder()
         .setProjectId("test-project")
         .setChannelProvider(channelProvider)
@@ -1304,6 +1298,13 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // 1. The mutation key is correctly included in the BeginTransaction request.
     // 2. The precommit token is properly set in the Commit request.
     Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+
+    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
+    // is cleared after the first call, so the retry should succeed.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
@@ -1336,6 +1337,13 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // 1. The mutation key is correctly included in the BeginTransaction request.
     // 2. The precommit token is properly set in the Commit request.
     Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+
+    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
+    // is cleared after the first call, so the retry should succeed.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
@@ -1375,6 +1383,13 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // 2. The precommit token is properly set in the Commit request.
 
     Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+
+    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
+    // is cleared after the first call, so the retry should succeed.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
@@ -1408,6 +1423,13 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // request
     // and precommit token is set in Commit request.
     Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+
+    // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
+    // is cleared after the first call, so the retry should succeed.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
@@ -1589,7 +1611,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void
-      testReadWriteUnimplementedErrorDuringInitialBeginTransactionRPC_firstReceivesError_secondFallsBackToRegularSessions() {
+      testReadWriteUnimplementedErrorDuringInitialBeginTransactionRPC_firstRetriedWithRegularSession_secondFallsBackToRegularSessions() {
     // This test simulates the following scenario,
     // 1. The server-side flag for RW multiplexed sessions is disabled.
     // 2. Application starts. The initial BeginTransaction RPC during client initialization will
@@ -1638,6 +1660,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
           }
           return null;
         });
+    assertNotNull(runner.getCommitTimestamp());
+    assertNotNull(runner.getCommitResponse());
 
     // Wait until the client sees that MultiplexedSessions are not supported for read-write.
     assertNotNull(client.multiplexedSessionDatabaseClient);
@@ -1689,7 +1713,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   }
 
   @Test
-  public void testReadWriteUnimplemented_firstReceivesError_secondFallsBackToRegularSessions() {
+  public void
+      testReadWriteUnimplemented_firstRetriedWithRegularSession_secondFallsBackToRegularSessions() {
     // This test simulates the following scenario,
     // 1. The server side flag for read-write multiplexed session is not disabled. When an
     // application starts, the initial BeginTransaction RPC with read-write will succeed.
@@ -1716,6 +1741,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(txn.getId());
     assertFalse(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
 
+    // Initially, the first attempt executes an ExecuteSqlRequest using multiplexed sessions, but it
+    // fails with UNIMPLEMENTED.
+    // On retry, the request should automatically switch to regular sessions, ensuring the
+    // transaction completes successfully.
     client
         .readWriteTransaction()
         .run(
@@ -1728,11 +1757,12 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
               return null;
             });
 
-    // Verify that the previous failed transaction has marked multiplexed session client to be
+    // Verify that the previous failed transaction during first attempt has marked multiplexed
+    // session client to be
     // unimplemented for read-write.
     assertTrue(client.multiplexedSessionDatabaseClient.unimplementedForRW.get());
 
-    // The next read-write transaction will fall back to regular sessions and succeed.
+    // The next read-write transaction will automatically fall back to regular sessions and succeed.
     client
         .readWriteTransaction()
         .run(
@@ -1927,6 +1957,57 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
+  @Test
+  public void
+      testReadWriteUnimplementedError_DuringExplicitBegin_RetriedWithRegularSessionForInFlightTransaction() {
+    // Test scenario:
+    // 1. The first attempt does an inline begin using a multiplexed session with an invalid
+    // statement, resulting in failure due to invalid syntax.
+    // 2. A retry occurs with an explicit begin using a multiplexed session, but we assume the
+    // backend flag is turned OFF, leading to UNIMPLEMENTED errors.
+    // 3. Upon encountering the UNIMPLEMENTED error, the entire transaction callable is retried
+    // using regular sessions, but the inline begin fails again.
+    // 4. A final retry executes the explicit BeginTransaction on a regular session.
+    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription(
+                    "Transaction type read_write not supported with multiplexed sessions")
+                .asRuntimeException()));
+
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    TransactionRunner runner = client.readWriteTransaction();
+    Long updateCount =
+        runner.run(
+            transaction -> {
+              // This update statement carries the BeginTransaction, but fails. This will
+              // cause the entire transaction to be retried with an explicit
+              // BeginTransaction RPC to ensure all statements in the transaction are
+              // actually executed against the same transaction.
+              SpannerException e =
+                  assertThrows(
+                      SpannerException.class,
+                      () -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
+              assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+              return transaction.executeUpdate(UPDATE_STATEMENT);
+            });
+
+    assertThat(updateCount).isEqualTo(1L);
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertEquals(2, beginTransactionRequests.size());
+
+    // Verify the first BeginTransaction request is executed using multiplexed sessions.
+    assertTrue(
+        mockSpanner.getSession(beginTransactionRequests.get(0).getSession()).getMultiplexed());
+
+    // Verify the second BeginTransaction request is executed using regular sessions.
+    assertFalse(
+        mockSpanner.getSession(beginTransactionRequests.get(1).getSession()).getMultiplexed());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
