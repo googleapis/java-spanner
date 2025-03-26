@@ -61,6 +61,7 @@ public class ITBuiltInMetricsTest {
 
   @BeforeClass
   public static void setUp() throws IOException {
+    assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
     metricClient = MetricServiceClient.create();
     // Enable BuiltinMetrics when the metrics are GA'ed
     db = env.getTestHelper().createTestDatabase();
@@ -76,7 +77,6 @@ public class ITBuiltInMetricsTest {
 
   @Test
   public void testBuiltinMetricsWithDefaultOTEL() throws Exception {
-    assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
     // This stopwatch is used for to limit fetching of metric data in verifyMetrics
     Stopwatch metricsPollingStopwatch = Stopwatch.createStarted();
     Instant start = Instant.now().minus(Duration.ofMinutes(2));

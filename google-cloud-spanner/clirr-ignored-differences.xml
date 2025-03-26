@@ -709,6 +709,13 @@
     <method>boolean isEnableBuiltInMetrics()</method>
   </difference>
 
+  <!-- Added Built In GRPC Metrics option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableGRPCBuiltInMetrics()</method>
+  </difference>
+
   <!-- Added Monitoring host option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -765,7 +772,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isKeepTransactionAlive()</method>
   </difference>
-  
+
   <!-- Automatic DML batching -->
   <difference>
     <differenceType>7012</differenceType>
@@ -797,7 +804,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isAutoBatchDmlUpdateCountVerification()</method>
   </difference>
-  
+
   <!-- Retry DML as Partitioned DML -->
   <difference>
     <differenceType>7012</differenceType>
@@ -821,7 +828,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.Object runTransaction(com.google.cloud.spanner.connection.Connection$TransactionCallable)</method>
   </difference>
-  
+
   <!-- Added experimental host option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -861,5 +868,5 @@
     <className>com/google/cloud/spanner/connection/ConnectionOptions</className>
     <field>VALID_PROPERTIES</field>
   </difference>
-  
+
 </differences>
