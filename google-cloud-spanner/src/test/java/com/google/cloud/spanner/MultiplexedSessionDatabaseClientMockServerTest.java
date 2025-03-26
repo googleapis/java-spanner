@@ -2012,7 +2012,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void
-      testReadWriteUnimplementedError_RetriedWithRegularSessionForInFlightTransaction_FailsWithSessionNotFound() {
+      testReadWriteUnimplementedError_RetriedWithRegularSessionForInFlightTransaction_RetriedWithSessionNotFound() {
     // Test scenario:
     // 1. The initial attempt performs an inline begin using a multiplexed session, but with the
     // backend flag assumed to be OFF, resulting in an UNIMPLEMENTED error.
@@ -2064,6 +2064,65 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // Verify that after the first regular session failed with SessionNotFoundException, a new
     // regular session is picked up to re-run the transaction.
     assertNotEquals(executeSqlRequests.get(1).getSession(), executeSqlRequests.get(2).getSession());
+  }
+
+  @Test
+  public void
+      testReadWriteUnimplementedError_FirstSucceedsWithMux_SecondRetriedWithRegularSessionDueToUnimplementedError() {
+    // Test scenario:
+    // 1. The first read-write transaction successfully performs an inline begin using a multiplexed
+    // session.
+    // 2. The second read-write transaction attempts to execute with a multiplexed session, but
+    // since the backend flag is assumed to be OFF, it encounters an UNIMPLEMENTED error.
+    // 3. Upon encountering the UNIMPLEMENTED error, the entire transaction callable for the second
+    // read-write transaction is retried using a regular session.
+
+    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // First read-write transaction attempt succeeds.
+    TransactionRunner runner = client.readWriteTransaction();
+    Long updateCount =
+        runner.run(
+            transaction -> {
+              return transaction.executeUpdate(UPDATE_STATEMENT);
+            });
+
+    assertThat(updateCount).isEqualTo(1L);
+
+    // The ExecuteSql request is forced to fail with UNIMPLEMENTED error.
+    mockSpanner.setExecuteSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription(
+                    "Transaction type read_write not supported with multiplexed sessions")
+                .asRuntimeException()));
+
+    // Second read-write transaction on mux fails with UNIMPLEMENTED error, and then retried using
+    // regular session.
+    TransactionRunner runner1 = client.readWriteTransaction();
+    Long updateCount1 =
+        runner1.run(
+            transaction -> {
+              return transaction.executeUpdate(UPDATE_STATEMENT);
+            });
+
+    assertThat(updateCount1).isEqualTo(1L);
+
+    List<ExecuteSqlRequest> executeSqlRequests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(3, executeSqlRequests.size());
+
+    // Verify the first BeginTransaction request is executed using multiplexed sessions.
+    assertTrue(mockSpanner.getSession(executeSqlRequests.get(0).getSession()).getMultiplexed());
+
+    // Verify the second BeginTransaction request is executed using multiplexed sessions.
+    assertTrue(mockSpanner.getSession(executeSqlRequests.get(1).getSession()).getMultiplexed());
+
+    // Verify the second BeginTransaction request is executed using regular sessions.
+    assertFalse(mockSpanner.getSession(executeSqlRequests.get(2).getSession()).getMultiplexed());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
