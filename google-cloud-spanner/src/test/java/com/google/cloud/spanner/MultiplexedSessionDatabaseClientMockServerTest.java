@@ -1252,7 +1252,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
         request.getPrecommitToken().getPrecommitToken());
   }
 
-  private Spanner setupSpannerForAbortedBeginTransactionTests() {
+  private Spanner setupSpannerBySkippingBeginTransactionVerificationForMux() {
     return SpannerOptions.newBuilder()
         .setProjectId("test-project")
         .setChannelProvider(channelProvider)
@@ -1297,7 +1297,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // ABORT error in the BeginTransaction RPC:
     // 1. The mutation key is correctly included in the BeginTransaction request.
     // 2. The precommit token is properly set in the Commit request.
-    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    Spanner spanner = setupSpannerBySkippingBeginTransactionVerificationForMux();
 
     // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
     // is cleared after the first call, so the retry should succeed.
@@ -1336,7 +1336,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // ABORT error in the BeginTransaction RPC:
     // 1. The mutation key is correctly included in the BeginTransaction request.
     // 2. The precommit token is properly set in the Commit request.
-    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    Spanner spanner = setupSpannerBySkippingBeginTransactionVerificationForMux();
 
     // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
     // is cleared after the first call, so the retry should succeed.
@@ -1382,7 +1382,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // 1. The mutation key is correctly included in the BeginTransaction request.
     // 2. The precommit token is properly set in the Commit request.
 
-    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    Spanner spanner = setupSpannerBySkippingBeginTransactionVerificationForMux();
 
     // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
     // is cleared after the first call, so the retry should succeed.
@@ -1422,7 +1422,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // ABORT in BeginTransaction RPC, the mutation key is correctly set in the BeginTransaction
     // request
     // and precommit token is set in Commit request.
-    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    Spanner spanner = setupSpannerBySkippingBeginTransactionVerificationForMux();
 
     // Force the BeginTransaction RPC to return Aborted the first time it is called. The exception
     // is cleared after the first call, so the retry should succeed.
@@ -1970,7 +1970,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // 3. Upon encountering the UNIMPLEMENTED error, the entire transaction callable is retried
     // using regular sessions, but the inline begin fails again.
     // 4. A final retry executes the explicit BeginTransaction on a regular session.
-    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    Spanner spanner = setupSpannerBySkippingBeginTransactionVerificationForMux();
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofException(
             Status.UNIMPLEMENTED
@@ -2020,7 +2020,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // using regular sessions. However, the Commit request fails due to a SessionNotFound error.
     // 3. A final retry is triggered to handle the SessionNotFound error by selecting a new session
     // from the pool, leading to a successful transaction.
-    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    Spanner spanner = setupSpannerBySkippingBeginTransactionVerificationForMux();
 
     // The first ExecuteSql request that does an inline begin with multiplexed sessions fail with
     // UNIMPLEMENTED error.
@@ -2077,7 +2077,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     // 3. Upon encountering the UNIMPLEMENTED error, the entire transaction callable for the second
     // read-write transaction is retried using a regular session.
 
-    Spanner spanner = setupSpannerForAbortedBeginTransactionTests();
+    Spanner spanner = setupSpannerBySkippingBeginTransactionVerificationForMux();
 
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
