@@ -53,6 +53,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * {@link TransactionRunner} that automatically handles "UNIMPLEMENTED" errors with the message
+ * "Transaction type read_write not supported with multiplexed sessions" by switching from a
+ * multiplexed session to a regular session and then restarts the transaction.
+ */
 class MultiplexedSessionTransactionRunner implements TransactionRunner {
   private final SessionPool sessionPool;
   private final TransactionRunnerImpl transactionRunnerForMultiplexedSession;
@@ -91,8 +96,9 @@ class MultiplexedSessionTransactionRunner implements TransactionRunner {
       try {
         return getRunner().run(callable);
       } catch (SpannerException e) {
-        if (e.getErrorCode() == ErrorCode.UNIMPLEMENTED) {
-          this.isUsingMultiplexedSession = false;
+        if (e.getErrorCode() == ErrorCode.UNIMPLEMENTED
+            && verifyUnimplementedErrorMessageForRWMux(e)) {
+          this.isUsingMultiplexedSession = false; // Fallback to regular session
         } else {
           throw e; // Other errors propagate
         }
@@ -114,6 +120,19 @@ class MultiplexedSessionTransactionRunner implements TransactionRunner {
   public TransactionRunner allowNestedTransaction() {
     getRunner().allowNestedTransaction();
     return this;
+  }
+
+  private boolean verifyUnimplementedErrorMessageForRWMux(SpannerException spannerException) {
+    if (spannerException.getCause() == null) {
+      return false;
+    }
+    if (spannerException.getCause().getMessage() == null) {
+      return false;
+    }
+    return spannerException
+        .getCause()
+        .getMessage()
+        .contains("Transaction type read_write not supported with multiplexed sessions");
   }
 }
 
