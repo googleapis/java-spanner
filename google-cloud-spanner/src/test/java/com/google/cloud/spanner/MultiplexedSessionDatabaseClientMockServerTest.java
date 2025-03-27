@@ -1574,9 +1574,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   /**
    * Tests the behavior of the server-side kill switch for partitioned query multiplexed sessions.
-   * The BatchReadOnlyTransaction is initiated using BatchTransactionId.
-   * 2 PartitionQueryRequest should be received. First with Multiplexed session and second with
-   * regular session.
+   * The BatchReadOnlyTransaction is initiated using BatchTransactionId. 2 PartitionQueryRequest
+   * should be received. First with Multiplexed session and second with regular session.
    */
   @Test
   public void

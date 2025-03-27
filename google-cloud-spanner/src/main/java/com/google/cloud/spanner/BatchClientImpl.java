@@ -216,7 +216,7 @@ public class BatchClientImpl implements BatchClient {
       return partitionReadUsingIndex(partitionOptions, table, index, keys, columns, false, option);
     }
 
-    public List<Partition> partitionReadUsingIndex(
+    private List<Partition> partitionReadUsingIndex(
         PartitionOptions partitionOptions,
         String table,
         String index,
@@ -332,13 +332,19 @@ public class BatchClientImpl implements BatchClient {
     }
 
     boolean maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
-      if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
-          spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
-        unimplementedForPartitionedOps.set(true);
-        session.setFallbackSessionReference(sessionClient.createSession().getSessionReference());
-        sessionName = session.getName();
-        initFallbackTransaction();
-        return true;
+      synchronized (session) {
+        if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
+            spannerException,
+            "Partitioned operations are not supported with multiplexed sessions")) {
+          if (!unimplementedForPartitionedOps.get()) {
+            session.setFallbackSessionReference(
+                sessionClient.createSession().getSessionReference());
+            sessionName = session.getName();
+            initFallbackTransaction();
+            unimplementedForPartitionedOps.set(true);
+          }
+          return true;
+        }
       }
       return false;
     }

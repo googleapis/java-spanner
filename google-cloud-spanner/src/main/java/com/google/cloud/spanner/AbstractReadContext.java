@@ -406,7 +406,8 @@ abstract class AbstractReadContext
 
     /**
      * Initializes the transaction with the timestamp specified within MultiUseReadOnlyTransaction.
-     * This is used only for fallback of PartitionQueryRequest and PartitionReadRequest with Multiplexed Session.
+     * This is used only for fallback of PartitionQueryRequest and PartitionReadRequest with
+     * Multiplexed Session.
      */
     void initFallbackTransaction() {
       synchronized (txnLock) {
