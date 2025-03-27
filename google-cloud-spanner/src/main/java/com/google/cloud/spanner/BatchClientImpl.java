@@ -165,6 +165,7 @@ public class BatchClientImpl implements BatchClient {
     private String sessionName;
     private final Map<SpannerRpc.Option, ?> options;
     private final SessionClient sessionClient;
+    private final AtomicBoolean fallbackInitiated = new AtomicBoolean(false);
 
     BatchReadOnlyTransactionImpl(
         MultiUseReadOnlyTransaction.Builder builder,
@@ -332,16 +333,16 @@ public class BatchClientImpl implements BatchClient {
     }
 
     boolean maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
-      synchronized (session) {
-        if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
-            spannerException,
-            "Partitioned operations are not supported with multiplexed sessions")) {
-          if (!unimplementedForPartitionedOps.get()) {
+      if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
+          spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
+        synchronized (fallbackInitiated) {
+          if (!fallbackInitiated.get()) {
             session.setFallbackSessionReference(
                 sessionClient.createSession().getSessionReference());
             sessionName = session.getName();
             initFallbackTransaction();
             unimplementedForPartitionedOps.set(true);
+            fallbackInitiated.set(true);
           }
           return true;
         }
