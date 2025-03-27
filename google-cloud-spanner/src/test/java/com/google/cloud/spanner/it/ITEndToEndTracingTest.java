@@ -39,13 +39,14 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
-import com.google.devtools.cloudtrace.v1.Trace;
+import com.google.common.base.Stopwatch;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -96,23 +97,21 @@ public class ITEndToEndTracingTest {
                         env.getTestHelper().getOptions().getCredentials()))
                 .build();
     try (TraceServiceClient client = TraceServiceClient.create(settings)) {
-      // It can take a few seconds before the trace is visible.
-      Thread.sleep(10000);
       boolean foundTrace = false;
-      for (int attempts = 0; attempts < 2; attempts++) {
+      Stopwatch metricsPollingStopwatch = Stopwatch.createStarted();
+      while (!foundTrace && metricsPollingStopwatch.elapsed(TimeUnit.SECONDS) < 30) {
+        // Try every 5 seconds
+        Thread.sleep(5000);
         try {
-          Trace trace = client.getTrace(env.getTestHelper().getInstanceId().getProject(), traceId);
-          // Assert Spanner Frontend Trace is present
-          assertTrue(
-              trace.getSpansList().stream()
-                  .anyMatch(span -> "Spanner.ExecuteStreamingSql".equals(span.getName())));
-          foundTrace = true;
-          break;
+          foundTrace =
+              client.getTrace(env.getTestHelper().getInstanceId().getProject(), traceId)
+                  .getSpansList().stream()
+                  .anyMatch(span -> "Spanner.ExecuteStreamingSql".equals(span.getName()));
         } catch (ApiException apiException) {
           assumeTrue(
               apiException.getStatusCode() != null
                   && StatusCode.Code.NOT_FOUND.equals(apiException.getStatusCode().getCode()));
-          Thread.sleep(5000L);
+          System.out.println("Trace NOT_FOUND error ignored");
         }
       }
       assertTrue(foundTrace);
