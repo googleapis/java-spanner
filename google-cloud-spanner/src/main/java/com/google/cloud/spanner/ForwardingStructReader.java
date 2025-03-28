@@ -232,6 +232,18 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
+  public Interval getInterval(int columnIndex) {
+    checkValidState();
+    return delegate.get().getInterval(columnIndex);
+  }
+
+  @Override
+  public Interval getInterval(String columnName) {
+    checkValidState();
+    return delegate.get().getInterval(columnName);
+  }
+
+  @Override
   public boolean[] getBooleanArray(int columnIndex) {
     checkValidState();
     return delegate.get().getBooleanArray(columnIndex);
@@ -407,6 +419,18 @@ public class ForwardingStructReader implements StructReader {
   public List<Date> getDateList(String columnName) {
     checkValidState();
     return delegate.get().getDateList(columnName);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(int columnIndex) {
+    checkValidState();
+    return delegate.get().getIntervalList(columnIndex);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(String columnName) {
+    checkValidState();
+    return delegate.get().getIntervalList(columnName);
   }
 
   @Override

@@ -20,6 +20,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Interval;
 import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -298,6 +299,18 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   }
 
   @Override
+  public Interval getInterval(int columnIndex) {
+    checkClosed();
+    return delegate.getInterval(columnIndex);
+  }
+
+  @Override
+  public Interval getInterval(String columnName) {
+    checkClosed();
+    return delegate.getInterval(columnName);
+  }
+
+  @Override
   public Value getValue(int columnIndex) {
     checkClosed();
     return delegate.getValue(columnIndex);
@@ -487,6 +500,18 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   public List<Date> getDateList(String columnName) {
     checkClosed();
     return delegate.getDateList(columnName);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(int columnIndex) {
+    checkClosed();
+    return delegate.getIntervalList(columnIndex);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(String columnName) {
+    checkClosed();
+    return delegate.getIntervalList(columnName);
   }
 
   @Override
