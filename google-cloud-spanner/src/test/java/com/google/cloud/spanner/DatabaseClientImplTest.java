@@ -227,14 +227,16 @@ public class DatabaseClientImplTest {
         new HashSet(
             Arrays.asList(
                 "google.spanner.v1.Spanner/BatchCreateSessions",
-                "google.spanner.v1.Spanner/DeleteSession",
-                "google.spanner.v1.Spanner/CreateSession",
-                "google.spanner.v1.Spanner/ExecuteStreamingSql",
-                "google.spanner.v1.Spanner/BeginTransaction",
-                "google.spanner.v1.Spanner/ExecuteSql",
                 "google.spanner.v1.Spanner/BatchWrite",
-                "google.spanner.v1.Spanner/StreamingRead",
+                "google.spanner.v1.Spanner/BeginTransaction",
+                "google.spanner.v1.Spanner/CreateSession",
+                "google.spanner.v1.Spanner/DeleteSession",
                 "google.spanner.v1.Spanner/ExecuteBatchDml",
+                "google.spanner.v1.Spanner/ExecuteSql",
+                "google.spanner.v1.Spanner/ExecuteStreamingSql",
+                "google.spanner.v1.Spanner/StreamingRead",
+                "google.spanner.v1.Spanner/PartitionQuery",
+                "google.spanner.v1.Spanner/PartitionRead",
                 "google.spanner.v1.Spanner/Commit"));
     xGoogReqIdInterceptor = new XGoogSpannerRequestIdTest.ServerHeaderEnforcer(checkMethods);
     executor = Executors.newSingleThreadExecutor();
