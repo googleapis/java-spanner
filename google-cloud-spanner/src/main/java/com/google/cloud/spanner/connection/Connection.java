@@ -42,6 +42,7 @@ import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.Set;
@@ -218,6 +219,12 @@ public interface Connection extends AutoCloseable {
 
   /** @return <code>true</code> if this connection is in read-only mode */
   boolean isReadOnly();
+
+  /** Sets the default isolation level for read/write transactions for this connection. */
+  void setDefaultIsolationLevel(IsolationLevel isolationLevel);
+
+  /** Returns the default isolation level for read/write transactions for this connection. */
+  IsolationLevel getDefaultIsolationLevel();
 
   /**
    * Sets the duration the connection should wait before automatically aborting the execution of a
