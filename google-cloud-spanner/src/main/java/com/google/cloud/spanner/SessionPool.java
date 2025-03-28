@@ -1004,7 +1004,7 @@ class SessionPool {
    * {@link TransactionRunner} that automatically handles {@link SessionNotFoundException}s by
    * replacing the underlying session and then restarts the transaction.
    */
-  private static final class SessionPoolTransactionRunner<I extends SessionFuture>
+  static final class SessionPoolTransactionRunner<I extends SessionFuture>
       implements TransactionRunner {
 
     private I session;
@@ -1012,7 +1012,7 @@ class SessionPool {
     private final TransactionOption[] options;
     private TransactionRunner runner;
 
-    private SessionPoolTransactionRunner(
+    SessionPoolTransactionRunner(
         I session,
         SessionReplacementHandler<I> sessionReplacementHandler,
         TransactionOption... options) {
