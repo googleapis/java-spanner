@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getNamespace;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -27,6 +28,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
@@ -181,7 +183,11 @@ public class ConnectionStatementWithNoParametersTest {
       ConnectionImpl connection = mock(ConnectionImpl.class);
       ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
       subject.getClientSideStatement().execute(executor, parse(statement));
-      verify(connection, times(1)).beginTransaction();
+      if (dialect == Dialect.GOOGLE_STANDARD_SQL && statement.contains("isolation")) {
+        verify(connection, times(1)).beginTransaction(any(IsolationLevel.class));
+      } else {
+        verify(connection, times(1)).beginTransaction();
+      }
     }
   }
 
