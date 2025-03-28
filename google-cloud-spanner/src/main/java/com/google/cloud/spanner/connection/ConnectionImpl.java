@@ -27,6 +27,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATC
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIRECTED_READ;
@@ -90,6 +91,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -478,6 +480,7 @@ class ConnectionImpl implements Connection {
     this.connectionState.resetValue(RETRY_ABORTS_INTERNALLY, context, inTransaction);
     this.connectionState.resetValue(AUTOCOMMIT, context, inTransaction);
     this.connectionState.resetValue(READONLY, context, inTransaction);
+    this.connectionState.resetValue(DEFAULT_ISOLATION_LEVEL, context, inTransaction);
     this.connectionState.resetValue(READ_ONLY_STALENESS, context, inTransaction);
     this.connectionState.resetValue(OPTIMIZER_VERSION, context, inTransaction);
     this.connectionState.resetValue(OPTIMIZER_STATISTICS_PACKAGE, context, inTransaction);
@@ -633,6 +636,24 @@ class ConnectionImpl implements Connection {
   public boolean isReadOnly() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return getConnectionPropertyValue(READONLY);
+  }
+
+  @Override
+  public void setDefaultIsolationLevel(IsolationLevel isolationLevel) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot default isolation level while in a batch");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "Cannot set default isolation level while a transaction is active");
+    setConnectionPropertyValue(DEFAULT_ISOLATION_LEVEL, isolationLevel);
+    clearLastTransactionAndSetDefaultTransactionOptions();
+  }
+
+  @Override
+  public IsolationLevel getDefaultIsolationLevel() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return getConnectionPropertyValue(DEFAULT_ISOLATION_LEVEL);
   }
 
   private void clearLastTransactionAndSetDefaultTransactionOptions() {
@@ -2196,6 +2217,7 @@ class ConnectionImpl implements Connection {
               .setUsesEmulator(options.usesEmulator())
               .setUseAutoSavepointsForEmulator(options.useAutoSavepointsForEmulator())
               .setDatabaseClient(dbClient)
+              .setIsolationLevel(getConnectionPropertyValue(DEFAULT_ISOLATION_LEVEL))
               .setDelayTransactionStartUntilFirstWrite(
                   getConnectionPropertyValue(DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE))
               .setKeepTransactionAlive(getConnectionPropertyValue(KEEP_TRANSACTION_ALIVE))
