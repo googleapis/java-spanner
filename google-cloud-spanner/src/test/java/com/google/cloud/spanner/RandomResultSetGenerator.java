@@ -29,6 +29,7 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import java.math.BigInteger;
 import java.util.Random;
 
 /** @deprecated Use {@link com.google.cloud.spanner.connection.RandomResultSetGenerator} instead. */
@@ -43,6 +44,7 @@ public class RandomResultSetGenerator {
         Type.newBuilder().setCode(TypeCode.STRING).build(),
         Type.newBuilder().setCode(TypeCode.BYTES).build(),
         Type.newBuilder().setCode(TypeCode.DATE).build(),
+        Type.newBuilder().setCode(TypeCode.INTERVAL).build(),
         Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
@@ -71,6 +73,10 @@ public class RandomResultSetGenerator {
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
             .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
+            .build(),
+        Type.newBuilder()
+            .setCode(TypeCode.ARRAY)
+            .setArrayElementType(Type.newBuilder().setCode(TypeCode.INTERVAL))
             .build(),
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
@@ -141,6 +147,15 @@ public class RandomResultSetGenerator {
               Date.fromYearMonthDay(
                   random.nextInt(2019) + 1, random.nextInt(11) + 1, random.nextInt(28) + 1);
           builder.setStringValue(date.toString());
+          break;
+        case INTERVAL:
+          Interval interval =
+              Interval.builder()
+                  .setMonths(random.nextInt(100) - 100)
+                  .setDays(random.nextInt(100) - 100)
+                  .setNanos(BigInteger.valueOf(random.nextInt(10000000) - 10000000))
+                  .build();
+          builder.setStringValue(interval.toISO8601());
           break;
         case FLOAT64:
           builder.setNumberValue(random.nextDouble());
