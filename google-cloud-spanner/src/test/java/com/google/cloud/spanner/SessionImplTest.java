@@ -144,11 +144,11 @@ public class SessionImplTest {
     when(rpc.getCommitRetrySettings())
         .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
     session = spanner.getSessionClient(db).createSession();
+    ((SessionImpl) session).setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     Span oTspan = mock(Span.class);
     ISpan span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
     ((SessionImpl) session).setCurrentSpan(span);
-    ((SessionImpl) session).setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     // We expect the same options, "options", on all calls on "session".
     options = optionsCaptor.getValue();
   }

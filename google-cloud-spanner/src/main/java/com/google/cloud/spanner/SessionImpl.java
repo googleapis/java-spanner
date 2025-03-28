@@ -301,8 +301,7 @@ class SessionImpl implements Session {
     CommitRequest request = requestBuilder.build();
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
     try (IScope s = tracer.withSpan(span)) {
-      // TODO: Derive the channelId from the session being used currently.
-      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* channelId */, 0);
+      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
           () -> {
             reqId.incrementAttempt();
@@ -347,7 +346,7 @@ class SessionImpl implements Session {
     Options allOptions = Options.fromTransactionOptions(transactionOptions);
     XGoogSpannerRequestId reqId = allOptions.reqId();
     if (reqId == null) {
-      reqId = this.requestIdCreator.nextRequestId(1 /* channelId */, 1);
+      reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
     }
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
@@ -468,8 +467,7 @@ class SessionImpl implements Session {
   public void close() {
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
-      // TODO: Derive the channelId from the session being used currently.
-      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* channelId */, 0);
+      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
       spanner.getRpc().deleteSession(getName(), reqId.withOptions(getOptions()));
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -502,7 +500,7 @@ class SessionImpl implements Session {
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
-      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* channelId */, 1);
+      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
       requestFuture =
           spanner
               .getRpc()
