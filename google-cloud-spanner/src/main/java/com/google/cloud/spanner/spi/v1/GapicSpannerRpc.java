@@ -2021,7 +2021,10 @@ public class GapicSpannerRpc implements SpannerRpc {
                         GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
       } else {
         // Set channel affinity in GAX.
-        context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+        Long affinity = Option.CHANNEL_HINT.getLong(options);
+        if (affinity != null) {
+          context = context.withChannelAffinity(affinity.intValue());
+        }
       }
       String methodName = method.getFullMethodName();
       context = withRequestId(context, options, methodName);

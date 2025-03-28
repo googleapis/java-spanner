@@ -127,7 +127,9 @@ public class XGoogSpannerRequestId {
   @SuppressWarnings("unchecked")
   public Map withOptions(Map options) {
     Map copyOptions = new HashMap<>();
-    copyOptions.putAll(options);
+    if (options != null) {
+      copyOptions.putAll(options);
+    }
     copyOptions.put(SpannerRpc.Option.REQUEST_ID, this.toString());
     return copyOptions;
   }
