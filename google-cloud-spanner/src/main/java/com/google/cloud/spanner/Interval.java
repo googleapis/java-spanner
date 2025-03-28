@@ -16,13 +16,13 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.client.util.Preconditions;
 import com.google.errorprone.annotations.Immutable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents the time duration as a combination of months, days and nanoseconds. Nanoseconds are
@@ -116,7 +116,7 @@ public class Interval implements Serializable {
   }
 
   /** Creates an interval with specified number of nanoseconds. */
-  public static Interval ofNanos(@NotNull BigInteger nanos) {
+  public static Interval ofNanos(BigInteger nanos) {
     return builder().setNanos(nanos).build();
   }
 
@@ -264,7 +264,7 @@ public class Interval implements Serializable {
     }
 
     Builder setNanos(BigInteger nanos) {
-      this.nanos = nanos;
+      this.nanos = Preconditions.checkNotNull(nanos);
       return this;
     }
 
