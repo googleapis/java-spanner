@@ -564,6 +564,11 @@ class ClientSideStatementValueConverters {
           mode.setAccessMode(AccessMode.READ_WRITE_TRANSACTION);
         } else if (valueWithSingleSpaces
             .substring(currentIndex)
+            .startsWith("isolation level repeatable read")) {
+          currentIndex += "isolation level repeatable read".length();
+          mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_REPEATABLE_READ);
+        } else if (valueWithSingleSpaces
+            .substring(currentIndex)
             .startsWith("isolation level serializable")) {
           currentIndex += "isolation level serializable".length();
           mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_SERIALIZABLE);

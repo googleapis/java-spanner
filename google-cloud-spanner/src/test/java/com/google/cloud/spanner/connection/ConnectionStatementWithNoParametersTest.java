@@ -183,7 +183,7 @@ public class ConnectionStatementWithNoParametersTest {
       ConnectionImpl connection = mock(ConnectionImpl.class);
       ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
       subject.getClientSideStatement().execute(executor, parse(statement));
-      if (dialect == Dialect.GOOGLE_STANDARD_SQL && statement.contains("isolation")) {
+      if (statement.contains("isolation") && !statement.contains("default")) {
         verify(connection, times(1)).beginTransaction(any(IsolationLevel.class));
       } else {
         verify(connection, times(1)).beginTransaction();

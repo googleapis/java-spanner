@@ -456,7 +456,14 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementBeginPgTransaction(@Nullable PgTransactionMode transactionMode) {
-    getConnection().beginTransaction();
+    if (transactionMode == null
+        || transactionMode.getIsolationLevel() == null
+        || transactionMode.getIsolationLevel() == IsolationLevel.ISOLATION_LEVEL_DEFAULT) {
+      getConnection().beginTransaction();
+    } else {
+      getConnection()
+          .beginTransaction(transactionMode.getIsolationLevel().getSpannerIsolationLevel());
+    }
     if (transactionMode != null) {
       statementSetPgTransactionMode(transactionMode);
     }
@@ -501,6 +508,10 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementSetPgSessionCharacteristicsTransactionMode(
       PgTransactionMode transactionMode) {
+    if (transactionMode.getIsolationLevel() != null) {
+      getConnection()
+          .setDefaultIsolationLevel(transactionMode.getIsolationLevel().getSpannerIsolationLevel());
+    }
     if (transactionMode.getAccessMode() != null) {
       switch (transactionMode.getAccessMode()) {
         case READ_ONLY_TRANSACTION:
@@ -518,7 +529,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetPgDefaultTransactionIsolation(IsolationLevel isolationLevel) {
-    // no-op
+    getConnection()
+        .setDefaultIsolationLevel(
+            isolationLevel == null
+                ? TransactionOptions.IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED
+                : isolationLevel.getSpannerIsolationLevel());
     return noResult(SET_DEFAULT_TRANSACTION_ISOLATION);
   }
 
