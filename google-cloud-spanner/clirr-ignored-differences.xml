@@ -902,4 +902,16 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.String getDefaultSequenceKind()</method>
   </difference>
+
+  <!-- Removed ConnectionOptions$ConnectionProperty in favor of the more generic ConnectionProperty class. -->
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/cloud/spanner/connection/ConnectionOptions$ConnectionProperty</className>
+  </difference>
+  <difference>
+    <differenceType>6001</differenceType>
+    <className>com/google/cloud/spanner/connection/ConnectionOptions</className>
+    <field>VALID_PROPERTIES</field>
+  </difference>
+  
 </differences>

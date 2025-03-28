@@ -1,5 +1,31 @@
 # Changelog
 
+## [6.89.0](https://github.com/googleapis/java-spanner/compare/v6.88.0...v6.89.0) (2025-03-20)
+
+
+### Features
+
+* Enable ALTS hard bound token in DirectPath ([#3645](https://github.com/googleapis/java-spanner/issues/3645)) ([42cc961](https://github.com/googleapis/java-spanner/commit/42cc9616fa74c765d5716fd948dc0823df0a07a6))
+* Next release from main branch is 6.89.0 ([#3669](https://github.com/googleapis/java-spanner/issues/3669)) ([7a8a29b](https://github.com/googleapis/java-spanner/commit/7a8a29be40258294cafd13b1df7df5ea349a675d))
+* Support isolation level REPEATABLE_READ for R/W transactions ([#3670](https://github.com/googleapis/java-spanner/issues/3670)) ([e62f5ab](https://github.com/googleapis/java-spanner/commit/e62f5ab46da8696a8ff0d213f924588612bb4025))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.55.1 ([b959f4c](https://github.com/googleapis/java-spanner/commit/b959f4c8ebb3551796a894b659aa42ba16fb1c39))
+* Revert the ALTS bound token enablement ([#3679](https://github.com/googleapis/java-spanner/issues/3679)) ([183c1f0](https://github.com/googleapis/java-spanner/commit/183c1f0e228a927a575596a38a01d63bb8eb6943))
+
+
+### Performance Improvements
+
+* Get database dialect using multiplexed session ([#3684](https://github.com/googleapis/java-spanner/issues/3684)) ([f641a40](https://github.com/googleapis/java-spanner/commit/f641a40ed515a6559718c2fe2757c322f037d83b))
+* Skip gRPC trailers for StreamingRead & ExecuteStreamingSql ([#3661](https://github.com/googleapis/java-spanner/issues/3661)) ([bd4b1f5](https://github.com/googleapis/java-spanner/commit/bd4b1f5b9612f6a4dfd748d735c887f8e46ae106))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.45.1 ([#3689](https://github.com/googleapis/java-spanner/issues/3689)) ([67188df](https://github.com/googleapis/java-spanner/commit/67188df2be23eef88de8f4febc3ac7208ebdd937))
+
 ## [6.88.0](https://github.com/googleapis/java-spanner/compare/v6.87.0...v6.88.0) (2025-02-27)
 
 
