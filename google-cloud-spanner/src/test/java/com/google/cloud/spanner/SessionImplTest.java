@@ -463,6 +463,7 @@ public class SessionImplTest {
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
+    assertNotNull(txn);
     SpannerException e =
         assertThrows(
             SpannerException.class,

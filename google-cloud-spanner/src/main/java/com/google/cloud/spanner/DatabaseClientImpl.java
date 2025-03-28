@@ -177,7 +177,16 @@ class DatabaseClientImpl implements DatabaseClient {
       if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient().writeWithOptions(mutations, options);
       }
-      return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));
+      XGoogSpannerRequestId reqId =
+          XGoogSpannerRequestId.of(this.dbId, 1 /*TODO: channelId*/, this.nextNthRequest(), 0);
+      return runWithSessionRetry(
+          (session) -> {
+            reqId.incrementAttempt();
+            ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
+            allOptions.add(new Options.RequestIdOption(reqId));
+            return session.writeWithOptions(
+                mutations, allOptions.toArray(new TransactionOption[0]));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -247,10 +256,6 @@ class DatabaseClientImpl implements DatabaseClient {
           (session) -> {
             reqId.incrementAttempt();
             ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
-            System.out.println(
-                "\033[35mbatchWriteAtLeastOnce:: session.class: "
-                    + session.getClass()
-                    + "\033[00m");
             allOptions.add(new Options.RequestIdOption(reqId));
             return session.batchWriteAtLeastOnce(
                 mutationGroups, allOptions.toArray(new TransactionOption[0]));
@@ -407,7 +412,7 @@ class DatabaseClientImpl implements DatabaseClient {
       return runWithSessionRetry(
           (session) -> {
             reqId.incrementAttempt();
-            ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
+            ArrayList<UpdateOption> allOptions = new ArrayList(Arrays.asList(options));
             allOptions.add(new Options.RequestIdOption(reqId));
             return session.executePartitionedUpdate(stmt, allOptions.toArray(new UpdateOption[0]));
           });
