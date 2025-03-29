@@ -232,13 +232,10 @@ class SessionImpl implements Session {
     setActive(null);
     PartitionedDmlTransaction txn =
         new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker());
-    XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
-    ArrayList<UpdateOption> allOptions = new ArrayList(Arrays.asList(options));
-    allOptions.add(new Options.RequestIdOption(reqId));
     return txn.executeStreamingPartitionedUpdate(
         stmt,
         spanner.getOptions().getPartitionedDmlTimeoutDuration(),
-        allOptions.toArray(new UpdateOption[0]));
+        options);
   }
 
   @Override
@@ -308,7 +305,7 @@ class SessionImpl implements Session {
     CommitRequest request = requestBuilder.build();
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
     try (IScope s = tracer.withSpan(span)) {
-      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
+      XGoogSpannerRequestId reqId = options.reqId();
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
           () -> {
             reqId.incrementAttempt();
@@ -351,11 +348,11 @@ class SessionImpl implements Session {
             .addAllMutationGroups(mutationGroupsProto);
     RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
     Options allOptions = Options.fromTransactionOptions(transactionOptions);
-    XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
+    XGoogSpannerRequestId reqId = allOptions.reqId();
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
     }
-    if (Options.fromTransactionOptions(transactionOptions).withExcludeTxnFromChangeStreams()
+    if (allOptions.withExcludeTxnFromChangeStreams()
         == Boolean.TRUE) {
       requestBuilder.setExcludeTxnFromChangeStreams(true);
     }

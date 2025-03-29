@@ -130,7 +130,7 @@ public class XGoogSpannerRequestId {
     if (options != null) {
       copyOptions.putAll(options);
     }
-    copyOptions.put(SpannerRpc.Option.REQUEST_ID, this.toString());
+    copyOptions.put(SpannerRpc.Option.REQUEST_ID, this);
     return copyOptions;
   }
 
