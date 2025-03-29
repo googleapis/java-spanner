@@ -47,6 +47,7 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -158,6 +159,7 @@ class SessionImpl implements Session {
     if (channelHint == NO_CHANNEL_HINT) {
       return sessionReference.getOptions();
     }
+    System.out.println("\033[35mcreateOptions.hint: " + channelHint + "\033[00m");
     return CHANNEL_HINT_OPTIONS[channelHint % CHANNEL_HINT_OPTIONS.length];
   }
 
@@ -230,8 +232,13 @@ class SessionImpl implements Session {
     setActive(null);
     PartitionedDmlTransaction txn =
         new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker());
+    XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
+    ArrayList<UpdateOption> allOptions = new ArrayList(Arrays.asList(options));
+    allOptions.add(new Options.RequestIdOption(reqId));
     return txn.executeStreamingPartitionedUpdate(
-        stmt, spanner.getOptions().getPartitionedDmlTimeoutDuration(), options);
+        stmt,
+        spanner.getOptions().getPartitionedDmlTimeoutDuration(),
+        allOptions.toArray(new UpdateOption[0]));
   }
 
   @Override
@@ -344,10 +351,7 @@ class SessionImpl implements Session {
             .addAllMutationGroups(mutationGroupsProto);
     RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
     Options allOptions = Options.fromTransactionOptions(transactionOptions);
-    XGoogSpannerRequestId reqId = allOptions.reqId();
-    if (reqId == null) {
-      reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
-    }
+    XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
     }

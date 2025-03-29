@@ -2061,14 +2061,15 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   GrpcCallContext withRequestId(GrpcCallContext context, Map options, String methodName) {
-    String reqId = (String) options.get(Option.REQUEST_ID);
-    if (reqId == null || Objects.equals(reqId, "")) {
+    XGoogSpannerRequestId reqId = (XGoogSpannerRequestId) options.get(Option.REQUEST_ID);
+    if (reqId == null) {
       return context;
     }
 
     Map<String, List<String>> withReqId =
         ImmutableMap.of(
-            XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(), Collections.singletonList(reqId));
+            XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(),
+            Collections.singletonList(reqId.toString()));
     return context.withExtraHeaders(withReqId);
   }
 

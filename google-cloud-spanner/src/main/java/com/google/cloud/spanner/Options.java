@@ -765,6 +765,9 @@ public final class Options implements Serializable {
     if (isolationLevel != null) {
       b.append("isolationLevel: ").append(isolationLevel).append(' ');
     }
+    if (reqId != null) {
+      b.append("requestId: ").append(reqId.toString()).append(' ');
+    }
     return b.toString();
   }
 
@@ -807,7 +810,8 @@ public final class Options implements Serializable {
         && Objects.equals(orderBy(), that.orderBy())
         && Objects.equals(isLastStatement(), that.isLastStatement())
         && Objects.equals(lockHint(), that.lockHint())
-        && Objects.equals(isolationLevel(), that.isolationLevel());
+        && Objects.equals(isolationLevel(), that.isolationLevel())
+        && Objects.equals(reqId(), that.reqId());
   }
 
   @Override
@@ -875,6 +879,9 @@ public final class Options implements Serializable {
     }
     if (isolationLevel != null) {
       result = 31 * result + isolationLevel.hashCode();
+    }
+    if (reqId != null) {
+      result = 31 * result + reqId.hashCode();
     }
     return result;
   }
