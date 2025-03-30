@@ -80,9 +80,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     long updateCount = 0L;
     Stopwatch stopwatch = Stopwatch.createStarted(ticker);
     Options options = Options.fromUpdateOptions(updateOptions);
-
-    XGoogSpannerRequestId reqId =
-        session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 0);
+    XGoogSpannerRequestId reqId = options.reqId();
 
     try {
       ExecuteSqlRequest request = newTransactionRequestFrom(statement, options);
@@ -219,8 +217,10 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
                     .setExcludeTxnFromChangeStreams(
                         options.withExcludeTxnFromChangeStreams() == Boolean.TRUE))
             .build();
-    XGoogSpannerRequestId reqId =
-        session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 1);
+    XGoogSpannerRequestId reqId = options.reqId();
+    if (reqId == null) {
+      reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 1);
+    }
     Transaction tx = rpc.beginTransaction(request, reqId.withOptions(session.getOptions()), true);
     if (tx.getId().isEmpty()) {
       throw SpannerExceptionFactory.newSpannerException(
