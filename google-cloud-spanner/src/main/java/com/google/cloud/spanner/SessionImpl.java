@@ -301,8 +301,9 @@ class SessionImpl implements Session {
     }
     CommitRequest request = requestBuilder.build();
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
+    final XGoogSpannerRequestId reqId = reqIdOrFresh(options);
+
     try (IScope s = tracer.withSpan(span)) {
-      XGoogSpannerRequestId reqId = options.reqId();
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
           () -> {
             // TODO: Detect an abort and then refresh the reqId.
@@ -316,6 +317,14 @@ class SessionImpl implements Session {
     } finally {
       span.end();
     }
+  }
+
+  private XGoogSpannerRequestId reqIdOrFresh(Options options) {
+    XGoogSpannerRequestId reqId = options.reqId();
+    if (reqId == null) {
+      reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
+    }
+    return reqId;
   }
 
   private RequestOptions getRequestOptions(TransactionOption... transactionOptions) {
@@ -346,7 +355,7 @@ class SessionImpl implements Session {
             .addAllMutationGroups(mutationGroupsProto);
     RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
     Options allOptions = Options.fromTransactionOptions(transactionOptions);
-    XGoogSpannerRequestId reqId = allOptions.reqId();
+    final XGoogSpannerRequestId reqId = reqIdOrFresh(allOptions);
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
     }

@@ -81,6 +81,9 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     Stopwatch stopwatch = Stopwatch.createStarted(ticker);
     Options options = Options.fromUpdateOptions(updateOptions);
     XGoogSpannerRequestId reqId = options.reqId();
+    if (reqId == null) {
+      reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 0);
+    }
 
     try {
       ExecuteSqlRequest request = newTransactionRequestFrom(statement, options);
