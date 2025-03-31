@@ -859,6 +859,27 @@ class ConnectionImpl implements Connection {
     this.unitOfWorkType = UnitOfWorkType.of(transactionMode);
   }
 
+  IsolationLevel getTransactionIsolationLevel() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(!isDdlBatchActive(), "This connection is in a DDL batch");
+    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    return this.transactionIsolationLevel;
+  }
+
+  void setTransactionIsolationLevel(IsolationLevel isolationLevel) {
+    Preconditions.checkNotNull(isolationLevel);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot set transaction isolation level while in a batch");
+    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "The transaction isolation level cannot be set after the transaction has started");
+
+    this.transactionBeginMarked = true;
+    this.transactionIsolationLevel = isolationLevel;
+  }
+
   @Override
   public String getTransactionTag() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);

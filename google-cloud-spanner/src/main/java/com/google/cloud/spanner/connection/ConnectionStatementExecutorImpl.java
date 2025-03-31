@@ -490,6 +490,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetPgTransactionMode(PgTransactionMode transactionMode) {
+    if (transactionMode.getIsolationLevel() != null) {
+      getConnection()
+          .setTransactionIsolationLevel(
+              transactionMode.getIsolationLevel().getSpannerIsolationLevel());
+    }
     if (transactionMode.getAccessMode() != null) {
       switch (transactionMode.getAccessMode()) {
         case READ_ONLY_TRANSACTION:
