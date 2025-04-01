@@ -104,7 +104,7 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(
             mockedProvider, mock(ResultSet.class), AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(mock(Executor.class), mock(ReadyCallback.class));
-      IllegalStateException e = assertThrows(IllegalStateException.class, () -> rs.tryNext());
+      IllegalStateException e = assertThrows(IllegalStateException.class, rs::tryNext);
       assertThat(e.getMessage()).contains("tryNext may only be called from a DataReady callback.");
     }
   }
@@ -152,7 +152,7 @@ public class AsyncResultSetImplTest {
   }
 
   @Test
-  public void toListAsyncPropagatesError() throws InterruptedException {
+  public void toListAsyncPropagatesError() {
     ExecutorService executor = Executors.newFixedThreadPool(1);
     ResultSet delegate = mock(ResultSet.class);
     when(delegate.next())
@@ -326,10 +326,7 @@ public class AsyncResultSetImplTest {
               @Override
               public Boolean answer(InvocationOnMock invocation) throws Throwable {
                 row++;
-                if (row > simulatedRows) {
-                  return false;
-                }
-                return true;
+                return row <= simulatedRows;
               }
             });
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
@@ -345,17 +342,17 @@ public class AsyncResultSetImplTest {
                 assertFalse(paused.get());
                 callbackCounter.incrementAndGet();
                 try {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case OK:
-                        paused.set(true);
-                        queue.put(new Object());
-                        return CallbackResponse.PAUSE;
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                    }
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      paused.set(true);
+                      queue.put(new Object());
+                      return CallbackResponse.PAUSE;
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    default:
+                      throw new IllegalStateException();
                   }
                 } catch (InterruptedException e) {
                   throw SpannerExceptionFactory.propagateInterrupt(e);
@@ -384,9 +381,8 @@ public class AsyncResultSetImplTest {
   }
 
   @Test
-  public void testCallbackIsNotCalledWhilePausedAndCanceled()
-      throws InterruptedException, ExecutionException {
-    Executor executor = Executors.newSingleThreadExecutor();
+  public void testCallbackIsNotCalledWhilePausedAndCanceled() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
     StreamingResultSet delegate = mock(StreamingResultSet.class);
 
     final AtomicInteger callbackCounter = new AtomicInteger();
@@ -414,6 +410,8 @@ public class AsyncResultSetImplTest {
       SpannerException exception = assertThrows(SpannerException.class, () -> get(callbackResult));
       assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
       assertEquals(1, callbackCounter.get());
+    } finally {
+      executor.shutdown();
     }
   }
 

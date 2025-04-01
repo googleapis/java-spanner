@@ -681,7 +681,7 @@ public abstract class AbstractStructReader implements StructReader {
   }
 
   private void checkNonNullOfTypes(
-      int columnIndex,  
+      int columnIndex,
       List<Type> expectedTypes,
       Object columnNameForError,
       String expectedTypeNames) {

@@ -902,4 +902,40 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.String getDefaultSequenceKind()</method>
   </difference>
+  
+  <!-- Default isolation level -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDefaultIsolationLevel(com.google.spanner.v1.TransactionOptions$IsolationLevel)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.spanner.v1.TransactionOptions$IsolationLevel getDefaultIsolationLevel()</method>
+  </difference>
+
+  <!-- Isolation level per transaction -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void beginTransaction(com.google.spanner.v1.TransactionOptions$IsolationLevel)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture beginTransactionAsync(com.google.spanner.v1.TransactionOptions$IsolationLevel)</method>
+  </difference>
+
+  <!-- Removed ConnectionOptions$ConnectionProperty in favor of the more generic ConnectionProperty class. -->
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/cloud/spanner/connection/ConnectionOptions$ConnectionProperty</className>
+  </difference>
+  <difference>
+    <differenceType>6001</differenceType>
+    <className>com/google/cloud/spanner/connection/ConnectionOptions</className>
+    <field>VALID_PROPERTIES</field>
+  </difference>
+  
 </differences>

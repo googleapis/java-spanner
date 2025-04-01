@@ -27,6 +27,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATC
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIRECTED_READ;
@@ -90,6 +91,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -283,6 +285,7 @@ class ConnectionImpl implements Connection {
 
   // The following properties are not 'normal' connection properties, but transient properties that
   // are automatically reset after executing a transaction or statement.
+  private IsolationLevel transactionIsolationLevel;
   private String transactionTag;
   private String statementTag;
   private boolean excludeTxnFromChangeStreams;
@@ -334,7 +337,7 @@ class ConnectionImpl implements Connection {
                         : Type.NON_TRANSACTIONAL));
 
     // (Re)set the state of the connection to the default.
-    setDefaultTransactionOptions();
+    setDefaultTransactionOptions(getDefaultIsolationLevel());
   }
 
   /** Constructor only for test purposes. */
@@ -368,7 +371,7 @@ class ConnectionImpl implements Connection {
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
     setReturnCommitStats(options.isReturnCommitStats());
-    setDefaultTransactionOptions();
+    setDefaultTransactionOptions(getDefaultIsolationLevel());
   }
 
   @Override
@@ -478,6 +481,7 @@ class ConnectionImpl implements Connection {
     this.connectionState.resetValue(RETRY_ABORTS_INTERNALLY, context, inTransaction);
     this.connectionState.resetValue(AUTOCOMMIT, context, inTransaction);
     this.connectionState.resetValue(READONLY, context, inTransaction);
+    this.connectionState.resetValue(DEFAULT_ISOLATION_LEVEL, context, inTransaction);
     this.connectionState.resetValue(READ_ONLY_STALENESS, context, inTransaction);
     this.connectionState.resetValue(OPTIMIZER_VERSION, context, inTransaction);
     this.connectionState.resetValue(OPTIMIZER_STATISTICS_PACKAGE, context, inTransaction);
@@ -502,7 +506,7 @@ class ConnectionImpl implements Connection {
     this.protoDescriptorsFilePath = null;
 
     if (!isTransactionStarted()) {
-      setDefaultTransactionOptions();
+      setDefaultTransactionOptions(getDefaultIsolationLevel());
     }
   }
 
@@ -592,7 +596,7 @@ class ConnectionImpl implements Connection {
       // middle of a transaction.
       this.connectionState.commit();
     }
-    clearLastTransactionAndSetDefaultTransactionOptions();
+    clearLastTransactionAndSetDefaultTransactionOptions(getDefaultIsolationLevel());
     // Reset the readOnlyStaleness value if it is no longer compatible with the new autocommit
     // value.
     if (!autocommit) {
@@ -626,7 +630,7 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !transactionBeginMarked, "Cannot set read-only when a transaction has begun");
     setConnectionPropertyValue(READONLY, readOnly);
-    clearLastTransactionAndSetDefaultTransactionOptions();
+    clearLastTransactionAndSetDefaultTransactionOptions(getDefaultIsolationLevel());
   }
 
   @Override
@@ -635,8 +639,26 @@ class ConnectionImpl implements Connection {
     return getConnectionPropertyValue(READONLY);
   }
 
-  private void clearLastTransactionAndSetDefaultTransactionOptions() {
-    setDefaultTransactionOptions();
+  @Override
+  public void setDefaultIsolationLevel(IsolationLevel isolationLevel) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot default isolation level while in a batch");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "Cannot set default isolation level while a transaction is active");
+    setConnectionPropertyValue(DEFAULT_ISOLATION_LEVEL, isolationLevel);
+    clearLastTransactionAndSetDefaultTransactionOptions(isolationLevel);
+  }
+
+  @Override
+  public IsolationLevel getDefaultIsolationLevel() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return getConnectionPropertyValue(DEFAULT_ISOLATION_LEVEL);
+  }
+
+  private void clearLastTransactionAndSetDefaultTransactionOptions(IsolationLevel isolationLevel) {
+    setDefaultTransactionOptions(isolationLevel);
     this.currentUnitOfWork = null;
   }
 
@@ -835,6 +857,27 @@ class ConnectionImpl implements Connection {
 
     this.transactionBeginMarked = true;
     this.unitOfWorkType = UnitOfWorkType.of(transactionMode);
+  }
+
+  IsolationLevel getTransactionIsolationLevel() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(!isDdlBatchActive(), "This connection is in a DDL batch");
+    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    return this.transactionIsolationLevel;
+  }
+
+  void setTransactionIsolationLevel(IsolationLevel isolationLevel) {
+    Preconditions.checkNotNull(isolationLevel);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot set transaction isolation level while in a batch");
+    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "The transaction isolation level cannot be set after the transaction has started");
+
+    this.transactionBeginMarked = true;
+    this.transactionIsolationLevel = isolationLevel;
   }
 
   @Override
@@ -1118,13 +1161,14 @@ class ConnectionImpl implements Connection {
   }
 
   /** Resets this connection to its default transaction options. */
-  private void setDefaultTransactionOptions() {
+  private void setDefaultTransactionOptions(IsolationLevel isolationLevel) {
     if (transactionStack.isEmpty()) {
       unitOfWorkType =
           isReadOnly()
               ? UnitOfWorkType.READ_ONLY_TRANSACTION
               : UnitOfWorkType.READ_WRITE_TRANSACTION;
       batchMode = BatchMode.NONE;
+      transactionIsolationLevel = isolationLevel;
       transactionTag = null;
       excludeTxnFromChangeStreams = false;
     } else {
@@ -1134,11 +1178,21 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void beginTransaction() {
-    get(beginTransactionAsync());
+    get(beginTransactionAsync(getConnectionPropertyValue(DEFAULT_ISOLATION_LEVEL)));
+  }
+
+  @Override
+  public void beginTransaction(IsolationLevel isolationLevel) {
+    get(beginTransactionAsync(isolationLevel));
   }
 
   @Override
   public ApiFuture<Void> beginTransactionAsync() {
+    return beginTransactionAsync(getConnectionPropertyValue(DEFAULT_ISOLATION_LEVEL));
+  }
+
+  @Override
+  public ApiFuture<Void> beginTransactionAsync(IsolationLevel isolationLevel) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(
         !isBatchActive(), "This connection has an active batch and cannot begin a transaction");
@@ -1148,7 +1202,7 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(!transactionBeginMarked, "A transaction has already begun");
 
     transactionBeginMarked = true;
-    clearLastTransactionAndSetDefaultTransactionOptions();
+    clearLastTransactionAndSetDefaultTransactionOptions(isolationLevel);
     if (isAutocommit()) {
       inTransaction = true;
     }
@@ -1263,7 +1317,7 @@ class ConnectionImpl implements Connection {
       if (isAutocommit()) {
         inTransaction = false;
       }
-      setDefaultTransactionOptions();
+      setDefaultTransactionOptions(getDefaultIsolationLevel());
     }
     return res;
   }
@@ -2175,7 +2229,7 @@ class ConnectionImpl implements Connection {
               .build();
       if (!isInternalMetadataQuery && !forceSingleUse) {
         // Reset the transaction options after starting a single-use transaction.
-        setDefaultTransactionOptions();
+        setDefaultTransactionOptions(getDefaultIsolationLevel());
       }
       return singleUseTransaction;
     } else {
@@ -2196,6 +2250,7 @@ class ConnectionImpl implements Connection {
               .setUsesEmulator(options.usesEmulator())
               .setUseAutoSavepointsForEmulator(options.useAutoSavepointsForEmulator())
               .setDatabaseClient(dbClient)
+              .setIsolationLevel(transactionIsolationLevel)
               .setDelayTransactionStartUntilFirstWrite(
                   getConnectionPropertyValue(DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE))
               .setKeepTransactionAlive(getConnectionPropertyValue(KEEP_TRANSACTION_ALIVE))
@@ -2379,7 +2434,7 @@ class ConnectionImpl implements Connection {
         this.protoDescriptorsFilePath = null;
       }
       this.batchMode = BatchMode.NONE;
-      setDefaultTransactionOptions();
+      setDefaultTransactionOptions(getDefaultIsolationLevel());
     }
   }
 
@@ -2393,7 +2448,7 @@ class ConnectionImpl implements Connection {
       }
     } finally {
       this.batchMode = BatchMode.NONE;
-      setDefaultTransactionOptions();
+      setDefaultTransactionOptions(getDefaultIsolationLevel());
     }
   }
 
