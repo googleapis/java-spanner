@@ -233,6 +233,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected Interval getIntervalInternal(int columnIndex) {
+      return values.get(columnIndex).getInterval();
+    }
+
+    @Override
     protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
       return values.get(columnIndex).getProtoMessage(message);
     }
@@ -346,6 +351,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected List<Interval> getIntervalListInternal(int columnIndex) {
+      return values.get(columnIndex).getIntervalArray();
+    }
+
+    @Override
     protected List<Struct> getStructListInternal(int columnIndex) {
       return values.get(columnIndex).getStructArray();
     }
@@ -433,6 +443,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getDateInternal(columnIndex);
       case UUID:
         return getUuidInternal(columnIndex);
+      case INTERVAL:
+        return getIntervalInternal(columnIndex);
       case STRUCT:
         return getStructInternal(columnIndex);
       case ARRAY:
@@ -466,6 +478,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
             return getDateListInternal(columnIndex);
           case UUID:
             return getUuidListInternal(columnIndex);
+          case INTERVAL:
+            return getIntervalListInternal(columnIndex);
           case STRUCT:
             return getStructListInternal(columnIndex);
           default:

@@ -44,6 +44,7 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -750,6 +751,26 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
     IllegalStateException e = assertThrows(IllegalStateException.class, v::getUuid);
+  }
+
+  public void interval() {
+    String interval = "P1Y2M3DT67H45M5.123478678S";
+    Interval t = Interval.parseFromString(interval);
+    Value v = Value.interval(t);
+    assertThat(v.getType()).isEqualTo(Type.interval());
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getInterval()).isSameInstanceAs(t);
+    assertThat(v.toString()).isEqualTo(interval);
+    assertEquals(interval, v.getAsString());
+  }
+
+  @Test
+  public void intervalNull() {
+    Value v = Value.interval(null);
+    assertThat(v.getType()).isEqualTo(Type.interval());
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInterval);
     assertThat(e.getMessage()).contains("null value");
     assertEquals("NULL", v.getAsString());
   }
@@ -1401,6 +1422,29 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
     IllegalStateException e = assertThrows(IllegalStateException.class, v::getUuidArray);
+  }
+
+  @Test
+  public void intervalArray() {
+    Interval interval1 = Interval.parseFromString("P123Y34M678DT478H345M345.76857863S");
+    Interval interval2 = Interval.parseFromString("P-123Y-34M678DT-478H-345M-345.76857863S");
+
+    Value v = Value.intervalArray(Arrays.asList(interval1, null, interval2));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getIntervalArray()).containsExactly(interval1, null, interval2).inOrder();
+    assertThat(v.toString())
+        .isEqualTo("[" + interval1.toISO8601() + ",NULL," + interval2.toISO8601() + "]");
+    assertEquals(
+        String.format("[%s,NULL,%s]", interval1.toISO8601(), interval2.toISO8601()),
+        v.getAsString());
+  }
+
+  @Test
+  public void intervalArrayNull() {
+    Value v = Value.intervalArray(null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getIntervalArray);
     assertThat(e.getMessage()).contains("null value");
     assertEquals("NULL", v.getAsString());
   }
@@ -1701,6 +1745,14 @@ public class ValueTest {
         Value.date(null).toProto());
 
     assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("P1Y2M3DT5H6M3.624567878S").build(),
+        Value.interval(Interval.fromMonthsDaysNanos(14, 3, BigInteger.valueOf(18363624567878L)))
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.interval(null).toProto());
+
+    assertEquals(
         com.google.protobuf.Value.newBuilder()
             .setStringValue("2012-04-10T15:16:17.123456789Z")
             .build(),
@@ -1836,6 +1888,25 @@ public class ValueTest {
                                 .build())))
             .build(),
         Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2010, 2, 28), null)).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("P1Y2M3DT5H6M2.456787800S")
+                                .build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.intervalArray(
+                Arrays.asList(
+                    Interval.fromMonthsDaysNanos(14, 3, new BigInteger("18362456787800")), null))
+            .toProto());
+
     assertEquals(
         com.google.protobuf.Value.newBuilder()
             .setListValue(
@@ -2269,6 +2340,13 @@ public class ValueTest {
     tester.addEqualityGroup(Value.dateArray(null));
 
     tester.addEqualityGroup(
+        Value.intervalArray(
+            Arrays.asList(null, Interval.fromMonthsDaysNanos(14, 3, BigInteger.valueOf(0)))),
+        Value.intervalArray(
+            Arrays.asList(null, Interval.fromMonthsDaysNanos(14, 3, BigInteger.valueOf(0)))));
+    tester.addEqualityGroup(Value.intervalArray(null));
+
+    tester.addEqualityGroup(
         Value.structArray(structType1, Arrays.asList(structValue1, null)),
         Value.structArray(structType1, Arrays.asList(structValue2, null)));
     tester.addEqualityGroup(
@@ -2322,6 +2400,9 @@ public class ValueTest {
         "2023-01-10T18:59:00Z",
         Value.timestamp(Timestamp.parseTimestamp("2023-01-10T18:59:00Z")).getAsString());
     assertEquals("2023-01-10", Value.date(Date.parseDate("2023-01-10")).getAsString());
+    assertEquals(
+        "P1Y2M3DT4H5M6.789123456S",
+        Value.interval(Interval.parseFromString("P1Y2M3DT4H5M6.789123456S")).getAsString());
 
     Random random = new Random();
     byte[] bytes = new byte[random.nextInt(256)];
@@ -2423,6 +2504,14 @@ public class ValueTest {
     reserializeAndAssert(Value.date(null));
     reserializeAndAssert(Value.date(Date.fromYearMonthDay(2018, 2, 26)));
     reserializeAndAssert(Value.dateArray(Arrays.asList(null, Date.fromYearMonthDay(2018, 2, 26))));
+
+    reserializeAndAssert(Value.interval(null));
+    reserializeAndAssert(
+        Value.interval(Interval.fromMonthsDaysNanos(15, 7, BigInteger.valueOf(1234567891))));
+    reserializeAndAssert(
+        Value.intervalArray(
+            Arrays.asList(
+                null, Interval.fromMonthsDaysNanos(15, 7, BigInteger.valueOf(1234567891)))));
 
     BrokenSerializationList<String> of = BrokenSerializationList.of("a", "b");
     reserializeAndAssert(Value.stringArray(of));

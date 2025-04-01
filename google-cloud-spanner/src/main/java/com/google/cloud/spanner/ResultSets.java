@@ -323,18 +323,28 @@ public final class ResultSets {
     }
 
     @Override
-    public UUID getUuid(int columnIndex) {
-      return getCurrentRowAsStruct().getUuid(columnIndex);
-    }
-
-    @Override
     public Date getDate(String columnName) {
       return getCurrentRowAsStruct().getDate(columnName);
     }
 
     @Override
+    public UUID getUuid(int columnIndex) {
+      return getCurrentRowAsStruct().getUuid(columnIndex);
+    }
+
+    @Override
     public UUID getUuid(String columnName) {
       return getCurrentRowAsStruct().getUuid(columnName);
+    }
+
+    @Override
+    public Interval getInterval(int columnIndex) {
+      return getCurrentRowAsStruct().getInterval(columnIndex);
+    }
+
+    @Override
+    public Interval getInterval(String columnName) {
+      return getCurrentRowAsStruct().getInterval(columnName);
     }
 
     @Override
@@ -525,8 +535,18 @@ public final class ResultSets {
     }
 
     @Override
-    public List<UUID> getUuidList(String columnNameÏ) {
-      return getCurrentRowAsStruct().getUuidList(columnNameÏ);
+    public List<UUID> getUuidList(String columnName) {
+      return getCurrentRowAsStruct().getUuidList(columnName);
+    }
+
+    @Override
+    public List<Interval> getIntervalList(int columnIndex) {
+      return getCurrentRowAsStruct().getIntervalList(columnIndex);
+    }
+
+    @Override
+    public List<Interval> getIntervalList(String columnName) {
+      return getCurrentRowAsStruct().getIntervalList(columnName);
     }
 
     @Override

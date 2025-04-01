@@ -35,6 +35,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.Interval;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -446,6 +447,26 @@ public class ITQueryTest {
 
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to((UUID) null), Type.uuid());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindInterval() {
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
+    Interval d = Interval.parseFromString("P1Y2M3DT4H5M6.789123S");
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(d), Type.interval());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getInterval(0)).isEqualTo(d);
+  }
+
+  @Test
+  public void bindIntervalNull() {
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").to((Interval) null), Type.interval());
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -891,6 +912,45 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindIntervalArray() {
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
+    Interval d1 = Interval.parseFromString("P-1Y-2M-3DT4H5M6.789123S");
+    Interval d2 = Interval.parseFromString("P1Y2M3DT-4H-5M-6.789123S");
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toIntervalArray(asList(d1, d2, null)),
+            Type.array(Type.interval()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getIntervalList(0)).containsExactly(d1, d2, null).inOrder();
+  }
+
+  @Test
+  public void bindIntervalArrayEmpty() {
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toIntervalArray(Collections.emptyList()),
+            Type.array(Type.interval()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getIntervalList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindIntervalArrayNull() {
+    assumeFalse(
+        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toIntervalArray(null),
+            Type.array(Type.interval()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
   public void bindNumericArrayGoogleStandardSQL() {
     assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
@@ -1041,6 +1101,7 @@ public class ITQueryTest {
   }
 
   private Struct structValue() {
+    // TODO: Add test for interval once interval is supported in emulator.
     return Struct.newBuilder()
         .set("f_int")
         .to(10)
@@ -1062,6 +1123,7 @@ public class ITQueryTest {
   @Test
   public void bindStruct() {
     assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    // TODO: Add test for interval once interval is supported in emulator.
     Struct p = structValue();
     String query =
         "SELECT "

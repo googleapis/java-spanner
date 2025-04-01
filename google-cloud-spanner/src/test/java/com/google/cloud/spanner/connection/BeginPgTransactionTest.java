@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -43,6 +44,8 @@ public class BeginPgTransactionTest {
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     int index = 1;
+    int withIsolationLevel = 0;
+    int withoutIsolationLevel = 0;
     for (String sql :
         ImmutableList.of(
             "begin",
@@ -67,7 +70,13 @@ public class BeginPgTransactionTest {
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
       statement.getClientSideStatement().execute(executor, statement);
 
-      verify(connection, times(index)).beginTransaction();
+      if (sql.contains("isolation") && !sql.contains("default")) {
+        withIsolationLevel++;
+        verify(connection, times(withIsolationLevel)).beginTransaction(any(IsolationLevel.class));
+      } else {
+        withoutIsolationLevel++;
+        verify(connection, times(withoutIsolationLevel)).beginTransaction();
+      }
       verify(connection, never()).setTransactionMode(any());
       index++;
     }
@@ -104,6 +113,8 @@ public class BeginPgTransactionTest {
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     int index = 1;
+    int withIsolationLevel = 0;
+    int withoutIsolationLevel = 0;
     for (String sql :
         ImmutableList.of(
             "begin read write",
@@ -116,7 +127,13 @@ public class BeginPgTransactionTest {
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
       statement.getClientSideStatement().execute(executor, statement);
 
-      verify(connection, times(index)).beginTransaction();
+      if (sql.contains("isolation") && !sql.contains("default")) {
+        withIsolationLevel++;
+        verify(connection, times(withIsolationLevel)).beginTransaction(any(IsolationLevel.class));
+      } else {
+        withoutIsolationLevel++;
+        verify(connection, times(withoutIsolationLevel)).beginTransaction();
+      }
       verify(connection, times(index)).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
       verify(connection, never()).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
       index++;
@@ -129,6 +146,8 @@ public class BeginPgTransactionTest {
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     int index = 1;
+    int withIsolationLevel = 0;
+    int withoutIsolationLevel = 0;
     for (String sql :
         ImmutableList.of(
             "begin read only isolation level serializable",
@@ -142,7 +161,13 @@ public class BeginPgTransactionTest {
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
       statement.getClientSideStatement().execute(executor, statement);
 
-      verify(connection, times(index)).beginTransaction();
+      if (sql.contains("isolation") && !sql.contains("default")) {
+        withIsolationLevel++;
+        verify(connection, times(withIsolationLevel)).beginTransaction(any(IsolationLevel.class));
+      } else {
+        withoutIsolationLevel++;
+        verify(connection, times(withoutIsolationLevel)).beginTransaction();
+      }
       verify(connection, times(index)).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
       verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
       index++;
@@ -155,6 +180,8 @@ public class BeginPgTransactionTest {
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     int index = 1;
+    int withIsolationLevel = 0;
+    int withoutIsolationLevel = 0;
     for (String sql :
         ImmutableList.of(
             "begin read only isolation level serializable not deferrable",
@@ -175,9 +202,16 @@ public class BeginPgTransactionTest {
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
       statement.getClientSideStatement().execute(executor, statement);
 
-      verify(connection, times(index)).beginTransaction();
+      if (sql.contains("isolation") && !sql.contains("default")) {
+        withIsolationLevel++;
+        verify(connection, times(withIsolationLevel)).beginTransaction(any(IsolationLevel.class));
+      } else {
+        withoutIsolationLevel++;
+        verify(connection, times(withoutIsolationLevel)).beginTransaction();
+      }
       verify(connection, times(index)).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
       verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+
       index++;
     }
   }

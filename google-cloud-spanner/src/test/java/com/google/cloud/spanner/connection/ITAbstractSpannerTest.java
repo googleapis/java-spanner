@@ -65,7 +65,7 @@ public abstract class ITAbstractSpannerTest {
     }
   }
 
-  protected interface ITConnection extends Connection {}
+  public interface ITConnection extends Connection {}
 
   private ITConnection createITConnection(ConnectionOptions options) {
     return new ITConnectionImpl(options);

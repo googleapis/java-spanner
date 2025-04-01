@@ -44,6 +44,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Transaction;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -556,6 +557,13 @@ public class GrpcResultSetTest {
         Value.date(null),
         Value.uuid(UUID.randomUUID()),
         Value.uuid(null),
+        Value.interval(
+            Interval.builder()
+                .setMonths(100)
+                .setDays(10)
+                .setNanos(BigInteger.valueOf(1000010))
+                .build()),
+        Value.interval(null),
         Value.stringArray(ImmutableList.of("one", "two")),
         Value.stringArray(null),
         Value.boolArray(new boolean[] {true, false}),
@@ -580,6 +588,11 @@ public class GrpcResultSetTest {
         Value.dateArray(null),
         Value.uuidArray(ImmutableList.of(UUID.randomUUID(), UUID.randomUUID())),
         Value.uuidArray(null),
+        Value.intervalArray(
+            ImmutableList.of(
+                Interval.parseFromString("P0Y"),
+                Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(30000L)))),
+        Value.intervalArray(null),
         Value.struct(s(null, 30)),
         Value.struct(structType, null),
         Value.structArray(structType, Arrays.asList(s("def", 10), null)),
@@ -754,9 +767,24 @@ public class GrpcResultSetTest {
             .addValues(Value.uuid(uuid).toProto())
             .build());
     consumer.onCompleted();
-
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getUuid(0)).isEqualTo(uuid);
+  }
+
+  @Test
+  public void getInterval() {
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.interval()))))
+            .addValues(
+                Value.interval(Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(12345678)))
+                    .toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getInterval(0))
+        .isEqualTo(Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(12345678)));
   }
 
   @Test
@@ -1026,6 +1054,24 @@ public class GrpcResultSetTest {
 
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getUuidList(0)).isEqualTo(uuidList);
+  }
+
+  @Test
+  public void getIntervalList() {
+    List<Interval> intervalList = new ArrayList<>();
+    intervalList.add(Interval.fromMonthsDaysNanos(10, 20, BigInteger.valueOf(100)));
+    intervalList.add(Interval.fromMonthsDaysNanos(-10, -20, BigInteger.valueOf(134520)));
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.interval())))))
+            .addValues(Value.intervalArray(intervalList).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getIntervalList(0)).isEqualTo(intervalList);
   }
 
   @Test

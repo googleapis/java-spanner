@@ -166,8 +166,14 @@ public abstract class ValueBinder<R> {
     return handle(Value.date(value));
   }
 
+  /** Binds to {@code Value.uuid(value)} */
   public R to(@Nullable UUID value) {
     return handle(Value.uuid(value));
+  }
+
+  /** Binds to {@code Value.interval(value)} */
+  public R to(@Nullable Interval value) {
+    return handle(Value.interval(value));
   }
 
   /** Binds a non-{@code NULL} struct value to {@code Value.struct(value)} */
@@ -331,6 +337,11 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.uuidArray(values)} */
   public R toUuidArray(@Nullable Iterable<UUID> values) {
     return handle(Value.uuidArray(values));
+  }
+
+  /** Binds to {@code Value.intervalArray(values)} */
+  public R toIntervalArray(@Nullable Iterable<Interval> values) {
+    return handle(Value.intervalArray(values));
   }
 
   /** Binds to {@code Value.structArray(fieldTypes, values)} */

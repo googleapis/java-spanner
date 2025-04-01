@@ -1331,6 +1331,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case UUID:
                 builder.bind(fieldName).toUuidArray(null);
                 break;
+              case INTERVAL:
+                builder.bind(fieldName).toIntervalArray(null);
+                break;
               case FLOAT32:
                 builder.bind(fieldName).toFloat32Array((Iterable<Float>) null);
                 break;
@@ -1379,6 +1382,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case UUID:
             builder.bind(fieldName).to((UUID) null);
+            break;
+          case INTERVAL:
+            builder.bind(fieldName).to((Interval) null);
             break;
           case FLOAT32:
             builder.bind(fieldName).to((Float) null);
@@ -1455,6 +1461,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                         (Iterable<UUID>)
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.uuid(), value.getListValue()));
+                break;
+              case INTERVAL:
+                builder
+                    .bind(fieldName)
+                    .toIntervalArray(
+                        (Iterable<Interval>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.interval(), value.getListValue()));
                 break;
               case FLOAT32:
                 builder
@@ -1549,6 +1563,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case UUID:
             builder.bind(fieldName).to(UUID.fromString(value.getStringValue()));
+            break;
+          case INTERVAL:
+            builder.bind(fieldName).to(Interval.parseFromString(value.getStringValue()));
             break;
           case FLOAT32:
             builder.bind(fieldName).to((float) value.getNumberValue());

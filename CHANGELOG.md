@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.90.0](https://github.com/googleapis/java-spanner/compare/v6.89.0...v6.90.0) (2025-03-31)
+
+
+### Features
+
+* Add default_isolation_level connection property ([#3702](https://github.com/googleapis/java-spanner/issues/3702)) ([9472d23](https://github.com/googleapis/java-spanner/commit/9472d23c2b233275e779815f89040323e073a7d1))
+* Adds support for Interval datatype in Java client ([#3416](https://github.com/googleapis/java-spanner/issues/3416)) ([8be8f5e](https://github.com/googleapis/java-spanner/commit/8be8f5e6b08c8cf3e5f062e4b985b3ec9c725064))
+* Integration test for End to End tracing ([#3691](https://github.com/googleapis/java-spanner/issues/3691)) ([bf1a07a](https://github.com/googleapis/java-spanner/commit/bf1a07a153b1eb899757260b8ac2bc12384e45af))
+* Specify isolation level per transaction ([#3704](https://github.com/googleapis/java-spanner/issues/3704)) ([868f30f](https://github.com/googleapis/java-spanner/commit/868f30fde95d07c3fc18feaca64b4d1c3ba6a27d))
+* Support PostgreSQL isolation level statements ([#3706](https://github.com/googleapis/java-spanner/issues/3706)) ([dda2e1d](https://github.com/googleapis/java-spanner/commit/dda2e1dec38febdad54b61f588590c7572017ba9))
+
 ## [6.89.0](https://github.com/googleapis/java-spanner/compare/v6.88.0...v6.89.0) (2025-03-20)
 
 

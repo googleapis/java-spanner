@@ -36,6 +36,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -336,6 +337,10 @@ public class ValueBinderTest {
       return UUID.fromString("db09330e-cc05-472c-a54e-b2784deebac3");
     }
 
+    public static Interval defaultInterval() {
+      return Interval.parseFromString("P0Y");
+    }
+
     public static boolean[] defaultBooleanArray() {
       return new boolean[] {false, true};
     }
@@ -397,6 +402,33 @@ public class ValueBinderTest {
       return Arrays.asList(
           UUID.fromString("8ebe9153-2747-4c92-a462-6da13eb25ebb"),
           UUID.fromString("12c154ca-6500-4be0-89c8-160bcfa8c3f6"));
+    }
+
+    public static Interval[] defaultIntervalArray() {
+      return new Interval[] {
+        Interval.builder()
+            .setMonths(-10)
+            .setDays(-100)
+            .setNanos(BigInteger.valueOf(-9999999L))
+            .build(),
+        Interval.parseFromString("P0Y"),
+        Interval.builder().setMonths(10).setDays(100).setNanos(BigInteger.valueOf(9999999L)).build()
+      };
+    }
+
+    public static Iterable<Interval> defaultIntervalIterable() {
+      return Arrays.asList(
+          Interval.builder()
+              .setMonths(-10)
+              .setDays(-100)
+              .setNanos(BigInteger.valueOf(-9999999L))
+              .build(),
+          Interval.parseFromString("P0Y"),
+          Interval.builder()
+              .setMonths(10)
+              .setDays(100)
+              .setNanos(BigInteger.valueOf(9999999L))
+              .build());
     }
 
     static Object getDefault(java.lang.reflect.Type type)

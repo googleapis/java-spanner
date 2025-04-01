@@ -247,6 +247,15 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns a {@code INTERVAL} value.
+   *
+   * @param interval the value, which may be null
+   */
+  public static Value interval(@Nullable Interval interval) {
+    return new IntervalImpl(interval == null, interval);
+  }
+
+  /**
    * Returns a {@code PG JSONB} value.
    *
    * @param v the value, which may be null
@@ -781,8 +790,24 @@ public abstract class Value implements Serializable {
     return new DateArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
+  /**
+   * Returns an {@code ARRAY<UUID>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
   public static Value uuidArray(@Nullable Iterable<UUID> v) {
     return new UuidArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
+   * Returns an {@code ARRAY<Interval>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value intervalArray(@Nullable Iterable<Interval> v) {
+    return new IntervalArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
   /**
@@ -924,7 +949,19 @@ public abstract class Value implements Serializable {
    */
   public abstract Date getDate();
 
+  /**
+   * Returns the value of a {@code UUID}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
   public abstract UUID getUuid();
+
+  /**
+   * Returns the value of a {@code INTERVAL}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract Interval getInterval();
 
   /**
    * Returns the value of a {@code STRUCT}-typed instance.
@@ -1046,7 +1083,21 @@ public abstract class Value implements Serializable {
    */
   public abstract List<Date> getDateArray();
 
+  /**
+   * Returns the value of an {@code ARRAY<UUID>}-typed instance. While the returned list itself will
+   * never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
   public abstract List<UUID> getUuidArray();
+
+  /**
+   * Returns the value of an {@code ARRAY<INTERVAL>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<Interval> getIntervalArray();
 
   /**
    * Returns the value of an {@code ARRAY<STRUCT<...>>}-typed instance. While the returned list
@@ -1333,6 +1384,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public Interval getInterval() {
+      throw defaultGetter(Type.interval());
+    }
+
+    @Override
     public Struct getStruct() {
       if (getType().getCode() != Type.Code.STRUCT) {
         throw new IllegalStateException(
@@ -1399,6 +1455,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<UUID> getUuidArray() {
       throw defaultGetter(Type.array(Type.uuid()));
+    }
+
+    @Override
+    public List<Interval> getIntervalArray() {
+      throw defaultGetter(Type.array(Type.interval()));
     }
 
     @Override
@@ -1833,6 +1894,35 @@ public abstract class Value implements Serializable {
     @Override
     void valueToString(StringBuilder b) {
       b.append(value);
+    }
+  }
+
+  private static class IntervalImpl extends AbstractObjectValue<Interval> {
+
+    private IntervalImpl(boolean isNull, Interval value) {
+      super(isNull, Type.interval(), value);
+    }
+
+    @Override
+    public Interval getInterval() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value.toISO8601());
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return com.google.protobuf.Value.newBuilder().setStringValue(value.toISO8601()).build();
+    }
+
+    @Nonnull
+    @Override
+    public String getAsString() {
+      return isNull() ? NULL_STRING : value.toISO8601();
     }
   }
 
@@ -2856,6 +2946,29 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class IntervalArrayImpl extends AbstractArrayValue<Interval> {
+
+    private IntervalArrayImpl(boolean isNull, @Nullable List<Interval> values) {
+      super(isNull, Type.interval(), values);
+    }
+
+    @Override
+    public List<Interval> getIntervalArray() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, Interval element) {
+      b.append(element.toISO8601());
+    }
+
+    @Override
+    String elementToString(Interval element) {
+      return element.toISO8601();
+    }
+  }
+
   private static class NumericArrayImpl extends AbstractArrayValue<BigDecimal> {
 
     private NumericArrayImpl(boolean isNull, @Nullable List<BigDecimal> values) {
@@ -3001,6 +3114,8 @@ public abstract class Value implements Serializable {
           return Value.uuid(value.getUuid(fieldIndex));
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
+        case INTERVAL:
+          return Value.interval(value.getInterval(fieldIndex));
         case PROTO:
           return Value.protoMessage(value.getBytes(fieldIndex), fieldType.getProtoTypeFqn());
         case ENUM:
@@ -3041,6 +3156,8 @@ public abstract class Value implements Serializable {
                 return Value.uuidArray(value.getUuidList(fieldIndex));
               case TIMESTAMP:
                 return Value.timestampArray(value.getTimestampList(fieldIndex));
+              case INTERVAL:
+                return Value.intervalArray(value.getIntervalList(fieldIndex));
               case STRUCT:
                 return Value.structArray(elementType, value.getStructList(fieldIndex));
               case ARRAY:
