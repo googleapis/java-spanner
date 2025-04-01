@@ -67,7 +67,9 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Date getDateInternal(int columnIndex);
 
-  protected abstract Interval getIntervalInternal(int columnIndex);
+  protected Interval getIntervalInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
     throw new UnsupportedOperationException("Not implemented");
@@ -130,7 +132,9 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract List<Date> getDateListInternal(int columnIndex);
 
-  protected abstract List<Interval> getIntervalListInternal(int columnIndex);
+  protected List<Interval> getIntervalListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract List<Struct> getStructListInternal(int columnIndex);
 
@@ -677,7 +681,7 @@ public abstract class AbstractStructReader implements StructReader {
   }
 
   private void checkNonNullOfTypes(
-      int columnIndex,
+      int columnIndex,  
       List<Type> expectedTypes,
       Object columnNameForError,
       String expectedTypeNames) {
