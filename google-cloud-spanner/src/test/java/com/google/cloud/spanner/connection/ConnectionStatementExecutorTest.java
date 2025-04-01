@@ -68,7 +68,7 @@ public class ConnectionStatementExecutorTest {
 
   @Test
   public void testStatementBeginTransaction() {
-    subject.statementBeginTransaction();
+    subject.statementBeginTransaction(null);
     verify(connection).beginTransaction();
   }
 

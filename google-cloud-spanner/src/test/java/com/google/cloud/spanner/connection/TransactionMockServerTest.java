@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
-import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -36,7 +38,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class AutoCommitMockServerTest extends AbstractMockServerTest {
+public class TransactionMockServerTest extends AbstractMockServerTest {
 
   @Parameter public IsolationLevel isolationLevel;
 
@@ -56,59 +58,58 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
   @Test
   public void testQuery() {
     try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
       //noinspection EmptyTryBlock
       try (ResultSet ignore = connection.executeQuery(SELECT1_STATEMENT)) {}
-    }
-    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
-    assertTrue(request.getTransaction().hasSingleUse());
-    assertTrue(request.getTransaction().getSingleUse().hasReadOnly());
-    assertEquals(
-        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
-        request.getTransaction().getSingleUse().getIsolationLevel());
-    assertFalse(request.getLastStatement());
-  }
-
-  @Test
-  public void testDml() {
-    try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
-      connection.executeUpdate(INSERT_STATEMENT);
+      connection.commit();
     }
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertTrue(request.getTransaction().hasBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
     assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
-    assertTrue(request.getLastStatement());
+    assertFalse(request.getLastStatement());
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testDml() {
+    try (Connection connection = createConnection()) {
+      connection.executeUpdate(INSERT_STATEMENT);
+      connection.commit();
+    }
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
+    assertTrue(request.getTransaction().hasBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
+    assertFalse(request.getLastStatement());
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test
   public void testDmlReturning() {
     try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
       //noinspection EmptyTryBlock
       try (ResultSet ignore = connection.executeQuery(INSERT_RETURNING_STATEMENT)) {}
+      connection.commit();
     }
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertTrue(request.getTransaction().hasBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
     assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
-    assertTrue(request.getLastStatement());
+    assertFalse(request.getLastStatement());
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test
   public void testBatchDml() {
     try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
       connection.startBatchDml();
       connection.executeUpdate(INSERT_STATEMENT);
       connection.executeUpdate(INSERT_STATEMENT);
       connection.runBatch();
+      connection.commit();
     }
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
     ExecuteBatchDmlRequest request =
@@ -116,83 +117,83 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
     assertTrue(request.getTransaction().hasBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
     assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
-    assertTrue(request.getLastStatements());
+    assertFalse(request.getLastStatements());
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test
-  public void testPartitionedDml() {
-    try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
-      connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
-      connection.executeUpdate(INSERT_STATEMENT);
+  public void testBeginTransactionIsolationLevel() {
+    SpannerPool.closeSpannerPool();
+    for (Dialect dialect : new Dialect[] {Dialect.POSTGRESQL, Dialect.GOOGLE_STANDARD_SQL}) {
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.detectDialectResult(dialect));
+
+      try (Connection connection = super.createConnection()) {
+        for (IsolationLevel isolationLevel :
+            new IsolationLevel[] {IsolationLevel.REPEATABLE_READ, IsolationLevel.SERIALIZABLE}) {
+          for (boolean useSql : new boolean[] {true, false}) {
+            if (useSql) {
+              connection.execute(
+                  Statement.of(
+                      "begin transaction isolation level "
+                          + isolationLevel.name().replace("_", " ")));
+            } else {
+              connection.beginTransaction(isolationLevel);
+            }
+            connection.executeUpdate(INSERT_STATEMENT);
+            connection.commit();
+
+            assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+            ExecuteSqlRequest request =
+                mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
+            assertTrue(request.getTransaction().hasBegin());
+            assertTrue(request.getTransaction().getBegin().hasReadWrite());
+            assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
+            assertFalse(request.getLastStatement());
+            assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+
+            mockSpanner.clearRequests();
+          }
+        }
+      }
+      SpannerPool.closeSpannerPool();
     }
-    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
-    BeginTransactionRequest beginRequest =
-        mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
-    assertTrue(beginRequest.getOptions().hasPartitionedDml());
-    assertEquals(
-        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED, beginRequest.getOptions().getIsolationLevel());
-    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
-    assertTrue(request.getTransaction().hasId());
-    assertFalse(request.getLastStatement());
-    assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test
-  public void testDmlAborted() {
-    try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
-      mockSpanner.abortNextTransaction();
-      connection.executeUpdate(INSERT_STATEMENT);
-    }
-    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    for (ExecuteSqlRequest request : mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)) {
-      assertTrue(request.getTransaction().hasBegin());
-      assertTrue(request.getTransaction().getBegin().hasReadWrite());
-      assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
-      assertTrue(request.getLastStatement());
-    }
-    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
-  }
+  public void testSetTransactionIsolationLevel() {
+    SpannerPool.closeSpannerPool();
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.POSTGRESQL));
 
-  @Test
-  public void testDmlReturningAborted() {
-    try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
-      mockSpanner.abortNextTransaction();
-      //noinspection EmptyTryBlock
-      try (ResultSet ignore = connection.executeQuery(INSERT_RETURNING_STATEMENT)) {}
-    }
-    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    for (ExecuteSqlRequest request : mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)) {
-      assertTrue(request.getTransaction().hasBegin());
-      assertTrue(request.getTransaction().getBegin().hasReadWrite());
-      assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
-      assertTrue(request.getLastStatement());
-    }
-    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
-  }
+    try (Connection connection = super.createConnection()) {
+      for (boolean autocommit : new boolean[] {true, false}) {
+        connection.setAutocommit(autocommit);
 
-  @Test
-  public void testBatchDmlAborted() {
-    try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
-      mockSpanner.abortNextTransaction();
-      connection.startBatchDml();
-      connection.executeUpdate(INSERT_STATEMENT);
-      connection.executeUpdate(INSERT_STATEMENT);
-      connection.runBatch();
+        for (IsolationLevel isolationLevel :
+            new IsolationLevel[] {IsolationLevel.REPEATABLE_READ, IsolationLevel.SERIALIZABLE}) {
+          // Manually start a transaction if autocommit is enabled.
+          if (autocommit) {
+            connection.execute(Statement.of("begin"));
+          }
+          connection.execute(
+              Statement.of(
+                  "set transaction isolation level " + isolationLevel.name().replace("_", " ")));
+          connection.executeUpdate(INSERT_STATEMENT);
+          connection.commit();
+
+          assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+          ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
+          assertTrue(request.getTransaction().hasBegin());
+          assertTrue(request.getTransaction().getBegin().hasReadWrite());
+          assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
+          assertFalse(request.getLastStatement());
+          assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+
+          mockSpanner.clearRequests();
+        }
+      }
     }
-    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    for (ExecuteBatchDmlRequest request :
-        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class)) {
-      assertTrue(request.getTransaction().hasBegin());
-      assertTrue(request.getTransaction().getBegin().hasReadWrite());
-      assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
-      assertTrue(request.getLastStatements());
-    }
-    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+    SpannerPool.closeSpannerPool();
   }
 }
