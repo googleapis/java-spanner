@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 
@@ -119,6 +120,7 @@ final class BuiltInMetricsProvider {
             .put(PROJECT_ID_KEY.getKey(), projectId)
             .put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown")
             .put(CLIENT_HASH_KEY.getKey(), generateClientHash(getDefaultTaskValue()))
+            .put(INSTANCE_ID_KEY.getKey(), "unknown")
             .put(LOCATION_ID_KEY.getKey(), detectClientLocation());
 
     return attributesBuilder.build();

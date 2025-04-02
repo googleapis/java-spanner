@@ -83,6 +83,7 @@ class SpannerCloudMonitoringExporterUtils {
           || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME)
           || metricData.getInstrumentationScopeInfo().getName().equals(GRPC_METER_NAME))) {
         // Filter out metric data for instruments that are not part of the spanner metrics list
+        System.out.println("Skipped some data" + metricData.getInstrumentationScopeInfo().getName().toString());
         continue;
       }
 
@@ -102,7 +103,6 @@ class SpannerCloudMonitoringExporterUtils {
                   convertPointToSpannerTimeSeries(metricData, pointData, monitoredResourceBuilder))
           .forEach(allTimeSeries::add);
     }
-
     return allTimeSeries;
   }
 
@@ -114,6 +114,7 @@ class SpannerCloudMonitoringExporterUtils {
         TimeSeries.newBuilder()
             .setMetricKind(convertMetricKind(metricData))
             .setValueType(convertValueType(metricData.getType()));
+    System.out.println("convertPointToSpannerTimeSeries Metric name " +metricData.getName());
     Metric.Builder metricBuilder = Metric.newBuilder().setType(metricData.getName());
 
     Attributes attributes = pointData.getAttributes();
@@ -123,7 +124,7 @@ class SpannerCloudMonitoringExporterUtils {
         monitoredResourceBuilder.putLabels(key.getKey(), String.valueOf(attributes.get(key)));
       } else {
         metricBuilder.putLabels(
-            key.getKey().replace(".", "/"), String.valueOf(attributes.get(key)));
+            key.getKey().replace(".", "_"), String.valueOf(attributes.get(key)));
       }
     }
 

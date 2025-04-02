@@ -137,7 +137,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     // Filter spanner metrics. Only include metrics that contain a project and instance ID.
     List<MetricData> spannerMetricData =
         collection.stream()
-            .filter(md -> SPANNER_METRICS.contains(md.getName()))
+            // .filter(md -> SPANNER_METRICS.contains(md.getName()))
             .collect(Collectors.toList());
 
     // Log warnings for metrics that will be skipped.
