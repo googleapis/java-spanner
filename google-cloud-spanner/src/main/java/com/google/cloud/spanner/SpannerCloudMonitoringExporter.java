@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_METRICS;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
