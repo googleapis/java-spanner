@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
