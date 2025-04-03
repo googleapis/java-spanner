@@ -49,6 +49,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.TransactionOptions;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.Collections;
 import java.util.UUID;
@@ -207,6 +208,8 @@ public class TransactionManagerImplTest {
   public void usesPreparedTransaction() {
     SpannerOptions options = mock(SpannerOptions.class);
     when(options.getNumChannels()).thenReturn(4);
+    when(options.getDefaultTransactionOptions())
+        .thenReturn(TransactionOptions.getDefaultInstance());
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(new TestExecutorFactory());
     when(options.getTransportOptions()).thenReturn(transportOptions);
@@ -288,6 +291,8 @@ public class TransactionManagerImplTest {
     when(options.getNumChannels()).thenReturn(4);
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(new TestExecutorFactory());
+    when(options.getDefaultTransactionOptions())
+        .thenReturn(TransactionOptions.getDefaultInstance());
     when(options.getTransportOptions()).thenReturn(transportOptions);
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder().setMinSessions(0).setIncStep(1).build();

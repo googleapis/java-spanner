@@ -37,6 +37,7 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.spanner.SpannerOptions.Builder.DefaultReadWriteTransactionOptions;
 import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
@@ -61,6 +62,7 @@ import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -765,6 +767,24 @@ public class SpannerOptionsTest {
                 .build()
                 .getMonitoringHost())
         .isEqualTo(metricsEndpoint);
+  }
+
+  @Test
+  public void testTransactionOptions() {
+    DefaultReadWriteTransactionOptions transactionOptions =
+        DefaultReadWriteTransactionOptions.newBuilder()
+            .setIsolationLevel(IsolationLevel.SERIALIZABLE)
+            .build();
+    assertNotNull(
+        SpannerOptions.newBuilder().setProjectId("p").build().getDefaultTransactionOptions());
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setDefaultTransactionOptions(transactionOptions)
+                .build()
+                .getDefaultTransactionOptions()
+                .getIsolationLevel())
+        .isEqualTo(IsolationLevel.SERIALIZABLE);
   }
 
   @Test

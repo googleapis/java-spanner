@@ -590,19 +590,7 @@ public class InlineBeginTransactionTest {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       mockSpanner.setExecuteStreamingSqlExecutionTime(
           SimulatedExecutionTime.ofStreamException(Status.UNAVAILABLE.asRuntimeException(), 0));
-      long value =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    // The first attempt will return UNAVAILABLE and retry internally.
-                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                      while (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    }
-                    return 0L;
-                  });
+      long value = MockSpannerTestActions.executeSelect1(client);
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
@@ -614,20 +602,7 @@ public class InlineBeginTransactionTest {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       mockSpanner.setStreamingReadExecutionTime(
           SimulatedExecutionTime.ofStreamException(Status.UNAVAILABLE.asRuntimeException(), 0));
-      Long value =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    // The first attempt will return UNAVAILABLE and retry internally.
-                    try (ResultSet rs =
-                        transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
-                      while (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    }
-                    return 0L;
-                  });
+      Long value = MockSpannerTestActions.executeReadFoo(client);
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ReadRequest.class)).isEqualTo(2);
@@ -641,22 +616,7 @@ public class InlineBeginTransactionTest {
           SimulatedExecutionTime.ofExceptions(
               Arrays.asList(
                   Status.UNAVAILABLE.asRuntimeException(), Status.ABORTED.asRuntimeException())));
-      Long value =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    // The first attempt will return UNAVAILABLE and retry internally.
-                    // The second attempt will return ABORTED and should cause the transaction to
-                    // retry.
-                    try (ResultSet rs =
-                        transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
-                      if (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    }
-                    return 0L;
-                  });
+      Long value = MockSpannerTestActions.executeReadFoo(client);
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
       assertThat(countRequests(ReadRequest.class)).isEqualTo(3);
@@ -670,21 +630,7 @@ public class InlineBeginTransactionTest {
           SimulatedExecutionTime.ofExceptions(
               Arrays.asList(
                   Status.UNAVAILABLE.asRuntimeException(), Status.ABORTED.asRuntimeException())));
-      Long value =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    // The first attempt will return UNAVAILABLE and retry internally.
-                    // The second attempt will return ABORTED and should cause the transaction to
-                    // retry.
-                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                      if (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    }
-                    return 0L;
-                  });
+      Long value = MockSpannerTestActions.executeSelect1(client);
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(3);
@@ -721,24 +667,7 @@ public class InlineBeginTransactionTest {
           SimulatedExecutionTime.ofExceptions(
               Arrays.asList(
                   Status.UNAVAILABLE.asRuntimeException(), Status.ABORTED.asRuntimeException())));
-      Long value =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    // The first attempt will return UNAVAILABLE and retry internally.
-                    // The second attempt will return ABORTED and should cause the transaction to
-                    // retry.
-                    try (ResultSet rs =
-                        transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
-                      if (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    } catch (AbortedException e) {
-                      // Ignore the AbortedException and let the commit handle it.
-                    }
-                    return 0L;
-                  });
+      Long value = MockSpannerTestActions.executeReadFoo(client);
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
       assertThat(countRequests(ReadRequest.class)).isEqualTo(3);
@@ -780,23 +709,7 @@ public class InlineBeginTransactionTest {
           SimulatedExecutionTime.ofExceptions(
               Arrays.asList(
                   Status.UNAVAILABLE.asRuntimeException(), Status.ABORTED.asRuntimeException())));
-      Long value =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    // The first attempt will return UNAVAILABLE and retry internally.
-                    // The second attempt will return ABORTED and should cause the transaction to
-                    // retry.
-                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                      if (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    } catch (AbortedException e) {
-                      // Ignore the AbortedException and let the commit handle it.
-                    }
-                    return 0L;
-                  });
+      Long value = MockSpannerTestActions.executeSelect1(client);
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(3);
@@ -959,20 +872,7 @@ public class InlineBeginTransactionTest {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       mockSpanner.setCommitExecutionTime(
           SimulatedExecutionTime.ofException(Status.UNAVAILABLE.asRuntimeException()));
-      Long value =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    // The first attempt will return UNAVAILABLE and retry internally.
-                    try (ResultSet rs =
-                        transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
-                      if (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    }
-                    return 0L;
-                  });
+      Long value = MockSpannerTestActions.executeReadFoo(client);
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ReadRequest.class)).isEqualTo(1);
@@ -1013,18 +913,7 @@ public class InlineBeginTransactionTest {
     public void testInlinedBeginTxWithQuery() {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      long updateCount =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                      while (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    }
-                    return 0L;
-                  });
+      long updateCount = MockSpannerTestActions.executeSelect1(client);
       assertThat(updateCount).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
@@ -1035,19 +924,7 @@ public class InlineBeginTransactionTest {
     @Test
     public void testInlinedBeginTxWithRead() {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      long updateCount =
-          client
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    try (ResultSet rs =
-                        transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
-                      while (rs.next()) {
-                        return rs.getLong(0);
-                      }
-                    }
-                    return 0L;
-                  });
+      long updateCount = MockSpannerTestActions.executeReadFoo(client);
       assertThat(updateCount).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ReadRequest.class)).isEqualTo(1);
@@ -1791,192 +1668,203 @@ public class InlineBeginTransactionTest {
       assertEquals(0, countRequests(CommitRequest.class));
     }
 
+    static void runWithIgnoreInlineBegin(Runnable runnable) {
+      // This will cause statements that requests a transaction to not return a transaction id.
+      mockSpanner.setIgnoreInlineBeginRequest(true);
+      try {
+        runnable.run();
+      } finally {
+        mockSpanner.setIgnoreInlineBeginRequest(false);
+      }
+    }
+
     @Test
     public void testQueryWithInlineBeginDidNotReturnTransaction() {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      // This will cause the first statement that requests a transaction to not return a transaction
-      // id.
-      mockSpanner.ignoreNextInlineBeginRequest();
-      SpannerException e =
-          assertThrows(
-              SpannerException.class,
-              () ->
-                  client
-                      .readWriteTransaction()
-                      .run(
-                          transaction -> {
-                            try (ResultSet rs =
-                                transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
-                              while (rs.next()) {}
-                            }
-                            return null;
-                          }));
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-      assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
-      assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+      runWithIgnoreInlineBegin(
+          () -> {
+            DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+            SpannerException e =
+                assertThrows(
+                    SpannerException.class,
+                    () ->
+                        client
+                            .readWriteTransaction()
+                            .run(
+                                transaction -> {
+                                  try (ResultSet rs =
+                                      transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
+                                    while (rs.next()) {}
+                                  }
+                                  return null;
+                                }));
+            assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+            assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
+            assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+            assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+            assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+          });
     }
 
     @Test
     public void testReadWithInlineBeginDidNotReturnTransaction() {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      // This will cause the first statement that requests a transaction to not return a transaction
-      // id.
-      mockSpanner.ignoreNextInlineBeginRequest();
-      SpannerException e =
-          assertThrows(
-              SpannerException.class,
-              () ->
-                  client
-                      .readWriteTransaction()
-                      .run(
-                          transaction ->
-                              transaction.readRow(
-                                  "FOO", Key.of(1L), Collections.singletonList("BAR"))));
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-      assertThat(countRequests(ReadRequest.class)).isEqualTo(1);
-      assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+      runWithIgnoreInlineBegin(
+          () -> {
+            DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+            SpannerException e =
+                assertThrows(
+                    SpannerException.class,
+                    () ->
+                        client
+                            .readWriteTransaction()
+                            .run(
+                                transaction ->
+                                    transaction.readRow(
+                                        "FOO", Key.of(1L), Collections.singletonList("BAR"))));
+            assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+            assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
+            assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+            assertThat(countRequests(ReadRequest.class)).isEqualTo(1);
+            assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+          });
     }
 
     @Test
     public void testUpdateWithInlineBeginDidNotReturnTransaction() {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      // This will cause the first statement that requests a transaction to not return a transaction
-      // id.
-      mockSpanner.ignoreNextInlineBeginRequest();
-      SpannerException e =
-          assertThrows(
-              SpannerException.class,
-              () ->
-                  client
-                      .readWriteTransaction()
-                      .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-      assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
-      assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+      runWithIgnoreInlineBegin(
+          () -> {
+            DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+            SpannerException e =
+                assertThrows(
+                    SpannerException.class,
+                    () ->
+                        client
+                            .readWriteTransaction()
+                            .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
+            assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+            assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
+            assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+            assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+            assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+          });
     }
 
     @Test
     public void testBatchUpdateWithInlineBeginDidNotReturnTransaction() {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      // This will cause the first statement that requests a transaction to not return a transaction
-      // id.
-      mockSpanner.ignoreNextInlineBeginRequest();
-      SpannerException e =
-          assertThrows(
-              SpannerException.class,
-              () ->
-                  client
-                      .readWriteTransaction()
-                      .run(
-                          transaction -> {
-                            transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT));
-                            return null;
-                          }));
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-      assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
-      assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+      runWithIgnoreInlineBegin(
+          () -> {
+            DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+            SpannerException e =
+                assertThrows(
+                    SpannerException.class,
+                    () ->
+                        client
+                            .readWriteTransaction()
+                            .run(
+                                transaction -> {
+                                  transaction.batchUpdate(
+                                      Collections.singletonList(UPDATE_STATEMENT));
+                                  return null;
+                                }));
+            assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+            assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
+            assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+            assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
+            assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+          });
     }
 
     @Test
     public void testQueryAsyncWithInlineBeginDidNotReturnTransaction() {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      final ExecutorService executor = Executors.newSingleThreadExecutor();
-      // This will cause the first statement that requests a transaction to not return a transaction
-      // id.
-      mockSpanner.ignoreNextInlineBeginRequest();
-      SpannerException outerException =
-          assertThrows(
-              SpannerException.class,
-              () ->
-                  client
-                      .readWriteTransaction()
-                      .run(
-                          transaction -> {
-                            try (AsyncResultSet rs =
-                                transaction.executeQueryAsync(SELECT1_UNION_ALL_SELECT2)) {
-                              return SpannerApiFutures.get(
-                                  rs.setCallback(
-                                      executor,
-                                      resultSet -> {
-                                        try {
-                                          while (true) {
-                                            switch (resultSet.tryNext()) {
-                                              case OK:
-                                                break;
-                                              case DONE:
+      runWithIgnoreInlineBegin(
+          () -> {
+            DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+            final ExecutorService executor = Executors.newSingleThreadExecutor();
+            SpannerException outerException =
+                assertThrows(
+                    SpannerException.class,
+                    () ->
+                        client
+                            .readWriteTransaction()
+                            .run(
+                                transaction -> {
+                                  try (AsyncResultSet rs =
+                                      transaction.executeQueryAsync(SELECT1_UNION_ALL_SELECT2)) {
+                                    return SpannerApiFutures.get(
+                                        rs.setCallback(
+                                            executor,
+                                            resultSet -> {
+                                              try {
+                                                while (true) {
+                                                  switch (resultSet.tryNext()) {
+                                                    case OK:
+                                                      break;
+                                                    case DONE:
+                                                      return CallbackResponse.DONE;
+                                                    case NOT_READY:
+                                                      return CallbackResponse.CONTINUE;
+                                                  }
+                                                }
+                                              } catch (SpannerException e) {
                                                 return CallbackResponse.DONE;
-                                              case NOT_READY:
-                                                return CallbackResponse.CONTINUE;
-                                            }
-                                          }
-                                        } catch (SpannerException e) {
-                                          return CallbackResponse.DONE;
-                                        }
-                                      }));
-                            }
-                          }));
-      assertEquals(ErrorCode.FAILED_PRECONDITION, outerException.getErrorCode());
-      assertThat(outerException.getMessage())
-          .contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
+                                              }
+                                            }));
+                                  }
+                                }));
+            assertEquals(ErrorCode.FAILED_PRECONDITION, outerException.getErrorCode());
+            assertThat(outerException.getMessage())
+                .contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
 
-      assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-      assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
-      assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+            assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+            assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+            assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+          });
     }
 
     @Test
     public void testUpdateAsyncWithInlineBeginDidNotReturnTransaction() {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      // This will cause the first statement that requests a transaction to not return a transaction
-      // id.
-      mockSpanner.ignoreNextInlineBeginRequest();
-      SpannerException e =
-          assertThrows(
-              SpannerException.class,
-              () ->
-                  client
-                      .readWriteTransaction()
-                      .run(
-                          transaction ->
-                              SpannerApiFutures.get(
-                                  transaction.executeUpdateAsync(UPDATE_STATEMENT))));
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-      assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
-      assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+      runWithIgnoreInlineBegin(
+          () -> {
+            DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+            SpannerException e =
+                assertThrows(
+                    SpannerException.class,
+                    () ->
+                        client
+                            .readWriteTransaction()
+                            .run(
+                                transaction ->
+                                    SpannerApiFutures.get(
+                                        transaction.executeUpdateAsync(UPDATE_STATEMENT))));
+            assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+            assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
+            assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+            assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+            assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+          });
     }
 
     @Test
     public void testBatchUpdateAsyncWithInlineBeginDidNotReturnTransaction() {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      // This will cause the first statement that requests a transaction to not return a transaction
-      // id.
-      mockSpanner.ignoreNextInlineBeginRequest();
-      SpannerException e =
-          assertThrows(
-              SpannerException.class,
-              () ->
-                  client
-                      .readWriteTransaction()
-                      .run(
-                          transaction ->
-                              SpannerApiFutures.get(
-                                  transaction.batchUpdateAsync(
-                                      Collections.singletonList(UPDATE_STATEMENT)))));
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-      assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
-      assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+      runWithIgnoreInlineBegin(
+          () -> {
+            DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+            SpannerException e =
+                assertThrows(
+                    SpannerException.class,
+                    () ->
+                        client
+                            .readWriteTransaction()
+                            .run(
+                                transaction ->
+                                    SpannerApiFutures.get(
+                                        transaction.batchUpdateAsync(
+                                            Collections.singletonList(UPDATE_STATEMENT)))));
+            assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+            assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
+            assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+            assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
+            assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+          });
     }
 
     @Test

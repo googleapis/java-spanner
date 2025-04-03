@@ -112,6 +112,7 @@ import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.Cr
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DdlInTransactionModeConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DialectConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DurationConverter;
+import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.IsolationLevelConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.LongConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.NonNegativeIntegerConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ReadOnlyStalenessConverter;
@@ -123,13 +124,11 @@ import com.google.cloud.spanner.connection.DirectedReadOptionsUtil.DirectedReadO
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.time.Duration;
+import java.util.Arrays;
 
-/**
- * Utility class that defines all known connection properties. This class will eventually replace
- * the list of {@link com.google.cloud.spanner.connection.ConnectionOptions.ConnectionProperty} in
- * {@link ConnectionOptions}.
- */
+/** Utility class that defines all known connection properties. */
 public class ConnectionProperties {
   private static final ImmutableMap.Builder<String, ConnectionProperty<?>>
       CONNECTION_PROPERTIES_BUILDER = ImmutableMap.builder();
@@ -401,13 +400,28 @@ public class ConnectionProperties {
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
+  static final ConnectionProperty<IsolationLevel> DEFAULT_ISOLATION_LEVEL =
+      create(
+          "default_isolation_level",
+          "The transaction isolation level that is used by default for read/write transactions. "
+              + "The default is isolation_level_unspecified, which means that the connection will use the "
+              + "default isolation level of the database that it is connected to.",
+          IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          new IsolationLevel[] {
+            IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            IsolationLevel.SERIALIZABLE,
+            IsolationLevel.REPEATABLE_READ
+          },
+          IsolationLevelConverter.INSTANCE,
+          Context.USER);
   static final ConnectionProperty<AutocommitDmlMode> AUTOCOMMIT_DML_MODE =
       create(
           "autocommit_dml_mode",
           "Determines the transaction type that is used to execute "
               + "DML statements when the connection is in auto-commit mode.",
           AutocommitDmlMode.TRANSACTIONAL,
-          AutocommitDmlMode.values(),
+          // Add 'null' as a valid value.
+          Arrays.copyOf(AutocommitDmlMode.values(), AutocommitDmlMode.values().length + 1),
           AutocommitDmlModeConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Boolean> RETRY_ABORTS_INTERNALLY =
@@ -523,7 +537,8 @@ public class ConnectionProperties {
           RPC_PRIORITY_NAME,
           "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH.",
           DEFAULT_RPC_PRIORITY,
-          RpcPriority.values(),
+          // Add 'null' as a valid value.
+          Arrays.copyOf(RpcPriority.values(), RpcPriority.values().length + 1),
           RpcPriorityConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<SavepointSupport> SAVEPOINT_SUPPORT =

@@ -83,6 +83,9 @@ class SessionImpl implements Session {
         && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
       readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
     }
+    if (options.isolationLevel() != null) {
+      transactionOptions.setIsolationLevel(options.isolationLevel());
+    }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
   }
@@ -117,7 +120,7 @@ class SessionImpl implements Session {
   static final int NO_CHANNEL_HINT = -1;
 
   private final SpannerImpl spanner;
-  private final SessionReference sessionReference;
+  private SessionReference sessionReference;
   private SessionTransaction activeTransaction;
   private ISpan currentSpan;
   private final Clock clock;
@@ -157,6 +160,14 @@ class SessionImpl implements Session {
     return sessionReference.getName();
   }
 
+  /**
+   * Updates the session reference with the fallback session. This should only be used for updating
+   * session reference with regular session in case of unimplemented error in multiplexed session.
+   */
+  void setFallbackSessionReference(SessionReference sessionReference) {
+    this.sessionReference = sessionReference;
+  }
+
   Map<SpannerRpc.Option, ?> getOptions() {
     return options;
   }
@@ -191,6 +202,10 @@ class SessionImpl implements Session {
 
   void markUsed(Instant instant) {
     sessionReference.markUsed(instant);
+  }
+
+  TransactionOptions defaultTransactionOptions() {
+    return this.spanner.getOptions().getDefaultTransactionOptions();
   }
 
   public DatabaseId getDatabaseId() {
@@ -252,7 +267,11 @@ class SessionImpl implements Session {
     if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       transactionOptionsBuilder.setExcludeTxnFromChangeStreams(true);
     }
-    requestBuilder.setSingleUseTransaction(transactionOptionsBuilder);
+    if (options.isolationLevel() != null) {
+      transactionOptionsBuilder.setIsolationLevel(options.isolationLevel());
+    }
+    requestBuilder.setSingleUseTransaction(
+        defaultTransactionOptions().toBuilder().mergeFrom(transactionOptionsBuilder.build()));
 
     if (options.hasMaxCommitDelay()) {
       requestBuilder.setMaxCommitDelay(
@@ -444,7 +463,11 @@ class SessionImpl implements Session {
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(
-                createReadWriteTransactionOptions(transactionOptions, previousTransactionId));
+                defaultTransactionOptions()
+                    .toBuilder()
+                    .mergeFrom(
+                        createReadWriteTransactionOptions(
+                            transactionOptions, previousTransactionId)));
     if (sessionReference.getIsMultiplexed() && mutation != null) {
       requestBuilder.setMutationKey(mutation);
     }
@@ -489,7 +512,6 @@ class SessionImpl implements Session {
         .setOptions(options)
         .setTransactionId(null)
         .setPreviousTransactionId(previousTransactionId)
-        .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))

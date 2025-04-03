@@ -299,6 +299,18 @@ public interface StructReader {
 
   /**
    * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#interval()}.
+   */
+  Interval getInterval(int columnIndex);
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#interval()}.
+   */
+  Interval getInterval(String columnName);
+
+  /**
+   * @param columnIndex index of the column
    * @return the value of a nullable column as a {@link Value}.
    */
   default Value getValue(int columnIndex) {
@@ -624,6 +636,22 @@ public interface StructReader {
    *     access each element in the list multiple times.
    */
   List<Date> getDateList(String columnName);
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.interval())}.
+   *     The list returned by this method is lazily constructed. Create a copy of it if you intend
+   *     to access each element in the list multiple times.
+   */
+  List<Interval> getIntervalList(int columnIndex);
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.interval())}.
+   *     The list returned by this method is lazily constructed. Create a copy of it if you intend
+   *     to access each element in the list multiple times.
+   */
+  List<Interval> getIntervalList(String columnName);
 
   /**
    * @param columnIndex index of the column

@@ -643,8 +643,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           if (tx == null) {
             return TransactionSelector.newBuilder()
                 .setBegin(
-                    SessionImpl.createReadWriteTransactionOptions(
-                        options, getPreviousTransactionId()))
+                    this.session
+                        .defaultTransactionOptions()
+                        .toBuilder()
+                        .mergeFrom(
+                            SessionImpl.createReadWriteTransactionOptions(
+                                options, getPreviousTransactionId())))
                 .build();
           } else {
             // Wait for the transaction to come available. The tx.get() call will fail with an
@@ -1072,7 +1076,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           // In all other cases, we should throw a BatchUpdateException.
           if (response.getStatus().getCode() == Code.ABORTED_VALUE) {
             throw createAbortedExceptionForBatchDml(response);
-          } else if (response.getStatus().getCode() != 0) {
+          } else if (response.getStatus().getCode() != Code.OK_VALUE) {
             throw newSpannerBatchUpdateException(
                 ErrorCode.fromRpcStatus(response.getStatus()),
                 response.getStatus().getMessage(),
@@ -1139,7 +1143,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   // In all other cases, we should throw a BatchUpdateException.
                   if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
                     throw createAbortedExceptionForBatchDml(batchDmlResponse);
-                  } else if (batchDmlResponse.getStatus().getCode() != 0) {
+                  } else if (batchDmlResponse.getStatus().getCode() != Code.OK_VALUE) {
                     throw newSpannerBatchUpdateException(
                         ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
                         batchDmlResponse.getStatus().getMessage(),

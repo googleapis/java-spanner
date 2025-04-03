@@ -607,7 +607,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<ByteString, Boolean> commitRetryTransactions = new ConcurrentHashMap<>();
   private final AtomicBoolean abortNextTransaction = new AtomicBoolean();
   private final AtomicBoolean abortNextStatement = new AtomicBoolean();
-  private final AtomicBoolean ignoreNextInlineBeginRequest = new AtomicBoolean();
+  private final AtomicBoolean ignoreInlineBeginRequest = new AtomicBoolean();
   private ConcurrentMap<String, AtomicLong> transactionCounters = new ConcurrentHashMap<>();
   private ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
@@ -790,8 +790,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
-  public void ignoreNextInlineBeginRequest() {
-    ignoreNextInlineBeginRequest.set(true);
+  public void setIgnoreInlineBeginRequest(boolean ignore) {
+    ignoreInlineBeginRequest.set(ignore);
   }
 
   public void freeze() {
@@ -1063,7 +1063,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                     .setMetadata(
                         ResultSetMetadata.newBuilder()
                             .setTransaction(
-                                ignoreNextInlineBeginRequest.getAndSet(false)
+                                ignoreInlineBeginRequest.get()
                                     ? Transaction.getDefaultInstance()
                                     : Transaction.newBuilder().setId(transactionId).build())
                             .build());
@@ -1096,7 +1096,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           metadata
               .toBuilder()
               .setTransaction(
-                  ignoreNextInlineBeginRequest.getAndSet(false)
+                  ignoreInlineBeginRequest.get()
                       ? Transaction.getDefaultInstance()
                       : Transaction.newBuilder().setId(transactionId).build())
               .build();
@@ -1197,7 +1197,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
                         .setTransaction(
-                            ignoreNextInlineBeginRequest.getAndSet(false)
+                            ignoreInlineBeginRequest.get()
                                 ? Transaction.getDefaultInstance()
                                 : Transaction.newBuilder().setId(transactionId).build())
                         .build())
@@ -1328,6 +1328,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case DATE:
                 builder.bind(fieldName).toDateArray(null);
                 break;
+              case INTERVAL:
+                builder.bind(fieldName).toIntervalArray(null);
+                break;
               case FLOAT32:
                 builder.bind(fieldName).toFloat32Array((Iterable<Float>) null);
                 break;
@@ -1373,6 +1376,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case DATE:
             builder.bind(fieldName).to((Date) null);
+            break;
+          case INTERVAL:
+            builder.bind(fieldName).to((Interval) null);
             break;
           case FLOAT32:
             builder.bind(fieldName).to((Float) null);
@@ -1441,6 +1447,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                         (Iterable<Date>)
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.date(), value.getListValue()));
+                break;
+              case INTERVAL:
+                builder
+                    .bind(fieldName)
+                    .toIntervalArray(
+                        (Iterable<Interval>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.interval(), value.getListValue()));
                 break;
               case FLOAT32:
                 builder
@@ -1532,6 +1546,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case DATE:
             builder.bind(fieldName).to(Date.parseDate(value.getStringValue()));
+            break;
+          case INTERVAL:
+            builder.bind(fieldName).to(Interval.parseFromString(value.getStringValue()));
             break;
           case FLOAT32:
             builder.bind(fieldName).to((float) value.getNumberValue());
@@ -1730,7 +1747,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           metadata
               .toBuilder()
               .setTransaction(
-                  ignoreNextInlineBeginRequest.getAndSet(false)
+                  ignoreInlineBeginRequest.get()
                       ? Transaction.getDefaultInstance()
                       : Transaction.newBuilder().setId(transactionId).build())
               .build();
@@ -1785,7 +1802,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                   ResultSetMetadata.newBuilder()
                       .setRowType(StructType.newBuilder().addFields(field).build())
                       .setTransaction(
-                          ignoreNextInlineBeginRequest.getAndSet(false)
+                          ignoreInlineBeginRequest.get()
                               ? Transaction.getDefaultInstance()
                               : Transaction.newBuilder().setId(transaction.getId()).build())
                       .build())
@@ -1798,7 +1815,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                   ResultSetMetadata.newBuilder()
                       .setRowType(StructType.newBuilder().addFields(field).build())
                       .setTransaction(
-                          ignoreNextInlineBeginRequest.getAndSet(false)
+                          ignoreInlineBeginRequest.get()
                               ? Transaction.getDefaultInstance()
                               : Transaction.newBuilder().setId(transaction.getId()).build())
                       .build())
@@ -2302,6 +2319,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       throws InterruptedException, TimeoutException {
     Stopwatch watch = Stopwatch.createStarted();
     while (countRequestsOfType(type) == 0) {
+      //noinspection BusyWait
       Thread.sleep(1L);
       if (watch.elapsed(TimeUnit.MILLISECONDS) > timeoutMillis) {
         throw new TimeoutException(
