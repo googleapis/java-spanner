@@ -51,7 +51,8 @@ public class BuiltInMetricsConstant {
           "grpc.lb.rls.default_target_picks",
           "grpc.lb.rls.target_picks",
           "grpc.xds_client.server_failure",
-          "grpc.xds_client.resource_updates_invalid");
+          "grpc.xds_client.resource_updates_invalid",
+          "grpc.xds_client.resource_updates_valid");
 
   public static final String SPANNER_RESOURCE_TYPE = "spanner_instance_client";
 

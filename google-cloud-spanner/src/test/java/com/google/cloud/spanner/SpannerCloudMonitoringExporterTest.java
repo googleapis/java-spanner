@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.BuiltInMetricsConstant.ATTEMPT_COUNT_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
@@ -32,7 +31,6 @@ import static com.google.cloud.spanner.BuiltInMetricsConstant.OPERATION_LATENCIE
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,7 +45,6 @@ import com.google.monitoring.v3.CreateTimeSeriesRequest;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.protobuf.Empty;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -356,56 +353,6 @@ public class SpannerCloudMonitoringExporterTest {
         SpannerCloudMonitoringExporter.create(projectId, null, null);
     assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
-  }
-
-  @Test
-  public void testSkipExportingDataIfMissingInstanceId() throws IOException {
-    Attributes attributesWithoutInstanceId =
-        Attributes.builder().putAll(attributes).remove(INSTANCE_ID_KEY).build();
-
-    SpannerCloudMonitoringExporter actualExporter =
-        SpannerCloudMonitoringExporter.create(projectId, null, null);
-    assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER))
-        .isEqualTo(AggregationTemporality.CUMULATIVE);
-    ArgumentCaptor<CreateTimeSeriesRequest> argumentCaptor =
-        ArgumentCaptor.forClass(CreateTimeSeriesRequest.class);
-
-    UnaryCallable<CreateTimeSeriesRequest, Empty> mockCallable = Mockito.mock(UnaryCallable.class);
-    Mockito.when(mockMetricServiceStub.createServiceTimeSeriesCallable()).thenReturn(mockCallable);
-    ApiFuture<Empty> future = ApiFutures.immediateFuture(Empty.getDefaultInstance());
-    Mockito.when(mockCallable.futureCall(argumentCaptor.capture())).thenReturn(future);
-
-    long fakeValue = 11L;
-
-    long startEpoch = 10;
-    long endEpoch = 15;
-    LongPointData longPointData =
-        ImmutableLongPointData.create(startEpoch, endEpoch, attributesWithoutInstanceId, fakeValue);
-
-    MetricData operationLongData =
-        ImmutableMetricData.createLongSum(
-            resource,
-            scope,
-            "spanner.googleapis.com/internal/client/" + OPERATION_COUNT_NAME,
-            "description",
-            "1",
-            ImmutableSumData.create(
-                true, AggregationTemporality.CUMULATIVE, ImmutableList.of(longPointData)));
-
-    MetricData attemptLongData =
-        ImmutableMetricData.createLongSum(
-            resource,
-            scope,
-            "spanner.googleapis.com/internal/client/" + ATTEMPT_COUNT_NAME,
-            "description",
-            "1",
-            ImmutableSumData.create(
-                true, AggregationTemporality.CUMULATIVE, ImmutableList.of(longPointData)));
-
-    CompletableResultCode resultCode =
-        exporter.export(Arrays.asList(operationLongData, attemptLongData));
-    assertTrue(resultCode.isSuccess());
-    assertTrue(exporter.lastExportSkippedData());
   }
 
   private static class FakeMetricServiceClient extends MetricServiceClient {

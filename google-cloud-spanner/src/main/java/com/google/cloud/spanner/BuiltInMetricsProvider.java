@@ -75,7 +75,6 @@ final class BuiltInMetricsProvider {
         BuiltInMetricsView.registerBuiltinMetrics(
             SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
             sdkMeterProviderBuilder);
-
         sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
         this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
@@ -91,7 +90,7 @@ final class BuiltInMetricsProvider {
     }
   }
 
-  public void enableGrpcMetrics(
+  void enableGrpcMetrics(
       InstantiatingGrpcChannelProvider.Builder channelProviderBuilder,
       String projectId,
       @Nullable Credentials credentials,
