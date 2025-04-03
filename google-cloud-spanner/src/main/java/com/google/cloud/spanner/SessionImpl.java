@@ -126,18 +126,31 @@ class SessionImpl implements Session {
   private final Clock clock;
   private final Map<SpannerRpc.Option, ?> options;
   private final ErrorHandler errorHandler;
+  private XGoogSpannerRequestId.RequestIdCreator requestIdCreator;
 
   SessionImpl(SpannerImpl spanner, SessionReference sessionReference) {
     this(spanner, sessionReference, NO_CHANNEL_HINT);
   }
 
   SessionImpl(SpannerImpl spanner, SessionReference sessionReference, int channelHint) {
+    this(spanner, sessionReference, channelHint, new XGoogSpannerRequestId.NoopRequestIdCreator());
+  }
+
+  SessionImpl(
+      SpannerImpl spanner,
+      SessionReference sessionReference,
+      int channelHint,
+      XGoogSpannerRequestId.RequestIdCreator requestIdCreator) {
     this.spanner = spanner;
     this.tracer = spanner.getTracer();
     this.sessionReference = sessionReference;
     this.clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
     this.options = createOptions(sessionReference, channelHint);
     this.errorHandler = createErrorHandler(spanner.getOptions());
+    this.requestIdCreator = requestIdCreator;
+    if (this.requestIdCreator == null) {
+      this.requestIdCreator = new XGoogSpannerRequestId.NoopRequestIdCreator();
+    }
   }
 
   static Map<SpannerRpc.Option, ?> createOptions(
@@ -145,6 +158,7 @@ class SessionImpl implements Session {
     if (channelHint == NO_CHANNEL_HINT) {
       return sessionReference.getOptions();
     }
+    System.out.println("\033[35mcreateOptions.hint: " + channelHint + "\033[00m");
     return CHANNEL_HINT_OPTIONS[channelHint % CHANNEL_HINT_OPTIONS.length];
   }
 
@@ -287,15 +301,30 @@ class SessionImpl implements Session {
     }
     CommitRequest request = requestBuilder.build();
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
+    final XGoogSpannerRequestId reqId = reqIdOrFresh(options);
+
     try (IScope s = tracer.withSpan(span)) {
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
-          () -> new CommitResponse(spanner.getRpc().commit(request, getOptions())));
+          () -> {
+            // TODO: Detect an abort and then refresh the reqId.
+            reqId.incrementAttempt();
+            return new CommitResponse(
+                spanner.getRpc().commit(request, reqId.withOptions(getOptions())));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
     } finally {
       span.end();
     }
+  }
+
+  private XGoogSpannerRequestId reqIdOrFresh(Options options) {
+    XGoogSpannerRequestId reqId = options.reqId();
+    if (reqId == null) {
+      reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
+    }
+    return reqId;
   }
 
   private RequestOptions getRequestOptions(TransactionOption... transactionOptions) {
@@ -325,16 +354,19 @@ class SessionImpl implements Session {
             .setSession(getName())
             .addAllMutationGroups(mutationGroupsProto);
     RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
+    Options allOptions = Options.fromTransactionOptions(transactionOptions);
+    final XGoogSpannerRequestId reqId = reqIdOrFresh(allOptions);
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
     }
-    if (Options.fromTransactionOptions(transactionOptions).withExcludeTxnFromChangeStreams()
-        == Boolean.TRUE) {
+    if (allOptions.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
       requestBuilder.setExcludeTxnFromChangeStreams(true);
     }
     ISpan span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE);
     try (IScope s = tracer.withSpan(span)) {
-      return spanner.getRpc().batchWriteAtLeastOnce(requestBuilder.build(), getOptions());
+      return spanner
+          .getRpc()
+          .batchWriteAtLeastOnce(requestBuilder.build(), reqId.withOptions(getOptions()));
     } catch (Throwable e) {
       span.setStatus(e);
       throw SpannerExceptionFactory.newSpannerException(e);
@@ -435,14 +467,16 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
-    return spanner.getRpc().asyncDeleteSession(getName(), getOptions());
+    XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
+    return spanner.getRpc().asyncDeleteSession(getName(), reqId.withOptions(getOptions()));
   }
 
   @Override
   public void close() {
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
-      spanner.getRpc().deleteSession(getName(), getOptions());
+      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
+      spanner.getRpc().deleteSession(getName(), reqId.withOptions(getOptions()));
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -474,7 +508,11 @@ class SessionImpl implements Session {
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
-      requestFuture = spanner.getRpc().beginTransactionAsync(request, channelHint, routeToLeader);
+      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
+      requestFuture =
+          spanner
+              .getRpc()
+              .beginTransactionAsync(request, reqId.withOptions(channelHint), routeToLeader);
     }
     requestFuture.addListener(
         () -> {
@@ -551,5 +589,13 @@ class SessionImpl implements Session {
 
   TraceWrapper getTracer() {
     return tracer;
+  }
+
+  public void setRequestIdCreator(XGoogSpannerRequestId.RequestIdCreator creator) {
+    this.requestIdCreator = creator;
+  }
+
+  public XGoogSpannerRequestId.RequestIdCreator getRequestIdCreator() {
+    return this.requestIdCreator;
   }
 }
