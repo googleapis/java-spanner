@@ -103,25 +103,6 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(@Nonnull Collection<MetricData> collection) {
-    // TODO: Remove
-    collection.stream()
-        .filter(md -> "grpc-java".equals(md.getInstrumentationScopeInfo().getName()))
-        .forEach(
-            md -> {
-              System.out.println("Name: " + md.getName()); // Print the name
-
-              md.getData()
-                  .getPoints()
-                  .forEach(
-                      point -> {
-                        System.out.println(
-                            "Attributes: "
-                                + point.getAttributes()); // Print attributes for each point
-                      });
-
-              System.out.println("----------------------"); // Separator for readability
-            });
-
     if (client.isShutdown()) {
       logger.log(Level.WARNING, "Exporter is shut down");
       return CompletableResultCode.ofFailure();
@@ -133,10 +114,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   /** Export client built in metrics */
   private CompletableResultCode exportSpannerClientMetrics(Collection<MetricData> collection) {
     // Filter spanner metrics. Only include metrics that contain a project and instance ID.
-    List<MetricData> spannerMetricData =
-        collection.stream()
-            // .filter(md -> SPANNER_METRICS.contains(md.getName()))
-            .collect(Collectors.toList());
+    List<MetricData> spannerMetricData = collection.stream().collect(Collectors.toList());
 
     // Log warnings for metrics that will be skipped.
     boolean mustFilter = false;

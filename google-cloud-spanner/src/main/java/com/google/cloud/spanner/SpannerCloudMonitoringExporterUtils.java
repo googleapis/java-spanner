@@ -78,13 +78,11 @@ class SpannerCloudMonitoringExporterUtils {
     List<TimeSeries> allTimeSeries = new ArrayList<>();
 
     for (MetricData metricData : collection) {
-      // Get metrics data from GAX library and Spanner library
+      // Get metrics data from GAX library, GRPC library and Spanner library
       if (!(metricData.getInstrumentationScopeInfo().getName().equals(GAX_METER_NAME)
           || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME)
           || metricData.getInstrumentationScopeInfo().getName().equals(GRPC_METER_NAME))) {
         // Filter out metric data for instruments that are not part of the spanner metrics list
-        System.out.println(
-            "Skipped some data" + metricData.getInstrumentationScopeInfo().getName().toString());
         continue;
       }
 
@@ -115,7 +113,6 @@ class SpannerCloudMonitoringExporterUtils {
         TimeSeries.newBuilder()
             .setMetricKind(convertMetricKind(metricData))
             .setValueType(convertValueType(metricData.getType()));
-    System.out.println("convertPointToSpannerTimeSeries Metric name " + metricData.getName());
     Metric.Builder metricBuilder = Metric.newBuilder().setType(metricData.getName());
 
     Attributes attributes = pointData.getAttributes();
@@ -124,11 +121,14 @@ class SpannerCloudMonitoringExporterUtils {
       if (SPANNER_PROMOTED_RESOURCE_LABELS.contains(key)) {
         monitoredResourceBuilder.putLabels(key.getKey(), String.valueOf(attributes.get(key)));
       } else {
+        // Replace metric label names by converting "." to "_" since Cloud Monitoring does not
+        // support labels containing "."
         metricBuilder.putLabels(
             key.getKey().replace(".", "_"), String.valueOf(attributes.get(key)));
       }
     }
 
+    // Add common labels like "client_name" and "client_uid" for all the exported metrics.
     metricBuilder.putAllLabels(BuiltInMetricsProvider.INSTANCE.createClientAttributes());
 
     builder.setResource(monitoredResourceBuilder.build());

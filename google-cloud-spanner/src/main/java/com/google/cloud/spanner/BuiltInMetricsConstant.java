@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @InternalApi
 public class BuiltInMetricsConstant {
@@ -53,18 +52,6 @@ public class BuiltInMetricsConstant {
           "grpc.lb.rls.target_picks",
           "grpc.xds_client.server_failure",
           "grpc.xds_client.resource_updates_invalid");
-
-  public static final Set<String> SPANNER_METRICS =
-      Stream.concat(
-              Stream.of(
-                  OPERATION_LATENCIES_NAME,
-                  ATTEMPT_LATENCIES_NAME,
-                  OPERATION_COUNT_NAME,
-                  ATTEMPT_COUNT_NAME,
-                  GFE_LATENCIES_NAME),
-              GRPC_METRICS_TO_ENABLE.stream())
-          .map(m -> METER_NAME + '/' + m)
-          .collect(Collectors.toSet());
 
   public static final String SPANNER_RESOURCE_TYPE = "spanner_instance_client";
 
