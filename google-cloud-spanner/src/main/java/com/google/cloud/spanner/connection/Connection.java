@@ -42,6 +42,7 @@ import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.Set;
@@ -219,6 +220,12 @@ public interface Connection extends AutoCloseable {
   /** @return <code>true</code> if this connection is in read-only mode */
   boolean isReadOnly();
 
+  /** Sets the default isolation level for read/write transactions for this connection. */
+  void setDefaultIsolationLevel(IsolationLevel isolationLevel);
+
+  /** Returns the default isolation level for read/write transactions for this connection. */
+  IsolationLevel getDefaultIsolationLevel();
+
   /**
    * Sets the duration the connection should wait before automatically aborting the execution of a
    * statement. The default is no timeout. Statement timeouts are applied all types of statements,
@@ -289,7 +296,8 @@ public interface Connection extends AutoCloseable {
   void cancel();
 
   /**
-   * Begins a new transaction for this connection.
+   * Begins a new transaction for this connection. The transaction will use the default isolation
+   * level of this connection.
    *
    * <ul>
    *   <li>Calling this method on a connection that has no transaction and that is
@@ -307,8 +315,15 @@ public interface Connection extends AutoCloseable {
   void beginTransaction();
 
   /**
+   * Same as {@link #beginTransaction()}, but this transaction will use the given isolation level,
+   * instead of the default isolation level of this connection.
+   */
+  void beginTransaction(IsolationLevel isolationLevel);
+
+  /**
    * Begins a new transaction for this connection. This method is guaranteed to be non-blocking. The
-   * returned {@link ApiFuture} will be done when the transaction has been initialized.
+   * returned {@link ApiFuture} will be done when the transaction has been initialized. The
+   * transaction will use the default isolation level of this connection.
    *
    * <ul>
    *   <li>Calling this method on a connection that has no transaction and that is
@@ -324,6 +339,12 @@ public interface Connection extends AutoCloseable {
    * </ul>
    */
   ApiFuture<Void> beginTransactionAsync();
+
+  /**
+   * Same as {@link #beginTransactionAsync()}, but this transaction will use the given isolation
+   * level, instead of the default isolation level of this connection.
+   */
+  ApiFuture<Void> beginTransactionAsync(IsolationLevel isolationLevel);
 
   /**
    * Sets the transaction mode to use for current transaction. This method may only be called when

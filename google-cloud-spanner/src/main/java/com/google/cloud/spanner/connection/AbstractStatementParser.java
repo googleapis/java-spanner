@@ -100,6 +100,14 @@ public abstract class AbstractStatementParser {
     }
   }
 
+  static final Set<String> ddlStatements =
+      ImmutableSet.of("CREATE", "DROP", "ALTER", "ANALYZE", "GRANT", "REVOKE", "RENAME");
+  static final Set<String> selectStatements =
+      ImmutableSet.of("SELECT", "WITH", "SHOW", "FROM", "GRAPH");
+  static final Set<String> SELECT_STATEMENTS_ALLOWING_PRECEDING_BRACKETS =
+      ImmutableSet.of("SELECT", "FROM");
+  static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
+
   /*
    * The following fixed pre-parsed statements are used internally by the Connection API. These do
    * not need to be parsed using a specific dialect, as they are equal for all dialects, and
@@ -416,13 +424,6 @@ public abstract class AbstractStatementParser {
     }
   }
 
-  static final Set<String> ddlStatements =
-      ImmutableSet.of("CREATE", "DROP", "ALTER", "ANALYZE", "GRANT", "REVOKE", "RENAME");
-  static final Set<String> selectStatements =
-      ImmutableSet.of("SELECT", "WITH", "SHOW", "FROM", "GRAPH");
-  static final Set<String> SELECT_STATEMENTS_ALLOWING_PRECEDING_BRACKETS =
-      ImmutableSet.of("SELECT", "FROM");
-  static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;
 
   /** The default maximum size of the statement cache in Mb. */

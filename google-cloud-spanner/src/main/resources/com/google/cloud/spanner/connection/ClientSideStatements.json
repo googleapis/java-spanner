@@ -249,13 +249,26 @@
 		"exampleStatements": ["run partitioned query select col1, col2 from my_table"]
 	},
 	{
-	  "name": "BEGIN TRANSACTION",
-	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "name": "BEGIN [TRANSACTION] [ISOLATION LEVEL isolation_level]",
+	  "executorName": "ClientSideStatementBeginExecutor",
 	  "resultType": "NO_RESULT",
 	  "statementType": "BEGIN",
-	  "regex": "(?is)\\A\\s*(?:begin|start)(?:\\s+transaction)?\\s*\\z",
+	  "regex": "(?is)\\A\\s*(?:begin|start)(?:\\s+transaction)?(?:\\s+isolation\\s+level\\s+(repeatable\\s+read|serializable))?\\s*\\z",
 	  "method": "statementBeginTransaction",
-	  "exampleStatements": ["begin", "start", "begin transaction", "start transaction"]
+	  "exampleStatements": [
+			"begin",
+			"start",
+			"begin transaction",
+			"start transaction",
+			"begin isolation level repeatable read",
+			"begin transaction isolation level repeatable read",
+			"begin isolation level serializable",
+			"begin transaction isolation level serializable",
+			"start isolation level repeatable read",
+			"start transaction isolation level repeatable read",
+			"start isolation level serializable",
+			"start transaction isolation level serializable"
+		]
 	},
 	{
 	  "name": "COMMIT TRANSACTION",

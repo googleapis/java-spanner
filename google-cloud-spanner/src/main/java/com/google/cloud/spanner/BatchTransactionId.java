@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
 import java.io.Serializable;
@@ -34,6 +35,7 @@ public class BatchTransactionId implements Serializable {
   private final Timestamp timestamp;
   private static final long serialVersionUID = 8067099123096783939L;
 
+  @VisibleForTesting
   BatchTransactionId(String sessionId, ByteString transactionId, Timestamp timestamp) {
     this.transactionId = Preconditions.checkNotNull(transactionId);
     this.sessionId = Preconditions.checkNotNull(sessionId);

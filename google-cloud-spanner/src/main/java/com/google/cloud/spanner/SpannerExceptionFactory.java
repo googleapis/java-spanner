@@ -118,7 +118,11 @@ public final class SpannerExceptionFactory {
   public static SpannerBatchUpdateException newSpannerBatchUpdateException(
       ErrorCode code, String message, long[] updateCounts) {
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;
-    return new SpannerBatchUpdateException(token, code, message, updateCounts);
+    SpannerException cause = null;
+    if (isTransactionMutationLimitException(code, message)) {
+      cause = new TransactionMutationLimitExceededException(token, code, message, null, null);
+    }
+    return new SpannerBatchUpdateException(token, code, message, updateCounts, cause);
   }
 
   /** Constructs a specific error that */

@@ -33,6 +33,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.TransactionOptions;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
@@ -382,6 +383,38 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  /**
+   * Converter for converting strings to {@link
+   * com.google.spanner.v1.TransactionOptions.IsolationLevel} values.
+   */
+  static class IsolationLevelConverter
+      implements ClientSideStatementValueConverter<TransactionOptions.IsolationLevel> {
+    static final IsolationLevelConverter INSTANCE = new IsolationLevelConverter();
+
+    private final CaseInsensitiveEnumMap<TransactionOptions.IsolationLevel> values =
+        new CaseInsensitiveEnumMap<>(TransactionOptions.IsolationLevel.class);
+
+    IsolationLevelConverter() {}
+
+    /** Constructor needed for reflection. */
+    public IsolationLevelConverter(String allowedValues) {}
+
+    @Override
+    public Class<TransactionOptions.IsolationLevel> getParameterClass() {
+      return TransactionOptions.IsolationLevel.class;
+    }
+
+    @Override
+    public TransactionOptions.IsolationLevel convert(String value) {
+      if (value != null) {
+        // This ensures that 'repeatable read' is translated to 'repeatable_read'. The text between
+        // 'repeatable' and 'read' can be any number of valid whitespace characters.
+        value = value.trim().replaceFirst("\\s+", "_");
+      }
+      return values.get(value);
+    }
+  }
+
   /** Converter for converting strings to {@link AutocommitDmlMode} values. */
   static class AutocommitDmlModeConverter
       implements ClientSideStatementValueConverter<AutocommitDmlMode> {
@@ -529,6 +562,11 @@ class ClientSideStatementValueConverters {
         } else if (valueWithSingleSpaces.substring(currentIndex).startsWith("read write")) {
           currentIndex += "read write".length();
           mode.setAccessMode(AccessMode.READ_WRITE_TRANSACTION);
+        } else if (valueWithSingleSpaces
+            .substring(currentIndex)
+            .startsWith("isolation level repeatable read")) {
+          currentIndex += "isolation level repeatable read".length();
+          mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_REPEATABLE_READ);
         } else if (valueWithSingleSpaces
             .substring(currentIndex)
             .startsWith("isolation level serializable")) {

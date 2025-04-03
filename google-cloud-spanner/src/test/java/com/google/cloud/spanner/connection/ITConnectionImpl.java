@@ -18,7 +18,7 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 
 /** Implementation of {@link ITConnection} for Spanner generic (not JDBC) connections. */
-class ITConnectionImpl extends ConnectionImpl implements ITConnection {
+public class ITConnectionImpl extends ConnectionImpl implements ITConnection {
   ITConnectionImpl(ConnectionOptions options) {
     super(options);
   }

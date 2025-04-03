@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -28,6 +29,8 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.grpc.Status;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
@@ -39,32 +42,48 @@ public class RunTransactionMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testRunTransaction() {
-    try (Connection connection = createConnection()) {
-      connection.runTransaction(
-          transaction -> {
-            assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-            assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-            return null;
-          });
+    for (IsolationLevel isolationLevel : DEFAULT_ISOLATION_LEVEL.getValidValues()) {
+      try (Connection connection = createConnection()) {
+        connection.setDefaultIsolationLevel(isolationLevel);
+        connection.runTransaction(
+            transaction -> {
+              assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+              assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+              return null;
+            });
+      }
+      assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+      TransactionOptions transactionOptions =
+          mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0).getTransaction().getBegin();
+      assertEquals(isolationLevel, transactionOptions.getIsolationLevel());
+
+      mockSpanner.clearRequests();
     }
-    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test
   public void testRunTransactionInAutoCommit() {
-    try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
+    for (IsolationLevel isolationLevel : DEFAULT_ISOLATION_LEVEL.getValidValues()) {
+      try (Connection connection = createConnection()) {
+        connection.setAutocommit(true);
+        connection.setDefaultIsolationLevel(isolationLevel);
 
-      connection.runTransaction(
-          transaction -> {
-            assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-            assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-            return null;
-          });
+        connection.runTransaction(
+            transaction -> {
+              assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+              assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+              return null;
+            });
+      }
+      assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+      TransactionOptions transactionOptions =
+          mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0).getTransaction().getBegin();
+      assertEquals(isolationLevel, transactionOptions.getIsolationLevel());
+
+      mockSpanner.clearRequests();
     }
-    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test
