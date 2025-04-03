@@ -72,7 +72,9 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected abstract Interval getIntervalInternal(int columnIndex);
+  protected Interval getIntervalInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
     throw new UnsupportedOperationException("Not implemented");
@@ -139,7 +141,9 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected abstract List<Interval> getIntervalListInternal(int columnIndex);
+  protected List<Interval> getIntervalListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract List<Struct> getStructListInternal(int columnIndex);
 
