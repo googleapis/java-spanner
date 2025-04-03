@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -393,6 +394,10 @@ public abstract class Value implements Serializable {
    */
   public static Value date(@Nullable Date v) {
     return new DateImpl(v == null, v);
+  }
+
+  public static Value uuid(@Nullable UUID v) {
+    return new UuidImpl(v == null, v);
   }
 
   /** Returns a non-{@code NULL} {#code STRUCT} value. */
@@ -786,6 +791,16 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<UUID>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value uuidArray(@Nullable Iterable<UUID> v) {
+    return new UuidArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
    * Returns an {@code ARRAY<Interval>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
@@ -935,6 +950,13 @@ public abstract class Value implements Serializable {
   public abstract Date getDate();
 
   /**
+   * Returns the value of a {@code UUID}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract UUID getUuid();
+
+  /**
    * Returns the value of a {@code INTERVAL}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -1060,6 +1082,14 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract List<Date> getDateArray();
+
+  /**
+   * Returns the value of an {@code ARRAY<UUID>}-typed instance. While the returned list itself will
+   * never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<UUID> getUuidArray();
 
   /**
    * Returns the value of an {@code ARRAY<INTERVAL>}-typed instance. While the returned list itself
@@ -1349,6 +1379,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public UUID getUuid() {
+      throw defaultGetter(Type.uuid());
+    }
+
+    @Override
     public Interval getInterval() {
       throw defaultGetter(Type.interval());
     }
@@ -1415,6 +1450,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<Date> getDateArray() {
       throw defaultGetter(Type.array(Type.date()));
+    }
+
+    @Override
+    public List<UUID> getUuidArray() {
+      throw defaultGetter(Type.array(Type.uuid()));
     }
 
     @Override
@@ -1829,6 +1869,24 @@ public abstract class Value implements Serializable {
 
     @Override
     public Date getDate() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+  }
+
+  private static class UuidImpl extends AbstractObjectValue<UUID> {
+
+    private UuidImpl(boolean isNull, UUID value) {
+      super(isNull, Type.uuid(), value);
+    }
+
+    @Override
+    public UUID getUuid() {
       checkNotNull();
       return value;
     }
@@ -2870,6 +2928,24 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class UuidArrayImpl extends AbstractArrayValue<UUID> {
+
+    private UuidArrayImpl(boolean isNull, @Nullable List<UUID> values) {
+      super(isNull, Type.uuid(), values);
+    }
+
+    @Override
+    public List<UUID> getUuidArray() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, UUID element) {
+      b.append(element);
+    }
+  }
+
   private static class IntervalArrayImpl extends AbstractArrayValue<Interval> {
 
     private IntervalArrayImpl(boolean isNull, @Nullable List<Interval> values) {
@@ -3034,6 +3110,8 @@ public abstract class Value implements Serializable {
           return Value.pgOid(value.getLong(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
+        case UUID:
+          return Value.uuid(value.getUuid(fieldIndex));
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
         case INTERVAL:
@@ -3074,6 +3152,8 @@ public abstract class Value implements Serializable {
                 return Value.pgNumericArray(value.getStringList(fieldIndex));
               case DATE:
                 return Value.dateArray(value.getDateList(fieldIndex));
+              case UUID:
+                return Value.uuidArray(value.getUuidList(fieldIndex));
               case TIMESTAMP:
                 return Value.timestampArray(value.getTimestampList(fieldIndex));
               case INTERVAL:
