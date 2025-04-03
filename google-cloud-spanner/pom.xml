@@ -192,6 +192,10 @@
       <artifactId>grpc-stub</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-opentelemetry</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.api</groupId>
       <artifactId>api-common</artifactId>
     </dependency>

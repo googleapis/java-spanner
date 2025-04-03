@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.spanner.Database;
@@ -24,6 +25,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Stopwatch;
 import com.google.monitoring.v3.ListTimeSeriesRequest;
 import com.google.monitoring.v3.ListTimeSeriesResponse;
@@ -34,9 +36,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -44,7 +46,6 @@ import org.junit.runners.JUnit4;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
-@Ignore("Built-in Metrics are not GA'ed yet. Enable this test once the metrics are released")
 public class ITBuiltInMetricsTest {
 
   private static Database db;
@@ -54,12 +55,24 @@ public class ITBuiltInMetricsTest {
 
   private static MetricServiceClient metricClient;
 
+  private static String[] METRICS = {
+    "operation_latencies", "attempt_latencies", "operation_count", "attempt_count",
+  };
+
   @BeforeClass
   public static void setUp() throws IOException {
+    assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
     metricClient = MetricServiceClient.create();
     // Enable BuiltinMetrics when the metrics are GA'ed
     db = env.getTestHelper().createTestDatabase();
     client = env.getTestHelper().getDatabaseClient(db);
+  }
+
+  @After
+  public void tearDown() {
+    if (metricClient != null) {
+      metricClient.close();
+    }
   }
 
   @Test
@@ -80,36 +93,36 @@ public class ITBuiltInMetricsTest {
         .readWriteTransaction()
         .run(transaction -> transaction.executeQuery(Statement.of("Select 1")));
 
-    String metricFilter =
-        String.format(
-            "metric.type=\"spanner.googleapis.com/client/%s\""
-                + " AND resource.type=\"spanner_instance\""
-                + " AND metric.labels.method=\"Spanner.Commit\""
-                + " AND resource.labels.instance_id=\"%s\""
-                + " AND metric.labels.database=\"%s\"",
-            "operation_latencies",
-            db.getId().getInstanceId().getInstance(),
-            db.getId().getDatabase());
+    for (String metric : METRICS) {
+      String metricFilter =
+          String.format(
+              "metric.type=\"spanner.googleapis.com/client/%s\""
+                  + " AND resource.type=\"spanner_instance\""
+                  + " AND metric.labels.method=\"Spanner.Commit\""
+                  + " AND resource.labels.instance_id=\"%s\""
+                  + " AND metric.labels.database=\"%s\"",
+              metric, db.getId().getInstanceId().getInstance(), db.getId().getDatabase());
 
-    ListTimeSeriesRequest.Builder requestBuilder =
-        ListTimeSeriesRequest.newBuilder()
-            .setName(name.toString())
-            .setFilter(metricFilter)
-            .setInterval(interval)
-            .setView(ListTimeSeriesRequest.TimeSeriesView.FULL);
+      ListTimeSeriesRequest.Builder requestBuilder =
+          ListTimeSeriesRequest.newBuilder()
+              .setName(name.toString())
+              .setFilter(metricFilter)
+              .setInterval(interval)
+              .setView(ListTimeSeriesRequest.TimeSeriesView.FULL);
 
-    ListTimeSeriesRequest request = requestBuilder.build();
+      ListTimeSeriesRequest request = requestBuilder.build();
 
-    ListTimeSeriesResponse response = metricClient.listTimeSeriesCallable().call(request);
-    while (response.getTimeSeriesCount() == 0
-        && metricsPollingStopwatch.elapsed(TimeUnit.MINUTES) < 3) {
-      // Call listTimeSeries every minute
-      Thread.sleep(Duration.ofMinutes(1).toMillis());
-      response = metricClient.listTimeSeriesCallable().call(request);
+      ListTimeSeriesResponse response = metricClient.listTimeSeriesCallable().call(request);
+      while (response.getTimeSeriesCount() == 0
+          && metricsPollingStopwatch.elapsed(TimeUnit.MINUTES) < 3) {
+        // Call listTimeSeries every minute
+        Thread.sleep(Duration.ofMinutes(1).toMillis());
+        response = metricClient.listTimeSeriesCallable().call(request);
+      }
+
+      assertWithMessage("Metric" + metric + "didn't return any data.")
+          .that(response.getTimeSeriesCount())
+          .isGreaterThan(0);
     }
-
-    assertWithMessage("View operation_latencies didn't return any data.")
-        .that(response.getTimeSeriesCount())
-        .isGreaterThan(0);
   }
 }
