@@ -599,16 +599,6 @@
   </difference>
   <difference>
     <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>com.google.cloud.spanner.Interval getIntervalInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>java.util.List getIntervalListInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
     <className>com/google/cloud/spanner/Value</className>
     <method>com.google.cloud.spanner.Interval getInterval()</method>
   </difference>
