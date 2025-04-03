@@ -46,6 +46,17 @@ public class BuiltInMetricsConstant {
   static final String OPERATION_COUNT_NAME = "operation_count";
   static final String ATTEMPT_COUNT_NAME = "attempt_count";
 
+  public static final Set<String> SPANNER_METRICS =
+      ImmutableSet.of(
+              OPERATION_LATENCIES_NAME,
+              ATTEMPT_LATENCIES_NAME,
+              OPERATION_COUNT_NAME,
+              ATTEMPT_COUNT_NAME,
+              GFE_LATENCIES_NAME)
+          .stream()
+          .map(m -> METER_NAME + '/' + m)
+          .collect(Collectors.toSet());
+
   static final Collection<String> GRPC_METRICS_TO_ENABLE =
       ImmutableList.of(
           "grpc.lb.rls.default_target_picks",
