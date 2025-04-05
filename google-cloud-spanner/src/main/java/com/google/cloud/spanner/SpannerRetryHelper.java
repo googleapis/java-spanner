@@ -93,9 +93,17 @@ class SpannerRetryHelper {
     try {
       return RetryHelper.runWithRetries(callable, retrySettings, new TxRetryAlgorithm<>(), clock);
     } catch (RetryHelperException e) {
+      System.out.println("\033[35m");
+      e.printStackTrace();
+      System.out.println("\033[00m");
       if (e.getCause() != null) {
         Throwables.throwIfUnchecked(errorHandler.translateException(e.getCause()));
       }
+      throw e;
+    } catch (Exception e) {
+      System.out.println("\033[31mGot an error in runTxWithRetriesOnAborted: ");
+      e.printStackTrace();
+      System.out.println("\033[00m");
       throw e;
     }
   }

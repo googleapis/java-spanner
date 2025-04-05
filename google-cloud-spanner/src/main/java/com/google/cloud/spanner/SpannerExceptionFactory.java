@@ -61,9 +61,13 @@ public final class SpannerExceptionFactory {
     return newSpannerException(code, message, null);
   }
 
+  public static SpannerException newSpannerException(ErrorCode code, @Nullable String message, @Nullable XGoogSpannerRequestId reqId) {
+    return newSpannerException(code, message, null, reqId);
+  }
+
   public static SpannerException newSpannerException(
       ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
-    return newSpannerExceptionPreformatted(code, formatMessage(code, message), cause);
+    return newSpannerExceptionPreformatted(code, formatMessage(code, message), cause, null);
   }
 
   public static SpannerException propagateInterrupt(InterruptedException e) {
@@ -113,6 +117,10 @@ public final class SpannerExceptionFactory {
    */
   public static SpannerException newSpannerException(Throwable cause) {
     return newSpannerException(null, cause);
+  }
+
+  public static SpannerException newSpannerException(Throwable cause, XGoogSpannerRequestId requestId) {
+    return newSpannerException(null, cause, requestId);
   }
 
   public static SpannerBatchUpdateException newSpannerBatchUpdateException(
@@ -301,7 +309,8 @@ public final class SpannerExceptionFactory {
       ErrorCode code,
       @Nullable String message,
       @Nullable Throwable cause,
-      @Nullable ApiException apiException) {
+      @Nullable ApiException apiException,
+      @Nullable XGoogSpannerRequestId reqId) {
     // This is the one place in the codebase that is allowed to call constructors directly.
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;
     switch (code) {
@@ -343,7 +352,7 @@ public final class SpannerExceptionFactory {
         // Fall through to the default.
       default:
         return new SpannerException(
-            token, code, isRetryable(code, cause), message, cause, apiException);
+            token, code, isRetryable(code, cause), message, cause, apiException, reqId);
     }
   }
 

@@ -766,7 +766,7 @@ public final class Options implements Serializable {
       b.append("isolationLevel: ").append(isolationLevel).append(' ');
     }
     if (reqId != null) {
-      b.append("requestId: ").append(reqId.toString()).append(' ');
+      b.append("requestId: ").append(reqId.toString());
     }
     return b.toString();
   }

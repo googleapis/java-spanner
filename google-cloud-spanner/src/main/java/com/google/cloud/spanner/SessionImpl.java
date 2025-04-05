@@ -158,7 +158,6 @@ class SessionImpl implements Session {
     if (channelHint == NO_CHANNEL_HINT) {
       return sessionReference.getOptions();
     }
-    System.out.println("\033[35mcreateOptions.hint: " + channelHint + "\033[00m");
     return CHANNEL_HINT_OPTIONS[channelHint % CHANNEL_HINT_OPTIONS.length];
   }
 
@@ -308,8 +307,12 @@ class SessionImpl implements Session {
           () -> {
             // TODO: Detect an abort and then refresh the reqId.
             reqId.incrementAttempt();
-            return new CommitResponse(
-                spanner.getRpc().commit(request, reqId.withOptions(getOptions())));
+            Map opts = reqId.withOptions(getOptions());
+            System.out.println("reqId.withOptions: " + opts);
+            CommitResponse res = new CommitResponse(
+                spanner.getRpc().commit(request, opts));
+            System.out.println("\033[32mSessionImpl.writeOnce: " + res + "\033[00m");
+            return res;
           });
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -322,7 +325,7 @@ class SessionImpl implements Session {
   private XGoogSpannerRequestId reqIdOrFresh(Options options) {
     XGoogSpannerRequestId reqId = options.reqId();
     if (reqId == null) {
-      reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
+      reqId = this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 0);
     }
     return reqId;
   }
@@ -369,7 +372,7 @@ class SessionImpl implements Session {
           .batchWriteAtLeastOnce(requestBuilder.build(), reqId.withOptions(getOptions()));
     } catch (Throwable e) {
       span.setStatus(e);
-      throw SpannerExceptionFactory.newSpannerException(e);
+      throw SpannerExceptionFactory.newSpannerException(e, reqId);
     } finally {
       span.end();
       onTransactionDone();
@@ -467,7 +470,7 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
-    XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
+    XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 0);
     return spanner.getRpc().asyncDeleteSession(getName(), reqId.withOptions(getOptions()));
   }
 
@@ -475,7 +478,7 @@ class SessionImpl implements Session {
   public void close() {
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
-      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 0);
+      XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 0);
       spanner.getRpc().deleteSession(getName(), reqId.withOptions(getOptions()));
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -507,8 +510,8 @@ class SessionImpl implements Session {
     }
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
+    XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 1);
     try (IScope ignore = tracer.withSpan(span)) {
-      XGoogSpannerRequestId reqId = this.requestIdCreator.nextRequestId(1 /* TODO: channelId */, 1);
       requestFuture =
           spanner
               .getRpc()
@@ -520,7 +523,7 @@ class SessionImpl implements Session {
             Transaction txn = requestFuture.get();
             if (txn.getId().isEmpty()) {
               throw newSpannerException(
-                  ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
+                  ErrorCode.INTERNAL, "Missing id in transaction\n" + getName(), reqId);
             }
             span.end();
             res.set(txn);
@@ -529,7 +532,7 @@ class SessionImpl implements Session {
             span.end();
             res.setException(
                 SpannerExceptionFactory.newSpannerException(
-                    e.getCause() == null ? e : e.getCause()));
+                    e.getCause() == null ? e : e.getCause(), reqId));
           } catch (InterruptedException e) {
             span.setStatus(e);
             span.end();

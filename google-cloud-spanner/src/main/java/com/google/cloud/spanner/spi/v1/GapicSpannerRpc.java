@@ -1846,6 +1846,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       CommitRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getCommitMethod(), true);
+    System.out.println("\033[32mcommitAsync: " + context + "\033[00m");
     return spannerStub.commitCallable().futureCall(request, context);
   }
 

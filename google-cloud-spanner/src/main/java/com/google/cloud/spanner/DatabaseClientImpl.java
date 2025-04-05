@@ -199,6 +199,14 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeAtLeastOnceWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
+    CommitResponse res = doWriteAtLeastOnceWithOptions(mutations, options);
+    System.out.println("\033[33mCommitResponse: " + res + "\033[00m");
+    return res;
+  }
+
+  private CommitResponse doWriteAtLeastOnceWithOptions(
+      final Iterable<Mutation> mutations, final TransactionOption... options)
+      throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       if (useMultiplexedSessionBlindWrite && getMultiplexedSessionDatabaseClient() != null) {
@@ -207,8 +215,11 @@ class DatabaseClientImpl implements DatabaseClient {
       }
 
       return runWithSessionRetry(
-          (session, reqId) ->
-              session.writeAtLeastOnceWithOptions(mutations, withReqId(reqId, options)));
+          (session, reqId) -> {
+            CommitResponse in = session.writeAtLeastOnceWithOptions(mutations, withReqId(reqId, options));
+            System.out.println("\033[35minternalDo: " + in + "\033[00m");
+            return in;
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -378,6 +389,9 @@ class DatabaseClientImpl implements DatabaseClient {
 
   private UpdateOption[] withReqId(
       final XGoogSpannerRequestId reqId, final UpdateOption... options) {
+    if (reqId == null) {
+      return options;
+    }
     ArrayList<UpdateOption> allOptions = new ArrayList(Arrays.asList(options));
     allOptions.add(new Options.RequestIdOption(reqId));
     return allOptions.toArray(new UpdateOption[0]);
@@ -385,6 +399,9 @@ class DatabaseClientImpl implements DatabaseClient {
 
   private TransactionOption[] withReqId(
       final XGoogSpannerRequestId reqId, final TransactionOption... options) {
+    if (reqId == null) {
+      return options;
+    }
     ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
     allOptions.add(new Options.RequestIdOption(reqId));
     return allOptions.toArray(new TransactionOption[0]);

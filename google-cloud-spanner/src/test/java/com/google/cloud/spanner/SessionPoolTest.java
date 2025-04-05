@@ -1350,6 +1350,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     when(closedSession.singleUse()).thenReturn(closedContext);
 
     final SessionImpl openSession = mockSession();
+    when(openSession.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     ReadContext openContext = mock(ReadContext.class);
     ResultSet openResultSet = mock(ResultSet.class);
     when(openResultSet.next()).thenReturn(true, false);
@@ -1394,6 +1396,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .thenThrow(SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName));
 
     final SessionImpl openSession = mockSession();
+    when(openSession.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     ReadOnlyTransaction openTransaction = mock(ReadOnlyTransaction.class);
     ResultSet openResultSet = mock(ResultSet.class);
     when(openResultSet.next()).thenReturn(true, false);
@@ -1479,6 +1483,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(
               SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
       final SessionImpl closedSession = mock(SessionImpl.class);
+      when(closedSession.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
       when(closedSession.defaultTransactionOptions())
           .thenReturn(TransactionOptions.getDefaultInstance());
       when(closedSession.getName())
@@ -1510,6 +1516,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
       final SessionImpl openSession = mock(SessionImpl.class);
       when(openSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
+      when(openSession.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
       when(openSession.asyncClose())
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(openSession.getName())
@@ -1650,6 +1658,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     when(closedSession.writeWithOptions(mutations)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
+      when(openSession.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
@@ -1695,6 +1705,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     final SessionImpl openSession = mockSession();
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
+      when(openSession.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
     when(openSession.writeAtLeastOnceWithOptions(mutations)).thenReturn(response);
     doAnswer(

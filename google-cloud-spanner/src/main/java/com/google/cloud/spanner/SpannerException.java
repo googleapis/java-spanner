@@ -56,6 +56,7 @@ public class SpannerException extends BaseGrpcServiceException {
 
   private final ErrorCode code;
   private final ApiException apiException;
+  private final XGoogSpannerRequestId requestId;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   SpannerException(
@@ -83,9 +84,35 @@ public class SpannerException extends BaseGrpcServiceException {
     this.apiException = apiException;
   }
 
+  /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
+  SpannerException(
+      DoNotConstructDirectly token,
+      ErrorCode code,
+      boolean retryable,
+      @Nullable String message,
+      @Nullable Throwable cause,
+      @Nullable ApiException apiException,
+      @Nullable XGoogSpannerRequestId requestId) {
+    super(message, cause, code.getCode(), retryable);
+    if (token != DoNotConstructDirectly.ALLOWED) {
+      throw new AssertionError("Do not construct directly: use SpannerExceptionFactory");
+    }
+    this.code = Preconditions.checkNotNull(code);
+    this.apiException = apiException;
+    this.requestId = requestId;
+  }
+
   /** Returns the error code associated with this exception. */
   public ErrorCode getErrorCode() {
     return code;
+  }
+
+  /** Returns the requestId associated with this exception. */
+  public String getRequestId() {
+    if (requestId == null) {
+      return null;
+    }
+    return requestId.toString();
   }
 
   enum DoNotConstructDirectly {
