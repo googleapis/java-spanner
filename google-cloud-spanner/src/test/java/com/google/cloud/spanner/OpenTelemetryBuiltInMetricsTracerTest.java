@@ -38,7 +38,9 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Server;
 import io.grpc.Status;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -47,6 +49,8 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
@@ -73,6 +77,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
   private static Attributes expectedCommonBaseAttributes;
   private static Attributes expectedCommonRequestAttributes;
+  private static ApiTracerFactory metricsTracerFactory;
 
   private static final long MIN_LATENCY = 0;
 
@@ -110,6 +115,10 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     expectedCommonRequestAttributes =
         Attributes.builder().put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false").build();
+    metricsTracerFactory =
+        new BuiltInMetricsTracerFactory(
+            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+            attributes);
   }
 
   @BeforeClass
@@ -122,16 +131,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   @After
   public void clearRequests() {
     mockSpanner.clearRequests();
+    metricReader.forceFlush();
   }
 
   @Override
   public void createSpannerInstance() {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
-
-    ApiTracerFactory metricsTracerFactory =
-        new BuiltInMetricsTracerFactory(
-            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            attributes);
     // Set a quick polling algorithm to prevent this from slowing down the test unnecessarily.
     builder
         .getDatabaseAdminStubSettingsBuilder()
@@ -209,6 +214,19 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
         getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
     long gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
     assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
+
+    MetricData afeLatencyMetricData =
+        getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
+    long afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
+    assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 0);
+
+    MetricData gfeConnectivityMetricData =
+        getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
+    assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(0);
+
+    MetricData afeConnectivityMetricData =
+        getMetricData(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME);
+    assertThat(getAggregatedValue(afeConnectivityMetricData, expectedAttributes)).isEqualTo(0);
   }
 
   @Test
@@ -343,6 +361,58 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     // Attempt count should have a failed metric point for CreateSession.
     assertEquals(
         1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed));
+  }
+
+  @Test
+  public void testNoServerTimingHeader() throws IOException, InterruptedException {
+    // Create Spanner Object without headers
+    InetSocketAddress addressNoHeader = new InetSocketAddress("localhost", 0);
+    Server serverNoHeader =
+        NettyServerBuilder.forAddress(addressNoHeader).addService(mockSpanner).build().start();
+    String endpoint = address.getHostString() + ":" + serverNoHeader.getPort();
+    Spanner spannerNoHeader =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://" + endpoint)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
+                    .setFailOnSessionLeak()
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
+                    .build())
+            // Setting this to false so that Spanner Options does not register Metrics Tracer
+            // factory again.
+            .setBuiltInMetricsEnabled(false)
+            .setApiTracerFactory(metricsTracerFactory)
+            .build()
+            .getService();
+    DatabaseClient databaseClientNoHeader =
+        spannerNoHeader.getDatabaseClient(DatabaseId.of("test-project", "i", "d"));
+
+    databaseClientNoHeader
+        .readWriteTransaction()
+        .run(transaction -> transaction.executeUpdate(UPDATE_RANDOM));
+
+    Attributes expectedAttributes =
+        expectedCommonBaseAttributes
+            .toBuilder()
+            .putAll(expectedCommonRequestAttributes)
+            .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
+            .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteSql")
+            .build();
+
+    MetricData gfeConnectivityMetricData =
+        getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
+    assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+
+    MetricData afeConnectivityMetricData =
+        getMetricData(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME);
+    assertThat(getAggregatedValue(afeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+    spannerNoHeader.close();
+    serverNoHeader.shutdown();
+    serverNoHeader.awaitTermination();
   }
 
   private MetricData getMetricData(InMemoryMetricReader reader, String metricName) {

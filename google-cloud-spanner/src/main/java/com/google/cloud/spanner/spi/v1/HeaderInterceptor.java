@@ -175,22 +175,19 @@ class HeaderInterceptor implements ClientInterceptor {
         if (compositeTracer != null) {
           compositeTracer.recordGFELatency(gfeLatency);
         }
-
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
         }
       } else {
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
         spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
-
         if (compositeTracer != null) {
           compositeTracer.recordGfeHeaderMissingCount(1L);
         }
       }
 
-      // Record AFE latency
-      // TODO: Add condition to check if AFE is enabled
-      if (compositeTracer != null) {
+      // Record AFE metrics
+      if (compositeTracer != null && GapicSpannerRpc.isEnableAFEServerTiming()) {
         if (serverTimingMetrics.containsKey(AFE_TIMING_HEADER)) {
           long afeLatency = serverTimingMetrics.get(AFE_TIMING_HEADER);
           compositeTracer.recordAFELatency(afeLatency);
