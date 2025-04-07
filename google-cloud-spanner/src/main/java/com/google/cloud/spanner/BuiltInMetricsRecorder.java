@@ -95,16 +95,24 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
    * @param attributes Map of the attributes to store
    */
   void recordServerTimingHeaderMetrics(
-      double gfeLatency,
-      double afeLatency,
+      Long gfeLatency,
+      Long afeLatency,
       Long gfeHeaderMissingCount,
       Long afeHeaderMissingCount,
       Map<String, String> attributes) {
     io.opentelemetry.api.common.Attributes otelAttributes = toOtelAttributes(attributes);
-    gfeLatencyRecorder.record(gfeLatency, otelAttributes);
-    gfeHeaderMissingCountRecorder.add(gfeHeaderMissingCount, otelAttributes);
-    afeLatencyRecorder.record(afeLatency, otelAttributes);
-    afeHeaderMissingCountRecorder.add(afeHeaderMissingCount, otelAttributes);
+    if (gfeLatency != null) {
+      gfeLatencyRecorder.record(gfeLatency, otelAttributes);
+    }
+    if (gfeHeaderMissingCount > 0) {
+      gfeHeaderMissingCountRecorder.add(gfeHeaderMissingCount, otelAttributes);
+    }
+    if (afeLatency != null) {
+      afeLatencyRecorder.record(afeLatency, otelAttributes);
+    }
+    if (afeHeaderMissingCount > 0) {
+      afeHeaderMissingCountRecorder.add(afeHeaderMissingCount, otelAttributes);
+    }
   }
 
   Attributes toOtelAttributes(Map<String, String> attributes) {
