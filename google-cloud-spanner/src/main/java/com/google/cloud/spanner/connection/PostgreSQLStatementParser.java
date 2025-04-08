@@ -125,7 +125,8 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     int multiLineCommentStartIdx = -1;
     StringBuilder res = new StringBuilder(sql.length());
     int index = 0;
-    while (index < sql.length()) {
+    int length = sql.length();
+    while (index < length) {
       char c = sql.charAt(index);
       if (isInSingleLineComment) {
         if (c == '\n') {
@@ -134,10 +135,10 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           res.append(c);
         }
       } else if (multiLineCommentLevel > 0) {
-        if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
+        if (length > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
           multiLineCommentLevel--;
           if (multiLineCommentLevel == 0) {
-            if (!whitespaceBeforeOrAfterMultiLineComment && (sql.length() > index + 2)) {
+            if (!whitespaceBeforeOrAfterMultiLineComment && (length > index + 2)) {
               whitespaceBeforeOrAfterMultiLineComment =
                   Character.isWhitespace(sql.charAt(index + 2));
             }
@@ -145,23 +146,23 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
             // neither at the start nor at the end of SQL string, append an extra space.
             if (!whitespaceBeforeOrAfterMultiLineComment
                 && (multiLineCommentStartIdx != 0)
-                && (index != sql.length() - 2)) {
+                && (index != length - 2)) {
               res.append(' ');
             }
           }
           index++;
-        } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
+        } else if (length > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
           multiLineCommentLevel++;
           index++;
         }
       } else {
         // Check for -- which indicates the start of a single-line comment.
-        if (sql.length() > index + 1 && c == HYPHEN && sql.charAt(index + 1) == HYPHEN) {
+        if (length > index + 1 && c == HYPHEN && sql.charAt(index + 1) == HYPHEN) {
           // This is a single line comment.
           isInSingleLineComment = true;
           index += 2;
           continue;
-        } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
+        } else if (length > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
           multiLineCommentLevel++;
           if (index >= 1) {
             whitespaceBeforeOrAfterMultiLineComment = Character.isWhitespace(sql.charAt(index - 1));

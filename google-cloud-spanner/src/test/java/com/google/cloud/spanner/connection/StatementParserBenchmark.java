@@ -17,6 +17,9 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -27,28 +30,52 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(iterations = 5, time = 5)
 public class StatementParserBenchmark {
   private static final Dialect dialect = Dialect.POSTGRESQL;
-  private static final AbstractStatementParser parser =
+  private static final AbstractStatementParser PARSER =
       AbstractStatementParser.getInstance(dialect);
 
-  private static String longQueryText = generateLongQuery(100 * 1024); // 100kb
+  private static final String LONG_QUERY_TEXT =
+      generateLongStatement("SELECT * FROM foo WHERE 1", 100 * 1024); // 100kb
+
+  private static final String LONG_DML_TEXT =
+      generateLongStatement("update foo set bar=1 WHERE 1", 100 * 1024); // 100kb
 
   /** Generates a long SQL-looking string. */
-  private static String generateLongQuery(int length) {
+  private static String generateLongStatement(String prefix, int length) {
     StringBuilder sb = new StringBuilder(length + 50);
-    sb.append("SELECT * FROM foo WHERE 1");
+    sb.append(prefix);
     while (sb.length() < length) {
-      sb.append(" OR abcdefghijklmnopqrstuvwxyz");
+      sb.append(" OR abcdefghijklmnopqrstuvwxyz='abcdefghijklmnopqrstuvwxyz'");
     }
     return sb.toString();
   }
 
   @Benchmark
-  public boolean isQueryTest() {
-    return parser.isQuery("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)");
+  public ParsedStatement isQueryTest() {
+    return PARSER.internalParse(
+        Statement.of("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"),
+        QueryOptions.getDefaultInstance());
   }
 
   @Benchmark
-  public boolean longQueryTest() {
-    return parser.isQuery(longQueryText);
+  public ParsedStatement longQueryTest() {
+    return PARSER.internalParse(Statement.of(LONG_QUERY_TEXT), QueryOptions.getDefaultInstance());
+  }
+
+  @Benchmark
+  public ParsedStatement longDmlTest() {
+    return PARSER.internalParse(Statement.of(LONG_DML_TEXT), QueryOptions.getDefaultInstance());
+  }
+
+  public static void main(String[] args) throws Exception {
+    for (int i = 0; i < 100000; i++) {
+      if (PARSER.internalParse(Statement.of(LONG_QUERY_TEXT), QueryOptions.getDefaultInstance())
+          == null) {
+        throw new AssertionError();
+      }
+      if (PARSER.internalParse(Statement.of(LONG_DML_TEXT), QueryOptions.getDefaultInstance())
+          == null) {
+        throw new AssertionError();
+      }
+    }
   }
 }
