@@ -27,10 +27,12 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractBaseUnitOfWork.InterceptorsUsage;
+import com.google.cloud.spanner.connection.SimpleParser.Result;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
@@ -38,6 +40,7 @@ import com.google.common.cache.Weigher;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import java.nio.CharBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -179,24 +183,24 @@ public abstract class AbstractStatementParser {
     private final StatementType type;
     private final ClientSideStatementImpl clientSideStatement;
     private final Statement statement;
-    private final String sqlWithoutComments;
-    private final boolean returningClause;
+    private final Supplier<String> sqlWithoutComments;
+    private final Supplier<Boolean> returningClause;
     private final ReadQueryUpdateTransactionOption[] optionsFromHints;
 
     private static ParsedStatement clientSideStatement(
         ClientSideStatementImpl clientSideStatement,
         Statement statement,
-        String sqlWithoutComments) {
+        Supplier<String> sqlWithoutComments) {
       return new ParsedStatement(clientSideStatement, statement, sqlWithoutComments);
     }
 
-    private static ParsedStatement ddl(Statement statement, String sqlWithoutComments) {
+    private static ParsedStatement ddl(Statement statement, Supplier<String> sqlWithoutComments) {
       return new ParsedStatement(StatementType.DDL, statement, sqlWithoutComments);
     }
 
     private static ParsedStatement query(
         Statement statement,
-        String sqlWithoutComments,
+        Supplier<String> sqlWithoutComments,
         QueryOptions defaultQueryOptions,
         ReadQueryUpdateTransactionOption[] optionsFromHints) {
       return new ParsedStatement(
@@ -205,57 +209,66 @@ public abstract class AbstractStatementParser {
           statement,
           sqlWithoutComments,
           defaultQueryOptions,
-          false,
+          Suppliers.ofInstance(false),
           optionsFromHints);
     }
 
     private static ParsedStatement update(
         Statement statement,
-        String sqlWithoutComments,
-        boolean returningClause,
+        Supplier<String> sqlWithoutComments,
+        Supplier<Boolean> returningClause,
         ReadQueryUpdateTransactionOption[] optionsFromHints) {
       return new ParsedStatement(
           StatementType.UPDATE, statement, sqlWithoutComments, returningClause, optionsFromHints);
     }
 
-    private static ParsedStatement unknown(Statement statement, String sqlWithoutComments) {
+    private static ParsedStatement unknown(
+        Statement statement, Supplier<String> sqlWithoutComments) {
       return new ParsedStatement(StatementType.UNKNOWN, statement, sqlWithoutComments);
     }
 
     private ParsedStatement(
         ClientSideStatementImpl clientSideStatement,
         Statement statement,
-        String sqlWithoutComments) {
+        Supplier<String> sqlWithoutComments) {
       Preconditions.checkNotNull(clientSideStatement);
       Preconditions.checkNotNull(statement);
       this.type = StatementType.CLIENT_SIDE;
       this.clientSideStatement = clientSideStatement;
       this.statement = statement;
-      this.sqlWithoutComments = Preconditions.checkNotNull(sqlWithoutComments);
-      this.returningClause = false;
+      this.sqlWithoutComments = sqlWithoutComments;
+      this.returningClause = Suppliers.ofInstance(false);
       this.optionsFromHints = EMPTY_OPTIONS;
     }
 
     private ParsedStatement(
         StatementType type,
         Statement statement,
-        String sqlWithoutComments,
-        boolean returningClause,
+        Supplier<String> sqlWithoutComments,
+        Supplier<Boolean> returningClause,
         ReadQueryUpdateTransactionOption[] optionsFromHints) {
       this(type, null, statement, sqlWithoutComments, null, returningClause, optionsFromHints);
     }
 
-    private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
-      this(type, null, statement, sqlWithoutComments, null, false, EMPTY_OPTIONS);
+    private ParsedStatement(
+        StatementType type, Statement statement, Supplier<String> sqlWithoutComments) {
+      this(
+          type,
+          null,
+          statement,
+          sqlWithoutComments,
+          null,
+          Suppliers.ofInstance(false),
+          EMPTY_OPTIONS);
     }
 
     private ParsedStatement(
         StatementType type,
         ClientSideStatementImpl clientSideStatement,
         Statement statement,
-        String sqlWithoutComments,
+        Supplier<String> sqlWithoutComments,
         QueryOptions defaultQueryOptions,
-        boolean returningClause,
+        Supplier<Boolean> returningClause,
         ReadQueryUpdateTransactionOption[] optionsFromHints) {
       Preconditions.checkNotNull(type);
       this.type = type;
@@ -315,7 +328,7 @@ public abstract class AbstractStatementParser {
     /** @return whether the statement has a returning clause or not. */
     @InternalApi
     public boolean hasReturningClause() {
-      return this.returningClause;
+      return this.returningClause.get();
     }
 
     @InternalApi
@@ -413,7 +426,7 @@ public abstract class AbstractStatementParser {
     /** @return the SQL statement with all comments removed from the SQL string. */
     @InternalApi
     public String getSqlWithoutComments() {
-      return sqlWithoutComments;
+      return sqlWithoutComments.get();
     }
 
     ClientSideStatement getClientSideStatement() {
@@ -464,7 +477,7 @@ public abstract class AbstractStatementParser {
               // We do length*2 because Java uses 2 bytes for each char.
               .weigher(
                   (Weigher<String, ParsedStatement>)
-                      (key, value) -> 2 * key.length() + 2 * value.sqlWithoutComments.length())
+                      (key, value) -> 2 * key.length() + 2 * value.statement.getSql().length())
               .concurrencyLevel(Runtime.getRuntime().availableProcessors());
       if (isRecordStatementCacheStats()) {
         cacheBuilder.recordStats();
@@ -511,9 +524,9 @@ public abstract class AbstractStatementParser {
     return parsedStatement.copy(statement, defaultQueryOptions);
   }
 
-  private ParsedStatement internalParse(Statement statement, QueryOptions defaultQueryOptions) {
-    StatementHintParser statementHintParser =
-        new StatementHintParser(getDialect(), statement.getSql());
+  ParsedStatement internalParse(Statement statement, QueryOptions defaultQueryOptions) {
+    String sql = statement.getSql();
+    StatementHintParser statementHintParser = new StatementHintParser(getDialect(), sql);
     ReadQueryUpdateTransactionOption[] optionsFromHints = EMPTY_OPTIONS;
     if (statementHintParser.hasStatementHints()
         && !statementHintParser.getClientSideStatementHints().isEmpty()) {
@@ -521,18 +534,52 @@ public abstract class AbstractStatementParser {
           statement.toBuilder().replace(statementHintParser.getSqlWithoutClientSideHints()).build();
       optionsFromHints = convertHintsToOptions(statementHintParser.getClientSideStatementHints());
     }
-    String sql = removeCommentsAndTrim(statement.getSql());
-    ClientSideStatementImpl client = parseClientSideStatement(sql);
+    // Create a supplier that will actually remove all comments and hints from the SQL string to be
+    // backwards compatible with anything that really needs the SQL string without comments.
+    Supplier<String> sqlWithoutCommentsSupplier =
+        Suppliers.memoize(() -> removeCommentsAndTrim(sql));
+
+    // Get rid of any spaces/comments at the start of the string.
+    SimpleParser simpleParser = new SimpleParser(getDialect(), sql);
+    simpleParser.skipWhitespaces();
+    // Create a wrapper around the SQL string from the point after the first whitespace.
+    CharBuffer charBuffer = CharBuffer.wrap(sql, simpleParser.getPos(), sql.length());
+    ClientSideStatementImpl client = parseClientSideStatement(charBuffer);
+
     if (client != null) {
-      return ParsedStatement.clientSideStatement(client, statement, sql);
-    } else if (isQuery(sql)) {
-      return ParsedStatement.query(statement, sql, defaultQueryOptions, optionsFromHints);
-    } else if (isUpdateStatement(sql)) {
-      return ParsedStatement.update(statement, sql, checkReturningClause(sql), optionsFromHints);
-    } else if (isDdlStatement(sql)) {
-      return ParsedStatement.ddl(statement, sql);
+      return ParsedStatement.clientSideStatement(client, statement, sqlWithoutCommentsSupplier);
+    } else {
+      // Find the first keyword in the SQL statement.
+      Result keywordResult = simpleParser.eatNextKeyword();
+      if (keywordResult.isValid()) {
+        // Determine the statement type based on the first keyword.
+        String keyword = keywordResult.getValue().toUpperCase();
+        if (keywordResult.isInParenthesis()) {
+          // If the first keyword is inside one or more parentheses, then only a subset of all
+          // keywords are allowed.
+          if (SELECT_STATEMENTS_ALLOWING_PRECEDING_BRACKETS.contains(keyword)) {
+            return ParsedStatement.query(
+                statement, sqlWithoutCommentsSupplier, defaultQueryOptions, optionsFromHints);
+          }
+        } else {
+          if (selectStatements.contains(keyword)) {
+            return ParsedStatement.query(
+                statement, sqlWithoutCommentsSupplier, defaultQueryOptions, optionsFromHints);
+          } else if (dmlStatements.contains(keyword)) {
+            return ParsedStatement.update(
+                statement,
+                sqlWithoutCommentsSupplier,
+                // TODO: Make the returning clause check work without removing comments
+                Suppliers.memoize(() -> checkReturningClause(sqlWithoutCommentsSupplier.get())),
+                optionsFromHints);
+          } else if (ddlStatements.contains(keyword)) {
+            return ParsedStatement.ddl(statement, sqlWithoutCommentsSupplier);
+          }
+        }
+      }
     }
-    return ParsedStatement.unknown(statement, sql);
+    // Fallthrough: Return an unknown statement.
+    return ParsedStatement.unknown(statement, sqlWithoutCommentsSupplier);
   }
 
   /**
@@ -546,7 +593,7 @@ public abstract class AbstractStatementParser {
    *     statement.
    */
   @VisibleForTesting
-  ClientSideStatementImpl parseClientSideStatement(String sql) {
+  ClientSideStatementImpl parseClientSideStatement(CharSequence sql) {
     for (ClientSideStatementImpl css : statements) {
       if (css.matches(sql)) {
         return css;
@@ -563,8 +610,10 @@ public abstract class AbstractStatementParser {
    * @param sql The statement to check (without any comments).
    * @return <code>true</code> if the statement is a DDL statement (i.e. starts with 'CREATE',
    *     'ALTER' or 'DROP').
+   * @deprecated Use {@link #parse(Statement)} instead
    */
   @InternalApi
+  @Deprecated
   public boolean isDdlStatement(String sql) {
     return statementStartsWith(sql, ddlStatements);
   }
@@ -576,8 +625,10 @@ public abstract class AbstractStatementParser {
    *
    * @param sql The statement to check (without any comments).
    * @return <code>true</code> if the statement is a SELECT statement (i.e. starts with 'SELECT').
+   * @deprecated Use {@link #parse(Statement)} instead
    */
   @InternalApi
+  @Deprecated
   public boolean isQuery(String sql) {
     // Skip any query hints at the beginning of the query.
     // We only do this if we actually know that it starts with a hint to prevent unnecessary
@@ -600,8 +651,10 @@ public abstract class AbstractStatementParser {
    * @param sql The statement to check (without any comments).
    * @return <code>true</code> if the statement is a DML update statement (i.e. starts with
    *     'INSERT', 'UPDATE' or 'DELETE').
+   * @deprecated Use {@link #parse(Statement)} instead
    */
   @InternalApi
+  @Deprecated
   public boolean isUpdateStatement(String sql) {
     // Skip any query hints at the beginning of the query.
     if (sql.startsWith("@")) {
