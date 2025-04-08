@@ -31,6 +31,7 @@ import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementTy
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
@@ -41,6 +42,7 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -614,16 +616,20 @@ public abstract class AbstractStatementParser {
 
   private boolean statementStartsWith(String sql, Iterable<String> checkStatements) {
     Preconditions.checkNotNull(sql);
-    String[] tokens = sql.split("\\s+", 2);
-    int checkIndex = 0;
-    if (supportsExplain() && tokens[0].equalsIgnoreCase("EXPLAIN")) {
-      checkIndex = 1;
+    Iterator<String> tokens = Splitter.onPattern("\\s+").split(sql).iterator();
+    if (!tokens.hasNext()) {
+      return false;
     }
-    if (tokens.length > checkIndex) {
-      for (String check : checkStatements) {
-        if (tokens[checkIndex].equalsIgnoreCase(check)) {
-          return true;
-        }
+    String token = tokens.next();
+    if (supportsExplain() && token.equalsIgnoreCase("EXPLAIN")) {
+      if (!tokens.hasNext()) {
+        return false;
+      }
+      token = tokens.next();
+    }
+    for (String check : checkStatements) {
+      if (token.equalsIgnoreCase(check)) {
+        return true;
       }
     }
     return false;
