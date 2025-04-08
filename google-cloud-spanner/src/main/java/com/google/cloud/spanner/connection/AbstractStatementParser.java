@@ -617,8 +617,6 @@ public abstract class AbstractStatementParser {
     return statementStartsWith(sql, dmlStatements);
   }
 
-  protected abstract boolean supportsExplain();
-
   private boolean statementStartsWith(String sql, Iterable<String> checkStatements) {
     Preconditions.checkNotNull(sql);
     Iterator<String> tokens = Splitter.onPattern("\\s+").split(sql).iterator();
@@ -626,12 +624,6 @@ public abstract class AbstractStatementParser {
       return false;
     }
     String token = tokens.next();
-    if (supportsExplain() && token.equalsIgnoreCase("EXPLAIN")) {
-      if (!tokens.hasNext()) {
-        return false;
-      }
-      token = tokens.next();
-    }
     for (String check : checkStatements) {
       if (token.equalsIgnoreCase(check)) {
         return true;

@@ -46,15 +46,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     return Dialect.POSTGRESQL;
   }
 
-  /**
-   * Indicates whether the parser supports the {@code EXPLAIN} clause. The PostgreSQL parser does
-   * not support it.
-   */
-  @Override
-  protected boolean supportsExplain() {
-    return false;
-  }
-
   @Override
   boolean supportsNestedComments() {
     return true;
