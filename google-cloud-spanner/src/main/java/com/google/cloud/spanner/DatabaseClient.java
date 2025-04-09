@@ -21,6 +21,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.Statement.StatementFactory;
 import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 
@@ -606,4 +607,16 @@ public interface DatabaseClient {
    * idempotent, such as deleting old rows from a very large table.
    */
   long executePartitionedUpdate(Statement stmt, UpdateOption... options);
+
+  /**
+   * Returns StatementFactory for the given dialect. With StatementFactory, unnamed parameterized
+   * queries can be passed along with the values to create a Statement.
+   *
+   * <p>Examples using {@link StatementFactory}
+   *
+   * <p>databaseClient.newStatementFactory().of("SELECT NAME FROM TABLE WHERE ID = ?", 10)
+   */
+  default StatementFactory newStatementFactory() {
+    return new StatementFactory(getDialect());
+  }
 }

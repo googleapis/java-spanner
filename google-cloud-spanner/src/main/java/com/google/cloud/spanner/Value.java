@@ -16,6 +16,14 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerTypeConverter.convertLocalDateToSpannerDate;
+import static com.google.cloud.spanner.SpannerTypeConverter.convertToISO8601;
+import static com.google.cloud.spanner.SpannerTypeConverter.convertToTypedIterable;
+import static com.google.cloud.spanner.SpannerTypeConverter.convertToUTCTimezone;
+import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedArrayValue;
+import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedIterableValue;
+import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedValue;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -39,16 +47,23 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -89,6 +104,8 @@ public abstract class Value implements Serializable {
 
   static final com.google.protobuf.Value NULL_PROTO =
       com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
+
+  private static final ZoneId UTC_ZONE = ZoneId.of("UTC");
 
   /** Constant to specify a PG Numeric NaN value. */
   public static final String NAN = "NaN";
@@ -823,6 +840,166 @@ public abstract class Value implements Serializable {
   }
 
   private Value() {}
+
+  static Value toValue(Object value) {
+    if (value instanceof Value) {
+      return (Value) value;
+    }
+    if (value instanceof Boolean) {
+      return Value.bool((Boolean) value);
+    }
+    if (value instanceof Long || value instanceof Integer) {
+      return createUntypedValue(String.valueOf(value));
+    }
+    if (value instanceof Float) {
+      return Value.float32((Float) value);
+    }
+    if (value instanceof Double) {
+      return Value.float64((Double) value);
+    }
+    if (value instanceof BigDecimal) {
+      return Value.numeric((BigDecimal) value);
+    }
+    if (value instanceof ByteArray) {
+      return Value.bytes((ByteArray) value);
+    }
+    if (value instanceof byte[]) {
+      return Value.bytes(ByteArray.copyFrom((byte[]) value));
+    }
+    if (value instanceof Date) {
+      return Value.date((Date) value);
+    }
+    if (value instanceof java.util.Date) {
+      return Value.date(SpannerTypeConverter.convertUtilDateToSpannerDate((java.util.Date) value));
+    }
+    if (value instanceof LocalDate) {
+      return Value.date(convertLocalDateToSpannerDate((LocalDate) value));
+    }
+    if (value instanceof LocalDateTime) {
+      return createUntypedValue(convertToISO8601(convertToUTCTimezone((LocalDateTime) value)));
+    }
+    if (value instanceof OffsetDateTime) {
+      return createUntypedValue(convertToISO8601(convertToUTCTimezone((OffsetDateTime) value)));
+    }
+    if (value instanceof ZonedDateTime) {
+      return createUntypedValue(convertToISO8601(convertToUTCTimezone((ZonedDateTime) value)));
+    }
+    if (value instanceof ProtocolMessageEnum) {
+      return Value.protoEnum((ProtocolMessageEnum) value);
+    }
+    if (value instanceof AbstractMessage) {
+      return Value.protoMessage((AbstractMessage) value);
+    }
+    if (value instanceof Interval) {
+      return Value.interval((Interval) value);
+    }
+    if (value instanceof Struct) {
+      return Value.struct((Struct) value);
+    }
+    if (value instanceof Timestamp) {
+      return Value.timestamp((Timestamp) value);
+    }
+    if (value instanceof Iterable<?>) {
+      Iterator<?> iterator = ((Iterable<?>) value).iterator();
+      if (!iterator.hasNext()) {
+        return createUntypedArrayValue(Stream.empty());
+      }
+      Object object = iterator.next();
+      if (object instanceof Boolean) {
+        return Value.boolArray(convertToTypedIterable((Boolean) object, iterator));
+      }
+      if (object instanceof Integer) {
+        return createUntypedIterableValue((Integer) object, iterator, String::valueOf);
+      }
+      if (object instanceof Long) {
+        return createUntypedIterableValue((Long) object, iterator, String::valueOf);
+      }
+      if (object instanceof Float) {
+        return Value.float32Array(convertToTypedIterable((Float) object, iterator));
+      }
+      if (object instanceof Double) {
+        return Value.float64Array(convertToTypedIterable((Double) object, iterator));
+      }
+      if (object instanceof BigDecimal) {
+        return Value.numericArray(convertToTypedIterable((BigDecimal) object, iterator));
+      }
+      if (object instanceof ByteArray) {
+        return Value.bytesArray(convertToTypedIterable((ByteArray) object, iterator));
+      }
+      if (object instanceof byte[]) {
+        return Value.bytesArray(
+            SpannerTypeConverter.convertToTypedIterable(
+                ByteArray::copyFrom, (byte[]) object, iterator));
+      }
+      if (object instanceof Interval) {
+        return Value.intervalArray(convertToTypedIterable((Interval) object, iterator));
+      }
+      if (object instanceof Timestamp) {
+        return Value.timestampArray(convertToTypedIterable((Timestamp) object, iterator));
+      }
+      if (object instanceof Date) {
+        return Value.dateArray(convertToTypedIterable((Date) object, iterator));
+      }
+      if (object instanceof java.util.Date) {
+        return Value.dateArray(
+            convertToTypedIterable(
+                SpannerTypeConverter::convertUtilDateToSpannerDate,
+                (java.util.Date) object,
+                iterator));
+      }
+      if (object instanceof LocalDate) {
+        return Value.dateArray(
+            SpannerTypeConverter.convertToTypedIterable(
+                SpannerTypeConverter::convertLocalDateToSpannerDate, (LocalDate) object, iterator));
+      }
+      if (object instanceof LocalDateTime) {
+        return createUntypedIterableValue(
+            (LocalDateTime) object, iterator, val -> convertToISO8601(convertToUTCTimezone(val)));
+      }
+      if (object instanceof OffsetDateTime) {
+        return createUntypedIterableValue(
+            (OffsetDateTime) object, iterator, val -> convertToISO8601(convertToUTCTimezone(val)));
+      }
+      if (object instanceof ZonedDateTime) {
+        return createUntypedIterableValue(
+            (ZonedDateTime) object, iterator, val -> convertToISO8601(convertToUTCTimezone(val)));
+      }
+    }
+
+    // array and primitive array
+    if (value instanceof Boolean[]) {
+      return Value.boolArray(Arrays.asList((Boolean[]) value));
+    }
+    if (value instanceof boolean[]) {
+      return Value.boolArray((boolean[]) value);
+    }
+    if (value instanceof Float[]) {
+      return Value.float32Array(Arrays.asList((Float[]) value));
+    }
+    if (value instanceof float[]) {
+      return Value.float32Array((float[]) value);
+    }
+    if (value instanceof Double[]) {
+      return Value.float64Array(Arrays.asList((Double[]) value));
+    }
+    if (value instanceof double[]) {
+      return Value.float64Array((double[]) value);
+    }
+    if (value instanceof Long[]) {
+      return createUntypedArrayValue(Arrays.stream((Long[]) value));
+    }
+    if (value instanceof long[]) {
+      return createUntypedArrayValue(Arrays.stream((long[]) value).boxed());
+    }
+    if (value instanceof Integer[]) {
+      return createUntypedArrayValue(Arrays.stream((Integer[]) value));
+    }
+    if (value instanceof int[]) {
+      return createUntypedArrayValue(Arrays.stream((int[]) value).boxed());
+    }
+
+    return createUntypedValue(value);
+  }
 
   /** Returns the type of this value. This will return a type even if {@code isNull()} is true. */
   public abstract Type getType();

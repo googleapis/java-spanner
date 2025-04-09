@@ -4897,6 +4897,23 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testStatementWithIUnnamedParametersParameter() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    Statement statement = client.newStatementFactory().of("select id from test where b=?", true);
+    Statement generatedStatement =
+        Statement.newBuilder("select id from test where b=@p1").bind("p1").to(true).build();
+    mockSpanner.putStatementResult(StatementResult.query(generatedStatement, SELECT1_RESULTSET));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
   public void testStatementWithBytesArrayParameter() {
     Statement statement =
         Statement.newBuilder("select id from test where b=@p1")
