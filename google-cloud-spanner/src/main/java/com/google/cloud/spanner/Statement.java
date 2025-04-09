@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
+import com.google.cloud.spanner.connection.AbstractStatementParser;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParametersInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -245,5 +247,57 @@ public final class Statement implements Serializable {
       b.append(",queryOptions=").append(queryOptions.toString());
     }
     return b;
+  }
+
+  public static final class StatementFactory {
+    private final Dialect dialect;
+
+    StatementFactory(Dialect dialect) {
+      this.dialect = dialect;
+    }
+
+    public Statement of(String sql) {
+      return Statement.of(sql);
+    }
+
+    /**
+     * @param sql SQL statement with unnamed parameter denoted as ?
+     * @param values list of values which needs to replace ? in the sql
+     * @return Statement object
+     *     <p>This function accepts the SQL statement with unnamed parameters(?) and accepts the
+     *     list of objects to replace unnamed parameters. Primitive types are supported
+     *     <p>For Date column, following types are supported
+     *     <ul>
+     *       <li>java.util.Date
+     *       <li>LocalDate
+     *       <li>com.google.cloud.Date
+     *     </ul>
+     *     <p>For Timestamp column, following types are supported. All the dates should be in UTC
+     *     format. Incase if the timezone is not in UTC, spanner client will convert that to UTC
+     *     automatically
+     *     <ul>
+     *       <li>LocalDateTime
+     *       <li>OffsetDateTime
+     *       <li>ZonedDateTime
+     *     </ul>
+     *     <p>
+     * @see DatabaseClient#newStatementFactory
+     */
+    public Statement of(String sql, Object... values) {
+      Map<String, Value> parameters = getUnnamedParametersMap(values);
+      AbstractStatementParser statementParser = AbstractStatementParser.getInstance(this.dialect);
+      ParametersInfo parametersInfo =
+          statementParser.convertPositionalParametersToNamedParameters('?', sql);
+      return new Statement(parametersInfo.sqlWithNamedParameters, parameters, null);
+    }
+
+    private Map<String, Value> getUnnamedParametersMap(Object[] values) {
+      Map<String, Value> parameters = new HashMap<>();
+      int index = 1;
+      for (Object value : values) {
+        parameters.put("p" + (index++), Value.toValue(value));
+      }
+      return parameters;
+    }
   }
 }
