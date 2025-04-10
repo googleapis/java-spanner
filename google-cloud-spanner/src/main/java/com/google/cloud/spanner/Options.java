@@ -535,6 +535,7 @@ public final class Options implements Serializable {
   private RpcLockHint lockHint;
   private Boolean lastStatement;
   private IsolationLevel isolationLevel;
+  private XGoogSpannerRequestId reqId;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -589,6 +590,14 @@ public final class Options implements Serializable {
 
   String pageToken() {
     return pageToken;
+  }
+
+  boolean hasReqId() {
+    return reqId != null;
+  }
+
+  XGoogSpannerRequestId reqId() {
+    return reqId;
   }
 
   boolean hasFilter() {
@@ -756,6 +765,9 @@ public final class Options implements Serializable {
     if (isolationLevel != null) {
       b.append("isolationLevel: ").append(isolationLevel).append(' ');
     }
+    if (reqId != null) {
+      b.append("requestId: ").append(reqId.toString());
+    }
     return b.toString();
   }
 
@@ -798,7 +810,8 @@ public final class Options implements Serializable {
         && Objects.equals(orderBy(), that.orderBy())
         && Objects.equals(isLastStatement(), that.isLastStatement())
         && Objects.equals(lockHint(), that.lockHint())
-        && Objects.equals(isolationLevel(), that.isolationLevel());
+        && Objects.equals(isolationLevel(), that.isolationLevel())
+        && Objects.equals(reqId(), that.reqId());
   }
 
   @Override
@@ -866,6 +879,9 @@ public final class Options implements Serializable {
     }
     if (isolationLevel != null) {
       result = 31 * result + isolationLevel.hashCode();
+    }
+    if (reqId != null) {
+      result = 31 * result + reqId.hashCode();
     }
     return result;
   }
@@ -1050,6 +1066,32 @@ public final class Options implements Serializable {
     @Override
     public boolean equals(Object o) {
       return o instanceof LastStatementUpdateOption;
+    }
+  }
+
+  static final class RequestIdOption extends InternalOption
+      implements TransactionOption, UpdateOption {
+    private final XGoogSpannerRequestId reqId;
+
+    RequestIdOption(XGoogSpannerRequestId reqId) {
+      this.reqId = reqId;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.reqId = this.reqId;
+    }
+
+    @Override
+    public int hashCode() {
+      return RequestIdOption.class.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      // TODO: Examine why the precedent for LastStatementUpdateOption
+      // does not check against the actual value.
+      return o instanceof RequestIdOption;
     }
   }
 }
