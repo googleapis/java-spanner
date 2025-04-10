@@ -153,8 +153,17 @@ public class SessionClientTests {
       assertThat(session.getName()).isEqualTo(sessionName);
 
       session.close();
+
+      final ArgumentCaptor<Map<SpannerRpc.Option, ?>> deleteOptionsCaptor =
+          ArgumentCaptor.forClass(Map.class);
+      final ArgumentCaptor<String> sessionNameCaptor = ArgumentCaptor.forClass(String.class);
+      Mockito.verify(rpc).deleteSession(sessionNameCaptor.capture(), deleteOptionsCaptor.capture());
+      assertEquals(sessionName, sessionNameCaptor.getValue());
       // The same channelHint is passed for deleteSession (contained in "options").
-      Mockito.verify(rpc).deleteSession(sessionName, options.getValue());
+      assertEquals(
+          deleteOptionsCaptor.getValue().get(SpannerRpc.Option.CHANNEL_HINT),
+          options.getValue().get(SpannerRpc.Option.CHANNEL_HINT));
+      assertTrue(deleteOptionsCaptor.getValue().containsKey(SpannerRpc.Option.REQUEST_ID));
     }
   }
 
