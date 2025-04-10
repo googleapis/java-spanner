@@ -206,6 +206,8 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     this.executorFactory = executorFactory;
     this.executor = executorFactory.get();
     this.commonAttributes = spanner.getTracer().createCommonAttributes(db);
+    this.nthId = SessionClient.NTH_ID.incrementAndGet();
+    this.nthRequest = new AtomicInteger(0);
   }
 
   @Override
@@ -239,6 +241,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     XGoogSpannerRequestId reqId = nextRequestId(channelId, 1);
     ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION, this.commonAttributes);
     try (IScope s = spanner.getTracer().withSpan(span)) {
+      XGoogSpannerRequestId reqId = this.nextRequestId(channelId, 1);
       com.google.spanner.v1.Session session =
           spanner
               .getRpc()
