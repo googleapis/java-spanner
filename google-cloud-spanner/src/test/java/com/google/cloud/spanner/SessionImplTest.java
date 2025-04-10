@@ -144,6 +144,7 @@ public class SessionImplTest {
     when(rpc.getCommitRetrySettings())
         .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
     session = spanner.getSessionClient(db).createSession();
+    ((SessionImpl) session).setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     Span oTspan = mock(Span.class);
     ISpan span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));

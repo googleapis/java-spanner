@@ -71,6 +71,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
+import com.google.cloud.spanner.XGoogSpannerRequestId;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminCallableFactory;
@@ -88,6 +89,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.RateLimiter;
@@ -193,6 +195,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -407,6 +410,8 @@ public class GapicSpannerRpc implements SpannerRpc {
       final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
       try {
+        // TODO: make our retry settings to inject and increment
+        // XGoogSpannerRequestId whenever a retry occurs.
         SpannerStubSettings spannerStubSettings =
             options.getSpannerStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
@@ -2042,8 +2047,13 @@ public class GapicSpannerRpc implements SpannerRpc {
                         GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
       } else {
         // Set channel affinity in GAX.
-        context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+        Long affinity = Option.CHANNEL_HINT.getLong(options);
+        if (affinity != null) {
+          context = context.withChannelAffinity(affinity.intValue());
+        }
       }
+      String methodName = method.getFullMethodName();
+      context = withRequestId(context, options, methodName);
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
@@ -2062,6 +2072,19 @@ public class GapicSpannerRpc implements SpannerRpc {
       apiCallContextFromContext = configurator.configure(context, request, method);
     }
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
+  }
+
+  GrpcCallContext withRequestId(GrpcCallContext context, Map options, String methodName) {
+    XGoogSpannerRequestId reqId = (XGoogSpannerRequestId) options.get(Option.REQUEST_ID);
+    if (reqId == null) {
+      return context;
+    }
+
+    Map<String, List<String>> withReqId =
+        ImmutableMap.of(
+            XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(),
+            Collections.singletonList(reqId.toString()));
+    return context.withExtraHeaders(withReqId);
   }
 
   void registerResponseObserver(SpannerResponseObserver responseObserver) {
