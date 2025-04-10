@@ -89,7 +89,7 @@ public class DatabaseAddSplitPointsSample {
                               .build()))
               .build();
 
-      // index key with table key part
+      // index key with table key part, first key is the index key and second is the table key
       com.google.spanner.admin.database.v1.SplitPoints splitPointForIndexWitTableKey =
           SplitPoints.newBuilder()
               .setIndex("SingersByFirstLastName")
@@ -98,15 +98,15 @@ public class DatabaseAddSplitPointsSample {
                   com.google.spanner.admin.database.v1.SplitPoints.Key.newBuilder()
                       .setKeyParts(
                           ListValue.newBuilder()
-                              .addValues(Value.newBuilder().setStringValue("38").build())
+                              .addValues(Value.newBuilder().setStringValue("Jane").build())
+                              .addValues(Value.newBuilder().setStringValue("Doe").build())
                               .build()))
               .setKeys(
                   1,
                   com.google.spanner.admin.database.v1.SplitPoints.Key.newBuilder()
                       .setKeyParts(
                           ListValue.newBuilder()
-                              .addValues(Value.newBuilder().setStringValue("Jane").build())
-                              .addValues(Value.newBuilder().setStringValue("Doe").build())
+                              .addValues(Value.newBuilder().setStringValue("38").build())
                               .build()))
               .build();
 
