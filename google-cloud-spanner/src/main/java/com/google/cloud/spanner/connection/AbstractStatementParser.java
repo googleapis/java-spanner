@@ -31,6 +31,7 @@ import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementTy
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
@@ -41,6 +42,7 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -511,7 +513,7 @@ public abstract class AbstractStatementParser {
     return parsedStatement.copy(statement, defaultQueryOptions);
   }
 
-  private ParsedStatement internalParse(Statement statement, QueryOptions defaultQueryOptions) {
+  ParsedStatement internalParse(Statement statement, QueryOptions defaultQueryOptions) {
     StatementHintParser statementHintParser =
         new StatementHintParser(getDialect(), statement.getSql());
     ReadQueryUpdateTransactionOption[] optionsFromHints = EMPTY_OPTIONS;
@@ -521,16 +523,21 @@ public abstract class AbstractStatementParser {
           statement.toBuilder().replace(statementHintParser.getSqlWithoutClientSideHints()).build();
       optionsFromHints = convertHintsToOptions(statementHintParser.getClientSideStatementHints());
     }
+    // TODO: Qualify statements without removing comments first.
     String sql = removeCommentsAndTrim(statement.getSql());
     ClientSideStatementImpl client = parseClientSideStatement(sql);
     if (client != null) {
       return ParsedStatement.clientSideStatement(client, statement, sql);
-    } else if (isQuery(sql)) {
-      return ParsedStatement.query(statement, sql, defaultQueryOptions, optionsFromHints);
-    } else if (isUpdateStatement(sql)) {
-      return ParsedStatement.update(statement, sql, checkReturningClause(sql), optionsFromHints);
-    } else if (isDdlStatement(sql)) {
-      return ParsedStatement.ddl(statement, sql);
+    } else {
+      String sqlWithoutHints =
+          !sql.isEmpty() && sql.charAt(0) == '@' ? removeStatementHint(sql) : sql;
+      if (isQuery(sqlWithoutHints)) {
+        return ParsedStatement.query(statement, sql, defaultQueryOptions, optionsFromHints);
+      } else if (isUpdateStatement(sqlWithoutHints)) {
+        return ParsedStatement.update(statement, sql, checkReturningClause(sql), optionsFromHints);
+      } else if (isDdlStatement(sqlWithoutHints)) {
+        return ParsedStatement.ddl(statement, sql);
+      }
     }
     return ParsedStatement.unknown(statement, sql);
   }
@@ -610,20 +617,16 @@ public abstract class AbstractStatementParser {
     return statementStartsWith(sql, dmlStatements);
   }
 
-  protected abstract boolean supportsExplain();
-
   private boolean statementStartsWith(String sql, Iterable<String> checkStatements) {
     Preconditions.checkNotNull(sql);
-    String[] tokens = sql.split("\\s+", 2);
-    int checkIndex = 0;
-    if (supportsExplain() && tokens[0].equalsIgnoreCase("EXPLAIN")) {
-      checkIndex = 1;
+    Iterator<String> tokens = Splitter.onPattern("\\s+").split(sql).iterator();
+    if (!tokens.hasNext()) {
+      return false;
     }
-    if (tokens.length > checkIndex) {
-      for (String check : checkStatements) {
-        if (tokens[checkIndex].equalsIgnoreCase(check)) {
-          return true;
-        }
+    String token = tokens.next();
+    for (String check : checkStatements) {
+      if (token.equalsIgnoreCase(check)) {
+        return true;
       }
     }
     return false;
@@ -929,7 +932,8 @@ public abstract class AbstractStatementParser {
       appendIfNotNull(result, startQuote);
       appendIfNotNull(result, startQuote);
     }
-    while (currentIndex < sql.length()) {
+    int length = sql.length();
+    while (currentIndex < length) {
       char currentChar = sql.charAt(currentIndex);
       if (currentChar == startQuote) {
         if (supportsDollarQuotedStrings() && currentChar == DOLLAR) {
@@ -940,7 +944,7 @@ public abstract class AbstractStatementParser {
             return currentIndex + tag.length() + 2;
           }
         } else if (supportsEscapeQuoteWithQuote()
-            && sql.length() > currentIndex + 1
+            && length > currentIndex + 1
             && sql.charAt(currentIndex + 1) == startQuote) {
           // This is an escaped quote (e.g. 'foo''bar')
           appendIfNotNull(result, currentChar);
@@ -949,7 +953,7 @@ public abstract class AbstractStatementParser {
           continue;
         } else if (isTripleQuoted) {
           // Check if this is the end of the triple-quoted string.
-          if (sql.length() > currentIndex + 2
+          if (length > currentIndex + 2
               && sql.charAt(currentIndex + 1) == startQuote
               && sql.charAt(currentIndex + 2) == startQuote) {
             appendIfNotNull(result, currentChar);
@@ -963,7 +967,7 @@ public abstract class AbstractStatementParser {
         }
       } else if (supportsBackslashEscape()
           && currentChar == BACKSLASH
-          && sql.length() > currentIndex + 1
+          && length > currentIndex + 1
           && sql.charAt(currentIndex + 1) == startQuote) {
         // This is an escaped quote (e.g. 'foo\'bar').
         // Note that in raw strings, the \ officially does not start an escape sequence, but the
