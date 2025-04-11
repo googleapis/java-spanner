@@ -140,6 +140,11 @@ public final class SpannerExceptionFactory {
   }
 
   public static SpannerBatchUpdateException newSpannerBatchUpdateException(
+      ErrorCode code, String message, long[] updateCounts) {
+    return newSpannerBatchUpdateException(code, message, updateCounts, null);
+  }
+
+  public static SpannerBatchUpdateException newSpannerBatchUpdateException(
       ErrorCode code, String message, long[] updateCounts, @Nullable XGoogSpannerRequestId reqId) {
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;
     SpannerException cause = null;
