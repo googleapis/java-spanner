@@ -25,8 +25,9 @@ public class SpannerBatchUpdateException extends SpannerException {
       ErrorCode code,
       String message,
       long[] counts,
-      Throwable cause) {
-    super(token, code, false, message, cause);
+      Throwable cause,
+      XGoogSpannerRequestId reqId) {
+    super(token, code, false, message, cause, null, reqId);
     updateCounts = counts;
   }
 

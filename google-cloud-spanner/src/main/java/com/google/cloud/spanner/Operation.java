@@ -89,7 +89,7 @@ public class Operation<R, M> {
       SpannerRpc rpc, String name, Status status, M metadata, Parser<R, M> parser, ApiClock clock) {
     SpannerException e =
         SpannerExceptionFactory.newSpannerException(
-            ErrorCode.fromRpcStatus(status), status.getMessage(), null);
+            ErrorCode.fromRpcStatus(status), status.getMessage(), (Throwable) (null));
     return new Operation<>(rpc, name, metadata, null, e, true, parser, clock);
   }
 
