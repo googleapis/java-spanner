@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.91.0](https://github.com/googleapis/java-spanner/compare/v6.90.0...v6.91.0) (2025-04-11)
+
+
+### Features
+
+* Add java sample for the pre-splitting feature ([#3713](https://github.com/googleapis/java-spanner/issues/3713)) ([e97b92e](https://github.com/googleapis/java-spanner/commit/e97b92ea4728bc8f013ff73478de4af9eaa1793b))
+* Add TransactionMutationLimitExceededException as cause to SpannerBatchUpdateException ([#3723](https://github.com/googleapis/java-spanner/issues/3723)) ([4cf5261](https://github.com/googleapis/java-spanner/commit/4cf52613c6c8280fdb864f5b8d04f8fb6ea55e16))
+
+
+### Bug Fixes
+
+* Add default implementations for Interval methods in AbstractStructReader ([#3722](https://github.com/googleapis/java-spanner/issues/3722)) ([97f4544](https://github.com/googleapis/java-spanner/commit/97f45448ecb51bd20699d1f163f78b2a7736b21f))
+* Set transaction isolation level had no effect ([#3718](https://github.com/googleapis/java-spanner/issues/3718)) ([b382999](https://github.com/googleapis/java-spanner/commit/b382999f42d1b643472cf3f605f8c6dc839dec19))
+
+
+### Performance Improvements
+
+* Cache the key used for OTEL traces and metrics ([#3814](https://github.com/googleapis/java-spanner/issues/3814)) ([c5a2045](https://github.com/googleapis/java-spanner/commit/c5a20452ad2ed5a8f1ac12cca4072a86f4457b93))
+* Optimize parsing in Connection API ([#3800](https://github.com/googleapis/java-spanner/issues/3800)) ([a2780ed](https://github.com/googleapis/java-spanner/commit/a2780edb3d9d4972c78befd097692f626a6a4bea))
+* Qualify statements without removing comments ([#3810](https://github.com/googleapis/java-spanner/issues/3810)) ([d358cb9](https://github.com/googleapis/java-spanner/commit/d358cb96e33bdf6de6528d03c884aa702b40b802))
+
 ## [6.90.0](https://github.com/googleapis/java-spanner/compare/v6.89.0...v6.90.0) (2025-03-31)
 
 
