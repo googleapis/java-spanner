@@ -873,4 +873,39 @@ public class OptionsTest {
     Options options = Options.fromTransactionOptions(transactionOptions);
     assertEquals(options.isolationLevel(), IsolationLevel.SERIALIZABLE);
   }
+
+  @Test
+  public void testRequestId() {
+    XGoogSpannerRequestId reqId1 = XGoogSpannerRequestId.of(1, 2, 3, 4);
+    XGoogSpannerRequestId reqId2 = XGoogSpannerRequestId.of(2, 3, 4, 5);
+    Options option1 = Options.fromUpdateOptions(Options.requestId(reqId1));
+    Options option1Prime = Options.fromUpdateOptions(Options.requestId(reqId1));
+    Options option2 = Options.fromUpdateOptions(Options.requestId(reqId2));
+    Options option3 = Options.fromUpdateOptions();
+
+    assertEquals(option1, option1Prime);
+    assertNotEquals(option1, option2);
+    assertEquals(option1.hashCode(), option1Prime.hashCode());
+    assertNotEquals(option1, option2);
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+
+    assertTrue(option1.hasReqId());
+    assertThat(option1.toString()).contains("requestId: " + reqId1.toString());
+
+    assertFalse(option3.hasReqId());
+    assertThat(option3.toString()).doesNotContain("requestId");
+  }
+
+  @Test
+  public void testOptions_WithMultipleDifferentRequestIds() {
+    XGoogSpannerRequestId reqId1 = XGoogSpannerRequestId.of(1, 1, 1, 1);
+    XGoogSpannerRequestId reqId2 = XGoogSpannerRequestId.of(1, 1, 1, 2);
+    TransactionOption[] transactionOptions = {
+      Options.requestId(reqId1), Options.requestId(reqId2),
+    };
+    Options options = Options.fromTransactionOptions(transactionOptions);
+    assertNotEquals(options.reqId(), reqId1);
+    assertEquals(options.reqId(), reqId2);
+  }
 }
