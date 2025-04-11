@@ -46,15 +46,6 @@ public class SpannerStatementParser extends AbstractStatementParser {
     return Dialect.GOOGLE_STANDARD_SQL;
   }
 
-  /**
-   * Indicates whether the parser supports the {@code EXPLAIN} clause. The Spanner parser does
-   * support it.
-   */
-  @Override
-  protected boolean supportsExplain() {
-    return true;
-  }
-
   @Override
   boolean supportsNestedComments() {
     return false;
