@@ -91,18 +91,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     String client_name = "spanner-java/";
     openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
-    attributes = provider.createClientAttributes("test-project", client_name);
+    attributes = provider.createClientAttributes();
 
     expectedCommonBaseAttributes =
         Attributes.builder()
-            .put(BuiltInMetricsConstant.PROJECT_ID_KEY, "test-project")
-            .put(BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY, "unknown")
-            .put(
-                BuiltInMetricsConstant.LOCATION_ID_KEY,
-                BuiltInMetricsProvider.detectClientLocation())
             .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, client_name)
             .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
-            .put(BuiltInMetricsConstant.CLIENT_HASH_KEY, attributes.get("client_hash"))
             .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, "i")
             .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
             .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
