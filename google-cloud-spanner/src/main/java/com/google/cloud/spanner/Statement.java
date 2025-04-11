@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.io.Serializable;
 import java.util.Collections;
@@ -140,7 +141,7 @@ public final class Statement implements Serializable {
 
   /** Creates a {@code Statement} with the given SQL text {@code sql}. */
   public static Statement of(String sql) {
-    return newBuilder(sql).build();
+    return new Statement(sql, ImmutableMap.of(), /*queryOptions=*/ null);
   }
 
   /** Creates a new statement builder with the SQL text {@code sql}. */

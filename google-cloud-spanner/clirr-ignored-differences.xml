@@ -935,4 +935,22 @@
     <field>VALID_PROPERTIES</field>
   </difference>
 
+  <!-- Remove supportsExplain() from the parser -->
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/AbstractStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/PostgreSQLStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/SpannerStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+
+  
 </differences>
