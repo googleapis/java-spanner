@@ -23,7 +23,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import java.util.Map;
 
@@ -36,9 +35,6 @@ import java.util.Map;
 class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
 
   private final DoubleHistogram gfeLatencyRecorder;
-  private final DoubleHistogram afeLatencyRecorder;
-  private final LongCounter gfeHeaderMissingCountRecorder;
-  private final LongCounter afeHeaderMissingCountRecorder;
 
   /**
    * Creates the following instruments for the following metrics:
@@ -63,27 +59,6 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
             .setDescription(
                 "Latency between Google's network receiving an RPC and reading back the first byte of the response")
             .setUnit("ms")
-            .setExplicitBucketBoundariesAdvice(BuiltInMetricsConstant.BUCKET_BOUNDARIES)
-            .build();
-    this.afeLatencyRecorder =
-        meter
-            .histogramBuilder(serviceName + '/' + BuiltInMetricsConstant.AFE_LATENCIES_NAME)
-            .setDescription(
-                "Latency between Spanner API Frontend receiving an RPC and starting to write back the response.")
-            .setExplicitBucketBoundariesAdvice(BuiltInMetricsConstant.BUCKET_BOUNDARIES)
-            .setUnit("ms")
-            .build();
-    this.gfeHeaderMissingCountRecorder =
-        meter
-            .counterBuilder(serviceName + '/' + BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME)
-            .setDescription("Number of requests that failed to reach the Google network.")
-            .setUnit("1")
-            .build();
-    this.afeHeaderMissingCountRecorder =
-        meter
-            .counterBuilder(serviceName + '/' + BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME)
-            .setDescription("Number of requests that failed to reach the Spanner API Frontend.")
-            .setUnit("1")
             .build();
   }
 
@@ -94,25 +69,8 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
    * @param gfeLatency Attempt Latency in ms
    * @param attributes Map of the attributes to store
    */
-  void recordServerTimingHeaderMetrics(
-      Long gfeLatency,
-      Long afeLatency,
-      Long gfeHeaderMissingCount,
-      Long afeHeaderMissingCount,
-      Map<String, String> attributes) {
-    io.opentelemetry.api.common.Attributes otelAttributes = toOtelAttributes(attributes);
-    if (gfeLatency != null) {
-      gfeLatencyRecorder.record(gfeLatency, otelAttributes);
-    }
-    if (gfeHeaderMissingCount > 0) {
-      gfeHeaderMissingCountRecorder.add(gfeHeaderMissingCount, otelAttributes);
-    }
-    if (afeLatency != null) {
-      afeLatencyRecorder.record(afeLatency, otelAttributes);
-    }
-    if (afeHeaderMissingCount > 0) {
-      afeHeaderMissingCountRecorder.add(afeHeaderMissingCount, otelAttributes);
-    }
+  void recordGFELatency(double gfeLatency, Map<String, String> attributes) {
+    gfeLatencyRecorder.record(gfeLatency, toOtelAttributes(attributes));
   }
 
   Attributes toOtelAttributes(Map<String, String> attributes) {
