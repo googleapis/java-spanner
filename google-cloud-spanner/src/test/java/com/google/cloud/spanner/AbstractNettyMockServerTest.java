@@ -47,6 +47,9 @@ abstract class AbstractNettyMockServerTest {
   protected static AtomicInteger fakeServerTiming =
       new AtomicInteger(new Random().nextInt(1000) + 1);
 
+  protected static AtomicInteger fakeAFEServerTiming =
+      new AtomicInteger(new Random().nextInt(500) + 1);
+
   protected Spanner spanner;
 
   @BeforeClass
@@ -72,7 +75,9 @@ abstract class AbstractNettyMockServerTest {
                           public void sendHeaders(Metadata headers) {
                             headers.put(
                                 Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER),
-                                String.format("gfet4t7; dur=%d", fakeServerTiming.get()));
+                                String.format(
+                                    "afet4t7; dur=%d, gfet4t7; dur=%d",
+                                    fakeAFEServerTiming.get(), fakeServerTiming.get()));
                             super.sendHeaders(headers);
                           }
                         },

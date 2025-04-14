@@ -689,6 +689,10 @@ public class GapicSpannerRpc implements SpannerRpc {
         && options.getHost().endsWith(emulatorHost);
   }
 
+  public static boolean isEnableAFEServerTiming() {
+    return !Boolean.parseBoolean(System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING"));
+  }
+
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
       RetrySettings.newBuilder()
           .setInitialRetryDelayDuration(Duration.ofSeconds(5L))
@@ -2042,6 +2046,12 @@ public class GapicSpannerRpc implements SpannerRpc {
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
+    }
+    if (endToEndTracingEnabled) {
+      context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
+    }
+    if (isEnableAFEServerTiming()) {
+      context = context.withExtraHeaders(metadataProvider.newAfeServerTimingHeader());
     }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();

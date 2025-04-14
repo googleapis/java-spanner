@@ -198,4 +198,28 @@ public class CompositeTracer extends BaseApiTracer {
       }
     }
   }
+
+  public void recordGfeHeaderMissingCount(Long value) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordGfeHeaderMissingCount(value);
+      }
+    }
+  }
+
+  public void recordAFELatency(Long afeLatency) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordAFELatency(afeLatency);
+      }
+    }
+  }
+
+  public void recordAfeHeaderMissingCount(Long value) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordAfeHeaderMissingCount(value);
+      }
+    }
+  }
 }
