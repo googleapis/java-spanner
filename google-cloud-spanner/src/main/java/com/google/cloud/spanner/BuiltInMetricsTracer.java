@@ -37,8 +37,10 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   private final BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder;
   // These are RPC specific attributes and pertain to a specific API Trace
   private final Map<String, String> attributes = new HashMap<>();
-
   private Long gfeLatency = null;
+  private Long afeLatency = null;
+  private long gfeHeaderMissingCount = 0;
+  private long afeHeaderMissingCount = 0;
 
   BuiltInMetricsTracer(
       MethodName methodName, BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
@@ -54,10 +56,9 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   @Override
   public void attemptSucceeded() {
     super.attemptSucceeded();
-    if (gfeLatency != null) {
-      attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
-    }
+    attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
+    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
   }
 
   /**
@@ -67,10 +68,9 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   @Override
   public void attemptCancelled() {
     super.attemptCancelled();
-    if (gfeLatency != null) {
-      attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.CANCELLED.toString());
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
-    }
+    attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.CANCELLED.toString());
+    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
   }
 
   /**
@@ -84,10 +84,9 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   @Override
   public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
     super.attemptFailedDuration(error, delay);
-    if (gfeLatency != null) {
-      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
-    }
+    attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
   }
 
   /**
@@ -100,10 +99,9 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   @Override
   public void attemptFailedRetriesExhausted(Throwable error) {
     super.attemptFailedRetriesExhausted(error);
-    if (gfeLatency != null) {
-      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
-    }
+    attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
   }
 
   /**
@@ -116,14 +114,25 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   @Override
   public void attemptPermanentFailure(Throwable error) {
     super.attemptPermanentFailure(error);
-    if (gfeLatency != null) {
-      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-      builtInOpenTelemetryMetricsRecorder.recordGFELatency(gfeLatency, attributes);
-    }
+    attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
   }
 
   void recordGFELatency(Long gfeLatency) {
     this.gfeLatency = gfeLatency;
+  }
+
+  void recordAFELatency(Long afeLatency) {
+    this.afeLatency = afeLatency;
+  }
+
+  void recordGfeHeaderMissingCount(Long value) {
+    this.gfeHeaderMissingCount = value;
+  }
+
+  void recordAfeHeaderMissingCount(Long value) {
+    this.afeHeaderMissingCount = value;
   }
 
   @Override
