@@ -617,6 +617,6 @@ public interface DatabaseClient {
    * <p>databaseClient.newStatementFactory().of("SELECT NAME FROM TABLE WHERE ID = ?", 10)
    */
   default StatementFactory newStatementFactory() {
-    return new StatementFactory(getDialect());
+    throw new UnsupportedOperationException("method should be overwritten");
   }
 }
