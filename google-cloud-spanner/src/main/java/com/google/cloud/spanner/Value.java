@@ -50,7 +50,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,8 +103,6 @@ public abstract class Value implements Serializable {
 
   static final com.google.protobuf.Value NULL_PROTO =
       com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
-
-  private static final ZoneId UTC_ZONE = ZoneId.of("UTC");
 
   /** Constant to specify a PG Numeric NaN value. */
   public static final String NAN = "NaN";
