@@ -146,19 +146,28 @@ class DatabaseClientImpl implements DatabaseClient {
     return pool.getDialect();
   }
 
+  private final AbstractLazyInitializer<StatementFactory> statementFactorySupplier =
+      new AbstractLazyInitializer<StatementFactory>() {
+        @Override
+        protected StatementFactory initialize() {
+          try {
+            Dialect dialect = getDialectAsync().get(30, TimeUnit.SECONDS);
+            return new StatementFactory(dialect);
+          } catch (ExecutionException | TimeoutException e) {
+            throw SpannerExceptionFactory.asSpannerException(e);
+          } catch (InterruptedException e) {
+            throw SpannerExceptionFactory.propagateInterrupt(e);
+          }
+        }
+      };
+
   @Override
-  public StatementFactory newStatementFactory() {
-    if (statementFactory == null) {
-      try {
-        Dialect dialect = getDialectAsync().get(5, TimeUnit.SECONDS);
-        statementFactory = new StatementFactory(dialect);
-      } catch (ExecutionException | TimeoutException e) {
-        throw SpannerExceptionFactory.asSpannerException(e);
-      } catch (InterruptedException e) {
-        throw SpannerExceptionFactory.propagateInterrupt(e);
-      }
+  public StatementFactory getStatementFactory() {
+    try {
+      return statementFactorySupplier.get();
+    } catch (Exception exception) {
+      throw SpannerExceptionFactory.asSpannerException(exception);
     }
-    return statementFactory;
   }
 
   @Override

@@ -609,14 +609,15 @@ public interface DatabaseClient {
   long executePartitionedUpdate(Statement stmt, UpdateOption... options);
 
   /**
-   * Returns StatementFactory for the given dialect. With StatementFactory, unnamed parameterized
-   * queries can be passed along with the values to create a Statement.
+   * Returns StatementFactory for the given dialect.
+   *
+   * <p>A {@link StatementFactory}, can be used to create statements with unnamed parameters.
    *
    * <p>Examples using {@link StatementFactory}
    *
-   * <p>databaseClient.newStatementFactory().of("SELECT NAME FROM TABLE WHERE ID = ?", 10)
+   * <p>databaseClient.getStatementFactory().of("SELECT NAME FROM TABLE WHERE ID = ?", 10)
    */
-  default StatementFactory newStatementFactory() {
+  default StatementFactory getStatementFactory() {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 }

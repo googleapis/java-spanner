@@ -261,9 +261,9 @@ public final class Statement implements Serializable {
     }
 
     /**
-     * @param sql SQL statement with unnamed parameter denoted as ?
-     * @param values list of values which needs to replace ? in the sql
-     * @return Statement object
+     * @param sql SQL statement with unnamed parameters denoted as ?
+     * @param values positional list of values for the unnamed parameters in the SQL string
+     * @return Statement a statement that can be executed on Spanner
      *     <p>This function accepts the SQL statement with unnamed parameters(?) and accepts the
      *     list of objects to replace unnamed parameters. Primitive types are supported
      *     <p>For Date column, following types are supported
@@ -281,9 +281,9 @@ public final class Statement implements Serializable {
      *       <li>ZonedDateTime
      *     </ul>
      *     <p>
-     * @see DatabaseClient#newStatementFactory
+     * @see DatabaseClient#getStatementFactory
      */
-    public Statement of(String sql, Object... values) {
+    public Statement withUnnamedParameters(String sql, Object... values) {
       Map<String, Value> parameters = getUnnamedParametersMap(values);
       AbstractStatementParser statementParser = AbstractStatementParser.getInstance(this.dialect);
       ParametersInfo parametersInfo =

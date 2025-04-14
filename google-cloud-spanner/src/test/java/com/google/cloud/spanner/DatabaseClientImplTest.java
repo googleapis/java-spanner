@@ -4901,7 +4901,8 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
-    Statement statement = client.newStatementFactory().of("select id from test where b=?", true);
+    Statement statement =
+        client.getStatementFactory().withUnnamedParameters("select id from test where b=?", true);
     Statement generatedStatement =
         Statement.newBuilder("select id from test where b=@p1").bind("p1").to(true).build();
     mockSpanner.putStatementResult(StatementResult.query(generatedStatement, SELECT1_RESULTSET));

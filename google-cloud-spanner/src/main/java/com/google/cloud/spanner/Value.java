@@ -16,13 +16,13 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerTypeConverter.atUTC;
 import static com.google.cloud.spanner.SpannerTypeConverter.convertLocalDateToSpannerDate;
 import static com.google.cloud.spanner.SpannerTypeConverter.convertToISO8601;
 import static com.google.cloud.spanner.SpannerTypeConverter.convertToTypedIterable;
-import static com.google.cloud.spanner.SpannerTypeConverter.convertToUTCTimezone;
 import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedArrayValue;
 import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedIterableValue;
-import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedValue;
+import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedStringValue;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -846,7 +846,7 @@ public abstract class Value implements Serializable {
       return Value.bool((Boolean) value);
     }
     if (value instanceof Long || value instanceof Integer) {
-      return createUntypedValue(String.valueOf(value));
+      return createUntypedStringValue(String.valueOf(value));
     }
     if (value instanceof Float) {
       return Value.float32((Float) value);
@@ -867,19 +867,21 @@ public abstract class Value implements Serializable {
       return Value.date((Date) value);
     }
     if (value instanceof java.util.Date) {
-      return Value.date(SpannerTypeConverter.convertUtilDateToSpannerDate((java.util.Date) value));
+      return Value.date(Date.fromJavaUtilDate((java.util.Date) value));
     }
     if (value instanceof LocalDate) {
       return Value.date(convertLocalDateToSpannerDate((LocalDate) value));
     }
     if (value instanceof LocalDateTime) {
-      return createUntypedValue(convertToISO8601(convertToUTCTimezone((LocalDateTime) value)));
+      return createUntypedStringValue(
+          convertToISO8601(SpannerTypeConverter.atUTC((LocalDateTime) value)));
     }
     if (value instanceof OffsetDateTime) {
-      return createUntypedValue(convertToISO8601(convertToUTCTimezone((OffsetDateTime) value)));
+      return createUntypedStringValue(
+          convertToISO8601(SpannerTypeConverter.atUTC((OffsetDateTime) value)));
     }
     if (value instanceof ZonedDateTime) {
-      return createUntypedValue(convertToISO8601(convertToUTCTimezone((ZonedDateTime) value)));
+      return createUntypedStringValue(convertToISO8601(atUTC((ZonedDateTime) value)));
     }
     if (value instanceof ProtocolMessageEnum) {
       return Value.protoEnum((ProtocolMessageEnum) value);
@@ -939,10 +941,7 @@ public abstract class Value implements Serializable {
       }
       if (object instanceof java.util.Date) {
         return Value.dateArray(
-            convertToTypedIterable(
-                SpannerTypeConverter::convertUtilDateToSpannerDate,
-                (java.util.Date) object,
-                iterator));
+            convertToTypedIterable(Date::fromJavaUtilDate, (java.util.Date) object, iterator));
       }
       if (object instanceof LocalDate) {
         return Value.dateArray(
@@ -951,15 +950,19 @@ public abstract class Value implements Serializable {
       }
       if (object instanceof LocalDateTime) {
         return createUntypedIterableValue(
-            (LocalDateTime) object, iterator, val -> convertToISO8601(convertToUTCTimezone(val)));
+            (LocalDateTime) object,
+            iterator,
+            val -> convertToISO8601(SpannerTypeConverter.atUTC(val)));
       }
       if (object instanceof OffsetDateTime) {
         return createUntypedIterableValue(
-            (OffsetDateTime) object, iterator, val -> convertToISO8601(convertToUTCTimezone(val)));
+            (OffsetDateTime) object,
+            iterator,
+            val -> convertToISO8601(SpannerTypeConverter.atUTC(val)));
       }
       if (object instanceof ZonedDateTime) {
         return createUntypedIterableValue(
-            (ZonedDateTime) object, iterator, val -> convertToISO8601(convertToUTCTimezone(val)));
+            (ZonedDateTime) object, iterator, val -> convertToISO8601(atUTC(val)));
       }
     }
 
@@ -995,7 +998,7 @@ public abstract class Value implements Serializable {
       return createUntypedArrayValue(Arrays.stream((int[]) value).boxed());
     }
 
-    return createUntypedValue(value);
+    return createUntypedStringValue(value);
   }
 
   /** Returns the type of this value. This will return a type even if {@code isNull()} is true. */

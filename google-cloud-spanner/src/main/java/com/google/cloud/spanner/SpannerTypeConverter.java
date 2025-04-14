@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import com.google.cloud.Date;
 import com.google.protobuf.ListValue;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -35,10 +34,7 @@ import java.util.stream.Stream;
 
 final class SpannerTypeConverter {
 
-  private static final String DATE_PATTERN = "yyyy-MM-dd";
-  private static final SimpleDateFormat SIMPLE_DATE_FORMATTER = new SimpleDateFormat(DATE_PATTERN);
   private static final ZoneId UTC_ZONE = ZoneId.of("UTC");
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_PATTERN);
   private static final DateTimeFormatter ISO_8601_DATE_FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
@@ -61,7 +57,7 @@ final class SpannerTypeConverter {
     return ISO_8601_DATE_FORMATTER.format(dateTime);
   }
 
-  static <T> Value createUntypedValue(T value) {
+  static <T> Value createUntypedStringValue(T value) {
     return Value.untyped(
         com.google.protobuf.Value.newBuilder().setStringValue(String.valueOf(value)).build());
   }
@@ -79,12 +75,8 @@ final class SpannerTypeConverter {
     return convertToTypedIterable(v -> v, val, iterator);
   }
 
-  static Date convertUtilDateToSpannerDate(java.util.Date date) {
-    return Date.parseDate(SIMPLE_DATE_FORMATTER.format(date));
-  }
-
   static Date convertLocalDateToSpannerDate(LocalDate date) {
-    return Date.parseDate(DATE_FORMATTER.format(date));
+    return Date.fromYearMonthDay(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
   }
 
   static <T> Value createUntypedIterableValue(
@@ -104,15 +96,15 @@ final class SpannerTypeConverter {
             .build());
   }
 
-  static ZonedDateTime convertToUTCTimezone(LocalDateTime localDateTime) {
+  static ZonedDateTime atUTC(LocalDateTime localDateTime) {
     return localDateTime.atZone(UTC_ZONE);
   }
 
-  static ZonedDateTime convertToUTCTimezone(OffsetDateTime localDateTime) {
+  static ZonedDateTime atUTC(OffsetDateTime localDateTime) {
     return localDateTime.atZoneSameInstant(UTC_ZONE);
   }
 
-  static ZonedDateTime convertToUTCTimezone(ZonedDateTime localDateTime) {
+  static ZonedDateTime atUTC(ZonedDateTime localDateTime) {
     return localDateTime.withZoneSameInstant(UTC_ZONE);
   }
 }

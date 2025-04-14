@@ -653,7 +653,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
-  public Future<Dialect> getDialectAsync() {
+  Future<Dialect> getDialectAsync() {
     try {
       return MAINTAINER_SERVICE.submit(dialectSupplier::get);
     } catch (Exception exception) {
