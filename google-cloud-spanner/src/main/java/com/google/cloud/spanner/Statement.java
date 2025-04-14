@@ -261,26 +261,32 @@ public final class Statement implements Serializable {
     }
 
     /**
+     * This function accepts the SQL statement with unnamed parameters(?) and accepts the list of
+     * objects to replace unnamed parameters. Primitive types are supported
+     *
+     * <p>For Date column, following types are supported
+     *
+     * <ul>
+     *   <li>java.util.Date
+     *   <li>LocalDate
+     *   <li>com.google.cloud.Date
+     * </ul>
+     *
+     * <p>For Timestamp column, following types are supported. All the dates should be in UTC
+     * format. Incase if the timezone is not in UTC, spanner client will convert that to UTC
+     * automatically
+     *
+     * <ul>
+     *   <li>LocalDateTime
+     *   <li>OffsetDateTime
+     *   <li>ZonedDateTime
+     * </ul>
+     *
+     * <p>
+     *
      * @param sql SQL statement with unnamed parameters denoted as ?
      * @param values positional list of values for the unnamed parameters in the SQL string
      * @return Statement a statement that can be executed on Spanner
-     *     <p>This function accepts the SQL statement with unnamed parameters(?) and accepts the
-     *     list of objects to replace unnamed parameters. Primitive types are supported
-     *     <p>For Date column, following types are supported
-     *     <ul>
-     *       <li>java.util.Date
-     *       <li>LocalDate
-     *       <li>com.google.cloud.Date
-     *     </ul>
-     *     <p>For Timestamp column, following types are supported. All the dates should be in UTC
-     *     format. Incase if the timezone is not in UTC, spanner client will convert that to UTC
-     *     automatically
-     *     <ul>
-     *       <li>LocalDateTime
-     *       <li>OffsetDateTime
-     *       <li>ZonedDateTime
-     *     </ul>
-     *     <p>
      * @see DatabaseClient#getStatementFactory
      */
     public Statement withUnnamedParameters(String sql, Object... values) {

@@ -866,9 +866,6 @@ public abstract class Value implements Serializable {
     if (value instanceof Date) {
       return Value.date((Date) value);
     }
-    if (value instanceof java.util.Date) {
-      return Value.date(Date.fromJavaUtilDate((java.util.Date) value));
-    }
     if (value instanceof LocalDate) {
       return Value.date(convertLocalDateToSpannerDate((LocalDate) value));
     }
@@ -938,10 +935,6 @@ public abstract class Value implements Serializable {
       }
       if (object instanceof Date) {
         return Value.dateArray(convertToTypedIterable((Date) object, iterator));
-      }
-      if (object instanceof java.util.Date) {
-        return Value.dateArray(
-            convertToTypedIterable(Date::fromJavaUtilDate, (java.util.Date) object, iterator));
       }
       if (object instanceof LocalDate) {
         return Value.dateArray(
