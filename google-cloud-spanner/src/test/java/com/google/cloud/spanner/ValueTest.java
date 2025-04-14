@@ -63,6 +63,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -2584,10 +2585,13 @@ public class ValueTest {
     assertEquals(Type.date(), value.getType());
     assertEquals(date, value.getDate());
 
+    TimeZone defaultTimezone = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone("Europe/Paris"));
     LocalDateTime localDateTime = LocalDateTime.of(2018, 2, 26, 11, 30, 10);
     value = Value.toValue(localDateTime);
     assertNull(value.getType());
-    assertEquals("2018-02-26T11:30:10.000Z", value.getAsString());
+    assertEquals("2018-02-26T10:30:10.000Z", value.getAsString());
+    TimeZone.setDefault(defaultTimezone);
 
     OffsetDateTime offsetDateTime = OffsetDateTime.of(localDateTime, ZoneOffset.ofHours(10));
     value = Value.toValue(offsetDateTime);
@@ -2766,6 +2770,8 @@ public class ValueTest {
     assertEquals(Type.array(Type.date()), value.getType());
     assertEquals(dates, value.getDateArray());
 
+    TimeZone defaultTimezone = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"));
     List<LocalDateTime> localDateTimes =
         Arrays.asList(
             LocalDateTime.of(2024, 8, 23, 1, 49, 52, 10),
@@ -2773,8 +2779,9 @@ public class ValueTest {
     value = Value.toValue(localDateTimes);
     assertNull(value.getType());
     assertEquals(
-        Arrays.asList("2024-08-23T01:49:52.000Z", "2024-12-27T01:49:52.000Z"),
+        Arrays.asList("2024-08-22T20:19:52.000Z", "2024-12-26T20:19:52.000Z"),
         value.getAsStringList());
+    TimeZone.setDefault(defaultTimezone);
 
     List<OffsetDateTime> offsetDateTimes =
         Arrays.asList(

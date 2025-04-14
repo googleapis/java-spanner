@@ -50,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -871,7 +872,8 @@ public abstract class Value implements Serializable {
     }
     if (value instanceof LocalDateTime) {
       return createUntypedStringValue(
-          convertToISO8601(SpannerTypeConverter.atUTC((LocalDateTime) value)));
+          convertToISO8601(
+              SpannerTypeConverter.atUTC(((LocalDateTime) value).atZone(ZoneId.systemDefault()))));
     }
     if (value instanceof OffsetDateTime) {
       return createUntypedStringValue(
@@ -945,7 +947,8 @@ public abstract class Value implements Serializable {
         return createUntypedIterableValue(
             (LocalDateTime) object,
             iterator,
-            val -> convertToISO8601(SpannerTypeConverter.atUTC(val)));
+            val ->
+                convertToISO8601(SpannerTypeConverter.atUTC(val.atZone(ZoneId.systemDefault()))));
       }
       if (object instanceof OffsetDateTime) {
         return createUntypedIterableValue(
