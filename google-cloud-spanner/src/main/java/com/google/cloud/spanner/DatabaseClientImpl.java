@@ -23,10 +23,14 @@ import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
@@ -40,6 +44,8 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
   @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
+  private final int dbId;
+  private final AtomicInteger nthRequest;
 
   final boolean useMultiplexedSessionBlindWrite;
 
@@ -86,6 +92,18 @@ class DatabaseClientImpl implements DatabaseClient {
     this.tracer = tracer;
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
     this.commonAttributes = commonAttributes;
+
+    this.dbId = this.dbIdFromClientId(this.clientId);
+    this.nthRequest = new AtomicInteger(0);
+  }
+
+  private int dbIdFromClientId(String clientId) {
+    int i = clientId.indexOf("-");
+    String strWithValue = clientId.substring(i + 1);
+    if (Objects.equals(strWithValue, "")) {
+      strWithValue = "0";
+    }
+    return Integer.parseInt(strWithValue);
   }
 
   @VisibleForTesting
@@ -159,7 +177,11 @@ class DatabaseClientImpl implements DatabaseClient {
       if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient().writeWithOptions(mutations, options);
       }
-      return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));
+
+      return runWithSessionRetry(
+          (session, reqId) -> {
+            return session.writeWithOptions(mutations, withReqId(reqId, options));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -177,20 +199,37 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeAtLeastOnceWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
+    CommitResponse res = doWriteAtLeastOnceWithOptions(mutations, options);
+    System.out.println("\033[33mCommitResponse: " + res + "\033[00m");
+    return res;
+  }
+
+  private CommitResponse doWriteAtLeastOnceWithOptions(
+      final Iterable<Mutation> mutations, final TransactionOption... options)
+      throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       if (useMultiplexedSessionBlindWrite && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient()
             .writeAtLeastOnceWithOptions(mutations, options);
       }
+
       return runWithSessionRetry(
-          session -> session.writeAtLeastOnceWithOptions(mutations, options));
+          (session, reqId) -> {
+            CommitResponse in = session.writeAtLeastOnceWithOptions(mutations, withReqId(reqId, options));
+            System.out.println("\033[35minternalDo: " + in + "\033[00m");
+            return in;
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
     } finally {
       span.end();
     }
+  }
+
+  private int nextNthRequest() {
+    return this.nthRequest.incrementAndGet();
   }
 
   @Override
@@ -202,7 +241,9 @@ class DatabaseClientImpl implements DatabaseClient {
       if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient().batchWriteAtLeastOnce(mutationGroups, options);
       }
-      return runWithSessionRetry(session -> session.batchWriteAtLeastOnce(mutationGroups, options));
+      return runWithSessionRetry(
+          (session, reqId) ->
+              session.batchWriteAtLeastOnce(mutationGroups, withReqId(reqId, options)));
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -346,11 +387,34 @@ class DatabaseClientImpl implements DatabaseClient {
     return executePartitionedUpdateWithPooledSession(stmt, options);
   }
 
+  private UpdateOption[] withReqId(
+      final XGoogSpannerRequestId reqId, final UpdateOption... options) {
+    if (reqId == null) {
+      return options;
+    }
+    ArrayList<UpdateOption> allOptions = new ArrayList(Arrays.asList(options));
+    allOptions.add(new Options.RequestIdOption(reqId));
+    return allOptions.toArray(new UpdateOption[0]);
+  }
+
+  private TransactionOption[] withReqId(
+      final XGoogSpannerRequestId reqId, final TransactionOption... options) {
+    if (reqId == null) {
+      return options;
+    }
+    ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
+    allOptions.add(new Options.RequestIdOption(reqId));
+    return allOptions.toArray(new TransactionOption[0]);
+  }
+
   private long executePartitionedUpdateWithPooledSession(
       final Statement stmt, final UpdateOption... options) {
     ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
+      return runWithSessionRetry(
+          (session, reqId) -> {
+            return session.executePartitionedUpdate(stmt, withReqId(reqId, options));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -358,15 +422,22 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
-  private <T> T runWithSessionRetry(Function<Session, T> callable) {
+  private <T> T runWithSessionRetry(BiFunction<Session, XGoogSpannerRequestId, T> callable) {
     PooledSessionFuture session = getSession();
+    XGoogSpannerRequestId reqId =
+        XGoogSpannerRequestId.of(
+            this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 0);
     while (true) {
       try {
-        return callable.apply(session);
+        reqId.incrementAttempt();
+        return callable.apply(session, reqId);
       } catch (SessionNotFoundException e) {
         session =
             (PooledSessionFuture)
                 pool.getPooledSessionReplacementHandler().replaceSession(e, session);
+        reqId =
+            XGoogSpannerRequestId.of(
+                this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 0);
       }
     }
   }

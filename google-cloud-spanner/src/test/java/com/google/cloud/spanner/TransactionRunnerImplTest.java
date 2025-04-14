@@ -121,6 +121,8 @@ public class TransactionRunnerImplTest {
     when(session.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
     when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     when(session.getTracer()).thenReturn(tracer);
+    when(session.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation -> {
