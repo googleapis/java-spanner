@@ -105,17 +105,6 @@ public class SpannerMetadataProviderTest {
     assertTrue(Maps.difference(extraHeaders, expectedHeaders).areEqual());
   }
 
-  @Test
-  public void testNewAfeServerTimingHeader() {
-    SpannerMetadataProvider metadataProvider =
-        SpannerMetadataProvider.create(ImmutableMap.of(), "header1");
-    Map<String, List<String>> extraHeaders = metadataProvider.newAfeServerTimingHeader();
-    Map<String, List<String>> expectedHeaders =
-        ImmutableMap.<String, List<String>>of(
-            "x-goog-spanner-enable-afe-server-timing", ImmutableList.of("true"));
-    assertTrue(Maps.difference(extraHeaders, expectedHeaders).areEqual());
-  }
-
   private String getResourceHeaderValue(
       SpannerMetadataProvider headerProvider, String resourceTokenTemplate) {
     Metadata metadata = headerProvider.newMetadata(resourceTokenTemplate, "projects/p");

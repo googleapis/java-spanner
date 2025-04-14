@@ -38,8 +38,6 @@ class SpannerMetadataProvider {
   private final String resourceHeaderKey;
   private static final String ROUTE_TO_LEADER_HEADER_KEY = "x-goog-spanner-route-to-leader";
   private static final String END_TO_END_TRACING_HEADER_KEY = "x-goog-spanner-end-to-end-tracing";
-  private static final String AFE_SERVER_TIMING_HEADER_KEY =
-      "x-goog-spanner-enable-afe-server-timing";
   private static final Pattern[] RESOURCE_TOKEN_PATTERNS = {
     Pattern.compile("^(?<headerValue>projects/[^/]*/instances/[^/]*/databases/[^/]*)(.*)?"),
     Pattern.compile("^(?<headerValue>projects/[^/]*/instances/[^/]*)(.*)?")
@@ -49,8 +47,6 @@ class SpannerMetadataProvider {
       ImmutableMap.of(ROUTE_TO_LEADER_HEADER_KEY, Collections.singletonList("true"));
   private static final Map<String, List<String>> END_TO_END_TRACING_HEADER_MAP =
       ImmutableMap.of(END_TO_END_TRACING_HEADER_KEY, Collections.singletonList("true"));
-  private static final Map<String, List<String>> AFE_SERVER_TIMING_HEADER_MAP =
-      ImmutableMap.of(AFE_SERVER_TIMING_HEADER_KEY, Collections.singletonList("true"));
 
   private SpannerMetadataProvider(Map<String, String> headers, String resourceHeaderKey) {
     this.resourceHeaderKey = resourceHeaderKey;
@@ -98,10 +94,6 @@ class SpannerMetadataProvider {
 
   Map<String, List<String>> newEndToEndTracingHeader() {
     return END_TO_END_TRACING_HEADER_MAP;
-  }
-
-  Map<String, List<String>> newAfeServerTimingHeader() {
-    return AFE_SERVER_TIMING_HEADER_MAP;
   }
 
   private Map<Metadata.Key<String>, String> constructHeadersAsMetadata(

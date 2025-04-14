@@ -751,13 +751,6 @@
     <method>boolean isEnableBuiltInMetrics()</method>
   </difference>
 
-  <!-- Added AFE Server Timing option -->
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
-    <method>boolean isEnableAFEServerTiming()</method>
-  </difference>
-
   <!-- Added Monitoring host option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -814,7 +807,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isKeepTransactionAlive()</method>
   </difference>
-
+  
   <!-- Automatic DML batching -->
   <difference>
     <differenceType>7012</differenceType>
@@ -846,7 +839,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isAutoBatchDmlUpdateCountVerification()</method>
   </difference>
-
+  
   <!-- Retry DML as Partitioned DML -->
   <difference>
     <differenceType>7012</differenceType>
@@ -870,7 +863,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.Object runTransaction(com.google.cloud.spanner.connection.Connection$TransactionCallable)</method>
   </difference>
-
+  
   <!-- Added experimental host option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -899,7 +892,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.String getDefaultSequenceKind()</method>
   </difference>
-
+  
   <!-- Default isolation level -->
   <difference>
     <differenceType>7012</differenceType>
