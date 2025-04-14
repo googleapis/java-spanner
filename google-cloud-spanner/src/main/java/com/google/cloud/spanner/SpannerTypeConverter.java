@@ -28,6 +28,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,17 +63,22 @@ final class SpannerTypeConverter {
         com.google.protobuf.Value.newBuilder().setStringValue(String.valueOf(value)).build());
   }
 
-  @SuppressWarnings("unchecked")
   static <T, U> Iterable<U> convertToTypedIterable(
       Function<T, U> func, T val, Iterator<?> iterator) {
     List<U> values = new ArrayList<>();
-    values.add(func.apply(val));
-    iterator.forEachRemaining(value -> values.add(func.apply((T) value)));
+    SpannerTypeConverter.processIterable(val, iterator, func, values::add);
     return values;
   }
 
   static <T> Iterable<T> convertToTypedIterable(T val, Iterator<?> iterator) {
     return convertToTypedIterable(v -> v, val, iterator);
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T, U> void processIterable(
+      T val, Iterator<?> iterator, Function<T, U> func, Consumer<U> consumer) {
+    consumer.accept(func.apply(val));
+    iterator.forEachRemaining(values -> consumer.accept(func.apply((T) values)));
   }
 
   static Date convertLocalDateToSpannerDate(LocalDate date) {
@@ -81,19 +87,14 @@ final class SpannerTypeConverter {
 
   static <T> Value createUntypedIterableValue(
       T value, Iterator<?> iterator, Function<T, String> func) {
+    ListValue.Builder listValueBuilder = ListValue.newBuilder();
+    SpannerTypeConverter.processIterable(
+        value,
+        iterator,
+        (val) -> com.google.protobuf.Value.newBuilder().setStringValue(func.apply(val)).build(),
+        listValueBuilder::addValues);
     return Value.untyped(
-        com.google.protobuf.Value.newBuilder()
-            .setListValue(
-                ListValue.newBuilder()
-                    .addAllValues(
-                        SpannerTypeConverter.convertToTypedIterable(
-                            (val) ->
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue(func.apply(val))
-                                    .build(),
-                            value,
-                            iterator)))
-            .build());
+        com.google.protobuf.Value.newBuilder().setListValue(listValueBuilder.build()).build());
   }
 
   static ZonedDateTime atUTC(LocalDateTime localDateTime) {

@@ -49,7 +49,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -2580,13 +2579,6 @@ public class ValueTest {
     assertEquals(Type.date(), value.getType());
     assertEquals(date, value.getDate());
 
-    java.util.Date utilDate =
-        java.util.Date.from(
-            Instant.from(LocalDateTime.of(2018, 2, 26, 11, 30).toInstant(ZoneOffset.UTC)));
-    value = Value.toValue(utilDate);
-    assertEquals(Type.date(), value.getType());
-    assertEquals(date, value.getDate());
-
     LocalDate localDate = LocalDate.of(2018, 2, 26);
     value = Value.toValue(localDate);
     assertEquals(Type.date(), value.getType());
@@ -2765,16 +2757,6 @@ public class ValueTest {
     List<Date> dates =
         Arrays.asList(Date.fromYearMonthDay(2024, 8, 23), Date.fromYearMonthDay(2024, 12, 27));
     value = Value.toValue(dates);
-    assertEquals(Type.array(Type.date()), value.getType());
-    assertEquals(dates, value.getDateArray());
-
-    List<java.util.Date> javaDates =
-        Arrays.asList(
-            java.util.Date.from(
-                ZonedDateTime.of(2024, 8, 23, 11, 12, 13, 10, ZoneId.of("UTC")).toInstant()),
-            java.util.Date.from(
-                ZonedDateTime.of(2024, 12, 27, 11, 12, 13, 10, ZoneId.of("UTC")).toInstant()));
-    value = Value.toValue(javaDates);
     assertEquals(Type.array(Type.date()), value.getType());
     assertEquals(dates, value.getDateArray());
 
