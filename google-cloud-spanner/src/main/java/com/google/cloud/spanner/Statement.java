@@ -144,6 +144,11 @@ public final class Statement implements Serializable {
     return new Statement(sql, ImmutableMap.of(), /*queryOptions=*/ null);
   }
 
+  /** Creates a {@link Statement} with the given SQL text and parameters. */
+  public static Statement of(String sql, ImmutableMap<String, Value> parameters) {
+    return new Statement(sql, parameters, /*queryOptions=*/ null);
+  }
+
   /** Creates a new statement builder with the SQL text {@code sql}. */
   public static Builder newBuilder(String sql) {
     return new Builder(sql);
