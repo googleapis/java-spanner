@@ -948,6 +948,6 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
-    <method>com.google.cloud.spanner.Statement$StatementFactory newStatementFactory()</method>
+    <method>com.google.cloud.spanner.Statement$StatementFactory getStatementFactory()</method>
   </difference>
 </differences>
