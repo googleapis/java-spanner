@@ -609,13 +609,20 @@ public interface DatabaseClient {
   long executePartitionedUpdate(Statement stmt, UpdateOption... options);
 
   /**
-   * Returns StatementFactory for the given dialect.
+   * Returns a {@link StatementFactory} for the given dialect.
    *
-   * <p>A {@link StatementFactory}, can be used to create statements with unnamed parameters.
+   * <p>A {@link StatementFactory} can be used to create statements with unnamed parameters. This is
+   * primarily intended for framework developers who want to integrate the Spanner client with
+   * frameworks that use unnamed parameters. Developers who just want to use the Spanner client in
+   * their application, should use named parameters.
    *
    * <p>Examples using {@link StatementFactory}
    *
-   * <p>databaseClient.getStatementFactory().of("SELECT NAME FROM TABLE WHERE ID = ?", 10)
+   * <pre>{@code
+   * Statement statement = databaseClient
+   *     .getStatementFactory()
+   *     .withUnnamedParameters("SELECT NAME FROM TABLE WHERE ID = ?", 10);
+   * }</pre>
    */
   default StatementFactory getStatementFactory() {
     throw new UnsupportedOperationException("method should be overwritten");

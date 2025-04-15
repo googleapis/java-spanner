@@ -839,6 +839,9 @@ public abstract class Value implements Serializable {
   private Value() {}
 
   static Value toValue(Object value) {
+    if (value == null) {
+      return Value.untyped(NULL_PROTO);
+    }
     if (value instanceof Value) {
       return (Value) value;
     }

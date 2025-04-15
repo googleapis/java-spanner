@@ -2510,8 +2510,12 @@ public class ValueTest {
 
   @Test
   public void testToValue() {
+    Value value = Value.toValue(null);
+    assertNull(value.getType());
+    assertEquals("NULL", value.getAsString());
+
     int i = 10;
-    Value value = Value.toValue(i);
+    value = Value.toValue(i);
     assertNull(value.getType());
     assertEquals("10", value.getAsString());
 

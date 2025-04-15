@@ -250,10 +250,11 @@ public final class Statement implements Serializable {
   }
 
   /**
-   * Factory for creating {@link Statement}.
+   * Factory for creating {@link Statement}s with unnamed parameters.
    *
-   * <p>This factory class supports creating {@link Statement} with positional(or unnamed)
-   * parameters.
+   * <p>This class is primarily intended for framework developers who want to integrate the Spanner
+   * client with a framework that uses unnamed parameters. Developers who want to use the Spanner
+   * client in their application, should use named parameters.
    *
    * <p>
    *
@@ -266,7 +267,18 @@ public final class Statement implements Serializable {
    *     .withUnnamedParameters("SELECT * FROM TABLE WHERE ID = ?", 10L)
    * }</pre>
    *
-   * How to use SQL queries with IN command
+   * SQL query with multiple parameters
+   *
+   * <pre>{@code
+   * long id = 10L;
+   * String name = "google";
+   * List<String> phoneNumbers = Arrays.asList("1234567890", "0987654321");
+   * Statement statement = databaseClient.getStatementFactory()
+   *    *     .withUnnamedParameters("INSERT INTO TABLE (ID, name, phonenumbers)
+   *       // VALUES(?, ?, ?)", id, name, phoneNumbers)
+   * }</pre>
+   *
+   * How to use arrays with the IN operator
    *
    * <pre>{@code
    * long[] ids = {10L, 12L, 1483L};
@@ -289,25 +301,27 @@ public final class Statement implements Serializable {
     }
 
     /**
-     * This function accepts the SQL statement with unnamed parameters(?) and accepts the list of
-     * objects to replace unnamed parameters. Primitive types are supported.
+     * This function accepts a SQL statement with unnamed parameters (?) and accepts a list of
+     * objects that should be used as the values for those parameters. Primitive types are
+     * supported.
      *
-     * <p>For Date column, following types are supported
+     * <p>For parameters of type DATE, the following types are supported
      *
      * <ul>
-     *   <li>java.util.Date
-     *   <li>LocalDate
-     *   <li>com.google.cloud.Date
+     *   <li>{@link java.time.LocalDate}
+     *   <li>{@link com.google.cloud.Date}
      * </ul>
      *
-     * <p>For Timestamp column, following types are supported. All the dates should be in UTC
-     * format. Incase if the timezone is not in UTC, spanner client will convert that to UTC
-     * automatically
+     * <p>For parameters of type TIMESTAMP, the following types are supported. Note that Spanner
+     * stores all timestamps in UTC. Instances of ZonedDateTime and OffsetDateTime that use other
+     * timezones than UTC, will be converted to the corresponding UTC values before being sent to
+     * Spanner. Instances of LocalDateTime will be converted to a ZonedDateTime using the system
+     * default timezone, and then converted to UTC before being sent to Spanner.
      *
      * <ul>
-     *   <li>LocalDateTime
-     *   <li>OffsetDateTime
-     *   <li>ZonedDateTime
+     *   <li>{@link java.time.LocalDateTime}
+     *   <li>{@link java.time.OffsetDateTime}
+     *   <li>{@link java.time.ZonedDateTime}
      * </ul>
      *
      * <p>
