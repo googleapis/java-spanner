@@ -249,6 +249,34 @@ public final class Statement implements Serializable {
     return b;
   }
 
+  /**
+   * Factory for creating {@link Statement}.
+   *
+   * <p>This factory class supports creating {@link Statement} with positional(or unnamed)
+   * parameters.
+   *
+   * <p>
+   *
+   * <h2>Usage Example</h2>
+   *
+   * Simple SQL query
+   *
+   * <pre>{@code
+   * Statement statement = databaseClient.getStatementFactory()
+   *     .withUnnamedParameters("SELECT * FROM TABLE WHERE ID = ?", 10L)
+   * }</pre>
+   *
+   * How to use SQL queries with IN command
+   *
+   * <pre>{@code
+   * long[] ids = {10L, 12L, 1483L};
+   * Statement statement = databaseClient.getStatementFactory()
+   *     .withUnnamedParameters("SELECT * FROM TABLE WHERE ID = UNNEST(?)", ids)
+   * }</pre>
+   *
+   * @see DatabaseClient#getStatementFactory()
+   * @see StatementFactory#withUnnamedParameters(String, Object...)
+   */
   public static final class StatementFactory {
     private final Dialect dialect;
 
@@ -262,7 +290,7 @@ public final class Statement implements Serializable {
 
     /**
      * This function accepts the SQL statement with unnamed parameters(?) and accepts the list of
-     * objects to replace unnamed parameters. Primitive types are supported
+     * objects to replace unnamed parameters. Primitive types are supported.
      *
      * <p>For Date column, following types are supported
      *

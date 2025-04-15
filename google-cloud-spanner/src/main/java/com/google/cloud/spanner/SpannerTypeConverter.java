@@ -98,7 +98,7 @@ final class SpannerTypeConverter {
   }
 
   static ZonedDateTime atUTC(LocalDateTime localDateTime) {
-    return localDateTime.atZone(UTC_ZONE);
+    return atUTC(localDateTime.atZone(ZoneId.systemDefault()));
   }
 
   static ZonedDateTime atUTC(OffsetDateTime localDateTime) {

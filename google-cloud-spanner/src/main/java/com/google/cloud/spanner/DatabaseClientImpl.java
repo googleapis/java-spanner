@@ -46,8 +46,6 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
 
-  private StatementFactory statementFactory = null;
-
   final boolean useMultiplexedSessionBlindWrite;
 
   @VisibleForTesting

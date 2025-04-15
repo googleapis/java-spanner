@@ -50,7 +50,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -871,13 +870,10 @@ public abstract class Value implements Serializable {
       return Value.date(convertLocalDateToSpannerDate((LocalDate) value));
     }
     if (value instanceof LocalDateTime) {
-      return createUntypedStringValue(
-          convertToISO8601(
-              SpannerTypeConverter.atUTC(((LocalDateTime) value).atZone(ZoneId.systemDefault()))));
+      return createUntypedStringValue(convertToISO8601(atUTC((LocalDateTime) value)));
     }
     if (value instanceof OffsetDateTime) {
-      return createUntypedStringValue(
-          convertToISO8601(SpannerTypeConverter.atUTC((OffsetDateTime) value)));
+      return createUntypedStringValue(convertToISO8601(atUTC((OffsetDateTime) value)));
     }
     if (value instanceof ZonedDateTime) {
       return createUntypedStringValue(convertToISO8601(atUTC((ZonedDateTime) value)));
@@ -945,16 +941,11 @@ public abstract class Value implements Serializable {
       }
       if (object instanceof LocalDateTime) {
         return createUntypedIterableValue(
-            (LocalDateTime) object,
-            iterator,
-            val ->
-                convertToISO8601(SpannerTypeConverter.atUTC(val.atZone(ZoneId.systemDefault()))));
+            (LocalDateTime) object, iterator, val -> convertToISO8601(atUTC(val)));
       }
       if (object instanceof OffsetDateTime) {
         return createUntypedIterableValue(
-            (OffsetDateTime) object,
-            iterator,
-            val -> convertToISO8601(SpannerTypeConverter.atUTC(val)));
+            (OffsetDateTime) object, iterator, val -> convertToISO8601(atUTC(val)));
       }
       if (object instanceof ZonedDateTime) {
         return createUntypedIterableValue(
