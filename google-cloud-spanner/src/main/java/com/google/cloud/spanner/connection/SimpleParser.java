@@ -277,6 +277,55 @@ class SimpleParser {
     return false;
   }
 
+  boolean eatKeyword(String... keywords) {
+    return eat(true, true, keywords);
+  }
+
+  boolean eat(boolean skipWhitespaceBefore, boolean requireWhitespaceAfter, String... keywords) {
+    boolean result = true;
+    for (String keyword : keywords) {
+      result &= internalEat(keyword, skipWhitespaceBefore, requireWhitespaceAfter, true);
+    }
+    return result;
+  }
+
+  private boolean internalEat(
+      String keyword,
+      boolean skipWhitespaceBefore,
+      boolean requireWhitespaceAfter,
+      boolean updatePos) {
+    int originalPos = pos;
+    if (skipWhitespaceBefore) {
+      skipWhitespaces();
+    }
+    if (pos + keyword.length() > sql.length()) {
+      if (!updatePos) {
+        pos = originalPos;
+      }
+      return false;
+    }
+    if (sql.substring(pos, pos + keyword.length()).equalsIgnoreCase(keyword)
+        && (!requireWhitespaceAfter || isValidEndOfKeyword(pos + keyword.length()))) {
+      if (updatePos) {
+        pos = pos + keyword.length();
+      } else {
+        pos = originalPos;
+      }
+      return true;
+    }
+    if (!updatePos) {
+      pos = originalPos;
+    }
+    return false;
+  }
+
+  private boolean isValidEndOfKeyword(int index) {
+    if (sql.length() == index) {
+      return true;
+    }
+    return !isValidIdentifierChar(sql.charAt(index));
+  }
+
   /**
    * Returns true if the given character is valid as the first character of an identifier. That
    * means that it can be used as the first character of an unquoted identifier.

@@ -49,7 +49,7 @@ class ClientSideStatementPartitionExecutor implements ClientSideStatementExecuto
   }
 
   String getParameterValue(ParsedStatement parsedStatement) {
-    Matcher matcher = statement.getPattern().matcher(parsedStatement.getSqlWithoutComments());
+    Matcher matcher = statement.getPattern().matcher(parsedStatement.getSql());
     if (matcher.find() && matcher.groupCount() >= 2) {
       String space = matcher.group(1);
       String value = matcher.group(2);

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -153,6 +154,7 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
           new DurationTestData("set statement_timeout = " + resetValue + " ", Duration.ZERO),
         }) {
       ConnectionStatementExecutor executor = mock(ConnectionStatementExecutor.class);
+      when(executor.getDialect()).thenReturn(dialect);
       ParsedStatement statement = parser.parse(Statement.of(data.sql));
       assertEquals(
           ClientSideStatementType.SET_STATEMENT_TIMEOUT, statement.getClientSideStatementType());
@@ -196,6 +198,7 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
           new DurationTestData("set " + prefix + "max_commit_delay = null ", Duration.ZERO),
         }) {
       ConnectionStatementExecutor executor = mock(ConnectionStatementExecutor.class);
+      when(executor.getDialect()).thenReturn(dialect);
       ParsedStatement statement = parser.parse(Statement.of(data.sql));
       assertEquals(
           ClientSideStatementType.SET_MAX_COMMIT_DELAY, statement.getClientSideStatementType());
