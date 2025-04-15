@@ -35,6 +35,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -293,9 +294,21 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   }
 
   @Override
+  public UUID getUuid(int columnIndex) {
+    checkClosed();
+    return delegate.getUuid(columnIndex);
+  }
+
+  @Override
   public Date getDate(String columnName) {
     checkClosed();
     return delegate.getDate(columnName);
+  }
+
+  @Override
+  public UUID getUuid(String columnName) {
+    checkClosed();
+    return delegate.getUuid(columnName);
   }
 
   @Override
@@ -500,6 +513,18 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   public List<Date> getDateList(String columnName) {
     checkClosed();
     return delegate.getDateList(columnName);
+  }
+
+  @Override
+  public List<UUID> getUuidList(int columnIndex) {
+    checkClosed();
+    return delegate.getUuidList(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUuidList(String columnName) {
+    checkClosed();
+    return delegate.getUuidList(columnName);
   }
 
   @Override
