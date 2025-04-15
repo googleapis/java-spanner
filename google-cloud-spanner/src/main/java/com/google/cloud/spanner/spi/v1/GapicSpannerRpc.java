@@ -1994,6 +1994,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (endToEndTracingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
     }
+    if (isEnableAFEServerTiming()) {
+      context = context.withExtraHeaders(metadataProvider.newAfeServerTimingHeader());
+    }
     return context
         .withStreamWaitTimeoutDuration(waitTimeout)
         .withStreamIdleTimeoutDuration(idleTimeout);
@@ -2043,12 +2046,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
-    }
-    if (endToEndTracingEnabled) {
-      context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
-    }
-    if (isEnableAFEServerTiming()) {
-      context = context.withExtraHeaders(metadataProvider.newAfeServerTimingHeader());
     }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
