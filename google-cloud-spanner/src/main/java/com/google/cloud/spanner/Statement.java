@@ -274,8 +274,7 @@ public final class Statement implements Serializable {
    * String name = "google";
    * List<String> phoneNumbers = Arrays.asList("1234567890", "0987654321");
    * Statement statement = databaseClient.getStatementFactory()
-   *    *     .withUnnamedParameters("INSERT INTO TABLE (ID, name, phonenumbers)
-   *       // VALUES(?, ?, ?)", id, name, phoneNumbers)
+   *      .withUnnamedParameters("INSERT INTO TABLE (ID, name, phonenumbers) VALUES(?, ?, ?)", id, name, phoneNumbers)
    * }</pre>
    *
    * How to use arrays with the IN operator
