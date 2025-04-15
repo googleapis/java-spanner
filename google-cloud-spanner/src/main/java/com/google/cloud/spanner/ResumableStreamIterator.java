@@ -180,10 +180,10 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       }
       if (latch.await(backoffMillis, TimeUnit.MILLISECONDS)) {
         // Woken by context cancellation.
-        throw newSpannerExceptionForCancellation(context, null);
+        throw newSpannerExceptionForCancellation(context, null, null /*TODO: requestId*/);
       }
     } catch (InterruptedException interruptExcept) {
-      throw newSpannerExceptionForCancellation(context, interruptExcept);
+      throw newSpannerExceptionForCancellation(context, interruptExcept, null /*TODO: requestId*/);
     } finally {
       context.removeListener(listener);
     }

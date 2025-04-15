@@ -1977,7 +1977,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       future.cancel(true);
       throw SpannerExceptionFactory.propagateInterrupt(e);
     } catch (Exception e) {
-      throw newSpannerException(context, e);
+      throw newSpannerException(context, e, null);
     }
   }
 

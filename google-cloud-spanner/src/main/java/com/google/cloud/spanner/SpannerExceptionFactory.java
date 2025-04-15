@@ -58,17 +58,37 @@ public final class SpannerExceptionFactory {
       ProtoUtils.keyForProto(ErrorInfo.getDefaultInstance());
 
   public static SpannerException newSpannerException(ErrorCode code, @Nullable String message) {
-    return newSpannerException(code, message, null);
+    return newSpannerException(code, message, (XGoogSpannerRequestId) (null));
+  }
+
+  public static SpannerException newSpannerException(
+      ErrorCode code,
+      @Nullable String message,
+      @Nullable Throwable cause,
+      @Nullable XGoogSpannerRequestId reqId) {
+    return newSpannerExceptionPreformatted(
+        code, formatMessage(code, message), cause, (ApiException) (null), reqId);
+  }
+
+  public static SpannerException newSpannerException(
+      ErrorCode code, @Nullable String message, @Nullable XGoogSpannerRequestId reqId) {
+    return newSpannerException(code, message, (Throwable) (null), reqId);
   }
 
   public static SpannerException newSpannerException(
       ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
-    return newSpannerExceptionPreformatted(code, formatMessage(code, message), cause);
+    return newSpannerException(code, message, cause, null);
   }
 
   public static SpannerException propagateInterrupt(InterruptedException e) {
+    return propagateInterrupt(e, null);
+  }
+
+  public static SpannerException propagateInterrupt(
+      InterruptedException e, XGoogSpannerRequestId reqId) {
     Thread.currentThread().interrupt();
-    return SpannerExceptionFactory.newSpannerException(ErrorCode.CANCELLED, "Interrupted", e);
+    return SpannerExceptionFactory.newSpannerException(
+        ErrorCode.CANCELLED, "Interrupted", e, reqId);
   }
 
   /**
@@ -112,17 +132,27 @@ public final class SpannerExceptionFactory {
    * #newSpannerException(ErrorCode, String)} instead of this method.
    */
   public static SpannerException newSpannerException(Throwable cause) {
-    return newSpannerException(null, cause);
+    return newSpannerException(null, cause, null);
+  }
+
+  public static SpannerException newSpannerException(Throwable cause, XGoogSpannerRequestId reqId) {
+    return newSpannerException(null, cause, reqId);
   }
 
   public static SpannerBatchUpdateException newSpannerBatchUpdateException(
       ErrorCode code, String message, long[] updateCounts) {
+    return newSpannerBatchUpdateException(code, message, updateCounts, null);
+  }
+
+  public static SpannerBatchUpdateException newSpannerBatchUpdateException(
+      ErrorCode code, String message, long[] updateCounts, @Nullable XGoogSpannerRequestId reqId) {
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;
     SpannerException cause = null;
     if (isTransactionMutationLimitException(code, message)) {
-      cause = new TransactionMutationLimitExceededException(token, code, message, null, null);
+      cause =
+          new TransactionMutationLimitExceededException(token, code, message, null, null, reqId);
     }
-    return new SpannerBatchUpdateException(token, code, message, updateCounts, cause);
+    return new SpannerBatchUpdateException(token, code, message, updateCounts, cause, reqId);
   }
 
   /** Constructs a specific error that */
@@ -173,6 +203,10 @@ public final class SpannerExceptionFactory {
         cause);
   }
 
+  public static SpannerException newSpannerException(@Nullable Context context, Throwable cause) {
+    return newSpannerException(context, cause, null);
+  }
+
   /**
    * Creates a new exception based on {@code cause}. If {@code cause} indicates cancellation, {@code
    * context} will be inspected to establish the type of cancellation.
@@ -180,21 +214,22 @@ public final class SpannerExceptionFactory {
    * <p>Intended for internal library use; user code should use {@link
    * #newSpannerException(ErrorCode, String)} instead of this method.
    */
-  public static SpannerException newSpannerException(@Nullable Context context, Throwable cause) {
+  public static SpannerException newSpannerException(
+      @Nullable Context context, Throwable cause, @Nullable XGoogSpannerRequestId reqId) {
     if (cause instanceof SpannerException) {
       SpannerException e = (SpannerException) cause;
-      return newSpannerExceptionPreformatted(e.getErrorCode(), e.getMessage(), e);
+      return newSpannerExceptionPreformatted(e.getErrorCode(), e.getMessage(), e, null, reqId);
     } else if (cause instanceof CancellationException) {
-      return newSpannerExceptionForCancellation(context, cause);
+      return newSpannerExceptionForCancellation(context, cause, reqId);
     } else if (cause instanceof ApiException) {
-      return fromApiException((ApiException) cause);
+      return fromApiException((ApiException) cause, reqId);
     }
     // Extract gRPC status.  This will produce "UNKNOWN" for non-gRPC exceptions.
     Status status = Status.fromThrowable(cause);
     if (status.getCode() == Status.Code.CANCELLED) {
-      return newSpannerExceptionForCancellation(context, cause);
+      return newSpannerExceptionForCancellation(context, cause, reqId);
     }
-    return newSpannerException(ErrorCode.fromGrpcStatus(status), cause.getMessage(), cause);
+    return newSpannerException(ErrorCode.fromGrpcStatus(status), cause.getMessage(), cause, reqId);
   }
 
   public static RuntimeException causeAsRunTimeException(ExecutionException executionException) {
@@ -219,6 +254,11 @@ public final class SpannerExceptionFactory {
 
   static SpannerException newSpannerExceptionForCancellation(
       @Nullable Context context, @Nullable Throwable cause) {
+    return newSpannerExceptionForCancellation(context, cause, null);
+  }
+
+  static SpannerException newSpannerExceptionForCancellation(
+      @Nullable Context context, @Nullable Throwable cause, @Nullable XGoogSpannerRequestId reqId) {
     if (context != null && context.isCancelled()) {
       Throwable cancellationCause = context.cancellationCause();
       Throwable throwable =
@@ -227,13 +267,14 @@ public final class SpannerExceptionFactory {
               : MoreObjects.firstNonNull(cause, cancellationCause);
       if (cancellationCause instanceof TimeoutException) {
         return newSpannerException(
-            ErrorCode.DEADLINE_EXCEEDED, "Current context exceeded deadline", throwable);
+            ErrorCode.DEADLINE_EXCEEDED, "Current context exceeded deadline", throwable, reqId);
       } else {
-        return newSpannerException(ErrorCode.CANCELLED, "Current context was cancelled", throwable);
+        return newSpannerException(
+            ErrorCode.CANCELLED, "Current context was cancelled", throwable, reqId);
       }
     }
     return newSpannerException(
-        ErrorCode.CANCELLED, cause == null ? "Cancelled" : cause.getMessage(), cause);
+        ErrorCode.CANCELLED, cause == null ? "Cancelled" : cause.getMessage(), cause, reqId);
   }
 
   private static String formatMessage(ErrorCode code, @Nullable String message) {
@@ -305,12 +346,13 @@ public final class SpannerExceptionFactory {
       ErrorCode code,
       @Nullable String message,
       @Nullable Throwable cause,
-      @Nullable ApiException apiException) {
+      @Nullable ApiException apiException,
+      @Nullable XGoogSpannerRequestId reqId) {
     // This is the one place in the codebase that is allowed to call constructors directly.
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;
     switch (code) {
       case ABORTED:
-        return new AbortedException(token, message, cause, apiException);
+        return new AbortedException(token, message, cause, apiException, reqId);
       case RESOURCE_EXHAUSTED:
         ErrorInfo info = extractErrorInfo(cause);
         if (info != null
@@ -319,7 +361,8 @@ public final class SpannerExceptionFactory {
             && AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_VALUE.equals(
                 info.getMetadataMap()
                     .get(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY))) {
-          return new AdminRequestsPerMinuteExceededException(token, message, cause, apiException);
+          return new AdminRequestsPerMinuteExceededException(
+              token, message, cause, apiException, reqId);
         }
       case NOT_FOUND:
         ResourceInfo resourceInfo = extractResourceInfo(cause);
@@ -327,36 +370,39 @@ public final class SpannerExceptionFactory {
           switch (resourceInfo.getResourceType()) {
             case SESSION_RESOURCE_TYPE:
               return new SessionNotFoundException(
-                  token, message, resourceInfo, cause, apiException);
+                  token, message, resourceInfo, cause, apiException, reqId);
             case DATABASE_RESOURCE_TYPE:
               return new DatabaseNotFoundException(
-                  token, message, resourceInfo, cause, apiException);
+                  token, message, resourceInfo, cause, apiException, reqId);
             case INSTANCE_RESOURCE_TYPE:
               return new InstanceNotFoundException(
-                  token, message, resourceInfo, cause, apiException);
+                  token, message, resourceInfo, cause, apiException, reqId);
           }
         }
       case INVALID_ARGUMENT:
         if (isTransactionMutationLimitException(cause)) {
           return new TransactionMutationLimitExceededException(
-              token, code, message, cause, apiException);
+              token, code, message, cause, apiException, reqId);
         }
         if (isMissingDefaultSequenceKindException(apiException)) {
-          return new MissingDefaultSequenceKindException(token, code, message, cause, apiException);
+          return new MissingDefaultSequenceKindException(
+              token, code, message, cause, apiException, reqId);
         }
         // Fall through to the default.
       default:
         return new SpannerException(
-            token, code, isRetryable(code, cause), message, cause, apiException);
+            token, code, isRetryable(code, cause), message, cause, apiException, reqId);
     }
   }
 
   static SpannerException newSpannerExceptionPreformatted(
       ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
-    return newSpannerExceptionPreformatted(code, message, cause, null);
+    return newSpannerExceptionPreformatted(
+        code, message, cause, null, (XGoogSpannerRequestId) (null));
   }
 
-  private static SpannerException fromApiException(ApiException exception) {
+  private static SpannerException fromApiException(
+      ApiException exception, @Nullable XGoogSpannerRequestId reqId) {
     Status.Code code;
     if (exception.getStatusCode() instanceof GrpcStatusCode) {
       code = ((GrpcStatusCode) exception.getStatusCode()).getTransportCode();
@@ -371,7 +417,8 @@ public final class SpannerExceptionFactory {
         errorCode,
         formatMessage(errorCode, exception.getMessage()),
         exception.getCause(),
-        exception);
+        exception,
+        reqId);
   }
 
   private static boolean isRetryable(ErrorCode code, @Nullable Throwable cause) {
