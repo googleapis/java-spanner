@@ -45,8 +45,7 @@ class ClientSideStatementPgBeginExecutor implements ClientSideStatementExecutor 
   @Override
   public StatementResult execute(ConnectionStatementExecutor connection, ParsedStatement statement)
       throws Exception {
-    return (StatementResult)
-        method.invoke(connection, getParameterValue(statement.getSqlWithoutComments()));
+    return (StatementResult) method.invoke(connection, getParameterValue(statement.getSql()));
   }
 
   PgTransactionMode getParameterValue(String sql) {

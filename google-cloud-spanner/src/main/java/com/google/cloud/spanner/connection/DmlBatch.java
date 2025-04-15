@@ -204,9 +204,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
         "The batch is no longer active and cannot be used for further statements");
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE,
-        "Only DML statements are allowed. \""
-            + update.getSqlWithoutComments()
-            + "\" is not a DML-statement.");
+        "Only DML statements are allowed. \"" + update.getSql() + "\" is not a DML-statement.");
     long updateCount = getUpdateCount();
     this.statements.add(update);
     this.updateCounts = Arrays.copyOf(this.updateCounts, this.updateCounts.length + 1);
@@ -233,9 +231,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
     for (ParsedStatement update : updates) {
       Preconditions.checkArgument(
           update.getType() == StatementType.UPDATE,
-          "Only DML statements are allowed. \""
-              + update.getSqlWithoutComments()
-              + "\" is not a DML-statement.");
+          "Only DML statements are allowed. \"" + update.getSql() + "\" is not a DML-statement.");
     }
     long[] updateCountArray = new long[Iterables.size(updates)];
     Arrays.fill(updateCountArray, getUpdateCount());

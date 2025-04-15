@@ -1713,6 +1713,16 @@ public class StatementParserTest {
     assertEquals(1, stats.hitCount());
   }
 
+  @Test
+  public void testClientSideStatementWithComment() {
+    String sql = "-- Null (no timeout)\n" + "SET STATEMENT_TIMEOUT=null";
+    ParsedStatement parsedStatement = parser.parse(Statement.of(sql));
+    assertEquals(StatementType.CLIENT_SIDE, parsedStatement.getType());
+    assertEquals(
+        ClientSideStatementType.SET_STATEMENT_TIMEOUT,
+        parsedStatement.getClientSideStatementType());
+  }
+
   static void assertUnclosedLiteral(AbstractStatementParser parser, String sql) {
     SpannerException exception =
         assertThrows(
