@@ -81,6 +81,9 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
   public void testSingleUseQuery() {
     final String SELECT_QUERY = "SELECT * FROM random";
 
+    mockSpanner.putStatementResult(
+        StatementResult.query(Statement.of(SELECT_QUERY), SELECT1_RESULTSET));
+
     System.out.println("Running warmup");
     for (int i = 0; i < 200000; i++) {
       try (ReadContext readContext = client.singleUse()) {
@@ -90,9 +93,6 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
       }
     }
     System.out.println("Warmup completed");
-
-    mockSpanner.putStatementResult(
-        StatementResult.query(Statement.of(SELECT_QUERY), SELECT1_RESULTSET));
 
     List<Long> beforeGrpcs = new ArrayList<>();
     List<Long> afterGrpcs = new ArrayList<>();
