@@ -87,8 +87,9 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
           while (resultSet.next()) {}
         }
+      }
     }
-      System.out.println("Warmup completed");
+    System.out.println("Warmup completed");
 
     mockSpanner.putStatementResult(
         StatementResult.query(Statement.of(SELECT_QUERY), SELECT1_RESULTSET));
