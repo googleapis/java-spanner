@@ -209,18 +209,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     long gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
     assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
 
-    MetricData afeLatencyMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
-    long afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
-    assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 0);
-
-    MetricData gfeConnectivityMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
-    assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(0);
-
-    MetricData afeConnectivityMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME);
-    assertThat(getAggregatedValue(afeConnectivityMetricData, expectedAttributes)).isEqualTo(0);
+    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
+    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
   }
 
   @Test
@@ -400,10 +390,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     MetricData gfeConnectivityMetricData =
         getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
     assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
-
-    MetricData afeConnectivityMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME);
-    assertThat(getAggregatedValue(afeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
     spannerNoHeader.close();
     serverNoHeader.shutdown();
     serverNoHeader.awaitTermination();
@@ -441,6 +428,27 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     fail(String.format("MetricData is missing for metric %s", fullMetricName));
     return null;
   }
+
+  private boolean checkIfMetricExists(InMemoryMetricReader reader, String metricName) {
+    String fullMetricName = BuiltInMetricsConstant.METER_NAME + "/" + metricName;
+
+    for (int attemptsLeft = 1000; attemptsLeft > 0; attemptsLeft--) {
+      boolean exists = reader.collectAllMetrics().stream()
+          .anyMatch(md -> md.getName().equals(fullMetricName));
+      if (exists) {
+        return true;
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(e);
+      }
+    }
+
+    return false;
+  }
+
 
   private long getAggregatedValue(MetricData metricData, Attributes attributes) {
     switch (metricData.getType()) {

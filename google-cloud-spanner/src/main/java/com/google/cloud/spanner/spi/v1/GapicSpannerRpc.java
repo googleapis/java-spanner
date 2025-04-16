@@ -690,7 +690,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   public static boolean isEnableAFEServerTiming() {
-    return !Boolean.parseBoolean(System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING"));
+    return "false".equalsIgnoreCase(System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING"));
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =

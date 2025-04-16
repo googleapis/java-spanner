@@ -72,7 +72,7 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Metadata.Key<String> SERVER_TIMING_HEADER_KEY =
       Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER);
   private static final String GFE_TIMING_HEADER = "gfet4t7";
-  private static final String AFE_TIMING_HEADER = "afet4t7";
+  private static final String AFE_TIMING_HEADER = "afe";
   private static final Metadata.Key<String> GOOGLE_CLOUD_RESOURCE_PREFIX_KEY =
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
   private static final Pattern SERVER_TIMING_PATTERN =
