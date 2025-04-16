@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -647,6 +648,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   public Dialect getDialect() {
     try {
       return dialectSupplier.get();
+    } catch (Exception exception) {
+      throw SpannerExceptionFactory.asSpannerException(exception);
+    }
+  }
+
+  Future<Dialect> getDialectAsync() {
+    try {
+      return MAINTAINER_SERVICE.submit(dialectSupplier::get);
     } catch (Exception exception) {
       throw SpannerExceptionFactory.asSpannerException(exception);
     }

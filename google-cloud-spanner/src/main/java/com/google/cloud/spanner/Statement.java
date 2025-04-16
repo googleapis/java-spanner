@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
+import com.google.cloud.spanner.connection.AbstractStatementParser;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParametersInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -250,5 +252,104 @@ public final class Statement implements Serializable {
       b.append(",queryOptions=").append(queryOptions.toString());
     }
     return b;
+  }
+
+  /**
+   * Factory for creating {@link Statement}s with unnamed parameters.
+   *
+   * <p>This class is primarily intended for framework developers who want to integrate the Spanner
+   * client with a framework that uses unnamed parameters. Developers who want to use the Spanner
+   * client in their application, should use named parameters.
+   *
+   * <p>
+   *
+   * <h2>Usage Example</h2>
+   *
+   * Simple SQL query
+   *
+   * <pre>{@code
+   * Statement statement = databaseClient.getStatementFactory()
+   *     .withUnnamedParameters("SELECT * FROM TABLE WHERE ID = ?", 10L)
+   * }</pre>
+   *
+   * SQL query with multiple parameters
+   *
+   * <pre>{@code
+   * long id = 10L;
+   * String name = "google";
+   * List<String> phoneNumbers = Arrays.asList("1234567890", "0987654321");
+   * Statement statement = databaseClient.getStatementFactory()
+   *      .withUnnamedParameters("INSERT INTO TABLE (ID, name, phonenumbers) VALUES(?, ?, ?)", id, name, phoneNumbers)
+   * }</pre>
+   *
+   * How to use arrays with the IN operator
+   *
+   * <pre>{@code
+   * long[] ids = {10L, 12L, 1483L};
+   * Statement statement = databaseClient.getStatementFactory()
+   *     .withUnnamedParameters("SELECT * FROM TABLE WHERE ID = UNNEST(?)", ids)
+   * }</pre>
+   *
+   * @see DatabaseClient#getStatementFactory()
+   * @see StatementFactory#withUnnamedParameters(String, Object...)
+   */
+  public static final class StatementFactory {
+    private final Dialect dialect;
+
+    StatementFactory(Dialect dialect) {
+      this.dialect = dialect;
+    }
+
+    public Statement of(String sql) {
+      return Statement.of(sql);
+    }
+
+    /**
+     * This function accepts a SQL statement with unnamed parameters (?) and accepts a list of
+     * objects that should be used as the values for those parameters. Primitive types are
+     * supported.
+     *
+     * <p>For parameters of type DATE, the following types are supported
+     *
+     * <ul>
+     *   <li>{@link java.time.LocalDate}
+     *   <li>{@link com.google.cloud.Date}
+     * </ul>
+     *
+     * <p>For parameters of type TIMESTAMP, the following types are supported. Note that Spanner
+     * stores all timestamps in UTC. Instances of ZonedDateTime and OffsetDateTime that use other
+     * timezones than UTC, will be converted to the corresponding UTC values before being sent to
+     * Spanner. Instances of LocalDateTime will be converted to a ZonedDateTime using the system
+     * default timezone, and then converted to UTC before being sent to Spanner.
+     *
+     * <ul>
+     *   <li>{@link java.time.LocalDateTime}
+     *   <li>{@link java.time.OffsetDateTime}
+     *   <li>{@link java.time.ZonedDateTime}
+     * </ul>
+     *
+     * <p>
+     *
+     * @param sql SQL statement with unnamed parameters denoted as ?
+     * @param values positional list of values for the unnamed parameters in the SQL string
+     * @return Statement a statement that can be executed on Spanner
+     * @see DatabaseClient#getStatementFactory
+     */
+    public Statement withUnnamedParameters(String sql, Object... values) {
+      Map<String, Value> parameters = getUnnamedParametersMap(values);
+      AbstractStatementParser statementParser = AbstractStatementParser.getInstance(this.dialect);
+      ParametersInfo parametersInfo =
+          statementParser.convertPositionalParametersToNamedParameters('?', sql);
+      return new Statement(parametersInfo.sqlWithNamedParameters, parameters, null);
+    }
+
+    private Map<String, Value> getUnnamedParametersMap(Object[] values) {
+      Map<String, Value> parameters = new HashMap<>();
+      int index = 1;
+      for (Object value : values) {
+        parameters.put("p" + (index++), Value.toValue(value));
+      }
+      return parameters;
+    }
   }
 }

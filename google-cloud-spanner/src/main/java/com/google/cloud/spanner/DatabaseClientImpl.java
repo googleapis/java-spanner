@@ -22,11 +22,16 @@ import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.Statement.StatementFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
@@ -137,6 +142,30 @@ class DatabaseClientImpl implements DatabaseClient {
       return client.getDialect();
     }
     return pool.getDialect();
+  }
+
+  private final AbstractLazyInitializer<StatementFactory> statementFactorySupplier =
+      new AbstractLazyInitializer<StatementFactory>() {
+        @Override
+        protected StatementFactory initialize() {
+          try {
+            Dialect dialect = getDialectAsync().get(30, TimeUnit.SECONDS);
+            return new StatementFactory(dialect);
+          } catch (ExecutionException | TimeoutException e) {
+            throw SpannerExceptionFactory.asSpannerException(e);
+          } catch (InterruptedException e) {
+            throw SpannerExceptionFactory.propagateInterrupt(e);
+          }
+        }
+      };
+
+  @Override
+  public StatementFactory getStatementFactory() {
+    try {
+      return statementFactorySupplier.get();
+    } catch (Exception exception) {
+      throw SpannerExceptionFactory.asSpannerException(exception);
+    }
   }
 
   @Override
@@ -344,6 +373,14 @@ class DatabaseClientImpl implements DatabaseClient {
       }
     }
     return executePartitionedUpdateWithPooledSession(stmt, options);
+  }
+
+  private Future<Dialect> getDialectAsync() {
+    MultiplexedSessionDatabaseClient client = getMultiplexedSessionDatabaseClient();
+    if (client != null) {
+      return client.getDialectAsync();
+    }
+    return pool.getDialectAsync();
   }
 
   private long executePartitionedUpdateWithPooledSession(
