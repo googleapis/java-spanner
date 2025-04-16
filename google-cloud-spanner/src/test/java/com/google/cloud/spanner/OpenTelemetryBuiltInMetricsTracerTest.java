@@ -216,7 +216,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
 
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
-    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    assertFalse(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
   }
 
   @Test
@@ -396,7 +397,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     MetricData gfeConnectivityMetricData =
         getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
     assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
-    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    assertFalse(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
     spannerNoHeader.close();
     serverNoHeader.shutdown();
     serverNoHeader.awaitTermination();
@@ -439,8 +441,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     String fullMetricName = BuiltInMetricsConstant.METER_NAME + "/" + metricName;
 
     for (int attemptsLeft = 1000; attemptsLeft > 0; attemptsLeft--) {
-      boolean exists = reader.collectAllMetrics().stream()
-          .anyMatch(md -> md.getName().equals(fullMetricName));
+      boolean exists =
+          reader.collectAllMetrics().stream().anyMatch(md -> md.getName().equals(fullMetricName));
       if (exists) {
         return true;
       }
@@ -454,7 +456,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     return false;
   }
-
 
   private long getAggregatedValue(MetricData metricData, Attributes attributes) {
     switch (metricData.getType()) {
