@@ -35,7 +35,9 @@ public class PerformanceClock {
   }
 
   public void stop() {
-    stopWatch.stop();
+    if (stopWatch.isRunning()) {
+      stopWatch.stop();
+    }
   }
 
   public void reset() {
