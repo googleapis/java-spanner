@@ -104,6 +104,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -2546,6 +2547,10 @@ class SessionPool {
     } catch (TimeoutException timeoutException) {
       throw SpannerExceptionFactory.propagateTimeout(timeoutException);
     }
+  }
+
+  Future<Dialect> getDialectAsync() {
+    return executor.submit(this::getDialect);
   }
 
   PooledSessionReplacementHandler getPooledSessionReplacementHandler() {
