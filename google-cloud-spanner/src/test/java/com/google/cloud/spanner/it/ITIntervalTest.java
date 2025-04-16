@@ -83,18 +83,9 @@ public class ITIntervalTest {
 
   private static DatabaseClient client;
 
-  private static boolean isUsingCloudDevel() {
-    return Objects.equals(
-        System.getProperty("spanner.gce.config.server_url"),
-        "https://staging-wrenchworks.sandbox.googleapis.com");
-  }
-
   @BeforeClass
   public static void setUpDatabase()
       throws ExecutionException, InterruptedException, TimeoutException {
-    assumeTrue("INTERVAL is supported only in Cloud-Devel for now", isUsingCloudDevel());
-    assumeFalse("INTERVAL is not yet supported on Emulator", isUsingEmulator());
-
     Database googleStandardSQLDatabase =
         env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA);
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
