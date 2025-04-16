@@ -76,7 +76,7 @@ abstract class AbstractNettyMockServerTest {
                             headers.put(
                                 Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER),
                                 String.format(
-                                    "afet4t7; dur=%d, gfet4t7; dur=%d",
+                                    "afe; dur=%d, gfet4t7; dur=%d",
                                     fakeAFEServerTiming.get(), fakeServerTiming.get()));
                             super.sendHeaders(headers);
                           }
