@@ -81,6 +81,15 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
   public void testSingleUseQuery() {
     final String SELECT_QUERY = "SELECT * FROM random";
 
+    System.out.println("Running warmup");
+    for (int i = 0; i < 200000; i++) {
+      try (ReadContext readContext = client.singleUse()) {
+        try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
+          while (resultSet.next()) {}
+        }
+    }
+      System.out.println("Warmup completed");
+
     mockSpanner.putStatementResult(
         StatementResult.query(Statement.of(SELECT_QUERY), SELECT1_RESULTSET));
 
