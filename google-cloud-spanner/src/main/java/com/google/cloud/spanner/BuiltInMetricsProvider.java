@@ -99,6 +99,7 @@ final class BuiltInMetricsProvider {
         GrpcOpenTelemetry.newBuilder()
             .sdk(this.getOrCreateOpenTelemetry(projectId, credentials, monitoringHost))
             .enableMetrics(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE)
+            // Disable gRPCs default metrics as they are not needed for Spanner.
             .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT)
             .build();
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator =

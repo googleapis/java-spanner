@@ -107,7 +107,7 @@ public class BuiltInMetricsConstant {
           DIRECT_PATH_ENABLED_KEY,
           DIRECT_PATH_USED_KEY);
 
-  public static final Set<String> GRPC_ATTRIBUTES =
+  static final Set<String> GRPC_LB_RLS_ATTRIBUTES =
       ImmutableSet.of("grpc.lb.rls.data_plane_target", "grpc.lb.pick_result");
 
   static Aggregation AGGREGATION_WITH_MILLIS_HISTOGRAM =
@@ -212,7 +212,7 @@ public class BuiltInMetricsConstant {
           BuiltInMetricsConstant.COMMON_ATTRIBUTES.stream()
               .map(AttributeKey::getKey)
               .collect(Collectors.toSet());
-      attributesFilter.addAll(BuiltInMetricsConstant.GRPC_ATTRIBUTES);
+      attributesFilter.addAll(BuiltInMetricsConstant.GRPC_LB_RLS_ATTRIBUTES);
 
       View view =
           View.builder()
