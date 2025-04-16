@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -26,6 +27,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionMutationLimitExceededException;
@@ -34,6 +36,7 @@ import com.google.rpc.Help;
 import com.google.rpc.Help.Link;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Metadata;
 import io.grpc.Status;
@@ -218,5 +221,30 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
         }
       }
     }
+  }
+
+  @Test
+  public void testTransactionMutationLimitExceeded_isWrappedAsCauseOfBatchUpdateException() {
+    String sql = "update test set value=1 where true";
+    Statement statement = Statement.of(sql);
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.exception(
+            statement, createTransactionMutationLimitExceededException()));
+
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      assertEquals(AutocommitDmlMode.TRANSACTIONAL, connection.getAutocommitDmlMode());
+
+      connection.startBatchDml();
+      connection.execute(statement);
+      SpannerBatchUpdateException batchUpdateException =
+          assertThrows(SpannerBatchUpdateException.class, connection::runBatch);
+      assertNotNull(batchUpdateException.getCause());
+      assertEquals(
+          TransactionMutationLimitExceededException.class,
+          batchUpdateException.getCause().getClass());
+    }
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 }

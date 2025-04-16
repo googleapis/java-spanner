@@ -21,6 +21,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.Statement.StatementFactory;
 import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 
@@ -606,4 +607,24 @@ public interface DatabaseClient {
    * idempotent, such as deleting old rows from a very large table.
    */
   long executePartitionedUpdate(Statement stmt, UpdateOption... options);
+
+  /**
+   * Returns a {@link StatementFactory} for the given dialect.
+   *
+   * <p>A {@link StatementFactory} can be used to create statements with unnamed parameters. This is
+   * primarily intended for framework developers who want to integrate the Spanner client with
+   * frameworks that use unnamed parameters. Developers who just want to use the Spanner client in
+   * their application, should use named parameters.
+   *
+   * <p>Examples using {@link StatementFactory}
+   *
+   * <pre>{@code
+   * Statement statement = databaseClient
+   *     .getStatementFactory()
+   *     .withUnnamedParameters("SELECT NAME FROM TABLE WHERE ID = ?", 10);
+   * }</pre>
+   */
+  default StatementFactory getStatementFactory() {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 }

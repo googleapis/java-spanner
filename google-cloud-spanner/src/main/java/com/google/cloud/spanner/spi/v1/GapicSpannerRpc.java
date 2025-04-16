@@ -280,6 +280,8 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private Supplier<Boolean> directPathEnabledSupplier = () -> false;
 
+  private final GrpcCallContext baseGrpcCallContext;
+
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
   }
@@ -333,6 +335,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.endToEndTracingEnabled = options.isEndToEndTracingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
+    this.baseGrpcCallContext = createBaseCallContext();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -1974,8 +1977,22 @@ public class GapicSpannerRpc implements SpannerRpc {
       future.cancel(true);
       throw SpannerExceptionFactory.propagateInterrupt(e);
     } catch (Exception e) {
-      throw newSpannerException(context, e);
+      throw newSpannerException(context, e, null);
     }
+  }
+
+  private GrpcCallContext createBaseCallContext() {
+    GrpcCallContext context = GrpcCallContext.createDefault();
+    if (compressorName != null) {
+      // This sets the compressor for Client -> Server.
+      context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
+    }
+    if (endToEndTracingEnabled) {
+      context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
+    }
+    return context
+        .withStreamWaitTimeoutDuration(waitTimeout)
+        .withStreamIdleTimeoutDuration(idleTimeout);
   }
 
   // Before removing this method, please verify with a code owner that it is not used
@@ -2002,7 +2019,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       ReqT request,
       MethodDescriptor<ReqT, RespT> method,
       boolean routeToLeader) {
-    GrpcCallContext context = GrpcCallContext.createDefault();
+    GrpcCallContext context = this.baseGrpcCallContext;
     if (options != null) {
       if (this.isGrpcGcpExtensionEnabled) {
         // Set channel affinity in gRPC-GCP.
@@ -2019,16 +2036,9 @@ public class GapicSpannerRpc implements SpannerRpc {
         context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
       }
     }
-    if (compressorName != null) {
-      // This sets the compressor for Client -> Server.
-      context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
-    }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
-    }
-    if (endToEndTracingEnabled) {
-      context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
     }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
@@ -2037,10 +2047,6 @@ public class GapicSpannerRpc implements SpannerRpc {
             context.withCallOptions(context.getCallOptions().withCallCredentials(callCredentials));
       }
     }
-    context =
-        context
-            .withStreamWaitTimeoutDuration(waitTimeout)
-            .withStreamIdleTimeoutDuration(idleTimeout);
     CallContextConfigurator configurator = SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY.get();
     ApiCallContext apiCallContextFromContext = null;
     if (configurator != null) {

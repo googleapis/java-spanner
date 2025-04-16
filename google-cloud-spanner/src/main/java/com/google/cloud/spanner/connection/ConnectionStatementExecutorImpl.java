@@ -155,6 +155,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public Dialect getDialect() {
+    return getConnection().getDialect();
+  }
+
+  @Override
   public StatementResult statementSetAutocommit(Boolean autocommit) {
     Preconditions.checkNotNull(autocommit);
     getConnection().setAutocommit(autocommit);
