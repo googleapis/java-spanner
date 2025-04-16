@@ -193,7 +193,7 @@ class ClientSideStatementImpl implements ClientSideStatement {
     return statementType;
   }
 
-  boolean matches(String statement) {
+  boolean matches(CharSequence statement) {
     Preconditions.checkState(pattern != null, "This statement has not been compiled");
     return pattern.matcher(statement).matches();
   }

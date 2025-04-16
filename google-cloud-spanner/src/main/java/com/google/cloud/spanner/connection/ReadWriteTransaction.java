@@ -785,8 +785,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       final List<Statement> updateStatements = new LinkedList<>();
       for (ParsedStatement update : updates) {
         Preconditions.checkArgument(
-            update.isUpdate(),
-            "Statement is not an update statement: " + update.getSqlWithoutComments());
+            update.isUpdate(), "Statement is not an update statement: " + update.getSql());
         updateStatements.add(update.getStatement());
       }
       checkOrCreateValidTransaction(Iterables.getFirst(updates, null), callType);

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Statement;
@@ -41,6 +42,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testSetIsolationLevelDefault() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     String sql = "set session characteristics as transaction isolation level default";
@@ -55,6 +57,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testSetIsolationLevelSerializable() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     String sql = "set session characteristics as transaction isolation level serializable";
@@ -69,6 +72,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testSetIsolationLevelRepeatableRead() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     String sql = "set session characteristics as transaction isolation level repeatable read";
@@ -83,6 +87,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testSetIsolationLevelReadOnly() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     String sql = "set\tsession\ncharacteristics as transaction read   only";
@@ -98,6 +103,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testSetIsolationLevelReadWrite() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     String sql = "set   session   characteristics   as   transaction   read   write";
@@ -113,6 +119,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testSetIsolationLevelSerializableReadWrite() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     String sql =
@@ -129,6 +136,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testSetIsolationLevelSerializableReadOnly() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     String sql =
@@ -144,6 +152,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testSetMultipleTransactionModes() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     String sql =
@@ -160,6 +169,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testDefaultTransactionIsolation() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
     int count = 0;
@@ -189,6 +199,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testDefaultTransactionReadOnlyTrue() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     String[] statements =
         new String[] {
@@ -223,6 +234,7 @@ public class SetPgSessionCharacteristicsTest {
   @Test
   public void testDefaultTransactionReadOnlyFalse() {
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(connection.getDialect()).thenReturn(Dialect.POSTGRESQL);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     String[] statements =
         new String[] {

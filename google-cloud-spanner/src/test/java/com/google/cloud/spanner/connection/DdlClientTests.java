@@ -32,7 +32,9 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.common.base.Suppliers;
 import com.google.common.io.ByteStreams;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.io.InputStream;
@@ -53,6 +55,7 @@ public class DdlClientTests {
 
   private DdlClient createSubject(DatabaseAdminClient client) {
     return DdlClient.newBuilder()
+        .setDialectSupplier(Suppliers.ofInstance(Dialect.GOOGLE_STANDARD_SQL))
         .setProjectId(projectId)
         .setInstanceId(instanceId)
         .setDatabaseName(databaseId)
@@ -108,20 +111,22 @@ public class DdlClientTests {
 
   @Test
   public void testIsCreateDatabase() {
-    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE foo"));
-    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE \"foo\""));
-    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE `foo`"));
-    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\tfoo"));
-    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\n foo"));
-    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\t\n foo"));
-    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE"));
-    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE\t \n DATABASE  foo"));
-    assertTrue(DdlClient.isCreateDatabaseStatement("create\t \n DATABASE  foo"));
-    assertTrue(DdlClient.isCreateDatabaseStatement("create database foo"));
+    for (Dialect dialect : Dialect.values()) {
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABASE foo"));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABASE \"foo\""));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABASE `foo`"));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABASE\tfoo"));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABASE\n foo"));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABASE\t\n foo"));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABASE"));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "CREATE\t \n DATABASE  foo"));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "create\t \n DATABASE  foo"));
+      assertTrue(DdlClient.isCreateDatabaseStatement(dialect, "create database foo"));
 
-    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE VIEW foo"));
-    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE DATABAS foo"));
-    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE DATABASEfoo"));
-    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE foo"));
+      assertFalse(DdlClient.isCreateDatabaseStatement(dialect, "CREATE VIEW foo"));
+      assertFalse(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABAS foo"));
+      assertFalse(DdlClient.isCreateDatabaseStatement(dialect, "CREATE DATABASEfoo"));
+      assertFalse(DdlClient.isCreateDatabaseStatement(dialect, "CREATE foo"));
+    }
   }
 }

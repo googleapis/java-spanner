@@ -599,16 +599,6 @@
   </difference>
   <difference>
     <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>com.google.cloud.spanner.Interval getIntervalInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>java.util.List getIntervalListInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
     <className>com/google/cloud/spanner/Value</className>
     <method>com.google.cloud.spanner.Interval getInterval()</method>
   </difference>
@@ -937,5 +927,27 @@
     <className>com/google/cloud/spanner/connection/ConnectionOptions</className>
     <field>VALID_PROPERTIES</field>
   </difference>
-  
+
+  <!-- Remove supportsExplain() from the parser -->
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/AbstractStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/PostgreSQLStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/SpannerStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.Statement$StatementFactory getStatementFactory()</method>
+  </difference>
 </differences>
