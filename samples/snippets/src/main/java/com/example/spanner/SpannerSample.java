@@ -679,26 +679,27 @@ public class SpannerSample {
     // ReadOnlyTransaction must be closed by calling close() on it to release resources held by it.
     // We use a try-with-resource block to automatically do so.
     try (ReadOnlyTransaction transaction = dbClient.readOnlyTransaction()) {
-      ResultSet queryResultSet =
+      try (ResultSet queryResultSet =
           transaction.executeQuery(
-              Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"));
+              Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums")) {
       while (queryResultSet.next()) {
         System.out.printf(
             "%d %d %s\n",
             queryResultSet.getLong(0), queryResultSet.getLong(1), queryResultSet.getString(2));
       }
-      try (ResultSet readResultSet =
-          transaction.read(
-              "Albums", KeySet.all(), Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
-        while (readResultSet.next()) {
-          System.out.printf(
-              "%d %d %s\n",
-              readResultSet.getLong(0), readResultSet.getLong(1), readResultSet.getString(2));
-        }
+    } // queryResultSet.close() is automatically called here
+    try (ResultSet readResultSet =
+        transaction.read(
+            "Albums", KeySet.all(), Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
+      while (readResultSet.next()) {
+        System.out.printf(
+            "%d %d %s\n",
+            readResultSet.getLong(0), readResultSet.getLong(1), readResultSet.getString(2));
       }
-    }
-  }
-  // [END spanner_read_only_transaction]
+    } // readResultSet.close() is automatically called here
+  } // transaction.close() is automatically called here
+}
+// [END spanner_read_only_transaction]
 
   // [START spanner_read_stale_data]
   static void readStaleData(DatabaseClient dbClient) {
