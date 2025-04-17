@@ -35,9 +35,10 @@ public class SpannerApiFutures {
       }
       throw SpannerExceptionFactory.newSpannerException(e.getCause());
     } catch (InterruptedException e) {
-      throw SpannerExceptionFactory.propagateInterrupt(e);
+      throw SpannerExceptionFactory.propagateInterrupt(e, null /*TODO: requestId*/);
     } catch (CancellationException e) {
-      throw SpannerExceptionFactory.newSpannerExceptionForCancellation(null, e);
+      throw SpannerExceptionFactory.newSpannerExceptionForCancellation(
+          null, e, null /*TODO: requestId*/);
     }
   }
 }

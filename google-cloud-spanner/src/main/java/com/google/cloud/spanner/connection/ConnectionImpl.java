@@ -382,6 +382,7 @@ class ConnectionImpl implements Connection {
   private DdlClient createDdlClient() {
     return DdlClient.newBuilder()
         .setDatabaseAdminClient(spanner.getDatabaseAdminClient())
+        .setDialectSupplier(this::getDialect)
         .setProjectId(options.getProjectId())
         .setInstanceId(options.getInstanceId())
         .setDatabaseName(options.getDatabaseName())
@@ -1424,8 +1425,7 @@ class ConnectionImpl implements Connection {
       default:
     }
     throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.INVALID_ARGUMENT,
-        "Unknown statement: " + parsedStatement.getSqlWithoutComments());
+        ErrorCode.INVALID_ARGUMENT, "Unknown statement: " + parsedStatement.getSql());
   }
 
   @VisibleForTesting
@@ -1470,8 +1470,7 @@ class ConnectionImpl implements Connection {
       case UNKNOWN:
       default:
         throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Unknown statement: " + parsedStatement.getSqlWithoutComments());
+            ErrorCode.INVALID_ARGUMENT, "Unknown statement: " + parsedStatement.getSql());
     }
   }
 
@@ -1503,8 +1502,7 @@ class ConnectionImpl implements Connection {
       default:
     }
     throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.INVALID_ARGUMENT,
-        "Unknown statement: " + parsedStatement.getSqlWithoutComments());
+        ErrorCode.INVALID_ARGUMENT, "Unknown statement: " + parsedStatement.getSql());
   }
 
   @Override
@@ -1699,7 +1697,7 @@ class ConnectionImpl implements Connection {
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.FAILED_PRECONDITION,
                   "DML statement with returning clause cannot be executed in read-only mode: "
-                      + parsedStatement.getSqlWithoutComments());
+                      + parsedStatement.getSql());
             }
             return internalExecuteQuery(callType, parsedStatement, analyzeMode, options);
           }
@@ -1710,8 +1708,7 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not a query or DML with returning clause: "
-            + parsedStatement.getSqlWithoutComments());
+        "Statement is not a query or DML with returning clause: " + parsedStatement.getSql());
   }
 
   private AsyncResultSet parseAndExecuteQueryAsync(Statement query, QueryOption... options) {
@@ -1741,7 +1738,7 @@ class ConnectionImpl implements Connection {
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.FAILED_PRECONDITION,
                   "DML statement with returning clause cannot be executed in read-only mode: "
-                      + parsedStatement.getSqlWithoutComments());
+                      + parsedStatement.getSql());
             }
             return internalExecuteQueryAsync(
                 CallType.ASYNC, parsedStatement, AnalyzeMode.NONE, options);
@@ -1753,8 +1750,7 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not a query or DML with returning clause: "
-            + parsedStatement.getSqlWithoutComments());
+        "Statement is not a query or DML with returning clause: " + parsedStatement.getSql());
   }
 
   private boolean isInternalMetadataQuery(QueryOption... options) {
@@ -1781,7 +1777,7 @@ class ConnectionImpl implements Connection {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.FAILED_PRECONDITION,
                 "DML statement with returning clause cannot be executed using executeUpdate: "
-                    + parsedStatement.getSqlWithoutComments()
+                    + parsedStatement.getSql()
                     + ". Please use executeQuery instead.");
           }
           return get(internalExecuteUpdateAsync(CallType.SYNC, parsedStatement));
@@ -1794,7 +1790,7 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not an update statement: " + parsedStatement.getSqlWithoutComments());
+        "Statement is not an update statement: " + parsedStatement.getSql());
   }
 
   @Override
@@ -1809,7 +1805,7 @@ class ConnectionImpl implements Connection {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.FAILED_PRECONDITION,
                 "DML statement with returning clause cannot be executed using executeUpdateAsync: "
-                    + parsedStatement.getSqlWithoutComments()
+                    + parsedStatement.getSql()
                     + ". Please use executeQueryAsync instead.");
           }
           return internalExecuteUpdateAsync(CallType.ASYNC, parsedStatement);
@@ -1822,7 +1818,7 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not an update statement: " + parsedStatement.getSqlWithoutComments());
+        "Statement is not an update statement: " + parsedStatement.getSql());
   }
 
   @Override
@@ -1845,7 +1841,7 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not an update statement: " + parsedStatement.getSqlWithoutComments());
+        "Statement is not an update statement: " + parsedStatement.getSql());
   }
 
   @Override
@@ -1867,7 +1863,7 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not an update statement: " + parsedStatement.getSqlWithoutComments());
+        "Statement is not an update statement: " + parsedStatement.getSql());
   }
 
   @Override
@@ -1899,7 +1895,7 @@ class ConnectionImpl implements Connection {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT,
               "The batch update list contains a statement that is not an update statement: "
-                  + parsedStatement.getSqlWithoutComments());
+                  + parsedStatement.getSql());
       }
     }
     return parsedStatements;

@@ -17,7 +17,6 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -1712,6 +1711,16 @@ public class StatementParserTest {
     // The first query had a cache miss. The second a cache hit.
     assertEquals(1, stats.missCount());
     assertEquals(1, stats.hitCount());
+  }
+
+  @Test
+  public void testClientSideStatementWithComment() {
+    String sql = "-- Null (no timeout)\n" + "SET STATEMENT_TIMEOUT=null";
+    ParsedStatement parsedStatement = parser.parse(Statement.of(sql));
+    assertEquals(StatementType.CLIENT_SIDE, parsedStatement.getType());
+    assertEquals(
+        ClientSideStatementType.SET_STATEMENT_TIMEOUT,
+        parsedStatement.getClientSideStatementType());
   }
 
   static void assertUnclosedLiteral(AbstractStatementParser parser, String sql) {

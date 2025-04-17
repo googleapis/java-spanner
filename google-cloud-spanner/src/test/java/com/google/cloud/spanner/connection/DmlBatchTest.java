@@ -177,7 +177,7 @@ public class DmlBatchTest {
     assertThat(batch.isActive(), is(true));
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getStatement()).thenReturn(Statement.of("UPDATE TEST SET COL1=2"));
-    when(statement.getSqlWithoutComments()).thenReturn("UPDATE TEST SET COL1=2");
+    when(statement.getSql()).thenReturn("UPDATE TEST SET COL1=2");
     when(statement.getType()).thenReturn(StatementType.UPDATE);
     get(batch.executeUpdateAsync(CallType.SYNC, statement));
     boolean exception = false;

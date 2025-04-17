@@ -250,4 +250,17 @@ public class SpannerExceptionFactoryTest {
 
     return trailers;
   }
+
+  @Test
+  public void withRequestId() {
+    XGoogSpannerRequestId reqIdIn = XGoogSpannerRequestId.of(1, 2, 3, 4);
+    Status status = Status.fromCodeValue(Status.Code.ABORTED.value());
+    Exception exc = new StatusRuntimeException(status);
+    SpannerException spannerExceptionWithReqId =
+        SpannerExceptionFactory.newSpannerException(exc, reqIdIn);
+    assertThat(spannerExceptionWithReqId.getRequestId()).isEqualTo(reqIdIn.toString());
+    SpannerException spannerExceptionWithoutReqId =
+        SpannerExceptionFactory.newSpannerException(exc);
+    assertThat(spannerExceptionWithoutReqId.getRequestId()).isEqualTo("");
+  }
 }

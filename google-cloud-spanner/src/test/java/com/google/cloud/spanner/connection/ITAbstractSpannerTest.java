@@ -128,7 +128,7 @@ public abstract class ITAbstractSpannerTest {
     @Override
     public void intercept(
         ParsedStatement statement, StatementExecutionStep step, UnitOfWork transaction) {
-      if (shouldAbort(statement.getSqlWithoutComments(), ExecutionStep.of(step))) {
+      if (shouldAbort(statement.getSql(), ExecutionStep.of(step))) {
         // ugly hack warning: inject the aborted state into the transaction manager to simulate an
         // abort
         if (transaction instanceof ReadWriteTransaction) {

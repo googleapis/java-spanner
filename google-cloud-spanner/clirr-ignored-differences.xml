@@ -751,6 +751,13 @@
     <method>boolean isEnableBuiltInMetrics()</method>
   </difference>
 
+  <!-- Added Built In GRPC Metrics option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableGRPCBuiltInMetrics()</method>
+  </difference>
+
   <!-- Added Monitoring host option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -807,7 +814,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isKeepTransactionAlive()</method>
   </difference>
-  
+
   <!-- Automatic DML batching -->
   <difference>
     <differenceType>7012</differenceType>
@@ -839,7 +846,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isAutoBatchDmlUpdateCountVerification()</method>
   </difference>
-  
+
   <!-- Retry DML as Partitioned DML -->
   <difference>
     <differenceType>7012</differenceType>
@@ -863,7 +870,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.Object runTransaction(com.google.cloud.spanner.connection.Connection$TransactionCallable)</method>
   </difference>
-  
+
   <!-- Added experimental host option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -927,5 +934,27 @@
     <className>com/google/cloud/spanner/connection/ConnectionOptions</className>
     <field>VALID_PROPERTIES</field>
   </difference>
-  
+
+  <!-- Remove supportsExplain() from the parser -->
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/AbstractStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/PostgreSQLStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/SpannerStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.Statement$StatementFactory getStatementFactory()</method>
+  </difference>
 </differences>

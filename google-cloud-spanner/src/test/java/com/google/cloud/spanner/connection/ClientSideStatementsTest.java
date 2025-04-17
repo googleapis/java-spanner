@@ -18,8 +18,10 @@ package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -62,6 +64,13 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
     }
+  }
+
+  @Test
+  public void testIsQuery() {
+    AbstractStatementParser parser = AbstractStatementParser.getInstance(dialect);
+    ParsedStatement parsedStatement = parser.parse(Statement.of("show/spanner.statement_tag;"));
+    assertTrue(parsedStatement.isQuery());
   }
 
   @Test
@@ -145,6 +154,7 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
           new DurationTestData("set statement_timeout = " + resetValue + " ", Duration.ZERO),
         }) {
       ConnectionStatementExecutor executor = mock(ConnectionStatementExecutor.class);
+      when(executor.getDialect()).thenReturn(dialect);
       ParsedStatement statement = parser.parse(Statement.of(data.sql));
       assertEquals(
           ClientSideStatementType.SET_STATEMENT_TIMEOUT, statement.getClientSideStatementType());
@@ -188,6 +198,7 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
           new DurationTestData("set " + prefix + "max_commit_delay = null ", Duration.ZERO),
         }) {
       ConnectionStatementExecutor executor = mock(ConnectionStatementExecutor.class);
+      when(executor.getDialect()).thenReturn(dialect);
       ParsedStatement statement = parser.parse(Statement.of(data.sql));
       assertEquals(
           ClientSideStatementType.SET_MAX_COMMIT_DELAY, statement.getClientSideStatementType());
@@ -293,7 +304,7 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
         log(
             statement.getExamplePrerequisiteStatements(),
             withInvalidSuffix(sql),
-            parser.isQuery(withInvalidSuffix(sql))
+            parser.parse(Statement.of(withInvalidSuffix(sql))).isQuery()
                 ? ErrorCode.UNIMPLEMENTED
                 : ErrorCode.INVALID_ARGUMENT);
       }
@@ -313,13 +324,13 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
           log(
               statement.getExamplePrerequisiteStatements(),
               withSuffix(replacement, sql),
-              parser.isQuery(withSuffix(replacement, sql))
+              parser.parse(Statement.of(withSuffix(replacement, sql))).isQuery()
                   ? ErrorCode.UNIMPLEMENTED
                   : ErrorCode.INVALID_ARGUMENT);
           log(
               statement.getExamplePrerequisiteStatements(),
               replaceLastSpaceWith(replacement, sql),
-              parser.isQuery(replaceLastSpaceWith(replacement, sql))
+              parser.parse(Statement.of(replaceLastSpaceWith(replacement, sql))).isQuery()
                   ? ErrorCode.UNIMPLEMENTED
                   : ErrorCode.INVALID_ARGUMENT);
         }

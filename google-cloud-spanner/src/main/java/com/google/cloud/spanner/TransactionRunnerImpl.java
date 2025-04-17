@@ -685,7 +685,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           }
           throw se;
         } catch (InterruptedException e) {
-          throw SpannerExceptionFactory.newSpannerExceptionForCancellation(null, e);
+          throw SpannerExceptionFactory.newSpannerExceptionForCancellation(
+              null, e, null /*TODO: requestId*/);
         }
       }
       // There is already a transactionId available. Include that id as the transaction to use.
@@ -1074,7 +1075,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             throw newSpannerBatchUpdateException(
                 ErrorCode.fromRpcStatus(response.getStatus()),
                 response.getStatus().getMessage(),
-                results);
+                results,
+                null /*TODO: requestId*/);
           }
           return results;
         } catch (Throwable e) {
@@ -1141,7 +1143,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     throw newSpannerBatchUpdateException(
                         ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
                         batchDmlResponse.getStatus().getMessage(),
-                        results);
+                        results,
+                        null /*TODO: requestId*/);
                   }
                   return results;
                 },
