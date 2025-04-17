@@ -16,11 +16,8 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.*;
@@ -29,7 +26,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.junit.AfterClass;
@@ -83,18 +79,9 @@ public class ITIntervalTest {
 
   private static DatabaseClient client;
 
-  private static boolean isUsingCloudDevel() {
-    return Objects.equals(
-        System.getProperty("spanner.gce.config.server_url"),
-        "https://staging-wrenchworks.sandbox.googleapis.com");
-  }
-
   @BeforeClass
   public static void setUpDatabase()
       throws ExecutionException, InterruptedException, TimeoutException {
-    assumeTrue("INTERVAL is supported only in Cloud-Devel for now", isUsingCloudDevel());
-    assumeFalse("INTERVAL is not yet supported on Emulator", isUsingEmulator());
-
     Database googleStandardSQLDatabase =
         env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA);
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
