@@ -41,6 +41,7 @@ import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ClientContext;
 import com.google.api.gax.rpc.FixedHeaderProvider;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.InstantiatingWatchdogProvider;
 import com.google.api.gax.rpc.OperationCallable;
@@ -408,11 +409,14 @@ public class GapicSpannerRpc implements SpannerRpc {
       final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
       try {
+        FixedTransportChannelProvider fixedChannelProvider =
+            FixedTransportChannelProvider.create(channelProvider.getTransportChannel());
+
         SpannerStubSettings spannerStubSettings =
             options
                 .getSpannerStubSettings()
                 .toBuilder()
-                .setTransportChannelProvider(channelProvider)
+                .setTransportChannelProvider(fixedChannelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
@@ -452,7 +456,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .build();
         SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
         pdmlSettings
-            .setTransportChannelProvider(channelProvider)
+            .setTransportChannelProvider(fixedChannelProvider)
             .setCredentialsProvider(credentialsProvider)
             .setStreamWatchdogProvider(watchdogProvider)
             .setTracerFactory(
@@ -482,7 +486,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             options
                 .getInstanceAdminStubSettings()
                 .toBuilder()
-                .setTransportChannelProvider(channelProvider)
+                .setTransportChannelProvider(fixedChannelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
@@ -495,7 +499,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             options
                 .getDatabaseAdminStubSettings()
                 .toBuilder()
-                .setTransportChannelProvider(channelProvider)
+                .setTransportChannelProvider(fixedChannelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
@@ -544,7 +548,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
         // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator
         // is actually running.
-        checkEmulatorConnection(options, channelProvider, credentialsProvider, emulatorHost);
+        checkEmulatorConnection(options, fixedChannelProvider, credentialsProvider, emulatorHost);
       } catch (Exception e) {
         throw newSpannerException(e);
       }
