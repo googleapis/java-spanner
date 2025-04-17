@@ -26,6 +26,8 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -84,8 +86,10 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(Statement.of(SELECT_QUERY), SELECT1_RESULTSET));
 
-    System.out.println("Running warmup");
-    for (int i = 0; i < 200000; i++) {
+    Instant warmUpEndTime = Instant.now().plus(2, ChronoUnit.MINUTES);
+
+    System.out.println("Running warmup for 2 minute");
+    while (warmUpEndTime.isAfter(Instant.now())) {
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
           while (resultSet.next()) {}
