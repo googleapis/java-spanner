@@ -100,7 +100,10 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
 
     List<Long> beforeGrpcs = new ArrayList<>();
     List<Long> afterGrpcs = new ArrayList<>();
-    for (int i = 0; i < 100000; i++) {
+    Instant perfEndTime = Instant.now().plus(30, ChronoUnit.MINUTES);
+
+    System.out.println("Running benchmarking for 30 minutes");
+    while (perfEndTime.isAfter(Instant.now())) {
       PerformanceClock.BEFORE_GRPC_INSTANCE.reset();
       PerformanceClock.AFTER_GRPC_INSTANCE.reset();
       PerformanceClock.BEFORE_GRPC_INSTANCE.start();
