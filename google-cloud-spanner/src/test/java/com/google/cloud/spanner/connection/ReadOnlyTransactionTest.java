@@ -287,7 +287,7 @@ public class ReadOnlyTransactionTest {
       when(parsedStatement.isQuery()).thenReturn(true);
       Statement statement = Statement.of("SELECT * FROM FOO");
       when(parsedStatement.getStatement()).thenReturn(statement);
-      when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
+      when(parsedStatement.getSql()).thenReturn(statement.getSql());
 
       ReadOnlyTransaction transaction = createSubject(staleness);
       ResultSet rs =
@@ -306,7 +306,7 @@ public class ReadOnlyTransactionTest {
     when(parsedStatement.isQuery()).thenReturn(true);
     Statement statement = Statement.of(sql);
     when(parsedStatement.getStatement()).thenReturn(statement);
-    when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
+    when(parsedStatement.getSql()).thenReturn(statement.getSql());
     DatabaseClient client = mock(DatabaseClient.class);
     com.google.cloud.spanner.ReadOnlyTransaction tx =
         mock(com.google.cloud.spanner.ReadOnlyTransaction.class);
@@ -344,7 +344,7 @@ public class ReadOnlyTransactionTest {
       when(parsedStatement.isQuery()).thenReturn(true);
       Statement statement = Statement.of("SELECT * FROM FOO");
       when(parsedStatement.getStatement()).thenReturn(statement);
-      when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
+      when(parsedStatement.getSql()).thenReturn(statement.getSql());
 
       ReadOnlyTransaction transaction = createSubject(staleness);
       ResultSet rs =
@@ -366,7 +366,7 @@ public class ReadOnlyTransactionTest {
       when(parsedStatement.isQuery()).thenReturn(true);
       Statement statement = Statement.of("SELECT * FROM FOO");
       when(parsedStatement.getStatement()).thenReturn(statement);
-      when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
+      when(parsedStatement.getSql()).thenReturn(statement.getSql());
 
       ReadOnlyTransaction transaction = createSubject(staleness);
       ResultSet rs =
@@ -388,7 +388,7 @@ public class ReadOnlyTransactionTest {
       when(parsedStatement.isQuery()).thenReturn(true);
       Statement statement = Statement.of("SELECT * FROM FOO");
       when(parsedStatement.getStatement()).thenReturn(statement);
-      when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
+      when(parsedStatement.getSql()).thenReturn(statement.getSql());
 
       ReadOnlyTransaction transaction = createSubject(staleness);
       boolean expectedException = false;
@@ -423,7 +423,7 @@ public class ReadOnlyTransactionTest {
     when(parsedStatement.isQuery()).thenReturn(true);
     Statement statement = Statement.of("SELECT * FROM FOO");
     when(parsedStatement.getStatement()).thenReturn(statement);
-    when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
+    when(parsedStatement.getSql()).thenReturn(statement.getSql());
 
     ReadOnlyTransaction transaction = createSubject();
     assertThat(

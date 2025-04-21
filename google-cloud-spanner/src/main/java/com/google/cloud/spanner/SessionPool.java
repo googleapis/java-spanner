@@ -104,6 +104,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -1004,7 +1005,7 @@ class SessionPool {
    * {@link TransactionRunner} that automatically handles {@link SessionNotFoundException}s by
    * replacing the underlying session and then restarts the transaction.
    */
-  private static final class SessionPoolTransactionRunner<I extends SessionFuture>
+  static final class SessionPoolTransactionRunner<I extends SessionFuture>
       implements TransactionRunner {
 
     private I session;
@@ -1012,7 +1013,7 @@ class SessionPool {
     private final TransactionOption[] options;
     private TransactionRunner runner;
 
-    private SessionPoolTransactionRunner(
+    SessionPoolTransactionRunner(
         I session,
         SessionReplacementHandler<I> sessionReplacementHandler,
         TransactionOption... options) {
@@ -2546,6 +2547,10 @@ class SessionPool {
     } catch (TimeoutException timeoutException) {
       throw SpannerExceptionFactory.propagateTimeout(timeoutException);
     }
+  }
+
+  Future<Dialect> getDialectAsync() {
+    return executor.submit(this::getDialect);
   }
 
   PooledSessionReplacementHandler getPooledSessionReplacementHandler() {

@@ -60,6 +60,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Scope;
 import java.time.Duration;
@@ -151,6 +152,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final long keepAliveIntervalMillis;
   private final ReentrantLock keepAliveLock;
   private final SavepointSupport savepointSupport;
+  @Nonnull private final IsolationLevel isolationLevel;
   private int transactionRetryAttempts;
   private int successfulRetries;
   private volatile ApiFuture<TransactionContext> txContextFuture;
@@ -202,6 +204,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private boolean returnCommitStats;
     private Duration maxCommitDelay;
     private SavepointSupport savepointSupport;
+    private IsolationLevel isolationLevel;
 
     private Builder() {}
 
@@ -251,6 +254,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       return this;
     }
 
+    Builder setIsolationLevel(IsolationLevel isolationLevel) {
+      this.isolationLevel = Preconditions.checkNotNull(isolationLevel);
+      return this;
+    }
+
     @Override
     ReadWriteTransaction build() {
       Preconditions.checkState(dbClient != null, "No DatabaseClient client specified");
@@ -259,6 +267,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       Preconditions.checkState(
           hasTransactionRetryListeners(), "TransactionRetryListeners are not specified");
       Preconditions.checkState(savepointSupport != null, "SavepointSupport is not specified");
+      Preconditions.checkState(isolationLevel != null, "IsolationLevel is not specified");
       return new ReadWriteTransaction(this);
     }
   }
@@ -293,6 +302,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.keepAliveLock = this.keepTransactionAlive ? new ReentrantLock() : null;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.savepointSupport = builder.savepointSupport;
+    this.isolationLevel = Preconditions.checkNotNull(builder.isolationLevel);
     this.transactionOptions = extractOptions(builder);
   }
 
@@ -313,6 +323,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (this.rpcPriority != null) {
       numOptions++;
     }
+    if (this.isolationLevel != IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED) {
+      numOptions++;
+    }
     TransactionOption[] options = new TransactionOption[numOptions];
     int index = 0;
     if (builder.returnCommitStats) {
@@ -329,6 +342,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
     if (this.rpcPriority != null) {
       options[index++] = Options.priority(this.rpcPriority);
+    }
+    if (this.isolationLevel != IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED) {
+      options[index++] = Options.isolationLevel(this.isolationLevel);
     }
     return options;
   }
@@ -769,8 +785,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       final List<Statement> updateStatements = new LinkedList<>();
       for (ParsedStatement update : updates) {
         Preconditions.checkArgument(
-            update.isUpdate(),
-            "Statement is not an update statement: " + update.getSqlWithoutComments());
+            update.isUpdate(), "Statement is not an update statement: " + update.getSql());
         updateStatements.add(update.getStatement());
       }
       checkOrCreateValidTransaction(Iterables.getFirst(updates, null), callType);

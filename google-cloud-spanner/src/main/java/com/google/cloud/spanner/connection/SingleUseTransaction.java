@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import static com.google.cloud.spanner.connection.AbstractStatementParser.COMMIT_STATEMENT;
 import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.READONLY;
@@ -60,6 +61,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.opentelemetry.context.Scope;
 import java.util.Arrays;
 import java.util.UUID;
@@ -384,13 +386,13 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       Callable<Void> callable =
           () -> {
             try {
-              if (isCreateDatabaseStatement(ddl.getSqlWithoutComments())) {
+              if (isCreateDatabaseStatement(dbClient.getDialect(), ddl.getSql())) {
                 executeCreateDatabase(ddl);
               } else {
                 ddlClient.runWithRetryForMissingDefaultSequenceKind(
                     restartIndex -> {
                       OperationFuture<?, ?> operation =
-                          ddlClient.executeDdl(ddl.getSqlWithoutComments(), protoDescriptors);
+                          ddlClient.executeDdl(ddl.getSql(), protoDescriptors);
                       getWithStatementTimeout(operation, ddl);
                     },
                     connectionState.getValue(DEFAULT_SEQUENCE_KIND).getValue(),
@@ -411,7 +413,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
   private void executeCreateDatabase(ParsedStatement ddl) {
     OperationFuture<?, ?> operation =
-        ddlClient.executeCreateDatabase(ddl.getSqlWithoutComments(), dbClient.getDialect());
+        ddlClient.executeCreateDatabase(ddl.getSql(), dbClient.getDialect());
     getWithStatementTimeout(operation, ddl);
   }
 
@@ -472,8 +474,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Preconditions.checkNotNull(updates);
     for (ParsedStatement update : updates) {
       Preconditions.checkArgument(
-          update.isUpdate(),
-          "Statement is not an update statement: " + update.getSqlWithoutComments());
+          update.isUpdate(), "Statement is not an update statement: " + update.getSql());
     }
     ConnectionPreconditions.checkState(
         !isReadOnly(), "Batch update statements are not allowed in read-only mode");
@@ -508,6 +509,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     if (connectionState.getValue(MAX_COMMIT_DELAY).getValue() != null) {
       numOptions++;
     }
+    if (connectionState.getValue(DEFAULT_ISOLATION_LEVEL).getValue()
+        != IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED) {
+      numOptions++;
+    }
     if (numOptions == 0) {
       return dbClient.readWriteTransaction();
     }
@@ -525,6 +530,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     if (connectionState.getValue(MAX_COMMIT_DELAY).getValue() != null) {
       options[index++] =
           Options.maxCommitDelay(connectionState.getValue(MAX_COMMIT_DELAY).getValue());
+    }
+    if (connectionState.getValue(DEFAULT_ISOLATION_LEVEL).getValue()
+        != IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED) {
+      options[index++] =
+          Options.isolationLevel(connectionState.getValue(DEFAULT_ISOLATION_LEVEL).getValue());
     }
     return dbClient.readWriteTransaction(options);
   }

@@ -87,6 +87,8 @@ class HeaderInterceptor implements ClientInterceptor {
       CacheBuilder.newBuilder().maximumSize(1000).build();
   private final Cache<String, Map<String, String>> builtInAttributesCache =
       CacheBuilder.newBuilder().maximumSize(1000).build();
+  private final Cache<DatabaseName, Cache<String, String>> keyCache =
+      CacheBuilder.newBuilder().maximumSize(1000).build();
 
   // Get the global singleton Tagger object.
   private static final Tagger TAGGER = Tags.getTagger();
@@ -116,7 +118,7 @@ class HeaderInterceptor implements ClientInterceptor {
         try {
           Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
-          String key = databaseName + method.getFullMethodName();
+          String key = extractKey(databaseName, method.getFullMethodName());
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
@@ -199,6 +201,13 @@ class HeaderInterceptor implements ClientInterceptor {
       }
     }
     return serverTimingMetrics;
+  }
+
+  private String extractKey(DatabaseName databaseName, String methodName)
+      throws ExecutionException {
+    Cache<String, String> keys =
+        keyCache.get(databaseName, () -> CacheBuilder.newBuilder().maximumSize(1000).build());
+    return keys.get(methodName, () -> databaseName + methodName);
   }
 
   private DatabaseName extractDatabaseName(Metadata headers) throws ExecutionException {

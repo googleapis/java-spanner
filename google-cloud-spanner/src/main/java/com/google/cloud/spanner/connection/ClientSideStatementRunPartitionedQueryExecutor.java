@@ -50,7 +50,7 @@ class ClientSideStatementRunPartitionedQueryExecutor implements ClientSideStatem
   }
 
   String getParameterValue(ParsedStatement parsedStatement) {
-    Matcher matcher = statement.getPattern().matcher(parsedStatement.getSqlWithoutComments());
+    Matcher matcher = statement.getPattern().matcher(parsedStatement.getSql());
     if (matcher.find() && matcher.groupCount() >= 2) {
       // Include the spacing group in case the query is enclosed in parentheses like this:
       // `run partitioned query(select * from foo)`

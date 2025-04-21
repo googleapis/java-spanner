@@ -191,13 +191,11 @@ class DdlBatch extends AbstractBaseUnitOfWork {
         "The batch is no longer active and cannot be used for further statements");
     Preconditions.checkArgument(
         ddl.getType() == StatementType.DDL,
-        "Only DDL statements are allowed. \""
-            + ddl.getSqlWithoutComments()
-            + "\" is not a DDL-statement.");
+        "Only DDL statements are allowed. \"" + ddl.getSql() + "\" is not a DDL-statement.");
     Preconditions.checkArgument(
-        !DdlClient.isCreateDatabaseStatement(ddl.getSqlWithoutComments()),
+        !DdlClient.isCreateDatabaseStatement(dbClient.getDialect(), ddl.getSql()),
         "CREATE DATABASE is not supported in DDL batches.");
-    statements.add(ddl.getSqlWithoutComments());
+    statements.add(ddl.getSql());
     return ApiFutures.immediateFuture(null);
   }
 
@@ -268,7 +266,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
               } catch (SpannerException e) {
                 long[] updateCounts = extractUpdateCounts(operationReference.get());
                 throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                    e.getErrorCode(), e.getMessage(), updateCounts);
+                    e.getErrorCode(), e.getMessage(), updateCounts, null /* TODO: requestId */);
               }
             } catch (Throwable t) {
               span.setStatus(StatusCode.ERROR);

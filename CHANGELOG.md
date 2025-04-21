@@ -1,5 +1,41 @@
 # Changelog
 
+## [6.91.0](https://github.com/googleapis/java-spanner/compare/v6.90.0...v6.91.0) (2025-04-17)
+
+
+### Features
+
+* [Internal] open telemetry built in metrics for GRPC ([#3709](https://github.com/googleapis/java-spanner/issues/3709)) ([cd76c73](https://github.com/googleapis/java-spanner/commit/cd76c73d838a9ccde2c8c11fc63144a62d76886c))
+* Add java sample for the pre-splitting feature ([#3713](https://github.com/googleapis/java-spanner/issues/3713)) ([e97b92e](https://github.com/googleapis/java-spanner/commit/e97b92ea4728bc8f013ff73478de4af9eaa1793b))
+* Add TransactionMutationLimitExceededException as cause to SpannerBatchUpdateException ([#3723](https://github.com/googleapis/java-spanner/issues/3723)) ([4cf5261](https://github.com/googleapis/java-spanner/commit/4cf52613c6c8280fdb864f5b8d04f8fb6ea55e16))
+* Built in metrics for afe latency and connectivity error ([#3724](https://github.com/googleapis/java-spanner/issues/3724)) ([e13a2f9](https://github.com/googleapis/java-spanner/commit/e13a2f9c5cadd15ab5a565c7dd1c1eec64c09488))
+* Support unnamed parameters ([#3820](https://github.com/googleapis/java-spanner/issues/3820)) ([1afd815](https://github.com/googleapis/java-spanner/commit/1afd815869785588dfd03ffc12e381e32c4aa0fe))
+
+
+### Bug Fixes
+
+* Add default implementations for Interval methods in AbstractStructReader ([#3722](https://github.com/googleapis/java-spanner/issues/3722)) ([97f4544](https://github.com/googleapis/java-spanner/commit/97f45448ecb51bd20699d1f163f78b2a7736b21f))
+* Set transaction isolation level had no effect ([#3718](https://github.com/googleapis/java-spanner/issues/3718)) ([b382999](https://github.com/googleapis/java-spanner/commit/b382999f42d1b643472cf3f605f8c6dc839dec19))
+
+
+### Performance Improvements
+
+* Cache the key used for OTEL traces and metrics ([#3814](https://github.com/googleapis/java-spanner/issues/3814)) ([c5a2045](https://github.com/googleapis/java-spanner/commit/c5a20452ad2ed5a8f1ac12cca4072a86f4457b93))
+* Optimize parsing in Connection API ([#3800](https://github.com/googleapis/java-spanner/issues/3800)) ([a2780ed](https://github.com/googleapis/java-spanner/commit/a2780edb3d9d4972c78befd097692f626a6a4bea))
+* Qualify statements without removing comments ([#3810](https://github.com/googleapis/java-spanner/issues/3810)) ([d358cb9](https://github.com/googleapis/java-spanner/commit/d358cb96e33bdf6de6528d03c884aa702b40b802))
+* Remove all calls to getSqlWithoutComments ([#3822](https://github.com/googleapis/java-spanner/issues/3822)) ([0e1e14c](https://github.com/googleapis/java-spanner/commit/0e1e14c0e8c1f3726c4d3cfd836c580b3b4122d0))
+
+## [6.90.0](https://github.com/googleapis/java-spanner/compare/v6.89.0...v6.90.0) (2025-03-31)
+
+
+### Features
+
+* Add default_isolation_level connection property ([#3702](https://github.com/googleapis/java-spanner/issues/3702)) ([9472d23](https://github.com/googleapis/java-spanner/commit/9472d23c2b233275e779815f89040323e073a7d1))
+* Adds support for Interval datatype in Java client ([#3416](https://github.com/googleapis/java-spanner/issues/3416)) ([8be8f5e](https://github.com/googleapis/java-spanner/commit/8be8f5e6b08c8cf3e5f062e4b985b3ec9c725064))
+* Integration test for End to End tracing ([#3691](https://github.com/googleapis/java-spanner/issues/3691)) ([bf1a07a](https://github.com/googleapis/java-spanner/commit/bf1a07a153b1eb899757260b8ac2bc12384e45af))
+* Specify isolation level per transaction ([#3704](https://github.com/googleapis/java-spanner/issues/3704)) ([868f30f](https://github.com/googleapis/java-spanner/commit/868f30fde95d07c3fc18feaca64b4d1c3ba6a27d))
+* Support PostgreSQL isolation level statements ([#3706](https://github.com/googleapis/java-spanner/issues/3706)) ([dda2e1d](https://github.com/googleapis/java-spanner/commit/dda2e1dec38febdad54b61f588590c7572017ba9))
+
 ## [6.89.0](https://github.com/googleapis/java-spanner/compare/v6.88.0...v6.89.0) (2025-03-20)
 
 

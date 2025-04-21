@@ -435,6 +435,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
+  protected Interval getIntervalInternal(int columnIndex) {
+    return currRow().getIntervalInternal(columnIndex);
+  }
+
+  @Override
   protected Value getValueInternal(int columnIndex) {
     return currRow().getValueInternal(columnIndex);
   }
@@ -524,6 +529,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected List<Date> getDateListInternal(int columnIndex) {
     return currRow().getDateListInternal(columnIndex);
+  }
+
+  @Override
+  protected List<Interval> getIntervalListInternal(int columnIndex) {
+    return currRow().getIntervalListInternal(columnIndex);
   }
 
   @Override

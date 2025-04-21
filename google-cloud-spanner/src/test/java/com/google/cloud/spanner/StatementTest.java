@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
@@ -39,6 +41,17 @@ public class StatementTest {
     assertThat(stmt.getSql()).isEqualTo(sql);
     assertThat(stmt.getParameters()).isEmpty();
     assertThat(stmt.toString()).isEqualTo(sql);
+    reserializeAndAssert(stmt);
+  }
+
+  @Test
+  public void basicWithParameters() {
+    String sql = "SELECT @name";
+    Statement stmt = Statement.of(sql, ImmutableMap.of("name", Value.string("hello")));
+    assertEquals(sql, stmt.getSql());
+    assertFalse(stmt.getParameters().isEmpty());
+    assertEquals(Value.string("hello"), stmt.getParameters().get("name"));
+    assertEquals(sql + " {name: hello}", stmt.toString());
     reserializeAndAssert(stmt);
   }
 

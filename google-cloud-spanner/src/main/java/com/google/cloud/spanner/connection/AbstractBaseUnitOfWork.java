@@ -317,7 +317,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     } catch (TimeoutException e) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.DEADLINE_EXCEEDED,
-          "Statement execution timeout occurred for " + statement.getSqlWithoutComments(),
+          "Statement execution timeout occurred for " + statement.getSql(),
           e);
     } catch (ExecutionException e) {
       Throwable cause = e.getCause();
@@ -331,7 +331,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       }
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.fromGrpcStatus(Status.fromThrowable(e)),
-          "Statement execution failed for " + statement.getSqlWithoutComments(),
+          "Statement execution failed for " + statement.getSql(),
           e);
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.newSpannerException(

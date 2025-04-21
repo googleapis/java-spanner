@@ -21,19 +21,28 @@ import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 
+import com.google.api.core.ApiFunction;
+import com.google.api.gax.core.GaxProperties;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.opentelemetry.GrpcOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
@@ -66,6 +75,7 @@ final class BuiltInMetricsProvider {
         BuiltInMetricsView.registerBuiltinMetrics(
             SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
             sdkMeterProviderBuilder);
+        sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
         this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
         Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
@@ -80,15 +90,47 @@ final class BuiltInMetricsProvider {
     }
   }
 
-  Map<String, String> createClientAttributes(String projectId, String client_name) {
+  void enableGrpcMetrics(
+      InstantiatingGrpcChannelProvider.Builder channelProviderBuilder,
+      String projectId,
+      @Nullable Credentials credentials,
+      @Nullable String monitoringHost) {
+    GrpcOpenTelemetry grpcOpenTelemetry =
+        GrpcOpenTelemetry.newBuilder()
+            .sdk(this.getOrCreateOpenTelemetry(projectId, credentials, monitoringHost))
+            .enableMetrics(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE)
+            // Disable gRPCs default metrics as they are not needed for Spanner.
+            .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT)
+            .build();
+    ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator =
+        channelProviderBuilder.getChannelConfigurator();
+    channelProviderBuilder.setChannelConfigurator(
+        b -> {
+          grpcOpenTelemetry.configureChannelBuilder(b);
+          if (channelConfigurator != null) {
+            return channelConfigurator.apply(b);
+          }
+          return b;
+        });
+  }
+
+  Attributes createResourceAttributes(String projectId) {
+    AttributesBuilder attributesBuilder =
+        Attributes.builder()
+            .put(PROJECT_ID_KEY.getKey(), projectId)
+            .put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown")
+            .put(CLIENT_HASH_KEY.getKey(), generateClientHash(getDefaultTaskValue()))
+            .put(INSTANCE_ID_KEY.getKey(), "unknown")
+            .put(LOCATION_ID_KEY.getKey(), detectClientLocation());
+
+    return attributesBuilder.build();
+  }
+
+  Map<String, String> createClientAttributes() {
     Map<String, String> clientAttributes = new HashMap<>();
-    clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
-    clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
-    clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
-    clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
-    String clientUid = getDefaultTaskValue();
-    clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
-    clientAttributes.put(CLIENT_HASH_KEY.getKey(), generateClientHash(clientUid));
+    clientAttributes.put(
+        CLIENT_NAME_KEY.getKey(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass()));
+    clientAttributes.put(CLIENT_UID_KEY.getKey(), getDefaultTaskValue());
     return clientAttributes;
   }
 
