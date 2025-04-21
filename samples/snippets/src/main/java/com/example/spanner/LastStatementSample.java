@@ -30,12 +30,9 @@ public class LastStatementSample {
 
     static void insertAndUpdateUsingLastStatement() {
         // TODO(developer): Replace these variables before running the sample.
-//        final String projectId = "my-project";
-//        final String instanceId = "my-instance";
-//        final String databaseId = "my-database";
-        final String projectId = "data-placement-test";
-        final String instanceId = "shirdon-instance";
-        final String databaseId = "db";
+        final String projectId = "my-project";
+        final String instanceId = "my-instance";
+        final String databaseId = "my-database";
 
         try (Spanner spanner =
                      SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
