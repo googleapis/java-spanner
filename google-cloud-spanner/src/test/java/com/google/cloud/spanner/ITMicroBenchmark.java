@@ -86,9 +86,9 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(Statement.of(SELECT_QUERY), SELECT1_RESULTSET));
 
-    Instant warmUpEndTime = Instant.now().plus(2, ChronoUnit.MINUTES);
+    Instant warmUpEndTime = Instant.now().plus(5, ChronoUnit.MINUTES);
 
-    System.out.println("Running warmup for 2 minute");
+    System.out.println("Running warmup for 5 minute");
     while (warmUpEndTime.isAfter(Instant.now())) {
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
