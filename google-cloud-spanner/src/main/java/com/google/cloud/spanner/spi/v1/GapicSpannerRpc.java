@@ -373,6 +373,9 @@ public class GapicSpannerRpc implements SpannerRpc {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
       }
+
+      options.enablegRPCMetrics(defaultChannelProviderBuilder);
+
       if (options.isUseVirtualThreads()) {
         ExecutorService executor =
             tryCreateVirtualThreadPerTaskExecutor("spanner-virtual-grpc-executor");
