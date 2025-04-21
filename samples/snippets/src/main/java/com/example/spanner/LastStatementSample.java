@@ -57,7 +57,8 @@ public class LastStatementSample {
                             // Pass in the `lastStatement` option to the last DML statement of the transaction.
                             transaction.executeUpdate(
                                     Statement.of(
-                                            "UPDATE Singers SET Singers.LastName = 'Doe' WHERE SingerId = 54213\n"), Options.lastStatement());
+                                            "UPDATE Singers SET Singers.LastName = 'Doe' WHERE SingerId = 54213\n"),
+                                    Options.lastStatement());
                             System.out.println("Singer last name updated.");
 
                             return null;
