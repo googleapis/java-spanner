@@ -42,7 +42,7 @@ public class PgLastStatementSample {
         }
     }
 
-    // [START spanner_last_statement]
+    // [START pg_spanner_last_statement]
     static void insertAndUpdateUsingLastStatement(DatabaseClient client) {
         client
                 .readWriteTransaction()
@@ -57,13 +57,13 @@ public class PgLastStatementSample {
                             // Pass in the `lastStatement` option to the last DML statement of the transaction.
                             transaction.executeUpdate(
                                     Statement.of(
-                                            "UPDATE Singers SET LastName = 'Doe' WHERE SingerId = 54213\n"),
+                                            "UPDATE Singers SET LastName = 'Doe' WHERE SingerId = 54214\n"),
                                     Options.lastStatement());
                             System.out.println("Singer last name updated.");
 
                             return null;
                         });
     }
-    // [END spanner_last_statement]
+    // [END pg_spanner_last_statement]
 
 }
