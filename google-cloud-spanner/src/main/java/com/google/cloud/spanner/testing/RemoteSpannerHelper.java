@@ -54,7 +54,8 @@ public class RemoteSpannerHelper {
   private final InstanceId instanceId;
   private static final AtomicInteger dbSeq = new AtomicInteger();
   private static final int dbPrefix = new Random().nextInt(Integer.MAX_VALUE);
-  private static final AtomicInteger dbRoleSeq = new AtomicInteger();;
+  private static final AtomicInteger dbRoleSeq = new AtomicInteger();
+  ;
   private static int dbRolePrefix = new Random().nextInt(Integer.MAX_VALUE);
   private static final AtomicInteger backupSeq = new AtomicInteger();
   private static final int backupPrefix = new Random().nextInt(Integer.MAX_VALUE);

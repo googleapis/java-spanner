@@ -99,6 +99,7 @@ public enum TypeAnnotationCode implements com.google.protobuf.ProtocolMessageEnu
    * <code>TYPE_ANNOTATION_CODE_UNSPECIFIED = 0;</code>
    */
   public static final int TYPE_ANNOTATION_CODE_UNSPECIFIED_VALUE = 0;
+
   /**
    *
    *
@@ -115,6 +116,7 @@ public enum TypeAnnotationCode implements com.google.protobuf.ProtocolMessageEnu
    * <code>PG_NUMERIC = 2;</code>
    */
   public static final int PG_NUMERIC_VALUE = 2;
+
   /**
    *
    *
@@ -130,6 +132,7 @@ public enum TypeAnnotationCode implements com.google.protobuf.ProtocolMessageEnu
    * <code>PG_JSONB = 3;</code>
    */
   public static final int PG_JSONB_VALUE = 3;
+
   /**
    *
    *

@@ -170,8 +170,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
     Attributes expectedAttributes =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteStreamingSql")
@@ -219,16 +218,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
     Attributes expectedAttributesBeginTransactionOK =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")
             .build();
 
     Attributes expectedAttributesBeginTransactionFailed =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .put(BuiltInMetricsConstant.STATUS_KEY, "UNAVAILABLE")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")
             .build();
@@ -310,8 +307,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
 
     Attributes expectedAttributesCreateSessionOK =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
@@ -321,8 +317,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .build();
 
     Attributes expectedAttributesCreateSessionFailed =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .put(BuiltInMetricsConstant.STATUS_KEY, "UNAVAILABLE")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
             // Include the additional attributes that are added by the HeaderInterceptor in the

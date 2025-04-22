@@ -34,6 +34,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.CopyBackupMetadata)
     CopyBackupMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use CopyBackupMetadata.newBuilder() to construct.
   private CopyBackupMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -70,6 +71,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object name_ = "";
+
   /**
    *
    *
@@ -95,6 +97,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       return s;
     }
   }
+
   /**
    *
    *
@@ -125,6 +128,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object sourceBackup_ = "";
+
   /**
    *
    *
@@ -150,6 +154,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       return s;
     }
   }
+
   /**
    *
    *
@@ -178,6 +183,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
 
   public static final int PROGRESS_FIELD_NUMBER = 3;
   private com.google.spanner.admin.database.v1.OperationProgress progress_;
+
   /**
    *
    *
@@ -195,6 +201,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
   public boolean hasProgress() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -214,6 +221,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         ? com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()
         : progress_;
   }
+
   /**
    *
    *
@@ -234,6 +242,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 4;
   private com.google.protobuf.Timestamp cancelTime_;
+
   /**
    *
    *
@@ -260,6 +269,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
   public boolean hasCancelTime() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -286,6 +296,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
   public com.google.protobuf.Timestamp getCancelTime() {
     return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
+
   /**
    *
    *
@@ -508,6 +519,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -756,6 +768,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     private int bitField0_;
 
     private java.lang.Object name_ = "";
+
     /**
      *
      *
@@ -780,6 +793,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -804,6 +818,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -827,6 +842,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -846,6 +862,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -872,6 +889,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     }
 
     private java.lang.Object sourceBackup_ = "";
+
     /**
      *
      *
@@ -896,6 +914,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -920,6 +939,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -943,6 +963,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -962,6 +983,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -993,6 +1015,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
             com.google.spanner.admin.database.v1.OperationProgress.Builder,
             com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
         progressBuilder_;
+
     /**
      *
      *
@@ -1009,6 +1032,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     public boolean hasProgress() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1031,6 +1055,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         return progressBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1055,6 +1080,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1077,6 +1103,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1107,6 +1134,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       }
       return this;
     }
+
     /**
      *
      *
@@ -1128,6 +1156,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1144,6 +1173,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return getProgressFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1164,6 +1194,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
             : progress_;
       }
     }
+
     /**
      *
      *
@@ -1198,6 +1229,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         cancelTimeBuilder_;
+
     /**
      *
      *
@@ -1223,6 +1255,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     public boolean hasCancelTime() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1254,6 +1287,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         return cancelTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1287,6 +1321,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1317,6 +1352,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1355,6 +1391,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       }
       return this;
     }
+
     /**
      *
      *
@@ -1385,6 +1422,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1410,6 +1448,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1439,6 +1478,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
             : cancelTime_;
       }
     }
+
     /**
      *
      *

@@ -36,6 +36,7 @@ public interface DropCloudDatabaseActionOrBuilder
    * @return The instanceId.
    */
   java.lang.String getInstanceId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface DropCloudDatabaseActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface DropCloudDatabaseActionOrBuilder
    * @return The databaseId.
    */
   java.lang.String getDatabaseId();
+
   /**
    *
    *

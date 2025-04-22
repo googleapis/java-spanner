@@ -41,6 +41,7 @@ public abstract class AbstractLatencyBenchmark {
   static final int NUM_GRPC_CHANNELS =
       Integer.valueOf(
           MoreObjects.firstNonNull(System.getenv("SPANNER_TEST_JMH_NUM_GRPC_CHANNELS"), "4"));
+
   /**
    * Total number of reads per test run for 1 thread. Increasing the value here will increase the
    * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_READS_PER_RUN = 200, there

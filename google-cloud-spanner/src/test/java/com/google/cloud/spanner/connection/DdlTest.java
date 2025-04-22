@@ -257,8 +257,9 @@ public class DdlTest extends AbstractMockServerTest {
         com.google.rpc.Status.newBuilder()
             .setCode(Code.INVALID_ARGUMENT_VALUE)
             .setMessage(
-                "The sequence kind of an identity column id2 is not specified. "
-                    + "Please specify the sequence kind explicitly or set the database option `default_sequence_kind`.")
+                "The sequence kind of an identity column id2 is not specified. Please specify the"
+                    + " sequence kind explicitly or set the database option"
+                    + " `default_sequence_kind`.")
             .build());
     try (Connection connection = createConnection()) {
       assertNull(connection.getDefaultSequenceKind());
@@ -278,8 +279,9 @@ public class DdlTest extends AbstractMockServerTest {
         com.google.rpc.Status.newBuilder()
             .setCode(Code.INVALID_ARGUMENT_VALUE)
             .setMessage(
-                "The sequence kind of an identity column id2 is not specified. "
-                    + "Please specify the sequence kind explicitly or set the database option `default_sequence_kind`.")
+                "The sequence kind of an identity column id2 is not specified. Please specify the"
+                    + " sequence kind explicitly or set the database option"
+                    + " `default_sequence_kind`.")
             .build());
     // This will be the response for the 'alter database' statement.
     addUpdateDdlResponse();
@@ -308,8 +310,9 @@ public class DdlTest extends AbstractMockServerTest {
         com.google.rpc.Status.newBuilder()
             .setCode(Code.INVALID_ARGUMENT_VALUE)
             .setMessage(
-                "The sequence kind of an identity column id2 is not specified. "
-                    + "Please specify the sequence kind explicitly or set the database option `default_sequence_kind`.")
+                "The sequence kind of an identity column id2 is not specified. Please specify the"
+                    + " sequence kind explicitly or set the database option"
+                    + " `default_sequence_kind`.")
             .build());
     try (Connection connection = createConnection()) {
       assertNull(connection.getDefaultSequenceKind());
@@ -328,8 +331,9 @@ public class DdlTest extends AbstractMockServerTest {
         com.google.rpc.Status.newBuilder()
             .setCode(Code.INVALID_ARGUMENT_VALUE)
             .setMessage(
-                "The sequence kind of an identity column id2 is not specified. "
-                    + "Please specify the sequence kind explicitly or set the database option `default_sequence_kind`.")
+                "The sequence kind of an identity column id2 is not specified. Please specify the"
+                    + " sequence kind explicitly or set the database option"
+                    + " `default_sequence_kind`.")
             .build());
     // This will be the response for the 'alter database' statement.
     addUpdateDdlResponse();

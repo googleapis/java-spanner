@@ -41,6 +41,7 @@ public interface UpdateInstancePartitionRequestOrBuilder
    * @return Whether the instancePartition field is set.
    */
   boolean hasInstancePartition();
+
   /**
    *
    *
@@ -58,6 +59,7 @@ public interface UpdateInstancePartitionRequestOrBuilder
    * @return The instancePartition.
    */
   com.google.spanner.admin.instance.v1.InstancePartition getInstancePartition();
+
   /**
    *
    *
@@ -92,6 +94,7 @@ public interface UpdateInstancePartitionRequestOrBuilder
    * @return Whether the fieldMask field is set.
    */
   boolean hasFieldMask();
+
   /**
    *
    *
@@ -110,6 +113,7 @@ public interface UpdateInstancePartitionRequestOrBuilder
    * @return The fieldMask.
    */
   com.google.protobuf.FieldMask getFieldMask();
+
   /**
    *
    *

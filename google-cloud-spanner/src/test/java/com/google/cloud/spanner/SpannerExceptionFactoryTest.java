@@ -225,7 +225,8 @@ public class SpannerExceptionFactoryTest {
                 "NOT_FOUND: Session not found: projects/p/instances/i/databases/d/sessions/s",
                 Status.NOT_FOUND
                     .withDescription(
-                        "NOT_FOUND: Session not found: projects/p/instances/i/databases/d/sessions/s")
+                        "NOT_FOUND: Session not found:"
+                            + " projects/p/instances/i/databases/d/sessions/s")
                     .asRuntimeException(
                         createResourceTypeMetadata(
                             SpannerExceptionFactory.SESSION_RESOURCE_TYPE,

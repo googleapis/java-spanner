@@ -34,6 +34,7 @@ public interface ListDatabasesResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Database databases = 1;</code>
    */
   java.util.List<com.google.spanner.admin.database.v1.Database> getDatabasesList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface ListDatabasesResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Database databases = 1;</code>
    */
   com.google.spanner.admin.database.v1.Database getDatabases(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface ListDatabasesResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Database databases = 1;</code>
    */
   int getDatabasesCount();
+
   /**
    *
    *
@@ -65,6 +68,7 @@ public interface ListDatabasesResponseOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.database.v1.DatabaseOrBuilder>
       getDatabasesOrBuilderList();
+
   /**
    *
    *
@@ -90,6 +94,7 @@ public interface ListDatabasesResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *

@@ -36,6 +36,7 @@ public interface ChangeQuorumCloudDatabaseActionOrBuilder
    * @return Whether the databaseUri field is set.
    */
   boolean hasDatabaseUri();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface ChangeQuorumCloudDatabaseActionOrBuilder
    * @return The databaseUri.
    */
   java.lang.String getDatabaseUri();
+
   /**
    *
    *
@@ -73,6 +75,7 @@ public interface ChangeQuorumCloudDatabaseActionOrBuilder
    * @return A list containing the servingLocations.
    */
   java.util.List<java.lang.String> getServingLocationsList();
+
   /**
    *
    *
@@ -85,6 +88,7 @@ public interface ChangeQuorumCloudDatabaseActionOrBuilder
    * @return The count of servingLocations.
    */
   int getServingLocationsCount();
+
   /**
    *
    *
@@ -98,6 +102,7 @@ public interface ChangeQuorumCloudDatabaseActionOrBuilder
    * @return The servingLocations at the given index.
    */
   java.lang.String getServingLocations(int index);
+
   /**
    *
    *

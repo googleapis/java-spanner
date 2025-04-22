@@ -57,7 +57,8 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
         meter
             .histogramBuilder(serviceName + '/' + BuiltInMetricsConstant.GFE_LATENCIES_NAME)
             .setDescription(
-                "Latency between Google's network receiving an RPC and reading back the first byte of the response")
+                "Latency between Google's network receiving an RPC and reading back the first byte"
+                    + " of the response")
             .setUnit("ms")
             .build();
   }

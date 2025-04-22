@@ -80,6 +80,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   /** Execution time for statements that have been defined as slow. */
   private static final int EXECUTION_TIME_SLOW_STATEMENT = 10_000;
+
   /**
    * This timeout should be high enough that it will never be exceeded, even on a slow build
    * environment, but still significantly lower than the expected execution time of the slow

@@ -568,7 +568,8 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
         try (ResultSet resultSet =
             connection.executeQuery(
                 Statement.newBuilder(
-                        "run\tpartitioned   query\n select * from random_table where active=@active")
+                        "run\tpartitioned   query\n"
+                            + " select * from random_table where active=@active")
                     .bind("active")
                     .to(true)
                     .build())) {
@@ -642,7 +643,8 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
         // only one of the partition executors will see it.
         assertTrue(
             String.format(
-                "rowCount (%d) should be <= maxPartitions (%d) * generatedRowCount (%d) - (generatedRowCount (%d) - errorIndex (%d))",
+                "rowCount (%d) should be <= maxPartitions (%d) * generatedRowCount (%d) -"
+                    + " (generatedRowCount (%d) - errorIndex (%d))",
                 rowCount, maxPartitions, generatedRowCount, generatedRowCount, errorIndex),
             rowCount <= (maxPartitions * generatedRowCount - (generatedRowCount - errorIndex)));
       }

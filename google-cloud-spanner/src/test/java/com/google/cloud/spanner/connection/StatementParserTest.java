@@ -325,7 +325,8 @@ public class StatementParserTest {
     assumeTrue(dialect == Dialect.POSTGRESQL);
 
     final String sql =
-        "/* This is a comment /* This is an embedded comment */ This is after the embedded comment */ SELECT 1";
+        "/* This is a comment /* This is an embedded comment */ This is after the embedded comment"
+            + " */ SELECT 1";
     assertEquals("SELECT 1", parser.removeCommentsAndTrim(sql));
   }
 
@@ -334,7 +335,8 @@ public class StatementParserTest {
     assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     final String sql =
-        "/* This is a comment /* This is an embedded comment */ This is after the embedded comment */ SELECT 1";
+        "/* This is a comment /* This is an embedded comment */ This is after the embedded comment"
+            + " */ SELECT 1";
     assertEquals(
         "This is after the embedded comment */ SELECT 1", parser.removeCommentsAndTrim(sql));
   }
@@ -459,7 +461,8 @@ public class StatementParserTest {
             parser
                 .parse(
                     Statement.of(
-                        "\t\tCREATE\n\t   TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                        "\t\tCREATE\n"
+                            + "\t   TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
                 .isDdl())
         .isTrue();
     assertThat(
@@ -473,42 +476,56 @@ public class StatementParserTest {
             parser
                 .parse(
                     Statement.of(
-                        "-- this is a comment\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                        "-- this is a comment\n"
+                            + "CREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
                 .isDdl())
         .isTrue();
     assertThat(
             parser
                 .parse(
                     Statement.of(
-                        "/* multi line comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                        "/* multi line comment\n"
+                            + "* with more information on the next line\n"
+                            + "*/\n"
+                            + "CREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
                 .isDdl())
         .isTrue();
     assertThat(
             parser
                 .parse(
                     Statement.of(
-                        "/** java doc comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                        "/** java doc comment\n"
+                            + "* with more information on the next line\n"
+                            + "*/\n"
+                            + "CREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
                 .isDdl())
         .isTrue();
     assertThat(
             parser
                 .parse(
                     Statement.of(
-                        "-- SELECT in a single line comment \nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                        "-- SELECT in a single line comment \n"
+                            + "CREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
                 .isDdl())
         .isTrue();
     assertThat(
             parser
                 .parse(
                     Statement.of(
-                        "/* SELECT in a multi line comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                        "/* SELECT in a multi line comment\n"
+                            + "* with more information on the next line\n"
+                            + "*/\n"
+                            + "CREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
                 .isDdl())
         .isTrue();
     assertThat(
             parser
                 .parse(
                     Statement.of(
-                        "/** SELECT in a java doc comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                        "/** SELECT in a java doc comment\n"
+                            + "* with more information on the next line\n"
+                            + "*/\n"
+                            + "CREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
                 .isDdl())
         .isTrue();
 
@@ -530,25 +547,32 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* this is a comment */ create view SingerNames as select FullName from Singers"))
+                    "/* this is a comment */ create view SingerNames as select FullName from"
+                        + " Singers"))
             .isDdl());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "create /* this is a comment */ view SingerNames as select FullName from Singers"))
+                    "create /* this is a comment */ view SingerNames as select FullName from"
+                        + " Singers"))
             .isDdl());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "create \n -- This is a comment \n view SingerNames as select FullName from Singers"))
+                    "create \n"
+                        + " -- This is a comment \n"
+                        + " view SingerNames as select FullName from Singers"))
             .isDdl());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    " \t \n create   \n \t  view \n  \t SingerNames as select FullName from Singers"))
+                    " \t \n"
+                        + " create   \n"
+                        + " \t  view \n"
+                        + "  \t SingerNames as select FullName from Singers"))
             .isDdl());
     assertTrue(parser.parse(Statement.of("DROP VIEW SingerNames")).isDdl());
     assertTrue(
@@ -631,13 +655,21 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* multi line comment\n* with more information on the next line\n*/\nSELECT ID, NAME\nFROM\tTEST\n\tWHERE ID=1"))
+                    "/* multi line comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "SELECT ID, NAME\n"
+                        + "FROM\tTEST\n"
+                        + "\tWHERE ID=1"))
             .isQuery());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** java doc comment\n* with more information on the next line\n*/\nselect max(id) from test"))
+                    "/** java doc comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "select max(id) from test"))
             .isQuery());
     assertTrue(
         parser.parse(Statement.of("-- INSERT in a single line comment \n    select 1")).isQuery());
@@ -645,13 +677,20 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* UPDATE in a multi line comment\n* with more information on the next line\n*/\nSELECT 1"))
+                    "/* UPDATE in a multi line comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "SELECT 1"))
             .isQuery());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** DELETE in a java doc comment\n* with more information on the next line\n*/\n\n\n\n -- UPDATE test\nSELECT 1"))
+                    "/** DELETE in a java doc comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n\n\n\n"
+                        + " -- UPDATE test\n"
+                        + "SELECT 1"))
             .isQuery());
 
     assertTrue(
@@ -707,7 +746,10 @@ public class StatementParserTest {
             "@{JOIN_METHOD=HASH_JOIN}\n -- Single line comment\nSELECT * FROM PersonsTable"));
     assertTrue(
         parser.isQuery(
-            "@{JOIN_METHOD=HASH_JOIN}\n /* Multi line comment\n with more comments\n */SELECT * FROM PersonsTable"));
+            "@{JOIN_METHOD=HASH_JOIN}\n"
+                + " /* Multi line comment\n"
+                + " with more comments\n"
+                + " */SELECT * FROM PersonsTable"));
     assertTrue(
         parser.isQuery(
             "@{JOIN_METHOD=HASH_JOIN} WITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
@@ -723,7 +765,9 @@ public class StatementParserTest {
         parser.isQuery("@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} Select * FROM tbl"));
     assertTrue(
         parser.isQuery(
-            "@{FORCE_INDEX=index_name}\n@{JOIN_METHOD=HASH_JOIN}\nWITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
+            "@{FORCE_INDEX=index_name}\n"
+                + "@{JOIN_METHOD=HASH_JOIN}\n"
+                + "WITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
                 + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
                 + "SELECT * FROM subQ1\n"
                 + "UNION ALL\n"
@@ -764,15 +808,21 @@ public class StatementParserTest {
             "@{\nLOCK_SCANNED_RANGES =  exclusive   \t}\n\t UPDATE FOO SET NAME='foo' WHERE ID=1"));
     assertTrue(
         parser.isUpdateStatement(
-            "@{LOCK_SCANNED_RANGES=exclusive}\n -- Single line comment\nUPDATE FOO SET NAME='foo' WHERE ID=1"));
+            "@{LOCK_SCANNED_RANGES=exclusive}\n"
+                + " -- Single line comment\n"
+                + "UPDATE FOO SET NAME='foo' WHERE ID=1"));
     assertTrue(
         parser.isUpdateStatement(
-            "@{LOCK_SCANNED_RANGES=exclusive}\n /* Multi line comment\n with more comments\n */UPDATE FOO SET NAME='foo' WHERE ID=1"));
+            "@{LOCK_SCANNED_RANGES=exclusive}\n"
+                + " /* Multi line comment\n"
+                + " with more comments\n"
+                + " */UPDATE FOO SET NAME='foo' WHERE ID=1"));
 
     // Multiple query hints.
     assertTrue(
         parser.isUpdateStatement(
-            "@{LOCK_SCANNED_RANGES=exclusive} @{USE_ADDITIONAL_PARALLELISM=TRUE} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+            "@{LOCK_SCANNED_RANGES=exclusive} @{USE_ADDITIONAL_PARALLELISM=TRUE} UPDATE FOO SET"
+                + " NAME='foo' WHERE ID=1"));
 
     // Invalid query hints.
     assertFalse(
@@ -812,13 +862,21 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* multi line comment\n* with more information on the next line\n*/\nINSERT INTO FOO\n(ID)\tVALUES\n\t(1)"))
+                    "/* multi line comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "INSERT INTO FOO\n"
+                        + "(ID)\tVALUES\n"
+                        + "\t(1)"))
             .isUpdate());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** java doc comment\n* with more information on the next line\n*/\nInsert intO foo (id) select 1"))
+                    "/** java doc comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "Insert intO foo (id) select 1"))
             .isUpdate());
     assertTrue(
         parser
@@ -830,13 +888,20 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* CREATE in a multi line comment\n* with more information on the next line\n*/\nINSERT INTO FOO (ID) VALUES (1)"))
+                    "/* CREATE in a multi line comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "INSERT INTO FOO (ID) VALUES (1)"))
             .isUpdate());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** DROP in a java doc comment\n* with more information on the next line\n*/\n\n\n\n -- SELECT test\ninsert into foo (id) values (1)"))
+                    "/** DROP in a java doc comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n\n\n\n"
+                        + " -- SELECT test\n"
+                        + "insert into foo (id) values (1)"))
             .isUpdate());
   }
 
@@ -870,13 +935,21 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* multi line comment\n* with more information on the next line\n*/\nUPDATE FOO\nSET NAME=\t'foo'\n\tWHERE ID=1"))
+                    "/* multi line comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "UPDATE FOO\n"
+                        + "SET NAME=\t'foo'\n"
+                        + "\tWHERE ID=1"))
             .isUpdate());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** java doc comment\n* with more information on the next line\n*/\nUPDATE FOO SET NAME=(select 'bar')"))
+                    "/** java doc comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "UPDATE FOO SET NAME=(select 'bar')"))
             .isUpdate());
     assertTrue(
         parser
@@ -887,13 +960,20 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* CREATE in a multi line comment\n* with more information on the next line\n*/\nUPDATE FOO SET NAME='BAR'"))
+                    "/* CREATE in a multi line comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "UPDATE FOO SET NAME='BAR'"))
             .isUpdate());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** DROP in a java doc comment\n* with more information on the next line\n*/\n\n\n\n -- SELECT test\nupdate foo set bar='foo'"))
+                    "/** DROP in a java doc comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n\n\n\n"
+                        + " -- SELECT test\n"
+                        + "update foo set bar='foo'"))
             .isUpdate());
   }
 
@@ -928,13 +1008,20 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* multi line comment\n* with more information on the next line\n*/\nDELETE FROM FOO\n\n\tWHERE ID=1"))
+                    "/* multi line comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "DELETE FROM FOO\n\n"
+                        + "\tWHERE ID=1"))
             .isUpdate());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** java doc comment\n* with more information on the next line\n*/\nDELETE FROM FOO WHERE NAME=(select 'bar')"))
+                    "/** java doc comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "DELETE FROM FOO WHERE NAME=(select 'bar')"))
             .isUpdate());
     assertTrue(
         parser
@@ -946,13 +1033,20 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "/* CREATE in a multi line comment\n* with more information on the next line\n*/\nDELETE FROM FOO WHERE NAME='BAR'"))
+                    "/* CREATE in a multi line comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n"
+                        + "DELETE FROM FOO WHERE NAME='BAR'"))
             .isUpdate());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** DROP in a java doc comment\n* with more information on the next line\n*/\n\n\n\n -- SELECT test\ndelete from foo where bar='foo'"))
+                    "/** DROP in a java doc comment\n"
+                        + "* with more information on the next line\n"
+                        + "*/\n\n\n\n"
+                        + " -- SELECT test\n"
+                        + "delete from foo where bar='foo'"))
             .isUpdate());
   }
 
@@ -1134,10 +1228,12 @@ public class StatementParserTest {
     assertUnclosedLiteral(parser, "?'''?it\\'?s \n ?it\\'?s'?");
 
     assertEquals(
-        "select 1, @p1, 'test?test', \"test?test\", foo.* from `foo` where col1=@p2 and col2='test' and col3=@p3 and col4='?' and col5=\"?\" and col6='?''?''?'",
+        "select 1, @p1, 'test?test', \"test?test\", foo.* from `foo` where col1=@p2 and col2='test'"
+            + " and col3=@p3 and col4='?' and col5=\"?\" and col6='?''?''?'",
         parser.convertPositionalParametersToNamedParameters(
                 '?',
-                "select 1, ?, 'test?test', \"test?test\", foo.* from `foo` where col1=? and col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'")
+                "select 1, ?, 'test?test', \"test?test\", foo.* from `foo` where col1=? and"
+                    + " col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'")
             .sqlWithNamedParameters);
 
     assertEquals(
@@ -1290,12 +1386,15 @@ public class StatementParserTest {
 
         assertEquals(
             injector.inject(
-                "select 1, $1, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=$2 and col2='test' and col3=$3 and col4='?' and col5=\"?\" and col6='?''?''?'",
+                "select 1, $1, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=$2 and"
+                    + " col2='test' and col3=$3 and col4='?' and col5=\"?\" and col6='?''?''?'",
                 comment),
             parser.convertPositionalParametersToNamedParameters(
                     '?',
                     injector.inject(
-                        "select 1, ?, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=? and col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'",
+                        "select 1, ?, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=?"
+                            + " and col2='test' and col3=? and col4='?' and col5=\"?\" and"
+                            + " col6='?''?''?'",
                         comment))
                 .sqlWithNamedParameters);
 
@@ -1384,8 +1483,9 @@ public class StatementParserTest {
     assertEquals(
         ImmutableSet.of("$1"),
         parser.getQueryParameters(
-            "/* @lock_scanned_ranges = exclusive */ select -- random comment\n '$2' "
-                + "from foo /* comment /* with nested comment */ outside of nested comment */ where bar=$1 and baz=$foo"));
+            "/* @lock_scanned_ranges = exclusive */ select -- random comment\n"
+                + " '$2' from foo /* comment /* with nested comment */ outside of nested comment */"
+                + " where bar=$1 and baz=$foo"));
   }
 
   @Test
@@ -1446,7 +1546,8 @@ public class StatementParserTest {
         parser
             .parse(
                 Statement.of(
-                    "insert into x (a,b) values (1,2)/*comment*/then/*comment*/return/*comment*/(a)"))
+                    "insert into x (a,b) values"
+                        + " (1,2)/*comment*/then/*comment*/return/*comment*/(a)"))
             .hasReturningClause());
     assertTrue(
         parser

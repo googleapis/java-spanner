@@ -464,7 +464,8 @@ public class MockDatabaseAdminImpl extends DatabaseAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method ListDatabaseOperations, expected %s or %s",
+                  "Unrecognized response type %s for method ListDatabaseOperations, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   ListDatabaseOperationsResponse.class.getName(),
                   Exception.class.getName())));
@@ -486,7 +487,8 @@ public class MockDatabaseAdminImpl extends DatabaseAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method ListBackupOperations, expected %s or %s",
+                  "Unrecognized response type %s for method ListBackupOperations, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   ListBackupOperationsResponse.class.getName(),
                   Exception.class.getName())));
@@ -550,7 +552,8 @@ public class MockDatabaseAdminImpl extends DatabaseAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method CreateBackupSchedule, expected %s or %s",
+                  "Unrecognized response type %s for method CreateBackupSchedule, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   BackupSchedule.class.getName(),
                   Exception.class.getName())));
@@ -592,7 +595,8 @@ public class MockDatabaseAdminImpl extends DatabaseAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method UpdateBackupSchedule, expected %s or %s",
+                  "Unrecognized response type %s for method UpdateBackupSchedule, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   BackupSchedule.class.getName(),
                   Exception.class.getName())));
@@ -613,7 +617,8 @@ public class MockDatabaseAdminImpl extends DatabaseAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method DeleteBackupSchedule, expected %s or %s",
+                  "Unrecognized response type %s for method DeleteBackupSchedule, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   Empty.class.getName(),
                   Exception.class.getName())));

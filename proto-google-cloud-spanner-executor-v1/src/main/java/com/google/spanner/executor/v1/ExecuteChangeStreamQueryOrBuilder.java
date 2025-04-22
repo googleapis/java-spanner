@@ -36,6 +36,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -62,6 +63,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return Whether the startTime field is set.
    */
   boolean hasStartTime();
+
   /**
    *
    *
@@ -75,6 +77,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return The startTime.
    */
   com.google.protobuf.Timestamp getStartTime();
+
   /**
    *
    *
@@ -100,6 +103,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return Whether the endTime field is set.
    */
   boolean hasEndTime();
+
   /**
    *
    *
@@ -113,6 +117,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return The endTime.
    */
   com.google.protobuf.Timestamp getEndTime();
+
   /**
    *
    *
@@ -138,6 +143,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return Whether the partitionToken field is set.
    */
   boolean hasPartitionToken();
+
   /**
    *
    *
@@ -151,6 +157,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return The partitionToken.
    */
   java.lang.String getPartitionToken();
+
   /**
    *
    *
@@ -177,6 +184,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return A list containing the readOptions.
    */
   java.util.List<java.lang.String> getReadOptionsList();
+
   /**
    *
    *
@@ -189,6 +197,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return The count of readOptions.
    */
   int getReadOptionsCount();
+
   /**
    *
    *
@@ -202,6 +211,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return The readOptions at the given index.
    */
   java.lang.String getReadOptions(int index);
+
   /**
    *
    *
@@ -229,6 +239,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return Whether the heartbeatMilliseconds field is set.
    */
   boolean hasHeartbeatMilliseconds();
+
   /**
    *
    *
@@ -255,6 +266,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return Whether the deadlineSeconds field is set.
    */
   boolean hasDeadlineSeconds();
+
   /**
    *
    *
@@ -282,6 +294,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return Whether the cloudDatabaseRole field is set.
    */
   boolean hasCloudDatabaseRole();
+
   /**
    *
    *
@@ -296,6 +309,7 @@ public interface ExecuteChangeStreamQueryOrBuilder
    * @return The cloudDatabaseRole.
    */
   java.lang.String getCloudDatabaseRole();
+
   /**
    *
    *
