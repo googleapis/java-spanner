@@ -27,6 +27,8 @@ import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +92,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
     Instant warmUpEndTime = Instant.now().plus(5, ChronoUnit.MINUTES);
     int waitTimeMilli = 5;
 
-    System.out.println("Running warmup for 5 minute");
+    System.out.println("Running warmup for 5 minutes, Started at " + currentTimeInIST());
     while (warmUpEndTime.isAfter(Instant.now())) {
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
@@ -105,7 +107,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
     List<Long> afterGrpcs = new ArrayList<>();
     Instant perfEndTime = Instant.now().plus(30, ChronoUnit.MINUTES);
 
-    System.out.println("Running benchmarking for 30 minutes");
+    System.out.println("Running benchmarking for 30 minutes, Started at " + currentTimeInIST());
     while (perfEndTime.isAfter(Instant.now())) {
       PerformanceClock.BEFORE_GRPC_INSTANCE.reset();
       PerformanceClock.AFTER_GRPC_INSTANCE.reset();
@@ -129,9 +131,14 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
             + percentile(afterGrpcs, 0.5));
   }
 
+  private String currentTimeInIST() {
+    return ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toString();
+  }
+
   // @Test
   // public void testSingleUseQueryWithExternalGRPC() throws InterruptedException {
-  //   SpannerOptions options = SpannerOptions.newBuilder().setProjectId("span-cloud-testing").build();
+  //   SpannerOptions options =
+  // SpannerOptions.newBuilder().setProjectId("span-cloud-testing").build();
   //   int waitTimeMilli = 5;
   //   DatabaseId databaseId =
   //       DatabaseId.of("span-cloud-testing", "sakthi-spanner-testing", "testing-database");
