@@ -142,9 +142,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
     while (warmUpEndTime.isAfter(Instant.now())) {
       try (ReadContext readContext = databaseClient.singleUse()) {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
-          while (resultSet.next()) {
-            System.out.println(resultSet.getCurrentRowAsStruct());
-          }
+          while (resultSet.next()) {}
         }
       }
       randomWait(waitTimeMilli);
