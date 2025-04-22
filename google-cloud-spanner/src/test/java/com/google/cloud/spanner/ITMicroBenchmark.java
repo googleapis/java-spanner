@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
@@ -123,6 +124,65 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
     System.out.println(
         "Total time spent in the client library after receiving PartialResultSet from grpc "
             + percentile(afterGrpcs, 0.5));
+  }
+
+  @Test
+  public void testSingleUseQueryWithExternalGRPC() throws InterruptedException {
+    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("span-cloud-testing").build();
+    DatabaseId databaseId =
+        DatabaseId.of("span-cloud-testing", "sakthi-spanner-testing", "testing-database");
+    DatabaseClient databaseClient = options.getService().getDatabaseClient(databaseId);
+
+    final String SELECT_QUERY = "SELECT * FROM Employees WHERE ID = 1";
+
+    Instant warmUpEndTime = Instant.now().plus(5, ChronoUnit.MINUTES);
+
+    System.out.println("Running warmup for 5 minute");
+    while (warmUpEndTime.isAfter(Instant.now())) {
+      try (ReadContext readContext = databaseClient.singleUse()) {
+        try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
+          while (resultSet.next()) {
+            System.out.println(resultSet.getCurrentRowAsStruct());
+          }
+        }
+      }
+    }
+    System.out.println("Warmup completed");
+
+    List<Long> beforeGrpcs = new ArrayList<>();
+    List<Long> afterGrpcs = new ArrayList<>();
+    Instant perfEndTime = Instant.now().plus(30, ChronoUnit.MINUTES);
+
+    System.out.println("Running benchmarking for 30 minutes");
+    while (perfEndTime.isAfter(Instant.now())) {
+      PerformanceClock.BEFORE_GRPC_INSTANCE.reset();
+      PerformanceClock.AFTER_GRPC_INSTANCE.reset();
+      PerformanceClock.BEFORE_GRPC_INSTANCE.start();
+      try (ReadContext readContext = databaseClient.singleUse()) {
+        try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
+          while (resultSet.next()) {}
+          PerformanceClock.AFTER_GRPC_INSTANCE.stop();
+          beforeGrpcs.add(PerformanceClock.BEFORE_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
+          afterGrpcs.add(PerformanceClock.AFTER_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
+          assertFalse(resultSet.next());
+        }
+      }
+      randomWait(5);
+    }
+    System.out.println(
+        "Total time spent in the client library before requesting data from grpc "
+            + percentile(beforeGrpcs, 0.5));
+    System.out.println(
+        "Total time spent in the client library after receiving PartialResultSet from grpc "
+            + percentile(afterGrpcs, 0.5));
+  }
+
+  public void randomWait(int waitMillis) throws InterruptedException {
+    if (waitMillis <= 0) {
+      return;
+    }
+    int randomMillis = ThreadLocalRandom.current().nextInt(waitMillis * 2);
+    Thread.sleep(randomMillis);
   }
 
   public static long percentile(List<Long> latencies, double percentile) {
