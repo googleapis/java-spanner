@@ -129,6 +129,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
   @Test
   public void testSingleUseQueryWithExternalGRPC() throws InterruptedException {
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("span-cloud-testing").build();
+    int waitTimeMilli = 5;
     DatabaseId databaseId =
         DatabaseId.of("span-cloud-testing", "sakthi-spanner-testing", "testing-database");
     DatabaseClient databaseClient = options.getService().getDatabaseClient(databaseId);
@@ -146,6 +147,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
           }
         }
       }
+      randomWait(waitTimeMilli);
     }
     System.out.println("Warmup completed");
 
@@ -167,7 +169,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
           assertFalse(resultSet.next());
         }
       }
-      randomWait(5);
+      randomWait(waitTimeMilli);
     }
     System.out.println(
         "Total time spent in the client library before requesting data from grpc "
