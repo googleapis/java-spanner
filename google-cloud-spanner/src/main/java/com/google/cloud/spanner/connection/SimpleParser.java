@@ -138,7 +138,7 @@ class SimpleParser {
     // comments and comments are automatically skipped by all methods.
     if (getDialect() == Dialect.GOOGLE_STANDARD_SQL && eatTokens('@', '{')) {
       while (pos < length && !eatToken('}')) {
-        pos += statementParser.skip(sql, pos, /*result=*/ null);
+        pos = statementParser.skip(sql, pos, /*result=*/ null);
       }
     }
   }
