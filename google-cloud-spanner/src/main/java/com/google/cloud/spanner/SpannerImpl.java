@@ -257,6 +257,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     return getDatabaseClient(db, null);
   }
 
+  @Override
   public DatabaseClient getDatabaseClient(DatabaseId db, String clientId) {
     synchronized (this) {
       checkClosed();

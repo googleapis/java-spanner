@@ -145,7 +145,9 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    *
    * <!--SNIPPET get_db_client-->
    */
-  DatabaseClient getDatabaseClient(DatabaseId db, String clientId);
+  default DatabaseClient getDatabaseClient(DatabaseId db, String clientId) {
+    throw new UnsupportedOperationException("getDatabaseClient with clientId is not supported by this default implementation.");
+  }
 
   /**
    * Returns a {@code BatchClient} to do batch operations on Cloud Spanner databases. Batch client
