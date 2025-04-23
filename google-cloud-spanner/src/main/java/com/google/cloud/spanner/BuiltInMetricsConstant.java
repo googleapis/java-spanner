@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.View;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,6 +40,9 @@ public class BuiltInMetricsConstant {
   static final String SPANNER_METER_NAME = "spanner-java";
   static final String GRPC_METER_NAME = "grpc-java";
   static final String GFE_LATENCIES_NAME = "gfe_latencies";
+  static final String AFE_LATENCIES_NAME = "afe_latencies";
+  static final String GFE_CONNECTIVITY_ERROR_NAME = "gfe_connectivity_error_count";
+  static final String AFE_CONNECTIVITY_ERROR_NAME = "afe_connectivity_error_count";
   static final String OPERATION_LATENCIES_NAME = "operation_latencies";
   static final String ATTEMPT_LATENCIES_NAME = "attempt_latencies";
   static final String OPERATION_LATENCY_NAME = "operation_latency";
@@ -52,7 +56,10 @@ public class BuiltInMetricsConstant {
               ATTEMPT_LATENCIES_NAME,
               OPERATION_COUNT_NAME,
               ATTEMPT_COUNT_NAME,
-              GFE_LATENCIES_NAME)
+              GFE_LATENCIES_NAME,
+              AFE_LATENCIES_NAME,
+              GFE_CONNECTIVITY_ERROR_NAME,
+              AFE_CONNECTIVITY_ERROR_NAME)
           .stream()
           .map(m -> METER_NAME + '/' + m)
           .collect(Collectors.toSet());
@@ -110,14 +117,14 @@ public class BuiltInMetricsConstant {
   static final Set<String> GRPC_LB_RLS_ATTRIBUTES =
       ImmutableSet.of("grpc.lb.rls.data_plane_target", "grpc.lb.pick_result");
 
+  static List<Double> BUCKET_BOUNDARIES =
+      ImmutableList.of(
+          0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0,
+          16.0, 17.0, 18.0, 19.0, 20.0, 25.0, 30.0, 40.0, 50.0, 65.0, 80.0, 100.0, 130.0, 160.0,
+          200.0, 250.0, 300.0, 400.0, 500.0, 650.0, 800.0, 1000.0, 2000.0, 5000.0, 10000.0, 20000.0,
+          50000.0, 100000.0, 200000.0, 400000.0, 800000.0, 1600000.0, 3200000.0);
   static Aggregation AGGREGATION_WITH_MILLIS_HISTOGRAM =
-      Aggregation.explicitBucketHistogram(
-          ImmutableList.of(
-              0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0,
-              15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 25.0, 30.0, 40.0, 50.0, 65.0, 80.0, 100.0, 130.0,
-              160.0, 200.0, 250.0, 300.0, 400.0, 500.0, 650.0, 800.0, 1000.0, 2000.0, 5000.0,
-              10000.0, 20000.0, 50000.0, 100000.0, 200000.0, 400000.0, 800000.0, 1600000.0,
-              3200000.0));
+      Aggregation.explicitBucketHistogram(BUCKET_BOUNDARIES);
 
   static final Collection<String> GRPC_METRICS_ENABLED_BY_DEFAULT =
       ImmutableList.of(
@@ -142,14 +149,6 @@ public class BuiltInMetricsConstant {
         BuiltInMetricsConstant.GAX_METER_NAME,
         BuiltInMetricsConstant.ATTEMPT_LATENCY_NAME,
         BuiltInMetricsConstant.ATTEMPT_LATENCIES_NAME,
-        BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
-        InstrumentType.HISTOGRAM,
-        "ms");
-    defineView(
-        views,
-        BuiltInMetricsConstant.SPANNER_METER_NAME,
-        BuiltInMetricsConstant.GFE_LATENCIES_NAME,
-        BuiltInMetricsConstant.GFE_LATENCIES_NAME,
         BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
         InstrumentType.HISTOGRAM,
         "ms");
