@@ -254,9 +254,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public DatabaseClient getDatabaseClient(DatabaseId db) {
+    return getDatabaseClient(db, null);
+  }
+
+  public DatabaseClient getDatabaseClient(DatabaseId db, String clientId) {
     synchronized (this) {
       checkClosed();
-      String clientId = null;
       if (dbClients.containsKey(db) && !dbClients.get(db).isValid()) {
         // Close the invalidated client and remove it.
         dbClients.get(db).closeAsync(new ClosedException());

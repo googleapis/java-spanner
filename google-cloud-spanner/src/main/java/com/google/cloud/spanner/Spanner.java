@@ -125,6 +125,29 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    */
   DatabaseClient getDatabaseClient(DatabaseId db);
 
+
+  /**
+   * Returns a {@code DatabaseClient} for the given database and given client id. It uses a pool of sessions to talk to
+   * the database.
+   * <!--SNIPPET get_db_client-->
+   *
+   * <pre>{@code
+   * SpannerOptions options = SpannerOptions.newBuilder().build();
+   * Spanner spanner = options.getService();
+   * final String project = "test-project";
+   * final String instance = "test-instance";
+   * final String database = "example-db";
+   * final String client_id = "client_id"
+   * DatabaseId db =
+   *     DatabaseId.of(project, instance, database);
+   *
+   * DatabaseClient dbClient = spanner.getDatabaseClient(db, client_id);
+   * }</pre>
+   *
+   * <!--SNIPPET get_db_client-->
+   */
+  DatabaseClient getDatabaseClient(DatabaseId db, String clientId);
+
   /**
    * Returns a {@code BatchClient} to do batch operations on Cloud Spanner databases. Batch client
    * is useful when one wants to read/query a large amount of data from Cloud Spanner across
