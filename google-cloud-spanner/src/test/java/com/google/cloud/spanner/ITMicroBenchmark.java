@@ -99,7 +99,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
           while (resultSet.next()) {}
         }
       }
-      randomWait(waitTimeMilli);
+      // randomWait(waitTimeMilli);
     }
     System.out.println("Warmup completed");
 
@@ -121,7 +121,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
           assertFalse(resultSet.next());
         }
       }
-      randomWait(waitTimeMilli);
+      // randomWait(waitTimeMilli);
     }
     System.out.println(
         "Total time spent in the client library before requesting data from grpc "
