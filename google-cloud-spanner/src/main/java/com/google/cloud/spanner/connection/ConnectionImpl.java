@@ -109,6 +109,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
@@ -326,28 +327,18 @@ class ConnectionImpl implements Connection {
           spanner, options.getDatabaseId(), options.getDialect());
     }
     DatabaseClient tempDbClient = null;
+    final DatabaseId databaseId = options.getDatabaseId();
     try {
-      final Map<String, ConnectionPropertyValue<?>> propertyValueMap = options.getInitialConnectionPropertyValues();
-      String clientIdString = null;
-      if (propertyValueMap != null) {
-        final ConnectionPropertyValue<?> clientIdProp = propertyValueMap.get(CLIENT_ID);
-        if (clientIdProp != null) {
-          Object value = clientIdProp.getValue();
-          if (value != null) {
-            clientIdString = value.toString();
-          }
-        }
-        if (clientIdString != null && !clientIdString.isEmpty()) {
-          tempDbClient = spanner.getDatabaseClient(options.getDatabaseId(), clientIdString);
-        }
-        else {
-          tempDbClient = spanner.getDatabaseClient(options.getDatabaseId());
-        }
-      } else {
-        tempDbClient = spanner.getDatabaseClient(options.getDatabaseId());
+      Optional<String> clientIdOpt = extractClientIdOptional(options);
+      if(clientIdOpt.isPresent()) {
+        tempDbClient = spanner.getDatabaseClient(databaseId, clientIdOpt.get());
       }
     } catch(Exception e) {
-      tempDbClient = spanner.getDatabaseClient(options.getDatabaseId());
+      System.err.println("WARNING: Failed during DatabaseClient initialization (possibly getting specific ID), falling back to default. Error: "
+          + e.getMessage());
+    }
+    if(tempDbClient == null) {
+      tempDbClient = spanner.getDatabaseClient(databaseId);
     }
     this.dbClient = tempDbClient;
     this.batchClient = spanner.getBatchClient(options.getDatabaseId());
@@ -364,6 +355,14 @@ class ConnectionImpl implements Connection {
 
     // (Re)set the state of the connection to the default.
     setDefaultTransactionOptions(getDefaultIsolationLevel());
+  }
+
+  private Optional<String> extractClientIdOptional(ConnectionOptions options) {
+    return Optional.ofNullable(options.getInitialConnectionPropertyValues())
+        .map(props -> props.get(CLIENT_ID))
+        .map(ConnectionPropertyValue::getValue)
+        .map(Object::toString)
+        .filter(id -> !id.isEmpty());
   }
 
   /** Constructor only for test purposes. */
