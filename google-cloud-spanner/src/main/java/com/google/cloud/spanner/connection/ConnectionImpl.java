@@ -108,7 +108,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
@@ -254,8 +253,7 @@ class ConnectionImpl implements Connection {
     }
   }
 
-  private StatementTimeout statementTimeout =
-      new StatementTimeout();
+  private StatementTimeout statementTimeout = new StatementTimeout();
   private boolean closed = false;
 
   private final Spanner spanner;
@@ -330,14 +328,15 @@ class ConnectionImpl implements Connection {
     final DatabaseId databaseId = options.getDatabaseId();
     try {
       Optional<String> clientIdOpt = extractClientIdOptional(options);
-      if(clientIdOpt.isPresent()) {
+      if (clientIdOpt.isPresent()) {
         tempDbClient = spanner.getDatabaseClient(databaseId, clientIdOpt.get());
       }
-    } catch(Exception e) {
-      System.err.println("WARNING: Failed during DatabaseClient initialization (possibly getting specific ID), falling back to default. Error: "
-          + e.getMessage());
+    } catch (Exception e) {
+      System.err.println(
+          "WARNING: Failed during DatabaseClient initialization (possibly getting specific ID), falling back to default. Error: "
+              + e.getMessage());
     }
-    if(tempDbClient == null) {
+    if (tempDbClient == null) {
       tempDbClient = spanner.getDatabaseClient(databaseId);
     }
     this.dbClient = tempDbClient;
@@ -566,8 +565,7 @@ class ConnectionImpl implements Connection {
     return closed;
   }
 
-  private <T> T getConnectionPropertyValue(
-      ConnectionProperty<T> property) {
+  private <T> T getConnectionPropertyValue(ConnectionProperty<T> property) {
     return this.connectionState.getValue(property).getValue();
   }
 
@@ -587,9 +585,8 @@ class ConnectionImpl implements Connection {
   /**
    * Sets a connection property value only for the duration of the current transaction. The effects
    * of this will be undone once the transaction ends, regardless whether the transaction is
-   * committed or rolled back. 'Local' properties are supported for both {@link
-   * Type#TRANSACTIONAL} and {@link
-   * Type#NON_TRANSACTIONAL} connection states.
+   * committed or rolled back. 'Local' properties are supported for both {@link Type#TRANSACTIONAL}
+   * and {@link Type#NON_TRANSACTIONAL} connection states.
    *
    * <p>NOTE: This feature is not yet exposed in the public API.
    */

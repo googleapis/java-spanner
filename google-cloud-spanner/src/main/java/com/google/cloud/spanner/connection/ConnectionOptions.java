@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_CONF
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CHANNEL_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_CERTIFICATE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_ID;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_KEY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_URL;
@@ -46,7 +47,6 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.RETRY_ABO
 import static com.google.cloud.spanner.connection.ConnectionProperties.RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ROUTE_TO_LEADER;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACING_PREFIX;
-import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_ID;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_CONNECTION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_SESSION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USER_AGENT;

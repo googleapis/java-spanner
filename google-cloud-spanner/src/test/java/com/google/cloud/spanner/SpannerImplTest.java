@@ -370,18 +370,21 @@ public class SpannerImplTest {
         .thenReturn(SessionPoolOptions.newBuilder().setMinSessions(0).build());
     Mockito.when(spannerOptions.getDatabaseRole()).thenReturn("role");
 
-    DatabaseClientImpl databaseClient = (DatabaseClientImpl) impl.getDatabaseClient(db, "clientId-1");
+    DatabaseClientImpl databaseClient =
+        (DatabaseClientImpl) impl.getDatabaseClient(db, "clientId-1");
     assertThat(databaseClient.clientId).isEqualTo("clientId-1");
 
     // Get same db client again.
-    DatabaseClientImpl databaseClient1 = (DatabaseClientImpl) impl.getDatabaseClient(db, "clientId-1");
+    DatabaseClientImpl databaseClient1 =
+        (DatabaseClientImpl) impl.getDatabaseClient(db, "clientId-1");
     assertThat(databaseClient1.clientId).isEqualTo(databaseClient.clientId);
 
     // Get a db client for a different database.
     String dbName2 =
         String.format("projects/p1/instances/i1/databases/%s", UUID.randomUUID().toString());
     DatabaseId db2 = DatabaseId.of(dbName2);
-    DatabaseClientImpl databaseClient2 = (DatabaseClientImpl) impl.getDatabaseClient(db2, "clientId-1");
+    DatabaseClientImpl databaseClient2 =
+        (DatabaseClientImpl) impl.getDatabaseClient(db2, "clientId-1");
     assertThat(databaseClient2.clientId).isEqualTo("clientId-1");
 
     // Getting a new database client for an invalidated database should use the same client id.

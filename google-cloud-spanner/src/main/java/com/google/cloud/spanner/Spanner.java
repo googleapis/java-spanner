@@ -125,10 +125,9 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    */
   DatabaseClient getDatabaseClient(DatabaseId db);
 
-
   /**
-   * Returns a {@code DatabaseClient} for the given database and given client id. It uses a pool of sessions to talk to
-   * the database.
+   * Returns a {@code DatabaseClient} for the given database and given client id. It uses a pool of
+   * sessions to talk to the database.
    * <!--SNIPPET get_db_client-->
    *
    * <pre>{@code
