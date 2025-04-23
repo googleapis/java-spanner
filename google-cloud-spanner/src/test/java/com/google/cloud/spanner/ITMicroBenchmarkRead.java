@@ -31,12 +31,13 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class ITMicroBenchmark extends AbstractMockServerTest {
+public class ITMicroBenchmarkRead extends AbstractMockServerTest {
 
   private DatabaseClient client;
 
@@ -84,7 +85,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
 
   @Test
   public void testSingleUseQuery() throws InterruptedException {
-    final String SELECT_QUERY = "SELECT * FROM random";
+    final String SELECT_QUERY = "SELECT * FROM random WHERE 1=1";
 
     mockSpanner.putStatementResult(
         StatementResult.query(Statement.of(SELECT_QUERY), SELECT1_RESULTSET));
@@ -95,8 +96,11 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
     System.out.println("Running warmup for 5 minutes, Started at " + currentTimeInIST());
     while (warmUpEndTime.isAfter(Instant.now())) {
       try (ReadContext readContext = client.singleUse()) {
-        try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
-          while (resultSet.next()) {}
+        try (ResultSet resultSet =
+            readContext.read("random", KeySet.all(), Collections.singletonList("*"))) {
+          while (resultSet.next()) {
+            System.out.println(resultSet.getCurrentRowAsStruct());
+          }
         }
       }
       randomWait(waitTimeMilli);
@@ -113,8 +117,11 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
       PerformanceClock.AFTER_GRPC_INSTANCE.reset();
       PerformanceClock.BEFORE_GRPC_INSTANCE.start();
       try (ReadContext readContext = client.singleUse()) {
-        try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
-          while (resultSet.next()) {}
+        try (ResultSet resultSet =
+            readContext.read("random", KeySet.all(), Collections.singletonList("*"))) {
+          while (resultSet.next()) {
+            System.out.println(resultSet.getCurrentRowAsStruct());
+          }
           PerformanceClock.AFTER_GRPC_INSTANCE.stop();
           beforeGrpcs.add(PerformanceClock.BEFORE_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
           afterGrpcs.add(PerformanceClock.AFTER_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
