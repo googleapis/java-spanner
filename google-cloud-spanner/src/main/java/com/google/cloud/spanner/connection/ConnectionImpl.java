@@ -340,6 +340,9 @@ class ConnectionImpl implements Connection {
         if (clientIdString != null && !clientIdString.isEmpty()) {
           tempDbClient = spanner.getDatabaseClient(options.getDatabaseId(), clientIdString);
         }
+        else {
+          tempDbClient = spanner.getDatabaseClient(options.getDatabaseId());
+        }
       } else {
         tempDbClient = spanner.getDatabaseClient(options.getDatabaseId());
       }
