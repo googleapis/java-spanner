@@ -98,9 +98,7 @@ public class ITMicroBenchmarkRead extends AbstractMockServerTest {
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet =
             readContext.read("random", KeySet.all(), Collections.singletonList("*"))) {
-          while (resultSet.next()) {
-            System.out.println(resultSet.getCurrentRowAsStruct());
-          }
+          while (resultSet.next()) {}
         }
       }
       randomWait(waitTimeMilli);
@@ -119,9 +117,7 @@ public class ITMicroBenchmarkRead extends AbstractMockServerTest {
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet =
             readContext.read("random", KeySet.all(), Collections.singletonList("*"))) {
-          while (resultSet.next()) {
-            System.out.println(resultSet.getCurrentRowAsStruct());
-          }
+          while (resultSet.next()) {}
           PerformanceClock.AFTER_GRPC_INSTANCE.stop();
           beforeGrpcs.add(PerformanceClock.BEFORE_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
           afterGrpcs.add(PerformanceClock.AFTER_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
