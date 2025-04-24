@@ -2171,9 +2171,17 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   }
 
   @Test
-  public void testReadWriteTransactionUsingTransactionManager_SetsTransactionID_DuringAborted() {
-    // Whenever an ABORTED exception occurs, the transaction ID that caused the ABORT should be set
-    // in the AbortedException class.
+  public void
+      testRWTransactionWithTransactionManager_CommitAborted_SetsTransactionId_AndUsedInNewInstance() {
+    // The below test verifies the behaviour of begin(AbortedException) method which is used to
+    // maintain transaction priority if resetForRetry() is not called.
+
+    // This test performs the following steps:
+    // 1. Simulates an ABORTED exception during commit and verifies that the transaction ID is
+    // included in the AbortedException.
+    // 2. Passes the ABORTED exception to the begin(AbortedException) method of a new
+    // TransactionManager, and verifies that the transaction ID from the failed transaction is sent
+    // during the inline begin of the first request.
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
@@ -2202,11 +2210,12 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
         exception = e;
       }
     }
+    // Verify that the transactionID of the aborted transaction is set.
     assertNotNull(abortedTransactionID);
     assertNotNull(exception);
     mockSpanner.clearRequests();
 
-    // Use AbortedException while creating a new instance of TransactionManager
+    // Pass AbortedException while invoking begin on the new manager instance.
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin(exception);
       while (true) {
@@ -2226,6 +2235,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
       }
     }
 
+    // Verify that the ExecuteSqlRequest with the inline begin passes the transactionID of the
+    // previously aborted transaction.
     List<ExecuteSqlRequest> executeSqlRequests =
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertEquals(1, executeSqlRequests.size());
@@ -2253,9 +2264,13 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void
-      testReadWriteTransactionUsingTransactionManager_SetsTransactionID_DuringAbortedInExecuteSql() {
-    // Whenever an ABORTED exception occurs, the transaction ID that caused the ABORT should be set
-    // in the AbortedException class.
+      testRWTransactionWithTransactionManager_ExecuteSQLAborted_SetsTransactionId_AndUsedInNewInstance() {
+    // This test performs the following steps:
+    // 1. Simulates an ABORTED exception during ExecuteSQL and verifies that the transaction ID is
+    // included in the AbortedException.
+    // 2. Passes the ABORTED exception to the begin(AbortedException) method of a new
+    // TransactionManager, and verifies that the transaction ID from the failed transaction is sent
+    // during the inline begin of the first request.
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
@@ -2271,6 +2286,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
           }
         }
 
+        // Simulate an ABORTED in next ExecuteSQL request.
         mockSpanner.setExecuteStreamingSqlExecutionTime(
             SimulatedExecutionTime.ofException(
                 mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
@@ -2290,12 +2306,12 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
         exception = e;
       }
     }
+    // Verify that the transactionID of the aborted transaction is set.
     assertNotNull(abortedTransactionID);
     assertNotNull(exception);
     mockSpanner.clearRequests();
 
-    // Use AbortedException while creating a new instance of TransactionManager
-
+    // Pass AbortedException while invoking begin on the new manager instance.
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin(exception);
       while (true) {
@@ -2315,6 +2331,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
       }
     }
 
+    // Verify that the ExecuteSqlRequest with inline begin includes the transaction ID from the
+    // previously aborted transaction.
     List<ExecuteSqlRequest> executeSqlRequests =
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertEquals(1, executeSqlRequests.size());
