@@ -61,6 +61,8 @@ public interface TransactionManager extends AutoCloseable {
    */
   TransactionContext begin();
 
+  TransactionContext begin(AbortedException exception);
+
   /**
    * Commits the currently active transaction. If the transaction was already aborted, then this
    * would throw an {@link AbortedException}.
