@@ -964,4 +964,16 @@
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>com.google.cloud.spanner.Statement$StatementFactory getStatementFactory()</method>
   </difference>
+
+  <!-- Add method begin() with AbortedException in TransactionManager and AsyncTransactionManager -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
+    <method>com.google.cloud.spanner.AsyncTransactionManager$TransactionContextFuture beginAsync(com.google.cloud.spanner.AbortedException)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionManager</className>
+    <method>com.google.cloud.spanner.TransactionContext begin(com.google.cloud.spanner.AbortedException)</method>
+  </difference>
 </differences>

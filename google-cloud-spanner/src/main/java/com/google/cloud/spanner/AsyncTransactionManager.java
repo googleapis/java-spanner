@@ -178,6 +178,8 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * new transaction for retry attempts. If {@link #resetForRetryAsync()} is not used, you can pass
    * the {@link AbortedException} from a previous attempt here to preserve the transaction's
    * priority.
+   *
+   * <p>For regular sessions, this behaves the same as {@link #beginAsync()}.
    */
   TransactionContextFuture beginAsync(AbortedException exception);
 
