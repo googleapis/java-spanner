@@ -900,6 +900,11 @@ class SessionPool {
       return internalBegin();
     }
 
+    @Override
+    public TransactionContext begin(AbortedException exception) {
+      return begin();
+    }
+
     private TransactionContext internalBegin() {
       TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
       session.get().markUsed();

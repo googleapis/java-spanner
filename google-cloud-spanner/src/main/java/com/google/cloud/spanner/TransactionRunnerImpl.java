@@ -793,6 +793,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         long delay = -1L;
         if (exceptionToThrow instanceof AbortedException) {
           delay = exceptionToThrow.getRetryDelayInMillis();
+          ((AbortedException) exceptionToThrow).setTransactionID(this.transactionId);
         }
         if (delay == -1L) {
           txnLogger.log(

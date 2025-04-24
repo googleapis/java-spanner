@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.gax.rpc.ApiException;
+import com.google.protobuf.ByteString;
 import javax.annotation.Nullable;
 
 /**
@@ -31,6 +32,7 @@ public class AbortedException extends SpannerException {
    * new transaction attempt) before a retry can succeed.
    */
   private static final boolean IS_RETRYABLE = false;
+  private ByteString transactionID;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   AbortedException(
@@ -46,6 +48,9 @@ public class AbortedException extends SpannerException {
       @Nullable ApiException apiException,
       @Nullable XGoogSpannerRequestId reqId) {
     super(token, ErrorCode.ABORTED, IS_RETRYABLE, message, cause, apiException, reqId);
+    if (cause instanceof AbortedException) {
+      this.transactionID = ((AbortedException) cause).getTransactionID();
+    }
   }
 
   /**
@@ -54,5 +59,13 @@ public class AbortedException extends SpannerException {
    */
   public boolean isEmulatorOnlySupportsOneTransactionException() {
     return getMessage().endsWith("The emulator only supports one transaction at a time.");
+  }
+
+  void setTransactionID(ByteString transactionID) {
+    this.transactionID = transactionID;
+  }
+
+  ByteString getTransactionID() {
+    return this.transactionID;
   }
 }
