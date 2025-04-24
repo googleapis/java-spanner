@@ -164,6 +164,11 @@ class SessionPoolAsyncTransactionManager<I extends SessionFuture>
   }
 
   @Override
+  public TransactionContextFuture beginAsync(AbortedException abortedException) {
+    return beginAsync();
+  }
+
+  @Override
   public void onError(Throwable t) {
     if (t instanceof AbortedException) {
       synchronized (lock) {

@@ -170,6 +170,8 @@ public interface AsyncTransactionManager extends AutoCloseable {
    */
   TransactionContextFuture beginAsync();
 
+  TransactionContextFuture beginAsync(AbortedException abortedException);
+
   /**
    * Rolls back the currently active transaction. In most cases there should be no need to call this
    * explicitly since {@link #close()} would automatically roll back any active transaction.
