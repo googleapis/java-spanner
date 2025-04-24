@@ -35,6 +35,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.BackupSchedule)
     BackupScheduleOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use BackupSchedule.newBuilder() to construct.
   private BackupSchedule(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -83,6 +84,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     private BackupTypeSpecCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -119,6 +121,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object name_ = "";
+
   /**
    *
    *
@@ -150,6 +153,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       return s;
     }
   }
+
   /**
    *
    *
@@ -184,6 +188,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
 
   public static final int SPEC_FIELD_NUMBER = 6;
   private com.google.spanner.admin.database.v1.BackupScheduleSpec spec_;
+
   /**
    *
    *
@@ -202,6 +207,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   public boolean hasSpec() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -222,6 +228,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.admin.database.v1.BackupScheduleSpec.getDefaultInstance()
         : spec_;
   }
+
   /**
    *
    *
@@ -243,6 +250,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
 
   public static final int RETENTION_DURATION_FIELD_NUMBER = 3;
   private com.google.protobuf.Duration retentionDuration_;
+
   /**
    *
    *
@@ -262,6 +270,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   public boolean hasRetentionDuration() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -283,6 +292,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         ? com.google.protobuf.Duration.getDefaultInstance()
         : retentionDuration_;
   }
+
   /**
    *
    *
@@ -305,6 +315,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
 
   public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 4;
   private com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryptionConfig_;
+
   /**
    *
    *
@@ -324,6 +335,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   public boolean hasEncryptionConfig() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -345,6 +357,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.getDefaultInstance()
         : encryptionConfig_;
   }
+
   /**
    *
    *
@@ -367,6 +380,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int FULL_BACKUP_SPEC_FIELD_NUMBER = 7;
+
   /**
    *
    *
@@ -382,6 +396,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   public boolean hasFullBackupSpec() {
     return backupTypeSpecCase_ == 7;
   }
+
   /**
    *
    *
@@ -400,6 +415,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.admin.database.v1.FullBackupSpec.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -418,6 +434,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int INCREMENTAL_BACKUP_SPEC_FIELD_NUMBER = 8;
+
   /**
    *
    *
@@ -434,6 +451,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   public boolean hasIncrementalBackupSpec() {
     return backupTypeSpecCase_ == 8;
   }
+
   /**
    *
    *
@@ -453,6 +471,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -474,6 +493,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
 
   public static final int UPDATE_TIME_FIELD_NUMBER = 9;
   private com.google.protobuf.Timestamp updateTime_;
+
   /**
    *
    *
@@ -492,6 +512,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   public boolean hasUpdateTime() {
     return ((bitField0_ & 0x00000008) != 0);
   }
+
   /**
    *
    *
@@ -510,6 +531,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
   public com.google.protobuf.Timestamp getUpdateTime() {
     return updateTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : updateTime_;
   }
+
   /**
    *
    *
@@ -782,6 +804,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1123,6 +1146,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     private int bitField0_;
 
     private java.lang.Object name_ = "";
+
     /**
      *
      *
@@ -1153,6 +1177,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1183,6 +1208,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1212,6 +1238,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1237,6 +1264,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1274,6 +1302,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.admin.database.v1.BackupScheduleSpec.Builder,
             com.google.spanner.admin.database.v1.BackupScheduleSpecOrBuilder>
         specBuilder_;
+
     /**
      *
      *
@@ -1291,6 +1320,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     public boolean hasSpec() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -1314,6 +1344,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return specBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1339,6 +1370,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1362,6 +1394,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1393,6 +1426,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1415,6 +1449,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1432,6 +1467,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getSpecFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1453,6 +1489,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             : spec_;
       }
     }
+
     /**
      *
      *
@@ -1488,6 +1525,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.Duration.Builder,
             com.google.protobuf.DurationOrBuilder>
         retentionDurationBuilder_;
+
     /**
      *
      *
@@ -1506,6 +1544,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     public boolean hasRetentionDuration() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1530,6 +1569,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return retentionDurationBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1556,6 +1596,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1579,6 +1620,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1610,6 +1652,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1633,6 +1676,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1651,6 +1695,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getRetentionDurationFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1673,6 +1718,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             : retentionDuration_;
       }
     }
+
     /**
      *
      *
@@ -1709,6 +1755,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder,
             com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder>
         encryptionConfigBuilder_;
+
     /**
      *
      *
@@ -1727,6 +1774,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     public boolean hasEncryptionConfig() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1751,6 +1799,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return encryptionConfigBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1778,6 +1827,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1802,6 +1852,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1836,6 +1887,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1859,6 +1911,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1878,6 +1931,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getEncryptionConfigFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1901,6 +1955,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             : encryptionConfig_;
       }
     }
+
     /**
      *
      *
@@ -1936,6 +1991,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.admin.database.v1.FullBackupSpec.Builder,
             com.google.spanner.admin.database.v1.FullBackupSpecOrBuilder>
         fullBackupSpecBuilder_;
+
     /**
      *
      *
@@ -1951,6 +2007,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     public boolean hasFullBackupSpec() {
       return backupTypeSpecCase_ == 7;
     }
+
     /**
      *
      *
@@ -1976,6 +2033,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.admin.database.v1.FullBackupSpec.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -1998,6 +2056,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       backupTypeSpecCase_ = 7;
       return this;
     }
+
     /**
      *
      *
@@ -2018,6 +2077,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       backupTypeSpecCase_ = 7;
       return this;
     }
+
     /**
      *
      *
@@ -2051,6 +2111,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       backupTypeSpecCase_ = 7;
       return this;
     }
+
     /**
      *
      *
@@ -2076,6 +2137,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -2088,6 +2150,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.database.v1.FullBackupSpec.Builder getFullBackupSpecBuilder() {
       return getFullBackupSpecFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2109,6 +2172,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.admin.database.v1.FullBackupSpec.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -2148,6 +2212,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.admin.database.v1.IncrementalBackupSpec.Builder,
             com.google.spanner.admin.database.v1.IncrementalBackupSpecOrBuilder>
         incrementalBackupSpecBuilder_;
+
     /**
      *
      *
@@ -2164,6 +2229,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     public boolean hasIncrementalBackupSpec() {
       return backupTypeSpecCase_ == 8;
     }
+
     /**
      *
      *
@@ -2190,6 +2256,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -2214,6 +2281,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       backupTypeSpecCase_ = 8;
       return this;
     }
+
     /**
      *
      *
@@ -2235,6 +2303,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       backupTypeSpecCase_ = 8;
       return this;
     }
+
     /**
      *
      *
@@ -2271,6 +2340,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       backupTypeSpecCase_ = 8;
       return this;
     }
+
     /**
      *
      *
@@ -2297,6 +2367,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -2311,6 +2382,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         getIncrementalBackupSpecBuilder() {
       return getIncrementalBackupSpecFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2333,6 +2405,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -2374,6 +2447,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         updateTimeBuilder_;
+
     /**
      *
      *
@@ -2392,6 +2466,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     public boolean hasUpdateTime() {
       return ((bitField0_ & 0x00000040) != 0);
     }
+
     /**
      *
      *
@@ -2416,6 +2491,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         return updateTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -2442,6 +2518,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2465,6 +2542,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2496,6 +2574,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -2519,6 +2598,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2537,6 +2617,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getUpdateTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2559,6 +2640,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             : updateTime_;
       }
     }
+
     /**
      *
      *

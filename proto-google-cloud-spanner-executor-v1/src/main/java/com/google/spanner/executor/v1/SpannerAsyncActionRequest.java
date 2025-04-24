@@ -33,6 +33,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.SpannerAsyncActionRequest)
     SpannerAsyncActionRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use SpannerAsyncActionRequest.newBuilder() to construct.
   private SpannerAsyncActionRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -64,6 +65,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
   private int bitField0_;
   public static final int ACTION_ID_FIELD_NUMBER = 1;
   private int actionId_ = 0;
+
   /**
    *
    *
@@ -82,6 +84,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
 
   public static final int ACTION_FIELD_NUMBER = 2;
   private com.google.spanner.executor.v1.SpannerAction action_;
+
   /**
    *
    *
@@ -97,6 +100,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
   public boolean hasAction() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -114,6 +118,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
         ? com.google.spanner.executor.v1.SpannerAction.getDefaultInstance()
         : action_;
   }
+
   /**
    *
    *
@@ -304,6 +309,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -515,6 +521,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
     private int bitField0_;
 
     private int actionId_;
+
     /**
      *
      *
@@ -530,6 +537,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
     public int getActionId() {
       return actionId_;
     }
+
     /**
      *
      *
@@ -549,6 +557,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -573,6 +582,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
             com.google.spanner.executor.v1.SpannerAction.Builder,
             com.google.spanner.executor.v1.SpannerActionOrBuilder>
         actionBuilder_;
+
     /**
      *
      *
@@ -587,6 +597,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
     public boolean hasAction() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -607,6 +618,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
         return actionBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -629,6 +641,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -648,6 +661,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -675,6 +689,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -694,6 +709,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -708,6 +724,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
       onChanged();
       return getActionFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -726,6 +743,7 @@ public final class SpannerAsyncActionRequest extends com.google.protobuf.Generat
             : action_;
       }
     }
+
     /**
      *
      *

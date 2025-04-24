@@ -35,6 +35,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     // @@protoc_insertion_point(message_implements:google.spanner.v1.PartialResultSet)
     PartialResultSetOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use PartialResultSet.newBuilder() to construct.
   private PartialResultSet(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -69,6 +70,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   private int bitField0_;
   public static final int METADATA_FIELD_NUMBER = 1;
   private com.google.spanner.v1.ResultSetMetadata metadata_;
+
   /**
    *
    *
@@ -85,6 +87,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public boolean hasMetadata() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -103,6 +106,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
         : metadata_;
   }
+
   /**
    *
    *
@@ -124,6 +128,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.protobuf.Value> values_;
+
   /**
    *
    *
@@ -214,6 +219,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public java.util.List<com.google.protobuf.Value> getValuesList() {
     return values_;
   }
+
   /**
    *
    *
@@ -304,6 +310,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public java.util.List<? extends com.google.protobuf.ValueOrBuilder> getValuesOrBuilderList() {
     return values_;
   }
+
   /**
    *
    *
@@ -394,6 +401,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public int getValuesCount() {
     return values_.size();
   }
+
   /**
    *
    *
@@ -484,6 +492,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public com.google.protobuf.Value getValues(int index) {
     return values_.get(index);
   }
+
   /**
    *
    *
@@ -577,6 +586,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
 
   public static final int CHUNKED_VALUE_FIELD_NUMBER = 3;
   private boolean chunkedValue_ = false;
+
   /**
    *
    *
@@ -598,6 +608,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
 
   public static final int RESUME_TOKEN_FIELD_NUMBER = 4;
   private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -620,6 +631,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
 
   public static final int STATS_FIELD_NUMBER = 5;
   private com.google.spanner.v1.ResultSetStats stats_;
+
   /**
    *
    *
@@ -639,6 +651,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public boolean hasStats() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -658,6 +671,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public com.google.spanner.v1.ResultSetStats getStats() {
     return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
   }
+
   /**
    *
    *
@@ -678,6 +692,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
 
   public static final int PRECOMMIT_TOKEN_FIELD_NUMBER = 8;
   private com.google.spanner.v1.MultiplexedSessionPrecommitToken precommitToken_;
+
   /**
    *
    *
@@ -698,6 +713,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public boolean hasPrecommitToken() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -720,6 +736,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         ? com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance()
         : precommitToken_;
   }
+
   /**
    *
    *
@@ -744,6 +761,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
 
   public static final int LAST_FIELD_NUMBER = 9;
   private boolean last_ = false;
+
   /**
    *
    *
@@ -991,6 +1009,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1333,6 +1352,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             com.google.spanner.v1.ResultSetMetadata.Builder,
             com.google.spanner.v1.ResultSetMetadataOrBuilder>
         metadataBuilder_;
+
     /**
      *
      *
@@ -1348,6 +1368,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public boolean hasMetadata() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -1369,6 +1390,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return metadataBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1392,6 +1414,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1412,6 +1435,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1440,6 +1464,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -1460,6 +1485,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1475,6 +1501,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return getMetadataFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1494,6 +1521,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             : metadata_;
       }
     }
+
     /**
      *
      *
@@ -1629,6 +1657,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return valuesBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -1722,6 +1751,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return valuesBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -1815,6 +1845,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return valuesBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -1914,6 +1945,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2010,6 +2042,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2109,6 +2142,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2208,6 +2242,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2304,6 +2339,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2400,6 +2436,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2496,6 +2533,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2592,6 +2630,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2688,6 +2727,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -2777,6 +2817,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public com.google.protobuf.Value.Builder getValuesBuilder(int index) {
       return getValuesFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -2870,6 +2911,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return valuesBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -2963,6 +3005,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return java.util.Collections.unmodifiableList(values_);
       }
     }
+
     /**
      *
      *
@@ -3052,6 +3095,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public com.google.protobuf.Value.Builder addValuesBuilder() {
       return getValuesFieldBuilder().addBuilder(com.google.protobuf.Value.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -3142,6 +3186,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       return getValuesFieldBuilder()
           .addBuilder(index, com.google.protobuf.Value.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -3250,6 +3295,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     }
 
     private boolean chunkedValue_;
+
     /**
      *
      *
@@ -3268,6 +3314,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public boolean getChunkedValue() {
       return chunkedValue_;
     }
+
     /**
      *
      *
@@ -3290,6 +3337,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3312,6 +3360,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     }
 
     private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -3331,6 +3380,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public com.google.protobuf.ByteString getResumeToken() {
       return resumeToken_;
     }
+
     /**
      *
      *
@@ -3356,6 +3406,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3384,6 +3435,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             com.google.spanner.v1.ResultSetStats.Builder,
             com.google.spanner.v1.ResultSetStatsOrBuilder>
         statsBuilder_;
+
     /**
      *
      *
@@ -3402,6 +3454,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public boolean hasStats() {
       return ((bitField0_ & 0x00000010) != 0);
     }
+
     /**
      *
      *
@@ -3424,6 +3477,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return statsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3450,6 +3504,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3473,6 +3528,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3504,6 +3560,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -3527,6 +3584,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3545,6 +3603,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return getStatsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3565,6 +3624,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
       }
     }
+
     /**
      *
      *
@@ -3601,6 +3661,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder,
             com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder>
         precommitTokenBuilder_;
+
     /**
      *
      *
@@ -3620,6 +3681,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public boolean hasPrecommitToken() {
       return ((bitField0_ & 0x00000020) != 0);
     }
+
     /**
      *
      *
@@ -3645,6 +3707,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         return precommitTokenBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3672,6 +3735,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3697,6 +3761,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3731,6 +3796,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -3755,6 +3821,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3775,6 +3842,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return getPrecommitTokenFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3799,6 +3867,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             : precommitToken_;
       }
     }
+
     /**
      *
      *
@@ -3831,6 +3900,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     }
 
     private boolean last_;
+
     /**
      *
      *
@@ -3848,6 +3918,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public boolean getLast() {
       return last_;
     }
+
     /**
      *
      *
@@ -3869,6 +3940,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *

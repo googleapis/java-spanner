@@ -48,6 +48,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.UpdateDatabaseDdlRequest)
     UpdateDatabaseDdlRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use UpdateDatabaseDdlRequest.newBuilder() to construct.
   private UpdateDatabaseDdlRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -85,6 +86,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object database_ = "";
+
   /**
    *
    *
@@ -110,6 +112,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       return s;
     }
   }
+
   /**
    *
    *
@@ -141,6 +144,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList statements_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -155,6 +159,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   public com.google.protobuf.ProtocolStringList getStatementsList() {
     return statements_;
   }
+
   /**
    *
    *
@@ -169,6 +174,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   public int getStatementsCount() {
     return statements_.size();
   }
+
   /**
    *
    *
@@ -184,6 +190,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   public java.lang.String getStatements(int index) {
     return statements_.get(index);
   }
+
   /**
    *
    *
@@ -204,6 +211,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object operationId_ = "";
+
   /**
    *
    *
@@ -247,6 +255,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       return s;
     }
   }
+
   /**
    *
    *
@@ -293,6 +302,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   public static final int PROTO_DESCRIPTORS_FIELD_NUMBER = 4;
   private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -516,6 +526,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -768,6 +779,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     private int bitField0_;
 
     private java.lang.Object database_ = "";
+
     /**
      *
      *
@@ -792,6 +804,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -816,6 +829,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -839,6 +853,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -858,6 +873,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -892,6 +908,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       }
       bitField0_ |= 0x00000002;
     }
+
     /**
      *
      *
@@ -907,6 +924,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       statements_.makeImmutable();
       return statements_;
     }
+
     /**
      *
      *
@@ -921,6 +939,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public int getStatementsCount() {
       return statements_.size();
     }
+
     /**
      *
      *
@@ -936,6 +955,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public java.lang.String getStatements(int index) {
       return statements_.get(index);
     }
+
     /**
      *
      *
@@ -951,6 +971,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public com.google.protobuf.ByteString getStatementsBytes(int index) {
       return statements_.getByteString(index);
     }
+
     /**
      *
      *
@@ -974,6 +995,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -996,6 +1018,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1015,6 +1038,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1033,6 +1057,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1058,6 +1083,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     }
 
     private java.lang.Object operationId_ = "";
+
     /**
      *
      *
@@ -1100,6 +1126,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1142,6 +1169,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1183,6 +1211,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1220,6 +1249,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1264,6 +1294,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     }
 
     private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -1292,6 +1323,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public com.google.protobuf.ByteString getProtoDescriptors() {
       return protoDescriptors_;
     }
+
     /**
      *
      *
@@ -1326,6 +1358,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *

@@ -216,8 +216,8 @@ class GrpcStruct extends Struct implements Serializable {
         type,
         rowData,
         decodeMode,
-        /* rowDecoded = */ false,
-        /* colDecoded = */ decodeMode == DecodeMode.LAZY_PER_COL
+        /* rowDecoded= */ false,
+        /* colDecoded= */ decodeMode == DecodeMode.LAZY_PER_COL
             ? new BitSet(type.getStructFields().size())
             : null);
   }
@@ -415,12 +415,12 @@ class GrpcStruct extends Struct implements Serializable {
   protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
     Preconditions.checkNotNull(
         message,
-        "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+        "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+            + " value.");
     ensureDecoded(columnIndex);
     try {
       return (T)
-          message
-              .toBuilder()
+          message.toBuilder()
               .mergeFrom(
                   Base64.getDecoder()
                       .wrap(
@@ -787,7 +787,8 @@ class GrpcStruct extends Struct implements Serializable {
       int columnIndex, T message) {
     Preconditions.checkNotNull(
         message,
-        "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+        "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+            + " value.");
     ensureDecoded(columnIndex);
 
     List<LazyByteArray> bytesArray = (List<LazyByteArray>) rowData.get(columnIndex);
@@ -800,8 +801,7 @@ class GrpcStruct extends Struct implements Serializable {
         } else {
           protoMessagesList.add(
               (T)
-                  message
-                      .toBuilder()
+                  message.toBuilder()
                       .mergeFrom(
                           Base64.getDecoder()
                               .wrap(

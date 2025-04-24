@@ -36,6 +36,7 @@ public interface ListCloudInstanceConfigsActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -62,6 +63,7 @@ public interface ListCloudInstanceConfigsActionOrBuilder
    * @return Whether the pageSize field is set.
    */
   boolean hasPageSize();
+
   /**
    *
    *
@@ -89,6 +91,7 @@ public interface ListCloudInstanceConfigsActionOrBuilder
    * @return Whether the pageToken field is set.
    */
   boolean hasPageToken();
+
   /**
    *
    *
@@ -102,6 +105,7 @@ public interface ListCloudInstanceConfigsActionOrBuilder
    * @return The pageToken.
    */
   java.lang.String getPageToken();
+
   /**
    *
    *

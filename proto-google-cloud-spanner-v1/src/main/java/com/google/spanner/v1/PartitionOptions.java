@@ -34,6 +34,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     // @@protoc_insertion_point(message_implements:google.spanner.v1.PartitionOptions)
     PartitionOptionsOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use PartitionOptions.newBuilder() to construct.
   private PartitionOptions(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -64,6 +65,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
 
   public static final int PARTITION_SIZE_BYTES_FIELD_NUMBER = 1;
   private long partitionSizeBytes_ = 0L;
+
   /**
    *
    *
@@ -87,6 +89,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
 
   public static final int MAX_PARTITIONS_FIELD_NUMBER = 2;
   private long maxPartitions_ = 0L;
+
   /**
    *
    *
@@ -277,6 +280,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -472,6 +476,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     private int bitField0_;
 
     private long partitionSizeBytes_;
+
     /**
      *
      *
@@ -492,6 +497,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     public long getPartitionSizeBytes() {
       return partitionSizeBytes_;
     }
+
     /**
      *
      *
@@ -516,6 +522,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -540,6 +547,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     }
 
     private long maxPartitions_;
+
     /**
      *
      *
@@ -562,6 +570,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     public long getMaxPartitions() {
       return maxPartitions_;
     }
+
     /**
      *
      *
@@ -588,6 +597,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *

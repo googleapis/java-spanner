@@ -177,8 +177,7 @@ public class ITInstanceAdminTest {
     String rand = new Random().nextInt() + "";
     String newDisplayName = "instance test" + rand;
     Instance toUpdate =
-        instance
-            .toBuilder()
+        instance.toBuilder()
             .setDisplayName(newDisplayName)
             .setNodeCount(instance.getNodeCount() + 1)
             .build();

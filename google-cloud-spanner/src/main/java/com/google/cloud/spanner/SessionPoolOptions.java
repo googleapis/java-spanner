@@ -39,12 +39,14 @@ public class SessionPoolOptions {
   private final int minSessions;
   private final int maxSessions;
   private final int incStep;
+
   /**
    * Use {@link #minSessions} instead to set the minimum number of sessions in the pool to maintain.
    * Creating a larger number of sessions during startup is relatively cheap as it is executed with
    * the BatchCreateSessions RPC.
    */
   @Deprecated private final int maxIdleSessions;
+
   /**
    * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
    * This setting therefore does not have any meaning anymore, and may be removed in the future.
@@ -578,6 +580,7 @@ public class SessionPoolOptions {
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
     private ActionOnSessionLeak actionOnSessionLeak = ActionOnSessionLeak.WARN;
+
     /**
      * Capture the call stack of the thread that checked out a session of the pool. This will
      * pre-create a {@link com.google.cloud.spanner.SessionPool.LeakedSessionException} already when
@@ -599,6 +602,7 @@ public class SessionPoolOptions {
     private Duration waitForMinSessions = Duration.ZERO;
     private Duration acquireSessionTimeout = Duration.ofSeconds(60);
     private final Position releaseToPosition = getReleaseToPositionFromSystemProperty();
+
     /**
      * The session pool will randomize the position of a session that is being returned when this
      * threshold is exceeded. That is: If the transactions per second exceeds this threshold, then

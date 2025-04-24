@@ -81,14 +81,11 @@ import java.util.stream.Stream;
 public abstract class AbstractSqlScriptVerifier {
   private static final Pattern VERIFY_PATTERN =
       Pattern.compile(
-          "(?is)\\s*(?:@EXPECT)\\s+"
-              + "(?<type>NO_RESULT"
-              + "|RESULT_SET\\s*(?<column>'.*?'(?<value>,.*?)?)?"
+          "(?is)\\s*(?:@EXPECT)\\s+(?<type>NO_RESULT|RESULT_SET\\s*(?<column>'.*?'(?<value>,.*?)?)?"
               + "|UPDATE_COUNT\\s*(?<count>-?\\d{1,19})"
               + "|EXCEPTION\\s*(?<exception>(?<code>CANCELLED|UNKNOWN|INVALID_ARGUMENT|DEADLINE_EXCEEDED|NOT_FOUND|ALREADY_EXISTS|PERMISSION_DENIED|UNAUTHENTICATED|RESOURCE_EXHAUSTED|FAILED_PRECONDITION|ABORTED|OUT_OF_RANGE|UNIMPLEMENTED|INTERNAL|UNAVAILABLE|DATA_LOSS)(?:\\s*)(?<messagePrefix>'.*?')?)"
-              + "|EQUAL\\s+(?<variable1>'.+?')\\s*,\\s*(?<variable2>'.+?')"
-              + ")"
-              + "(\\n(?<statement>.*))?");
+              + "|EQUAL\\s+(?<variable1>'.+?')\\s*,\\s*(?<variable2>'.+?'))(\\n"
+              + "(?<statement>.*))?");
 
   private static final String PUT_CONDITION =
       "@PUT can only be used in combination with a statement that returns a"

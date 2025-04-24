@@ -38,6 +38,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * @return The session.
    */
   java.lang.String getSession();
+
   /**
    *
    *
@@ -71,6 +72,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * @return Whether the transaction field is set.
    */
   boolean hasTransaction();
+
   /**
    *
    *
@@ -89,6 +91,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * @return The transaction.
    */
   com.google.spanner.v1.TransactionSelector getTransaction();
+
   /**
    *
    *
@@ -123,6 +126,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * </code>
    */
   java.util.List<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement> getStatementsList();
+
   /**
    *
    *
@@ -140,6 +144,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * </code>
    */
   com.google.spanner.v1.ExecuteBatchDmlRequest.Statement getStatements(int index);
+
   /**
    *
    *
@@ -157,6 +162,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * </code>
    */
   int getStatementsCount();
+
   /**
    *
    *
@@ -175,6 +181,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    */
   java.util.List<? extends com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
       getStatementsOrBuilderList();
+
   /**
    *
    *
@@ -225,6 +232,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * @return Whether the requestOptions field is set.
    */
   boolean hasRequestOptions();
+
   /**
    *
    *
@@ -237,6 +245,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * @return The requestOptions.
    */
   com.google.spanner.v1.RequestOptions getRequestOptions();
+
   /**
    *
    *

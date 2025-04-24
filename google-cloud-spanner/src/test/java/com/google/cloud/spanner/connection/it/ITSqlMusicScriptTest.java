@@ -136,7 +136,8 @@ public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {
         try (ResultSet rs =
             connection2.executeQuery(
                 Statement.newBuilder(
-                        "SELECT TicketPrices FROM Concerts WHERE SingerId=@singer AND VenueId=@venue")
+                        "SELECT TicketPrices FROM Concerts WHERE SingerId=@singer AND"
+                            + " VenueId=@venue")
                     .bind("singer")
                     .to(SINGER_ID)
                     .bind("venue")
@@ -149,7 +150,8 @@ public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {
           newPrices.set(1, originalPrices.get(1) + 1);
           connection2.executeUpdate(
               Statement.newBuilder(
-                      "UPDATE Concerts SET TicketPrices=@prices WHERE SingerId=@singer AND VenueId=@venue")
+                      "UPDATE Concerts SET TicketPrices=@prices WHERE SingerId=@singer AND"
+                          + " VenueId=@venue")
                   .bind("prices")
                   .toInt64Array(newPrices)
                   .bind("singer")

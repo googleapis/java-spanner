@@ -34,6 +34,7 @@ public interface ListDatabaseRolesResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.DatabaseRole database_roles = 1;</code>
    */
   java.util.List<com.google.spanner.admin.database.v1.DatabaseRole> getDatabaseRolesList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface ListDatabaseRolesResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.DatabaseRole database_roles = 1;</code>
    */
   com.google.spanner.admin.database.v1.DatabaseRole getDatabaseRoles(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface ListDatabaseRolesResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.DatabaseRole database_roles = 1;</code>
    */
   int getDatabaseRolesCount();
+
   /**
    *
    *
@@ -65,6 +68,7 @@ public interface ListDatabaseRolesResponseOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.database.v1.DatabaseRoleOrBuilder>
       getDatabaseRolesOrBuilderList();
+
   /**
    *
    *
@@ -90,6 +94,7 @@ public interface ListDatabaseRolesResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *

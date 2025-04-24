@@ -129,8 +129,7 @@ public class BackendExhaustedTest {
         ((GrpcTransportOptions) options.getTransportOptions()).getExecutorFactory();
     ScheduledThreadPoolExecutor executor = (ScheduledThreadPoolExecutor) executorFactory.get();
     options =
-        options
-            .toBuilder()
+        options.toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(executor.getCorePoolSize())

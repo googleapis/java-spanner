@@ -409,15 +409,13 @@ public class GapicSpannerRpc implements SpannerRpc {
 
       try {
         SpannerStubSettings spannerStubSettings =
-            options
-                .getSpannerStubSettings()
-                .toBuilder()
+            options.getSpannerStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         ClientContext clientContext = ClientContext.create(spannerStubSettings);
         this.spannerStub =
@@ -440,11 +438,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.commitRetrySettings =
             options.getSpannerStubSettings().commitSettings().getRetrySettings();
         partitionedDmlRetrySettings =
-            options
-                .getSpannerStubSettings()
-                .executeSqlSettings()
-                .getRetrySettings()
-                .toBuilder()
+            options.getSpannerStubSettings().executeSqlSettings().getRetrySettings().toBuilder()
                 .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
                 .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
                 .setTotalTimeout(options.getPartitionedDmlTimeout())
@@ -457,7 +451,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setStreamWatchdogProvider(watchdogProvider)
             .setTracerFactory(
                 options.getApiTracerFactory(
-                    /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
+                    /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
             .executeSqlSettings()
             .setRetrySettings(partitionedDmlRetrySettings);
         pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
@@ -479,28 +473,24 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.partitionedDmlStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(pdmlSettings.build());
         this.instanceAdminStubSettings =
-            options
-                .getInstanceAdminStubSettings()
-                .toBuilder()
+            options.getInstanceAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ true, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ true, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
         this.databaseAdminStubSettings =
-            options
-                .getDatabaseAdminStubSettings()
-                .toBuilder()
+            options.getDatabaseAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ true, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ true, isEmulatorEnabled(options, emulatorHost)))
                 .build();
 
         // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
@@ -651,9 +641,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       // Do a quick check to see if the emulator is actually running.
       try {
         InstanceAdminStubSettings.Builder testEmulatorSettings =
-            options
-                .getInstanceAdminStubSettings()
-                .toBuilder()
+            options.getInstanceAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider);
         testEmulatorSettings

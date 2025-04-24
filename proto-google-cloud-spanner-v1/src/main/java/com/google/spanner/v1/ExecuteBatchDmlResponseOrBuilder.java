@@ -42,6 +42,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
   java.util.List<com.google.spanner.v1.ResultSet> getResultSetsList();
+
   /**
    *
    *
@@ -60,6 +61,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
   com.google.spanner.v1.ResultSet getResultSets(int index);
+
   /**
    *
    *
@@ -78,6 +80,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
   int getResultSetsCount();
+
   /**
    *
    *
@@ -96,6 +99,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
   java.util.List<? extends com.google.spanner.v1.ResultSetOrBuilder> getResultSetsOrBuilderList();
+
   /**
    *
    *
@@ -128,6 +132,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * @return Whether the status field is set.
    */
   boolean hasStatus();
+
   /**
    *
    *
@@ -141,6 +146,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * @return The status.
    */
   com.google.rpc.Status getStatus();
+
   /**
    *
    *
@@ -173,6 +179,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * @return Whether the precommitToken field is set.
    */
   boolean hasPrecommitToken();
+
   /**
    *
    *
@@ -193,6 +200,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    * @return The precommitToken.
    */
   com.google.spanner.v1.MultiplexedSessionPrecommitToken getPrecommitToken();
+
   /**
    *
    *

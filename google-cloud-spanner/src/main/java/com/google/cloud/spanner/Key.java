@@ -117,41 +117,49 @@ public final class Key implements Serializable {
       buffer.add(value);
       return this;
     }
+
     /** Appends an {@code INT64} value to the key. */
     public Builder append(long value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends an {@code INT64} value to the key. */
     public Builder append(@Nullable Long value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code FLOAT64} value to the key. */
     public Builder append(double value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code FLOAT64} value to the key. */
     public Builder append(@Nullable Double value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code NUMERIC} value to the key. */
     public Builder append(@Nullable BigDecimal value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code ENUM} value to the key. */
     public Builder append(@Nullable ProtocolMessageEnum value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code STRING} value to the key. */
     public Builder append(@Nullable String value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code BYTES} value to the key. */
     public Builder append(@Nullable ByteArray value) {
       buffer.add(value);

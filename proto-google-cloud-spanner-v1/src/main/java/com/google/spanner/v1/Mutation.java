@@ -35,6 +35,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.v1.Mutation)
     MutationOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use Mutation.newBuilder() to construct.
   private Mutation(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -79,6 +80,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * @return The table.
      */
     java.lang.String getTable();
+
     /**
      *
      *
@@ -108,6 +110,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * @return A list containing the columns.
      */
     java.util.List<java.lang.String> getColumnsList();
+
     /**
      *
      *
@@ -124,6 +127,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * @return The count of columns.
      */
     int getColumnsCount();
+
     /**
      *
      *
@@ -141,6 +145,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * @return The columns at the given index.
      */
     java.lang.String getColumns(int index);
+
     /**
      *
      *
@@ -176,6 +181,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
     java.util.List<com.google.protobuf.ListValue> getValuesList();
+
     /**
      *
      *
@@ -193,6 +199,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
     com.google.protobuf.ListValue getValues(int index);
+
     /**
      *
      *
@@ -210,6 +217,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
     int getValuesCount();
+
     /**
      *
      *
@@ -227,6 +235,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
     java.util.List<? extends com.google.protobuf.ListValueOrBuilder> getValuesOrBuilderList();
+
     /**
      *
      *
@@ -245,6 +254,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      */
     com.google.protobuf.ListValueOrBuilder getValuesOrBuilder(int index);
   }
+
   /**
    *
    *
@@ -260,6 +270,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       // @@protoc_insertion_point(message_implements:google.spanner.v1.Mutation.Write)
       WriteOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use Write.newBuilder() to construct.
     private Write(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -296,6 +307,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object table_ = "";
+
     /**
      *
      *
@@ -319,6 +331,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return s;
       }
     }
+
     /**
      *
      *
@@ -348,6 +361,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @SuppressWarnings("serial")
     private com.google.protobuf.LazyStringArrayList columns_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
+
     /**
      *
      *
@@ -366,6 +380,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ProtocolStringList getColumnsList() {
       return columns_;
     }
+
     /**
      *
      *
@@ -384,6 +399,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public int getColumnsCount() {
       return columns_.size();
     }
+
     /**
      *
      *
@@ -403,6 +419,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public java.lang.String getColumns(int index) {
       return columns_.get(index);
     }
+
     /**
      *
      *
@@ -427,6 +444,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
 
     @SuppressWarnings("serial")
     private java.util.List<com.google.protobuf.ListValue> values_;
+
     /**
      *
      *
@@ -447,6 +465,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public java.util.List<com.google.protobuf.ListValue> getValuesList() {
       return values_;
     }
+
     /**
      *
      *
@@ -468,6 +487,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         getValuesOrBuilderList() {
       return values_;
     }
+
     /**
      *
      *
@@ -488,6 +508,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public int getValuesCount() {
       return values_.size();
     }
+
     /**
      *
      *
@@ -508,6 +529,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ListValue getValues(int index) {
       return values_.get(index);
     }
+
     /**
      *
      *
@@ -715,6 +737,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -983,6 +1006,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       private int bitField0_;
 
       private java.lang.Object table_ = "";
+
       /**
        *
        *
@@ -1005,6 +1029,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -1027,6 +1052,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -1048,6 +1074,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1065,6 +1092,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1097,6 +1125,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         bitField0_ |= 0x00000002;
       }
+
       /**
        *
        *
@@ -1116,6 +1145,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         columns_.makeImmutable();
         return columns_;
       }
+
       /**
        *
        *
@@ -1134,6 +1164,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public int getColumnsCount() {
         return columns_.size();
       }
+
       /**
        *
        *
@@ -1153,6 +1184,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public java.lang.String getColumns(int index) {
         return columns_.get(index);
       }
+
       /**
        *
        *
@@ -1172,6 +1204,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public com.google.protobuf.ByteString getColumnsBytes(int index) {
         return columns_.getByteString(index);
       }
+
       /**
        *
        *
@@ -1199,6 +1232,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1225,6 +1259,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1248,6 +1283,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1270,6 +1306,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1337,6 +1374,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return valuesBuilder_.getMessageList();
         }
       }
+
       /**
        *
        *
@@ -1360,6 +1398,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return valuesBuilder_.getCount();
         }
       }
+
       /**
        *
        *
@@ -1383,6 +1422,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return valuesBuilder_.getMessage(index);
         }
       }
+
       /**
        *
        *
@@ -1412,6 +1452,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1438,6 +1479,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1467,6 +1509,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1496,6 +1539,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1522,6 +1566,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1548,6 +1593,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1575,6 +1621,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1601,6 +1648,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1627,6 +1675,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -1646,6 +1695,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public com.google.protobuf.ListValue.Builder getValuesBuilder(int index) {
         return getValuesFieldBuilder().getBuilder(index);
       }
+
       /**
        *
        *
@@ -1669,6 +1719,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return valuesBuilder_.getMessageOrBuilder(index);
         }
       }
+
       /**
        *
        *
@@ -1693,6 +1744,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return java.util.Collections.unmodifiableList(values_);
         }
       }
+
       /**
        *
        *
@@ -1713,6 +1765,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return getValuesFieldBuilder()
             .addBuilder(com.google.protobuf.ListValue.getDefaultInstance());
       }
+
       /**
        *
        *
@@ -1733,6 +1786,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return getValuesFieldBuilder()
             .addBuilder(index, com.google.protobuf.ListValue.getDefaultInstance());
       }
+
       /**
        *
        *
@@ -1851,6 +1905,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * @return The table.
      */
     java.lang.String getTable();
+
     /**
      *
      *
@@ -1881,6 +1936,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the keySet field is set.
      */
     boolean hasKeySet();
+
     /**
      *
      *
@@ -1898,6 +1954,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * @return The keySet.
      */
     com.google.spanner.v1.KeySet getKeySet();
+
     /**
      *
      *
@@ -1914,6 +1971,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      */
     com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder();
   }
+
   /**
    *
    *
@@ -1928,6 +1986,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       // @@protoc_insertion_point(message_implements:google.spanner.v1.Mutation.Delete)
       DeleteOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use Delete.newBuilder() to construct.
     private Delete(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -1963,6 +2022,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object table_ = "";
+
     /**
      *
      *
@@ -1986,6 +2046,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return s;
       }
     }
+
     /**
      *
      *
@@ -2012,6 +2073,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
 
     public static final int KEY_SET_FIELD_NUMBER = 2;
     private com.google.spanner.v1.KeySet keySet_;
+
     /**
      *
      *
@@ -2032,6 +2094,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public boolean hasKeySet() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -2052,6 +2115,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.KeySet getKeySet() {
       return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
     }
+
     /**
      *
      *
@@ -2244,6 +2308,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -2459,6 +2524,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       private int bitField0_;
 
       private java.lang.Object table_ = "";
+
       /**
        *
        *
@@ -2481,6 +2547,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -2503,6 +2570,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -2524,6 +2592,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2541,6 +2610,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2570,6 +2640,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               com.google.spanner.v1.KeySet.Builder,
               com.google.spanner.v1.KeySetOrBuilder>
           keySetBuilder_;
+
       /**
        *
        *
@@ -2590,6 +2661,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public boolean hasKeySet() {
         return ((bitField0_ & 0x00000002) != 0);
       }
+
       /**
        *
        *
@@ -2614,6 +2686,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return keySetBuilder_.getMessage();
         }
       }
+
       /**
        *
        *
@@ -2642,6 +2715,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2667,6 +2741,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2700,6 +2775,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         return this;
       }
+
       /**
        *
        *
@@ -2725,6 +2801,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2745,6 +2822,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return getKeySetFieldBuilder().getBuilder();
       }
+
       /**
        *
        *
@@ -2767,6 +2845,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
         }
       }
+
       /**
        *
        *
@@ -2883,6 +2962,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     private OperationCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -2922,6 +3002,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int INSERT_FIELD_NUMBER = 1;
+
   /**
    *
    *
@@ -2938,6 +3019,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   public boolean hasInsert() {
     return operationCase_ == 1;
   }
+
   /**
    *
    *
@@ -2957,6 +3039,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -2976,6 +3059,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int UPDATE_FIELD_NUMBER = 2;
+
   /**
    *
    *
@@ -2992,6 +3076,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   public boolean hasUpdate() {
     return operationCase_ == 2;
   }
+
   /**
    *
    *
@@ -3011,6 +3096,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -3030,6 +3116,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int INSERT_OR_UPDATE_FIELD_NUMBER = 3;
+
   /**
    *
    *
@@ -3051,6 +3138,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   public boolean hasInsertOrUpdate() {
     return operationCase_ == 3;
   }
+
   /**
    *
    *
@@ -3075,6 +3163,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -3099,6 +3188,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int REPLACE_FIELD_NUMBER = 4;
+
   /**
    *
    *
@@ -3122,6 +3212,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   public boolean hasReplace() {
     return operationCase_ == 4;
   }
+
   /**
    *
    *
@@ -3148,6 +3239,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -3174,6 +3266,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DELETE_FIELD_NUMBER = 5;
+
   /**
    *
    *
@@ -3190,6 +3283,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   public boolean hasDelete() {
     return operationCase_ == 5;
   }
+
   /**
    *
    *
@@ -3209,6 +3303,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.v1.Mutation.Delete.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -3459,6 +3554,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -3744,6 +3840,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.Mutation.Write.Builder,
             com.google.spanner.v1.Mutation.WriteOrBuilder>
         insertBuilder_;
+
     /**
      *
      *
@@ -3760,6 +3857,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public boolean hasInsert() {
       return operationCase_ == 1;
     }
+
     /**
      *
      *
@@ -3786,6 +3884,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3809,6 +3908,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -3829,6 +3929,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -3862,6 +3963,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -3888,6 +3990,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3901,6 +4004,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.Mutation.Write.Builder getInsertBuilder() {
       return getInsertFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3922,6 +4026,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3961,6 +4066,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.Mutation.Write.Builder,
             com.google.spanner.v1.Mutation.WriteOrBuilder>
         updateBuilder_;
+
     /**
      *
      *
@@ -3977,6 +4083,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public boolean hasUpdate() {
       return operationCase_ == 2;
     }
+
     /**
      *
      *
@@ -4003,6 +4110,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4026,6 +4134,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -4046,6 +4155,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -4079,6 +4189,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -4105,6 +4216,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4118,6 +4230,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.Mutation.Write.Builder getUpdateBuilder() {
       return getUpdateFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4139,6 +4252,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4178,6 +4292,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.Mutation.Write.Builder,
             com.google.spanner.v1.Mutation.WriteOrBuilder>
         insertOrUpdateBuilder_;
+
     /**
      *
      *
@@ -4199,6 +4314,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public boolean hasInsertOrUpdate() {
       return operationCase_ == 3;
     }
+
     /**
      *
      *
@@ -4230,6 +4346,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4258,6 +4375,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -4283,6 +4401,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -4321,6 +4440,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -4352,6 +4472,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4370,6 +4491,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.Mutation.Write.Builder getInsertOrUpdateBuilder() {
       return getInsertOrUpdateFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4396,6 +4518,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4440,6 +4563,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.Mutation.Write.Builder,
             com.google.spanner.v1.Mutation.WriteOrBuilder>
         replaceBuilder_;
+
     /**
      *
      *
@@ -4463,6 +4587,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public boolean hasReplace() {
       return operationCase_ == 4;
     }
+
     /**
      *
      *
@@ -4496,6 +4621,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4526,6 +4652,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -4553,6 +4680,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -4593,6 +4721,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -4626,6 +4755,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4646,6 +4776,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.Mutation.Write.Builder getReplaceBuilder() {
       return getReplaceFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4674,6 +4805,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Write.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4720,6 +4852,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.Mutation.Delete.Builder,
             com.google.spanner.v1.Mutation.DeleteOrBuilder>
         deleteBuilder_;
+
     /**
      *
      *
@@ -4736,6 +4869,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public boolean hasDelete() {
       return operationCase_ == 5;
     }
+
     /**
      *
      *
@@ -4762,6 +4896,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Delete.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4785,6 +4920,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 5;
       return this;
     }
+
     /**
      *
      *
@@ -4805,6 +4941,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 5;
       return this;
     }
+
     /**
      *
      *
@@ -4838,6 +4975,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 5;
       return this;
     }
+
     /**
      *
      *
@@ -4864,6 +5002,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4877,6 +5016,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.Mutation.Delete.Builder getDeleteBuilder() {
       return getDeleteFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4898,6 +5038,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.Mutation.Delete.getDefaultInstance();
       }
     }
+
     /**
      *
      *

@@ -37,6 +37,7 @@ public interface UpdateDatabaseMetadataOrBuilder
    * @return Whether the request field is set.
    */
   boolean hasRequest();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface UpdateDatabaseMetadataOrBuilder
    * @return The request.
    */
   com.google.spanner.admin.database.v1.UpdateDatabaseRequest getRequest();
+
   /**
    *
    *
@@ -76,6 +78,7 @@ public interface UpdateDatabaseMetadataOrBuilder
    * @return Whether the progress field is set.
    */
   boolean hasProgress();
+
   /**
    *
    *
@@ -90,6 +93,7 @@ public interface UpdateDatabaseMetadataOrBuilder
    * @return The progress.
    */
   com.google.spanner.admin.database.v1.OperationProgress getProgress();
+
   /**
    *
    *
@@ -116,6 +120,7 @@ public interface UpdateDatabaseMetadataOrBuilder
    * @return Whether the cancelTime field is set.
    */
   boolean hasCancelTime();
+
   /**
    *
    *
@@ -129,6 +134,7 @@ public interface UpdateDatabaseMetadataOrBuilder
    * @return The cancelTime.
    */
   com.google.protobuf.Timestamp getCancelTime();
+
   /**
    *
    *

@@ -36,6 +36,7 @@ public interface ReadActionOrBuilder
    * @return The table.
    */
   java.lang.String getTable();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface ReadActionOrBuilder
    * @return Whether the index field is set.
    */
   boolean hasIndex();
+
   /**
    *
    *
@@ -73,6 +75,7 @@ public interface ReadActionOrBuilder
    * @return The index.
    */
   java.lang.String getIndex();
+
   /**
    *
    *
@@ -98,6 +101,7 @@ public interface ReadActionOrBuilder
    * @return A list containing the column.
    */
   java.util.List<java.lang.String> getColumnList();
+
   /**
    *
    *
@@ -110,6 +114,7 @@ public interface ReadActionOrBuilder
    * @return The count of column.
    */
   int getColumnCount();
+
   /**
    *
    *
@@ -123,6 +128,7 @@ public interface ReadActionOrBuilder
    * @return The column at the given index.
    */
   java.lang.String getColumn(int index);
+
   /**
    *
    *
@@ -149,6 +155,7 @@ public interface ReadActionOrBuilder
    * @return Whether the keys field is set.
    */
   boolean hasKeys();
+
   /**
    *
    *
@@ -161,6 +168,7 @@ public interface ReadActionOrBuilder
    * @return The keys.
    */
   com.google.spanner.executor.v1.KeySet getKeys();
+
   /**
    *
    *

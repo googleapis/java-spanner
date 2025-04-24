@@ -34,6 +34,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.WriteMutationsAction)
     WriteMutationsActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use WriteMutationsAction.newBuilder() to construct.
   private WriteMutationsAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -65,6 +66,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
   private int bitField0_;
   public static final int MUTATION_FIELD_NUMBER = 1;
   private com.google.spanner.executor.v1.MutationAction mutation_;
+
   /**
    *
    *
@@ -80,6 +82,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
   public boolean hasMutation() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -97,6 +100,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
         ? com.google.spanner.executor.v1.MutationAction.getDefaultInstance()
         : mutation_;
   }
+
   /**
    *
    *
@@ -277,6 +281,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -481,6 +486,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
             com.google.spanner.executor.v1.MutationAction.Builder,
             com.google.spanner.executor.v1.MutationActionOrBuilder>
         mutationBuilder_;
+
     /**
      *
      *
@@ -495,6 +501,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
     public boolean hasMutation() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -515,6 +522,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
         return mutationBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -537,6 +545,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -557,6 +566,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -584,6 +594,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
       }
       return this;
     }
+
     /**
      *
      *
@@ -603,6 +614,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -617,6 +629,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
       onChanged();
       return getMutationFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -635,6 +648,7 @@ public final class WriteMutationsAction extends com.google.protobuf.GeneratedMes
             : mutation_;
       }
     }
+
     /**
      *
      *

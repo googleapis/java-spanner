@@ -163,12 +163,15 @@ public class SpannerStatementParserTest {
 
         assertEquals(
             injector.inject(
-                "select 1, @p1, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=@p2 and col2='test' and col3=@p3 and col4='?' and col5=\"?\" and col6='?''?''?'",
+                "select 1, @p1, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=@p2 and"
+                    + " col2='test' and col3=@p3 and col4='?' and col5=\"?\" and col6='?''?''?'",
                 comment),
             parser.convertPositionalParametersToNamedParameters(
                     '?',
                     injector.inject(
-                        "select 1, ?, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=? and col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'",
+                        "select 1, ?, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=?"
+                            + " and col2='test' and col3=? and col4='?' and col5=\"?\" and"
+                            + " col6='?''?''?'",
                         comment))
                 .sqlWithNamedParameters);
 
