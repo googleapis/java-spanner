@@ -59,7 +59,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Default implementation of the Cloud Spanner interface. */
-class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
+class SpannerImpl extends BaseService<SpannerOptions> implements ExtendedSpanner {
   private static final Logger logger = Logger.getLogger(SpannerImpl.class.getName());
   final TraceWrapper tracer =
       new TraceWrapper(

@@ -964,11 +964,4 @@
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>com.google.cloud.spanner.Statement$StatementFactory getStatementFactory()</method>
   </difference>
-
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/Spanner</className>
-    <method>com.google.cloud.spanner.DatabaseClient getDatabaseClient(com.google.cloud.spanner.DatabaseId, java.lang.String)</method>
-    <justification>Added as default method for JDBC client ID support. Default implementation throws UnsupportedOperationException to maintain binary compatibility for existing implementers.</justification>
-  </difference>
 </differences>

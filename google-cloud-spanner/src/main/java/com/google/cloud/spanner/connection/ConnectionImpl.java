@@ -58,6 +58,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.ExtendedSpanner;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -328,8 +329,11 @@ class ConnectionImpl implements Connection {
     final DatabaseId databaseId = options.getDatabaseId();
     try {
       Optional<String> clientIdOpt = extractClientIdOptional(options);
-      if (clientIdOpt.isPresent()) {
-        tempDbClient = spanner.getDatabaseClient(databaseId, clientIdOpt.get());
+      if (clientIdOpt.isPresent() && !clientIdOpt.get().isEmpty()) {
+        if (this.spanner instanceof ExtendedSpanner) {
+          ExtendedSpanner extendedSpanner = (ExtendedSpanner) this.spanner;
+          tempDbClient = extendedSpanner.getDatabaseClient(databaseId, clientIdOpt.get());
+        }
       }
     } catch (Exception e) {
       System.err.println(
