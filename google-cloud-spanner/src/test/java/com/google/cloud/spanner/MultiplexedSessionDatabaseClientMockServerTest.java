@@ -2233,8 +2233,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertEquals(executeSqlRequests.get(0).getTransaction().getBegin().getReadWrite().getMultiplexedSessionPreviousTransactionId(), abortedTransactionID);
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
-    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
-    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
