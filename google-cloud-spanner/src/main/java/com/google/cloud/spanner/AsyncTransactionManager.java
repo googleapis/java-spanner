@@ -170,7 +170,16 @@ public interface AsyncTransactionManager extends AutoCloseable {
    */
   TransactionContextFuture beginAsync();
 
-  TransactionContextFuture beginAsync(AbortedException abortedException);
+  /**
+   * Initializes a new read-write transaction. This method must be called before performing any
+   * operations, and it can only be invoked once per transaction lifecycle.
+   *
+   * <p>This is especially useful in scenarios involving multiplexed sessions and when creating a
+   * new transaction for retry attempts. If {@link #resetForRetryAsync()} is not used, you can pass
+   * the {@link AbortedException} from a previous attempt here to preserve the transaction's
+   * priority.
+   */
+  TransactionContextFuture beginAsync(AbortedException exception);
 
   /**
    * Rolls back the currently active transaction. In most cases there should be no need to call this

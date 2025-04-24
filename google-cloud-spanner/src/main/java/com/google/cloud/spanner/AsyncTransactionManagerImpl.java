@@ -80,13 +80,15 @@ final class AsyncTransactionManagerImpl
   }
 
   @Override
-  public TransactionContextFutureImpl beginAsync(AbortedException abortedException) {
+  public TransactionContextFutureImpl beginAsync(AbortedException exception) {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    ByteString abortedTransactionId = abortedException.getTransactionID() != null ? abortedException.getTransactionID() : ByteString.EMPTY;
+    ByteString abortedTransactionId =
+        exception.getTransactionID() != null ? exception.getTransactionID() : ByteString.EMPTY;
     return new TransactionContextFutureImpl(this, internalBeginAsync(true, abortedTransactionId));
   }
 
-  private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt, ByteString abortedTransactionID) {
+  private ApiFuture<TransactionContext> internalBeginAsync(
+      boolean firstAttempt, ByteString abortedTransactionID) {
     txnState = TransactionState.STARTED;
 
     // Determine the latest transactionId when using a multiplexed session.

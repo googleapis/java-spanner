@@ -61,6 +61,14 @@ public interface TransactionManager extends AutoCloseable {
    */
   TransactionContext begin();
 
+  /**
+   * Initializes a new read-write transaction. This method must be called before performing any
+   * operations, and it can only be invoked once per transaction lifecycle.
+   *
+   * <p>This is especially useful in scenarios involving multiplexed sessions and when creating a
+   * new transaction for retry attempts. If {@link #resetForRetry()} is not used, you can pass the
+   * {@link AbortedException} from a previous attempt here to preserve the transaction's priority.
+   */
   TransactionContext begin(AbortedException exception);
 
   /**

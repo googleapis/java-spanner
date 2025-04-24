@@ -59,7 +59,8 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   @Override
   public TransactionContext begin(AbortedException exception) {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    ByteString previousAbortedTransactionID = exception.getTransactionID() != null ? exception.getTransactionID() : ByteString.EMPTY;
+    ByteString previousAbortedTransactionID =
+        exception.getTransactionID() != null ? exception.getTransactionID() : ByteString.EMPTY;
     return begin(previousAbortedTransactionID);
   }
 

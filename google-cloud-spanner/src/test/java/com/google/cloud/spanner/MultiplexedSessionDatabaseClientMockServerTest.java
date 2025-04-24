@@ -2172,7 +2172,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void testReadWriteTransactionUsingTransactionManager_SetsTransactionID_DuringAborted() {
-    // Whenever an ABORTED exception occurs, the transaction ID that caused the ABORT should be set in the AbortedException class.
+    // Whenever an ABORTED exception occurs, the transaction ID that caused the ABORT should be set
+    // in the AbortedException class.
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
@@ -2229,8 +2230,21 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertEquals(1, executeSqlRequests.size());
     assertTrue(mockSpanner.getSession(executeSqlRequests.get(0).getSession()).getMultiplexed());
-    assertNotNull(executeSqlRequests.get(0).getTransaction().getBegin().getReadWrite().getMultiplexedSessionPreviousTransactionId());
-    assertEquals(executeSqlRequests.get(0).getTransaction().getBegin().getReadWrite().getMultiplexedSessionPreviousTransactionId(), abortedTransactionID);
+    assertNotNull(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId(),
+        abortedTransactionID);
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
@@ -2238,8 +2252,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   }
 
   @Test
-  public void testReadWriteTransactionUsingTransactionManager_SetsTransactionID_DuringAbortedInExecuteSql() {
-    // Whenever an ABORTED exception occurs, the transaction ID that caused the ABORT should be set in the AbortedException class.
+  public void
+      testReadWriteTransactionUsingTransactionManager_SetsTransactionID_DuringAbortedInExecuteSql() {
+    // Whenever an ABORTED exception occurs, the transaction ID that caused the ABORT should be set
+    // in the AbortedException class.
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
@@ -2303,9 +2319,21 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertEquals(1, executeSqlRequests.size());
     assertTrue(mockSpanner.getSession(executeSqlRequests.get(0).getSession()).getMultiplexed());
-    assertNotNull(executeSqlRequests.get(0).getTransaction().getBegin().getReadWrite().getMultiplexedSessionPreviousTransactionId());
-    assertEquals(executeSqlRequests.get(0).getTransaction().getBegin().getReadWrite().getMultiplexedSessionPreviousTransactionId(), abortedTransactionID);
-
+    assertNotNull(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId(),
+        abortedTransactionID);
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());

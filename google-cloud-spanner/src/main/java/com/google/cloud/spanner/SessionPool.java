@@ -902,6 +902,8 @@ class SessionPool {
 
     @Override
     public TransactionContext begin(AbortedException exception) {
+      // For regular sessions, the input exception is ignored and the behavior is equivalent to
+      // calling {@link #begin()}.
       return begin();
     }
 

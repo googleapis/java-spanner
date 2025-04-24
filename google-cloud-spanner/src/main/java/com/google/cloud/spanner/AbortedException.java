@@ -32,6 +32,7 @@ public class AbortedException extends SpannerException {
    * new transaction attempt) before a retry can succeed.
    */
   private static final boolean IS_RETRYABLE = false;
+
   private ByteString transactionID;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
