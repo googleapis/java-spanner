@@ -59,7 +59,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Default implementation of the Cloud Spanner interface. */
-class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
+class SpannerImpl extends BaseService<SpannerOptions> implements ExtendedSpanner {
   private static final Logger logger = Logger.getLogger(SpannerImpl.class.getName());
   final TraceWrapper tracer =
       new TraceWrapper(
@@ -254,9 +254,13 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public DatabaseClient getDatabaseClient(DatabaseId db) {
+    return getDatabaseClient(db, null);
+  }
+
+  @Override
+  public DatabaseClient getDatabaseClient(DatabaseId db, String clientId) {
     synchronized (this) {
       checkClosed();
-      String clientId = null;
       if (dbClients.containsKey(db) && !dbClients.get(db).isValid()) {
         // Close the invalidated client and remove it.
         dbClients.get(db).closeAsync(new ClosedException());

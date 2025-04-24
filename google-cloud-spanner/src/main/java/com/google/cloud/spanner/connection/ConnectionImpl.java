@@ -58,6 +58,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.ExtendedSpanner;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -108,6 +109,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
@@ -157,6 +159,7 @@ class ConnectionImpl implements Connection {
   private static final ParsedStatement RELEASE_STATEMENT =
       AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
           .parse(Statement.of("RELEASE s1"));
+  private static final String CLIENT_ID = "client_id";
 
   /**
    * Exception that is used to register the stacktrace of the code that opened a {@link Connection}.
@@ -251,8 +254,7 @@ class ConnectionImpl implements Connection {
     }
   }
 
-  private StatementExecutor.StatementTimeout statementTimeout =
-      new StatementExecutor.StatementTimeout();
+  private StatementTimeout statementTimeout = new StatementTimeout();
   private boolean closed = false;
 
   private final Spanner spanner;
@@ -323,7 +325,25 @@ class ConnectionImpl implements Connection {
       EmulatorUtil.maybeCreateInstanceAndDatabase(
           spanner, options.getDatabaseId(), options.getDialect());
     }
-    this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
+    DatabaseClient tempDbClient = null;
+    final DatabaseId databaseId = options.getDatabaseId();
+    try {
+      Optional<String> clientIdOpt = extractClientIdOptional(options);
+      if (clientIdOpt.isPresent() && !clientIdOpt.get().isEmpty()) {
+        if (this.spanner instanceof ExtendedSpanner) {
+          ExtendedSpanner extendedSpanner = (ExtendedSpanner) this.spanner;
+          tempDbClient = extendedSpanner.getDatabaseClient(databaseId, clientIdOpt.get());
+        }
+      }
+    } catch (Exception e) {
+      System.err.println(
+          "WARNING: Failed during DatabaseClient initialization (possibly getting specific ID), falling back to default. Error: "
+              + e.getMessage());
+    }
+    if (tempDbClient == null) {
+      tempDbClient = spanner.getDatabaseClient(databaseId);
+    }
+    this.dbClient = tempDbClient;
     this.batchClient = spanner.getBatchClient(options.getDatabaseId());
     this.ddlClient = createDdlClient();
     this.connectionState =
@@ -338,6 +358,14 @@ class ConnectionImpl implements Connection {
 
     // (Re)set the state of the connection to the default.
     setDefaultTransactionOptions(getDefaultIsolationLevel());
+  }
+
+  private Optional<String> extractClientIdOptional(ConnectionOptions options) {
+    return Optional.ofNullable(options.getInitialConnectionPropertyValues())
+        .map(props -> props.get(CLIENT_ID))
+        .map(ConnectionPropertyValue::getValue)
+        .map(Object::toString)
+        .filter(id -> !id.isEmpty());
   }
 
   /** Constructor only for test purposes. */
@@ -411,7 +439,7 @@ class ConnectionImpl implements Connection {
   }
 
   @VisibleForTesting
-  ConnectionState.Type getConnectionStateType() {
+  Type getConnectionStateType() {
     return this.connectionState.getType();
   }
 
@@ -500,7 +528,7 @@ class ConnectionImpl implements Connection {
 
     this.connectionState.resetValue(AUTOCOMMIT_DML_MODE, context, inTransaction);
     this.statementTag = null;
-    this.statementTimeout = new StatementExecutor.StatementTimeout();
+    this.statementTimeout = new StatementTimeout();
     this.connectionState.resetValue(DIRECTED_READ, context, inTransaction);
     this.connectionState.resetValue(SAVEPOINT_SUPPORT, context, inTransaction);
     this.protoDescriptors = null;
@@ -541,8 +569,7 @@ class ConnectionImpl implements Connection {
     return closed;
   }
 
-  private <T> T getConnectionPropertyValue(
-      com.google.cloud.spanner.connection.ConnectionProperty<T> property) {
+  private <T> T getConnectionPropertyValue(ConnectionProperty<T> property) {
     return this.connectionState.getValue(property).getValue();
   }
 
@@ -562,9 +589,8 @@ class ConnectionImpl implements Connection {
   /**
    * Sets a connection property value only for the duration of the current transaction. The effects
    * of this will be undone once the transaction ends, regardless whether the transaction is
-   * committed or rolled back. 'Local' properties are supported for both {@link
-   * com.google.cloud.spanner.connection.ConnectionState.Type#TRANSACTIONAL} and {@link
-   * com.google.cloud.spanner.connection.ConnectionState.Type#NON_TRANSACTIONAL} connection states.
+   * committed or rolled back. 'Local' properties are supported for both {@link Type#TRANSACTIONAL}
+   * and {@link Type#NON_TRANSACTIONAL} connection states.
    *
    * <p>NOTE: This feature is not yet exposed in the public API.
    */

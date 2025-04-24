@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_CONF
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CHANNEL_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_CERTIFICATE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_ID;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CLIENT_KEY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_URL;
@@ -539,6 +540,11 @@ public class ConnectionOptions {
       return this;
     }
 
+    public Builder setClientId(String clientId) {
+      setConnectionPropertyValue(CLIENT_ID, clientId);
+      return this;
+    }
+
     /** @return the {@link ConnectionOptions} */
     public ConnectionOptions build() {
       Preconditions.checkState(this.uri != null, "Connection URI is required");
@@ -603,7 +609,6 @@ public class ConnectionOptions {
 
     // Create the initial connection state from the parsed properties in the connection URL.
     this.initialConnectionState = new ConnectionState(connectionPropertyValues);
-
     // Check that at most one of credentials location, encoded credentials, credentials provider and
     // OUAuth token has been specified in the connection URI.
     Preconditions.checkArgument(

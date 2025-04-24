@@ -135,6 +135,14 @@ public class ConnectionProperties {
 
   private static final Boolean[] BOOLEANS = new Boolean[] {Boolean.TRUE, Boolean.FALSE};
 
+  static final ConnectionProperty<String> CLIENT_ID =
+      create(
+          "client_id",
+          "Client Id to use for this connection. Can only be set at the start up time",
+          null,
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
+
   static final ConnectionProperty<ConnectionState.Type> CONNECTION_STATE_TYPE =
       create(
           "connection_state_type",

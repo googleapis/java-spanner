@@ -358,6 +358,43 @@ public class SpannerImplTest {
     assertNotNull(instanceAdminClient);
   }
 
+  @Test
+  public void testGetDatabaseClient_when_clientId_is_not_null() {
+    String dbName =
+        String.format("projects/p1/instances/i1/databases/%s", UUID.randomUUID().toString());
+    DatabaseId db = DatabaseId.of(dbName);
+
+    Mockito.when(spannerOptions.getTransportOptions())
+        .thenReturn(GrpcTransportOptions.newBuilder().build());
+    Mockito.when(spannerOptions.getSessionPoolOptions())
+        .thenReturn(SessionPoolOptions.newBuilder().setMinSessions(0).build());
+    Mockito.when(spannerOptions.getDatabaseRole()).thenReturn("role");
+
+    DatabaseClientImpl databaseClient =
+        (DatabaseClientImpl) impl.getDatabaseClient(db, "clientId-1");
+    assertThat(databaseClient.clientId).isEqualTo("clientId-1");
+
+    // Get same db client again.
+    DatabaseClientImpl databaseClient1 =
+        (DatabaseClientImpl) impl.getDatabaseClient(db, "clientId-1");
+    assertThat(databaseClient1.clientId).isEqualTo(databaseClient.clientId);
+
+    // Get a db client for a different database.
+    String dbName2 =
+        String.format("projects/p1/instances/i1/databases/%s", UUID.randomUUID().toString());
+    DatabaseId db2 = DatabaseId.of(dbName2);
+    DatabaseClientImpl databaseClient2 =
+        (DatabaseClientImpl) impl.getDatabaseClient(db2, "clientId-1");
+    assertThat(databaseClient2.clientId).isEqualTo("clientId-1");
+
+    // Getting a new database client for an invalidated database should use the same client id.
+    databaseClient.pool.setResourceNotFoundException(
+        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
+    DatabaseClientImpl revalidated = (DatabaseClientImpl) impl.getDatabaseClient(db, "clientId-1");
+    assertThat(revalidated).isNotSameInstanceAs(databaseClient);
+    assertThat(revalidated.clientId).isEqualTo(databaseClient.clientId);
+  }
+
   private void closeSpannerAndIncludeStacktrace(Spanner spanner) {
     spanner.close();
   }
