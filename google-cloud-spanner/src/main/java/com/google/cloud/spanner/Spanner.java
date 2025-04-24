@@ -146,7 +146,8 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * <!--SNIPPET get_db_client-->
    */
   default DatabaseClient getDatabaseClient(DatabaseId db, String clientId) {
-    throw new UnsupportedOperationException("getDatabaseClient with clientId is not supported by this default implementation.");
+    throw new UnsupportedOperationException(
+        "getDatabaseClient with clientId is not supported by this default implementation.");
   }
 
   /**
