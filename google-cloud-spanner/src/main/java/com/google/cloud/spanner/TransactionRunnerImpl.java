@@ -679,7 +679,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   "Timeout while waiting for a transaction to be returned by another statement."
                       + (trackTransactionStarter
                           ? " See the suppressed exception for the stacktrace of the caller that"
-                                + " should return a transaction"
+                              + " should return a transaction"
                           : ""),
                   e);
           if (transactionStarter != null) {
