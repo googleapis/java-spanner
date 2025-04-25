@@ -758,6 +758,13 @@
     <method>boolean isEnableGRPCBuiltInMetrics()</method>
   </difference>
 
+  <!-- Added AFE Server Timing option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableAFEServerTiming()</method>
+  </difference>
+
   <!-- Added Monitoring host option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -899,7 +906,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.String getDefaultSequenceKind()</method>
   </difference>
-  
+
   <!-- Default isolation level -->
   <difference>
     <differenceType>7012</differenceType>

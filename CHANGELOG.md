@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.91.1](https://github.com/googleapis/java-spanner/compare/v6.91.0...v6.91.1) (2025-04-21)
+
+
+### Bug Fixes
+
+* SkipHint in the internal parser skipped too much ([#3827](https://github.com/googleapis/java-spanner/issues/3827)) ([fbf7b4c](https://github.com/googleapis/java-spanner/commit/fbf7b4c4324c4d565bfe3950ecf80de02c88f16e))
+
 ## [6.91.0](https://github.com/googleapis/java-spanner/compare/v6.90.0...v6.91.0) (2025-04-17)
 
 
