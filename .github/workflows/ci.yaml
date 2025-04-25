@@ -86,6 +86,8 @@ jobs:
           distribution: temurin
       - run: echo "SUREFIRE_JVM_OPT=-Djvm=${JAVA_HOME}/bin/java" >> $GITHUB_ENV
         shell: bash
+      - run: echo "MAVEN_OPTS=-DGOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS=true -DGOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW=true" >> $GITHUB_ENV
+        shell: bash
       - uses: actions/setup-java@v3
         with:
           java-version: 17
