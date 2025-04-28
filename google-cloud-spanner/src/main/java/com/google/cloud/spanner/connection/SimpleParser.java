@@ -138,7 +138,7 @@ class SimpleParser {
     // comments and comments are automatically skipped by all methods.
     if (getDialect() == Dialect.GOOGLE_STANDARD_SQL && eatTokens('@', '{')) {
       while (pos < length && !eatToken('}')) {
-        pos += statementParser.skip(sql, pos, /*result=*/ null);
+        pos = statementParser.skip(sql, pos, /*result=*/ null);
       }
     }
   }
@@ -275,6 +275,55 @@ class SimpleParser {
       return true;
     }
     return false;
+  }
+
+  boolean eatKeyword(String... keywords) {
+    return eat(true, true, keywords);
+  }
+
+  boolean eat(boolean skipWhitespaceBefore, boolean requireWhitespaceAfter, String... keywords) {
+    boolean result = true;
+    for (String keyword : keywords) {
+      result &= internalEat(keyword, skipWhitespaceBefore, requireWhitespaceAfter, true);
+    }
+    return result;
+  }
+
+  private boolean internalEat(
+      String keyword,
+      boolean skipWhitespaceBefore,
+      boolean requireWhitespaceAfter,
+      boolean updatePos) {
+    int originalPos = pos;
+    if (skipWhitespaceBefore) {
+      skipWhitespaces();
+    }
+    if (pos + keyword.length() > sql.length()) {
+      if (!updatePos) {
+        pos = originalPos;
+      }
+      return false;
+    }
+    if (sql.substring(pos, pos + keyword.length()).equalsIgnoreCase(keyword)
+        && (!requireWhitespaceAfter || isValidEndOfKeyword(pos + keyword.length()))) {
+      if (updatePos) {
+        pos = pos + keyword.length();
+      } else {
+        pos = originalPos;
+      }
+      return true;
+    }
+    if (!updatePos) {
+      pos = originalPos;
+    }
+    return false;
+  }
+
+  private boolean isValidEndOfKeyword(int index) {
+    if (sql.length() == index) {
+      return true;
+    }
+    return !isValidIdentifierChar(sql.charAt(index));
   }
 
   /**

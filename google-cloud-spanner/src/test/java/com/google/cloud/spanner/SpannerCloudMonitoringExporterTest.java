@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.BuiltInMetricsConstant.ATTEMPT_COUNT_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
@@ -32,7 +31,6 @@ import static com.google.cloud.spanner.BuiltInMetricsConstant.OPERATION_LATENCIE
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,7 +45,6 @@ import com.google.monitoring.v3.CreateTimeSeriesRequest;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.protobuf.Empty;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -81,7 +78,7 @@ public class SpannerCloudMonitoringExporterTest {
   private static final String instanceId = "fake-instance";
   private static final String locationId = "global";
   private static final String databaseId = "fake-database";
-  private static final String clientName = "spanner-java";
+  private static final String clientName = "spanner-java/";
 
   private static final String clientHash = "spanner-test";
   private static final String instanceConfigId = "fake-instance-config-id";
@@ -93,28 +90,38 @@ public class SpannerCloudMonitoringExporterTest {
   private SpannerCloudMonitoringExporter exporter;
 
   private Attributes attributes;
+
+  private Attributes resourceAttributes;
   private Resource resource;
   private InstrumentationScopeInfo scope;
+
+  private String client_uid;
 
   @Before
   public void setUp() {
     fakeMetricServiceClient = new FakeMetricServiceClient(mockMetricServiceStub);
     exporter = new SpannerCloudMonitoringExporter(projectId, fakeMetricServiceClient);
 
+    this.client_uid = BuiltInMetricsProvider.INSTANCE.createClientAttributes().get("client_uid");
+
     attributes =
         Attributes.builder()
-            .put(PROJECT_ID_KEY, projectId)
             .put(INSTANCE_ID_KEY, instanceId)
-            .put(LOCATION_ID_KEY, locationId)
-            .put(INSTANCE_CONFIG_ID_KEY, instanceConfigId)
             .put(DATABASE_KEY, databaseId)
             .put(CLIENT_NAME_KEY, clientName)
-            .put(CLIENT_HASH_KEY, clientHash)
+            .put(CLIENT_UID_KEY, this.client_uid)
             .put(String.valueOf(DIRECT_PATH_ENABLED_KEY), true)
             .put(String.valueOf(DIRECT_PATH_USED_KEY), true)
             .build();
 
-    resource = Resource.create(Attributes.empty());
+    resourceAttributes =
+        Attributes.builder()
+            .put(PROJECT_ID_KEY, projectId)
+            .put(LOCATION_ID_KEY, locationId)
+            .put(CLIENT_HASH_KEY, clientHash)
+            .put(INSTANCE_CONFIG_ID_KEY, instanceConfigId)
+            .build();
+    resource = Resource.create(resourceAttributes);
 
     scope = InstrumentationScopeInfo.create(GAX_METER_NAME);
   }
@@ -177,8 +184,10 @@ public class SpannerCloudMonitoringExporterTest {
             DIRECT_PATH_ENABLED_KEY.getKey(),
             "true",
             DIRECT_PATH_USED_KEY.getKey(),
-            "true");
-    assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(4);
+            "true",
+            CLIENT_UID_KEY.getKey(),
+            this.client_uid);
+    assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(5);
 
     assertThat(timeSeries.getPoints(0).getValue().getInt64Value()).isEqualTo(fakeValue);
     assertThat(timeSeries.getPoints(0).getInterval().getStartTime().getNanos())
@@ -239,7 +248,7 @@ public class SpannerCloudMonitoringExporterTest {
             INSTANCE_CONFIG_ID_KEY.getKey(), instanceConfigId,
             CLIENT_HASH_KEY.getKey(), clientHash);
 
-    assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(4);
+    assertThat(timeSeries.getMetric().getLabelsMap()).hasSize(5);
     assertThat(timeSeries.getMetric().getLabelsMap())
         .containsExactly(
             DATABASE_KEY.getKey(),
@@ -249,7 +258,9 @@ public class SpannerCloudMonitoringExporterTest {
             DIRECT_PATH_ENABLED_KEY.getKey(),
             "true",
             DIRECT_PATH_USED_KEY.getKey(),
-            "true");
+            "true",
+            CLIENT_UID_KEY.getKey(),
+            this.client_uid);
 
     Distribution distribution = timeSeries.getPoints(0).getValue().getDistributionValue();
     assertThat(distribution.getCount()).isEqualTo(3);
@@ -274,11 +285,7 @@ public class SpannerCloudMonitoringExporterTest {
     Collection<MetricData> toExport = new ArrayList<>();
     for (int i = 0; i < 250; i++) {
       LongPointData longPointData =
-          ImmutableLongPointData.create(
-              startEpoch,
-              endEpoch,
-              attributes.toBuilder().put(CLIENT_UID_KEY, "client_uid" + i).build(),
-              i);
+          ImmutableLongPointData.create(startEpoch, endEpoch, attributes, i);
 
       MetricData longData =
           ImmutableMetricData.createLongSum(
@@ -331,7 +338,7 @@ public class SpannerCloudMonitoringExporterTest {
               DIRECT_PATH_USED_KEY.getKey(),
               "true",
               CLIENT_UID_KEY.getKey(),
-              "client_uid" + i);
+              this.client_uid);
 
       assertThat(timeSeries.getPoints(0).getValue().getInt64Value()).isEqualTo(i);
       assertThat(timeSeries.getPoints(0).getInterval().getStartTime().getNanos())
@@ -346,56 +353,6 @@ public class SpannerCloudMonitoringExporterTest {
         SpannerCloudMonitoringExporter.create(projectId, null, null);
     assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
-  }
-
-  @Test
-  public void testSkipExportingDataIfMissingInstanceId() throws IOException {
-    Attributes attributesWithoutInstanceId =
-        Attributes.builder().putAll(attributes).remove(INSTANCE_ID_KEY).build();
-
-    SpannerCloudMonitoringExporter actualExporter =
-        SpannerCloudMonitoringExporter.create(projectId, null, null);
-    assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER))
-        .isEqualTo(AggregationTemporality.CUMULATIVE);
-    ArgumentCaptor<CreateTimeSeriesRequest> argumentCaptor =
-        ArgumentCaptor.forClass(CreateTimeSeriesRequest.class);
-
-    UnaryCallable<CreateTimeSeriesRequest, Empty> mockCallable = Mockito.mock(UnaryCallable.class);
-    Mockito.when(mockMetricServiceStub.createServiceTimeSeriesCallable()).thenReturn(mockCallable);
-    ApiFuture<Empty> future = ApiFutures.immediateFuture(Empty.getDefaultInstance());
-    Mockito.when(mockCallable.futureCall(argumentCaptor.capture())).thenReturn(future);
-
-    long fakeValue = 11L;
-
-    long startEpoch = 10;
-    long endEpoch = 15;
-    LongPointData longPointData =
-        ImmutableLongPointData.create(startEpoch, endEpoch, attributesWithoutInstanceId, fakeValue);
-
-    MetricData operationLongData =
-        ImmutableMetricData.createLongSum(
-            resource,
-            scope,
-            "spanner.googleapis.com/internal/client/" + OPERATION_COUNT_NAME,
-            "description",
-            "1",
-            ImmutableSumData.create(
-                true, AggregationTemporality.CUMULATIVE, ImmutableList.of(longPointData)));
-
-    MetricData attemptLongData =
-        ImmutableMetricData.createLongSum(
-            resource,
-            scope,
-            "spanner.googleapis.com/internal/client/" + ATTEMPT_COUNT_NAME,
-            "description",
-            "1",
-            ImmutableSumData.create(
-                true, AggregationTemporality.CUMULATIVE, ImmutableList.of(longPointData)));
-
-    CompletableResultCode resultCode =
-        exporter.export(Arrays.asList(operationLongData, attemptLongData));
-    assertTrue(resultCode.isSuccess());
-    assertTrue(exporter.lastExportSkippedData());
   }
 
   private static class FakeMetricServiceClient extends MetricServiceClient {

@@ -500,7 +500,7 @@ public class SingleUseTransactionTest {
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getType()).thenReturn(StatementType.DDL);
     when(statement.getStatement()).thenReturn(Statement.of(sql));
-    when(statement.getSqlWithoutComments()).thenReturn(sql);
+    when(statement.getSql()).thenReturn(sql);
     return statement;
   }
 

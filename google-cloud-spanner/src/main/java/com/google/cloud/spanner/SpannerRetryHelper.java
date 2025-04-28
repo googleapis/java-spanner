@@ -120,7 +120,8 @@ class SpannerRetryHelper {
     public boolean shouldRetry(Throwable prevThrowable, T prevResponse)
         throws CancellationException {
       if (Context.current().isCancelled()) {
-        throw SpannerExceptionFactory.newSpannerExceptionForCancellation(Context.current(), null);
+        throw SpannerExceptionFactory.newSpannerExceptionForCancellation(
+            Context.current(), null, null);
       }
       return prevThrowable instanceof AbortedException
           || prevThrowable instanceof com.google.api.gax.rpc.AbortedException;

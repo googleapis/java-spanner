@@ -4905,6 +4905,144 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testStatementWithUnnamedParameters() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    Statement statement =
+        client.getStatementFactory().withUnnamedParameters("select id from test where b=?", true);
+    Statement generatedStatement =
+        Statement.newBuilder("select id from test where b=@p1").bind("p1").to(true).build();
+    mockSpanner.putStatementResult(StatementResult.query(generatedStatement, SELECT1_RESULTSET));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
+  public void testStatementWithUnnamedParametersAndSingleLineComment() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    Statement statement =
+        client
+            .getStatementFactory()
+            .withUnnamedParameters(
+                "-- comment about ? in the statement\nselect id from test where b=?", true);
+    Statement generatedStatement =
+        Statement.newBuilder("-- comment about ? in the statement\nselect id from test where b=@p1")
+            .bind("p1")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(generatedStatement, SELECT1_RESULTSET));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
+  public void testStatementWithUnnamedParametersAndSingleLineCommentWithHash() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    Statement statement =
+        client
+            .getStatementFactory()
+            .withUnnamedParameters(
+                "# comment about ? in the statement\nselect id from test where b=?", true);
+    Statement generatedStatement =
+        Statement.newBuilder("# comment about ? in the statement\nselect id from test where b=@p1")
+            .bind("p1")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(generatedStatement, SELECT1_RESULTSET));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
+  public void testStatementWithUnnamedParametersAndMultiLineComment() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    Statement statement =
+        client
+            .getStatementFactory()
+            .withUnnamedParameters(
+                "# comment about ? in the statement\nselect id from test\n /* This is a ? comment \n about ? */ \n where b=? # this is a inline command about ?",
+                true);
+    Statement generatedStatement =
+        Statement.newBuilder(
+                "# comment about ? in the statement\nselect id from test\n /* This is a ? comment \n about ? */ \n where b=@p1 # this is a inline command about ?")
+            .bind("p1")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(generatedStatement, SELECT1_RESULTSET));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
+  public void testStatementWithUnnamedParametersAndStringLiteralWithQuestionMark() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    Statement statement =
+        client
+            .getStatementFactory()
+            .withUnnamedParameters("select id from test where name = \"abc?\" AND b=?", true);
+    Statement generatedStatement =
+        Statement.newBuilder("select id from test where name = \"abc?\" AND b=@p1")
+            .bind("p1")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(generatedStatement, SELECT1_RESULTSET));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
+  public void testStatementWithUnnamedParametersAndHint() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    Statement statement =
+        client
+            .getStatementFactory()
+            .withUnnamedParameters("@{FORCE_INDEX=ABCDEF} select id from test where b=?", true);
+    Statement generatedStatement =
+        Statement.newBuilder("@{FORCE_INDEX=ABCDEF} select id from test where b=@p1")
+            .bind("p1")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(generatedStatement, SELECT1_RESULTSET));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
   public void testStatementWithBytesArrayParameter() {
     Statement statement =
         Statement.newBuilder("select id from test where b=@p1")

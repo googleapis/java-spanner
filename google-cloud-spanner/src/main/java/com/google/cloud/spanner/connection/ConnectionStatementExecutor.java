@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
@@ -36,6 +37,7 @@ import java.time.Duration;
  * <p>The client side statements are defined in the ClientSideStatements.json file.
  */
 interface ConnectionStatementExecutor {
+  Dialect getDialect();
 
   StatementResult statementSetAutocommit(Boolean autocommit);
 

@@ -696,46 +696,89 @@ public class StatementParserTest {
 
     // Supports query hints, PostgreSQL dialect does NOT
     // Valid query hints.
-    assertTrue(parser.isQuery("@{JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
-    assertTrue(parser.isQuery("@ {JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
-    assertTrue(parser.isQuery("@{ JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
-    assertTrue(parser.isQuery("@{JOIN_METHOD=HASH_JOIN } SELECT * FROM PersonsTable"));
-    assertTrue(parser.isQuery("@{JOIN_METHOD=HASH_JOIN}\nSELECT * FROM PersonsTable"));
-    assertTrue(parser.isQuery("@{\nJOIN_METHOD =  HASH_JOIN   \t}\n\t SELECT * FROM PersonsTable"));
     assertTrue(
-        parser.isQuery(
-            "@{JOIN_METHOD=HASH_JOIN}\n -- Single line comment\nSELECT * FROM PersonsTable"));
+        parser
+            .parse(Statement.of("@{JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"))
+            .isQuery());
     assertTrue(
-        parser.isQuery(
-            "@{JOIN_METHOD=HASH_JOIN}\n /* Multi line comment\n with more comments\n */SELECT * FROM PersonsTable"));
+        parser
+            .parse(Statement.of("@ {JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"))
+            .isQuery());
     assertTrue(
-        parser.isQuery(
-            "@{JOIN_METHOD=HASH_JOIN} WITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
-                + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
-                + "SELECT * FROM subQ1\n"
-                + "UNION ALL\n"
-                + "SELECT * FROM subQ2"));
+        parser
+            .parse(Statement.of("@{ JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(Statement.of("@{JOIN_METHOD=HASH_JOIN } SELECT * FROM PersonsTable"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(Statement.of("@{JOIN_METHOD=HASH_JOIN}\nSELECT * FROM PersonsTable"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of("@{\nJOIN_METHOD =  HASH_JOIN   \t}\n\t SELECT * FROM PersonsTable"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "@{JOIN_METHOD=HASH_JOIN}\n -- Single line comment\nSELECT * FROM PersonsTable"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "@{JOIN_METHOD=HASH_JOIN}\n /* Multi line comment\n with more comments\n */SELECT * FROM PersonsTable"))
+            .isQuery());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "@{JOIN_METHOD=HASH_JOIN} WITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
+                        + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
+                        + "SELECT * FROM subQ1\n"
+                        + "UNION ALL\n"
+                        + "SELECT * FROM subQ2"))
+            .isQuery());
 
     // Multiple query hints.
     assertTrue(
-        parser.isQuery("@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} SELECT * FROM tbl"));
+        parser
+            .parse(
+                Statement.of("@{FORCE_INDEX=index_name, JOIN_METHOD=HASH_JOIN} SELECT * FROM tbl"))
+            .isQuery());
     assertTrue(
-        parser.isQuery("@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} Select * FROM tbl"));
+        parser
+            .parse(
+                Statement.of("@{FORCE_INDEX=index_name, JOIN_METHOD=HASH_JOIN} Select * FROM tbl"))
+            .isQuery());
     assertTrue(
-        parser.isQuery(
-            "@{FORCE_INDEX=index_name}\n@{JOIN_METHOD=HASH_JOIN}\nWITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
-                + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
-                + "SELECT * FROM subQ1\n"
-                + "UNION ALL\n"
-                + "SELECT * FROM subQ2"));
+        parser
+            .parse(
+                Statement.of(
+                    "@{FORCE_INDEX=index_name,\nJOIN_METHOD=HASH_JOIN}\nWITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
+                        + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
+                        + "SELECT * FROM subQ1\n"
+                        + "UNION ALL\n"
+                        + "SELECT * FROM subQ2"))
+            .isQuery());
 
     // Invalid query hints.
-    assertFalse(parser.isQuery("@{JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable"));
-    assertFalse(parser.isQuery("@JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
-    assertFalse(parser.isQuery("@JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable"));
     assertFalse(
-        parser.isQuery(
-            "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} UPDATE tbl set FOO=1 WHERE ID=2"));
+        parser.parse(Statement.of("@{JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable")).isQuery());
+    assertFalse(
+        parser.parse(Statement.of("@JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable")).isQuery());
+    assertFalse(
+        parser.parse(Statement.of("@JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable")).isQuery());
+    assertFalse(
+        parser
+            .parse(
+                Statement.of(
+                    "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} UPDATE tbl set FOO=1 WHERE ID=2"))
+            .isQuery());
   }
 
   @Test
@@ -1711,6 +1754,16 @@ public class StatementParserTest {
     // The first query had a cache miss. The second a cache hit.
     assertEquals(1, stats.missCount());
     assertEquals(1, stats.hitCount());
+  }
+
+  @Test
+  public void testClientSideStatementWithComment() {
+    String sql = "-- Null (no timeout)\n" + "SET STATEMENT_TIMEOUT=null";
+    ParsedStatement parsedStatement = parser.parse(Statement.of(sql));
+    assertEquals(StatementType.CLIENT_SIDE, parsedStatement.getType());
+    assertEquals(
+        ClientSideStatementType.SET_STATEMENT_TIMEOUT,
+        parsedStatement.getClientSideStatementType());
   }
 
   static void assertUnclosedLiteral(AbstractStatementParser parser, String sql) {

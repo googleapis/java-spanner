@@ -425,7 +425,17 @@ public abstract class AbstractStatementParser {
           .build();
     }
 
-    /** @return the SQL statement with all comments removed from the SQL string. */
+    /** @return the original SQL statement */
+    @InternalApi
+    public String getSql() {
+      return statement.getSql();
+    }
+
+    /**
+     * @return the SQL statement with all comments removed from the SQL string.
+     * @deprecated use {@link #getSql()} instead
+     */
+    @Deprecated
     @InternalApi
     public String getSqlWithoutComments() {
       return sqlWithoutComments.get();
