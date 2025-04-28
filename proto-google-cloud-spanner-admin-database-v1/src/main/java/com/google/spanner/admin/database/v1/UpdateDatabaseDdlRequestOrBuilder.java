@@ -38,6 +38,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * @return The database.
    */
   java.lang.String getDatabase();
+
   /**
    *
    *
@@ -65,6 +66,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * @return A list containing the statements.
    */
   java.util.List<java.lang.String> getStatementsList();
+
   /**
    *
    *
@@ -77,6 +79,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * @return The count of statements.
    */
   int getStatementsCount();
+
   /**
    *
    *
@@ -90,6 +93,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * @return The statements at the given index.
    */
   java.lang.String getStatements(int index);
+
   /**
    *
    *
@@ -136,6 +140,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * @return The operationId.
    */
   java.lang.String getOperationId();
+
   /**
    *
    *

@@ -106,7 +106,7 @@ final class AsyncTransactionManagerImpl
 
     txn =
         session.newTransaction(
-            options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
+            options, /* previousTransactionId= */ multiplexedSessionPreviousTransactionId);
     if (firstAttempt) {
       session.setActive(this);
     }

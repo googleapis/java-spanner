@@ -107,7 +107,8 @@ public class ITUuidTest {
 
   private static DatabaseClient client;
 
-  private UUID uuid1 = UUID.fromString("aac68fbe-6847-48b1-8373-110950aeaf3a");;
+  private UUID uuid1 = UUID.fromString("aac68fbe-6847-48b1-8373-110950aeaf3a");
+  ;
   private UUID uuid2 = UUID.fromString("f5868be9-7983-4cfa-adf3-2e9f13f2019d");
 
   @BeforeClass
@@ -227,16 +228,22 @@ public class ITUuidTest {
 
     if (dialect.dialect == Dialect.POSTGRESQL) {
       statement +=
-          "('dml1', 'aac68fbe-6847-48b1-8373-110950aeaf3a', array['aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid]), "
-              + "('dml2', 'aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid, array['aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid]),"
-              + "('dml3', null, null), "
-              + "('dml4', 'aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid, array['aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid, 'f5868be9-7983-4cfa-adf3-2e9f13f2019d'::uuid, null])";
+          "('dml1', 'aac68fbe-6847-48b1-8373-110950aeaf3a',"
+              + " array['aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid]), ('dml2',"
+              + " 'aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid,"
+              + " array['aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid]),('dml3', null, null),"
+              + " ('dml4', 'aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid,"
+              + " array['aac68fbe-6847-48b1-8373-110950aeaf3a'::uuid,"
+              + " 'f5868be9-7983-4cfa-adf3-2e9f13f2019d'::uuid, null])";
     } else {
       statement +=
-          "('dml1', 'aac68fbe-6847-48b1-8373-110950aeaf3a', [CAST('aac68fbe-6847-48b1-8373-110950aeaf3a' AS UUID)]), "
-              + "('dml2', CAST('aac68fbe-6847-48b1-8373-110950aeaf3a' AS UUID), [CAST('aac68fbe-6847-48b1-8373-110950aeaf3a' AS UUID)]), "
-              + "('dml3', null, null), "
-              + "('dml4', 'aac68fbe-6847-48b1-8373-110950aeaf3a', [CAST('aac68fbe-6847-48b1-8373-110950aeaf3a' AS UUID), CAST('f5868be9-7983-4cfa-adf3-2e9f13f2019d' AS UUID), null])";
+          "('dml1', 'aac68fbe-6847-48b1-8373-110950aeaf3a',"
+              + " [CAST('aac68fbe-6847-48b1-8373-110950aeaf3a' AS UUID)]), ('dml2',"
+              + " CAST('aac68fbe-6847-48b1-8373-110950aeaf3a' AS UUID),"
+              + " [CAST('aac68fbe-6847-48b1-8373-110950aeaf3a' AS UUID)]), ('dml3', null, null),"
+              + " ('dml4', 'aac68fbe-6847-48b1-8373-110950aeaf3a',"
+              + " [CAST('aac68fbe-6847-48b1-8373-110950aeaf3a' AS UUID),"
+              + " CAST('f5868be9-7983-4cfa-adf3-2e9f13f2019d' AS UUID), null])";
     }
     return statement;
   }

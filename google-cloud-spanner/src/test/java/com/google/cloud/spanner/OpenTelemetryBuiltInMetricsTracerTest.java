@@ -78,9 +78,11 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
           .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, "i")
           .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
           .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
-          .build();;
+          .build();
+  ;
   private static Attributes expectedCommonRequestAttributes =
-      Attributes.builder().put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false").build();;
+      Attributes.builder().put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false").build();
+  ;
 
   private static final long MIN_LATENCY = 0;
 
@@ -159,8 +161,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
     Attributes expectedAttributes =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteStreamingSql")
@@ -230,8 +231,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
       long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
       Attributes expectedAttributes =
-          expectedCommonBaseAttributes
-              .toBuilder()
+          expectedCommonBaseAttributes.toBuilder()
               .putAll(expectedCommonRequestAttributes)
               .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
               .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteStreamingSql")
@@ -293,16 +293,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
     Attributes expectedAttributesBeginTransactionOK =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")
             .build();
 
     Attributes expectedAttributesBeginTransactionFailed =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .put(BuiltInMetricsConstant.STATUS_KEY, "UNAVAILABLE")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")
             .build();
@@ -380,8 +378,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
 
     Attributes expectedAttributesCreateSessionOK =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
@@ -391,8 +388,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .build();
 
     Attributes expectedAttributesCreateSessionFailed =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .put(BuiltInMetricsConstant.STATUS_KEY, "UNAVAILABLE")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
             // Include the additional attributes that are added by the HeaderInterceptor in the
@@ -442,8 +438,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
         .run(transaction -> transaction.executeUpdate(UPDATE_RANDOM));
 
     Attributes expectedAttributes =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteSql")

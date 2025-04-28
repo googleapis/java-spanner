@@ -39,6 +39,7 @@ public interface MoveInstanceRequestOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -70,6 +71,7 @@ public interface MoveInstanceRequestOrBuilder
    * @return The targetConfig.
    */
   java.lang.String getTargetConfig();
+
   /**
    *
    *

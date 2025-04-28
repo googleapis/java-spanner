@@ -33,6 +33,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.v1.CommitResponse)
     CommitResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use CommitResponse.newBuilder() to construct.
   private CommitResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -85,6 +86,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      */
     long getMutationCount();
   }
+
   /**
    *
    *
@@ -99,6 +101,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       // @@protoc_insertion_point(message_implements:google.spanner.v1.CommitResponse.CommitStats)
       CommitStatsOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use CommitStats.newBuilder() to construct.
     private CommitStats(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -129,6 +132,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
     public static final int MUTATION_COUNT_FIELD_NUMBER = 1;
     private long mutationCount_ = 0L;
+
     /**
      *
      *
@@ -311,6 +315,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -496,6 +501,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       private int bitField0_;
 
       private long mutationCount_;
+
       /**
        *
        *
@@ -517,6 +523,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       public long getMutationCount() {
         return mutationCount_;
       }
+
       /**
        *
        *
@@ -542,6 +549,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -647,6 +655,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     private MultiplexedSessionRetryCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -679,6 +688,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
   public static final int COMMIT_TIMESTAMP_FIELD_NUMBER = 1;
   private com.google.protobuf.Timestamp commitTimestamp_;
+
   /**
    *
    *
@@ -694,6 +704,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCommitTimestamp() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -711,6 +722,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         ? com.google.protobuf.Timestamp.getDefaultInstance()
         : commitTimestamp_;
   }
+
   /**
    *
    *
@@ -729,6 +741,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
   public static final int COMMIT_STATS_FIELD_NUMBER = 2;
   private com.google.spanner.v1.CommitResponse.CommitStats commitStats_;
+
   /**
    *
    *
@@ -746,6 +759,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCommitStats() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -765,6 +779,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.v1.CommitResponse.CommitStats.getDefaultInstance()
         : commitStats_;
   }
+
   /**
    *
    *
@@ -784,6 +799,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int PRECOMMIT_TOKEN_FIELD_NUMBER = 4;
+
   /**
    *
    *
@@ -800,6 +816,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
   public boolean hasPrecommitToken() {
     return multiplexedSessionRetryCase_ == 4;
   }
+
   /**
    *
    *
@@ -819,6 +836,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1040,6 +1058,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1307,6 +1326,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         commitTimestampBuilder_;
+
     /**
      *
      *
@@ -1321,6 +1341,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCommitTimestamp() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -1341,6 +1362,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         return commitTimestampBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1363,6 +1385,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1382,6 +1405,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1409,6 +1433,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1428,6 +1453,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1442,6 +1468,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getCommitTimestampFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1460,6 +1487,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
             : commitTimestamp_;
       }
     }
+
     /**
      *
      *
@@ -1492,6 +1520,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.CommitResponse.CommitStats.Builder,
             com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder>
         commitStatsBuilder_;
+
     /**
      *
      *
@@ -1508,6 +1537,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCommitStats() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -1530,6 +1560,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         return commitStatsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1554,6 +1585,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1576,6 +1608,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1606,6 +1639,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1627,6 +1661,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1643,6 +1678,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getCommitStatsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1663,6 +1699,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
             : commitStats_;
       }
     }
+
     /**
      *
      *
@@ -1696,6 +1733,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder,
             com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder>
         precommitTokenBuilder_;
+
     /**
      *
      *
@@ -1712,6 +1750,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     public boolean hasPrecommitToken() {
       return multiplexedSessionRetryCase_ == 4;
     }
+
     /**
      *
      *
@@ -1738,6 +1777,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -1761,6 +1801,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       multiplexedSessionRetryCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -1782,6 +1823,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       multiplexedSessionRetryCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -1818,6 +1860,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       multiplexedSessionRetryCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -1844,6 +1887,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1858,6 +1902,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         getPrecommitTokenBuilder() {
       return getPrecommitTokenFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1880,6 +1925,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance();
       }
     }
+
     /**
      *
      *

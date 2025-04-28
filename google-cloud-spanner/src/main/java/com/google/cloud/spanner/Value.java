@@ -220,7 +220,8 @@ public abstract class Value implements Serializable {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.OUT_OF_RANGE,
             String.format(
-                "Max precision for the whole component of a numeric is 29. The requested numeric has a whole component with precision %d",
+                "Max precision for the whole component of a numeric is 29. The requested numeric"
+                    + " has a whole component with precision %d",
                 test.precision() - test.scale()));
       }
     }
@@ -2248,7 +2249,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> T getProtoMessage(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         return (T)
@@ -2298,7 +2300,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> T getProtoMessage(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         return (T) m.toBuilder().mergeFrom(value.toByteArray()).build();
@@ -2943,7 +2946,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         List<T> protoMessagesList = new ArrayList<>(value.size());
@@ -3014,7 +3018,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         List<T> protoMessagesList = new ArrayList<>(value.size());

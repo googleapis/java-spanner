@@ -280,8 +280,7 @@ public class InstanceAdminClientImplTest {
     when(rpc.createInstance(
             "projects/" + PROJECT_ID,
             INSTANCE_ID,
-            getInstanceProto()
-                .toBuilder()
+            getInstanceProto().toBuilder()
                 .setProcessingUnits(0)
                 .setEdition(com.google.spanner.admin.instance.v1.Instance.Edition.ENTERPRISE_PLUS)
                 .build()))

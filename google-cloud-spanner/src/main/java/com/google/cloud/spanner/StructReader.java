@@ -504,7 +504,8 @@ public interface StructReader {
    */
   default List<String> getJsonList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnName name of the column
@@ -514,7 +515,8 @@ public interface StructReader {
    */
   default List<String> getJsonList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnIndex index of the column
@@ -524,7 +526,8 @@ public interface StructReader {
    */
   default List<String> getPgJsonbList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnName name of the column
@@ -534,7 +537,8 @@ public interface StructReader {
    */
   default List<String> getPgJsonbList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * To get the proto message of generic type {@code T} from Struct.

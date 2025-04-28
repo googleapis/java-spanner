@@ -40,6 +40,7 @@ public interface DeleteBackupScheduleRequestOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *

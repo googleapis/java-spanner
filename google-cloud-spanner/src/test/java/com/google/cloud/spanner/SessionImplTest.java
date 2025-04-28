@@ -411,8 +411,7 @@ public class SessionImplTest {
     PartialResultSet resultSet =
         PartialResultSet.newBuilder()
             .setMetadata(
-                newMetadata(Type.struct(Type.StructField.of("C", Type.string())))
-                    .toBuilder()
+                newMetadata(Type.struct(Type.StructField.of("C", Type.string()))).toBuilder()
                     .setTransaction(Transaction.getDefaultInstance()))
             .build();
     mockRead(resultSet);

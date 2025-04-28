@@ -354,7 +354,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       Preconditions.checkNotNull(columns);
       Preconditions.checkArgument(
           isValidKeySet(keySet),
-          "Currently only KeySet.all() and KeySet.singleKey(Key.of()) are supported for read statements");
+          "Currently only KeySet.all() and KeySet.singleKey(Key.of()) are supported for read"
+              + " statements");
       StringBuilder builder = new StringBuilder("SELECT ");
       boolean first = true;
       for (String col : columns) {
@@ -578,6 +579,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   private final Random random = new Random();
   private double abortProbability = 0.0010D;
+
   /**
    * Flip this switch to true if you want the {@link SessionPool#DETERMINE_DIALECT_STATEMENT}
    * statement to be included in the recorded requests on the mock server. It is ignored by default
@@ -728,7 +730,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           .withDescription(
               String.format(
                   "There is no result registered for the statement: %s\n"
-                      + "Call TestSpannerImpl#addStatementResult(StatementResult) before executing the statement.",
+                      + "Call TestSpannerImpl#addStatementResult(StatementResult) before executing"
+                      + " the statement.",
                   statement.toString()))
           .asRuntimeException();
     }
@@ -1093,8 +1096,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     ResultSetMetadata metadata = resultSet.getMetadata();
     if (transactionId != null) {
       metadata =
-          metadata
-              .toBuilder()
+          metadata.toBuilder()
               .setTransaction(
                   ignoreInlineBeginRequest.get()
                       ? Transaction.getDefaultInstance()
@@ -1132,7 +1134,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       if (isPartitionedDmlTransaction(transactionId)) {
         throw Status.FAILED_PRECONDITION
             .withDescription(
-                "This transaction is a partitioned DML transaction and cannot be used for batch DML updates.")
+                "This transaction is a partitioned DML transaction and cannot be used for batch DML"
+                    + " updates.")
             .asRuntimeException();
       }
       simulateAbort(session, transactionId);
@@ -1761,8 +1764,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       metadata = metadata.toBuilder().setTransaction(transaction).build();
     } else {
       metadata =
-          metadata
-              .toBuilder()
+          metadata.toBuilder()
               .setTransaction(
                   ignoreInlineBeginRequest.get()
                       ? Transaction.getDefaultInstance()
@@ -2037,7 +2039,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           throw Status.FAILED_PRECONDITION
               .withDescription(
                   String.format(
-                      "This transaction has been invalidated by a later transaction in the same session.\nTransaction id: "
+                      "This transaction has been invalidated by a later transaction in the same"
+                          + " session.\n"
+                          + "Transaction id: "
                           + id
                           + "\nExpected: "
                           + counter.get(),

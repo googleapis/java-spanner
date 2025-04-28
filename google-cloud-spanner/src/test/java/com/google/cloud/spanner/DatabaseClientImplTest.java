@@ -251,9 +251,7 @@ public class DatabaseClientImplTest {
             .build()
             .getService();
     spannerWithEmptySessionPool =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder().setMinSessions(0).setFailOnSessionLeak().build())
             .build()
@@ -1645,9 +1643,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testExecuteQuery_withDirectedReadOptionsViaSpannerOptions() {
     Spanner spannerWithDirectedReadOptions =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
@@ -1668,9 +1664,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testExecuteQuery_whenMultipleDirectedReadsOptions_preferRequestOption() {
     Spanner spannerWithDirectedReadOptions =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
@@ -1806,9 +1800,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testExecuteReadWithDirectedReadOptionsViaSpannerOptions() {
     Spanner spannerWithDirectedReadOptions =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
@@ -1830,9 +1822,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testReadWriteExecuteQueryWithDirectedReadOptionsViaSpannerOptions() {
     Spanner spannerWithDirectedReadOptions =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
@@ -4350,9 +4340,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testGetDialectDefaultPreloaded() {
     try (Spanner spanner =
-        this.spanner
-            .getOptions()
-            .toBuilder()
+        this.spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
             .build()
@@ -4380,9 +4368,7 @@ public class DatabaseClientImplTest {
   public void testGetDialectPostgreSQLPreloaded() {
     mockSpanner.putStatementResult(StatementResult.detectDialectResult(Dialect.POSTGRESQL));
     try (Spanner spanner =
-        this.spanner
-            .getOptions()
-            .toBuilder()
+        this.spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
             .build()
@@ -4421,9 +4407,7 @@ public class DatabaseClientImplTest {
     mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     try (Spanner spanner =
-        this.spanner
-            .getOptions()
-            .toBuilder()
+        this.spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
             .build()
@@ -4863,7 +4847,9 @@ public class DatabaseClientImplTest {
       // There are no rows, but we need to call resultSet.next() before we can get the metadata.
       assertFalse(resultSet.next());
       assertEquals(
-          "STRUCT<c1 UNRECOGNIZED, c2 STRING<UNRECOGNIZED>, c3 UNRECOGNIZED<PG_NUMERIC>, c4 ARRAY<UNRECOGNIZED>, c5 ARRAY<STRING<UNRECOGNIZED>>, c6 UNRECOGNIZED<UNRECOGNIZED>, c7 ARRAY<UNRECOGNIZED<PG_NUMERIC>>>",
+          "STRUCT<c1 UNRECOGNIZED, c2 STRING<UNRECOGNIZED>, c3 UNRECOGNIZED<PG_NUMERIC>, c4"
+              + " ARRAY<UNRECOGNIZED>, c5 ARRAY<STRING<UNRECOGNIZED>>, c6"
+              + " UNRECOGNIZED<UNRECOGNIZED>, c7 ARRAY<UNRECOGNIZED<PG_NUMERIC>>>",
           resultSet.getType().toString());
       assertEquals(
           "UNRECOGNIZED", resultSet.getType().getStructFields().get(0).getType().toString());
@@ -4979,11 +4965,19 @@ public class DatabaseClientImplTest {
         client
             .getStatementFactory()
             .withUnnamedParameters(
-                "# comment about ? in the statement\nselect id from test\n /* This is a ? comment \n about ? */ \n where b=? # this is a inline command about ?",
+                "# comment about ? in the statement\n"
+                    + "select id from test\n"
+                    + " /* This is a ? comment \n"
+                    + " about ? */ \n"
+                    + " where b=? # this is a inline command about ?",
                 true);
     Statement generatedStatement =
         Statement.newBuilder(
-                "# comment about ? in the statement\nselect id from test\n /* This is a ? comment \n about ? */ \n where b=@p1 # this is a inline command about ?")
+                "# comment about ? in the statement\n"
+                    + "select id from test\n"
+                    + " /* This is a ? comment \n"
+                    + " about ? */ \n"
+                    + " where b=@p1 # this is a inline command about ?")
             .bind("p1")
             .to(true)
             .build();

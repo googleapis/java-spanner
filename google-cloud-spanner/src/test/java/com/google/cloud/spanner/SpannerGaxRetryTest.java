@@ -151,8 +151,7 @@ public class SpannerGaxRetryTest {
     // wait time is for multiplexed sessions
     if (sessionPoolOptions.getUseMultiplexedSession()) {
       sessionPoolOptions =
-          sessionPoolOptions
-              .toBuilder()
+          sessionPoolOptions.toBuilder()
               .setWaitForMinSessionsDuration(Duration.ofSeconds(5))
               .build();
     }

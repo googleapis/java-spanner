@@ -36,6 +36,7 @@ public interface OptimizeRestoredDatabaseMetadataOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface OptimizeRestoredDatabaseMetadataOrBuilder
    * @return Whether the progress field is set.
    */
   boolean hasProgress();
+
   /**
    *
    *
@@ -73,6 +75,7 @@ public interface OptimizeRestoredDatabaseMetadataOrBuilder
    * @return The progress.
    */
   com.google.spanner.admin.database.v1.OperationProgress getProgress();
+
   /**
    *
    *

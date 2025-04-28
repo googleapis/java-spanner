@@ -34,6 +34,7 @@ public interface ValueListOrBuilder
    * <code>repeated .google.spanner.executor.v1.Value value = 1;</code>
    */
   java.util.List<com.google.spanner.executor.v1.Value> getValueList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface ValueListOrBuilder
    * <code>repeated .google.spanner.executor.v1.Value value = 1;</code>
    */
   com.google.spanner.executor.v1.Value getValue(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface ValueListOrBuilder
    * <code>repeated .google.spanner.executor.v1.Value value = 1;</code>
    */
   int getValueCount();
+
   /**
    *
    *
@@ -64,6 +67,7 @@ public interface ValueListOrBuilder
    * <code>repeated .google.spanner.executor.v1.Value value = 1;</code>
    */
   java.util.List<? extends com.google.spanner.executor.v1.ValueOrBuilder> getValueOrBuilderList();
+
   /**
    *
    *

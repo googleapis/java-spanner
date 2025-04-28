@@ -137,7 +137,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       }
       txn =
           session.newTransaction(
-              options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
+              options, /* previousTransactionId= */ multiplexedSessionPreviousTransactionId);
       if (!useInlinedBegin) {
         txn.ensureTxn();
       }

@@ -91,6 +91,7 @@ class AsyncResultSetImpl extends ForwardingStructReader
 
   private final BlockingDeque<Struct> buffer;
   private Struct currentRow;
+
   /** Supplies the underlying synchronous {@link ResultSet} that will be producing the rows. */
   private final Supplier<ResultSet> delegateResultSet;
 
@@ -137,11 +138,13 @@ class AsyncResultSetImpl extends ForwardingStructReader
    * production of rows that are put into the buffer is only paused once the buffer is full.
    */
   private volatile CountDownLatch pausedLatch = new CountDownLatch(1);
+
   /**
    * This variable is used to pause the producer when the buffer is full and the consumer needs some
    * time to catch up.
    */
   private volatile CountDownLatch bufferConsumptionLatch = new CountDownLatch(0);
+
   /**
    * This variable is used to pause the producer when all rows have been put into the buffer, but
    * the consumer (the callback) has not yet received and processed all rows.

@@ -38,6 +38,7 @@ public interface CreateSessionRequestOrBuilder
    * @return The database.
    */
   java.lang.String getDatabase();
+
   /**
    *
    *
@@ -65,6 +66,7 @@ public interface CreateSessionRequestOrBuilder
    * @return Whether the session field is set.
    */
   boolean hasSession();
+
   /**
    *
    *
@@ -77,6 +79,7 @@ public interface CreateSessionRequestOrBuilder
    * @return The session.
    */
   com.google.spanner.v1.Session getSession();
+
   /**
    *
    *

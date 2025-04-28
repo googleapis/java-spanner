@@ -36,6 +36,7 @@ public interface DmlActionOrBuilder
    * @return Whether the update field is set.
    */
   boolean hasUpdate();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface DmlActionOrBuilder
    * @return The update.
    */
   com.google.spanner.executor.v1.QueryAction getUpdate();
+
   /**
    *
    *
@@ -72,6 +74,7 @@ public interface DmlActionOrBuilder
    * @return Whether the autocommitIfSupported field is set.
    */
   boolean hasAutocommitIfSupported();
+
   /**
    *
    *

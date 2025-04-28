@@ -39,16 +39,23 @@ public class IntegrationTestEnvTest {
         isRetryableResourceExhaustedException(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.RESOURCE_EXHAUSTED,
-                "Operation with name \"projects/my-project/instances/my-instance/operations/32bb3dccf4243afc\" failed with status = GrpcStatusCode{transportCode=RESOURCE_EXHAUSTED} and message = Project 123 cannot add 1 nodes in region .")));
+                "Operation with name"
+                    + " \"projects/my-project/instances/my-instance/operations/32bb3dccf4243afc\""
+                    + " failed with status = GrpcStatusCode{transportCode=RESOURCE_EXHAUSTED} and"
+                    + " message = Project 123 cannot add 1 nodes in region .")));
     assertTrue(
         isRetryableResourceExhaustedException(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.RESOURCE_EXHAUSTED,
-                "Operation with name \"projects/my-project/instances/my-instance/operations/32bb3dccf4243afc\" failed with status = GrpcStatusCode{transportCode=RESOURCE_EXHAUSTED} and message = Project 123 cannot add 99 nodes in region .")));
+                "Operation with name"
+                    + " \"projects/my-project/instances/my-instance/operations/32bb3dccf4243afc\""
+                    + " failed with status = GrpcStatusCode{transportCode=RESOURCE_EXHAUSTED} and"
+                    + " message = Project 123 cannot add 99 nodes in region .")));
     assertTrue(
         isRetryableResourceExhaustedException(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.RESOURCE_EXHAUSTED,
-                "Could not create instance. Quota exceeded for quota metric 'Instance create requests' and limit 'Instance create requests per minute'")));
+                "Could not create instance. Quota exceeded for quota metric 'Instance create"
+                    + " requests' and limit 'Instance create requests per minute'")));
   }
 }

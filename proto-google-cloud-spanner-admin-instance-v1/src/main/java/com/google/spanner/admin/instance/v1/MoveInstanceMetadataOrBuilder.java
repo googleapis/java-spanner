@@ -37,6 +37,7 @@ public interface MoveInstanceMetadataOrBuilder
    * @return The targetConfig.
    */
   java.lang.String getTargetConfig();
+
   /**
    *
    *
@@ -67,6 +68,7 @@ public interface MoveInstanceMetadataOrBuilder
    * @return Whether the progress field is set.
    */
   boolean hasProgress();
+
   /**
    *
    *
@@ -83,6 +85,7 @@ public interface MoveInstanceMetadataOrBuilder
    * @return The progress.
    */
   com.google.spanner.admin.instance.v1.OperationProgress getProgress();
+
   /**
    *
    *
@@ -110,6 +113,7 @@ public interface MoveInstanceMetadataOrBuilder
    * @return Whether the cancelTime field is set.
    */
   boolean hasCancelTime();
+
   /**
    *
    *
@@ -122,6 +126,7 @@ public interface MoveInstanceMetadataOrBuilder
    * @return The cancelTime.
    */
   com.google.protobuf.Timestamp getCancelTime();
+
   /**
    *
    *

@@ -166,7 +166,9 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
                 // TODO: Add the link of public documentation when available in the log message.
                 msg +=
                     String.format(
-                        " Need monitoring metric writer permission on project=%s. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions",
+                        " Need monitoring metric writer permission on project=%s. Follow"
+                            + " https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics"
+                            + " to set up permissions",
                         projectName.getProject());
               }
               logger.log(Level.WARNING, msg, throwable);

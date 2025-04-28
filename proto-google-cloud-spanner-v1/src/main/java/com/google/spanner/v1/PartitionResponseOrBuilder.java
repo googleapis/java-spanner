@@ -34,6 +34,7 @@ public interface PartitionResponseOrBuilder
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
   java.util.List<com.google.spanner.v1.Partition> getPartitionsList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface PartitionResponseOrBuilder
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
   com.google.spanner.v1.Partition getPartitions(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface PartitionResponseOrBuilder
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
   int getPartitionsCount();
+
   /**
    *
    *
@@ -64,6 +67,7 @@ public interface PartitionResponseOrBuilder
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
   java.util.List<? extends com.google.spanner.v1.PartitionOrBuilder> getPartitionsOrBuilderList();
+
   /**
    *
    *
@@ -87,6 +91,7 @@ public interface PartitionResponseOrBuilder
    * @return Whether the transaction field is set.
    */
   boolean hasTransaction();
+
   /**
    *
    *
@@ -99,6 +104,7 @@ public interface PartitionResponseOrBuilder
    * @return The transaction.
    */
   com.google.spanner.v1.Transaction getTransaction();
+
   /**
    *
    *

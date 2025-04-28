@@ -190,8 +190,7 @@ public class IntegrationTestEnv extends ExternalResource {
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .build();
     SpannerOptions.enableOpenTelemetryTraces();
-    return options
-        .toBuilder()
+    return options.toBuilder()
         .setOpenTelemetry(openTelemetry)
         .setEnableEndToEndTracing(true)
         .build();
@@ -284,7 +283,8 @@ public class IntegrationTestEnv extends ExternalResource {
     return exception
             .getMessage()
             .contains(
-                "Quota exceeded for quota metric 'Instance create requests' and limit 'Instance create requests per minute'")
+                "Quota exceeded for quota metric 'Instance create requests' and limit 'Instance"
+                    + " create requests per minute'")
         || exception.getMessage().matches(".*cannot add \\d+ nodes in region.*");
   }
 

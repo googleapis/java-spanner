@@ -40,6 +40,7 @@ public interface CreateInstancePartitionRequestOrBuilder
    * @return The parent.
    */
   java.lang.String getParent();
+
   /**
    *
    *
@@ -71,6 +72,7 @@ public interface CreateInstancePartitionRequestOrBuilder
    * @return The instancePartitionId.
    */
   java.lang.String getInstancePartitionId();
+
   /**
    *
    *
@@ -102,6 +104,7 @@ public interface CreateInstancePartitionRequestOrBuilder
    * @return Whether the instancePartition field is set.
    */
   boolean hasInstancePartition();
+
   /**
    *
    *
@@ -118,6 +121,7 @@ public interface CreateInstancePartitionRequestOrBuilder
    * @return The instancePartition.
    */
   com.google.spanner.admin.instance.v1.InstancePartition getInstancePartition();
+
   /**
    *
    *

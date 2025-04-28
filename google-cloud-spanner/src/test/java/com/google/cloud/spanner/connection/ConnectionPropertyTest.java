@@ -37,15 +37,15 @@ public class ConnectionPropertyTest {
 
   @Test
   public void testCreateKey() {
-    assertEquals("my_property", createKey(/* extension = */ null, "my_property"));
-    assertEquals("my_property", createKey(/* extension = */ null, "My_Property"));
-    assertEquals("my_property", createKey(/* extension = */ null, "MY_PROPERTY"));
+    assertEquals("my_property", createKey(/* extension= */ null, "my_property"));
+    assertEquals("my_property", createKey(/* extension= */ null, "My_Property"));
+    assertEquals("my_property", createKey(/* extension= */ null, "MY_PROPERTY"));
     assertEquals("my_extension.my_property", createKey("my_extension", "my_property"));
     assertEquals("my_extension.my_property", createKey("My_Extension", "My_Property"));
     assertEquals("my_extension.my_property", createKey("MY_EXTENSION", "MY_PROPERTY"));
 
     //noinspection DataFlowIssue
-    assertThrows(SpannerException.class, () -> createKey("my_extension", /* name = */ null));
+    assertThrows(SpannerException.class, () -> createKey("my_extension", /* name= */ null));
     assertThrows(SpannerException.class, () -> createKey("my_extension", ""));
   }
 
@@ -86,7 +86,7 @@ public class ConnectionPropertyTest {
   public void testEquals() {
     ConnectionProperty<String> property1 =
         new ConnectionProperty<>(
-            /* extension = */ null,
+            /* extension= */ null,
             "my_property",
             "Description of property1",
             "default_value_1",
@@ -95,7 +95,7 @@ public class ConnectionPropertyTest {
             Context.STARTUP);
     ConnectionProperty<String> property2 =
         new ConnectionProperty<>(
-            /* extension = */ null,
+            /* extension= */ null,
             "my_property",
             "Description of property2",
             "default_value_2",
@@ -122,7 +122,7 @@ public class ConnectionPropertyTest {
             Context.USER);
     ConnectionProperty<String> property5 =
         new ConnectionProperty<>(
-            /* extension = */ null,
+            /* extension= */ null,
             "my_other_property",
             "Description of property5",
             "default_value_5",
@@ -140,7 +140,7 @@ public class ConnectionPropertyTest {
             Context.STARTUP);
     ConnectionProperty<String> property7 =
         new ConnectionProperty<>(
-            /* extension = */ null,
+            /* extension= */ null,
             "MY_PROPERTY",
             "Description of property7",
             "default_value_7",
