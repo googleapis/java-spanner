@@ -82,6 +82,7 @@ final class AsyncTransactionManagerImpl
   @Override
   public TransactionContextFutureImpl beginAsync(AbortedException exception) {
     Preconditions.checkState(txn == null, "begin can only be called once");
+    Preconditions.checkNotNull(exception, "AbortedException from the previous attempt is required");
     ByteString abortedTransactionId =
         exception.getTransactionID() != null ? exception.getTransactionID() : ByteString.EMPTY;
     return new TransactionContextFutureImpl(this, internalBeginAsync(true, abortedTransactionId));
