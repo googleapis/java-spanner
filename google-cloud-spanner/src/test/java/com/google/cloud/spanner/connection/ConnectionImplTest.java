@@ -46,6 +46,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.BatchTransactionId;
@@ -118,6 +119,11 @@ public class ConnectionImplTest {
     public TransactionContext begin() {
       state = TransactionState.STARTED;
       return txContext;
+    }
+
+    @Override
+    public TransactionContext begin(AbortedException exception) {
+      return begin();
     }
 
     @Override

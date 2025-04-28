@@ -900,6 +900,13 @@ class SessionPool {
       return internalBegin();
     }
 
+    @Override
+    public TransactionContext begin(AbortedException exception) {
+      // For regular sessions, the input exception is ignored and the behavior is equivalent to
+      // calling {@link #begin()}.
+      return begin();
+    }
+
     private TransactionContext internalBegin() {
       TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
       session.get().markUsed();

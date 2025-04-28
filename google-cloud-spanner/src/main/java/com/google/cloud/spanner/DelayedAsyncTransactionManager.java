@@ -51,6 +51,11 @@ public class DelayedAsyncTransactionManager implements AsyncTransactionManager {
   }
 
   @Override
+  public TransactionContextFuture beginAsync(AbortedException exception) {
+    return getAsyncTransactionManager().beginAsync(exception);
+  }
+
+  @Override
   public ApiFuture<Void> rollbackAsync() {
     return getAsyncTransactionManager().rollbackAsync();
   }
