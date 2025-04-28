@@ -4580,6 +4580,7 @@ public class DatabaseClientImplTest {
             resultSet,
             col++);
         assertAsString("2023-01-11", resultSet, col++);
+        assertAsString("b1153a48-cd31-498e-b770-f554bce48e05", resultSet, col++);
         assertAsString("2023-01-11T11:55:18.123456789Z", resultSet, col++);
         if (dialect == Dialect.POSTGRESQL) {
           // Check PG_OID value
@@ -4621,6 +4622,13 @@ public class DatabaseClientImplTest {
             resultSet,
             col++);
         assertAsString(ImmutableList.of("2000-02-29", "NULL", "2000-01-01"), resultSet, col++);
+        assertAsString(
+            ImmutableList.of(
+                "b1153a48-cd31-498e-b770-f554bce48e05",
+                "NULL",
+                "11546309-8b37-4366-9a20-369381c7803a"),
+            resultSet,
+            col++);
         assertAsString(
             ImmutableList.of("2023-01-11T11:55:18.123456789Z", "NULL", "2023-01-12T11:55:18Z"),
             resultSet,
@@ -5305,6 +5313,10 @@ public class DatabaseClientImplTest {
             .addValues(com.google.protobuf.Value.newBuilder().setStringValue("2023-01-11").build())
             .addValues(
                 com.google.protobuf.Value.newBuilder()
+                    .setStringValue("b1153a48-cd31-498e-b770-f554bce48e05")
+                    .build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
                     .setStringValue("2023-01-11T11:55:18.123456789Z")
                     .build());
     if (dialect == Dialect.POSTGRESQL) {
@@ -5465,6 +5477,23 @@ public class DatabaseClientImplTest {
                         .addValues(
                             com.google.protobuf.Value.newBuilder()
                                 .setStringValue("2000-01-01")
+                                .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("b1153a48-cd31-498e-b770-f554bce48e05")
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("11546309-8b37-4366-9a20-369381c7803a")
                                 .build())
                         .build()))
         .addValues(
