@@ -237,6 +237,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       if (this.setPrecommitToken) {
         builder.setPrecommitToken(getPartialResultSetPrecommitToken(this.transactionId));
       }
+      builder.setLast(!hasNext);
       return builder.build();
     }
 
