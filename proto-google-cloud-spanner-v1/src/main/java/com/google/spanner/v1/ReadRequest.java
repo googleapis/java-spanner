@@ -34,6 +34,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.v1.ReadRequest)
     ReadRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ReadRequest.newBuilder() to construct.
   private ReadRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -131,6 +132,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>ORDER_BY_UNSPECIFIED = 0;</code>
      */
     public static final int ORDER_BY_UNSPECIFIED_VALUE = 0;
+
     /**
      *
      *
@@ -144,6 +146,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>ORDER_BY_PRIMARY_KEY = 1;</code>
      */
     public static final int ORDER_BY_PRIMARY_KEY_VALUE = 1;
+
     /**
      *
      *
@@ -329,6 +332,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>LOCK_HINT_UNSPECIFIED = 0;</code>
      */
     public static final int LOCK_HINT_UNSPECIFIED_VALUE = 0;
+
     /**
      *
      *
@@ -347,6 +351,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>LOCK_HINT_SHARED = 1;</code>
      */
     public static final int LOCK_HINT_SHARED_VALUE = 1;
+
     /**
      *
      *
@@ -472,6 +477,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object session_ = "";
+
   /**
    *
    *
@@ -497,6 +503,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       return s;
     }
   }
+
   /**
    *
    *
@@ -525,6 +532,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int TRANSACTION_FIELD_NUMBER = 2;
   private com.google.spanner.v1.TransactionSelector transaction_;
+
   /**
    *
    *
@@ -541,6 +549,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public boolean hasTransaction() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -559,6 +568,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
         : transaction_;
   }
+
   /**
    *
    *
@@ -580,6 +590,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object table_ = "";
+
   /**
    *
    *
@@ -603,6 +614,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       return s;
     }
   }
+
   /**
    *
    *
@@ -631,6 +643,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object index_ = "";
+
   /**
    *
    *
@@ -659,6 +672,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       return s;
     }
   }
+
   /**
    *
    *
@@ -693,6 +707,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList columns_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -708,6 +723,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public com.google.protobuf.ProtocolStringList getColumnsList() {
     return columns_;
   }
+
   /**
    *
    *
@@ -723,6 +739,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public int getColumnsCount() {
     return columns_.size();
   }
+
   /**
    *
    *
@@ -739,6 +756,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public java.lang.String getColumns(int index) {
     return columns_.get(index);
   }
+
   /**
    *
    *
@@ -758,6 +776,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int KEY_SET_FIELD_NUMBER = 6;
   private com.google.spanner.v1.KeySet keySet_;
+
   /**
    *
    *
@@ -788,6 +807,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public boolean hasKeySet() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -818,6 +838,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public com.google.spanner.v1.KeySet getKeySet() {
     return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
   }
+
   /**
    *
    *
@@ -849,6 +870,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int LIMIT_FIELD_NUMBER = 8;
   private long limit_ = 0L;
+
   /**
    *
    *
@@ -869,6 +891,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int RESUME_TOKEN_FIELD_NUMBER = 9;
   private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -892,6 +915,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int PARTITION_TOKEN_FIELD_NUMBER = 10;
   private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -913,6 +937,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int REQUEST_OPTIONS_FIELD_NUMBER = 11;
   private com.google.spanner.v1.RequestOptions requestOptions_;
+
   /**
    *
    *
@@ -928,6 +953,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public boolean hasRequestOptions() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -945,6 +971,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
         : requestOptions_;
   }
+
   /**
    *
    *
@@ -963,6 +990,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int DIRECTED_READ_OPTIONS_FIELD_NUMBER = 14;
   private com.google.spanner.v1.DirectedReadOptions directedReadOptions_;
+
   /**
    *
    *
@@ -978,6 +1006,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public boolean hasDirectedReadOptions() {
     return ((bitField0_ & 0x00000008) != 0);
   }
+
   /**
    *
    *
@@ -995,6 +1024,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.v1.DirectedReadOptions.getDefaultInstance()
         : directedReadOptions_;
   }
+
   /**
    *
    *
@@ -1013,6 +1043,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int DATA_BOOST_ENABLED_FIELD_NUMBER = 15;
   private boolean dataBoostEnabled_ = false;
+
   /**
    *
    *
@@ -1035,6 +1066,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int ORDER_BY_FIELD_NUMBER = 16;
   private int orderBy_ = 0;
+
   /**
    *
    *
@@ -1058,6 +1090,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public int getOrderByValue() {
     return orderBy_;
   }
+
   /**
    *
    *
@@ -1086,6 +1119,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   public static final int LOCK_HINT_FIELD_NUMBER = 17;
   private int lockHint_ = 0;
+
   /**
    *
    *
@@ -1104,6 +1138,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   public int getLockHintValue() {
     return lockHint_;
   }
+
   /**
    *
    *
@@ -1427,6 +1462,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1832,6 +1868,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     private int bitField0_;
 
     private java.lang.Object session_ = "";
+
     /**
      *
      *
@@ -1856,6 +1893,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1880,6 +1918,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1903,6 +1942,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1922,6 +1962,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1953,6 +1994,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.TransactionSelector.Builder,
             com.google.spanner.v1.TransactionSelectorOrBuilder>
         transactionBuilder_;
+
     /**
      *
      *
@@ -1968,6 +2010,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public boolean hasTransaction() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -1989,6 +2032,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return transactionBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -2012,6 +2056,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2033,6 +2078,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2061,6 +2107,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -2081,6 +2128,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2096,6 +2144,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2115,6 +2164,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             : transaction_;
       }
     }
+
     /**
      *
      *
@@ -2143,6 +2193,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private java.lang.Object table_ = "";
+
     /**
      *
      *
@@ -2165,6 +2216,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -2187,6 +2239,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -2208,6 +2261,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2225,6 +2279,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2249,6 +2304,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private java.lang.Object index_ = "";
+
     /**
      *
      *
@@ -2276,6 +2332,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -2303,6 +2360,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -2329,6 +2387,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2351,6 +2410,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2388,6 +2448,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       bitField0_ |= 0x00000010;
     }
+
     /**
      *
      *
@@ -2404,6 +2465,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       columns_.makeImmutable();
       return columns_;
     }
+
     /**
      *
      *
@@ -2419,6 +2481,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public int getColumnsCount() {
       return columns_.size();
     }
+
     /**
      *
      *
@@ -2435,6 +2498,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public java.lang.String getColumns(int index) {
       return columns_.get(index);
     }
+
     /**
      *
      *
@@ -2451,6 +2515,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ByteString getColumnsBytes(int index) {
       return columns_.getByteString(index);
     }
+
     /**
      *
      *
@@ -2475,6 +2540,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2498,6 +2564,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2518,6 +2585,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2537,6 +2605,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2568,6 +2637,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.KeySet.Builder,
             com.google.spanner.v1.KeySetOrBuilder>
         keySetBuilder_;
+
     /**
      *
      *
@@ -2597,6 +2667,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public boolean hasKeySet() {
       return ((bitField0_ & 0x00000020) != 0);
     }
+
     /**
      *
      *
@@ -2630,6 +2701,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return keySetBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -2667,6 +2739,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2701,6 +2774,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2743,6 +2817,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -2777,6 +2852,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2806,6 +2882,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getKeySetFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2837,6 +2914,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
       }
     }
+
     /**
      *
      *
@@ -2879,6 +2957,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private long limit_;
+
     /**
      *
      *
@@ -2896,6 +2975,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public long getLimit() {
       return limit_;
     }
+
     /**
      *
      *
@@ -2917,6 +2997,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2938,6 +3019,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -2958,6 +3040,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ByteString getResumeToken() {
       return resumeToken_;
     }
+
     /**
      *
      *
@@ -2984,6 +3067,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3008,6 +3092,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -3026,6 +3111,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ByteString getPartitionToken() {
       return partitionToken_;
     }
+
     /**
      *
      *
@@ -3050,6 +3136,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3077,6 +3164,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.RequestOptions.Builder,
             com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
+
     /**
      *
      *
@@ -3091,6 +3179,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public boolean hasRequestOptions() {
       return ((bitField0_ & 0x00000200) != 0);
     }
+
     /**
      *
      *
@@ -3111,6 +3200,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return requestOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3133,6 +3223,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3152,6 +3243,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3179,6 +3271,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3198,6 +3291,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3212,6 +3306,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3230,6 +3325,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             : requestOptions_;
       }
     }
+
     /**
      *
      *
@@ -3262,6 +3358,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.DirectedReadOptions.Builder,
             com.google.spanner.v1.DirectedReadOptionsOrBuilder>
         directedReadOptionsBuilder_;
+
     /**
      *
      *
@@ -3276,6 +3373,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public boolean hasDirectedReadOptions() {
       return ((bitField0_ & 0x00000400) != 0);
     }
+
     /**
      *
      *
@@ -3296,6 +3394,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         return directedReadOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3318,6 +3417,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3338,6 +3438,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3366,6 +3467,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3385,6 +3487,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3399,6 +3502,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getDirectedReadOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3417,6 +3521,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             : directedReadOptions_;
       }
     }
+
     /**
      *
      *
@@ -3444,6 +3549,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private boolean dataBoostEnabled_;
+
     /**
      *
      *
@@ -3463,6 +3569,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public boolean getDataBoostEnabled() {
       return dataBoostEnabled_;
     }
+
     /**
      *
      *
@@ -3486,6 +3593,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3509,6 +3617,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private int orderBy_ = 0;
+
     /**
      *
      *
@@ -3532,6 +3641,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public int getOrderByValue() {
       return orderBy_;
     }
+
     /**
      *
      *
@@ -3558,6 +3668,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3583,6 +3694,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
           com.google.spanner.v1.ReadRequest.OrderBy.forNumber(orderBy_);
       return result == null ? com.google.spanner.v1.ReadRequest.OrderBy.UNRECOGNIZED : result;
     }
+
     /**
      *
      *
@@ -3612,6 +3724,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3639,6 +3752,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private int lockHint_ = 0;
+
     /**
      *
      *
@@ -3657,6 +3771,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public int getLockHintValue() {
       return lockHint_;
     }
+
     /**
      *
      *
@@ -3678,6 +3793,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3698,6 +3814,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
           com.google.spanner.v1.ReadRequest.LockHint.forNumber(lockHint_);
       return result == null ? com.google.spanner.v1.ReadRequest.LockHint.UNRECOGNIZED : result;
     }
+
     /**
      *
      *
@@ -3722,6 +3839,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *

@@ -38,6 +38,7 @@ public interface ListDatabaseOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   java.util.List<com.google.longrunning.Operation> getOperationsList();
+
   /**
    *
    *
@@ -52,6 +53,7 @@ public interface ListDatabaseOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   com.google.longrunning.Operation getOperations(int index);
+
   /**
    *
    *
@@ -66,6 +68,7 @@ public interface ListDatabaseOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   int getOperationsCount();
+
   /**
    *
    *
@@ -80,6 +83,7 @@ public interface ListDatabaseOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   java.util.List<? extends com.google.longrunning.OperationOrBuilder> getOperationsOrBuilderList();
+
   /**
    *
    *
@@ -109,6 +113,7 @@ public interface ListDatabaseOperationsResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *

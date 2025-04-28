@@ -33,6 +33,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.DmlAction)
     DmlActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use DmlAction.newBuilder() to construct.
   private DmlAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -64,6 +65,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
   private int bitField0_;
   public static final int UPDATE_FIELD_NUMBER = 1;
   private com.google.spanner.executor.v1.QueryAction update_;
+
   /**
    *
    *
@@ -79,6 +81,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasUpdate() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -96,6 +99,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.executor.v1.QueryAction.getDefaultInstance()
         : update_;
   }
+
   /**
    *
    *
@@ -114,6 +118,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
 
   public static final int AUTOCOMMIT_IF_SUPPORTED_FIELD_NUMBER = 2;
   private boolean autocommitIfSupported_ = false;
+
   /**
    *
    *
@@ -130,6 +135,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasAutocommitIfSupported() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -324,6 +330,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -540,6 +547,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.QueryAction.Builder,
             com.google.spanner.executor.v1.QueryActionOrBuilder>
         updateBuilder_;
+
     /**
      *
      *
@@ -554,6 +562,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasUpdate() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -574,6 +583,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
         return updateBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -596,6 +606,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -615,6 +626,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -642,6 +654,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -661,6 +674,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -675,6 +689,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getUpdateFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -693,6 +708,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
             : update_;
       }
     }
+
     /**
      *
      *
@@ -720,6 +736,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
     }
 
     private boolean autocommitIfSupported_;
+
     /**
      *
      *
@@ -736,6 +753,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasAutocommitIfSupported() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -752,6 +770,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
     public boolean getAutocommitIfSupported() {
       return autocommitIfSupported_;
     }
+
     /**
      *
      *
@@ -772,6 +791,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *

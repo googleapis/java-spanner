@@ -36,6 +36,7 @@ public interface ListCloudDatabaseOperationsActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -62,6 +63,7 @@ public interface ListCloudDatabaseOperationsActionOrBuilder
    * @return The instanceId.
    */
   java.lang.String getInstanceId();
+
   /**
    *
    *
@@ -93,6 +95,7 @@ public interface ListCloudDatabaseOperationsActionOrBuilder
    * @return The filter.
    */
   java.lang.String getFilter();
+
   /**
    *
    *
@@ -139,6 +142,7 @@ public interface ListCloudDatabaseOperationsActionOrBuilder
    * @return The pageToken.
    */
   java.lang.String getPageToken();
+
   /**
    *
    *

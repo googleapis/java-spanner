@@ -33,6 +33,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.UpdateCloudInstanceAction)
     UpdateCloudInstanceActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use UpdateCloudInstanceAction.newBuilder() to construct.
   private UpdateCloudInstanceAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -82,6 +83,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object instanceId_ = "";
+
   /**
    *
    *
@@ -105,6 +107,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       return s;
     }
   }
+
   /**
    *
    *
@@ -133,6 +136,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object projectId_ = "";
+
   /**
    *
    *
@@ -156,6 +160,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       return s;
     }
   }
+
   /**
    *
    *
@@ -184,6 +189,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object displayName_ = "";
+
   /**
    *
    *
@@ -200,6 +206,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
   public boolean hasDisplayName() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -224,6 +231,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       return s;
     }
   }
+
   /**
    *
    *
@@ -251,6 +259,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
 
   public static final int NODE_COUNT_FIELD_NUMBER = 4;
   private int nodeCount_ = 0;
+
   /**
    *
    *
@@ -267,6 +276,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
   public boolean hasNodeCount() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -286,6 +296,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
 
   public static final int PROCESSING_UNITS_FIELD_NUMBER = 5;
   private int processingUnits_ = 0;
+
   /**
    *
    *
@@ -302,6 +313,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
   public boolean hasProcessingUnits() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -321,6 +333,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
 
   public static final int AUTOSCALING_CONFIG_FIELD_NUMBER = 7;
   private com.google.spanner.admin.instance.v1.AutoscalingConfig autoscalingConfig_;
+
   /**
    *
    *
@@ -339,6 +352,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
   public boolean hasAutoscalingConfig() {
     return ((bitField0_ & 0x00000008) != 0);
   }
+
   /**
    *
    *
@@ -359,6 +373,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
         : autoscalingConfig_;
   }
+
   /**
    *
    *
@@ -405,6 +420,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
   public int getLabelsCount() {
     return internalGetLabels().getMap().size();
   }
+
   /**
    *
    *
@@ -421,12 +437,14 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     }
     return internalGetLabels().getMap().containsKey(key);
   }
+
   /** Use {@link #getLabelsMap()} instead. */
   @java.lang.Override
   @java.lang.Deprecated
   public java.util.Map<java.lang.String, java.lang.String> getLabels() {
     return getLabelsMap();
   }
+
   /**
    *
    *
@@ -440,6 +458,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
   public java.util.Map<java.lang.String, java.lang.String> getLabelsMap() {
     return internalGetLabels().getMap();
   }
+
   /**
    *
    *
@@ -460,6 +479,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
     return map.containsKey(key) ? map.get(key) : defaultValue;
   }
+
   /**
    *
    *
@@ -723,6 +743,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1040,6 +1061,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     private int bitField0_;
 
     private java.lang.Object instanceId_ = "";
+
     /**
      *
      *
@@ -1062,6 +1084,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1084,6 +1107,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1105,6 +1129,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1122,6 +1147,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1146,6 +1172,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     }
 
     private java.lang.Object projectId_ = "";
+
     /**
      *
      *
@@ -1168,6 +1195,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1190,6 +1218,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1211,6 +1240,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1228,6 +1258,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1252,6 +1283,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     }
 
     private java.lang.Object displayName_ = "";
+
     /**
      *
      *
@@ -1267,6 +1299,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public boolean hasDisplayName() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1290,6 +1323,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1313,6 +1347,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1335,6 +1370,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1353,6 +1389,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1378,6 +1415,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     }
 
     private int nodeCount_;
+
     /**
      *
      *
@@ -1394,6 +1432,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public boolean hasNodeCount() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1410,6 +1449,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public int getNodeCount() {
       return nodeCount_;
     }
+
     /**
      *
      *
@@ -1430,6 +1470,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1450,6 +1491,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     }
 
     private int processingUnits_;
+
     /**
      *
      *
@@ -1466,6 +1508,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public boolean hasProcessingUnits() {
       return ((bitField0_ & 0x00000010) != 0);
     }
+
     /**
      *
      *
@@ -1482,6 +1525,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public int getProcessingUnits() {
       return processingUnits_;
     }
+
     /**
      *
      *
@@ -1502,6 +1546,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1527,6 +1572,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
             com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
             com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>
         autoscalingConfigBuilder_;
+
     /**
      *
      *
@@ -1544,6 +1590,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public boolean hasAutoscalingConfig() {
       return ((bitField0_ & 0x00000020) != 0);
     }
+
     /**
      *
      *
@@ -1567,6 +1614,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         return autoscalingConfigBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1593,6 +1641,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1616,6 +1665,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1648,6 +1698,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1670,6 +1721,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1688,6 +1740,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       onChanged();
       return getAutoscalingConfigFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1710,6 +1763,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
             : autoscalingConfig_;
       }
     }
+
     /**
      *
      *
@@ -1764,6 +1818,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public int getLabelsCount() {
       return internalGetLabels().getMap().size();
     }
+
     /**
      *
      *
@@ -1780,12 +1835,14 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       }
       return internalGetLabels().getMap().containsKey(key);
     }
+
     /** Use {@link #getLabelsMap()} instead. */
     @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.String> getLabels() {
       return getLabelsMap();
     }
+
     /**
      *
      *
@@ -1799,6 +1856,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public java.util.Map<java.lang.String, java.lang.String> getLabelsMap() {
       return internalGetLabels().getMap();
     }
+
     /**
      *
      *
@@ -1819,6 +1877,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
+
     /**
      *
      *
@@ -1845,6 +1904,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       internalGetMutableLabels().getMutableMap().clear();
       return this;
     }
+
     /**
      *
      *
@@ -1861,12 +1921,14 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       internalGetMutableLabels().getMutableMap().remove(key);
       return this;
     }
+
     /** Use alternate mutation accessors instead. */
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.String> getMutableLabels() {
       bitField0_ |= 0x00000040;
       return internalGetMutableLabels().getMutableMap();
     }
+
     /**
      *
      *
@@ -1887,6 +1949,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       bitField0_ |= 0x00000040;
       return this;
     }
+
     /**
      *
      *

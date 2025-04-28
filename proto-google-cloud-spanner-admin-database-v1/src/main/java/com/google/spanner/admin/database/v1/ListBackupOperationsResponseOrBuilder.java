@@ -42,6 +42,7 @@ public interface ListBackupOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   java.util.List<com.google.longrunning.Operation> getOperationsList();
+
   /**
    *
    *
@@ -60,6 +61,7 @@ public interface ListBackupOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   com.google.longrunning.Operation getOperations(int index);
+
   /**
    *
    *
@@ -78,6 +80,7 @@ public interface ListBackupOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   int getOperationsCount();
+
   /**
    *
    *
@@ -96,6 +99,7 @@ public interface ListBackupOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   java.util.List<? extends com.google.longrunning.OperationOrBuilder> getOperationsOrBuilderList();
+
   /**
    *
    *
@@ -129,6 +133,7 @@ public interface ListBackupOperationsResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *

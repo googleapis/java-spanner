@@ -36,6 +36,7 @@ public interface SpannerOptionsOrBuilder
    * @return Whether the sessionPoolOptions field is set.
    */
   boolean hasSessionPoolOptions();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface SpannerOptionsOrBuilder
    * @return The sessionPoolOptions.
    */
   com.google.spanner.executor.v1.SessionPoolOptions getSessionPoolOptions();
+
   /**
    *
    *

@@ -36,6 +36,7 @@ public interface BackupScheduleSpecOrBuilder
    * @return Whether the cronSpec field is set.
    */
   boolean hasCronSpec();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface BackupScheduleSpecOrBuilder
    * @return The cronSpec.
    */
   com.google.spanner.admin.database.v1.CrontabSpec getCronSpec();
+
   /**
    *
    *

@@ -61,7 +61,8 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
         meter
             .histogramBuilder(serviceName + '/' + BuiltInMetricsConstant.GFE_LATENCIES_NAME)
             .setDescription(
-                "Latency between Google's network receiving an RPC and reading back the first byte of the response")
+                "Latency between Google's network receiving an RPC and reading back the first byte"
+                    + " of the response")
             .setUnit("ms")
             .setExplicitBucketBoundariesAdvice(BuiltInMetricsConstant.BUCKET_BOUNDARIES)
             .build();
@@ -69,7 +70,8 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
         meter
             .histogramBuilder(serviceName + '/' + BuiltInMetricsConstant.AFE_LATENCIES_NAME)
             .setDescription(
-                "Latency between Spanner API Frontend receiving an RPC and starting to write back the response.")
+                "Latency between Spanner API Frontend receiving an RPC and starting to write back"
+                    + " the response.")
             .setExplicitBucketBoundariesAdvice(BuiltInMetricsConstant.BUCKET_BOUNDARIES)
             .setUnit("ms")
             .build();

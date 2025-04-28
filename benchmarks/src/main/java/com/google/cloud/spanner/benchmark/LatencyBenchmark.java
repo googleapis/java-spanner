@@ -48,7 +48,11 @@ public class LatencyBenchmark {
           String.format("projects/%s/instances/%s/databases/%s", project, instance, database);
     } else {
       throw new IllegalArgumentException(
-          "You must either set all the environment variables SPANNER_CLIENT_BENCHMARK_GOOGLE_CLOUD_PROJECT, SPANNER_CLIENT_BENCHMARK_SPANNER_INSTANCE and SPANNER_CLIENT_BENCHMARK_SPANNER_DATABASE, or specify a value for the command line argument --database");
+          "You must either set all the environment variables"
+              + " SPANNER_CLIENT_BENCHMARK_GOOGLE_CLOUD_PROJECT,"
+              + " SPANNER_CLIENT_BENCHMARK_SPANNER_INSTANCE and"
+              + " SPANNER_CLIENT_BENCHMARK_SPANNER_DATABASE, or specify a value for the command"
+              + " line argument --database");
     }
 
     LatencyBenchmark benchmark = new LatencyBenchmark(DatabaseId.of(fullyQualifiedDatabase));
@@ -69,13 +73,15 @@ public class LatencyBenchmark {
         "w",
         "wait",
         true,
-        "The wait time in milliseconds between each query that is executed by each client. Defaults to 0. "
-            + "Set this to for example 1000 to have each client execute 1 query per second.");
+        "The wait time in milliseconds between each query that is executed by each client. Defaults"
+            + " to 0. Set this to for example 1000 to have each client execute 1 query per"
+            + " second.");
     options.addOption(
         "t",
         "transaction",
         true,
-        "The type of transaction to execute. Must be either READ_ONLY or READ_WRITE. Defaults to READ_ONLY.");
+        "The type of transaction to execute. Must be either READ_ONLY or READ_WRITE. Defaults to"
+            + " READ_ONLY.");
     options.addOption("m", "multiplexed", true, "Use multiplexed sessions. Defaults to false.");
     options.addOption("w", "wait", true, "Wait time in millis. Defaults to zero.");
     options.addOption("name", true, "Name of this test run");

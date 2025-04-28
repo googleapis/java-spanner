@@ -121,8 +121,7 @@ public class DatabaseAdminClientImplTest {
   }
 
   private Database getEncryptedDatabaseProto() {
-    return getDatabaseProto()
-        .toBuilder()
+    return getDatabaseProto().toBuilder()
         .setEncryptionConfig(
             com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
                 .setKmsKeyName(KMS_KEY_NAME)

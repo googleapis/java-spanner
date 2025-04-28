@@ -255,8 +255,8 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
               ErrorCode.FAILED_PRECONDITION,
               "Failed to get the underlying protobuf value for the column "
                   + resultSet.getMetadata().getRowType().getFields(col).getName()
-                  + ". "
-                  + "Executing queries with DecodeMode#DIRECT is not supported in read/write transactions.");
+                  + ". Executing queries with DecodeMode#DIRECT is not supported in read/write"
+                  + " transactions.");
         }
       }
       firstRow = false;

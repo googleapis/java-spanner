@@ -91,21 +91,14 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
           SessionPoolOptions.Builder sessionPoolOptionsBuilder;
           if (request.getAction().getSpannerOptions().hasSessionPoolOptions()) {
             sessionPoolOptionsBuilder =
-                request
-                    .getAction()
-                    .getSpannerOptions()
-                    .getSessionPoolOptions()
-                    .toBuilder()
+                request.getAction().getSpannerOptions().getSessionPoolOptions().toBuilder()
                     .setUseMultiplexed(true);
           } else {
             sessionPoolOptionsBuilder = SessionPoolOptions.newBuilder().setUseMultiplexed(true);
           }
 
           SpannerOptions.Builder optionsBuilder =
-              request
-                  .getAction()
-                  .getSpannerOptions()
-                  .toBuilder()
+              request.getAction().getSpannerOptions().toBuilder()
                   .setSessionPoolOptions(sessionPoolOptionsBuilder);
           SpannerAction.Builder actionBuilder =
               request.getAction().toBuilder().setSpannerOptions(optionsBuilder);

@@ -33,6 +33,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.v1.QueryPlan)
     QueryPlanOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use QueryPlan.newBuilder() to construct.
   private QueryPlan(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -66,6 +67,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.PlanNode> planNodes_;
+
   /**
    *
    *
@@ -81,6 +83,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
   public java.util.List<com.google.spanner.v1.PlanNode> getPlanNodesList() {
     return planNodes_;
   }
+
   /**
    *
    *
@@ -97,6 +100,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       getPlanNodesOrBuilderList() {
     return planNodes_;
   }
+
   /**
    *
    *
@@ -112,6 +116,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
   public int getPlanNodesCount() {
     return planNodes_.size();
   }
+
   /**
    *
    *
@@ -127,6 +132,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
   public com.google.spanner.v1.PlanNode getPlanNodes(int index) {
     return planNodes_.get(index);
   }
+
   /**
    *
    *
@@ -302,6 +308,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -560,6 +567,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
         return planNodesBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -578,6 +586,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
         return planNodesBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -596,6 +605,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
         return planNodesBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -620,6 +630,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -641,6 +652,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -665,6 +677,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -689,6 +702,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -710,6 +724,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -731,6 +746,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -753,6 +769,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -774,6 +791,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -795,6 +813,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -809,6 +828,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.PlanNode.Builder getPlanNodesBuilder(int index) {
       return getPlanNodesFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -827,6 +847,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
         return planNodesBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -846,6 +867,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
         return java.util.Collections.unmodifiableList(planNodes_);
       }
     }
+
     /**
      *
      *
@@ -861,6 +883,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       return getPlanNodesFieldBuilder()
           .addBuilder(com.google.spanner.v1.PlanNode.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -876,6 +899,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       return getPlanNodesFieldBuilder()
           .addBuilder(index, com.google.spanner.v1.PlanNode.getDefaultInstance());
     }
+
     /**
      *
      *

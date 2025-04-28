@@ -36,6 +36,7 @@ public interface DeleteUserInstanceConfigActionOrBuilder
    * @return The userConfigId.
    */
   java.lang.String getUserConfigId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface DeleteUserInstanceConfigActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *

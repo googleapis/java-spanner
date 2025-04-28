@@ -84,7 +84,8 @@ final class BuiltInMetricsProvider {
     } catch (IOException ex) {
       logger.log(
           Level.WARNING,
-          "Unable to get OpenTelemetry object for client side metrics, will skip exporting client side metrics",
+          "Unable to get OpenTelemetry object for client side metrics, will skip exporting client"
+              + " side metrics",
           ex);
       return null;
     }

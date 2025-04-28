@@ -23,6 +23,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -291,11 +292,15 @@ public interface StructReader {
    */
   Date getDate(int columnIndex);
 
+  UUID getUuid(int columnIndex);
+
   /**
    * @param columnName name of the column
    * @return the value of a non-{@code NULL} column with type {@link Type#date()}.
    */
   Date getDate(String columnName);
+
+  UUID getUuid(String columnName);
 
   /**
    * @param columnIndex index of the column
@@ -499,7 +504,8 @@ public interface StructReader {
    */
   default List<String> getJsonList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnName name of the column
@@ -509,7 +515,8 @@ public interface StructReader {
    */
   default List<String> getJsonList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnIndex index of the column
@@ -519,7 +526,8 @@ public interface StructReader {
    */
   default List<String> getPgJsonbList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnName name of the column
@@ -529,7 +537,8 @@ public interface StructReader {
    */
   default List<String> getPgJsonbList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * To get the proto message of generic type {@code T} from Struct.
@@ -636,6 +645,10 @@ public interface StructReader {
    *     access each element in the list multiple times.
    */
   List<Date> getDateList(String columnName);
+
+  List<UUID> getUuidList(int columnIndex);
+
+  List<UUID> getUuidList(String columnNameÏ);
 
   /**
    * @param columnIndex index of the column

@@ -139,7 +139,8 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   public void addAttributes(Map<String, String> attributes) {
     super.addAttributes(attributes);
     this.attributes.putAll(attributes);
-  };
+  }
+  ;
 
   @Override
   public void addAttributes(String key, String value) {

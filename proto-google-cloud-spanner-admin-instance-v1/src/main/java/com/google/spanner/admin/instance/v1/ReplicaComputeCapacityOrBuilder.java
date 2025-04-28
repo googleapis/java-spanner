@@ -39,6 +39,7 @@ public interface ReplicaComputeCapacityOrBuilder
    * @return Whether the replicaSelection field is set.
    */
   boolean hasReplicaSelection();
+
   /**
    *
    *
@@ -54,6 +55,7 @@ public interface ReplicaComputeCapacityOrBuilder
    * @return The replicaSelection.
    */
   com.google.spanner.admin.instance.v1.ReplicaSelection getReplicaSelection();
+
   /**
    *
    *
@@ -83,6 +85,7 @@ public interface ReplicaComputeCapacityOrBuilder
    * @return Whether the nodeCount field is set.
    */
   boolean hasNodeCount();
+
   /**
    *
    *
@@ -114,6 +117,7 @@ public interface ReplicaComputeCapacityOrBuilder
    * @return Whether the processingUnits field is set.
    */
   boolean hasProcessingUnits();
+
   /**
    *
    *

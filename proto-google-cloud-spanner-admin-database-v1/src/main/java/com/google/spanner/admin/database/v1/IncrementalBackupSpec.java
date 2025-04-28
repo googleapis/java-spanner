@@ -38,6 +38,7 @@ public final class IncrementalBackupSpec extends com.google.protobuf.GeneratedMe
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.IncrementalBackupSpec)
     IncrementalBackupSpecOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use IncrementalBackupSpec.newBuilder() to construct.
   private IncrementalBackupSpec(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -217,6 +218,7 @@ public final class IncrementalBackupSpec extends com.google.protobuf.GeneratedMe
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *

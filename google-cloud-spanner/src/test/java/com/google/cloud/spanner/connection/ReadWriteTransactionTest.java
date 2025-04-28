@@ -98,6 +98,11 @@ public class ReadWriteTransactionTest {
     }
 
     @Override
+    public TransactionContext begin(AbortedException exception) {
+      return begin();
+    }
+
+    @Override
     public void commit() {
       switch (commitBehavior) {
         case SUCCEED:

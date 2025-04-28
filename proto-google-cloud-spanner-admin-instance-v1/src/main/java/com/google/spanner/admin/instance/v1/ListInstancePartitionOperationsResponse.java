@@ -35,6 +35,7 @@ public final class ListInstancePartitionOperationsResponse
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse)
     ListInstancePartitionOperationsResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ListInstancePartitionOperationsResponse.newBuilder() to construct.
   private ListInstancePartitionOperationsResponse(
       com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -73,6 +74,7 @@ public final class ListInstancePartitionOperationsResponse
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.longrunning.Operation> operations_;
+
   /**
    *
    *
@@ -90,6 +92,7 @@ public final class ListInstancePartitionOperationsResponse
   public java.util.List<com.google.longrunning.Operation> getOperationsList() {
     return operations_;
   }
+
   /**
    *
    *
@@ -108,6 +111,7 @@ public final class ListInstancePartitionOperationsResponse
       getOperationsOrBuilderList() {
     return operations_;
   }
+
   /**
    *
    *
@@ -125,6 +129,7 @@ public final class ListInstancePartitionOperationsResponse
   public int getOperationsCount() {
     return operations_.size();
   }
+
   /**
    *
    *
@@ -142,6 +147,7 @@ public final class ListInstancePartitionOperationsResponse
   public com.google.longrunning.Operation getOperations(int index) {
     return operations_.get(index);
   }
+
   /**
    *
    *
@@ -164,6 +170,7 @@ public final class ListInstancePartitionOperationsResponse
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object nextPageToken_ = "";
+
   /**
    *
    *
@@ -189,6 +196,7 @@ public final class ListInstancePartitionOperationsResponse
       return s;
     }
   }
+
   /**
    *
    *
@@ -220,6 +228,7 @@ public final class ListInstancePartitionOperationsResponse
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList unreachableInstancePartitions_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -237,6 +246,7 @@ public final class ListInstancePartitionOperationsResponse
   public com.google.protobuf.ProtocolStringList getUnreachableInstancePartitionsList() {
     return unreachableInstancePartitions_;
   }
+
   /**
    *
    *
@@ -254,6 +264,7 @@ public final class ListInstancePartitionOperationsResponse
   public int getUnreachableInstancePartitionsCount() {
     return unreachableInstancePartitions_.size();
   }
+
   /**
    *
    *
@@ -272,6 +283,7 @@ public final class ListInstancePartitionOperationsResponse
   public java.lang.String getUnreachableInstancePartitions(int index) {
     return unreachableInstancePartitions_.get(index);
   }
+
   /**
    *
    *
@@ -487,6 +499,7 @@ public final class ListInstancePartitionOperationsResponse
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -800,6 +813,7 @@ public final class ListInstancePartitionOperationsResponse
         return operationsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -820,6 +834,7 @@ public final class ListInstancePartitionOperationsResponse
         return operationsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -840,6 +855,7 @@ public final class ListInstancePartitionOperationsResponse
         return operationsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -866,6 +882,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -890,6 +907,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -916,6 +934,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -942,6 +961,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -965,6 +985,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -989,6 +1010,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -1013,6 +1035,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -1036,6 +1059,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -1059,6 +1083,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -1075,6 +1100,7 @@ public final class ListInstancePartitionOperationsResponse
     public com.google.longrunning.Operation.Builder getOperationsBuilder(int index) {
       return getOperationsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -1095,6 +1121,7 @@ public final class ListInstancePartitionOperationsResponse
         return operationsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -1116,6 +1143,7 @@ public final class ListInstancePartitionOperationsResponse
         return java.util.Collections.unmodifiableList(operations_);
       }
     }
+
     /**
      *
      *
@@ -1133,6 +1161,7 @@ public final class ListInstancePartitionOperationsResponse
       return getOperationsFieldBuilder()
           .addBuilder(com.google.longrunning.Operation.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1150,6 +1179,7 @@ public final class ListInstancePartitionOperationsResponse
       return getOperationsFieldBuilder()
           .addBuilder(index, com.google.longrunning.Operation.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1185,6 +1215,7 @@ public final class ListInstancePartitionOperationsResponse
     }
 
     private java.lang.Object nextPageToken_ = "";
+
     /**
      *
      *
@@ -1209,6 +1240,7 @@ public final class ListInstancePartitionOperationsResponse
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1233,6 +1265,7 @@ public final class ListInstancePartitionOperationsResponse
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1256,6 +1289,7 @@ public final class ListInstancePartitionOperationsResponse
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1275,6 +1309,7 @@ public final class ListInstancePartitionOperationsResponse
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1310,6 +1345,7 @@ public final class ListInstancePartitionOperationsResponse
       }
       bitField0_ |= 0x00000004;
     }
+
     /**
      *
      *
@@ -1328,6 +1364,7 @@ public final class ListInstancePartitionOperationsResponse
       unreachableInstancePartitions_.makeImmutable();
       return unreachableInstancePartitions_;
     }
+
     /**
      *
      *
@@ -1345,6 +1382,7 @@ public final class ListInstancePartitionOperationsResponse
     public int getUnreachableInstancePartitionsCount() {
       return unreachableInstancePartitions_.size();
     }
+
     /**
      *
      *
@@ -1363,6 +1401,7 @@ public final class ListInstancePartitionOperationsResponse
     public java.lang.String getUnreachableInstancePartitions(int index) {
       return unreachableInstancePartitions_.get(index);
     }
+
     /**
      *
      *
@@ -1381,6 +1420,7 @@ public final class ListInstancePartitionOperationsResponse
     public com.google.protobuf.ByteString getUnreachableInstancePartitionsBytes(int index) {
       return unreachableInstancePartitions_.getByteString(index);
     }
+
     /**
      *
      *
@@ -1407,6 +1447,7 @@ public final class ListInstancePartitionOperationsResponse
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1432,6 +1473,7 @@ public final class ListInstancePartitionOperationsResponse
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1456,6 +1498,7 @@ public final class ListInstancePartitionOperationsResponse
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1477,6 +1520,7 @@ public final class ListInstancePartitionOperationsResponse
       onChanged();
       return this;
     }
+
     /**
      *
      *

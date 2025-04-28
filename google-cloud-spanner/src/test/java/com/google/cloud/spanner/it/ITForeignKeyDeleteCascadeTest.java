@@ -85,7 +85,8 @@ public class ITForeignKeyDeleteCascadeTest {
                     "CREATE TABLE Concert (\n"
                         + "  venue_id      INT64 NOT NULL,\n"
                         + "  singer_id     INT64 NOT NULL,\n"
-                        + "  CONSTRAINT Fk_Concert_Singer FOREIGN KEY (singer_id) REFERENCES Singer (singer_id) ON DELETE CASCADE\n"
+                        + "  CONSTRAINT Fk_Concert_Singer FOREIGN KEY (singer_id) REFERENCES Singer"
+                        + " (singer_id) ON DELETE CASCADE\n"
                         + ") PRIMARY KEY(venue_id, singer_id)"));
     POSTGRESQL_DATABASE =
         env.getTestHelper()
@@ -100,7 +101,8 @@ public class ITForeignKeyDeleteCascadeTest {
                         + "      venue_id      BIGINT NOT NULL,\n"
                         + "      singer_id     BIGINT NOT NULL,\n"
                         + "      PRIMARY KEY (venue_id, singer_id),\n"
-                        + "      CONSTRAINT \"Fk_Concert_Singer\" FOREIGN KEY (singer_id) REFERENCES Singer (singer_id) ON DELETE CASCADE\n"
+                        + "      CONSTRAINT \"Fk_Concert_Singer\" FOREIGN KEY (singer_id)"
+                        + " REFERENCES Singer (singer_id) ON DELETE CASCADE\n"
                         + "      )"));
 
     dbs.add(GOOGLE_STANDARD_SQL_DATABASE);
@@ -152,9 +154,8 @@ public class ITForeignKeyDeleteCascadeTest {
                   + "      singer_id     BIGINT NOT NULL,\n"
                   + "      PRIMARY KEY (venue_id, singer_id)\n"
                   + "      )",
-              "ALTER TABLE ConcertV2 "
-                  + "ADD CONSTRAINT \"Fk_Concert_Singer_V2\" FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) "
-                  + "ON DELETE CASCADE");
+              "ALTER TABLE ConcertV2 ADD CONSTRAINT \"Fk_Concert_Singer_V2\" FOREIGN KEY(singer_id)"
+                  + " REFERENCES Singer(singer_id) ON DELETE CASCADE");
     } else {
       createStatements =
           ImmutableList.of(
@@ -166,9 +167,8 @@ public class ITForeignKeyDeleteCascadeTest {
                   + "  venue_id      INT64 NOT NULL,\n"
                   + "  singer_id     INT64 NOT NULL,\n"
                   + ") PRIMARY KEY(venue_id, singer_id)",
-              "ALTER TABLE ConcertV2 "
-                  + "ADD CONSTRAINT Fk_Concert_Singer_V2 FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) "
-                  + "ON DELETE CASCADE");
+              "ALTER TABLE ConcertV2 ADD CONSTRAINT Fk_Concert_Singer_V2 FOREIGN KEY(singer_id)"
+                  + " REFERENCES Singer(singer_id) ON DELETE CASCADE");
     }
     final Database createdDatabase =
         env.getTestHelper().createTestDatabase(dialect.dialect, createStatements);
@@ -199,8 +199,8 @@ public class ITForeignKeyDeleteCascadeTest {
             createdDatabase.getId().getDatabase(),
             ImmutableList.of(
                 "ALTER TABLE ConcertV2\n" + "DROP CONSTRAINT Fk_Concert_Singer_V2",
-                "ALTER TABLE ConcertV2 "
-                    + "ADD CONSTRAINT Fk_Concert_Singer_V2 FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) "),
+                "ALTER TABLE ConcertV2 ADD CONSTRAINT Fk_Concert_Singer_V2 FOREIGN KEY(singer_id)"
+                    + " REFERENCES Singer(singer_id) "),
             null)
         .get();
 
