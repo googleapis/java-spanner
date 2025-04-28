@@ -62,9 +62,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -1757,7 +1757,9 @@ public class ValueTest {
         Value.date(null).toProto());
 
     assertEquals(
-        com.google.protobuf.Value.newBuilder().setStringValue("e0d8a283-29d8-49ce-8d4c-e1d8cb0ea047").build(),
+        com.google.protobuf.Value.newBuilder()
+            .setStringValue("e0d8a283-29d8-49ce-8d4c-e1d8cb0ea047")
+            .build(),
         Value.uuid(UUID.fromString("e0d8a283-29d8-49ce-8d4c-e1d8cb0ea047")).toProto());
     assertEquals(
         com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
@@ -1921,7 +1923,9 @@ public class ValueTest {
                                 .setNullValue(NullValue.NULL_VALUE)
                                 .build())))
             .build(),
-        Value.uuidArray(Arrays.asList(UUID.fromString("3fb10ff0-4a9a-428a-bc20-a947181fd76d"), null)).toProto());
+        Value.uuidArray(
+                Arrays.asList(UUID.fromString("3fb10ff0-4a9a-428a-bc20-a947181fd76d"), null))
+            .toProto());
 
     assertEquals(
         com.google.protobuf.Value.newBuilder()
@@ -2163,7 +2167,8 @@ public class ValueTest {
                                     .addAllValues(
                                         Arrays.asList(
                                             com.google.protobuf.Value.newBuilder()
-                                                .setStringValue("9e2f9eac-8d6f-45c1-ac1d-c589daad8821")
+                                                .setStringValue(
+                                                    "9e2f9eac-8d6f-45c1-ac1d-c589daad8821")
                                                 .build(),
                                             com.google.protobuf.Value.newBuilder()
                                                 .setNullValue(NullValue.NULL_VALUE)
@@ -2174,7 +2179,10 @@ public class ValueTest {
             .build(),
         Value.struct(
                 Struct.newBuilder()
-                    .add(Value.uuidArray(Arrays.asList(UUID.fromString("9e2f9eac-8d6f-45c1-ac1d-c589daad8821"), null)))
+                    .add(
+                        Value.uuidArray(
+                            Arrays.asList(
+                                UUID.fromString("9e2f9eac-8d6f-45c1-ac1d-c589daad8821"), null)))
                     .build())
             .toProto());
     assertEquals(
@@ -2310,9 +2318,7 @@ public class ValueTest {
 
     UUID uuid = UUID.randomUUID();
     tester.addEqualityGroup(Value.uuid(null), Value.uuid(null));
-    tester.addEqualityGroup(
-        Value.uuid(uuid),
-        Value.uuid(uuid));
+    tester.addEqualityGroup(Value.uuid(uuid), Value.uuid(uuid));
     tester.addEqualityGroup(Value.uuid(UUID.randomUUID()));
 
     Struct structValue1 = Struct.newBuilder().set("f1").to(20).set("f2").to("def").build();
@@ -2406,8 +2412,7 @@ public class ValueTest {
     tester.addEqualityGroup(Value.dateArray(null));
 
     tester.addEqualityGroup(
-        Value.uuidArray(Arrays.asList(null, uuid)),
-        Value.uuidArray(Arrays.asList(null, uuid)));
+        Value.uuidArray(Arrays.asList(null, uuid)), Value.uuidArray(Arrays.asList(null, uuid)));
     tester.addEqualityGroup(Value.uuidArray(null));
 
     tester.addEqualityGroup(
@@ -2471,7 +2476,9 @@ public class ValueTest {
         "2023-01-10T18:59:00Z",
         Value.timestamp(Timestamp.parseTimestamp("2023-01-10T18:59:00Z")).getAsString());
     assertEquals("2023-01-10", Value.date(Date.parseDate("2023-01-10")).getAsString());
-    assertEquals("4ef8ba78-3bb5-4a8f-ae39-bf59a89a491d", Value.uuid(UUID.fromString("4ef8ba78-3bb5-4a8f-ae39-bf59a89a491d")).getAsString());
+    assertEquals(
+        "4ef8ba78-3bb5-4a8f-ae39-bf59a89a491d",
+        Value.uuid(UUID.fromString("4ef8ba78-3bb5-4a8f-ae39-bf59a89a491d")).getAsString());
     assertEquals(
         "P1Y2M3DT4H5M6.789123456S",
         Value.interval(Interval.parseFromString("P1Y2M3DT4H5M6.789123456S")).getAsString());
@@ -2579,7 +2586,9 @@ public class ValueTest {
 
     reserializeAndAssert(Value.uuid(null));
     reserializeAndAssert(Value.uuid(UUID.fromString("20d55f8b-5cd4-46ae-81bc-38f6b53c243b")));
-    reserializeAndAssert(Value.uuidArray(Arrays.asList(null, UUID.fromString("20d55f8b-5cd4-46ae-81bc-38f6b53c243b"))));
+    reserializeAndAssert(
+        Value.uuidArray(
+            Arrays.asList(null, UUID.fromString("20d55f8b-5cd4-46ae-81bc-38f6b53c243b"))));
 
     reserializeAndAssert(Value.interval(null));
     reserializeAndAssert(
@@ -2878,8 +2887,7 @@ public class ValueTest {
     assertEquals(Type.array(Type.date()), value.getType());
     assertEquals(dates, value.getDateArray());
 
-    List<UUID> uuids =
-        Arrays.asList(UUID.randomUUID(), UUID.randomUUID());
+    List<UUID> uuids = Arrays.asList(UUID.randomUUID(), UUID.randomUUID());
     value = Value.toValue(uuids);
     assertEquals(Type.array(Type.uuid()), value.getType());
     assertEquals(uuids, value.getUuidArray());
