@@ -3282,11 +3282,12 @@ public class CloudClientExecutor extends CloudExecutor {
                 ErrorCode.INVALID_ARGUMENT, "Unsupported key part type: " + type.getCode().name());
         }
       } else if (part.hasStringValue()) {
-        // TODO: Handle UUID when it is part of the key.
         if (type.getCode() == TypeCode.NUMERIC) {
           String ascii = part.getStringValue();
           cloudKey.append(new BigDecimal(ascii));
-        } else {
+        } if (type.getCode() == TypeCode.UUID) {
+          cloudKey.append(UUID.fromString(part.getStringValue()));
+        }else {
           cloudKey.append(part.getStringValue());
         }
       } else if (part.hasTimestampValue()) {
