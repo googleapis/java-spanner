@@ -54,7 +54,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <github.global.server>github</github.global.server>
     <site.installationModule>google-cloud-spanner-parent</site.installationModule>
-    <error-prone.version>2.31.0</error-prone.version>
+    <error-prone.version>2.38.0</error-prone.version>
   </properties>
 
   <dependencyManagement>
@@ -151,7 +151,8 @@
               <fork>true</fork>
               <compilerArgs>
                 <arg>-XDcompilePolicy=simple</arg>
-                <arg>-Xplugin:ErrorProne -Xep:CheckReturnValue:OFF -Xep:ProtoBuilderReturnValueIgnored:OFF -Xep:ReturnValueIgnored:OFF</arg>
+                <arg>--should-stop=ifError=FLOW</arg>
+                <arg>-Xplugin:ErrorProne -Xep:CheckReturnValue:OFF -Xep:ProtoBuilderReturnValueIgnored:OFF -Xep:ReturnValueIgnored:OFF -Xep:BoxedPrimitiveEquality:OFF -Xep:UnicodeInCode:OFF</arg>
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>

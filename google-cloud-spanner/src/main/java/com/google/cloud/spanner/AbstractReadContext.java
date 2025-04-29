@@ -458,6 +458,8 @@ abstract class AbstractReadContext
       }
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     private void initTransactionInternal(BeginTransactionRequest request) {
       try {
         Transaction transaction =
