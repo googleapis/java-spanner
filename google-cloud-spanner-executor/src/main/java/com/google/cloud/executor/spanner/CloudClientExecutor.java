@@ -3049,25 +3049,24 @@ public class CloudClientExecutor extends CloudExecutor {
                 }
                 break;
               case UUID:
-              {
-                com.google.spanner.executor.v1.ValueList.Builder builder =
-                    com.google.spanner.executor.v1.ValueList.newBuilder();
-                List<UUID> values = struct.getUuidList(i);
-                for (UUID uuidValue : values) {
-                  com.google.spanner.executor.v1.Value.Builder valueProto =
-                      com.google.spanner.executor.v1.Value.newBuilder();
-                  if (uuidValue == null) {
-                    builder.addValue(valueProto.setIsNull(true).build());
-                  } else {
-                    builder.addValue(
-                        valueProto.setStringValue(uuidValue.toString()).build());
+                {
+                  com.google.spanner.executor.v1.ValueList.Builder builder =
+                      com.google.spanner.executor.v1.ValueList.newBuilder();
+                  List<UUID> values = struct.getUuidList(i);
+                  for (UUID uuidValue : values) {
+                    com.google.spanner.executor.v1.Value.Builder valueProto =
+                        com.google.spanner.executor.v1.Value.newBuilder();
+                    if (uuidValue == null) {
+                      builder.addValue(valueProto.setIsNull(true).build());
+                    } else {
+                      builder.addValue(valueProto.setStringValue(uuidValue.toString()).build());
+                    }
                   }
+                  value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.UUID).build());
                 }
-                value.setArrayValue(builder.build());
-                value.setArrayType(
-                    com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.UUID).build());
-              }
-              break;
+                break;
               case TIMESTAMP:
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
@@ -3285,9 +3284,9 @@ public class CloudClientExecutor extends CloudExecutor {
         if (type.getCode() == TypeCode.NUMERIC) {
           String ascii = part.getStringValue();
           cloudKey.append(new BigDecimal(ascii));
-        } if (type.getCode() == TypeCode.UUID) {
+        } else if (type.getCode() == TypeCode.UUID) {
           cloudKey.append(UUID.fromString(part.getStringValue()));
-        }else {
+        } else {
           cloudKey.append(part.getStringValue());
         }
       } else if (part.hasTimestampValue()) {
