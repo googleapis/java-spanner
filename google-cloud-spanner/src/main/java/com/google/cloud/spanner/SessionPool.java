@@ -2718,7 +2718,9 @@ class SessionPool {
     return null;
   }
 
-  /** @return true if this {@link SessionPool} is still valid. */
+  /**
+   * @return true if this {@link SessionPool} is still valid.
+   */
   boolean isValid() {
     synchronized (lock) {
       return closureFuture == null && resourceNotFoundException == null;

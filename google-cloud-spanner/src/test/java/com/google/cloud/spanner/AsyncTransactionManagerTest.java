@@ -1239,10 +1239,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void testRollbackAndCloseEmptyTransaction() throws Exception {
-    assumeFalse(spannerWithEmptySessionPool
-        .getOptions()
-        .getSessionPoolOptions()
-        .getUseMultiplexedSessionForRW());
+    assumeFalse(
+        spannerWithEmptySessionPool
+            .getOptions()
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionForRW());
 
     DatabaseClientImpl client = (DatabaseClientImpl) clientWithEmptySessionPool();
 
