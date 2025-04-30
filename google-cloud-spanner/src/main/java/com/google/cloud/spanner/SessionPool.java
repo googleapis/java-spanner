@@ -1314,6 +1314,7 @@ class SessionPool {
   class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
       implements SessionFuture {
 
+    private boolean closed;
     private volatile LeakedSessionException leakedException;
     private final AtomicBoolean inUse = new AtomicBoolean();
     private final CountDownLatch initialized = new CountDownLatch(1);
@@ -1331,6 +1332,7 @@ class SessionPool {
     }
 
     private void markCheckedOut() {
+
       if (options.isTrackStackTraceOfSessionCheckout()) {
         this.leakedException = new LeakedSessionException();
         synchronized (SessionPool.this.lock) {
@@ -1520,6 +1522,13 @@ class SessionPool {
 
     @Override
     public ApiFuture<Empty> asyncClose() {
+      synchronized (this) {
+        // Don't add the session twice to the pool if a resource is being closed multiple times.
+        if (closed) {
+          return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+        }
+        closed = true;
+      }
       try {
         PooledSession delegate = getOrNull();
         if (delegate != null) {
@@ -3139,6 +3148,13 @@ class SessionPool {
   int totalSessions() {
     synchronized (lock) {
       return allSessions.size();
+    }
+  }
+
+  @VisibleForTesting
+  int numSessionsInPool() {
+    synchronized (lock) {
+      return sessions.size();
     }
   }
 
