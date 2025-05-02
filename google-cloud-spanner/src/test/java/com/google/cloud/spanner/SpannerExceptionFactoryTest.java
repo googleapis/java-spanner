@@ -225,7 +225,8 @@ public class SpannerExceptionFactoryTest {
                 "NOT_FOUND: Session not found: projects/p/instances/i/databases/d/sessions/s",
                 Status.NOT_FOUND
                     .withDescription(
-                        "NOT_FOUND: Session not found: projects/p/instances/i/databases/d/sessions/s")
+                        "NOT_FOUND: Session not found:"
+                            + " projects/p/instances/i/databases/d/sessions/s")
                     .asRuntimeException(
                         createResourceTypeMetadata(
                             SpannerExceptionFactory.SESSION_RESOURCE_TYPE,
@@ -249,5 +250,18 @@ public class SpannerExceptionFactoryTest {
     trailers.put(key, resourceInfo);
 
     return trailers;
+  }
+
+  @Test
+  public void withRequestId() {
+    XGoogSpannerRequestId reqIdIn = XGoogSpannerRequestId.of(1, 2, 3, 4);
+    Status status = Status.fromCodeValue(Status.Code.ABORTED.value());
+    Exception exc = new StatusRuntimeException(status);
+    SpannerException spannerExceptionWithReqId =
+        SpannerExceptionFactory.newSpannerException(exc, reqIdIn);
+    assertThat(spannerExceptionWithReqId.getRequestId()).isEqualTo(reqIdIn.toString());
+    SpannerException spannerExceptionWithoutReqId =
+        SpannerExceptionFactory.newSpannerException(exc);
+    assertThat(spannerExceptionWithoutReqId.getRequestId()).isEqualTo("");
   }
 }

@@ -312,8 +312,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void poolLifo() {
     setupMockSessionCreation();
     options =
-        options
-            .toBuilder()
+        options.toBuilder()
             .setMinSessions(2)
             .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
             .build();
@@ -348,8 +347,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         "LAST",
         () -> {
           options =
-              options
-                  .toBuilder()
+              options.toBuilder()
                   .setMinSessions(2)
                   .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))
                   .build();
@@ -395,8 +393,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             while (attempt < maxAttempts) {
               int numSessions = 5;
               options =
-                  options
-                      .toBuilder()
+                  options.toBuilder()
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
                       .setWaitForMinSessionsDuration(Duration.ofSeconds(10L))

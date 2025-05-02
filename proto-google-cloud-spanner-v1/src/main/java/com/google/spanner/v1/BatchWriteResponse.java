@@ -33,6 +33,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
     // @@protoc_insertion_point(message_implements:google.spanner.v1.BatchWriteResponse)
     BatchWriteResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use BatchWriteResponse.newBuilder() to construct.
   private BatchWriteResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -68,6 +69,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
 
   @SuppressWarnings("serial")
   private com.google.protobuf.Internal.IntList indexes_ = emptyIntList();
+
   /**
    *
    *
@@ -84,6 +86,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
   public java.util.List<java.lang.Integer> getIndexesList() {
     return indexes_;
   }
+
   /**
    *
    *
@@ -99,6 +102,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
   public int getIndexesCount() {
     return indexes_.size();
   }
+
   /**
    *
    *
@@ -120,6 +124,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
 
   public static final int STATUS_FIELD_NUMBER = 2;
   private com.google.rpc.Status status_;
+
   /**
    *
    *
@@ -135,6 +140,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
   public boolean hasStatus() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -150,6 +156,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
   public com.google.rpc.Status getStatus() {
     return status_ == null ? com.google.rpc.Status.getDefaultInstance() : status_;
   }
+
   /**
    *
    *
@@ -166,6 +173,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
 
   public static final int COMMIT_TIMESTAMP_FIELD_NUMBER = 3;
   private com.google.protobuf.Timestamp commitTimestamp_;
+
   /**
    *
    *
@@ -182,6 +190,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
   public boolean hasCommitTimestamp() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -200,6 +209,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
         ? com.google.protobuf.Timestamp.getDefaultInstance()
         : commitTimestamp_;
   }
+
   /**
    *
    *
@@ -419,6 +429,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -677,6 +688,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       }
       bitField0_ |= 0x00000001;
     }
+
     /**
      *
      *
@@ -693,6 +705,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       indexes_.makeImmutable();
       return indexes_;
     }
+
     /**
      *
      *
@@ -708,6 +721,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
     public int getIndexesCount() {
       return indexes_.size();
     }
+
     /**
      *
      *
@@ -724,6 +738,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
     public int getIndexes(int index) {
       return indexes_.getInt(index);
     }
+
     /**
      *
      *
@@ -746,6 +761,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -767,6 +783,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -787,6 +804,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -810,6 +828,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.rpc.Status, com.google.rpc.Status.Builder, com.google.rpc.StatusOrBuilder>
         statusBuilder_;
+
     /**
      *
      *
@@ -824,6 +843,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
     public boolean hasStatus() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -842,6 +862,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
         return statusBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -864,6 +885,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -883,6 +905,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -910,6 +933,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       }
       return this;
     }
+
     /**
      *
      *
@@ -929,6 +953,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -943,6 +968,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return getStatusFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -959,6 +985,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
         return status_ == null ? com.google.rpc.Status.getDefaultInstance() : status_;
       }
     }
+
     /**
      *
      *
@@ -988,6 +1015,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         commitTimestampBuilder_;
+
     /**
      *
      *
@@ -1003,6 +1031,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
     public boolean hasCommitTimestamp() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1024,6 +1053,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
         return commitTimestampBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1047,6 +1077,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1067,6 +1098,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1095,6 +1127,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       }
       return this;
     }
+
     /**
      *
      *
@@ -1115,6 +1148,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1130,6 +1164,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
       onChanged();
       return getCommitTimestampFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1149,6 +1184,7 @@ public final class BatchWriteResponse extends com.google.protobuf.GeneratedMessa
             : commitTimestamp_;
       }
     }
+
     /**
      *
      *

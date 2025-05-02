@@ -252,6 +252,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>TYPE_CODE_UNSPECIFIED = 0;</code>
    */
   public static final int TYPE_CODE_UNSPECIFIED_VALUE = 0;
+
   /**
    *
    *
@@ -262,6 +263,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>BOOL = 1;</code>
    */
   public static final int BOOL_VALUE = 1;
+
   /**
    *
    *
@@ -272,6 +274,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>INT64 = 2;</code>
    */
   public static final int INT64_VALUE = 2;
+
   /**
    *
    *
@@ -283,6 +286,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>FLOAT64 = 3;</code>
    */
   public static final int FLOAT64_VALUE = 3;
+
   /**
    *
    *
@@ -294,6 +298,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>FLOAT32 = 15;</code>
    */
   public static final int FLOAT32_VALUE = 15;
+
   /**
    *
    *
@@ -311,6 +316,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>TIMESTAMP = 4;</code>
    */
   public static final int TIMESTAMP_VALUE = 4;
+
   /**
    *
    *
@@ -321,6 +327,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>DATE = 5;</code>
    */
   public static final int DATE_VALUE = 5;
+
   /**
    *
    *
@@ -331,6 +338,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>STRING = 6;</code>
    */
   public static final int STRING_VALUE = 6;
+
   /**
    *
    *
@@ -342,6 +350,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>BYTES = 7;</code>
    */
   public static final int BYTES_VALUE = 7;
+
   /**
    *
    *
@@ -354,6 +363,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>ARRAY = 8;</code>
    */
   public static final int ARRAY_VALUE = 8;
+
   /**
    *
    *
@@ -365,6 +375,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>STRUCT = 9;</code>
    */
   public static final int STRUCT_VALUE = 9;
+
   /**
    *
    *
@@ -383,6 +394,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>NUMERIC = 10;</code>
    */
   public static final int NUMERIC_VALUE = 10;
+
   /**
    *
    *
@@ -400,6 +412,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>JSON = 11;</code>
    */
   public static final int JSON_VALUE = 11;
+
   /**
    *
    *
@@ -411,6 +424,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>PROTO = 13;</code>
    */
   public static final int PROTO_VALUE = 13;
+
   /**
    *
    *
@@ -421,6 +435,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>ENUM = 14;</code>
    */
   public static final int ENUM_VALUE = 14;
+
   /**
    *
    *
@@ -435,6 +450,7 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>INTERVAL = 16;</code>
    */
   public static final int INTERVAL_VALUE = 16;
+
   /**
    *
    *

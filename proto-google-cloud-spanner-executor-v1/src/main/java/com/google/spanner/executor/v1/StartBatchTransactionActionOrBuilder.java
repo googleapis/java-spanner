@@ -36,6 +36,7 @@ public interface StartBatchTransactionActionOrBuilder
    * @return Whether the batchTxnTime field is set.
    */
   boolean hasBatchTxnTime();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface StartBatchTransactionActionOrBuilder
    * @return The batchTxnTime.
    */
   com.google.protobuf.Timestamp getBatchTxnTime();
+
   /**
    *
    *
@@ -73,6 +75,7 @@ public interface StartBatchTransactionActionOrBuilder
    * @return Whether the tid field is set.
    */
   boolean hasTid();
+
   /**
    *
    *
@@ -102,6 +105,7 @@ public interface StartBatchTransactionActionOrBuilder
    * @return The cloudDatabaseRole.
    */
   java.lang.String getCloudDatabaseRole();
+
   /**
    *
    *

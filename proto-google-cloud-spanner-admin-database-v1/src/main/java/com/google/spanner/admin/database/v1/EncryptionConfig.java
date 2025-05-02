@@ -33,6 +33,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.EncryptionConfig)
     EncryptionConfigOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use EncryptionConfig.newBuilder() to construct.
   private EncryptionConfig(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -68,6 +69,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object kmsKeyName_ = "";
+
   /**
    *
    *
@@ -93,6 +95,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       return s;
     }
   }
+
   /**
    *
    *
@@ -124,6 +127,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList kmsKeyNames_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -152,6 +156,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
   public com.google.protobuf.ProtocolStringList getKmsKeyNamesList() {
     return kmsKeyNames_;
   }
+
   /**
    *
    *
@@ -180,6 +185,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
   public int getKmsKeyNamesCount() {
     return kmsKeyNames_.size();
   }
+
   /**
    *
    *
@@ -209,6 +215,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
   public java.lang.String getKmsKeyNames(int index) {
     return kmsKeyNames_.get(index);
   }
+
   /**
    *
    *
@@ -415,6 +422,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -621,6 +629,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
     private int bitField0_;
 
     private java.lang.Object kmsKeyName_ = "";
+
     /**
      *
      *
@@ -645,6 +654,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -669,6 +679,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -692,6 +703,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -711,6 +723,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -745,6 +758,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       }
       bitField0_ |= 0x00000002;
     }
+
     /**
      *
      *
@@ -774,6 +788,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       kmsKeyNames_.makeImmutable();
       return kmsKeyNames_;
     }
+
     /**
      *
      *
@@ -802,6 +817,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
     public int getKmsKeyNamesCount() {
       return kmsKeyNames_.size();
     }
+
     /**
      *
      *
@@ -831,6 +847,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
     public java.lang.String getKmsKeyNames(int index) {
       return kmsKeyNames_.get(index);
     }
+
     /**
      *
      *
@@ -860,6 +877,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
     public com.google.protobuf.ByteString getKmsKeyNamesBytes(int index) {
       return kmsKeyNames_.getByteString(index);
     }
+
     /**
      *
      *
@@ -897,6 +915,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -933,6 +952,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -966,6 +986,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -998,6 +1019,7 @@ public final class EncryptionConfig extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *

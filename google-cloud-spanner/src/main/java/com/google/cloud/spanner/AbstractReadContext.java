@@ -404,6 +404,32 @@ abstract class AbstractReadContext
       }
     }
 
+    /**
+     * Initializes the transaction with the timestamp specified within MultiUseReadOnlyTransaction.
+     * This is used only for fallback of PartitionQueryRequest and PartitionReadRequest with
+     * Multiplexed Session.
+     */
+    void initFallbackTransaction() {
+      synchronized (txnLock) {
+        span.addAnnotation("Creating Transaction");
+        TransactionOptions.Builder options = TransactionOptions.newBuilder();
+        if (timestamp != null) {
+          options
+              .getReadOnlyBuilder()
+              .setReadTimestamp(timestamp.toProto())
+              .setReturnReadTimestamp(true);
+        } else {
+          bound.applyToBuilder(options.getReadOnlyBuilder()).setReturnReadTimestamp(true);
+        }
+        final BeginTransactionRequest request =
+            BeginTransactionRequest.newBuilder()
+                .setSession(session.getName())
+                .setOptions(options)
+                .build();
+        initTransactionInternal(request);
+      }
+    }
+
     void initTransaction() {
       SessionImpl.throwIfTransactionsPending();
 
@@ -419,40 +445,43 @@ abstract class AbstractReadContext
           return;
         }
         span.addAnnotation("Creating Transaction");
-        try {
-          TransactionOptions.Builder options = TransactionOptions.newBuilder();
-          bound.applyToBuilder(options.getReadOnlyBuilder()).setReturnReadTimestamp(true);
-          final BeginTransactionRequest request =
-              BeginTransactionRequest.newBuilder()
-                  .setSession(session.getName())
-                  .setOptions(options)
-                  .build();
-          Transaction transaction =
-              rpc.beginTransaction(request, getTransactionChannelHint(), isRouteToLeader());
-          if (!transaction.hasReadTimestamp()) {
-            throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
-          }
-          if (transaction.getId().isEmpty()) {
-            throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.INTERNAL, "Missing expected transaction.id metadata field");
-          }
-          try {
-            timestamp = Timestamp.fromProto(transaction.getReadTimestamp());
-          } catch (IllegalArgumentException e) {
-            throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.INTERNAL, "Bad value in transaction.read_timestamp metadata field", e);
-          }
-          transactionId = transaction.getId();
-          span.addAnnotation(
-              "Transaction Creation Done",
-              ImmutableMap.of(
-                  "Id", transaction.getId().toStringUtf8(), "Timestamp", timestamp.toString()));
+        TransactionOptions.Builder options = TransactionOptions.newBuilder();
+        bound.applyToBuilder(options.getReadOnlyBuilder()).setReturnReadTimestamp(true);
+        final BeginTransactionRequest request =
+            BeginTransactionRequest.newBuilder()
+                .setSession(session.getName())
+                .setOptions(options)
+                .build();
+        initTransactionInternal(request);
+      }
+    }
 
-        } catch (SpannerException e) {
-          span.addAnnotation("Transaction Creation Failed", e);
-          throw e;
+    private void initTransactionInternal(BeginTransactionRequest request) {
+      try {
+        Transaction transaction =
+            rpc.beginTransaction(request, getTransactionChannelHint(), isRouteToLeader());
+        if (!transaction.hasReadTimestamp()) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
         }
+        if (transaction.getId().isEmpty()) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INTERNAL, "Missing expected transaction.id metadata field");
+        }
+        try {
+          timestamp = Timestamp.fromProto(transaction.getReadTimestamp());
+        } catch (IllegalArgumentException e) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INTERNAL, "Bad value in transaction.read_timestamp metadata field", e);
+        }
+        transactionId = transaction.getId();
+        span.addAnnotation(
+            "Transaction Creation Done",
+            ImmutableMap.of(
+                "Id", transaction.getId().toStringUtf8(), "Timestamp", timestamp.toString()));
+      } catch (SpannerException e) {
+        span.addAnnotation("Transaction Creation Failed", e);
+        throw e;
       }
     }
   }
@@ -764,7 +793,7 @@ abstract class AbstractReadContext
         options.hasPrefetchChunks() ? options.prefetchChunks() : defaultPrefetchChunks;
     final ExecuteSqlRequest.Builder request =
         getExecuteSqlRequestBuilder(
-            statement, queryMode, options, /* withTransactionSelector = */ false);
+            statement, queryMode, options, /* withTransactionSelector= */ false);
     ResumableStreamIterator stream =
         new ResumableStreamIterator(
             MAX_BUFFERED_CHUNKS,
@@ -1007,7 +1036,7 @@ abstract class AbstractReadContext
                     getTransactionChannelHint(),
                     isRouteToLeader());
             session.markUsed(clock.instant());
-            stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
+            stream.setCall(call, /* withBeginTransaction= */ builder.getTransaction().hasBegin());
             return stream;
           }
 

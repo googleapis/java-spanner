@@ -56,10 +56,7 @@ class SpannerRetryHelper {
    */
   @VisibleForTesting
   static final RetrySettings txRetrySettings =
-      SpannerStubSettings.newBuilder()
-          .rollbackSettings()
-          .getRetrySettings()
-          .toBuilder()
+      SpannerStubSettings.newBuilder().rollbackSettings().getRetrySettings().toBuilder()
           .setTotalTimeoutDuration(Duration.ofHours(24L))
           .setMaxAttempts(0)
           .build();
@@ -107,8 +104,7 @@ class SpannerRetryHelper {
       if (prevThrowable != null) {
         long retryDelay = SpannerException.extractRetryDelay(prevThrowable);
         if (retryDelay > -1L) {
-          return prevSettings
-              .toBuilder()
+          return prevSettings.toBuilder()
               .setRandomizedRetryDelayDuration(Duration.ofMillis(retryDelay))
               .build();
         }
@@ -120,7 +116,8 @@ class SpannerRetryHelper {
     public boolean shouldRetry(Throwable prevThrowable, T prevResponse)
         throws CancellationException {
       if (Context.current().isCancelled()) {
-        throw SpannerExceptionFactory.newSpannerExceptionForCancellation(Context.current(), null);
+        throw SpannerExceptionFactory.newSpannerExceptionForCancellation(
+            Context.current(), null, null);
       }
       return prevThrowable instanceof AbortedException
           || prevThrowable instanceof com.google.api.gax.rpc.AbortedException;

@@ -38,6 +38,7 @@ public interface ConcurrencyOrBuilder
    * @return Whether the stalenessSeconds field is set.
    */
   boolean hasStalenessSeconds();
+
   /**
    *
    *
@@ -65,6 +66,7 @@ public interface ConcurrencyOrBuilder
    * @return Whether the minReadTimestampMicros field is set.
    */
   boolean hasMinReadTimestampMicros();
+
   /**
    *
    *
@@ -90,6 +92,7 @@ public interface ConcurrencyOrBuilder
    * @return Whether the maxStalenessSeconds field is set.
    */
   boolean hasMaxStalenessSeconds();
+
   /**
    *
    *
@@ -115,6 +118,7 @@ public interface ConcurrencyOrBuilder
    * @return Whether the exactTimestampMicros field is set.
    */
   boolean hasExactTimestampMicros();
+
   /**
    *
    *
@@ -140,6 +144,7 @@ public interface ConcurrencyOrBuilder
    * @return Whether the strong field is set.
    */
   boolean hasStrong();
+
   /**
    *
    *
@@ -165,6 +170,7 @@ public interface ConcurrencyOrBuilder
    * @return Whether the batch field is set.
    */
   boolean hasBatch();
+
   /**
    *
    *
@@ -206,6 +212,7 @@ public interface ConcurrencyOrBuilder
    * @return The snapshotEpochRootTable.
    */
   java.lang.String getSnapshotEpochRootTable();
+
   /**
    *
    *

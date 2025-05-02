@@ -36,6 +36,7 @@ public interface GetCloudInstanceConfigActionOrBuilder
    * @return The instanceConfigId.
    */
   java.lang.String getInstanceConfigId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface GetCloudInstanceConfigActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *

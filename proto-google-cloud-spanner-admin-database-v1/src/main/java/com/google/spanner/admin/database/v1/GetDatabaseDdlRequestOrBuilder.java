@@ -40,6 +40,7 @@ public interface GetDatabaseDdlRequestOrBuilder
    * @return The database.
    */
   java.lang.String getDatabase();
+
   /**
    *
    *

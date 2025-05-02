@@ -27,10 +27,12 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.ConnectionProperty.Context;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -63,6 +65,7 @@ class ConnectionState {
    * used for {@link ConnectionState} that is marked as {@link Type#TRANSACTIONAL}.
    */
   private Map<String, ConnectionPropertyValue<?>> transactionProperties;
+
   /** localProperties are the modified local properties during a transaction. */
   private Map<String, ConnectionPropertyValue<?>> localProperties;
 
@@ -93,7 +96,7 @@ class ConnectionState {
             castProperty(entry.getValue().getProperty()),
             cast(entry.getValue()).getValue(),
             Context.STARTUP,
-            /* inTransaction = */ false);
+            /* inTransaction= */ false);
       }
     }
     Type configuredType = getValue(CONNECTION_STATE_TYPE).getValue();
@@ -233,6 +236,7 @@ class ConnectionState {
       T value,
       Map<String, ConnectionPropertyValue<?>> currentProperties,
       Context context) {
+    checkValidValue(property, value);
     ConnectionPropertyValue<T> newValue = cast(currentProperties.get(property.getKey()));
     if (newValue == null) {
       ConnectionPropertyValue<T> existingValue = cast(properties.get(property.getKey()));
@@ -247,6 +251,23 @@ class ConnectionState {
     }
     newValue.setValue(value, context);
     currentProperties.put(property.getKey(), newValue);
+  }
+
+  static <T> void checkValidValue(ConnectionProperty<T> property, T value) {
+    if (property.getValidValues() == null || property.getValidValues().length == 0) {
+      return;
+    }
+    if (Arrays.stream(property.getValidValues())
+        .noneMatch(validValue -> Objects.equals(validValue, value))) {
+      throw invalidParamValueError(property, value);
+    }
+  }
+
+  /** Creates an exception for an invalid value for a connection property. */
+  static <T> SpannerException invalidParamValueError(ConnectionProperty<T> property, T value) {
+    return SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INVALID_ARGUMENT,
+        String.format("invalid value \"%s\" for configuration property \"%s\"", value, property));
   }
 
   /** Creates an exception for an unknown connection property. */

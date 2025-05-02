@@ -38,6 +38,7 @@ public interface DropDatabaseRequestOrBuilder
    * @return The database.
    */
   java.lang.String getDatabase();
+
   /**
    *
    *

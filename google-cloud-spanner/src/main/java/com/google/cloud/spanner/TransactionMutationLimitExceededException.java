@@ -26,20 +26,27 @@ import javax.annotation.Nullable;
 public class TransactionMutationLimitExceededException extends SpannerException {
   private static final long serialVersionUID = 1L;
 
+  private static final String ERROR_MESSAGE = "The transaction contains too many mutations.";
+
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   TransactionMutationLimitExceededException(
       DoNotConstructDirectly token,
       ErrorCode errorCode,
       String message,
       Throwable cause,
-      @Nullable ApiException apiException) {
-    super(token, errorCode, /*retryable = */ false, message, cause, apiException);
+      @Nullable ApiException apiException,
+      @Nullable XGoogSpannerRequestId reqId) {
+    super(token, errorCode, /* retryable= */ false, message, cause, apiException, reqId);
+  }
+
+  static boolean isTransactionMutationLimitException(ErrorCode code, String message) {
+    return code == ErrorCode.INVALID_ARGUMENT && message != null && message.contains(ERROR_MESSAGE);
   }
 
   static boolean isTransactionMutationLimitException(Throwable cause) {
     if (cause == null
         || cause.getMessage() == null
-        || !cause.getMessage().contains("The transaction contains too many mutations.")) {
+        || !cause.getMessage().contains(ERROR_MESSAGE)) {
       return false;
     }
     // Spanner includes a hint that points to the Spanner limits documentation page when the error

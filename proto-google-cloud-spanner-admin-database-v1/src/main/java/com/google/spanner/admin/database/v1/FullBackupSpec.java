@@ -35,6 +35,7 @@ public final class FullBackupSpec extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.FullBackupSpec)
     FullBackupSpecOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use FullBackupSpec.newBuilder() to construct.
   private FullBackupSpec(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -213,6 +214,7 @@ public final class FullBackupSpec extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *

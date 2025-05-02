@@ -65,7 +65,7 @@ public abstract class ITAbstractSpannerTest {
     }
   }
 
-  protected interface ITConnection extends Connection {}
+  public interface ITConnection extends Connection {}
 
   private ITConnection createITConnection(ConnectionOptions options) {
     return new ITConnectionImpl(options);
@@ -128,7 +128,7 @@ public abstract class ITAbstractSpannerTest {
     @Override
     public void intercept(
         ParsedStatement statement, StatementExecutionStep step, UnitOfWork transaction) {
-      if (shouldAbort(statement.getSqlWithoutComments(), ExecutionStep.of(step))) {
+      if (shouldAbort(statement.getSql(), ExecutionStep.of(step))) {
         // ugly hack warning: inject the aborted state into the transaction manager to simulate an
         // abort
         if (transaction instanceof ReadWriteTransaction) {
@@ -332,7 +332,8 @@ public abstract class ITAbstractSpannerTest {
           connection.startBatchDdl();
           connection.execute(
               Statement.of(
-                  "CREATE TABLE TEST (ID INT64 NOT NULL, NAME STRING(100) NOT NULL) PRIMARY KEY (ID)"));
+                  "CREATE TABLE TEST (ID INT64 NOT NULL, NAME STRING(100) NOT NULL) PRIMARY KEY"
+                      + " (ID)"));
           connection.runBatch();
         }
       }
@@ -345,7 +346,8 @@ public abstract class ITAbstractSpannerTest {
         connection.executeQuery(
             Statement.newBuilder(
                     String.format(
-                        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE UPPER(TABLE_NAME)=UPPER(\'%s\')",
+                        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE"
+                            + " UPPER(TABLE_NAME)=UPPER(\'%s\')",
                         table))
                 .build())) {
       while (rs.next()) {
@@ -360,7 +362,8 @@ public abstract class ITAbstractSpannerTest {
     try (ResultSet rs =
         connection.executeQuery(
             Statement.newBuilder(
-                    "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE UPPER(TABLE_NAME)=@table_name AND UPPER(INDEX_NAME)=@index_name")
+                    "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE"
+                        + " UPPER(TABLE_NAME)=@table_name AND UPPER(INDEX_NAME)=@index_name")
                 .bind("table_name")
                 .to(table)
                 .bind("index_name")

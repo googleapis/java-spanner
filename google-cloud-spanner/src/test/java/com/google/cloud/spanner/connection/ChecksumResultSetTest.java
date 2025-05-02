@@ -27,6 +27,7 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.Interval;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
 import com.google.cloud.spanner.SingerProto.Genre;
@@ -42,6 +43,7 @@ import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,6 +83,10 @@ public class ChecksumResultSetTest {
           .to(Timestamp.parseTimestamp("2022-08-04T11:20:00.123456789Z"))
           .set("date")
           .to(Date.fromYearMonthDay(2022, 8, 3))
+          .set("uuid")
+          .to(UUID.randomUUID())
+          .set("interval")
+          .to(Interval.parseFromString("P8Y2M3DT4H5M6.789123456S"))
           .set("boolArray")
           .to(Value.boolArray(Arrays.asList(Boolean.FALSE, null, Boolean.TRUE)))
           .set("longArray")
@@ -108,6 +114,15 @@ public class ChecksumResultSetTest {
           .to(
               Value.dateArray(
                   Arrays.asList(Date.parseDate("2000-01-01"), null, Date.parseDate("2022-08-03"))))
+          .set("uuidArray")
+          .to(Value.uuidArray(Arrays.asList(UUID.randomUUID(), UUID.randomUUID())))
+          .set("intervalArray")
+          .to(
+              Value.intervalArray(
+                  Arrays.asList(
+                      Interval.parseFromString("P1Y2M-3DT4H5M6.789123456S"),
+                      null,
+                      Interval.parseFromString("P-1Y-2M-3DT-4H-5M-6.789123456S"))))
           .set("stringArray")
           .to(Value.stringArray(Arrays.asList("test2", null, "test1")))
           .set("jsonArray")
@@ -150,6 +165,8 @@ public class ChecksumResultSetTest {
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
+            Type.StructField.of("uuid", Type.uuid()),
+            Type.StructField.of("interval", Type.interval()),
             Type.StructField.of("boolArray", Type.array(Type.bool())),
             Type.StructField.of("longArray", Type.array(Type.int64())),
             Type.StructField.of("doubleArray", Type.array(Type.float64())),
@@ -159,6 +176,8 @@ public class ChecksumResultSetTest {
             Type.StructField.of("byteArray", Type.array(Type.bytes())),
             Type.StructField.of("timestampArray", Type.array(Type.timestamp())),
             Type.StructField.of("dateArray", Type.array(Type.date())),
+            Type.StructField.of("uuidArray", Type.array(Type.uuid())),
+            Type.StructField.of("intervalArray", Type.array(Type.interval())),
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
             Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
@@ -200,6 +219,10 @@ public class ChecksumResultSetTest {
             .to(Timestamp.parseTimestamp("2022-08-04T10:19:00.123456789Z"))
             .set("date")
             .to(Date.fromYearMonthDay(2022, 8, 4))
+            .set("uuid")
+            .to(UUID.randomUUID())
+            .set("interval")
+            .to(Interval.parseFromString("P1Y2M3DT4H5M6.789123456S"))
             .set("boolArray")
             .to(Value.boolArray(Arrays.asList(Boolean.TRUE, null, Boolean.FALSE)))
             .set("longArray")
@@ -228,6 +251,15 @@ public class ChecksumResultSetTest {
                 Value.dateArray(
                     Arrays.asList(
                         Date.parseDate("2000-01-01"), null, Date.parseDate("2022-08-04"))))
+            .set("uuidArray")
+            .to(Value.uuidArray(Arrays.asList(UUID.randomUUID(), UUID.randomUUID())))
+            .set("intervalArray")
+            .to(
+                Value.intervalArray(
+                    Arrays.asList(
+                        Interval.parseFromString("P1Y2M3DT4H5M6.789123456S"),
+                        null,
+                        Interval.parseFromString("P-1Y-2M-3DT-4H-5M-6.789123456S"))))
             .set("stringArray")
             .to(Value.stringArray(Arrays.asList("test1", null, "test2")))
             .set("jsonArray")
@@ -282,6 +314,10 @@ public class ChecksumResultSetTest {
             .to((Timestamp) null)
             .set("date")
             .to((Date) null)
+            .set("uuid")
+            .to((UUID) null)
+            .set("interval")
+            .to((Interval) null)
             .set("boolArray")
             .toBoolArray((Iterable<Boolean>) null)
             .set("longArray")
@@ -300,6 +336,10 @@ public class ChecksumResultSetTest {
             .toTimestampArray(null)
             .set("dateArray")
             .toDateArray(null)
+            .set("uuidArray")
+            .toUuidArray(null)
+            .set("intervalArray")
+            .toIntervalArray(null)
             .set("stringArray")
             .toStringArray(null)
             .set("jsonArray")

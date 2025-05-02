@@ -583,37 +583,28 @@ public class ITResultSetGetValue {
             .singleUse()
             .executeQuery(
                 Statement.of(
-                    "SELECT "
-                        + "TRUE AS bool,"
-                        + "1 AS int64,"
-                        + "CAST('100' AS NUMERIC) AS numeric,"
-                        + "'stringValue' AS string,"
-                        + "CAST('bytesValue' AS BYTES) AS bytes,"
-                        + "CAST('1970-01-01T00:00:01Z' AS TIMESTAMP) AS timestamp,"
-                        + "CAST('2021-02-03' AS DATE) AS date,"
-                        + "[false, true] AS boolArray,"
-                        + "[1, 2] AS int64Array,"
-                        + "[CAST('100' AS NUMERIC), CAST('200' AS NUMERIC)] AS numericArray,"
-                        + "['string1', 'string2'] AS stringArray,"
-                        + "[CAST('bytes1' AS BYTES), CAST('bytes2' AS BYTES)] AS bytesArray,"
-                        + "[CAST('1970-01-01T00:00:01.000000002Z' AS TIMESTAMP), CAST('1970-01-01T00:00:02.000000003Z' AS TIMESTAMP)] AS timestampArray,"
-                        + "[CAST('2020-01-02' AS DATE), CAST('2021-02-03' AS DATE)] AS dateArray,"
-                        + "ARRAY(SELECT STRUCT("
-                        + "  TRUE AS structBool,"
-                        + "  1 AS structInt64,"
-                        + "  CAST('100' AS NUMERIC) AS structNumeric,"
-                        + "  'stringValue' AS structString,"
-                        + "  CAST('bytesValue' AS BYTES) AS structBytes,"
-                        + "  CAST('1970-01-01T00:00:01Z' AS TIMESTAMP) AS structTimestamp,"
-                        + "  CAST('2020-01-02' AS DATE) AS structDate,"
-                        + "  [false, true] AS structBoolArray,"
-                        + "  [1, 2] AS structInt64Array,"
-                        + "  [CAST('100' AS NUMERIC), CAST('200' AS NUMERIC)] AS structNumericArray,"
-                        + "  ['string1', 'string2'] AS structStringArray,"
-                        + "  [CAST('bytes1' AS BYTES), CAST('bytes2' AS BYTES)] AS structBytesArray,"
-                        + "  [CAST('1970-01-01T00:00:01.000000002Z' AS TIMESTAMP), CAST('1970-01-01T00:00:02.000000003Z' AS TIMESTAMP)] AS structTimestampArray,"
-                        + "  [CAST('2020-01-02' AS DATE), CAST('2021-02-03' AS DATE)] AS structDateArray"
-                        + ")) AS structArray"))) {
+                    "SELECT TRUE AS bool,1 AS int64,CAST('100' AS NUMERIC) AS numeric,'stringValue'"
+                        + " AS string,CAST('bytesValue' AS BYTES) AS"
+                        + " bytes,CAST('1970-01-01T00:00:01Z' AS TIMESTAMP) AS"
+                        + " timestamp,CAST('2021-02-03' AS DATE) AS date,[false, true] AS"
+                        + " boolArray,[1, 2] AS int64Array,[CAST('100' AS NUMERIC), CAST('200' AS"
+                        + " NUMERIC)] AS numericArray,['string1', 'string2'] AS"
+                        + " stringArray,[CAST('bytes1' AS BYTES), CAST('bytes2' AS BYTES)] AS"
+                        + " bytesArray,[CAST('1970-01-01T00:00:01.000000002Z' AS TIMESTAMP),"
+                        + " CAST('1970-01-01T00:00:02.000000003Z' AS TIMESTAMP)] AS"
+                        + " timestampArray,[CAST('2020-01-02' AS DATE), CAST('2021-02-03' AS DATE)]"
+                        + " AS dateArray,ARRAY(SELECT STRUCT(  TRUE AS structBool,  1 AS"
+                        + " structInt64,  CAST('100' AS NUMERIC) AS structNumeric,  'stringValue'"
+                        + " AS structString,  CAST('bytesValue' AS BYTES) AS structBytes, "
+                        + " CAST('1970-01-01T00:00:01Z' AS TIMESTAMP) AS structTimestamp, "
+                        + " CAST('2020-01-02' AS DATE) AS structDate,  [false, true] AS"
+                        + " structBoolArray,  [1, 2] AS structInt64Array,  [CAST('100' AS NUMERIC),"
+                        + " CAST('200' AS NUMERIC)] AS structNumericArray,  ['string1', 'string2']"
+                        + " AS structStringArray,  [CAST('bytes1' AS BYTES), CAST('bytes2' AS"
+                        + " BYTES)] AS structBytesArray,  [CAST('1970-01-01T00:00:01.000000002Z' AS"
+                        + " TIMESTAMP), CAST('1970-01-01T00:00:02.000000003Z' AS TIMESTAMP)] AS"
+                        + " structTimestampArray,  [CAST('2020-01-02' AS DATE), CAST('2021-02-03'"
+                        + " AS DATE)] AS structDateArray)) AS structArray"))) {
       resultSet.next();
 
       assertEquals(Value.bool(true), resultSet.getValue("bool"));
@@ -711,21 +702,17 @@ public class ITResultSetGetValue {
             .singleUse()
             .executeQuery(
                 Statement.of(
-                    "SELECT "
-                        + "TRUE AS bool,"
-                        + "1 AS int64,"
-                        + "CAST('100' AS numeric) AS numeric,"
-                        + "'stringValue' AS string,"
-                        + "CAST('bytesValue' AS BYTEA) AS bytes,"
-                        + "CAST('1970-01-01T00:00:01 UTC' AS TIMESTAMPTZ) AS timestamp,"
-                        + "CAST('2021-02-03' AS DATE) AS date,"
-                        + "ARRAY[false, true] AS boolArray,"
-                        + "ARRAY[1, 2] AS int64Array,"
-                        + "ARRAY[CAST('100' AS NUMERIC), CAST('200' AS NUMERIC)] AS numericArray,"
-                        + "ARRAY['string1', 'string2'] AS stringArray,"
-                        + "ARRAY[CAST('bytes1' AS BYTEA), CAST('bytes2' AS BYTEA)] AS bytesArray,"
-                        + "ARRAY[CAST('1970-01-01T00:00:01 UTC' AS TIMESTAMPTZ), CAST('1970-01-01T00:00:02 UTC' AS TIMESTAMPTZ)] AS timestampArray,"
-                        + "ARRAY[CAST('2020-01-02' AS DATE), CAST('2021-02-03' AS DATE)] AS dateArray"))) {
+                    "SELECT TRUE AS bool,1 AS int64,CAST('100' AS numeric) AS numeric,'stringValue'"
+                        + " AS string,CAST('bytesValue' AS BYTEA) AS"
+                        + " bytes,CAST('1970-01-01T00:00:01 UTC' AS TIMESTAMPTZ) AS"
+                        + " timestamp,CAST('2021-02-03' AS DATE) AS date,ARRAY[false, true] AS"
+                        + " boolArray,ARRAY[1, 2] AS int64Array,ARRAY[CAST('100' AS NUMERIC),"
+                        + " CAST('200' AS NUMERIC)] AS numericArray,ARRAY['string1', 'string2'] AS"
+                        + " stringArray,ARRAY[CAST('bytes1' AS BYTEA), CAST('bytes2' AS BYTEA)] AS"
+                        + " bytesArray,ARRAY[CAST('1970-01-01T00:00:01 UTC' AS TIMESTAMPTZ),"
+                        + " CAST('1970-01-01T00:00:02 UTC' AS TIMESTAMPTZ)] AS"
+                        + " timestampArray,ARRAY[CAST('2020-01-02' AS DATE), CAST('2021-02-03' AS"
+                        + " DATE)] AS dateArray"))) {
       resultSet.next();
 
       assertEquals(Value.bool(true), resultSet.getValue("bool"));

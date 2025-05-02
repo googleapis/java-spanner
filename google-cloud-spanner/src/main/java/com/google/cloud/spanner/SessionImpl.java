@@ -120,7 +120,7 @@ class SessionImpl implements Session {
   static final int NO_CHANNEL_HINT = -1;
 
   private final SpannerImpl spanner;
-  private final SessionReference sessionReference;
+  private SessionReference sessionReference;
   private SessionTransaction activeTransaction;
   private ISpan currentSpan;
   private final Clock clock;
@@ -158,6 +158,14 @@ class SessionImpl implements Session {
   @Override
   public String getName() {
     return sessionReference.getName();
+  }
+
+  /**
+   * Updates the session reference with the fallback session. This should only be used for updating
+   * session reference with regular session in case of unimplemented error in multiplexed session.
+   */
+  void setFallbackSessionReference(SessionReference sessionReference) {
+    this.sessionReference = sessionReference;
   }
 
   Map<SpannerRpc.Option, ?> getOptions() {
@@ -455,8 +463,7 @@ class SessionImpl implements Session {
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(
-                defaultTransactionOptions()
-                    .toBuilder()
+                defaultTransactionOptions().toBuilder()
                     .mergeFrom(
                         createReadWriteTransactionOptions(
                             transactionOptions, previousTransactionId)));

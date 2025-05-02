@@ -27,6 +27,7 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
@@ -153,12 +154,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
   private final BuiltInMetricsProvider builtInMetricsProvider = BuiltInMetricsProvider.INSTANCE;
+
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
   private final Map<DatabaseId, QueryOptions> defaultQueryOptions;
+
   /** These are the default {@link QueryOptions} defined in environment variables on this system. */
   private final QueryOptions envQueryOptions;
+
   /**
    * These are the merged query options of the {@link QueryOptions} set on this {@link
    * SpannerOptions} and the {@link QueryOptions} in the environment variables. Options specified in
@@ -709,7 +713,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT,
           String.format(
-              "The %s system property must be a valid integer. The value %s could not be parsed as an integer.",
+              "The %s system property must be a valid integer. The value %s could not be parsed as"
+                  + " an integer.",
               propertyName, propertyValue));
     }
   }
@@ -848,6 +853,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return true;
     }
 
+    default boolean isEnableGRPCBuiltInMetrics() {
+      return false;
+    }
+
     default boolean isEnableEndToEndTracing() {
       return false;
     }
@@ -878,6 +887,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
+    private static final String SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS =
+        "SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS";
     private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
 
     private SpannerEnvironmentImpl() {}
@@ -908,6 +919,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableBuiltInMetrics() {
       return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_BUILTIN_METRICS));
+    }
+
+    @Override
+    public boolean isEnableGRPCBuiltInMetrics() {
+      return "false"
+          .equalsIgnoreCase(System.getenv(SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS));
     }
 
     @Override
@@ -1191,8 +1208,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public Builder setRetrySettings(RetrySettings retrySettings) {
       throw new UnsupportedOperationException(
-          "SpannerOptions does not support setting global retry settings. "
-              + "Call spannerStubSettingsBuilder().<method-name>Settings().setRetrySettings(RetrySettings) instead.");
+          "SpannerOptions does not support setting global retry settings. Call"
+              + " spannerStubSettingsBuilder().<method-name>Settings().setRetrySettings(RetrySettings)"
+              + " instead.");
     }
 
     /**
@@ -1783,7 +1801,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       if (activeTracingFramework != null
           && activeTracingFramework != TracingFramework.OPEN_TELEMETRY) {
         throw new IllegalStateException(
-            "ActiveTracingFramework is set to OpenCensus and cannot be reset after SpannerOptions object is created.");
+            "ActiveTracingFramework is set to OpenCensus and cannot be reset after SpannerOptions"
+                + " object is created.");
       }
       activeTracingFramework = TracingFramework.OPEN_TELEMETRY;
     }
@@ -1791,13 +1810,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   /** Enables OpenCensus traces. Enabling OpenCensus traces will disable OpenTelemetry traces. */
   @ObsoleteApi(
-      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to"
+          + " OpenTelemetry traces")
   public static void enableOpenCensusTraces() {
     synchronized (lock) {
       if (activeTracingFramework != null
           && activeTracingFramework != TracingFramework.OPEN_CENSUS) {
         throw new IllegalStateException(
-            "ActiveTracingFramework is set to OpenTelemetry and cannot be reset after SpannerOptions object is created.");
+            "ActiveTracingFramework is set to OpenTelemetry and cannot be reset after"
+                + " SpannerOptions object is created.");
       }
       activeTracingFramework = TracingFramework.OPEN_CENSUS;
     }
@@ -1808,7 +1829,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * not a valid production scenario
    */
   @ObsoleteApi(
-      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to"
+          + " OpenTelemetry traces")
   @VisibleForTesting
   static void resetActiveTracingFramework() {
     activeTracingFramework = null;
@@ -1971,6 +1993,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return createApiTracerFactory(false, false);
   }
 
+  public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
+    if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
+      this.builtInMetricsProvider.enableGrpcMetrics(
+          channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+    }
+  }
+
   public ApiTracerFactory getApiTracerFactory(boolean isAdminClient, boolean isEmulatorEnabled) {
     return createApiTracerFactory(isAdminClient, isEmulatorEnabled);
   }
@@ -2018,8 +2047,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return openTelemetry != null
         ? new BuiltInMetricsTracerFactory(
             new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            builtInMetricsProvider.createClientAttributes(
-                this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
+            new HashMap<>())
         : null;
   }
 

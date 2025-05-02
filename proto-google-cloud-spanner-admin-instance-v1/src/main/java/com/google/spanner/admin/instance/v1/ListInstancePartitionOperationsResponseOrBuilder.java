@@ -38,6 +38,7 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   java.util.List<com.google.longrunning.Operation> getOperationsList();
+
   /**
    *
    *
@@ -52,6 +53,7 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   com.google.longrunning.Operation getOperations(int index);
+
   /**
    *
    *
@@ -66,6 +68,7 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   int getOperationsCount();
+
   /**
    *
    *
@@ -80,6 +83,7 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
   java.util.List<? extends com.google.longrunning.OperationOrBuilder> getOperationsOrBuilderList();
+
   /**
    *
    *
@@ -109,6 +113,7 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *
@@ -139,6 +144,7 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    * @return A list containing the unreachableInstancePartitions.
    */
   java.util.List<java.lang.String> getUnreachableInstancePartitionsList();
+
   /**
    *
    *
@@ -154,6 +160,7 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    * @return The count of unreachableInstancePartitions.
    */
   int getUnreachableInstancePartitionsCount();
+
   /**
    *
    *
@@ -170,6 +177,7 @@ public interface ListInstancePartitionOperationsResponseOrBuilder
    * @return The unreachableInstancePartitions at the given index.
    */
   java.lang.String getUnreachableInstancePartitions(int index);
+
   /**
    *
    *

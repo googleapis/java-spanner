@@ -72,6 +72,7 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Metadata.Key<String> SERVER_TIMING_HEADER_KEY =
       Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER);
   private static final String GFE_TIMING_HEADER = "gfet4t7";
+  private static final String AFE_TIMING_HEADER = "afe";
   private static final Metadata.Key<String> GOOGLE_CLOUD_RESOURCE_PREFIX_KEY =
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
   private static final Pattern SERVER_TIMING_PATTERN =
@@ -86,6 +87,8 @@ class HeaderInterceptor implements ClientInterceptor {
   private final Cache<String, Attributes> attributesCache =
       CacheBuilder.newBuilder().maximumSize(1000).build();
   private final Cache<String, Map<String, String>> builtInAttributesCache =
+      CacheBuilder.newBuilder().maximumSize(1000).build();
+  private final Cache<DatabaseName, Cache<String, String>> keyCache =
       CacheBuilder.newBuilder().maximumSize(1000).build();
 
   // Get the global singleton Tagger object.
@@ -116,7 +119,7 @@ class HeaderInterceptor implements ClientInterceptor {
         try {
           Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
-          String key = databaseName + method.getFullMethodName();
+          String key = extractKey(databaseName, method.getFullMethodName());
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
@@ -172,13 +175,25 @@ class HeaderInterceptor implements ClientInterceptor {
         if (compositeTracer != null) {
           compositeTracer.recordGFELatency(gfeLatency);
         }
-
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
         }
       } else {
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
         spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
+        if (compositeTracer != null) {
+          compositeTracer.recordGfeHeaderMissingCount(1L);
+        }
+      }
+
+      // Record AFE metrics
+      if (compositeTracer != null && GapicSpannerRpc.isEnableAFEServerTiming()) {
+        if (serverTimingMetrics.containsKey(AFE_TIMING_HEADER)) {
+          long afeLatency = serverTimingMetrics.get(AFE_TIMING_HEADER);
+          compositeTracer.recordAFELatency(afeLatency);
+        } else {
+          compositeTracer.recordAfeHeaderMissingCount(1L);
+        }
       }
     } catch (NumberFormatException e) {
       LOGGER.log(LEVEL, "Invalid server-timing object in header: {}", serverTiming);
@@ -199,6 +214,13 @@ class HeaderInterceptor implements ClientInterceptor {
       }
     }
     return serverTimingMetrics;
+  }
+
+  private String extractKey(DatabaseName databaseName, String methodName)
+      throws ExecutionException {
+    Cache<String, String> keys =
+        keyCache.get(databaseName, () -> CacheBuilder.newBuilder().maximumSize(1000).build());
+    return keys.get(methodName, () -> databaseName + methodName);
   }
 
   private DatabaseName extractDatabaseName(Metadata headers) throws ExecutionException {

@@ -41,6 +41,7 @@ public final class CloseBatchTransactionAction extends com.google.protobuf.Gener
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.CloseBatchTransactionAction)
     CloseBatchTransactionActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use CloseBatchTransactionAction.newBuilder() to construct.
   private CloseBatchTransactionAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -71,6 +72,7 @@ public final class CloseBatchTransactionAction extends com.google.protobuf.Gener
 
   public static final int CLEANUP_FIELD_NUMBER = 1;
   private boolean cleanup_ = false;
+
   /**
    *
    *
@@ -247,6 +249,7 @@ public final class CloseBatchTransactionAction extends com.google.protobuf.Gener
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -437,6 +440,7 @@ public final class CloseBatchTransactionAction extends com.google.protobuf.Gener
     private int bitField0_;
 
     private boolean cleanup_;
+
     /**
      *
      *
@@ -452,6 +456,7 @@ public final class CloseBatchTransactionAction extends com.google.protobuf.Gener
     public boolean getCleanup() {
       return cleanup_;
     }
+
     /**
      *
      *
@@ -471,6 +476,7 @@ public final class CloseBatchTransactionAction extends com.google.protobuf.Gener
       onChanged();
       return this;
     }
+
     /**
      *
      *

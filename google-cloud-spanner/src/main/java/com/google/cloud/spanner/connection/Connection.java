@@ -42,6 +42,7 @@ import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.Set;
@@ -169,7 +170,9 @@ public interface Connection extends AutoCloseable {
    */
   ApiFuture<Void> closeAsync();
 
-  /** @return <code>true</code> if this connection has been closed. */
+  /**
+   * @return <code>true</code> if this connection has been closed.
+   */
   boolean isClosed();
 
   /**
@@ -204,7 +207,9 @@ public interface Connection extends AutoCloseable {
    */
   void setAutocommit(boolean autocommit);
 
-  /** @return <code>true</code> if this connection is in autocommit mode */
+  /**
+   * @return <code>true</code> if this connection is in autocommit mode
+   */
   boolean isAutocommit();
 
   /**
@@ -216,8 +221,16 @@ public interface Connection extends AutoCloseable {
    */
   void setReadOnly(boolean readOnly);
 
-  /** @return <code>true</code> if this connection is in read-only mode */
+  /**
+   * @return <code>true</code> if this connection is in read-only mode
+   */
   boolean isReadOnly();
+
+  /** Sets the default isolation level for read/write transactions for this connection. */
+  void setDefaultIsolationLevel(IsolationLevel isolationLevel);
+
+  /** Returns the default isolation level for read/write transactions for this connection. */
+  IsolationLevel getDefaultIsolationLevel();
 
   /**
    * Sets the duration the connection should wait before automatically aborting the execution of a
@@ -266,7 +279,9 @@ public interface Connection extends AutoCloseable {
    */
   long getStatementTimeout(TimeUnit unit);
 
-  /** @return <code>true</code> if this {@link Connection} has a statement timeout value. */
+  /**
+   * @return <code>true</code> if this {@link Connection} has a statement timeout value.
+   */
   boolean hasStatementTimeout();
 
   /**
@@ -289,7 +304,8 @@ public interface Connection extends AutoCloseable {
   void cancel();
 
   /**
-   * Begins a new transaction for this connection.
+   * Begins a new transaction for this connection. The transaction will use the default isolation
+   * level of this connection.
    *
    * <ul>
    *   <li>Calling this method on a connection that has no transaction and that is
@@ -307,8 +323,15 @@ public interface Connection extends AutoCloseable {
   void beginTransaction();
 
   /**
+   * Same as {@link #beginTransaction()}, but this transaction will use the given isolation level,
+   * instead of the default isolation level of this connection.
+   */
+  void beginTransaction(IsolationLevel isolationLevel);
+
+  /**
    * Begins a new transaction for this connection. This method is guaranteed to be non-blocking. The
-   * returned {@link ApiFuture} will be done when the transaction has been initialized.
+   * returned {@link ApiFuture} will be done when the transaction has been initialized. The
+   * transaction will use the default isolation level of this connection.
    *
    * <ul>
    *   <li>Calling this method on a connection that has no transaction and that is
@@ -324,6 +347,12 @@ public interface Connection extends AutoCloseable {
    * </ul>
    */
   ApiFuture<Void> beginTransactionAsync();
+
+  /**
+   * Same as {@link #beginTransactionAsync()}, but this transaction will use the given isolation
+   * level, instead of the default isolation level of this connection.
+   */
+  ApiFuture<Void> beginTransactionAsync(IsolationLevel isolationLevel);
 
   /**
    * Sets the transaction mode to use for current transaction. This method may only be called when
@@ -370,7 +399,9 @@ public interface Connection extends AutoCloseable {
     throw new UnsupportedOperationException();
   }
 
-  /** @return The transaction tag of the current transaction. */
+  /**
+   * @return The transaction tag of the current transaction.
+   */
   default String getTransactionTag() {
     throw new UnsupportedOperationException();
   }
@@ -604,7 +635,9 @@ public interface Connection extends AutoCloseable {
    */
   void setReturnCommitStats(boolean returnCommitStats);
 
-  /** @return true if this connection requests commit statistics from Cloud Spanner */
+  /**
+   * @return true if this connection requests commit statistics from Cloud Spanner
+   */
   boolean isReturnCommitStats();
 
   /** Sets the max_commit_delay that will be applied to commit requests from this connection. */
@@ -1056,10 +1089,14 @@ public interface Connection extends AutoCloseable {
    */
   void abortBatch();
 
-  /** @return <code>true</code> if a DDL batch is active on this connection. */
+  /**
+   * @return <code>true</code> if a DDL batch is active on this connection.
+   */
   boolean isDdlBatchActive();
 
-  /** @return <code>true</code> if a DML batch is active on this connection. */
+  /**
+   * @return <code>true</code> if a DML batch is active on this connection.
+   */
   boolean isDmlBatchActive();
 
   /**

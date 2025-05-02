@@ -112,6 +112,7 @@ import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.Cr
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DdlInTransactionModeConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DialectConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DurationConverter;
+import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.IsolationLevelConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.LongConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.NonNegativeIntegerConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ReadOnlyStalenessConverter;
@@ -123,13 +124,11 @@ import com.google.cloud.spanner.connection.DirectedReadOptionsUtil.DirectedReadO
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.time.Duration;
+import java.util.Arrays;
 
-/**
- * Utility class that defines all known connection properties. This class will eventually replace
- * the list of {@link com.google.cloud.spanner.connection.ConnectionOptions.ConnectionProperty} in
- * {@link ConnectionOptions}.
- */
+/** Utility class that defines all known connection properties. */
 public class ConnectionProperties {
   private static final ImmutableMap.Builder<String, ConnectionProperty<?>>
       CONNECTION_PROPERTIES_BUILDER = ImmutableMap.builder();
@@ -165,19 +164,21 @@ public class ConnectionProperties {
   static final ConnectionProperty<String> ENDPOINT =
       create(
           ENDPOINT_PROPERTY_NAME,
-          "The endpoint that the JDBC driver should connect to. "
-              + "The default is the default Spanner production endpoint when autoConfigEmulator=false, "
-              + "and the default Spanner emulator endpoint (localhost:9010) when autoConfigEmulator=true. "
-              + "This property takes precedence over any host name at the start of the connection URL.",
+          "The endpoint that the JDBC driver should connect to. The default is the default Spanner"
+              + " production endpoint when autoConfigEmulator=false, and the default Spanner"
+              + " emulator endpoint (localhost:9010) when autoConfigEmulator=true. This property"
+              + " takes precedence over any host name at the start of the connection URL.",
           DEFAULT_ENDPOINT,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<Boolean> AUTO_CONFIG_EMULATOR =
       create(
           "autoConfigEmulator",
-          "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
-              + "The instance and database in the connection string will automatically be created if these do not yet exist on the emulator. "
-              + "Add dialect=postgresql to the connection string to make sure that the database that is created uses the PostgreSQL dialect.",
+          "Automatically configure the connection to try to connect to the Cloud Spanner emulator"
+              + " (true/false). The instance and database in the connection string will"
+              + " automatically be created if these do not yet exist on the emulator. Add"
+              + " dialect=postgresql to the connection string to make sure that the database that"
+              + " is created uses the PostgreSQL dialect.",
           false,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -185,8 +186,9 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> USE_AUTO_SAVEPOINTS_FOR_EMULATOR =
       create(
           "useAutoSavepointsForEmulator",
-          "Automatically creates savepoints for each statement in a read/write transaction when using the Emulator. "
-              + "This is no longer needed when using Emulator version 1.5.23 or higher.",
+          "Automatically creates savepoints for each statement in a read/write transaction when"
+              + " using the Emulator. This is no longer needed when using Emulator version 1.5.23"
+              + " or higher.",
           false,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -194,7 +196,9 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> USE_PLAIN_TEXT =
       create(
           USE_PLAIN_TEXT_PROPERTY_NAME,
-          "Use a plain text communication channel (i.e. non-TLS) for communicating with the server (true/false). Set this value to true for communication with the Cloud Spanner emulator.",
+          "Use a plain text communication channel (i.e. non-TLS) for communicating with the server"
+              + " (true/false). Set this value to true for communication with the Cloud Spanner"
+              + " emulator.",
           DEFAULT_USE_PLAIN_TEXT,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -210,42 +214,50 @@ public class ConnectionProperties {
   static final ConnectionProperty<String> CLIENT_CERTIFICATE =
       create(
           CLIENT_CERTIFICATE_PROPERTY_NAME,
-          "Specifies the file path to the client certificate required for establishing an mTLS connection.",
+          "Specifies the file path to the client certificate required for establishing an mTLS"
+              + " connection.",
           DEFAULT_CLIENT_CERTIFICATE,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<String> CLIENT_KEY =
       create(
           CLIENT_KEY_PROPERTY_NAME,
-          "Specifies the file path to the client private key required for establishing an mTLS connection.",
+          "Specifies the file path to the client private key required for establishing an mTLS"
+              + " connection.",
           DEFAULT_CLIENT_KEY,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<String> CREDENTIALS_URL =
       create(
           CREDENTIALS_PROPERTY_NAME,
-          "The location of the credentials file to use for this connection. If neither this property or encoded credentials are set, the connection will use the default Google Cloud credentials for the runtime environment.",
+          "The location of the credentials file to use for this connection. If neither this"
+              + " property or encoded credentials are set, the connection will use the default"
+              + " Google Cloud credentials for the runtime environment.",
           DEFAULT_CREDENTIALS,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<String> ENCODED_CREDENTIALS =
       create(
           ENCODED_CREDENTIALS_PROPERTY_NAME,
-          "Base64-encoded credentials to use for this connection. If neither this property or a credentials location are set, the connection will use the default Google Cloud credentials for the runtime environment.",
+          "Base64-encoded credentials to use for this connection. If neither this property or a"
+              + " credentials location are set, the connection will use the default Google Cloud"
+              + " credentials for the runtime environment.",
           null,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<String> OAUTH_TOKEN =
       create(
           OAUTH_TOKEN_PROPERTY_NAME,
-          "A valid pre-existing OAuth token to use for authentication for this connection. Setting this property will take precedence over any value set for a credentials file.",
+          "A valid pre-existing OAuth token to use for authentication for this connection. Setting"
+              + " this property will take precedence over any value set for a credentials file.",
           DEFAULT_OAUTH_TOKEN,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<CredentialsProvider> CREDENTIALS_PROVIDER =
       create(
           CREDENTIALS_PROVIDER_PROPERTY_NAME,
-          "The class name of the com.google.api.gax.core.CredentialsProvider implementation that should be used to obtain credentials for connections.",
+          "The class name of the com.google.api.gax.core.CredentialsProvider implementation that"
+              + " should be used to obtain credentials for connections.",
           null,
           CredentialsProviderConverter.INSTANCE,
           Context.STARTUP);
@@ -253,7 +265,9 @@ public class ConnectionProperties {
   static final ConnectionProperty<String> USER_AGENT =
       create(
           USER_AGENT_PROPERTY_NAME,
-          "The custom user-agent property name to use when communicating with Cloud Spanner. This property is intended for internal library usage, and should not be set by applications.",
+          "The custom user-agent property name to use when communicating with Cloud Spanner. This"
+              + " property is intended for internal library usage, and should not be set by"
+              + " applications.",
           DEFAULT_USER_AGENT,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
@@ -268,12 +282,13 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> TRACK_SESSION_LEAKS =
       create(
           TRACK_SESSION_LEAKS_PROPERTY_NAME,
-          "Capture the call stack of the thread that checked out a session of the session pool. This will "
-              + "pre-create a LeakedSessionException already when a session is checked out. This can be disabled, "
-              + "for example if a monitoring system logs the pre-created exception. "
-              + "If disabled, the LeakedSessionException will only be created when an "
-              + "actual session leak is detected. The stack trace of the exception will "
-              + "in that case not contain the call stack of when the session was checked out.",
+          "Capture the call stack of the thread that checked out a session of the session pool."
+              + " This will pre-create a LeakedSessionException already when a session is checked"
+              + " out. This can be disabled, for example if a monitoring system logs the"
+              + " pre-created exception. If disabled, the LeakedSessionException will only be"
+              + " created when an actual session leak is detected. The stack trace of the exception"
+              + " will in that case not contain the call stack of when the session was checked"
+              + " out.",
           DEFAULT_TRACK_SESSION_LEAKS,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -281,12 +296,12 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> TRACK_CONNECTION_LEAKS =
       create(
           TRACK_CONNECTION_LEAKS_PROPERTY_NAME,
-          "Capture the call stack of the thread that created a connection. This will "
-              + "pre-create a LeakedConnectionException already when a connection is created. "
-              + "This can be disabled, for example if a monitoring system logs the pre-created exception. "
-              + "If disabled, the LeakedConnectionException will only be created when an "
-              + "actual connection leak is detected. The stack trace of the exception will "
-              + "in that case not contain the call stack of when the connection was created.",
+          "Capture the call stack of the thread that created a connection. This will pre-create a"
+              + " LeakedConnectionException already when a connection is created. This can be"
+              + " disabled, for example if a monitoring system logs the pre-created exception. If"
+              + " disabled, the LeakedConnectionException will only be created when an actual"
+              + " connection leak is detected. The stack trace of the exception will in that case"
+              + " not contain the call stack of when the connection was created.",
           DEFAULT_TRACK_CONNECTION_LEAKS,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -294,7 +309,8 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> ROUTE_TO_LEADER =
       create(
           ROUTE_TO_LEADER_PROPERTY_NAME,
-          "Should read/write transactions and partitioned DML be routed to leader region (true/false)",
+          "Should read/write transactions and partitioned DML be routed to leader region"
+              + " (true/false)",
           DEFAULT_ROUTE_TO_LEADER,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -302,8 +318,9 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> USE_VIRTUAL_THREADS =
       create(
           USE_VIRTUAL_THREADS_PROPERTY_NAME,
-          "Use a virtual thread instead of a platform thread for each connection (true/false). "
-              + "This option only has any effect if the application is running on Java 21 or higher. In all other cases, the option is ignored.",
+          "Use a virtual thread instead of a platform thread for each connection (true/false). This"
+              + " option only has any effect if the application is running on Java 21 or higher. In"
+              + " all other cases, the option is ignored.",
           DEFAULT_USE_VIRTUAL_THREADS,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -311,8 +328,9 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> USE_VIRTUAL_GRPC_TRANSPORT_THREADS =
       create(
           USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME,
-          "Use a virtual thread instead of a platform thread for the gRPC executor (true/false). "
-              + "This option only has any effect if the application is running on Java 21 or higher. In all other cases, the option is ignored.",
+          "Use a virtual thread instead of a platform thread for the gRPC executor (true/false)."
+              + " This option only has any effect if the application is running on Java 21 or"
+              + " higher. In all other cases, the option is ignored.",
           DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -341,10 +359,11 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> ENABLE_END_TO_END_TRACING =
       create(
           ENABLE_END_TO_END_TRACING_PROPERTY_NAME,
-          "Enable end-to-end tracing (true/false) to generate traces for both the time "
-              + "that is spent in the client, as well as time that is spent in the Spanner server. "
-              + "Server side traces can only go to Google Cloud Trace, so to see end to end traces, "
-              + "the application should configure an exporter that exports the traces to Google Cloud Trace.",
+          "Enable end-to-end tracing (true/false) to generate traces for both the time that is"
+              + " spent in the client, as well as time that is spent in the Spanner server. Server"
+              + " side traces can only go to Google Cloud Trace, so to see end to end traces, the"
+              + " application should configure an exporter that exports the traces to Google Cloud"
+              + " Trace.",
           DEFAULT_ENABLE_END_TO_END_TRACING,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -373,14 +392,17 @@ public class ConnectionProperties {
   static final ConnectionProperty<String> CHANNEL_PROVIDER =
       create(
           CHANNEL_PROVIDER_PROPERTY_NAME,
-          "The name of the channel provider class. The name must reference an implementation of ExternalChannelProvider. If this property is not set, the connection will use the default grpc channel provider.",
+          "The name of the channel provider class. The name must reference an implementation of"
+              + " ExternalChannelProvider. If this property is not set, the connection will use the"
+              + " default grpc channel provider.",
           DEFAULT_CHANNEL_PROVIDER,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
   static final ConnectionProperty<String> DATABASE_ROLE =
       create(
           DATABASE_ROLE_PROPERTY_NAME,
-          "Sets the database role to use for this connection. The default is privileges assigned to IAM role",
+          "Sets the database role to use for this connection. The default is privileges assigned to"
+              + " IAM role",
           DEFAULT_DATABASE_ROLE,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
@@ -401,13 +423,28 @@ public class ConnectionProperties {
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
+  static final ConnectionProperty<IsolationLevel> DEFAULT_ISOLATION_LEVEL =
+      create(
+          "default_isolation_level",
+          "The transaction isolation level that is used by default for read/write transactions. The"
+              + " default is isolation_level_unspecified, which means that the connection will use"
+              + " the default isolation level of the database that it is connected to.",
+          IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          new IsolationLevel[] {
+            IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            IsolationLevel.SERIALIZABLE,
+            IsolationLevel.REPEATABLE_READ
+          },
+          IsolationLevelConverter.INSTANCE,
+          Context.USER);
   static final ConnectionProperty<AutocommitDmlMode> AUTOCOMMIT_DML_MODE =
       create(
           "autocommit_dml_mode",
           "Determines the transaction type that is used to execute "
               + "DML statements when the connection is in auto-commit mode.",
           AutocommitDmlMode.TRANSACTIONAL,
-          AutocommitDmlMode.values(),
+          // Add 'null' as a valid value.
+          Arrays.copyOf(AutocommitDmlMode.values(), AutocommitDmlMode.values().length + 1),
           AutocommitDmlModeConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Boolean> RETRY_ABORTS_INTERNALLY =
@@ -434,11 +471,15 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE =
       create(
           DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME,
-          "Enabling this option will delay the actual start of a read/write transaction until the first write operation is seen in that transaction. "
-              + "All reads that happen before the first write in a transaction will instead be executed as if the connection was in auto-commit mode. "
-              + "Enabling this option will make read/write transactions lose their SERIALIZABLE isolation level. Read operations that are executed after "
-              + "the first write operation in a read/write transaction will be executed using the read/write transaction. Enabling this mode can reduce locking "
-              + "and improve performance for applications that can handle the lower transaction isolation semantics.",
+          "Enabling this option will delay the actual start of a read/write transaction until the"
+              + " first write operation is seen in that transaction. All reads that happen before"
+              + " the first write in a transaction will instead be executed as if the connection"
+              + " was in auto-commit mode. Enabling this option will make read/write transactions"
+              + " lose their SERIALIZABLE isolation level. Read operations that are executed after"
+              + " the first write operation in a read/write transaction will be executed using the"
+              + " read/write transaction. Enabling this mode can reduce locking and improve"
+              + " performance for applications that can handle the lower transaction isolation"
+              + " semantics.",
           DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -446,9 +487,12 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> KEEP_TRANSACTION_ALIVE =
       create(
           KEEP_TRANSACTION_ALIVE_PROPERTY_NAME,
-          "Enabling this option will trigger the connection to keep read/write transactions alive by executing a SELECT 1 query once every 10 seconds "
-              + "if no other statements are being executed. This option should be used with caution, as it can keep transactions alive and hold on to locks "
-              + "longer than intended. This option should typically be used for CLI-type application that might wait for user input for a longer period of time.",
+          "Enabling this option will trigger the connection to keep read/write transactions alive"
+              + " by executing a SELECT 1 query once every 10 seconds if no other statements are"
+              + " being executed. This option should be used with caution, as it can keep"
+              + " transactions alive and hold on to locks longer than intended. This option should"
+              + " typically be used for CLI-type application that might wait for user input for a"
+              + " longer period of time.",
           DEFAULT_KEEP_TRANSACTION_ALIVE,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -474,8 +518,9 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> DATA_BOOST_ENABLED =
       create(
           DATA_BOOST_ENABLED_PROPERTY_NAME,
-          "Enable data boost for all partitioned queries that are executed by this connection. "
-              + "This setting is only used for partitioned queries and is ignored by all other statements.",
+          "Enable data boost for all partitioned queries that are executed by this connection. This"
+              + " setting is only used for partitioned queries and is ignored by all other"
+              + " statements.",
           DEFAULT_DATA_BOOST_ENABLED,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -521,9 +566,11 @@ public class ConnectionProperties {
   static final ConnectionProperty<RpcPriority> RPC_PRIORITY =
       create(
           RPC_PRIORITY_NAME,
-          "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH.",
+          "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The"
+              + " default is HIGH.",
           DEFAULT_RPC_PRIORITY,
-          RpcPriority.values(),
+          // Add 'null' as a valid value.
+          Arrays.copyOf(RpcPriority.values(), RpcPriority.values().length + 1),
           RpcPriorityConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<SavepointSupport> SAVEPOINT_SUPPORT =
@@ -561,15 +608,14 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> AUTO_BATCH_DML =
       create(
           AUTO_BATCH_DML_PROPERTY_NAME,
-          "Automatically buffer DML statements that are executed on this connection and "
-              + "execute them as one batch when a non-DML statement is executed, or when the current "
-              + "transaction is committed. The update count that is returned for DML statements that "
-              + "are buffered is by default 1. This default can be changed by setting the connection "
-              + "variable "
+          "Automatically buffer DML statements that are executed on this connection and execute"
+              + " them as one batch when a non-DML statement is executed, or when the current"
+              + " transaction is committed. The update count that is returned for DML statements"
+              + " that are buffered is by default 1. This default can be changed by setting the"
+              + " connection variable "
               + AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME
-              + " to value other than 1. "
-              + "This setting is only in read/write transactions. DML statements in auto-commit mode "
-              + "are executed directly.",
+              + " to value other than 1. This setting is only in read/write transactions. DML"
+              + " statements in auto-commit mode are executed directly.",
           DEFAULT_AUTO_BATCH_DML,
           BOOLEANS,
           BooleanConverter.INSTANCE,
@@ -579,10 +625,9 @@ public class ConnectionProperties {
           AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME,
           "DML statements that are executed when "
               + AUTO_BATCH_DML_PROPERTY_NAME
-              + " is "
-              + "set to true, are not directly sent to Spanner, but are buffered in the client until "
-              + "the batch is flushed. This property determines the update count that is returned for "
-              + "these DML statements. The default is "
+              + " is set to true, are not directly sent to Spanner, but are buffered in the client"
+              + " until the batch is flushed. This property determines the update count that is"
+              + " returned for these DML statements. The default is "
               + DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT
               + ", as "
               + "that is the update count that is expected by most ORMs (e.g. Hibernate).",
@@ -598,9 +643,9 @@ public class ConnectionProperties {
               + ". "
               + "This value can be changed by setting the connection variable "
               + AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME
-              + ". The update counts that are returned by Spanner when the DML statements are actually "
-              + "executed are verified against the update counts that were returned when they were "
-              + "buffered. If these do not match, a "
+              + ". The update counts that are returned by Spanner when the DML statements are"
+              + " actually executed are verified against the update counts that were returned when"
+              + " they were buffered. If these do not match, a "
               + DmlBatchUpdateCountVerificationFailedException.class.getName()
               + " will be thrown. You can disable this verification by setting "
               + AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME

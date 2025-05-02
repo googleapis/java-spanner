@@ -164,6 +164,13 @@ class SessionPoolAsyncTransactionManager<I extends SessionFuture>
   }
 
   @Override
+  public TransactionContextFuture beginAsync(AbortedException exception) {
+    // For regular sessions, the input exception is ignored and the behavior is equivalent to
+    // calling {@link #beginAsync()}.
+    return beginAsync();
+  }
+
+  @Override
   public void onError(Throwable t) {
     if (t instanceof AbortedException) {
       synchronized (lock) {

@@ -88,8 +88,7 @@ public class PartitionedDmlTransactionTest {
   private final ExecuteSqlRequest executeRequestWithResumeToken =
       executeRequestWithoutResumeToken.toBuilder().setResumeToken(resumeToken).build();
   private final ExecuteSqlRequest executeRequestWithRequestOptions =
-      executeRequestWithoutResumeToken
-          .toBuilder()
+      executeRequestWithoutResumeToken.toBuilder()
           .setRequestOptions(RequestOptions.newBuilder().setRequestTag(tag).build())
           .build();
 

@@ -39,6 +39,7 @@ public interface ListInstancesRequestOrBuilder
    * @return The parent.
    */
   java.lang.String getParent();
+
   /**
    *
    *
@@ -84,6 +85,7 @@ public interface ListInstancesRequestOrBuilder
    * @return The pageToken.
    */
   java.lang.String getPageToken();
+
   /**
    *
    *
@@ -130,6 +132,7 @@ public interface ListInstancesRequestOrBuilder
    * @return The filter.
    */
   java.lang.String getFilter();
+
   /**
    *
    *
@@ -178,6 +181,7 @@ public interface ListInstancesRequestOrBuilder
    * @return Whether the instanceDeadline field is set.
    */
   boolean hasInstanceDeadline();
+
   /**
    *
    *
@@ -195,6 +199,7 @@ public interface ListInstancesRequestOrBuilder
    * @return The instanceDeadline.
    */
   com.google.protobuf.Timestamp getInstanceDeadline();
+
   /**
    *
    *

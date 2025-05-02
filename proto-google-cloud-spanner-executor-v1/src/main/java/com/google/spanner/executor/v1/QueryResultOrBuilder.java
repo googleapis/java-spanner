@@ -35,6 +35,7 @@ public interface QueryResultOrBuilder
    * <code>repeated .google.spanner.executor.v1.ValueList row = 1;</code>
    */
   java.util.List<com.google.spanner.executor.v1.ValueList> getRowList();
+
   /**
    *
    *
@@ -46,6 +47,7 @@ public interface QueryResultOrBuilder
    * <code>repeated .google.spanner.executor.v1.ValueList row = 1;</code>
    */
   com.google.spanner.executor.v1.ValueList getRow(int index);
+
   /**
    *
    *
@@ -57,6 +59,7 @@ public interface QueryResultOrBuilder
    * <code>repeated .google.spanner.executor.v1.ValueList row = 1;</code>
    */
   int getRowCount();
+
   /**
    *
    *
@@ -68,6 +71,7 @@ public interface QueryResultOrBuilder
    * <code>repeated .google.spanner.executor.v1.ValueList row = 1;</code>
    */
   java.util.List<? extends com.google.spanner.executor.v1.ValueListOrBuilder> getRowOrBuilderList();
+
   /**
    *
    *
@@ -92,6 +96,7 @@ public interface QueryResultOrBuilder
    * @return Whether the rowType field is set.
    */
   boolean hasRowType();
+
   /**
    *
    *
@@ -104,6 +109,7 @@ public interface QueryResultOrBuilder
    * @return The rowType.
    */
   com.google.spanner.v1.StructType getRowType();
+
   /**
    *
    *

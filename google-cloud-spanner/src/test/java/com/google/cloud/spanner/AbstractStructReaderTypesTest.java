@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.junit.Before;
@@ -100,6 +101,15 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected Date getDateInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected UUID getUuidInternal(int columnIndex) {
+      return null;
+    }
+
+    protected Interval getIntervalInternal(int columnIndex) {
       return null;
     }
 
@@ -207,6 +217,16 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected List<UUID> getUuidListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected List<Interval> getIntervalListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected List<Struct> getStructListInternal(int columnIndex) {
       return null;
     }
@@ -299,6 +319,20 @@ public class AbstractStructReaderTypesTest {
             "getDateInternal",
             Date.parseDate("2015-09-15"),
             "getDate",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.uuid(),
+            "getUuidInternal",
+            UUID.randomUUID(),
+            "getUuid",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.interval(),
+            "getIntervalInternal",
+            Interval.parseFromString("P1Y2M3DT4H5M6.78912345S"),
+            "getInterval",
             Collections.singletonList("getValue")
           },
           {
@@ -421,6 +455,23 @@ public class AbstractStructReaderTypesTest {
             "getDateListInternal",
             Arrays.asList(Date.parseDate("2015-09-15"), Date.parseDate("2015-09-14")),
             "getDateList",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.uuid()),
+            "getUuidListInternal",
+            Arrays.asList(UUID.randomUUID(), UUID.randomUUID()),
+            "getUuidList",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.interval()),
+            "getIntervalListInternal",
+            Arrays.asList(
+                Interval.parseFromString("P1Y2M3DT4H5M6.78912345S"),
+                Interval.parseFromString("P0Y"),
+                Interval.parseFromString("P-1Y2M-3DT-4H5M6.78912345S")),
+            "getIntervalList",
             Collections.singletonList("getValue")
           },
           {

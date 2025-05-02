@@ -23,7 +23,7 @@ import static com.google.api.MetricDescriptor.ValueType.DISTRIBUTION;
 import static com.google.api.MetricDescriptor.ValueType.DOUBLE;
 import static com.google.api.MetricDescriptor.ValueType.INT64;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.GAX_METER_NAME;
-import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.GRPC_METER_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_METER_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_PROMOTED_RESOURCE_LABELS;
@@ -52,6 +52,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -64,34 +65,45 @@ class SpannerCloudMonitoringExporterUtils {
 
   private SpannerCloudMonitoringExporterUtils() {}
 
-  static String getProjectId(PointData pointData) {
-    return pointData.getAttributes().get(PROJECT_ID_KEY);
-  }
-
-  static String getInstanceId(PointData pointData) {
-    return pointData.getAttributes().get(INSTANCE_ID_KEY);
+  static String getProjectId(Resource resource) {
+    return resource.getAttributes().get(PROJECT_ID_KEY);
   }
 
   static List<TimeSeries> convertToSpannerTimeSeries(List<MetricData> collection) {
     List<TimeSeries> allTimeSeries = new ArrayList<>();
 
     for (MetricData metricData : collection) {
-      // Get metrics data from GAX library and Spanner library
+      // Get metrics data from GAX library, GRPC library and Spanner library
       if (!(metricData.getInstrumentationScopeInfo().getName().equals(GAX_METER_NAME)
-          || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME))) {
+          || metricData.getInstrumentationScopeInfo().getName().equals(SPANNER_METER_NAME)
+          || metricData.getInstrumentationScopeInfo().getName().equals(GRPC_METER_NAME))) {
         // Filter out metric data for instruments that are not part of the spanner metrics list
         continue;
       }
+
+      // Create MonitoredResource Builder
+      MonitoredResource.Builder monitoredResourceBuilder =
+          MonitoredResource.newBuilder().setType(SPANNER_RESOURCE_TYPE);
+
+      Attributes resourceAttributes = metricData.getResource().getAttributes();
+      for (AttributeKey<?> key : resourceAttributes.asMap().keySet()) {
+        monitoredResourceBuilder.putLabels(
+            key.getKey(), String.valueOf(resourceAttributes.get(key)));
+      }
+
       metricData.getData().getPoints().stream()
-          .map(pointData -> convertPointToSpannerTimeSeries(metricData, pointData))
+          .map(
+              pointData ->
+                  convertPointToSpannerTimeSeries(metricData, pointData, monitoredResourceBuilder))
           .forEach(allTimeSeries::add);
     }
-
     return allTimeSeries;
   }
 
   private static TimeSeries convertPointToSpannerTimeSeries(
-      MetricData metricData, PointData pointData) {
+      MetricData metricData,
+      PointData pointData,
+      MonitoredResource.Builder monitoredResourceBuilder) {
     TimeSeries.Builder builder =
         TimeSeries.newBuilder()
             .setMetricKind(convertMetricKind(metricData))
@@ -99,16 +111,20 @@ class SpannerCloudMonitoringExporterUtils {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(metricData.getName());
 
     Attributes attributes = pointData.getAttributes();
-    MonitoredResource.Builder monitoredResourceBuilder =
-        MonitoredResource.newBuilder().setType(SPANNER_RESOURCE_TYPE);
 
     for (AttributeKey<?> key : attributes.asMap().keySet()) {
       if (SPANNER_PROMOTED_RESOURCE_LABELS.contains(key)) {
         monitoredResourceBuilder.putLabels(key.getKey(), String.valueOf(attributes.get(key)));
       } else {
-        metricBuilder.putLabels(key.getKey(), String.valueOf(attributes.get(key)));
+        // Replace metric label names by converting "." to "_" since Cloud Monitoring does not
+        // support labels containing "."
+        metricBuilder.putLabels(
+            key.getKey().replace(".", "_"), String.valueOf(attributes.get(key)));
       }
     }
+
+    // Add common labels like "client_name" and "client_uid" for all the exported metrics.
+    metricBuilder.putAllLabels(BuiltInMetricsProvider.INSTANCE.createClientAttributes());
 
     builder.setResource(monitoredResourceBuilder.build());
     builder.setMetric(metricBuilder.build());

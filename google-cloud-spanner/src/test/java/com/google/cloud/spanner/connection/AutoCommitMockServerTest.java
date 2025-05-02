@@ -16,21 +16,42 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class AutoCommitMockServerTest extends AbstractMockServerTest {
+
+  @Parameter public IsolationLevel isolationLevel;
+
+  @Parameters(name = "isolationLevel = {0}")
+  public static Object[] data() {
+    return DEFAULT_ISOLATION_LEVEL.getValidValues();
+  }
+
+  @Override
+  protected ITConnection createConnection() {
+    return createConnection(
+        Collections.emptyList(),
+        Collections.emptyList(),
+        String.format(";default_isolation_level=%s", isolationLevel));
+  }
 
   @Test
   public void testQuery() {
@@ -43,6 +64,9 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
     ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertTrue(request.getTransaction().hasSingleUse());
     assertTrue(request.getTransaction().getSingleUse().hasReadOnly());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        request.getTransaction().getSingleUse().getIsolationLevel());
     assertFalse(request.getLastStatement());
   }
 
@@ -56,6 +80,7 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
     ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertTrue(request.getTransaction().hasBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
     assertTrue(request.getLastStatement());
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
@@ -71,6 +96,7 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
     ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertTrue(request.getTransaction().hasBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
     assertTrue(request.getLastStatement());
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
@@ -89,6 +115,7 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
     assertTrue(request.getTransaction().hasBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
     assertTrue(request.getLastStatements());
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
@@ -104,6 +131,8 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
     BeginTransactionRequest beginRequest =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
     assertTrue(beginRequest.getOptions().hasPartitionedDml());
+    assertEquals(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED, beginRequest.getOptions().getIsolationLevel());
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertTrue(request.getTransaction().hasId());
@@ -122,6 +151,7 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
     for (ExecuteSqlRequest request : mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)) {
       assertTrue(request.getTransaction().hasBegin());
       assertTrue(request.getTransaction().getBegin().hasReadWrite());
+      assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
       assertTrue(request.getLastStatement());
     }
     assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
@@ -139,6 +169,7 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
     for (ExecuteSqlRequest request : mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)) {
       assertTrue(request.getTransaction().hasBegin());
       assertTrue(request.getTransaction().getBegin().hasReadWrite());
+      assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
       assertTrue(request.getLastStatement());
     }
     assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
@@ -159,6 +190,7 @@ public class AutoCommitMockServerTest extends AbstractMockServerTest {
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class)) {
       assertTrue(request.getTransaction().hasBegin());
       assertTrue(request.getTransaction().getBegin().hasReadWrite());
+      assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
       assertTrue(request.getLastStatements());
     }
     assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));

@@ -43,6 +43,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
 
     ApiFuture<Timestamp> commitAsync();
   }
+
   /**
    * {@link ApiFuture} that returns a commit timestamp. Any {@link AbortedException} that is thrown
    * by either the commit call or any other rpc during the transaction will be thrown by the {@link
@@ -193,7 +194,8 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
     if (executor == MoreExecutors.directExecutor()) {
       return Preconditions.checkNotNull(
           function.apply(txn, input),
-          "AsyncTransactionFunction returned <null>. Did you mean to return ApiFutures.immediateFuture(null)?");
+          "AsyncTransactionFunction returned <null>. Did you mean to return"
+              + " ApiFutures.immediateFuture(null)?");
     } else {
       final SettableApiFuture<O> res = SettableApiFuture.create();
       executor.execute(
@@ -202,7 +204,8 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
               ApiFuture<O> functionResult =
                   Preconditions.checkNotNull(
                       function.apply(txn, input),
-                      "AsyncTransactionFunction returned <null>. Did you mean to return ApiFutures.immediateFuture(null)?");
+                      "AsyncTransactionFunction returned <null>. Did you mean to return"
+                          + " ApiFutures.immediateFuture(null)?");
               ApiFutures.addCallback(
                   functionResult,
                   new ApiFutureCallback<O>() {

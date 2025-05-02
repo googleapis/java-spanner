@@ -64,6 +64,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.StartBatchTransactionAction)
     StartBatchTransactionActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use StartBatchTransactionAction.newBuilder() to construct.
   private StartBatchTransactionAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -111,6 +112,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
     private ParamCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -144,6 +146,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
   }
 
   public static final int BATCH_TXN_TIME_FIELD_NUMBER = 1;
+
   /**
    *
    *
@@ -159,6 +162,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
   public boolean hasBatchTxnTime() {
     return paramCase_ == 1;
   }
+
   /**
    *
    *
@@ -177,6 +181,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
     }
     return com.google.protobuf.Timestamp.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -195,6 +200,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
   }
 
   public static final int TID_FIELD_NUMBER = 2;
+
   /**
    *
    *
@@ -212,6 +218,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
   public boolean hasTid() {
     return paramCase_ == 2;
   }
+
   /**
    *
    *
@@ -237,6 +244,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object cloudDatabaseRole_ = "";
+
   /**
    *
    *
@@ -262,6 +270,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       return s;
     }
   }
+
   /**
    *
    *
@@ -487,6 +496,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -763,6 +773,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         batchTxnTimeBuilder_;
+
     /**
      *
      *
@@ -778,6 +789,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
     public boolean hasBatchTxnTime() {
       return paramCase_ == 1;
     }
+
     /**
      *
      *
@@ -803,6 +815,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
         return com.google.protobuf.Timestamp.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -825,6 +838,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       paramCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -844,6 +858,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       paramCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -874,6 +889,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       paramCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -899,6 +915,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       }
       return this;
     }
+
     /**
      *
      *
@@ -911,6 +928,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
     public com.google.protobuf.Timestamp.Builder getBatchTxnTimeBuilder() {
       return getBatchTxnTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -931,6 +949,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
         return com.google.protobuf.Timestamp.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -978,6 +997,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
     public boolean hasTid() {
       return paramCase_ == 2;
     }
+
     /**
      *
      *
@@ -997,6 +1017,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       }
       return com.google.protobuf.ByteString.EMPTY;
     }
+
     /**
      *
      *
@@ -1020,6 +1041,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1043,6 +1065,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
     }
 
     private java.lang.Object cloudDatabaseRole_ = "";
+
     /**
      *
      *
@@ -1067,6 +1090,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1091,6 +1115,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1114,6 +1139,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1133,6 +1159,7 @@ public final class StartBatchTransactionAction extends com.google.protobuf.Gener
       onChanged();
       return this;
     }
+
     /**
      *
      *

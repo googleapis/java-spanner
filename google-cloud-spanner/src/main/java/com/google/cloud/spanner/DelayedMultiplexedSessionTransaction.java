@@ -44,14 +44,17 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
   private final ISpan span;
 
   private final ApiFuture<SessionReference> sessionFuture;
+  private final SessionPool sessionPool;
 
   DelayedMultiplexedSessionTransaction(
       MultiplexedSessionDatabaseClient client,
       ISpan span,
-      ApiFuture<SessionReference> sessionFuture) {
+      ApiFuture<SessionReference> sessionFuture,
+      SessionPool sessionPool) {
     this.client = client;
     this.span = span;
     this.sessionFuture = sessionFuture;
+    this.sessionPool = sessionPool;
   }
 
   @Override
@@ -61,7 +64,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ true)
                     .singleUse(),
             MoreExecutors.directExecutor()));
   }
@@ -73,7 +76,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ true)
                     .singleUse(bound),
             MoreExecutors.directExecutor()));
   }
@@ -85,7 +88,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ true)
                     .singleUseReadOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -97,7 +100,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ true)
                     .singleUseReadOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }
@@ -109,7 +112,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ false)
                     .readOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -121,7 +124,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ false)
                     .readOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }
@@ -136,7 +139,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     SessionReference sessionReference = getSessionReference();
     try (MultiplexedSessionTransaction transaction =
         new MultiplexedSessionTransaction(
-            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)) {
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ true)) {
       return transaction.writeAtLeastOnceWithOptions(mutations, options);
     }
   }
@@ -148,7 +151,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     SessionReference sessionReference = getSessionReference();
     try (MultiplexedSessionTransaction transaction =
         new MultiplexedSessionTransaction(
-            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)) {
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ false)) {
       return transaction.write(mutations);
     }
   }
@@ -161,7 +164,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     SessionReference sessionReference = getSessionReference();
     try (MultiplexedSessionTransaction transaction =
         new MultiplexedSessionTransaction(
-            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)) {
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ false)) {
       return transaction.writeWithOptions(mutations, options);
     }
   }
@@ -177,7 +180,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
     SessionReference sessionReference = getSessionReference();
     try (MultiplexedSessionTransaction transaction =
         new MultiplexedSessionTransaction(
-            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)) {
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ true)) {
       return transaction.batchWriteAtLeastOnce(mutationGroups, options);
     }
   }
@@ -189,7 +192,12 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                        client,
+                        span,
+                        sessionReference,
+                        NO_CHANNEL_HINT,
+                        /* singleUse= */ false,
+                        this.sessionPool)
                     .readWriteTransaction(options),
             MoreExecutors.directExecutor()));
   }
@@ -201,7 +209,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ false)
                     .transactionManager(options),
             MoreExecutors.directExecutor()));
   }
@@ -213,7 +221,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ false)
                     .runAsync(options),
             MoreExecutors.directExecutor()));
   }
@@ -225,7 +233,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ false)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ false)
                     .transactionManagerAsync(options),
             MoreExecutors.directExecutor()));
   }
@@ -252,7 +260,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
   public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
     SessionReference sessionReference = getSessionReference();
     return new MultiplexedSessionTransaction(
-            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse = */ true)
+            client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ true)
         .executePartitionedUpdate(stmt, options);
   }
 }

@@ -88,15 +88,13 @@ public class DirectedReadTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.query(
             GOOGLESQL_DML_STATEMENT,
-            resultSet
-                .toBuilder()
+            resultSet.toBuilder()
                 .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build())
                 .build()));
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.query(
             POSTGRESQL_DML_STATEMENT,
-            resultSet
-                .toBuilder()
+            resultSet.toBuilder()
                 .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build())
                 .build()));
   }

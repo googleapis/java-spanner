@@ -39,6 +39,7 @@ public interface CreateDatabaseRequestOrBuilder
    * @return The parent.
    */
   java.lang.String getParent();
+
   /**
    *
    *
@@ -71,6 +72,7 @@ public interface CreateDatabaseRequestOrBuilder
    * @return The createStatement.
    */
   java.lang.String getCreateStatement();
+
   /**
    *
    *
@@ -103,6 +105,7 @@ public interface CreateDatabaseRequestOrBuilder
    * @return A list containing the extraStatements.
    */
   java.util.List<java.lang.String> getExtraStatementsList();
+
   /**
    *
    *
@@ -118,6 +121,7 @@ public interface CreateDatabaseRequestOrBuilder
    * @return The count of extraStatements.
    */
   int getExtraStatementsCount();
+
   /**
    *
    *
@@ -134,6 +138,7 @@ public interface CreateDatabaseRequestOrBuilder
    * @return The extraStatements at the given index.
    */
   java.lang.String getExtraStatements(int index);
+
   /**
    *
    *
@@ -167,6 +172,7 @@ public interface CreateDatabaseRequestOrBuilder
    * @return Whether the encryptionConfig field is set.
    */
   boolean hasEncryptionConfig();
+
   /**
    *
    *
@@ -183,6 +189,7 @@ public interface CreateDatabaseRequestOrBuilder
    * @return The encryptionConfig.
    */
   com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+
   /**
    *
    *
@@ -212,6 +219,7 @@ public interface CreateDatabaseRequestOrBuilder
    * @return The enum numeric value on the wire for databaseDialect.
    */
   int getDatabaseDialectValue();
+
   /**
    *
    *

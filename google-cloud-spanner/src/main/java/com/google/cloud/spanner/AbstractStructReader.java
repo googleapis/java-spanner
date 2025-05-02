@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -66,6 +67,14 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract Timestamp getTimestampInternal(int columnIndex);
 
   protected abstract Date getDateInternal(int columnIndex);
+
+  protected UUID getUuidInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  protected Interval getIntervalInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
     throw new UnsupportedOperationException("Not implemented");
@@ -127,6 +136,14 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract List<Timestamp> getTimestampListInternal(int columnIndex);
 
   protected abstract List<Date> getDateListInternal(int columnIndex);
+
+  protected List<UUID> getUuidListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  protected List<Interval> getIntervalListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract List<Struct> getStructListInternal(int columnIndex);
 
@@ -297,6 +314,32 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.date(), columnName);
     return getDateInternal(columnIndex);
+  }
+
+  @Override
+  public UUID getUuid(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.uuid(), columnIndex);
+    return getUuidInternal(columnIndex);
+  }
+
+  @Override
+  public UUID getUuid(String columnName) {
+    final int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.uuid(), columnName);
+    return getUuidInternal(columnIndex);
+  }
+
+  @Override
+  public Interval getInterval(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.interval(), columnIndex);
+    return getIntervalInternal(columnIndex);
+  }
+
+  @Override
+  public Interval getInterval(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.interval(), columnName);
+    return getIntervalInternal(columnIndex);
   }
 
   @Override
@@ -581,6 +624,32 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.array(Type.date()), columnName);
     return getDateListInternal(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUuidList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.uuid()), columnIndex);
+    return getUuidListInternal(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUuidList(String columnName) {
+    final int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.uuid()), columnName);
+    return getUuidListInternal(columnIndex);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.interval()), columnIndex);
+    return getIntervalListInternal(columnIndex);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.interval()), columnName);
+    return getIntervalListInternal(columnIndex);
   }
 
   @Override
