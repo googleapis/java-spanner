@@ -105,7 +105,7 @@ integration)
     RETURN_CODE=$?
     ;;
 integration-directpath-enabled)
-    mvn -B ${INTEGRATION_TEST_ARGS} \
+    mvn -X -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
