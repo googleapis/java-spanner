@@ -1828,6 +1828,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Always resets the activeTracingFramework. This variable is used for internal testing, and is
    * not a valid production scenario
    */
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to"
           + " OpenTelemetry traces")
@@ -2023,6 +2025,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return new CompositeTracerFactory(apiTracerFactories);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   private ApiTracerFactory getDefaultApiTracerFactory() {
     if (isEnableApiTracing()) {
       if (activeTracingFramework == TracingFramework.OPEN_TELEMETRY) {
