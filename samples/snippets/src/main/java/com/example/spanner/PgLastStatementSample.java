@@ -43,7 +43,7 @@ public class PgLastStatementSample {
     }
   }
 
-  // [START spanner_postgresql_last_statement]
+  // [START spanner_postgresql_dml_last_statement]
   static void insertAndUpdateUsingLastStatement(DatabaseClient client) {
     client
         .readWriteTransaction()
@@ -64,6 +64,6 @@ public class PgLastStatementSample {
               return null;
             });
   }
-  // [END spanner_postgresql_last_statement]
+  // [END spanner_postgresql_dml_last_statement]
 
 }
