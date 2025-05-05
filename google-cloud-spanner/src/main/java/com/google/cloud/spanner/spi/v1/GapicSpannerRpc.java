@@ -1657,7 +1657,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException {
-    // By default sessions are not multiplexed
+    // By default, sessions are not multiplexed
     return createSession(databaseName, databaseRole, labels, options, false);
   }
 
@@ -2043,8 +2043,10 @@ public class GapicSpannerRpc implements SpannerRpc {
           context = context.withChannelAffinity(affinity.intValue());
         }
       }
-      String methodName = method.getFullMethodName();
-      context = withRequestId(context, options, methodName);
+      if (method != null) {
+        String methodName = method.getFullMethodName();
+        context = withRequestId(context, options, methodName);
+      }
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
@@ -2065,7 +2067,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
   }
 
-  GrpcCallContext withRequestId(GrpcCallContext context, Map options, String methodName) {
+  GrpcCallContext withRequestId(
+      GrpcCallContext context, Map<SpannerRpc.Option, ?> options, String methodName) {
     XGoogSpannerRequestId reqId = (XGoogSpannerRequestId) options.get(Option.REQUEST_ID);
     if (reqId == null) {
       return context;

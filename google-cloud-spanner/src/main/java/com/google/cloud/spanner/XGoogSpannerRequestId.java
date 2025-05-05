@@ -124,8 +124,7 @@ public class XGoogSpannerRequestId {
     this.attempt++;
   }
 
-  @SuppressWarnings("unchecked")
-  public Map withOptions(Map options) {
+  Map<SpannerRpc.Option, ?> withOptions(Map<SpannerRpc.Option, ?> options) {
     Map copyOptions = new HashMap<>();
     if (options != null) {
       copyOptions.putAll(options);
@@ -139,11 +138,11 @@ public class XGoogSpannerRequestId {
     return Objects.hash(this.nthClientId, this.nthChannelId, this.nthRequest, this.attempt);
   }
 
-  public interface RequestIdCreator {
+  interface RequestIdCreator {
     XGoogSpannerRequestId nextRequestId(long channelId, int attempt);
   }
 
-  public static class NoopRequestIdCreator implements RequestIdCreator {
+  static class NoopRequestIdCreator implements RequestIdCreator {
     NoopRequestIdCreator() {}
 
     @Override
@@ -152,7 +151,7 @@ public class XGoogSpannerRequestId {
     }
   }
 
-  public static void assertMonotonicityOfIds(String prefix, List<XGoogSpannerRequestId> reqIds) {
+  static void assertMonotonicityOfIds(String prefix, List<XGoogSpannerRequestId> reqIds) {
     int size = reqIds.size();
 
     List<String> violations = new ArrayList<>();
@@ -164,7 +163,7 @@ public class XGoogSpannerRequestId {
       }
     }
 
-    if (violations.size() == 0) {
+    if (violations.isEmpty()) {
       return;
     }
 
