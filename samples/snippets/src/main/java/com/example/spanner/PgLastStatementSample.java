@@ -24,46 +24,46 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 
 /**
- * Sample showing how to set the last statement option when a DML statement is the last statement in a transaction.
+ * Sample showing how to set the last statement option when a DML statement is the last statement in
+ * a transaction.
  */
 public class PgLastStatementSample {
 
-    static void insertAndUpdateUsingLastStatement() {
-        // TODO(developer): Replace these variables before running the sample.
-        final String projectId = "my-project";
-        final String instanceId = "my-instance";
-        final String databaseId = "my-database";
+  static void insertAndUpdateUsingLastStatement() {
+    // TODO(developer): Replace these variables before running the sample.
+    final String projectId = "my-project";
+    final String instanceId = "my-instance";
+    final String databaseId = "my-database";
 
-        try (Spanner spanner =
-                     SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-            final DatabaseClient databaseClient =
-                    spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
-            insertAndUpdateUsingLastStatement(databaseClient);
-        }
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+      insertAndUpdateUsingLastStatement(databaseClient);
     }
+  }
 
-    // [START spanner_postgresql_last_statement]
-    static void insertAndUpdateUsingLastStatement(DatabaseClient client) {
-        client
-                .readWriteTransaction()
-                .run(
-                        transaction -> {
-                            transaction.executeUpdate(
-                                    Statement.of(
-                                            "INSERT INTO Singers (SingerId, FirstName, LastName) "
-                                                    + "VALUES (54214, 'John', 'Do')"));
-                            System.out.println("New singer inserted.");
+  // [START spanner_postgresql_last_statement]
+  static void insertAndUpdateUsingLastStatement(DatabaseClient client) {
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              transaction.executeUpdate(
+                  Statement.of(
+                      "INSERT INTO Singers (SingerId, FirstName, LastName) "
+                          + "VALUES (54214, 'John', 'Do')"));
+              System.out.println("New singer inserted.");
 
-                            // Pass in the `lastStatement` option to the last DML statement of the transaction.
-                            transaction.executeUpdate(
-                                    Statement.of(
-                                            "UPDATE Singers SET LastName = 'Doe' WHERE SingerId = 54214\n"),
-                                    Options.lastStatement());
-                            System.out.println("Singer last name updated.");
+              // Pass in the `lastStatement` option to the last DML statement of the transaction.
+              transaction.executeUpdate(
+                  Statement.of("UPDATE Singers SET LastName = 'Doe' WHERE SingerId = 54214\n"),
+                  Options.lastStatement());
+              System.out.println("Singer last name updated.");
 
-                            return null;
-                        });
-    }
-    // [END spanner_postgresql_last_statement]
+              return null;
+            });
+  }
+  // [END spanner_postgresql_last_statement]
 
 }

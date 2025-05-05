@@ -21,13 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.KeySet;
-import com.google.cloud.spanner.Mutation;
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
-import java.util.Collections;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,33 +31,31 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class LastStatementSampleIT extends SampleTestBase {
 
-    private static DatabaseId databaseId;
+  private static DatabaseId databaseId;
 
-    @BeforeClass
-    public static void createTestDatabase() throws Exception {
-        final String database = idGenerator.generateDatabaseId();
-        databaseAdminClient
-                .createDatabase(
-                        instanceId,
-                        database,
-                        ImmutableList.of(
-                                "CREATE TABLE Singers ("
-                                        + "  SingerId   INT64 NOT NULL,"
-                                        + "  FirstName  STRING(1024),"
-                                        + "  LastName   STRING(1024),"
-                                        + "  SingerInfo BYTES(MAX)"
-                                        + ") PRIMARY KEY (SingerId)"))
-                .get();
-        databaseId = DatabaseId.of(projectId, instanceId, database);
-    }
+  @BeforeClass
+  public static void createTestDatabase() throws Exception {
+    final String database = idGenerator.generateDatabaseId();
+    databaseAdminClient
+        .createDatabase(
+            instanceId,
+            database,
+            ImmutableList.of(
+                "CREATE TABLE Singers ("
+                    + "  SingerId   INT64 NOT NULL,"
+                    + "  FirstName  STRING(1024),"
+                    + "  LastName   STRING(1024),"
+                    + "  SingerInfo BYTES(MAX)"
+                    + ") PRIMARY KEY (SingerId)"))
+        .get();
+    databaseId = DatabaseId.of(projectId, instanceId, database);
+  }
 
-    @Test
-    public void testSetLastStatementOptionSample() throws Exception {
-        final DatabaseClient client = spanner.getDatabaseClient(databaseId);
-        String out =
-                runSample(
-                        () -> LastStatementSample.insertAndUpdateUsingLastStatement(client));
-        assertThat(out).contains("New singer inserted.");
-        assertThat(out).contains("Singer last name updated.");
-    }
+  @Test
+  public void testSetLastStatementOptionSample() throws Exception {
+    final DatabaseClient client = spanner.getDatabaseClient(databaseId);
+    String out = runSample(() -> LastStatementSample.insertAndUpdateUsingLastStatement(client));
+    assertThat(out).contains("New singer inserted.");
+    assertThat(out).contains("Singer last name updated.");
+  }
 }
