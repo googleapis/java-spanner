@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -107,6 +108,13 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
       checkArgument(prev == null, "Duplicate option %s", option.rpcOption());
     }
     return ImmutableMap.copyOf(tmp);
+  }
+
+  static Map<SpannerRpc.Option, ?> createRequestOptions(
+      long channelId, XGoogSpannerRequestId requestId) {
+    return ImmutableMap.of(
+        Option.CHANNEL_HINT, channelId,
+        Option.REQUEST_ID, requestId);
   }
 
   private final class BatchCreateSessionsRunnable implements Runnable {
@@ -219,15 +227,14 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
   SessionImpl createSession() {
     // The sessionChannelCounter could overflow, but that will just flip it to Integer.MIN_VALUE,
     // which is also a valid channel hint.
-    final Map<SpannerRpc.Option, ?> options;
     final long channelId;
     synchronized (this) {
-      options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
       channelId = sessionChannelCounter;
+      sessionChannelCounter++;
     }
+    XGoogSpannerRequestId reqId = nextRequestId(channelId, 1);
     ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION, this.commonAttributes);
     try (IScope s = spanner.getTracer().withSpan(span)) {
-      XGoogSpannerRequestId reqId = this.nextRequestId(channelId, 1);
       com.google.spanner.v1.Session session =
           spanner
               .getRpc()
@@ -235,10 +242,13 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
                   db.getName(),
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
-                  reqId.withOptions(options));
+                  createRequestOptions(channelId, reqId));
       SessionReference sessionReference =
           new SessionReference(
-              session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
+              session.getName(),
+              session.getCreateTime(),
+              session.getMultiplexed(),
+              optionMap(SessionOption.channelHint(channelId)));
       SessionImpl sessionImpl = new SessionImpl(spanner, sessionReference);
       sessionImpl.setRequestIdCreator(this);
       return sessionImpl;
@@ -399,7 +409,6 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
    */
   private List<SessionImpl> internalBatchCreateSessions(
       final int sessionCount, final long channelHint) throws SpannerException {
-    final Map<SpannerRpc.Option, ?> options = optionMap(SessionOption.channelHint(channelHint));
     ISpan parent = spanner.getTracer().getCurrentSpan();
     ISpan span =
         spanner
@@ -417,7 +426,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
                   sessionCount,
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
-                  reqId.withOptions(options));
+                  createRequestOptions(channelHint, reqId));
       span.addAnnotation(
           String.format(
               "Request for %d sessions returned %d sessions", sessionCount, sessions.size()));
@@ -428,7 +437,10 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
             new SessionImpl(
                 spanner,
                 new SessionReference(
-                    session.getName(), session.getCreateTime(), session.getMultiplexed(), options));
+                    session.getName(),
+                    session.getCreateTime(),
+                    session.getMultiplexed(),
+                    optionMap(SessionOption.channelHint(channelHint))));
         sessionImpl.setRequestIdCreator(this);
         res.add(sessionImpl);
       }

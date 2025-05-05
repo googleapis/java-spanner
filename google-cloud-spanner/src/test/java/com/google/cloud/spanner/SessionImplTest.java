@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -223,7 +224,7 @@ public class SessionImplTest {
     ArgumentCaptor<CommitRequest> commit = ArgumentCaptor.forClass(CommitRequest.class);
     CommitResponse response =
         CommitResponse.newBuilder().setCommitTimestamp(Timestamps.parse(timestampString)).build();
-    Mockito.when(rpc.commit(commit.capture(), Mockito.eq(options))).thenReturn(response);
+    Mockito.when(rpc.commit(commit.capture(), anyMap())).thenReturn(response);
 
     Timestamp timestamp =
         session.writeAtLeastOnce(
@@ -255,7 +256,7 @@ public class SessionImplTest {
     ArgumentCaptor<CommitRequest> commit = ArgumentCaptor.forClass(CommitRequest.class);
     CommitResponse response =
         CommitResponse.newBuilder().setCommitTimestamp(Timestamps.parse(timestampString)).build();
-    Mockito.when(rpc.commit(commit.capture(), Mockito.eq(options))).thenReturn(response);
+    Mockito.when(rpc.commit(commit.capture(), anyMap())).thenReturn(response);
     session.writeAtLeastOnceWithOptions(
         Collections.singletonList(Mutation.newInsertBuilder("T").set("C").to("x").build()),
         Options.tag(tag));
@@ -340,7 +341,7 @@ public class SessionImplTest {
   public void writeClosesOldSingleUseContext() throws ParseException {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
 
-    Mockito.when(rpc.commit(Mockito.any(), Mockito.eq(options)))
+    Mockito.when(rpc.commit(Mockito.any(), anyMap()))
         .thenReturn(
             CommitResponse.newBuilder()
                 .setCommitTimestamp(Timestamps.parse("2015-10-01T10:54:20.021Z"))
@@ -441,7 +442,7 @@ public class SessionImplTest {
   private void mockRead(final PartialResultSet myResultSet) {
     final ArgumentCaptor<SpannerRpc.ResultStreamConsumer> consumer =
         ArgumentCaptor.forClass(SpannerRpc.ResultStreamConsumer.class);
-    Mockito.when(rpc.read(Mockito.any(), consumer.capture(), Mockito.eq(options), eq(false)))
+    Mockito.when(rpc.read(Mockito.any(), consumer.capture(), anyMap(), eq(false)))
         .then(
             invocation -> {
               consumer.getValue().onPartialResultSet(myResultSet);
@@ -457,8 +458,7 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), anyMap(), eq(false))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
@@ -476,8 +476,7 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), anyMap(), eq(false))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
@@ -496,8 +495,7 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), anyMap(), eq(false))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
