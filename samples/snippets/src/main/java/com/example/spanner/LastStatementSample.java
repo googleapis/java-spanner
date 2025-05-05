@@ -43,7 +43,7 @@ public class LastStatementSample {
     }
   }
 
-  // [START spanner_last_statement]
+  // [START spanner_dml_last_statement]
   static void insertAndUpdateUsingLastStatement(DatabaseClient client) {
     client
         .readWriteTransaction()
@@ -65,6 +65,6 @@ public class LastStatementSample {
               return null;
             });
   }
-  // [END spanner_last_statement]
+  // [END spanner_dml_last_statement]
 
 }
