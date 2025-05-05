@@ -241,7 +241,6 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     XGoogSpannerRequestId reqId = nextRequestId(channelId, 1);
     ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION, this.commonAttributes);
     try (IScope s = spanner.getTracer().withSpan(span)) {
-      XGoogSpannerRequestId reqId = this.nextRequestId(channelId, 1);
       com.google.spanner.v1.Session session =
           spanner
               .getRpc()
