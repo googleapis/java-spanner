@@ -160,7 +160,7 @@ public class XGoogSpannerRequestId {
     }
   }
 
-  public static void assertMonotonicityOfIds(String prefix, List<XGoogSpannerRequestId> reqIds) {
+  static void assertMonotonicityOfIds(String prefix, List<XGoogSpannerRequestId> reqIds) {
     int size = reqIds.size();
 
     List<String> violations = new ArrayList<>();
@@ -172,7 +172,7 @@ public class XGoogSpannerRequestId {
       }
     }
 
-    if (violations.size() == 0) {
+    if (violations.isEmpty()) {
       return;
     }
 
