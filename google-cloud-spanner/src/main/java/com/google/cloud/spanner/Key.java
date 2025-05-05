@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 /**
@@ -70,6 +71,7 @@ public final class Key implements Serializable {
    *   <li>{@link ByteArray} for the {@code BYTES} Cloud Spanner type
    *   <li>{@link Timestamp} for the {@code TIMESTAMP} Cloud Spanner type
    *   <li>{@link Date} for the {@code DATE} Cloud Spanner type
+   *   <li>{@link java.util.UUID} for the {@code UUID} Cloud Spanner type
    * </ul>
    *
    * @throws IllegalArgumentException if any member of {@code values} is not a supported type
@@ -178,6 +180,12 @@ public final class Key implements Serializable {
       return this;
     }
 
+    /** Appends a {@code UUID} value to the key */
+    public Builder append(@Nullable UUID value) {
+      buffer.add(value);
+      return this;
+    }
+
     /**
      * Appends an object following the same conversion rules as {@link Key#of(Object...)}. When
      * using the {@code Builder}, most code should prefer using the strongly typed {@code
@@ -206,6 +214,8 @@ public final class Key implements Serializable {
         append((Timestamp) value);
       } else if (value instanceof Date) {
         append((Date) value);
+      } else if (value instanceof UUID) {
+        append((UUID) value);
       } else if (value instanceof ProtocolMessageEnum) {
         append((ProtocolMessageEnum) value);
       } else {
@@ -315,6 +325,8 @@ public final class Key implements Serializable {
       } else if (part instanceof Timestamp) {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof Date) {
+        builder.addValuesBuilder().setStringValue(part.toString());
+      } else if (part instanceof UUID) {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof ProtocolMessageEnum) {
         builder
