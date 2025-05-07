@@ -36,6 +36,7 @@ public interface AdminResultOrBuilder
    * @return Whether the backupResponse field is set.
    */
   boolean hasBackupResponse();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface AdminResultOrBuilder
    * @return The backupResponse.
    */
   com.google.spanner.executor.v1.CloudBackupResponse getBackupResponse();
+
   /**
    *
    *
@@ -71,6 +73,7 @@ public interface AdminResultOrBuilder
    * @return Whether the operationResponse field is set.
    */
   boolean hasOperationResponse();
+
   /**
    *
    *
@@ -83,6 +86,7 @@ public interface AdminResultOrBuilder
    * @return The operationResponse.
    */
   com.google.spanner.executor.v1.OperationResponse getOperationResponse();
+
   /**
    *
    *
@@ -106,6 +110,7 @@ public interface AdminResultOrBuilder
    * @return Whether the databaseResponse field is set.
    */
   boolean hasDatabaseResponse();
+
   /**
    *
    *
@@ -118,6 +123,7 @@ public interface AdminResultOrBuilder
    * @return The databaseResponse.
    */
   com.google.spanner.executor.v1.CloudDatabaseResponse getDatabaseResponse();
+
   /**
    *
    *
@@ -141,6 +147,7 @@ public interface AdminResultOrBuilder
    * @return Whether the instanceResponse field is set.
    */
   boolean hasInstanceResponse();
+
   /**
    *
    *
@@ -153,6 +160,7 @@ public interface AdminResultOrBuilder
    * @return The instanceResponse.
    */
   com.google.spanner.executor.v1.CloudInstanceResponse getInstanceResponse();
+
   /**
    *
    *
@@ -177,6 +185,7 @@ public interface AdminResultOrBuilder
    * @return Whether the instanceConfigResponse field is set.
    */
   boolean hasInstanceConfigResponse();
+
   /**
    *
    *
@@ -190,6 +199,7 @@ public interface AdminResultOrBuilder
    * @return The instanceConfigResponse.
    */
   com.google.spanner.executor.v1.CloudInstanceConfigResponse getInstanceConfigResponse();
+
   /**
    *
    *

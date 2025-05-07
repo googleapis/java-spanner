@@ -34,6 +34,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.MoveInstanceMetadata)
     MoveInstanceMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use MoveInstanceMetadata.newBuilder() to construct.
   private MoveInstanceMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -69,6 +70,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object targetConfig_ = "";
+
   /**
    *
    *
@@ -93,6 +95,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       return s;
     }
   }
+
   /**
    *
    *
@@ -120,6 +123,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
 
   public static final int PROGRESS_FIELD_NUMBER = 2;
   private com.google.spanner.admin.instance.v1.OperationProgress progress_;
+
   /**
    *
    *
@@ -139,6 +143,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
   public boolean hasProgress() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -160,6 +165,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
         ? com.google.spanner.admin.instance.v1.OperationProgress.getDefaultInstance()
         : progress_;
   }
+
   /**
    *
    *
@@ -182,6 +188,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 3;
   private com.google.protobuf.Timestamp cancelTime_;
+
   /**
    *
    *
@@ -197,6 +204,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
   public boolean hasCancelTime() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -212,6 +220,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
   public com.google.protobuf.Timestamp getCancelTime() {
     return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
+
   /**
    *
    *
@@ -414,6 +423,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -647,6 +657,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
     private int bitField0_;
 
     private java.lang.Object targetConfig_ = "";
+
     /**
      *
      *
@@ -670,6 +681,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -693,6 +705,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -715,6 +728,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -733,6 +747,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -763,6 +778,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
             com.google.spanner.admin.instance.v1.OperationProgress.Builder,
             com.google.spanner.admin.instance.v1.OperationProgressOrBuilder>
         progressBuilder_;
+
     /**
      *
      *
@@ -781,6 +797,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
     public boolean hasProgress() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -805,6 +822,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
         return progressBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -831,6 +849,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -855,6 +874,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -887,6 +907,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       }
       return this;
     }
+
     /**
      *
      *
@@ -910,6 +931,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -928,6 +950,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return getProgressFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -950,6 +973,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
             : progress_;
       }
     }
+
     /**
      *
      *
@@ -986,6 +1010,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         cancelTimeBuilder_;
+
     /**
      *
      *
@@ -1000,6 +1025,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
     public boolean hasCancelTime() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1020,6 +1046,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
         return cancelTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1042,6 +1069,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1061,6 +1089,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1088,6 +1117,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       }
       return this;
     }
+
     /**
      *
      *
@@ -1107,6 +1137,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1121,6 +1152,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1139,6 +1171,7 @@ public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMes
             : cancelTime_;
       }
     }
+
     /**
      *
      *

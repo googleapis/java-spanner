@@ -82,7 +82,7 @@ test)
     RETURN_CODE=$?
     ;;
 lint)
-    mvn com.coveo:fmt-maven-plugin:check
+    mvn com.spotify.fmt:fmt-maven-plugin:check
     RETURN_CODE=$?
     ;;
 javadoc)
@@ -99,9 +99,8 @@ integration)
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
-      -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
-      -Dspanner.gce.config.project_id=span-cloud-testing \
-      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/java-client-integration-tests \
+      -Dspanner.gce.config.project_id=gcloud-devel \
+      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests \
       -fae \
       verify
     RETURN_CODE=$?
@@ -115,7 +114,6 @@ integration-directpath-enabled)
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
-      -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
       -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-java-client-directpath \
       -Dspanner.gce.config.project_id=span-cloud-testing \
       -fae \
@@ -131,9 +129,8 @@ integration-multiplexed-sessions-enabled)
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
-      -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
-      -Dspanner.gce.config.project_id=span-cloud-testing \
-      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/java-client-integration-tests-multiplexed-sessions \
+      -Dspanner.gce.config.project_id=gcloud-devel \
+      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-multiplexed-sessions \
       -fae \
       verify
     RETURN_CODE=$?

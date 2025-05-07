@@ -38,6 +38,7 @@ public interface EncryptionConfigOrBuilder
    * @return The kmsKeyName.
    */
   java.lang.String getKmsKeyName();
+
   /**
    *
    *
@@ -79,6 +80,7 @@ public interface EncryptionConfigOrBuilder
    * @return A list containing the kmsKeyNames.
    */
   java.util.List<java.lang.String> getKmsKeyNamesList();
+
   /**
    *
    *
@@ -105,6 +107,7 @@ public interface EncryptionConfigOrBuilder
    * @return The count of kmsKeyNames.
    */
   int getKmsKeyNamesCount();
+
   /**
    *
    *
@@ -132,6 +135,7 @@ public interface EncryptionConfigOrBuilder
    * @return The kmsKeyNames at the given index.
    */
   java.lang.String getKmsKeyNames(int index);
+
   /**
    *
    *

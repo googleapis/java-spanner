@@ -37,6 +37,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return Whether the status field is set.
    */
   boolean hasStatus();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return The status.
    */
   com.google.rpc.Status getStatus();
+
   /**
    *
    *
@@ -74,6 +76,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return Whether the commitTime field is set.
    */
   boolean hasCommitTime();
+
   /**
    *
    *
@@ -86,6 +89,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return The commitTime.
    */
   com.google.protobuf.Timestamp getCommitTime();
+
   /**
    *
    *
@@ -110,6 +114,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return Whether the readResult field is set.
    */
   boolean hasReadResult();
+
   /**
    *
    *
@@ -123,6 +128,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return The readResult.
    */
   com.google.spanner.executor.v1.ReadResult getReadResult();
+
   /**
    *
    *
@@ -148,6 +154,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return Whether the queryResult field is set.
    */
   boolean hasQueryResult();
+
   /**
    *
    *
@@ -161,6 +168,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return The queryResult.
    */
   com.google.spanner.executor.v1.QueryResult getQueryResult();
+
   /**
    *
    *
@@ -188,6 +196,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return Whether the transactionRestarted field is set.
    */
   boolean hasTransactionRestarted();
+
   /**
    *
    *
@@ -217,6 +226,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return Whether the batchTxnId field is set.
    */
   boolean hasBatchTxnId();
+
   /**
    *
    *
@@ -242,6 +252,7 @@ public interface SpannerActionOutcomeOrBuilder
    * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
    */
   java.util.List<com.google.spanner.executor.v1.BatchPartition> getDbPartitionList();
+
   /**
    *
    *
@@ -253,6 +264,7 @@ public interface SpannerActionOutcomeOrBuilder
    * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
    */
   com.google.spanner.executor.v1.BatchPartition getDbPartition(int index);
+
   /**
    *
    *
@@ -264,6 +276,7 @@ public interface SpannerActionOutcomeOrBuilder
    * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
    */
   int getDbPartitionCount();
+
   /**
    *
    *
@@ -276,6 +289,7 @@ public interface SpannerActionOutcomeOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.BatchPartitionOrBuilder>
       getDbPartitionOrBuilderList();
+
   /**
    *
    *
@@ -300,6 +314,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return Whether the adminResult field is set.
    */
   boolean hasAdminResult();
+
   /**
    *
    *
@@ -312,6 +327,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return The adminResult.
    */
   com.google.spanner.executor.v1.AdminResult getAdminResult();
+
   /**
    *
    *
@@ -336,6 +352,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return A list containing the dmlRowsModified.
    */
   java.util.List<java.lang.Long> getDmlRowsModifiedList();
+
   /**
    *
    *
@@ -349,6 +366,7 @@ public interface SpannerActionOutcomeOrBuilder
    * @return The count of dmlRowsModified.
    */
   int getDmlRowsModifiedCount();
+
   /**
    *
    *
@@ -375,6 +393,7 @@ public interface SpannerActionOutcomeOrBuilder
    * </code>
    */
   java.util.List<com.google.spanner.executor.v1.ChangeStreamRecord> getChangeStreamRecordsList();
+
   /**
    *
    *
@@ -386,6 +405,7 @@ public interface SpannerActionOutcomeOrBuilder
    * </code>
    */
   com.google.spanner.executor.v1.ChangeStreamRecord getChangeStreamRecords(int index);
+
   /**
    *
    *
@@ -397,6 +417,7 @@ public interface SpannerActionOutcomeOrBuilder
    * </code>
    */
   int getChangeStreamRecordsCount();
+
   /**
    *
    *
@@ -409,6 +430,7 @@ public interface SpannerActionOutcomeOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder>
       getChangeStreamRecordsOrBuilderList();
+
   /**
    *
    *

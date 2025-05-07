@@ -900,6 +900,13 @@ class SessionPool {
       return internalBegin();
     }
 
+    @Override
+    public TransactionContext begin(AbortedException exception) {
+      // For regular sessions, the input exception is ignored and the behavior is equivalent to
+      // calling {@link #begin()}.
+      return begin();
+    }
+
     private TransactionContext internalBegin() {
       TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
       session.get().markUsed();
@@ -1307,6 +1314,7 @@ class SessionPool {
   class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
       implements SessionFuture {
 
+    private boolean closed;
     private volatile LeakedSessionException leakedException;
     private final AtomicBoolean inUse = new AtomicBoolean();
     private final CountDownLatch initialized = new CountDownLatch(1);
@@ -1324,6 +1332,7 @@ class SessionPool {
     }
 
     private void markCheckedOut() {
+
       if (options.isTrackStackTraceOfSessionCheckout()) {
         this.leakedException = new LeakedSessionException();
         synchronized (SessionPool.this.lock) {
@@ -1513,6 +1522,13 @@ class SessionPool {
 
     @Override
     public ApiFuture<Empty> asyncClose() {
+      synchronized (this) {
+        // Don't add the session twice to the pool if a resource is being closed multiple times.
+        if (closed) {
+          return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+        }
+        closed = true;
+      }
       try {
         PooledSession delegate = getOrNull();
         if (delegate != null) {
@@ -1938,8 +1954,9 @@ class SessionPool {
                       ErrorCode.RESOURCE_EXHAUSTED,
                       "Timed out after waiting "
                           + acquireSessionTimeout.toMillis()
-                          + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
-                          + " or increase the number of sessions in the session pool.\n"
+                          + "ms for acquiring session. To mitigate error"
+                          + " SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher"
+                          + " timeout or increase the number of sessions in the session pool.\n"
                           + createCheckedOutSessionsStackTraces());
               if (waiter.setException(exception)) {
                 // Only throw the exception if setting it on the waiter was successful. The
@@ -2213,9 +2230,10 @@ class SessionPool {
                   logger.log(
                       Level.WARNING,
                       String.format(
-                          "Detected long-running session => %s. To automatically remove "
-                              + "long-running sessions, set SessionOption ActionOnInactiveTransaction "
-                              + "to WARN_AND_CLOSE by invoking setWarnAndCloseIfInactiveTransactions() method.",
+                          "Detected long-running session => %s. To automatically remove"
+                              + " long-running sessions, set SessionOption"
+                              + " ActionOnInactiveTransaction to WARN_AND_CLOSE by invoking"
+                              + " setWarnAndCloseIfInactiveTransactions() method.",
                           session.getName()),
                       sessionFuture.leakedException);
                   session.isLeakedExceptionLogged = true;
@@ -2272,6 +2290,7 @@ class SessionPool {
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
+
   /**
    * initialReleasePosition determines where in the pool sessions are added when they are released
    * into the pool the first time. This is always RANDOM in production, but some tests use FIRST to
@@ -2699,7 +2718,9 @@ class SessionPool {
     return null;
   }
 
-  /** @return true if this {@link SessionPool} is still valid. */
+  /**
+   * @return true if this {@link SessionPool} is still valid.
+   */
   boolean isValid() {
     synchronized (lock) {
       return closureFuture == null && resourceNotFoundException == null;
@@ -2744,7 +2765,8 @@ class SessionPool {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.NOT_FOUND,
             String.format(
-                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                "The session pool has been invalidated because a previous RPC returned 'Database"
+                    + " not found': %s",
                 resourceNotFoundException.getMessage()),
             resourceNotFoundException);
       }
@@ -2827,8 +2849,8 @@ class SessionPool {
     span.addAnnotation("Pool exhausted. Failing");
 
     String message =
-        "No session available in the pool. Maximum number of sessions in the pool can be"
-            + " overridden by invoking SessionPoolOptions#Builder#setMaxSessions. Client can be made to block"
+        "No session available in the pool. Maximum number of sessions in the pool can be overridden"
+            + " by invoking SessionPoolOptions#Builder#setMaxSessions. Client can be made to block"
             + " rather than fail by setting SessionPoolOptions#Builder#setBlockIfPoolExhausted.\n"
             + createCheckedOutSessionsStackTraces();
     throw newSpannerException(ErrorCode.RESOURCE_EXHAUSTED, message);
@@ -3090,9 +3112,9 @@ class SessionPool {
           }
         } else {
           String message =
-              "Leaked session. "
-                  + "Call SessionOptions.Builder#setTrackStackTraceOfSessionCheckout(true) to start "
-                  + "tracking the call stack trace of the thread that checked out the session.";
+              "Leaked session. Call"
+                  + " SessionOptions.Builder#setTrackStackTraceOfSessionCheckout(true) to start"
+                  + " tracking the call stack trace of the thread that checked out the session.";
           if (options.isFailOnSessionLeak()) {
             throw new LeakedSessionException(message);
           } else {
@@ -3126,6 +3148,13 @@ class SessionPool {
   int totalSessions() {
     synchronized (lock) {
       return allSessions.size();
+    }
+  }
+
+  @VisibleForTesting
+  int numSessionsInPool() {
+    synchronized (lock) {
+      return sessions.size();
     }
   }
 

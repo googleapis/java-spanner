@@ -44,6 +44,7 @@ public interface UpdateInstanceConfigRequestOrBuilder
    * @return Whether the instanceConfig field is set.
    */
   boolean hasInstanceConfig();
+
   /**
    *
    *
@@ -64,6 +65,7 @@ public interface UpdateInstanceConfigRequestOrBuilder
    * @return The instanceConfig.
    */
   com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig();
+
   /**
    *
    *
@@ -101,6 +103,7 @@ public interface UpdateInstanceConfigRequestOrBuilder
    * @return Whether the updateMask field is set.
    */
   boolean hasUpdateMask();
+
   /**
    *
    *
@@ -119,6 +122,7 @@ public interface UpdateInstanceConfigRequestOrBuilder
    * @return The updateMask.
    */
   com.google.protobuf.FieldMask getUpdateMask();
+
   /**
    *
    *

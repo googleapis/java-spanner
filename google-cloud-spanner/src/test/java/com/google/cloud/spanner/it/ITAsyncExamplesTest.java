@@ -373,10 +373,12 @@ public class ITAsyncExamplesTest {
   public void pauseResume() throws Exception {
     Statement unevenStatement =
         Statement.of(
-            "SELECT * FROM TestTable WHERE MOD(CAST(SUBSTR(Key, 2) AS INT64), 2) = 1 ORDER BY CAST(SUBSTR(Key, 2) AS INT64)");
+            "SELECT * FROM TestTable WHERE MOD(CAST(SUBSTR(Key, 2) AS INT64), 2) = 1 ORDER BY"
+                + " CAST(SUBSTR(Key, 2) AS INT64)");
     Statement evenStatement =
         Statement.of(
-            "SELECT * FROM TestTable WHERE MOD(CAST(SUBSTR(Key, 2) AS INT64), 2) = 0 ORDER BY CAST(SUBSTR(Key, 2) AS INT64)");
+            "SELECT * FROM TestTable WHERE MOD(CAST(SUBSTR(Key, 2) AS INT64), 2) = 0 ORDER BY"
+                + " CAST(SUBSTR(Key, 2) AS INT64)");
 
     final Object lock = new Object();
     final SettableApiFuture<Boolean> evenFinished = SettableApiFuture.create();

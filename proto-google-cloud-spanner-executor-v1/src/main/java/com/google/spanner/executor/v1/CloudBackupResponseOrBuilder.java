@@ -34,6 +34,7 @@ public interface CloudBackupResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Backup listed_backups = 1;</code>
    */
   java.util.List<com.google.spanner.admin.database.v1.Backup> getListedBackupsList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface CloudBackupResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Backup listed_backups = 1;</code>
    */
   com.google.spanner.admin.database.v1.Backup getListedBackups(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface CloudBackupResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Backup listed_backups = 1;</code>
    */
   int getListedBackupsCount();
+
   /**
    *
    *
@@ -65,6 +68,7 @@ public interface CloudBackupResponseOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.database.v1.BackupOrBuilder>
       getListedBackupsOrBuilderList();
+
   /**
    *
    *
@@ -86,6 +90,7 @@ public interface CloudBackupResponseOrBuilder
    * <code>repeated .google.longrunning.Operation listed_backup_operations = 2;</code>
    */
   java.util.List<com.google.longrunning.Operation> getListedBackupOperationsList();
+
   /**
    *
    *
@@ -96,6 +101,7 @@ public interface CloudBackupResponseOrBuilder
    * <code>repeated .google.longrunning.Operation listed_backup_operations = 2;</code>
    */
   com.google.longrunning.Operation getListedBackupOperations(int index);
+
   /**
    *
    *
@@ -106,6 +112,7 @@ public interface CloudBackupResponseOrBuilder
    * <code>repeated .google.longrunning.Operation listed_backup_operations = 2;</code>
    */
   int getListedBackupOperationsCount();
+
   /**
    *
    *
@@ -117,6 +124,7 @@ public interface CloudBackupResponseOrBuilder
    */
   java.util.List<? extends com.google.longrunning.OperationOrBuilder>
       getListedBackupOperationsOrBuilderList();
+
   /**
    *
    *
@@ -141,6 +149,7 @@ public interface CloudBackupResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *
@@ -167,6 +176,7 @@ public interface CloudBackupResponseOrBuilder
    * @return Whether the backup field is set.
    */
   boolean hasBackup();
+
   /**
    *
    *
@@ -179,6 +189,7 @@ public interface CloudBackupResponseOrBuilder
    * @return The backup.
    */
   com.google.spanner.admin.database.v1.Backup getBackup();
+
   /**
    *
    *

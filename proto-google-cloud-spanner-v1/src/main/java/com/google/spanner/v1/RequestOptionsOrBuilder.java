@@ -36,6 +36,7 @@ public interface RequestOptionsOrBuilder
    * @return The enum numeric value on the wire for priority.
    */
   int getPriorityValue();
+
   /**
    *
    *
@@ -70,6 +71,7 @@ public interface RequestOptionsOrBuilder
    * @return The requestTag.
    */
   java.lang.String getRequestTag();
+
   /**
    *
    *
@@ -114,6 +116,7 @@ public interface RequestOptionsOrBuilder
    * @return The transactionTag.
    */
   java.lang.String getTransactionTag();
+
   /**
    *
    *

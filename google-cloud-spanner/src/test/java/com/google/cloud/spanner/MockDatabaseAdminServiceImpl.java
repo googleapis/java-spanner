@@ -233,8 +233,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
         }
         metadata = metadata.toBuilder().addAllCommitTimestamps(commitTimestamps).build();
         operations.update(
-            operation
-                .toBuilder()
+            operation.toBuilder()
                 .setMetadata(Any.pack(metadata))
                 .setDone(true)
                 .setResponse(Any.pack(Empty.getDefaultInstance()))
@@ -269,14 +268,12 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
           CreateBackupMetadata metadata =
               operation.getMetadata().unpack(CreateBackupMetadata.class);
           metadata =
-              metadata
-                  .toBuilder()
+              metadata.toBuilder()
                   .setProgress(
                       metadata.getProgress().toBuilder().setProgressPercent(progress).build())
                   .build();
           operations.update(
-              operation
-                  .toBuilder()
+              operation.toBuilder()
                   .setMetadata(Any.pack(metadata))
                   .setResponse(Any.pack(proto))
                   .build());
@@ -287,19 +284,15 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
       if (operation != null) {
         CreateBackupMetadata metadata = operation.getMetadata().unpack(CreateBackupMetadata.class);
         metadata =
-            metadata
-                .toBuilder()
+            metadata.toBuilder()
                 .setProgress(
-                    metadata
-                        .getProgress()
-                        .toBuilder()
+                    metadata.getProgress().toBuilder()
                         .setProgressPercent(100)
                         .setEndTime(currentTime())
                         .build())
                 .build();
         operations.update(
-            operation
-                .toBuilder()
+            operation.toBuilder()
                 .setDone(true)
                 .setMetadata(Any.pack(metadata))
                 .setResponse(Any.pack(proto))
@@ -334,14 +327,12 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
           RestoreDatabaseMetadata metadata =
               operation.getMetadata().unpack(RestoreDatabaseMetadata.class);
           metadata =
-              metadata
-                  .toBuilder()
+              metadata.toBuilder()
                   .setProgress(
                       metadata.getProgress().toBuilder().setProgressPercent(progress).build())
                   .build();
           operations.update(
-              operation
-                  .toBuilder()
+              operation.toBuilder()
                   .setMetadata(Any.pack(metadata))
                   .setResponse(Any.pack(proto))
                   .build());
@@ -353,19 +344,15 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
         RestoreDatabaseMetadata metadata =
             operation.getMetadata().unpack(RestoreDatabaseMetadata.class);
         metadata =
-            metadata
-                .toBuilder()
+            metadata.toBuilder()
                 .setProgress(
-                    metadata
-                        .getProgress()
-                        .toBuilder()
+                    metadata.getProgress().toBuilder()
                         .setEndTime(currentTime())
                         .setProgressPercent(100)
                         .build())
                 .build();
         operations.update(
-            operation
-                .toBuilder()
+            operation.toBuilder()
                 .setDone(true)
                 .setMetadata(Any.pack(metadata))
                 .setResponse(Any.pack(proto))
@@ -410,8 +397,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
         if (operation != null) {
           Database proto = db.toProto();
           operations.update(
-              operation
-                  .toBuilder()
+              operation.toBuilder()
                   .setDone(true)
                   .setError(fromException(e))
                   .setResponse(Any.pack(proto))
@@ -615,7 +601,8 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
         Operation operation = (Operation) obj;
         Pattern pattern =
             Pattern.compile(
-                "(?:\\(metadata.@type:type.googleapis.com/(.*)\\)) AND (?:\\(metadata.(?:name|database):(.*)\\)|\\(name:(.*)/operations/\\))");
+                "(?:\\(metadata.@type:type.googleapis.com/(.*)\\)) AND"
+                    + " (?:\\(metadata.(?:name|database):(.*)\\)|\\(name:(.*)/operations/\\))");
         Matcher matcher = pattern.matcher(filter);
         if (matcher.matches()) {
           String type = matcher.group(1);

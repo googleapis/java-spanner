@@ -37,6 +37,7 @@ public class InstanceNotFoundException extends ResourceNotFoundException {
       @Nullable Throwable cause) {
     this(token, message, resourceInfo, cause, null, null);
   }
+
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   InstanceNotFoundException(
       DoNotConstructDirectly token,

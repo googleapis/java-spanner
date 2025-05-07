@@ -61,6 +61,7 @@ public interface TransactionOrBuilder
    * @return Whether the readTimestamp field is set.
    */
   boolean hasReadTimestamp();
+
   /**
    *
    *
@@ -78,6 +79,7 @@ public interface TransactionOrBuilder
    * @return The readTimestamp.
    */
   com.google.protobuf.Timestamp getReadTimestamp();
+
   /**
    *
    *
@@ -114,6 +116,7 @@ public interface TransactionOrBuilder
    * @return Whether the precommitToken field is set.
    */
   boolean hasPrecommitToken();
+
   /**
    *
    *
@@ -134,6 +137,7 @@ public interface TransactionOrBuilder
    * @return The precommitToken.
    */
   com.google.spanner.v1.MultiplexedSessionPrecommitToken getPrecommitToken();
+
   /**
    *
    *

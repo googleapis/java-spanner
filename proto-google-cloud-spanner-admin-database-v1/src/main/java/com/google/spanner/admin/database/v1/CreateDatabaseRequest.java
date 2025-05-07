@@ -34,6 +34,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.CreateDatabaseRequest)
     CreateDatabaseRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use CreateDatabaseRequest.newBuilder() to construct.
   private CreateDatabaseRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -73,6 +74,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object parent_ = "";
+
   /**
    *
    *
@@ -99,6 +101,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       return s;
     }
   }
+
   /**
    *
    *
@@ -130,6 +133,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object createStatement_ = "";
+
   /**
    *
    *
@@ -157,6 +161,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       return s;
     }
   }
+
   /**
    *
    *
@@ -190,6 +195,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList extraStatements_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -207,6 +213,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   public com.google.protobuf.ProtocolStringList getExtraStatementsList() {
     return extraStatements_;
   }
+
   /**
    *
    *
@@ -224,6 +231,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   public int getExtraStatementsCount() {
     return extraStatements_.size();
   }
+
   /**
    *
    *
@@ -242,6 +250,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   public java.lang.String getExtraStatements(int index) {
     return extraStatements_.get(index);
   }
+
   /**
    *
    *
@@ -263,6 +272,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 4;
   private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+
   /**
    *
    *
@@ -282,6 +292,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   public boolean hasEncryptionConfig() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -303,6 +314,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
         : encryptionConfig_;
   }
+
   /**
    *
    *
@@ -326,6 +338,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   public static final int DATABASE_DIALECT_FIELD_NUMBER = 5;
   private int databaseDialect_ = 0;
+
   /**
    *
    *
@@ -343,6 +356,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   public int getDatabaseDialectValue() {
     return databaseDialect_;
   }
+
   /**
    *
    *
@@ -367,6 +381,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   public static final int PROTO_DESCRIPTORS_FIELD_NUMBER = 6;
   private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -618,6 +633,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -897,6 +913,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     private int bitField0_;
 
     private java.lang.Object parent_ = "";
+
     /**
      *
      *
@@ -922,6 +939,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -947,6 +965,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -971,6 +990,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -991,6 +1011,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1018,6 +1039,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
 
     private java.lang.Object createStatement_ = "";
+
     /**
      *
      *
@@ -1044,6 +1066,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1070,6 +1093,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1095,6 +1119,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1116,6 +1141,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1152,6 +1178,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       bitField0_ |= 0x00000004;
     }
+
     /**
      *
      *
@@ -1170,6 +1197,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       extraStatements_.makeImmutable();
       return extraStatements_;
     }
+
     /**
      *
      *
@@ -1187,6 +1215,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public int getExtraStatementsCount() {
       return extraStatements_.size();
     }
+
     /**
      *
      *
@@ -1205,6 +1234,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public java.lang.String getExtraStatements(int index) {
       return extraStatements_.get(index);
     }
+
     /**
      *
      *
@@ -1223,6 +1253,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public com.google.protobuf.ByteString getExtraStatementsBytes(int index) {
       return extraStatements_.getByteString(index);
     }
+
     /**
      *
      *
@@ -1249,6 +1280,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1274,6 +1306,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1296,6 +1329,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1317,6 +1351,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1350,6 +1385,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
             com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
             com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
         encryptionConfigBuilder_;
+
     /**
      *
      *
@@ -1368,6 +1404,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public boolean hasEncryptionConfig() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1392,6 +1429,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         return encryptionConfigBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1419,6 +1457,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1443,6 +1482,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1476,6 +1516,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -1499,6 +1540,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1518,6 +1560,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return getEncryptionConfigFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1541,6 +1584,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
             : encryptionConfig_;
       }
     }
+
     /**
      *
      *
@@ -1572,6 +1616,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
 
     private int databaseDialect_ = 0;
+
     /**
      *
      *
@@ -1589,6 +1634,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public int getDatabaseDialectValue() {
       return databaseDialect_;
     }
+
     /**
      *
      *
@@ -1609,6 +1655,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1630,6 +1677,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
           ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
           : result;
     }
+
     /**
      *
      *
@@ -1653,6 +1701,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1674,6 +1723,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
 
     private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -1703,6 +1753,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public com.google.protobuf.ByteString getProtoDescriptors() {
       return protoDescriptors_;
     }
+
     /**
      *
      *
@@ -1738,6 +1789,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *

@@ -251,9 +251,7 @@ public class DatabaseClientImplTest {
             .build()
             .getService();
     spannerWithEmptySessionPool =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder().setMinSessions(0).setFailOnSessionLeak().build())
             .build()
@@ -1645,9 +1643,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testExecuteQuery_withDirectedReadOptionsViaSpannerOptions() {
     Spanner spannerWithDirectedReadOptions =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
@@ -1668,9 +1664,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testExecuteQuery_whenMultipleDirectedReadsOptions_preferRequestOption() {
     Spanner spannerWithDirectedReadOptions =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
@@ -1806,9 +1800,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testExecuteReadWithDirectedReadOptionsViaSpannerOptions() {
     Spanner spannerWithDirectedReadOptions =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
@@ -1830,9 +1822,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testReadWriteExecuteQueryWithDirectedReadOptionsViaSpannerOptions() {
     Spanner spannerWithDirectedReadOptions =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
@@ -4350,9 +4340,7 @@ public class DatabaseClientImplTest {
   @Test
   public void testGetDialectDefaultPreloaded() {
     try (Spanner spanner =
-        this.spanner
-            .getOptions()
-            .toBuilder()
+        this.spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
             .build()
@@ -4380,9 +4368,7 @@ public class DatabaseClientImplTest {
   public void testGetDialectPostgreSQLPreloaded() {
     mockSpanner.putStatementResult(StatementResult.detectDialectResult(Dialect.POSTGRESQL));
     try (Spanner spanner =
-        this.spanner
-            .getOptions()
-            .toBuilder()
+        this.spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
             .build()
@@ -4421,9 +4407,7 @@ public class DatabaseClientImplTest {
     mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     try (Spanner spanner =
-        this.spanner
-            .getOptions()
-            .toBuilder()
+        this.spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
             .build()
@@ -4596,6 +4580,7 @@ public class DatabaseClientImplTest {
             resultSet,
             col++);
         assertAsString("2023-01-11", resultSet, col++);
+        assertAsString("b1153a48-cd31-498e-b770-f554bce48e05", resultSet, col++);
         assertAsString("2023-01-11T11:55:18.123456789Z", resultSet, col++);
         if (dialect == Dialect.POSTGRESQL) {
           // Check PG_OID value
@@ -4637,6 +4622,13 @@ public class DatabaseClientImplTest {
             resultSet,
             col++);
         assertAsString(ImmutableList.of("2000-02-29", "NULL", "2000-01-01"), resultSet, col++);
+        assertAsString(
+            ImmutableList.of(
+                "b1153a48-cd31-498e-b770-f554bce48e05",
+                "NULL",
+                "11546309-8b37-4366-9a20-369381c7803a"),
+            resultSet,
+            col++);
         assertAsString(
             ImmutableList.of("2023-01-11T11:55:18.123456789Z", "NULL", "2023-01-12T11:55:18Z"),
             resultSet,
@@ -4855,7 +4847,9 @@ public class DatabaseClientImplTest {
       // There are no rows, but we need to call resultSet.next() before we can get the metadata.
       assertFalse(resultSet.next());
       assertEquals(
-          "STRUCT<c1 UNRECOGNIZED, c2 STRING<UNRECOGNIZED>, c3 UNRECOGNIZED<PG_NUMERIC>, c4 ARRAY<UNRECOGNIZED>, c5 ARRAY<STRING<UNRECOGNIZED>>, c6 UNRECOGNIZED<UNRECOGNIZED>, c7 ARRAY<UNRECOGNIZED<PG_NUMERIC>>>",
+          "STRUCT<c1 UNRECOGNIZED, c2 STRING<UNRECOGNIZED>, c3 UNRECOGNIZED<PG_NUMERIC>, c4"
+              + " ARRAY<UNRECOGNIZED>, c5 ARRAY<STRING<UNRECOGNIZED>>, c6"
+              + " UNRECOGNIZED<UNRECOGNIZED>, c7 ARRAY<UNRECOGNIZED<PG_NUMERIC>>>",
           resultSet.getType().toString());
       assertEquals(
           "UNRECOGNIZED", resultSet.getType().getStructFields().get(0).getType().toString());
@@ -4971,11 +4965,19 @@ public class DatabaseClientImplTest {
         client
             .getStatementFactory()
             .withUnnamedParameters(
-                "# comment about ? in the statement\nselect id from test\n /* This is a ? comment \n about ? */ \n where b=? # this is a inline command about ?",
+                "# comment about ? in the statement\n"
+                    + "select id from test\n"
+                    + " /* This is a ? comment \n"
+                    + " about ? */ \n"
+                    + " where b=? # this is a inline command about ?",
                 true);
     Statement generatedStatement =
         Statement.newBuilder(
-                "# comment about ? in the statement\nselect id from test\n /* This is a ? comment \n about ? */ \n where b=@p1 # this is a inline command about ?")
+                "# comment about ? in the statement\n"
+                    + "select id from test\n"
+                    + " /* This is a ? comment \n"
+                    + " about ? */ \n"
+                    + " where b=@p1 # this is a inline command about ?")
             .bind("p1")
             .to(true)
             .build();
@@ -5311,6 +5313,10 @@ public class DatabaseClientImplTest {
             .addValues(com.google.protobuf.Value.newBuilder().setStringValue("2023-01-11").build())
             .addValues(
                 com.google.protobuf.Value.newBuilder()
+                    .setStringValue("b1153a48-cd31-498e-b770-f554bce48e05")
+                    .build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
                     .setStringValue("2023-01-11T11:55:18.123456789Z")
                     .build());
     if (dialect == Dialect.POSTGRESQL) {
@@ -5471,6 +5477,23 @@ public class DatabaseClientImplTest {
                         .addValues(
                             com.google.protobuf.Value.newBuilder()
                                 .setStringValue("2000-01-01")
+                                .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("b1153a48-cd31-498e-b770-f554bce48e05")
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("11546309-8b37-4366-9a20-369381c7803a")
                                 .build())
                         .build()))
         .addValues(

@@ -566,6 +566,38 @@
     <method>java.util.List getFloat32Array()</method>
   </difference>
 
+  <!-- UUID -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.UUID getUuid(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.UUID getUuid(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getUuidList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getUuidList(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.UUID getUuid()</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.List getUuidArray()</method>
+  </difference>
+
   <!-- INTERVAL -->
   <difference>
     <differenceType>7012</differenceType>
@@ -963,5 +995,17 @@
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>com.google.cloud.spanner.Statement$StatementFactory getStatementFactory()</method>
+  </difference>
+
+  <!-- Add method begin() with AbortedException in TransactionManager and AsyncTransactionManager -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
+    <method>com.google.cloud.spanner.AsyncTransactionManager$TransactionContextFuture beginAsync(com.google.cloud.spanner.AbortedException)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionManager</className>
+    <method>com.google.cloud.spanner.TransactionContext begin(com.google.cloud.spanner.AbortedException)</method>
   </difference>
 </differences>

@@ -33,6 +33,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     // @@protoc_insertion_point(message_implements:google.spanner.v1.BatchWriteRequest)
     BatchWriteRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use BatchWriteRequest.newBuilder() to construct.
   private BatchWriteRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -81,6 +82,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     java.util.List<com.google.spanner.v1.Mutation> getMutationsList();
+
     /**
      *
      *
@@ -93,6 +95,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     com.google.spanner.v1.Mutation getMutations(int index);
+
     /**
      *
      *
@@ -105,6 +108,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     int getMutationsCount();
+
     /**
      *
      *
@@ -117,6 +121,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     java.util.List<? extends com.google.spanner.v1.MutationOrBuilder> getMutationsOrBuilderList();
+
     /**
      *
      *
@@ -130,6 +135,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
      */
     com.google.spanner.v1.MutationOrBuilder getMutationsOrBuilder(int index);
   }
+
   /**
    *
    *
@@ -146,6 +152,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       // @@protoc_insertion_point(message_implements:google.spanner.v1.BatchWriteRequest.MutationGroup)
       MutationGroupOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use MutationGroup.newBuilder() to construct.
     private MutationGroup(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -180,6 +187,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
 
     @SuppressWarnings("serial")
     private java.util.List<com.google.spanner.v1.Mutation> mutations_;
+
     /**
      *
      *
@@ -195,6 +203,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     public java.util.List<com.google.spanner.v1.Mutation> getMutationsList() {
       return mutations_;
     }
+
     /**
      *
      *
@@ -211,6 +220,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         getMutationsOrBuilderList() {
       return mutations_;
     }
+
     /**
      *
      *
@@ -226,6 +236,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     public int getMutationsCount() {
       return mutations_.size();
     }
+
     /**
      *
      *
@@ -241,6 +252,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     public com.google.spanner.v1.Mutation getMutations(int index) {
       return mutations_.get(index);
     }
+
     /**
      *
      *
@@ -420,6 +432,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -687,6 +700,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
           return mutationsBuilder_.getMessageList();
         }
       }
+
       /**
        *
        *
@@ -705,6 +719,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
           return mutationsBuilder_.getCount();
         }
       }
+
       /**
        *
        *
@@ -723,6 +738,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
           return mutationsBuilder_.getMessage(index);
         }
       }
+
       /**
        *
        *
@@ -747,6 +763,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -769,6 +786,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -793,6 +811,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -817,6 +836,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -838,6 +858,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -860,6 +881,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -882,6 +904,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -903,6 +926,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -924,6 +948,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -938,6 +963,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       public com.google.spanner.v1.Mutation.Builder getMutationsBuilder(int index) {
         return getMutationsFieldBuilder().getBuilder(index);
       }
+
       /**
        *
        *
@@ -956,6 +982,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
           return mutationsBuilder_.getMessageOrBuilder(index);
         }
       }
+
       /**
        *
        *
@@ -975,6 +1002,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
           return java.util.Collections.unmodifiableList(mutations_);
         }
       }
+
       /**
        *
        *
@@ -990,6 +1018,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return getMutationsFieldBuilder()
             .addBuilder(com.google.spanner.v1.Mutation.getDefaultInstance());
       }
+
       /**
        *
        *
@@ -1005,6 +1034,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return getMutationsFieldBuilder()
             .addBuilder(index, com.google.spanner.v1.Mutation.getDefaultInstance());
       }
+
       /**
        *
        *
@@ -1106,6 +1136,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object session_ = "";
+
   /**
    *
    *
@@ -1131,6 +1162,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       return s;
     }
   }
+
   /**
    *
    *
@@ -1159,6 +1191,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int REQUEST_OPTIONS_FIELD_NUMBER = 3;
   private com.google.spanner.v1.RequestOptions requestOptions_;
+
   /**
    *
    *
@@ -1174,6 +1207,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
   public boolean hasRequestOptions() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -1191,6 +1225,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
         : requestOptions_;
   }
+
   /**
    *
    *
@@ -1211,6 +1246,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.BatchWriteRequest.MutationGroup> mutationGroups_;
+
   /**
    *
    *
@@ -1227,6 +1263,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       getMutationGroupsList() {
     return mutationGroups_;
   }
+
   /**
    *
    *
@@ -1243,6 +1280,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       getMutationGroupsOrBuilderList() {
     return mutationGroups_;
   }
+
   /**
    *
    *
@@ -1258,6 +1296,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
   public int getMutationGroupsCount() {
     return mutationGroups_.size();
   }
+
   /**
    *
    *
@@ -1273,6 +1312,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
   public com.google.spanner.v1.BatchWriteRequest.MutationGroup getMutationGroups(int index) {
     return mutationGroups_.get(index);
   }
+
   /**
    *
    *
@@ -1292,6 +1332,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int EXCLUDE_TXN_FROM_CHANGE_STREAMS_FIELD_NUMBER = 5;
   private boolean excludeTxnFromChangeStreams_ = false;
+
   /**
    *
    *
@@ -1513,6 +1554,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1801,6 +1843,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     private int bitField0_;
 
     private java.lang.Object session_ = "";
+
     /**
      *
      *
@@ -1825,6 +1868,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1849,6 +1893,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1872,6 +1917,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1891,6 +1937,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1922,6 +1969,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
             com.google.spanner.v1.RequestOptions.Builder,
             com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
+
     /**
      *
      *
@@ -1936,6 +1984,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     public boolean hasRequestOptions() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -1956,6 +2005,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return requestOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1978,6 +2028,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1997,6 +2048,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2024,6 +2076,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2043,6 +2096,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2057,6 +2111,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2075,6 +2130,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
             : requestOptions_;
       }
     }
+
     /**
      *
      *
@@ -2138,6 +2194,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return mutationGroupsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -2156,6 +2213,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return mutationGroupsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -2174,6 +2232,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return mutationGroupsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -2199,6 +2258,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2221,6 +2281,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2245,6 +2306,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2270,6 +2332,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2292,6 +2355,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2314,6 +2378,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2337,6 +2402,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2358,6 +2424,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2379,6 +2446,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -2394,6 +2462,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         int index) {
       return getMutationGroupsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -2413,6 +2482,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return mutationGroupsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -2432,6 +2502,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
         return java.util.Collections.unmodifiableList(mutationGroups_);
       }
     }
+
     /**
      *
      *
@@ -2448,6 +2519,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       return getMutationGroupsFieldBuilder()
           .addBuilder(com.google.spanner.v1.BatchWriteRequest.MutationGroup.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -2465,6 +2537,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
           .addBuilder(
               index, com.google.spanner.v1.BatchWriteRequest.MutationGroup.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -2502,6 +2575,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private boolean excludeTxnFromChangeStreams_;
+
     /**
      *
      *
@@ -2529,6 +2603,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
     public boolean getExcludeTxnFromChangeStreams() {
       return excludeTxnFromChangeStreams_;
     }
+
     /**
      *
      *
@@ -2560,6 +2635,7 @@ public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *

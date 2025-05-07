@@ -37,6 +37,7 @@ public interface KeySetOrBuilder
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
   java.util.List<com.google.protobuf.ListValue> getKeysList();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface KeySetOrBuilder
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
   com.google.protobuf.ListValue getKeys(int index);
+
   /**
    *
    *
@@ -63,6 +65,7 @@ public interface KeySetOrBuilder
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
   int getKeysCount();
+
   /**
    *
    *
@@ -76,6 +79,7 @@ public interface KeySetOrBuilder
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
   java.util.List<? extends com.google.protobuf.ListValueOrBuilder> getKeysOrBuilderList();
+
   /**
    *
    *
@@ -101,6 +105,7 @@ public interface KeySetOrBuilder
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
   java.util.List<com.google.spanner.v1.KeyRange> getRangesList();
+
   /**
    *
    *
@@ -112,6 +117,7 @@ public interface KeySetOrBuilder
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
   com.google.spanner.v1.KeyRange getRanges(int index);
+
   /**
    *
    *
@@ -123,6 +129,7 @@ public interface KeySetOrBuilder
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
   int getRangesCount();
+
   /**
    *
    *
@@ -134,6 +141,7 @@ public interface KeySetOrBuilder
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
   java.util.List<? extends com.google.spanner.v1.KeyRangeOrBuilder> getRangesOrBuilderList();
+
   /**
    *
    *

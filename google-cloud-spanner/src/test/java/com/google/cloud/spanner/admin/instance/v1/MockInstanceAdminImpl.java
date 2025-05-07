@@ -148,7 +148,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method CreateInstanceConfig, expected %s or %s",
+                  "Unrecognized response type %s for method CreateInstanceConfig, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   Operation.class.getName(),
                   Exception.class.getName())));
@@ -169,7 +170,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method UpdateInstanceConfig, expected %s or %s",
+                  "Unrecognized response type %s for method UpdateInstanceConfig, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   Operation.class.getName(),
                   Exception.class.getName())));
@@ -190,7 +192,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method DeleteInstanceConfig, expected %s or %s",
+                  "Unrecognized response type %s for method DeleteInstanceConfig, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   Empty.class.getName(),
                   Exception.class.getName())));
@@ -212,7 +215,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method ListInstanceConfigOperations, expected %s or %s",
+                  "Unrecognized response type %s for method ListInstanceConfigOperations, expected"
+                      + " %s or %s",
                   response == null ? "null" : response.getClass().getName(),
                   ListInstanceConfigOperationsResponse.class.getName(),
                   Exception.class.getName())));
@@ -255,7 +259,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method ListInstancePartitions, expected %s or %s",
+                  "Unrecognized response type %s for method ListInstancePartitions, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   ListInstancePartitionsResponse.class.getName(),
                   Exception.class.getName())));
@@ -421,7 +426,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method GetInstancePartition, expected %s or %s",
+                  "Unrecognized response type %s for method GetInstancePartition, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   InstancePartition.class.getName(),
                   Exception.class.getName())));
@@ -442,7 +448,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method CreateInstancePartition, expected %s or %s",
+                  "Unrecognized response type %s for method CreateInstancePartition, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   Operation.class.getName(),
                   Exception.class.getName())));
@@ -463,7 +470,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method DeleteInstancePartition, expected %s or %s",
+                  "Unrecognized response type %s for method DeleteInstancePartition, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   Empty.class.getName(),
                   Exception.class.getName())));
@@ -484,7 +492,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method UpdateInstancePartition, expected %s or %s",
+                  "Unrecognized response type %s for method UpdateInstancePartition, expected %s or"
+                      + " %s",
                   response == null ? "null" : response.getClass().getName(),
                   Operation.class.getName(),
                   Exception.class.getName())));
@@ -506,7 +515,8 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
       responseObserver.onError(
           new IllegalArgumentException(
               String.format(
-                  "Unrecognized response type %s for method ListInstancePartitionOperations, expected %s or %s",
+                  "Unrecognized response type %s for method ListInstancePartitionOperations,"
+                      + " expected %s or %s",
                   response == null ? "null" : response.getClass().getName(),
                   ListInstancePartitionOperationsResponse.class.getName(),
                   Exception.class.getName())));

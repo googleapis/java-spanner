@@ -34,6 +34,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.UpdateInstancePartitionRequest)
     UpdateInstancePartitionRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use UpdateInstancePartitionRequest.newBuilder() to construct.
   private UpdateInstancePartitionRequest(
       com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -66,6 +67,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
   private int bitField0_;
   public static final int INSTANCE_PARTITION_FIELD_NUMBER = 1;
   private com.google.spanner.admin.instance.v1.InstancePartition instancePartition_;
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
   public boolean hasInstancePartition() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -108,6 +111,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
         ? com.google.spanner.admin.instance.v1.InstancePartition.getDefaultInstance()
         : instancePartition_;
   }
+
   /**
    *
    *
@@ -132,6 +136,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
 
   public static final int FIELD_MASK_FIELD_NUMBER = 2;
   private com.google.protobuf.FieldMask fieldMask_;
+
   /**
    *
    *
@@ -153,6 +158,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
   public boolean hasFieldMask() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -174,6 +180,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
   public com.google.protobuf.FieldMask getFieldMask() {
     return fieldMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : fieldMask_;
   }
+
   /**
    *
    *
@@ -374,6 +381,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -608,6 +616,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
             com.google.spanner.admin.instance.v1.InstancePartition.Builder,
             com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder>
         instancePartitionBuilder_;
+
     /**
      *
      *
@@ -627,6 +636,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
     public boolean hasInstancePartition() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -652,6 +662,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
         return instancePartitionBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -680,6 +691,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -705,6 +717,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -739,6 +752,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -763,6 +777,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -783,6 +798,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       onChanged();
       return getInstancePartitionFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -807,6 +823,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
             : instancePartition_;
       }
     }
+
     /**
      *
      *
@@ -844,6 +861,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
             com.google.protobuf.FieldMask.Builder,
             com.google.protobuf.FieldMaskOrBuilder>
         fieldMaskBuilder_;
+
     /**
      *
      *
@@ -864,6 +882,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
     public boolean hasFieldMask() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -888,6 +907,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
         return fieldMaskBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -916,6 +936,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -941,6 +962,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -974,6 +996,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -999,6 +1022,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1019,6 +1043,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
       onChanged();
       return getFieldMaskFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1041,6 +1066,7 @@ public final class UpdateInstancePartitionRequest extends com.google.protobuf.Ge
         return fieldMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : fieldMask_;
       }
     }
+
     /**
      *
      *

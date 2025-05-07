@@ -36,6 +36,7 @@ public interface TypeOrBuilder
    * @return The enum numeric value on the wire for code.
    */
   int getCodeValue();
+
   /**
    *
    *
@@ -63,6 +64,7 @@ public interface TypeOrBuilder
    * @return Whether the arrayElementType field is set.
    */
   boolean hasArrayElementType();
+
   /**
    *
    *
@@ -77,6 +79,7 @@ public interface TypeOrBuilder
    * @return The arrayElementType.
    */
   com.google.spanner.v1.Type getArrayElementType();
+
   /**
    *
    *
@@ -104,6 +107,7 @@ public interface TypeOrBuilder
    * @return Whether the structType field is set.
    */
   boolean hasStructType();
+
   /**
    *
    *
@@ -118,6 +122,7 @@ public interface TypeOrBuilder
    * @return The structType.
    */
   com.google.spanner.v1.StructType getStructType();
+
   /**
    *
    *
@@ -150,6 +155,7 @@ public interface TypeOrBuilder
    * @return The enum numeric value on the wire for typeAnnotation.
    */
   int getTypeAnnotationValue();
+
   /**
    *
    *
@@ -186,6 +192,7 @@ public interface TypeOrBuilder
    * @return The protoTypeFqn.
    */
   java.lang.String getProtoTypeFqn();
+
   /**
    *
    *

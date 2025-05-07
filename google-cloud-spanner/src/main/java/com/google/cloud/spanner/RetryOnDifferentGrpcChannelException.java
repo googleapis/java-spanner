@@ -24,7 +24,8 @@ class RetryOnDifferentGrpcChannelException extends SpannerException {
   RetryOnDifferentGrpcChannelException(
       @Nullable String message, int channel, @Nullable Throwable cause) {
     // Note: We set retryable=false, as the exception is not retryable in the standard way.
-    super(DoNotConstructDirectly.ALLOWED, ErrorCode.INTERNAL, /*retryable=*/ false, message, cause);
+    super(
+        DoNotConstructDirectly.ALLOWED, ErrorCode.INTERNAL, /* retryable= */ false, message, cause);
     this.channel = channel;
   }
 

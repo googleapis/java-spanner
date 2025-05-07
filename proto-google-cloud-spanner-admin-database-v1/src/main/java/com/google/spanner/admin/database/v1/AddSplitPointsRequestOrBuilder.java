@@ -40,6 +40,7 @@ public interface AddSplitPointsRequestOrBuilder
    * @return The database.
    */
   java.lang.String getDatabase();
+
   /**
    *
    *
@@ -69,6 +70,7 @@ public interface AddSplitPointsRequestOrBuilder
    * </code>
    */
   java.util.List<com.google.spanner.admin.database.v1.SplitPoints> getSplitPointsList();
+
   /**
    *
    *
@@ -81,6 +83,7 @@ public interface AddSplitPointsRequestOrBuilder
    * </code>
    */
   com.google.spanner.admin.database.v1.SplitPoints getSplitPoints(int index);
+
   /**
    *
    *
@@ -93,6 +96,7 @@ public interface AddSplitPointsRequestOrBuilder
    * </code>
    */
   int getSplitPointsCount();
+
   /**
    *
    *
@@ -106,6 +110,7 @@ public interface AddSplitPointsRequestOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.database.v1.SplitPointsOrBuilder>
       getSplitPointsOrBuilderList();
+
   /**
    *
    *
@@ -135,6 +140,7 @@ public interface AddSplitPointsRequestOrBuilder
    * @return The initiator.
    */
   java.lang.String getInitiator();
+
   /**
    *
    *

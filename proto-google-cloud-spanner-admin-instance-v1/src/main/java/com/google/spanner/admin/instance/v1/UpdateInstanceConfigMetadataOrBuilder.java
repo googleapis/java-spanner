@@ -36,6 +36,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    * @return Whether the instanceConfig field is set.
    */
   boolean hasInstanceConfig();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    * @return The instanceConfig.
    */
   com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig();
+
   /**
    *
    *
@@ -73,6 +75,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    * @return Whether the progress field is set.
    */
   boolean hasProgress();
+
   /**
    *
    *
@@ -87,6 +90,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    * @return The progress.
    */
   com.google.spanner.admin.instance.v1.OperationProgress getProgress();
+
   /**
    *
    *
@@ -112,6 +116,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    * @return Whether the cancelTime field is set.
    */
   boolean hasCancelTime();
+
   /**
    *
    *
@@ -124,6 +129,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    * @return The cancelTime.
    */
   com.google.protobuf.Timestamp getCancelTime();
+
   /**
    *
    *

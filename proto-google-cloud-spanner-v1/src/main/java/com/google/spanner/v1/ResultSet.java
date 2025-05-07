@@ -34,6 +34,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.v1.ResultSet)
     ResultSetOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ResultSet.newBuilder() to construct.
   private ResultSet(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -66,6 +67,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   private int bitField0_;
   public static final int METADATA_FIELD_NUMBER = 1;
   private com.google.spanner.v1.ResultSetMetadata metadata_;
+
   /**
    *
    *
@@ -81,6 +83,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   public boolean hasMetadata() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -98,6 +101,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
         : metadata_;
   }
+
   /**
    *
    *
@@ -118,6 +122,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.protobuf.ListValue> rows_;
+
   /**
    *
    *
@@ -135,6 +140,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   public java.util.List<com.google.protobuf.ListValue> getRowsList() {
     return rows_;
   }
+
   /**
    *
    *
@@ -152,6 +158,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   public java.util.List<? extends com.google.protobuf.ListValueOrBuilder> getRowsOrBuilderList() {
     return rows_;
   }
+
   /**
    *
    *
@@ -169,6 +176,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   public int getRowsCount() {
     return rows_.size();
   }
+
   /**
    *
    *
@@ -186,6 +194,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   public com.google.protobuf.ListValue getRows(int index) {
     return rows_.get(index);
   }
+
   /**
    *
    *
@@ -206,6 +215,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
 
   public static final int STATS_FIELD_NUMBER = 3;
   private com.google.spanner.v1.ResultSetStats stats_;
+
   /**
    *
    *
@@ -229,6 +239,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   public boolean hasStats() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -252,6 +263,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   public com.google.spanner.v1.ResultSetStats getStats() {
     return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
   }
+
   /**
    *
    *
@@ -276,6 +288,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
 
   public static final int PRECOMMIT_TOKEN_FIELD_NUMBER = 5;
   private com.google.spanner.v1.MultiplexedSessionPrecommitToken precommitToken_;
+
   /**
    *
    *
@@ -296,6 +309,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
   public boolean hasPrecommitToken() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -318,6 +332,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance()
         : precommitToken_;
   }
+
   /**
    *
    *
@@ -541,6 +556,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -841,6 +857,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.ResultSetMetadata.Builder,
             com.google.spanner.v1.ResultSetMetadataOrBuilder>
         metadataBuilder_;
+
     /**
      *
      *
@@ -855,6 +872,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
     public boolean hasMetadata() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -875,6 +893,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return metadataBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -897,6 +916,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -916,6 +936,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -943,6 +964,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -962,6 +984,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -976,6 +999,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getMetadataFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -994,6 +1018,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
             : metadata_;
       }
     }
+
     /**
      *
      *
@@ -1055,6 +1080,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return rowsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -1075,6 +1101,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return rowsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -1095,6 +1122,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return rowsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -1121,6 +1149,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1144,6 +1173,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1170,6 +1200,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1196,6 +1227,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1219,6 +1251,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1242,6 +1275,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1265,6 +1299,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1288,6 +1323,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1311,6 +1347,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1327,6 +1364,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ListValue.Builder getRowsBuilder(int index) {
       return getRowsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -1347,6 +1385,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return rowsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -1367,6 +1406,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return java.util.Collections.unmodifiableList(rows_);
       }
     }
+
     /**
      *
      *
@@ -1383,6 +1423,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ListValue.Builder addRowsBuilder() {
       return getRowsFieldBuilder().addBuilder(com.google.protobuf.ListValue.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1400,6 +1441,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       return getRowsFieldBuilder()
           .addBuilder(index, com.google.protobuf.ListValue.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1440,6 +1482,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.ResultSetStats.Builder,
             com.google.spanner.v1.ResultSetStatsOrBuilder>
         statsBuilder_;
+
     /**
      *
      *
@@ -1462,6 +1505,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
     public boolean hasStats() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1488,6 +1532,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return statsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1518,6 +1563,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1545,6 +1591,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1580,6 +1627,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1607,6 +1655,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1629,6 +1678,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getStatsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1653,6 +1703,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
       }
     }
+
     /**
      *
      *
@@ -1693,6 +1744,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder,
             com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder>
         precommitTokenBuilder_;
+
     /**
      *
      *
@@ -1712,6 +1764,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
     public boolean hasPrecommitToken() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1737,6 +1790,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
         return precommitTokenBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1764,6 +1818,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1789,6 +1844,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1823,6 +1879,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1847,6 +1904,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1867,6 +1925,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getPrecommitTokenFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1891,6 +1950,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
             : precommitToken_;
       }
     }
+
     /**
      *
      *

@@ -38,6 +38,7 @@ public interface BatchCreateSessionsRequestOrBuilder
    * @return The database.
    */
   java.lang.String getDatabase();
+
   /**
    *
    *
@@ -65,6 +66,7 @@ public interface BatchCreateSessionsRequestOrBuilder
    * @return Whether the sessionTemplate field is set.
    */
   boolean hasSessionTemplate();
+
   /**
    *
    *
@@ -77,6 +79,7 @@ public interface BatchCreateSessionsRequestOrBuilder
    * @return The sessionTemplate.
    */
   com.google.spanner.v1.Session getSessionTemplate();
+
   /**
    *
    *

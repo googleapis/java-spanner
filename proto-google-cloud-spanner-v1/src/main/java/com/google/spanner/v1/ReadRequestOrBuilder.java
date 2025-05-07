@@ -38,6 +38,7 @@ public interface ReadRequestOrBuilder
    * @return The session.
    */
   java.lang.String getSession();
+
   /**
    *
    *
@@ -66,6 +67,7 @@ public interface ReadRequestOrBuilder
    * @return Whether the transaction field is set.
    */
   boolean hasTransaction();
+
   /**
    *
    *
@@ -79,6 +81,7 @@ public interface ReadRequestOrBuilder
    * @return The transaction.
    */
   com.google.spanner.v1.TransactionSelector getTransaction();
+
   /**
    *
    *
@@ -103,6 +106,7 @@ public interface ReadRequestOrBuilder
    * @return The table.
    */
   java.lang.String getTable();
+
   /**
    *
    *
@@ -133,6 +137,7 @@ public interface ReadRequestOrBuilder
    * @return The index.
    */
   java.lang.String getIndex();
+
   /**
    *
    *
@@ -164,6 +169,7 @@ public interface ReadRequestOrBuilder
    * @return A list containing the columns.
    */
   java.util.List<java.lang.String> getColumnsList();
+
   /**
    *
    *
@@ -177,6 +183,7 @@ public interface ReadRequestOrBuilder
    * @return The count of columns.
    */
   int getColumnsCount();
+
   /**
    *
    *
@@ -191,6 +198,7 @@ public interface ReadRequestOrBuilder
    * @return The columns at the given index.
    */
   java.lang.String getColumns(int index);
+
   /**
    *
    *
@@ -233,6 +241,7 @@ public interface ReadRequestOrBuilder
    * @return Whether the keySet field is set.
    */
   boolean hasKeySet();
+
   /**
    *
    *
@@ -260,6 +269,7 @@ public interface ReadRequestOrBuilder
    * @return The keySet.
    */
   com.google.spanner.v1.KeySet getKeySet();
+
   /**
    *
    *
@@ -347,6 +357,7 @@ public interface ReadRequestOrBuilder
    * @return Whether the requestOptions field is set.
    */
   boolean hasRequestOptions();
+
   /**
    *
    *
@@ -359,6 +370,7 @@ public interface ReadRequestOrBuilder
    * @return The requestOptions.
    */
   com.google.spanner.v1.RequestOptions getRequestOptions();
+
   /**
    *
    *
@@ -382,6 +394,7 @@ public interface ReadRequestOrBuilder
    * @return Whether the directedReadOptions field is set.
    */
   boolean hasDirectedReadOptions();
+
   /**
    *
    *
@@ -394,6 +407,7 @@ public interface ReadRequestOrBuilder
    * @return The directedReadOptions.
    */
   com.google.spanner.v1.DirectedReadOptions getDirectedReadOptions();
+
   /**
    *
    *
@@ -442,6 +456,7 @@ public interface ReadRequestOrBuilder
    * @return The enum numeric value on the wire for orderBy.
    */
   int getOrderByValue();
+
   /**
    *
    *
@@ -478,6 +493,7 @@ public interface ReadRequestOrBuilder
    * @return The enum numeric value on the wire for lockHint.
    */
   int getLockHintValue();
+
   /**
    *
    *

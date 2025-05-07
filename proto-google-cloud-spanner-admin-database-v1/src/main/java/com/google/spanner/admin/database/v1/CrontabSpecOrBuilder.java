@@ -47,6 +47,7 @@ public interface CrontabSpecOrBuilder
    * @return The text.
    */
   java.lang.String getText();
+
   /**
    *
    *
@@ -84,6 +85,7 @@ public interface CrontabSpecOrBuilder
    * @return The timeZone.
    */
   java.lang.String getTimeZone();
+
   /**
    *
    *
@@ -118,6 +120,7 @@ public interface CrontabSpecOrBuilder
    * @return Whether the creationWindow field is set.
    */
   boolean hasCreationWindow();
+
   /**
    *
    *
@@ -138,6 +141,7 @@ public interface CrontabSpecOrBuilder
    * @return The creationWindow.
    */
   com.google.protobuf.Duration getCreationWindow();
+
   /**
    *
    *

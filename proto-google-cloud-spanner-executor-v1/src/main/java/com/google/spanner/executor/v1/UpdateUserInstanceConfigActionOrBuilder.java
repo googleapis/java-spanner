@@ -36,6 +36,7 @@ public interface UpdateUserInstanceConfigActionOrBuilder
    * @return The userConfigId.
    */
   java.lang.String getUserConfigId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface UpdateUserInstanceConfigActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface UpdateUserInstanceConfigActionOrBuilder
    * @return Whether the displayName field is set.
    */
   boolean hasDisplayName();
+
   /**
    *
    *
@@ -98,6 +101,7 @@ public interface UpdateUserInstanceConfigActionOrBuilder
    * @return The displayName.
    */
   java.lang.String getDisplayName();
+
   /**
    *
    *
@@ -121,6 +125,7 @@ public interface UpdateUserInstanceConfigActionOrBuilder
    * <code>map&lt;string, string&gt; labels = 4;</code>
    */
   int getLabelsCount();
+
   /**
    *
    *
@@ -131,9 +136,11 @@ public interface UpdateUserInstanceConfigActionOrBuilder
    * <code>map&lt;string, string&gt; labels = 4;</code>
    */
   boolean containsLabels(java.lang.String key);
+
   /** Use {@link #getLabelsMap()} instead. */
   @java.lang.Deprecated
   java.util.Map<java.lang.String, java.lang.String> getLabels();
+
   /**
    *
    *
@@ -144,6 +151,7 @@ public interface UpdateUserInstanceConfigActionOrBuilder
    * <code>map&lt;string, string&gt; labels = 4;</code>
    */
   java.util.Map<java.lang.String, java.lang.String> getLabelsMap();
+
   /**
    *
    *
@@ -158,6 +166,7 @@ public interface UpdateUserInstanceConfigActionOrBuilder
       java.lang.String key,
       /* nullable */
       java.lang.String defaultValue);
+
   /**
    *
    *

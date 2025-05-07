@@ -34,6 +34,7 @@ public interface ListInstanceConfigsResponseOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.InstanceConfig instance_configs = 1;</code>
    */
   java.util.List<com.google.spanner.admin.instance.v1.InstanceConfig> getInstanceConfigsList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface ListInstanceConfigsResponseOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.InstanceConfig instance_configs = 1;</code>
    */
   com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfigs(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface ListInstanceConfigsResponseOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.InstanceConfig instance_configs = 1;</code>
    */
   int getInstanceConfigsCount();
+
   /**
    *
    *
@@ -65,6 +68,7 @@ public interface ListInstanceConfigsResponseOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder>
       getInstanceConfigsOrBuilderList();
+
   /**
    *
    *
@@ -91,6 +95,7 @@ public interface ListInstanceConfigsResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *

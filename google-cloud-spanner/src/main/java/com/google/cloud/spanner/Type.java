@@ -59,6 +59,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_BYTES = new Type(Code.BYTES, null, null);
   private static final Type TYPE_TIMESTAMP = new Type(Code.TIMESTAMP, null, null);
   private static final Type TYPE_DATE = new Type(Code.DATE, null, null);
+  private static final Type TYPE_UUID = new Type(Code.UUID, null, null);
   private static final Type TYPE_INTERVAL = new Type(Code.INTERVAL, null, null);
   private static final Type TYPE_ARRAY_BOOL = new Type(Code.ARRAY, TYPE_BOOL, null);
   private static final Type TYPE_ARRAY_INT64 = new Type(Code.ARRAY, TYPE_INT64, null);
@@ -73,6 +74,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_ARRAY_BYTES = new Type(Code.ARRAY, TYPE_BYTES, null);
   private static final Type TYPE_ARRAY_TIMESTAMP = new Type(Code.ARRAY, TYPE_TIMESTAMP, null);
   private static final Type TYPE_ARRAY_DATE = new Type(Code.ARRAY, TYPE_DATE, null);
+  private static final Type TYPE_ARRAY_UUID = new Type(Code.ARRAY, TYPE_UUID, null);
   private static final Type TYPE_ARRAY_INTERVAL = new Type(Code.ARRAY, TYPE_INTERVAL, null);
 
   private static final int AMBIGUOUS_FIELD = -1;
@@ -185,6 +187,11 @@ public final class Type implements Serializable {
     return TYPE_DATE;
   }
 
+  /** Returns the descriptor for the {@code UUID} type. */
+  public static Type uuid() {
+    return TYPE_UUID;
+  }
+
   /**
    * Returns the descriptor for the {@code INTERVAL} type: an interval which represents a time
    * duration as a tuple of 3 values (months, days, nanoseconds). [Interval(months:-120000, days:
@@ -225,6 +232,8 @@ public final class Type implements Serializable {
         return TYPE_ARRAY_TIMESTAMP;
       case DATE:
         return TYPE_ARRAY_DATE;
+      case UUID:
+        return TYPE_ARRAY_UUID;
       case INTERVAL:
         return TYPE_ARRAY_INTERVAL;
       default:
@@ -309,6 +318,7 @@ public final class Type implements Serializable {
     BYTES(TypeCode.BYTES, "bytea"),
     TIMESTAMP(TypeCode.TIMESTAMP, "timestamp with time zone"),
     DATE(TypeCode.DATE, "date"),
+    UUID(TypeCode.UUID, "uuid"),
     INTERVAL(TypeCode.INTERVAL, "interval"),
     ARRAY(TypeCode.ARRAY, "array"),
     STRUCT(TypeCode.STRUCT, "struct");
@@ -625,6 +635,8 @@ public final class Type implements Serializable {
         return timestamp();
       case DATE:
         return date();
+      case UUID:
+        return uuid();
       case INTERVAL:
         return interval();
       case PROTO:

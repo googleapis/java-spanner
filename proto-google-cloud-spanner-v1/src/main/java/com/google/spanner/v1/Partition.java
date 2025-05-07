@@ -34,6 +34,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.v1.Partition)
     PartitionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use Partition.newBuilder() to construct.
   private Partition(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -65,6 +66,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
 
   public static final int PARTITION_TOKEN_FIELD_NUMBER = 1;
   private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -240,6 +242,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -420,6 +423,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
     private int bitField0_;
 
     private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -437,6 +441,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ByteString getPartitionToken() {
       return partitionToken_;
     }
+
     /**
      *
      *
@@ -460,6 +465,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *

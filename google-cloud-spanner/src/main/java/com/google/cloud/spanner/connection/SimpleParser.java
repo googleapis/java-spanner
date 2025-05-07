@@ -102,7 +102,7 @@ class SimpleParser {
 
   /** Constructs a simple parser for the given SQL string and dialect. */
   SimpleParser(Dialect dialect, String sql) {
-    this(dialect, sql, 0, /* treatHintCommentsAsTokens = */ false);
+    this(dialect, sql, 0, /* treatHintCommentsAsTokens= */ false);
   }
 
   /**
@@ -138,7 +138,7 @@ class SimpleParser {
     // comments and comments are automatically skipped by all methods.
     if (getDialect() == Dialect.GOOGLE_STANDARD_SQL && eatTokens('@', '{')) {
       while (pos < length && !eatToken('}')) {
-        pos = statementParser.skip(sql, pos, /*result=*/ null);
+        pos = statementParser.skip(sql, pos, /* result= */ null);
       }
     }
   }
@@ -222,7 +222,7 @@ class SimpleParser {
   }
 
   boolean peekTokens(char... tokens) {
-    return internalEatTokens(/* updatePos = */ false, tokens);
+    return internalEatTokens(/* updatePos= */ false, tokens);
   }
 
   /**
@@ -231,7 +231,7 @@ class SimpleParser {
    * are not equal to the list of tokens.
    */
   boolean eatTokens(char... tokens) {
-    return internalEatTokens(/* updatePos = */ true, tokens);
+    return internalEatTokens(/* updatePos= */ true, tokens);
   }
 
   /**
@@ -350,9 +350,9 @@ class SimpleParser {
   void skipWhitespaces() {
     while (pos < sql.length()) {
       if (sql.charAt(pos) == HYPHEN && sql.length() > (pos + 1) && sql.charAt(pos + 1) == HYPHEN) {
-        skipSingleLineComment(/* prefixLength = */ 2);
+        skipSingleLineComment(/* prefixLength= */ 2);
       } else if (statementParser.supportsHashSingleLineComments() && sql.charAt(pos) == DASH) {
-        skipSingleLineComment(/* prefixLength = */ 1);
+        skipSingleLineComment(/* prefixLength= */ 1);
       } else if (sql.charAt(pos) == SLASH
           && sql.length() > (pos + 1)
           && sql.charAt(pos + 1) == ASTERISK) {

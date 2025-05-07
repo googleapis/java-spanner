@@ -338,8 +338,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   public void testRandomizeThreshold() throws Exception {
     SessionPool pool =
         createPool(
-            this.options
-                .toBuilder()
+            this.options.toBuilder()
                 .setMaxSessions(400)
                 .setLoopFrequency(1000L)
                 .setRandomizePositionQPSThreshold(4)

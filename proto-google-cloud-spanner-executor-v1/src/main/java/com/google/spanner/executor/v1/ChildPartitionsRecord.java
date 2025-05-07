@@ -33,6 +33,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.ChildPartitionsRecord)
     ChildPartitionsRecordOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ChildPartitionsRecord.newBuilder() to construct.
   private ChildPartitionsRecord(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -81,6 +82,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
      * @return The token.
      */
     java.lang.String getToken();
+
     /**
      *
      *
@@ -106,6 +108,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
      * @return A list containing the parentPartitionTokens.
      */
     java.util.List<java.lang.String> getParentPartitionTokensList();
+
     /**
      *
      *
@@ -118,6 +121,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
      * @return The count of parentPartitionTokens.
      */
     int getParentPartitionTokensCount();
+
     /**
      *
      *
@@ -131,6 +135,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
      * @return The parentPartitionTokens at the given index.
      */
     java.lang.String getParentPartitionTokens(int index);
+
     /**
      *
      *
@@ -145,6 +150,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
      */
     com.google.protobuf.ByteString getParentPartitionTokensBytes(int index);
   }
+
   /**
    *
    *
@@ -159,6 +165,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.ChildPartitionsRecord.ChildPartition)
       ChildPartitionOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use ChildPartition.newBuilder() to construct.
     private ChildPartition(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -194,6 +201,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object token_ = "";
+
     /**
      *
      *
@@ -217,6 +225,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return s;
       }
     }
+
     /**
      *
      *
@@ -246,6 +255,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
     @SuppressWarnings("serial")
     private com.google.protobuf.LazyStringArrayList parentPartitionTokens_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
+
     /**
      *
      *
@@ -260,6 +270,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
     public com.google.protobuf.ProtocolStringList getParentPartitionTokensList() {
       return parentPartitionTokens_;
     }
+
     /**
      *
      *
@@ -274,6 +285,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
     public int getParentPartitionTokensCount() {
       return parentPartitionTokens_.size();
     }
+
     /**
      *
      *
@@ -289,6 +301,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
     public java.lang.String getParentPartitionTokens(int index) {
       return parentPartitionTokens_.get(index);
     }
+
     /**
      *
      *
@@ -485,6 +498,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -701,6 +715,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       private int bitField0_;
 
       private java.lang.Object token_ = "";
+
       /**
        *
        *
@@ -723,6 +738,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -745,6 +761,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -766,6 +783,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -783,6 +801,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -816,6 +835,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         }
         bitField0_ |= 0x00000002;
       }
+
       /**
        *
        *
@@ -831,6 +851,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         parentPartitionTokens_.makeImmutable();
         return parentPartitionTokens_;
       }
+
       /**
        *
        *
@@ -845,6 +866,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       public int getParentPartitionTokensCount() {
         return parentPartitionTokens_.size();
       }
+
       /**
        *
        *
@@ -860,6 +882,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       public java.lang.String getParentPartitionTokens(int index) {
         return parentPartitionTokens_.get(index);
       }
+
       /**
        *
        *
@@ -875,6 +898,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       public com.google.protobuf.ByteString getParentPartitionTokensBytes(int index) {
         return parentPartitionTokens_.getByteString(index);
       }
+
       /**
        *
        *
@@ -898,6 +922,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -920,6 +945,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -939,6 +965,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -957,6 +984,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1051,6 +1079,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
   private int bitField0_;
   public static final int START_TIME_FIELD_NUMBER = 1;
   private com.google.protobuf.Timestamp startTime_;
+
   /**
    *
    *
@@ -1067,6 +1096,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
   public boolean hasStartTime() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -1083,6 +1113,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
   public com.google.protobuf.Timestamp getStartTime() {
     return startTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : startTime_;
   }
+
   /**
    *
    *
@@ -1102,6 +1133,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object recordSequence_ = "";
+
   /**
    *
    *
@@ -1128,6 +1160,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       return s;
     }
   }
+
   /**
    *
    *
@@ -1160,6 +1193,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.executor.v1.ChildPartitionsRecord.ChildPartition>
       childPartitions_;
+
   /**
    *
    *
@@ -1176,6 +1210,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       getChildPartitionsList() {
     return childPartitions_;
   }
+
   /**
    *
    *
@@ -1193,6 +1228,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       getChildPartitionsOrBuilderList() {
     return childPartitions_;
   }
+
   /**
    *
    *
@@ -1208,6 +1244,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
   public int getChildPartitionsCount() {
     return childPartitions_.size();
   }
+
   /**
    *
    *
@@ -1224,6 +1261,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       int index) {
     return childPartitions_.get(index);
   }
+
   /**
    *
    *
@@ -1425,6 +1463,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1707,6 +1746,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         startTimeBuilder_;
+
     /**
      *
      *
@@ -1722,6 +1762,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
     public boolean hasStartTime() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -1741,6 +1782,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return startTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1764,6 +1806,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1784,6 +1827,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1812,6 +1856,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -1832,6 +1877,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1847,6 +1893,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       onChanged();
       return getStartTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1864,6 +1911,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return startTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : startTime_;
       }
     }
+
     /**
      *
      *
@@ -1892,6 +1940,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
     }
 
     private java.lang.Object recordSequence_ = "";
+
     /**
      *
      *
@@ -1917,6 +1966,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1942,6 +1992,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1966,6 +2017,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1986,6 +2038,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2050,6 +2103,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return childPartitionsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -2068,6 +2122,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return childPartitionsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -2087,6 +2142,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return childPartitionsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -2112,6 +2168,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2136,6 +2193,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2161,6 +2219,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2186,6 +2245,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2209,6 +2269,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2233,6 +2294,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2257,6 +2319,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2278,6 +2341,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2299,6 +2363,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
       }
       return this;
     }
+
     /**
      *
      *
@@ -2314,6 +2379,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         getChildPartitionsBuilder(int index) {
       return getChildPartitionsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -2333,6 +2399,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return childPartitionsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -2353,6 +2420,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
         return java.util.Collections.unmodifiableList(childPartitions_);
       }
     }
+
     /**
      *
      *
@@ -2371,6 +2439,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
               com.google.spanner.executor.v1.ChildPartitionsRecord.ChildPartition
                   .getDefaultInstance());
     }
+
     /**
      *
      *
@@ -2390,6 +2459,7 @@ public final class ChildPartitionsRecord extends com.google.protobuf.GeneratedMe
               com.google.spanner.executor.v1.ChildPartitionsRecord.ChildPartition
                   .getDefaultInstance());
     }
+
     /**
      *
      *

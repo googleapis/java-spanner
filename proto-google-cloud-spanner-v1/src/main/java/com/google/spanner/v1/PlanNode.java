@@ -33,6 +33,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.v1.PlanNode)
     PlanNodeOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use PlanNode.newBuilder() to construct.
   private PlanNode(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -123,6 +124,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * <code>KIND_UNSPECIFIED = 0;</code>
      */
     public static final int KIND_UNSPECIFIED_VALUE = 0;
+
     /**
      *
      *
@@ -135,6 +137,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * <code>RELATIONAL = 1;</code>
      */
     public static final int RELATIONAL_VALUE = 1;
+
     /**
      *
      *
@@ -265,6 +268,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * @return The type.
      */
     java.lang.String getType();
+
     /**
      *
      *
@@ -300,6 +304,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * @return The variable.
      */
     java.lang.String getVariable();
+
     /**
      *
      *
@@ -320,6 +325,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      */
     com.google.protobuf.ByteString getVariableBytes();
   }
+
   /**
    *
    *
@@ -335,6 +341,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       // @@protoc_insertion_point(message_implements:google.spanner.v1.PlanNode.ChildLink)
       ChildLinkOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use ChildLink.newBuilder() to construct.
     private ChildLink(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -368,6 +375,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
     public static final int CHILD_INDEX_FIELD_NUMBER = 1;
     private int childIndex_ = 0;
+
     /**
      *
      *
@@ -388,6 +396,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object type_ = "";
+
     /**
      *
      *
@@ -414,6 +423,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return s;
       }
     }
+
     /**
      *
      *
@@ -445,6 +455,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object variable_ = "";
+
     /**
      *
      *
@@ -475,6 +486,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return s;
       }
     }
+
     /**
      *
      *
@@ -684,6 +696,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -899,6 +912,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       private int bitField0_;
 
       private int childIndex_;
+
       /**
        *
        *
@@ -914,6 +928,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       public int getChildIndex() {
         return childIndex_;
       }
+
       /**
        *
        *
@@ -933,6 +948,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -952,6 +968,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
 
       private java.lang.Object type_ = "";
+
       /**
        *
        *
@@ -977,6 +994,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -1002,6 +1020,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -1026,6 +1045,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1046,6 +1066,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1073,6 +1094,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
 
       private java.lang.Object variable_ = "";
+
       /**
        *
        *
@@ -1102,6 +1124,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -1131,6 +1154,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -1159,6 +1183,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1183,6 +1208,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1294,6 +1320,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * @return The description.
      */
     java.lang.String getDescription();
+
     /**
      *
      *
@@ -1321,6 +1348,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * <code>map&lt;string, int32&gt; subqueries = 2;</code>
      */
     int getSubqueriesCount();
+
     /**
      *
      *
@@ -1335,9 +1363,11 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * <code>map&lt;string, int32&gt; subqueries = 2;</code>
      */
     boolean containsSubqueries(java.lang.String key);
+
     /** Use {@link #getSubqueriesMap()} instead. */
     @java.lang.Deprecated
     java.util.Map<java.lang.String, java.lang.Integer> getSubqueries();
+
     /**
      *
      *
@@ -1352,6 +1382,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * <code>map&lt;string, int32&gt; subqueries = 2;</code>
      */
     java.util.Map<java.lang.String, java.lang.Integer> getSubqueriesMap();
+
     /**
      *
      *
@@ -1366,6 +1397,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * <code>map&lt;string, int32&gt; subqueries = 2;</code>
      */
     int getSubqueriesOrDefault(java.lang.String key, int defaultValue);
+
     /**
      *
      *
@@ -1381,6 +1413,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      */
     int getSubqueriesOrThrow(java.lang.String key);
   }
+
   /**
    *
    *
@@ -1396,6 +1429,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       // @@protoc_insertion_point(message_implements:google.spanner.v1.PlanNode.ShortRepresentation)
       ShortRepresentationOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use ShortRepresentation.newBuilder() to construct.
     private ShortRepresentation(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -1442,6 +1476,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object description_ = "";
+
     /**
      *
      *
@@ -1465,6 +1500,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return s;
       }
     }
+
     /**
      *
      *
@@ -1517,6 +1553,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     public int getSubqueriesCount() {
       return internalGetSubqueries().getMap().size();
     }
+
     /**
      *
      *
@@ -1537,12 +1574,14 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return internalGetSubqueries().getMap().containsKey(key);
     }
+
     /** Use {@link #getSubqueriesMap()} instead. */
     @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.Integer> getSubqueries() {
       return getSubqueriesMap();
     }
+
     /**
      *
      *
@@ -1560,6 +1599,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     public java.util.Map<java.lang.String, java.lang.Integer> getSubqueriesMap() {
       return internalGetSubqueries().getMap();
     }
+
     /**
      *
      *
@@ -1581,6 +1621,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
+
     /**
      *
      *
@@ -1783,6 +1824,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -2012,6 +2054,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       private int bitField0_;
 
       private java.lang.Object description_ = "";
+
       /**
        *
        *
@@ -2034,6 +2077,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -2056,6 +2100,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -2077,6 +2122,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2094,6 +2140,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2145,6 +2192,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       public int getSubqueriesCount() {
         return internalGetSubqueries().getMap().size();
       }
+
       /**
        *
        *
@@ -2165,12 +2213,14 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         }
         return internalGetSubqueries().getMap().containsKey(key);
       }
+
       /** Use {@link #getSubqueriesMap()} instead. */
       @java.lang.Override
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, java.lang.Integer> getSubqueries() {
         return getSubqueriesMap();
       }
+
       /**
        *
        *
@@ -2188,6 +2238,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       public java.util.Map<java.lang.String, java.lang.Integer> getSubqueriesMap() {
         return internalGetSubqueries().getMap();
       }
+
       /**
        *
        *
@@ -2209,6 +2260,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
       }
+
       /**
        *
        *
@@ -2239,6 +2291,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         internalGetMutableSubqueries().getMutableMap().clear();
         return this;
       }
+
       /**
        *
        *
@@ -2259,12 +2312,14 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         internalGetMutableSubqueries().getMutableMap().remove(key);
         return this;
       }
+
       /** Use alternate mutation accessors instead. */
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, java.lang.Integer> getMutableSubqueries() {
         bitField0_ |= 0x00000002;
         return internalGetMutableSubqueries().getMutableMap();
       }
+
       /**
        *
        *
@@ -2287,6 +2342,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         bitField0_ |= 0x00000002;
         return this;
       }
+
       /**
        *
        *
@@ -2373,6 +2429,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   private int bitField0_;
   public static final int INDEX_FIELD_NUMBER = 1;
   private int index_ = 0;
+
   /**
    *
    *
@@ -2391,6 +2448,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
   public static final int KIND_FIELD_NUMBER = 2;
   private int kind_ = 0;
+
   /**
    *
    *
@@ -2410,6 +2468,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   public int getKindValue() {
     return kind_;
   }
+
   /**
    *
    *
@@ -2436,6 +2495,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object displayName_ = "";
+
   /**
    *
    *
@@ -2459,6 +2519,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       return s;
     }
   }
+
   /**
    *
    *
@@ -2487,6 +2548,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.PlanNode.ChildLink> childLinks_;
+
   /**
    *
    *
@@ -2500,6 +2562,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   public java.util.List<com.google.spanner.v1.PlanNode.ChildLink> getChildLinksList() {
     return childLinks_;
   }
+
   /**
    *
    *
@@ -2514,6 +2577,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       getChildLinksOrBuilderList() {
     return childLinks_;
   }
+
   /**
    *
    *
@@ -2527,6 +2591,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   public int getChildLinksCount() {
     return childLinks_.size();
   }
+
   /**
    *
    *
@@ -2540,6 +2605,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   public com.google.spanner.v1.PlanNode.ChildLink getChildLinks(int index) {
     return childLinks_.get(index);
   }
+
   /**
    *
    *
@@ -2556,6 +2622,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
   public static final int SHORT_REPRESENTATION_FIELD_NUMBER = 5;
   private com.google.spanner.v1.PlanNode.ShortRepresentation shortRepresentation_;
+
   /**
    *
    *
@@ -2571,6 +2638,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   public boolean hasShortRepresentation() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -2588,6 +2656,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.v1.PlanNode.ShortRepresentation.getDefaultInstance()
         : shortRepresentation_;
   }
+
   /**
    *
    *
@@ -2607,6 +2676,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
   public static final int METADATA_FIELD_NUMBER = 6;
   private com.google.protobuf.Struct metadata_;
+
   /**
    *
    *
@@ -2629,6 +2699,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   public boolean hasMetadata() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -2651,6 +2722,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   public com.google.protobuf.Struct getMetadata() {
     return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
   }
+
   /**
    *
    *
@@ -2674,6 +2746,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
   public static final int EXECUTION_STATS_FIELD_NUMBER = 7;
   private com.google.protobuf.Struct executionStats_;
+
   /**
    *
    *
@@ -2692,6 +2765,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
   public boolean hasExecutionStats() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -2712,6 +2786,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         ? com.google.protobuf.Struct.getDefaultInstance()
         : executionStats_;
   }
+
   /**
    *
    *
@@ -2959,6 +3034,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -3299,6 +3375,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     private int bitField0_;
 
     private int index_;
+
     /**
      *
      *
@@ -3314,6 +3391,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     public int getIndex() {
       return index_;
     }
+
     /**
      *
      *
@@ -3333,6 +3411,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3352,6 +3431,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     }
 
     private int kind_ = 0;
+
     /**
      *
      *
@@ -3371,6 +3451,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     public int getKindValue() {
       return kind_;
     }
+
     /**
      *
      *
@@ -3393,6 +3474,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3414,6 +3496,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
           com.google.spanner.v1.PlanNode.Kind.forNumber(kind_);
       return result == null ? com.google.spanner.v1.PlanNode.Kind.UNRECOGNIZED : result;
     }
+
     /**
      *
      *
@@ -3439,6 +3522,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3462,6 +3546,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     }
 
     private java.lang.Object displayName_ = "";
+
     /**
      *
      *
@@ -3484,6 +3569,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -3506,6 +3592,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -3527,6 +3614,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3544,6 +3632,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3600,6 +3689,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return childLinksBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -3616,6 +3706,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return childLinksBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -3632,6 +3723,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return childLinksBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -3654,6 +3746,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3674,6 +3767,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3696,6 +3790,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3718,6 +3813,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3737,6 +3833,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3757,6 +3854,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3777,6 +3875,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3796,6 +3895,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3815,6 +3915,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3827,6 +3928,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.PlanNode.ChildLink.Builder getChildLinksBuilder(int index) {
       return getChildLinksFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -3843,6 +3945,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return childLinksBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -3860,6 +3963,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return java.util.Collections.unmodifiableList(childLinks_);
       }
     }
+
     /**
      *
      *
@@ -3873,6 +3977,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       return getChildLinksFieldBuilder()
           .addBuilder(com.google.spanner.v1.PlanNode.ChildLink.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -3886,6 +3991,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       return getChildLinksFieldBuilder()
           .addBuilder(index, com.google.spanner.v1.PlanNode.ChildLink.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -3923,6 +4029,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.PlanNode.ShortRepresentation.Builder,
             com.google.spanner.v1.PlanNode.ShortRepresentationOrBuilder>
         shortRepresentationBuilder_;
+
     /**
      *
      *
@@ -3937,6 +4044,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     public boolean hasShortRepresentation() {
       return ((bitField0_ & 0x00000010) != 0);
     }
+
     /**
      *
      *
@@ -3957,6 +4065,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return shortRepresentationBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3980,6 +4089,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4000,6 +4110,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4029,6 +4140,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4048,6 +4160,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4063,6 +4176,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getShortRepresentationFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4082,6 +4196,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
             : shortRepresentation_;
       }
     }
+
     /**
      *
      *
@@ -4114,6 +4229,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.Struct.Builder,
             com.google.protobuf.StructOrBuilder>
         metadataBuilder_;
+
     /**
      *
      *
@@ -4135,6 +4251,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     public boolean hasMetadata() {
       return ((bitField0_ & 0x00000020) != 0);
     }
+
     /**
      *
      *
@@ -4160,6 +4277,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return metadataBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -4189,6 +4307,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4215,6 +4334,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4249,6 +4369,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4275,6 +4396,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4296,6 +4418,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getMetadataFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4319,6 +4442,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
       }
     }
+
     /**
      *
      *
@@ -4358,6 +4482,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.Struct.Builder,
             com.google.protobuf.StructOrBuilder>
         executionStatsBuilder_;
+
     /**
      *
      *
@@ -4375,6 +4500,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     public boolean hasExecutionStats() {
       return ((bitField0_ & 0x00000040) != 0);
     }
+
     /**
      *
      *
@@ -4398,6 +4524,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return executionStatsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -4423,6 +4550,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4445,6 +4573,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4475,6 +4604,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4497,6 +4627,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4514,6 +4645,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getExecutionStatsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4535,6 +4667,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
             : executionStats_;
       }
     }
+
     /**
      *
      *

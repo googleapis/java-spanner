@@ -140,7 +140,7 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
                   && ((DeleteSessionRequest) request)
                       .getName()
                       .equals(executeSqlRequests.get(0).getSession()),
-          /*timeoutMillis=*/ 1000L);
+          /* timeoutMillis= */ 1000L);
       service.shutdownNow();
     }
   }
