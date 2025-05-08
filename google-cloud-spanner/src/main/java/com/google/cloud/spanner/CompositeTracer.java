@@ -191,10 +191,11 @@ public class CompositeTracer extends BaseApiTracer {
     }
   }
 
-  public void recordGFELatency(Float gfeLatency) {
+  @Deprecated
+  public void recordGFELatency(Long gfeLatency) {
     for (ApiTracer child : children) {
       if (child instanceof BuiltInMetricsTracer) {
-        ((BuiltInMetricsTracer) child).recordGFELatency(gfeLatency);
+        ((BuiltInMetricsTracer) child).recordGFELatency(Float.valueOf(gfeLatency));
       }
     }
   }
@@ -207,10 +208,11 @@ public class CompositeTracer extends BaseApiTracer {
     }
   }
 
-  public void recordAFELatency(Float afeLatency) {
+  @Deprecated
+  public void recordAFELatency(Long afeLatency) {
     for (ApiTracer child : children) {
       if (child instanceof BuiltInMetricsTracer) {
-        ((BuiltInMetricsTracer) child).recordAFELatency(afeLatency);
+        ((BuiltInMetricsTracer) child).recordAFELatency(Float.valueOf(afeLatency));
       }
     }
   }
@@ -219,6 +221,22 @@ public class CompositeTracer extends BaseApiTracer {
     for (ApiTracer child : children) {
       if (child instanceof BuiltInMetricsTracer) {
         ((BuiltInMetricsTracer) child).recordAfeHeaderMissingCount(value);
+      }
+    }
+  }
+
+  public void recordGFELatency(Float gfeLatency) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordGFELatency(gfeLatency);
+      }
+    }
+  }
+
+  public void recordAFELatency(Float afeLatency) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordAFELatency(afeLatency);
       }
     }
   }
