@@ -191,7 +191,6 @@ public class CompositeTracer extends BaseApiTracer {
     }
   }
 
-  @Deprecated
   public void recordGFELatency(Long gfeLatency) {
     for (ApiTracer child : children) {
       if (child instanceof BuiltInMetricsTracer) {
@@ -208,7 +207,6 @@ public class CompositeTracer extends BaseApiTracer {
     }
   }
 
-  @Deprecated
   public void recordAFELatency(Long afeLatency) {
     for (ApiTracer child : children) {
       if (child instanceof BuiltInMetricsTracer) {
