@@ -1994,7 +1994,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
-    if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
+    if (GapicSpannerRpc.isEnableDirectPathXdsEnv()
+        || SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
       this.builtInMetricsProvider.enableGrpcMetrics(
           channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
     }

@@ -367,8 +367,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
               .setAllowNonDefaultServiceAccount(true);
-      String directPathXdsEnv = System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS");
-      boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
+      boolean isAttemptDirectPathXds = isEnableDirectPathXdsEnv();
       if (isAttemptDirectPathXds) {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
@@ -678,7 +677,12 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   public static boolean isEnableAFEServerTiming() {
-    return "false".equalsIgnoreCase(System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING"));
+    return isEnableDirectPathXdsEnv()
+        || "false".equalsIgnoreCase(System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING"));
+  }
+
+  public static boolean isEnableDirectPathXdsEnv() {
+    return Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS"));
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
