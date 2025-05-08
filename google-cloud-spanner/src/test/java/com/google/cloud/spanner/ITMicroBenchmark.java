@@ -36,41 +36,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class ITMicroBenchmark extends AbstractMockServerTest {
+public class ITMicroBenchmark {
 
-  private DatabaseClient client;
-
-  private static final ResultSetMetadata SELECT1_METADATA =
-      ResultSetMetadata.newBuilder()
-          .setRowType(
-              StructType.newBuilder()
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("COL1")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.INT64)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
-
-  private static final com.google.spanner.v1.ResultSet SELECT1_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
-                  .build())
-          .setMetadata(SELECT1_METADATA)
-          .build();
-
-  @Override
-  public void createSpannerInstance() {
-    spanner =
+  @Test
+  public void testSingleUseQuery() throws InterruptedException {
+    Spanner spanner =
         SpannerOptions.newBuilder()
-            .setProjectId("test-project")
-            .setChannelProvider(channelProvider)
-            .setCredentials(NoCredentials.getInstance())
+            .setProjectId("span-cloud-testing")
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
@@ -79,15 +51,9 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
             .setEnableApiTracing(true)
             .build()
             .getService();
-    client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-  }
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("span-cloud-testing", "sakthi-spanner-testing", "benchmarking"));
 
-  @Test
-  public void testSingleUseQuery() throws InterruptedException {
-    final String SELECT_QUERY = "SELECT * FROM random";
-
-    mockSpanner.putStatementResult(
-        StatementResult.query(Statement.of(SELECT_QUERY), SELECT1_RESULTSET));
+    final String SELECT_QUERY = "SELECT ID FROM Employees WHERE id = 1";
 
     Instant warmUpEndTime = Instant.now().plus(5, ChronoUnit.MINUTES);
     int waitTimeMilli = 5;
@@ -123,6 +89,7 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
       }
       randomWait(waitTimeMilli);
     }
+    spanner.close();
     System.out.println(
         "Total time spent in the client library before requesting data from grpc "
             + percentile(beforeGrpcs, 0.5));
