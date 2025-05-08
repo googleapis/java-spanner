@@ -349,6 +349,20 @@
     <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
     <to>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map, boolean)</to>
   </difference>
+  <!-- (CompositeTracer is an internal API) -->
+  <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer$CompositeTracer</className>
+    <method>void recordGFELatency(java.lang.Long)</method>
+    <to>void recordGFELatency(java.lang.Float)</to>
+  </difference>
+  <!-- (CompositeTracer is an internal API) -->
+  <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer$CompositeTracer</className>
+    <method>void recordAFELatency(java.lang.Long)</method>
+    <to>void recordAFELatency(java.lang.Float)</to>
+  </difference>
   <difference>
     <differenceType>7006</differenceType>
     <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>

@@ -191,7 +191,7 @@ public class CompositeTracer extends BaseApiTracer {
     }
   }
 
-  public void recordGFELatency(Long gfeLatency) {
+  public void recordGFELatency(Float gfeLatency) {
     for (ApiTracer child : children) {
       if (child instanceof BuiltInMetricsTracer) {
         ((BuiltInMetricsTracer) child).recordGFELatency(gfeLatency);
@@ -207,7 +207,7 @@ public class CompositeTracer extends BaseApiTracer {
     }
   }
 
-  public void recordAFELatency(Long afeLatency) {
+  public void recordAFELatency(Float afeLatency) {
     for (ApiTracer child : children) {
       if (child instanceof BuiltInMetricsTracer) {
         ((BuiltInMetricsTracer) child).recordAFELatency(afeLatency);
