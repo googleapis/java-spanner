@@ -269,12 +269,12 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-monitoring</artifactId>
-      <version>3.54.0</version>
+      <version>3.63.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-monitoring-v3</artifactId>
-      <version>3.57.0</version>
+      <version>3.63.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
@@ -421,7 +421,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20240303</version>
+      <version>20250107</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -468,13 +468,13 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-trace</artifactId>
-      <version>2.51.0</version>
+      <version>2.62.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-trace-v1</artifactId>
-      <version>2.51.0</version>
+      <version>2.62.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
