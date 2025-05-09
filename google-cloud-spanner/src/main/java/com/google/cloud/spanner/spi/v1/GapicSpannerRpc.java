@@ -677,8 +677,15 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   public static boolean isEnableAFEServerTiming() {
-    return isEnableDirectPathXdsEnv()
-        || "false".equalsIgnoreCase(System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING"));
+    // Enable AFE metrics and add AFE header if:
+    // 1. The env var SPANNER_DISABLE_AFE_SERVER_TIMING is explicitly set to "false", OR
+    // 2. DirectPath is enabled AND the env var is not set to "true"
+    // This allows metrics to be enabled by default when DirectPath is on, unless explicitly
+    // disabled via env.
+    String afeDisableEnv = System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING");
+    boolean isDirectPathEnabled = isEnableDirectPathXdsEnv();
+    return ("false".equalsIgnoreCase(afeDisableEnv))
+        || (isDirectPathEnabled && !"true".equalsIgnoreCase(afeDisableEnv));
   }
 
   public static boolean isEnableDirectPathXdsEnv() {
