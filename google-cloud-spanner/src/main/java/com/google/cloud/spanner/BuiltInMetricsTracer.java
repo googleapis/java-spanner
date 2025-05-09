@@ -37,8 +37,8 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   private final BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder;
   // These are RPC specific attributes and pertain to a specific API Trace
   private final Map<String, String> attributes = new HashMap<>();
-  private Long gfeLatency = null;
-  private Long afeLatency = null;
+  private Float gfeLatency = null;
+  private Float afeLatency = null;
   private long gfeHeaderMissingCount = 0;
   private long afeHeaderMissingCount = 0;
 
@@ -119,11 +119,11 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
         gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
   }
 
-  void recordGFELatency(Long gfeLatency) {
+  void recordGFELatency(Float gfeLatency) {
     this.gfeLatency = gfeLatency;
   }
 
-  void recordAFELatency(Long afeLatency) {
+  void recordAFELatency(Float afeLatency) {
     this.afeLatency = afeLatency;
   }
 
