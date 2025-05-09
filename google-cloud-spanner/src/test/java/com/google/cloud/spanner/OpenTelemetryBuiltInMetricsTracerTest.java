@@ -200,12 +200,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
       MetricData afeLatencyMetricData =
           getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
       double afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
-      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 0);
+      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 1e-6);
     } else {
       MetricData gfeLatencyMetricData =
           getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
       double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
-      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
+      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 1e-6);
       assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
     }
   }
@@ -276,12 +276,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
       MetricData afeLatencyMetricData =
           getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
       double afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
-      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 0);
+      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 1e-6);
 
       MetricData gfeLatencyMetricData =
           getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
       double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
-      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
+      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 1e-6);
     } finally {
       writeableEnvironmentVariables.remove("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
     }
