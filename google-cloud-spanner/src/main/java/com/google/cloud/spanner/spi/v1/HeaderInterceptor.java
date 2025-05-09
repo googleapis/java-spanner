@@ -133,7 +133,8 @@ class HeaderInterceptor implements ClientInterceptor {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
-                  processHeader(metadata, tagContext, attributes, span, compositeTracer);
+                  processHeader(
+                      metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
                   super.onHeaders(metadata);
                 }
               },
@@ -151,7 +152,8 @@ class HeaderInterceptor implements ClientInterceptor {
       TagContext tagContext,
       Attributes attributes,
       Span span,
-      CompositeTracer compositeTracer) {
+      CompositeTracer compositeTracer,
+      boolean isDirectPathUsed) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
     try {
@@ -172,7 +174,7 @@ class HeaderInterceptor implements ClientInterceptor {
 
         spannerRpcMetrics.recordGfeLatency((long) gfeLatency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
-        if (compositeTracer != null) {
+        if (compositeTracer != null && !isDirectPathUsed) {
           compositeTracer.recordGFELatency(gfeLatency);
         }
         if (span != null) {
@@ -181,7 +183,7 @@ class HeaderInterceptor implements ClientInterceptor {
       } else {
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
         spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
-        if (compositeTracer != null) {
+        if (compositeTracer != null && !isDirectPathUsed) {
           compositeTracer.recordGfeHeaderMissingCount(1L);
         }
       }
