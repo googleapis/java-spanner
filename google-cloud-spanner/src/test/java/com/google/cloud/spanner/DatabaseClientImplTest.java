@@ -105,6 +105,7 @@ import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Server;
+import io.grpc.ServerInterceptors;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -119,6 +120,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -152,6 +154,7 @@ public class DatabaseClientImplTest {
   private static final String DATABASE_NAME =
       String.format(
           "projects/%s/instances/%s/databases/%s", TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE);
+  private static XGoogSpannerRequestIdTest.ServerHeaderEnforcer xGoogReqIdInterceptor;
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
@@ -220,13 +223,31 @@ public class DatabaseClientImplTest {
         StatementResult.query(SELECT1_FROM_TABLE, MockSpannerTestUtil.SELECT1_RESULTSET));
     mockSpanner.setBatchWriteResult(BATCH_WRITE_RESPONSES);
 
+    Set<String> checkMethods =
+        new HashSet(
+            Arrays.asList(
+                "google.spanner.v1.Spanner/BatchCreateSessions"
+                // As functionality is added, uncomment each method.
+                // "google.spanner.v1.Spanner/BatchWrite",
+                // "google.spanner.v1.Spanner/BeginTransaction",
+                // "google.spanner.v1.Spanner/CreateSession",
+                // "google.spanner.v1.Spanner/DeleteSession",
+                // "google.spanner.v1.Spanner/ExecuteBatchDml",
+                // "google.spanner.v1.Spanner/ExecuteSql",
+                // "google.spanner.v1.Spanner/ExecuteStreamingSql",
+                // "google.spanner.v1.Spanner/StreamingRead",
+                // "google.spanner.v1.Spanner/PartitionQuery",
+                // "google.spanner.v1.Spanner/PartitionRead",
+                // "google.spanner.v1.Spanner/Commit",
+                ));
+    xGoogReqIdInterceptor = new XGoogSpannerRequestIdTest.ServerHeaderEnforcer(checkMethods);
     executor = Executors.newSingleThreadExecutor();
     String uniqueName = InProcessServerBuilder.generateName();
     server =
         InProcessServerBuilder.forName(uniqueName)
             // We need to use a real executor for timeouts to occur.
             .scheduledExecutorService(new ScheduledThreadPoolExecutor(1))
-            .addService(mockSpanner)
+            .addService(ServerInterceptors.intercept(mockSpanner, xGoogReqIdInterceptor))
             .build()
             .start();
     channelProvider = LocalChannelProvider.create(uniqueName);
@@ -264,6 +285,7 @@ public class DatabaseClientImplTest {
     spanner.close();
     spannerWithEmptySessionPool.close();
     mockSpanner.reset();
+    xGoogReqIdInterceptor.reset();
     mockSpanner.removeAllExecutionTimes();
   }
 
@@ -1391,6 +1413,7 @@ public class DatabaseClientImplTest {
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(2, commitRequests.size());
+    xGoogReqIdInterceptor.assertIntegrity();
   }
 
   @Test
@@ -5194,6 +5217,26 @@ public class DatabaseClientImplTest {
           mockSpanner.clearRequests();
         }
       }
+    }
+  }
+
+  @Test
+  public void testSelectHasXGoogRequestIdHeader() {
+    Statement statement =
+        Statement.newBuilder("select id from test where b=@p1")
+            .bind("p1")
+            .toBytesArray(
+                Arrays.asList(ByteArray.copyFrom("test1"), null, ByteArray.copyFrom("test2")))
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, SELECT1_RESULTSET));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    } finally {
+      xGoogReqIdInterceptor.assertIntegrity();
     }
   }
 
