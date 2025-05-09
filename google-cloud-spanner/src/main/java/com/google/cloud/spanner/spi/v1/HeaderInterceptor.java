@@ -76,7 +76,7 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Metadata.Key<String> GOOGLE_CLOUD_RESOURCE_PREFIX_KEY =
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
   private static final Pattern SERVER_TIMING_PATTERN =
-      Pattern.compile("(?<metricName>[a-zA-Z0-9_-]+);\\s*dur=(?<duration>\\d+)");
+      Pattern.compile("(?<metricName>[a-zA-Z0-9_-]+);\\s*dur=(?<duration>\\d+(\\.\\d+)?)");
   private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN =
       Pattern.compile(
           ".*projects/(?<project>\\p{ASCII}[^/]*)(/instances/(?<instance>\\p{ASCII}[^/]*))?(/databases/(?<database>\\p{ASCII}[^/]*))?");
@@ -162,15 +162,15 @@ class HeaderInterceptor implements ClientInterceptor {
       // would fail to parse it correctly. To make the parsing more robust, the logic has been
       // updated to handle multiple metrics gracefully.
 
-      Map<String, Long> serverTimingMetrics = parseServerTimingHeader(serverTiming);
+      Map<String, Float> serverTimingMetrics = parseServerTimingHeader(serverTiming);
       if (serverTimingMetrics.containsKey(GFE_TIMING_HEADER)) {
-        long gfeLatency = serverTimingMetrics.get(GFE_TIMING_HEADER);
+        float gfeLatency = serverTimingMetrics.get(GFE_TIMING_HEADER);
 
-        measureMap.put(SPANNER_GFE_LATENCY, gfeLatency);
+        measureMap.put(SPANNER_GFE_LATENCY, (long) gfeLatency);
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
         measureMap.record(tagContext);
 
-        spannerRpcMetrics.recordGfeLatency(gfeLatency, attributes);
+        spannerRpcMetrics.recordGfeLatency((long) gfeLatency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
         if (compositeTracer != null) {
           compositeTracer.recordGFELatency(gfeLatency);
@@ -189,7 +189,7 @@ class HeaderInterceptor implements ClientInterceptor {
       // Record AFE metrics
       if (compositeTracer != null && GapicSpannerRpc.isEnableAFEServerTiming()) {
         if (serverTimingMetrics.containsKey(AFE_TIMING_HEADER)) {
-          long afeLatency = serverTimingMetrics.get(AFE_TIMING_HEADER);
+          float afeLatency = serverTimingMetrics.get(AFE_TIMING_HEADER);
           compositeTracer.recordAFELatency(afeLatency);
         } else {
           compositeTracer.recordAfeHeaderMissingCount(1L);
@@ -200,8 +200,8 @@ class HeaderInterceptor implements ClientInterceptor {
     }
   }
 
-  private Map<String, Long> parseServerTimingHeader(String serverTiming) {
-    Map<String, Long> serverTimingMetrics = new HashMap<>();
+  private Map<String, Float> parseServerTimingHeader(String serverTiming) {
+    Map<String, Float> serverTimingMetrics = new HashMap<>();
     if (serverTiming != null) {
       Matcher matcher = SERVER_TIMING_PATTERN.matcher(serverTiming);
       while (matcher.find()) {
@@ -209,7 +209,7 @@ class HeaderInterceptor implements ClientInterceptor {
         String durationStr = matcher.group("duration");
 
         if (metricName != null && durationStr != null) {
-          serverTimingMetrics.put(metricName, Long.valueOf(durationStr));
+          serverTimingMetrics.put(metricName, Float.valueOf(durationStr));
         }
       }
     }
