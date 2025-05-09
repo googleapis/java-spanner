@@ -97,8 +97,8 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
    * @param attributes Map of the attributes to store
    */
   void recordServerTimingHeaderMetrics(
-      Long gfeLatency,
-      Long afeLatency,
+      Float gfeLatency,
+      Float afeLatency,
       Long gfeHeaderMissingCount,
       Long afeHeaderMissingCount,
       Map<String, String> attributes) {
