@@ -1644,12 +1644,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Collections.singletonList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
+    closedSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(closedSession.writeWithOptions(eq(mutations), any())).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
+    openSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(openSession.writeWithOptions(eq(mutations), any())).thenReturn(response);
     doAnswer(
             invocation -> {
@@ -1687,6 +1689,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Collections.singletonList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
+    closedSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(closedSession.writeAtLeastOnceWithOptions(eq(mutations), any()))
         .thenThrow(sessionNotFound);
 
@@ -1694,6 +1697,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
+    openSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(openSession.writeAtLeastOnceWithOptions(eq(mutations), any())).thenReturn(response);
     doAnswer(
             invocation -> {
