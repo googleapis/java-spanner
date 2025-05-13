@@ -221,6 +221,10 @@ public class SessionImplTest {
   @Test
   public void writeAtLeastOnce() throws ParseException {
     String timestampString = "2015-10-01T10:54:20.021Z";
+    com.google.protobuf.Timestamp t = Timestamps.parse(timestampString);
+    Transaction txnMetadata = Transaction.newBuilder().setReadTimestamp(t).build();
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
+        .thenReturn(txnMetadata);
     ArgumentCaptor<CommitRequest> commit = ArgumentCaptor.forClass(CommitRequest.class);
     CommitResponse response =
         CommitResponse.newBuilder().setCommitTimestamp(Timestamps.parse(timestampString)).build();
