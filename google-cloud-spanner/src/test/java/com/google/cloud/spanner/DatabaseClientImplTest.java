@@ -130,6 +130,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -5632,5 +5633,64 @@ public class DatabaseClientImplTest {
       return false;
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
+  }
+
+  @Test
+  public void testdbIdFromClientId() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+
+    assertEquals(client.dbIdFromClientId(""), 0);
+    assertEquals(client.dbIdFromClientId("client-10"), 10);
+    assertEquals(client.dbIdFromClientId("client--10"), -10);
+    assertThrows(NumberFormatException.class, () -> client.dbIdFromClientId("client10"));
+  }
+
+  @Test
+  public void testrunWithSessionRetry_withRequestId() {
+    // Tests that DatabaseClientImpl.runWithSessionRetry correctly returns a XGoogSpannerRequestId
+    // and correctly increases its nthRequest ordinal number and that attempts stay at 1.
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture sessionFut = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(sessionFut);
+    // TODO:(@olavloite) to kindly help with resolving this mocking that's failing.
+    // when(pool.getPooledSessionReplacementHandler()).thenReturn(pool.new
+    // PooledSessionReplacementHandler());
+    TransactionOption option = mock(TransactionOption.class);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+
+    // 1. Run with no fail has a single attempt.
+    client.runWithSessionRetry(
+        (session, reqId) -> {
+          assertEquals(reqId.getAttempt(), 1);
+          return 1;
+        });
+
+    // 2. Run with SessionNotFoundException.
+    final AtomicInteger i = new AtomicInteger(0);
+    SessionNotFoundException excSessionNotFound =
+        SpannerExceptionFactoryTest.newSessionNotFoundException(
+            "projects/p/instances/i/databases/d/sessions/s");
+
+    final AtomicLong priorNthRequest = new AtomicLong(client.getNthRequest());
+    client.runWithSessionRetry(
+        (session, reqId) -> {
+          // Monotonically increasing priorNthRequest.
+          assertEquals(reqId.getNthRequest() - priorNthRequest.get(), 1);
+          priorNthRequest.set(reqId.getNthRequest());
+
+          // Attempts stay at 1 since with a SessionNotFound exception,
+          // a fresh requestId is generated.
+          assertEquals(reqId.getAttempt(), 1);
+
+          if (i.addAndGet(1) < 4) {
+            throw excSessionNotFound;
+          }
+
+          return 1;
+        });
   }
 }
