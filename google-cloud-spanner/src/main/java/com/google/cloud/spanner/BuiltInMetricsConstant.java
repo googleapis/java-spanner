@@ -168,6 +168,14 @@ public class BuiltInMetricsConstant {
         Aggregation.sum(),
         InstrumentType.COUNTER,
         "1");
+    defineView(
+        views,
+        BuiltInMetricsConstant.SPANNER_METER_NAME,
+        BuiltInMetricsConstant.GFE_LATENCIES_NAME,
+        BuiltInMetricsConstant.GFE_LATENCIES_NAME,
+        BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
+        InstrumentType.HISTOGRAM,
+        "ms");
     defineGRPCView(views);
     return views.build();
   }

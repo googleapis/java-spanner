@@ -105,7 +105,7 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
       Map<String, String> attributes) {
     io.opentelemetry.api.common.Attributes otelAttributes = toOtelAttributes(attributes);
     if (gfeLatency != null) {
-      gfeLatencyRecorder.record(gfeLatency, otelAttributes);
+      gfeLatencyRecorder.record(gfeLatency, otelAttributes, Context.current());
     }
     if (gfeHeaderMissingCount > 0) {
       gfeHeaderMissingCountRecorder.add(gfeHeaderMissingCount, otelAttributes);

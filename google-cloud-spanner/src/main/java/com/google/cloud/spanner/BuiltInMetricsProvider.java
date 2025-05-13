@@ -17,15 +17,15 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.opentelemetry.detection.GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
-import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_RESOURCE_TYPE;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_RESOURCE_TYPE;
 
 import com.google.api.core.ApiFunction;
-import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
@@ -34,8 +34,6 @@ import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.metric.MetricConfiguration;
 import com.google.cloud.opentelemetry.metric.MonitoredResourceDescription;
-import com.google.cloud.opentelemetry.trace.TraceConfiguration;
-import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -47,11 +45,8 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.resources.Resource;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -101,39 +96,11 @@ final class BuiltInMetricsProvider {
                     .setPrefix("spanner.googleapis.com/internal/client")
                     .setUseServiceTimeSeries(true)
                     .build());
-        AttributesBuilder attributesBuilder =
-            Attributes.builder()
-                .put("gcp.resource_type", SPANNER_RESOURCE_TYPE)
-                .put("project_id", projectId)
-                .put("instance_id", "spanner-testing-east2")
-                .put("instance_config", "unknown")
-                .put("location", detectClientLocation())
-                .put("client_hash", generateClientHash(getDefaultTaskValue()));
         BuiltInMetricsView.registerBuiltinMetrics(metricExporter, sdkMeterProviderBuilder);
         sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
-        SdkMeterProvider sdkMeterProvider =
-            sdkMeterProviderBuilder.setResource(Resource.create(attributesBuilder.build())).build();
+        SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
 
-        // Registering the trace provider with the same OpenTelemetry object used for metrics.
-        Resource resource =
-            Resource.getDefault().merge(Resource.builder().put("service.name", "surbhi").build());
-
-        io.opentelemetry.sdk.trace.export.SpanExporter traceExporter =
-            TraceExporter.createWithConfiguration(TraceConfiguration.builder().build());
-        BatchSpanProcessor otlpGrpcSpanProcessor =
-            BatchSpanProcessor.builder(traceExporter).build();
-        SdkTracerProvider sdkTracerProvider =
-            SdkTracerProvider.builder()
-                .addSpanProcessor(otlpGrpcSpanProcessor)
-                .setResource(resource)
-                .setSampler(Sampler.traceIdRatioBased(1))
-                .build();
-
-        this.openTelemetry =
-            OpenTelemetrySdk.builder()
-                .setMeterProvider(sdkMeterProvider)
-                // .setTracerProvider(sdkTracerProvider)
-                .build();
+        this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
         Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
       }
       return this.openTelemetry;
@@ -178,20 +145,16 @@ final class BuiltInMetricsProvider {
             .put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown")
             .put(CLIENT_HASH_KEY.getKey(), generateClientHash(getDefaultTaskValue()))
             .put(INSTANCE_ID_KEY.getKey(), "unknown")
-            .put(LOCATION_ID_KEY.getKey(), detectClientLocation());
+            .put(LOCATION_ID_KEY.getKey(), detectClientLocation())
+            .put("gcp.resource_type", SPANNER_RESOURCE_TYPE);
 
     return attributesBuilder.build();
   }
 
   Map<String, String> createClientAttributes() {
     Map<String, String> clientAttributes = new HashMap<>();
-    // clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
-    // clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
-    // clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
-    // clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
     String clientUid = getDefaultTaskValue();
     clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
-    // clientAttributes.put(CLIENT_HASH_KEY.getKey(), generateClientHash(clientUid));
     return clientAttributes;
   }
 
