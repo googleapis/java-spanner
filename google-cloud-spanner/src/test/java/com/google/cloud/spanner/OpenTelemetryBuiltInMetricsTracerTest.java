@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.tracing.ApiTracerFactory;
@@ -100,7 +101,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
         OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
 
     return new BuiltInMetricsTracerFactory(
-        new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME), attributes);
+        new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+        attributes,
+        new TraceWrapper(
+            Tracing.getTracer(),
+            openTelemetry.getTracer(
+                MetricRegistryConstants.INSTRUMENTATION_SCOPE,
+                GaxProperties.getLibraryVersion(getClass())),
+            true));
   }
 
   @BeforeClass
@@ -122,7 +130,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     ApiTracerFactory metricsTracerFactory =
         new BuiltInMetricsTracerFactory(
-            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
+            new BuiltInMetricsRecorder(OpenTelemetry.noop(), BuiltInMetricsConstant.METER_NAME),
             attributes,
             new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), true));
     // Set a quick polling algorithm to prevent this from slowing down the test unnecessarily.

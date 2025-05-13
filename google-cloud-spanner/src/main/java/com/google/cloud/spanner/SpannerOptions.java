@@ -1994,9 +1994,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this.openTelemetry;
     } else {
       return GlobalOpenTelemetry.get();
-      // this.openTelemetry = this.builtInMetricsProvider.getOrCreateOpenTelemetry(
-      //     this.getProjectId(), getCredentials(), this.monitoringHost);
-      // return this.openTelemetry;
     }
   }
 
@@ -2056,17 +2053,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.builtInMetricsProvider.getOrCreateOpenTelemetry(
             this.getProjectId(), getCredentials(), this.monitoringHost);
 
-    // this.openTelemetry = openTelemetry;
-
     return openTelemetry != null
         ? new BuiltInMetricsTracerFactory(
             new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
             new HashMap<>(),
             new TraceWrapper(
                 Tracing.getTracer(),
-                openTelemetry.getTracer(
-                    MetricRegistryConstants.INSTRUMENTATION_SCOPE,
-                    GaxProperties.getLibraryVersion(getClass())),
+                // Using the OpenTelemetry object set in Spanner Options, will be NoOp if not set
+                this.getOpenTelemetry()
+                    .getTracer(
+                        MetricRegistryConstants.INSTRUMENTATION_SCOPE,
+                        GaxProperties.getLibraryVersion(getClass())),
                 true))
         : null;
   }

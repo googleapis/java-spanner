@@ -77,7 +77,7 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
       super.attemptSucceeded();
       attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
       builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
     }
     span.end();
   }
@@ -161,7 +161,6 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     super.addAttributes(attributes);
     this.attributes.putAll(attributes);
   }
-  ;
 
   @Override
   public void addAttributes(String key, String value) {
