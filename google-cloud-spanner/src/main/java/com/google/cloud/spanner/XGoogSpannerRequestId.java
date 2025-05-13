@@ -61,6 +61,16 @@ public class XGoogSpannerRequestId {
   }
 
   @VisibleForTesting
+  long getAttempt() {
+    return this.attempt;
+  }
+
+  @VisibleForTesting
+  long getNthRequest() {
+    return this.nthRequest;
+  }
+
+  @VisibleForTesting
   static final Pattern REGEX =
       Pattern.compile("^(\\d)\\.([0-9a-z]{16})\\.(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)$");
 

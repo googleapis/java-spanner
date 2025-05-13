@@ -102,7 +102,8 @@ class DatabaseClientImpl implements DatabaseClient {
     this.nthRequest = new AtomicInteger(0);
   }
 
-  private int dbIdFromClientId(String clientId) {
+  @VisibleForTesting
+  int dbIdFromClientId(String clientId) {
     int i = clientId.indexOf("-");
     String strWithValue = clientId.substring(i + 1);
     if (Objects.equals(strWithValue, "")) {
@@ -255,6 +256,11 @@ class DatabaseClientImpl implements DatabaseClient {
 
   private int nextNthRequest() {
     return this.nthRequest.incrementAndGet();
+  }
+
+  @VisibleForTesting
+  int getNthRequest() {
+    return this.nthRequest.get();
   }
 
   @Override
@@ -455,7 +461,8 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
-  private <T> T runWithSessionRetry(BiFunction<Session, XGoogSpannerRequestId, T> callable) {
+  @VisibleForTesting
+  <T> T runWithSessionRetry(BiFunction<Session, XGoogSpannerRequestId, T> callable) {
     PooledSessionFuture session = getSession();
     XGoogSpannerRequestId reqId =
         XGoogSpannerRequestId.of(
