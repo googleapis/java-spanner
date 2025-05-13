@@ -556,7 +556,11 @@ public class ConnectionOptions {
       return this;
     }
 
-    Builder setStatementExecutorType(StatementExecutorType statementExecutorType) {
+    /**
+     * Sets the executor type to use for connections. See {@link StatementExecutorType} for more
+     * information on what the different options mean.
+     */
+    public Builder setStatementExecutorType(StatementExecutorType statementExecutorType) {
       this.statementExecutorType = statementExecutorType;
       return this;
     }
@@ -920,7 +924,11 @@ public class ConnectionOptions {
     return getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER);
   }
 
-  StatementExecutorType getStatementExecutorType() {
+  /**
+   * Returns the executor type that is used by connections that are created from this {@link
+   * ConnectionOptions} instance.
+   */
+  public StatementExecutorType getStatementExecutorType() {
     return this.statementExecutorType;
   }
 
