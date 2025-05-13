@@ -14,7 +14,7 @@
   <parent>
     <groupId>com.google.cloud.samples</groupId>
     <artifactId>shared-configuration</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.2</version>
     <relativePath></relativePath>
   </parent>
 
@@ -23,8 +23,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
-    <trace.version>2.54.0</trace.version>
-    <cloudmonitoring.version>3.54.0</cloudmonitoring.version>
+    <trace.version>2.62.0</trace.version>
+    <cloudmonitoring.version>3.63.0</cloudmonitoring.version>
   </properties>
 
   <dependencies>
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.92.1-SNAPSHOT</version>
+      <version>6.93.0</version>
     </dependency>
     <!-- {x-version-update-end} -->
     
@@ -144,7 +144,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.5.2</version>
+        <version>3.5.3</version>
         <configuration>
           <forkCount>10</forkCount>
           <reuseForks>false</reuseForks>
