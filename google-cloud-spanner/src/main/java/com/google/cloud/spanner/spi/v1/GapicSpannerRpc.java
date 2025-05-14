@@ -367,8 +367,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
               .setAllowNonDefaultServiceAccount(true);
-      String directPathXdsEnv = System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS");
-      boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
+      boolean isAttemptDirectPathXds = isEnableDirectPathXdsEnv();
       if (isAttemptDirectPathXds) {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
@@ -678,7 +677,19 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   public static boolean isEnableAFEServerTiming() {
-    return "false".equalsIgnoreCase(System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING"));
+    // Enable AFE metrics and add AFE header if:
+    // 1. The env var SPANNER_DISABLE_AFE_SERVER_TIMING is explicitly set to "false", OR
+    // 2. DirectPath is enabled AND the env var is not set to "true"
+    // This allows metrics to be enabled by default when DirectPath is on, unless explicitly
+    // disabled via env.
+    String afeDisableEnv = System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING");
+    boolean isDirectPathEnabled = isEnableDirectPathXdsEnv();
+    return ("false".equalsIgnoreCase(afeDisableEnv))
+        || (isDirectPathEnabled && !"true".equalsIgnoreCase(afeDisableEnv));
+  }
+
+  public static boolean isEnableDirectPathXdsEnv() {
+    return Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS"));
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
