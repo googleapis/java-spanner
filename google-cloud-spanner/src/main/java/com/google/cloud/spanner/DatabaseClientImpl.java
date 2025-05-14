@@ -213,15 +213,7 @@ class DatabaseClientImpl implements DatabaseClient {
             return session.writeWithOptions(mutations, withReqId(reqId, options));
           });
     } catch (RuntimeException e) {
-      System.out.println("runtime.crashing out\033[31m");
-      e.printStackTrace();
-      System.out.println("\033[00m");
       span.setStatus(e);
-      throw e;
-    } catch (Exception e) {
-      System.out.println("crashing out\033[31m");
-      e.printStackTrace();
-      System.out.println("\033[00m");
       throw e;
     } finally {
       span.end();
