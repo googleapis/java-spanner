@@ -172,9 +172,23 @@ class StatementExecutor {
    */
   private final List<StatementExecutionInterceptor> interceptors;
 
-  enum StatementExecutorType {
+  /** The executor type that is used for statements that are executed on a connection. */
+  public enum StatementExecutorType {
+    /**
+     * Use a platform thread per connection. This allows async execution of statements, but costs
+     * more resources than the other options.
+     */
     PLATFORM_THREAD,
+    /**
+     * Use a virtual thread per connection. This allows async execution of statements. Virtual
+     * threads are only supported on Java 21 and higher.
+     */
     VIRTUAL_THREAD,
+    /**
+     * Use the calling thread for execution. This does not support async execution of statements.
+     * This option is used by drivers that do not support async execution, such as JDBC and
+     * PGAdapter.
+     */
     DIRECT_EXECUTOR,
   }
 
