@@ -171,19 +171,6 @@ public class XGoogSpannerRequestIdTest {
       return accumulated.toArray(new methodAndRequestId[0]);
     }
 
-    public void printAccumulatedValues() {
-      methodAndRequestId[] unary = this.accumulatedUnaryValues();
-      System.out.println("accumulatedUnaryvalues");
-      for (int i = 0; i < unary.length; i++) {
-        System.out.println("\t" + unary[i].toString());
-      }
-      methodAndRequestId[] streaming = this.accumulatedStreamingValues();
-      System.out.println("accumulatedStreaminvalues");
-      for (int i = 0; i < streaming.length; i++) {
-        System.out.println("\t" + streaming[i].toString());
-      }
-    }
-
     public void reset() {
       this.gotValues.clear();
       this.unaryResults.clear();
