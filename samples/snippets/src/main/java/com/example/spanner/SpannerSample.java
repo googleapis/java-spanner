@@ -681,7 +681,7 @@ public class SpannerSample {
     try (ReadOnlyTransaction transaction = dbClient.readOnlyTransaction()) {
       try (ResultSet queryResultSet =
           transaction.executeQuery(
-              Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums")) {
+              Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
       while (queryResultSet.next()) {
         System.out.printf(
             "%d %d %s\n",
