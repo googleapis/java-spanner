@@ -34,6 +34,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
+import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -190,16 +191,23 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     assertNotNull(attemptCountMetricData);
     assertThat(getAggregatedValue(attemptCountMetricData, expectedAttributes)).isEqualTo(1);
 
-    MetricData gfeLatencyMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
-    double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
-    assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
-
     assertFalse(
         checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
-    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
     assertFalse(
         checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    if (GapicSpannerRpc.isEnableDirectPathXdsEnv()) {
+      // AFE metrics are enabled for DirectPath.
+      MetricData afeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
+      double afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 1e-6);
+    } else {
+      MetricData gfeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
+      double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 1e-6);
+      assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
+    }
   }
 
   private boolean isJava8() {
@@ -261,20 +269,19 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
       assertNotNull(attemptCountMetricData);
       assertThat(getAggregatedValue(attemptCountMetricData, expectedAttributes)).isEqualTo(1);
 
-      MetricData gfeLatencyMetricData =
-          getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
-      double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
-      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
-
       assertFalse(
           checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
-
+      assertFalse(
+          checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
       MetricData afeLatencyMetricData =
           getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
       double afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
-      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 0);
-      assertFalse(
-          checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 1e-6);
+
+      MetricData gfeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
+      double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 1e-6);
     } finally {
       writeableEnvironmentVariables.remove("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
     }
@@ -445,13 +452,20 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteSql")
             .build();
 
-    MetricData gfeConnectivityMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
-    assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME));
-    assertFalse(
-        checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    if (GapicSpannerRpc.isEnableDirectPathXdsEnv()) {
+      MetricData afeConnectivityMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME);
+      assertThat(getAggregatedValue(afeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+    } else {
+      MetricData gfeConnectivityMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
+      assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+      assertFalse(
+          checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    }
+
     spannerNoHeader.close();
     serverNoHeader.shutdown();
     serverNoHeader.awaitTermination();
