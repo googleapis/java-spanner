@@ -127,12 +127,34 @@ public class XGoogSpannerRequestIdTest {
     public void assertIntegrity() {
       this.unaryResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
-            XGoogSpannerRequestId.assertMonotonicityOfIds(method, values);
+            assertMonotonicityOfIds(method, values);
           });
       this.streamingResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
-            XGoogSpannerRequestId.assertMonotonicityOfIds(method, values);
+            assertMonotonicityOfIds(method, values);
           });
+    }
+
+    private void assertMonotonicityOfIds(String prefix, List<XGoogSpannerRequestId> reqIds) {
+      int size = reqIds.size();
+
+      List<String> violations = new ArrayList<>();
+      for (int i = 1; i < size; i++) {
+        XGoogSpannerRequestId prev = reqIds.get(i - 1);
+        XGoogSpannerRequestId curr = reqIds.get(i);
+        if (prev.isGreaterThan(curr)) {
+          violations.add(String.format("#%d(%s) > #%d(%s)", i - 1, prev, i, curr));
+        }
+      }
+
+      if (violations.isEmpty()) {
+        return;
+      }
+
+      throw new IllegalStateException(
+          prefix
+              + " monotonicity violation:"
+              + String.join("\n\t", violations.toArray(new String[0])));
     }
 
     public static class methodAndRequestId {

@@ -2054,7 +2054,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       }
       if (method != null) {
         String methodName = method.getFullMethodName();
-        context = withRequestId(context, options, methodName);
+        context = withRequestId(context, options);
       }
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
@@ -2076,8 +2076,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
   }
 
-  GrpcCallContext withRequestId(
-      GrpcCallContext context, Map<SpannerRpc.Option, ?> options, String methodName) {
+  GrpcCallContext withRequestId(GrpcCallContext context, Map<SpannerRpc.Option, ?> options) {
     XGoogSpannerRequestId reqId = (XGoogSpannerRequestId) options.get(Option.REQUEST_ID);
     if (reqId == null) {
       return context;
