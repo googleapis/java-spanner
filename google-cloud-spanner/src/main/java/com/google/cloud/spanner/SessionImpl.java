@@ -305,9 +305,6 @@ class SessionImpl implements Session {
     try (IScope s = tracer.withSpan(span)) {
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
           () -> {
-            // TODO(@odeke-em): Only increment on UNAVAILABLE and INCREMENT,
-            // instead increment the nthRequest on ABORTED and others.
-            reqId.incrementAttempt();
             return new CommitResponse(
                 spanner.getRpc().commit(request, reqId.withOptions(getOptions())));
           });
@@ -322,7 +319,7 @@ class SessionImpl implements Session {
   private XGoogSpannerRequestId reqIdOrFresh(Options options) {
     XGoogSpannerRequestId reqId = options.reqId();
     if (reqId == null) {
-      reqId = this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 0);
+      reqId = this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 1);
     }
     return reqId;
   }
