@@ -22,9 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.grpc.Metadata;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.MatchResult;
@@ -108,7 +106,8 @@ public class XGoogSpannerRequestId {
         this.attempt);
   }
 
-  private boolean isGreaterThan(XGoogSpannerRequestId other) {
+  @VisibleForTesting
+  boolean isGreaterThan(XGoogSpannerRequestId other) {
     return this.nthClientId > other.nthClientId
         && this.nthChannelId > other.nthChannelId
         && this.nthRequest > other.nthRequest
@@ -159,27 +158,5 @@ public class XGoogSpannerRequestId {
     public XGoogSpannerRequestId nextRequestId(long channelId, int attempt) {
       return XGoogSpannerRequestId.of(1, 1, 1, 0);
     }
-  }
-
-  static void assertMonotonicityOfIds(String prefix, List<XGoogSpannerRequestId> reqIds) {
-    int size = reqIds.size();
-
-    List<String> violations = new ArrayList<>();
-    for (int i = 1; i < size; i++) {
-      XGoogSpannerRequestId prev = reqIds.get(i - 1);
-      XGoogSpannerRequestId curr = reqIds.get(i);
-      if (prev.isGreaterThan(curr)) {
-        violations.add(String.format("#%d(%s) > #%d(%s)", i - 1, prev, i, curr));
-      }
-    }
-
-    if (violations.isEmpty()) {
-      return;
-    }
-
-    throw new IllegalStateException(
-        prefix
-            + " monotonicity violation:"
-            + String.join("\n\t", violations.toArray(new String[0])));
   }
 }
