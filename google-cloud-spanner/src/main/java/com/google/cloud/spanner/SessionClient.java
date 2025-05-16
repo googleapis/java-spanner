@@ -117,8 +117,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
         Option.REQUEST_ID, requestId);
   }
 
-  static Map<SpannerRpc.Option, ?> createRequestOptions(
-      XGoogSpannerRequestId requestId) {
+  static Map<SpannerRpc.Option, ?> createRequestOptions(XGoogSpannerRequestId requestId) {
     return ImmutableMap.of(Option.REQUEST_ID, requestId);
   }
 
@@ -206,8 +205,6 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     this.executorFactory = executorFactory;
     this.executor = executorFactory.get();
     this.commonAttributes = spanner.getTracer().createCommonAttributes(db);
-    this.nthId = SessionClient.NTH_ID.incrementAndGet();
-    this.nthRequest = new AtomicInteger(0);
   }
 
   @Override
