@@ -364,4 +364,47 @@ public class DdlTest extends AbstractMockServerTest {
         "create table bar (id2 int64 auto_increment primary key",
         ((UpdateDatabaseDdlRequest) requests.get(0)).getStatements(1));
   }
+
+  @Test
+  public void testStripTrailingSemicolon() {
+    addUpdateDdlResponse();
+    addUpdateDdlResponse();
+    addUpdateDdlResponse();
+    addUpdateDdlResponse();
+    try (Connection connection = createConnection()) {
+      connection.execute(Statement.of("drop table foo;"));
+      connection.execute(Statement.of("drop table foo  \n\t;\n\t   "));
+      connection.execute(Statement.of("drop table foo"));
+
+      connection.startBatchDdl();
+      connection.execute(Statement.of("create table foo (id1 int64 auto_increment primary key;"));
+      connection.execute(
+          Statement.of("create table foo (id1 int64 auto_increment primary key  \n\t;\n\t  "));
+      connection.execute(Statement.of("create table foo (id2 int64 auto_increment primary key"));
+      connection.runBatch();
+    }
+    assertEquals(4, mockDatabaseAdmin.getRequests().size());
+    assertEquals(
+        "drop table foo",
+        ((UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(0)).getStatements(0));
+    assertEquals(
+        "drop table foo  \n\t",
+        ((UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(1)).getStatements(0));
+    assertEquals(
+        "drop table foo",
+        ((UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(2)).getStatements(0));
+
+    assertEquals(
+        3,
+        ((UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(3)).getStatementsCount());
+    assertEquals(
+        "create table foo (id1 int64 auto_increment primary key",
+        ((UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(3)).getStatements(0));
+    assertEquals(
+        "create table foo (id1 int64 auto_increment primary key  \n\t",
+        ((UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(3)).getStatements(1));
+    assertEquals(
+        "create table foo (id2 int64 auto_increment primary key",
+        ((UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(3)).getStatements(2));
+  }
 }
