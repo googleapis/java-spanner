@@ -1093,8 +1093,6 @@ public final class Options implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-      // TODO: Examine why the precedent for LastStatementUpdateOption
-      // does not check against the actual value.
       return o instanceof RequestIdOption;
     }
   }
