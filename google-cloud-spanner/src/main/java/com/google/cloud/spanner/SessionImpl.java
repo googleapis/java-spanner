@@ -149,7 +149,7 @@ class SessionImpl implements Session {
     this.errorHandler = createErrorHandler(spanner.getOptions());
     this.requestIdCreator = requestIdCreator;
     if (this.requestIdCreator == null) {
-      this.requestIdCreator = new XGoogSpannerRequestId.NoopRequestIdCreator();
+      throw new IllegalStateException("requestIdCreator must be non-null");
     }
   }
 
