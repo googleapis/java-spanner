@@ -126,7 +126,7 @@ class SessionImpl implements Session {
   private final Clock clock;
   private final Map<SpannerRpc.Option, ?> options;
   private final ErrorHandler errorHandler;
-  private XGoogSpannerRequestId.RequestIdCreator requestIdCreator;
+  private final XGoogSpannerRequestId.RequestIdCreator requestIdCreator;
 
   SessionImpl(SpannerImpl spanner, SessionReference sessionReference) {
     this(spanner, sessionReference, NO_CHANNEL_HINT);
