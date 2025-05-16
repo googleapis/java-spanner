@@ -29,7 +29,8 @@ import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +52,7 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
   private final int dbId;
   private final AtomicInteger nthRequest;
+  private final Map<String, Integer> clientIdToOrdinalMap;
 
   final boolean useMultiplexedSessionBlindWrite;
 
@@ -98,18 +100,19 @@ class DatabaseClientImpl implements DatabaseClient {
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
     this.commonAttributes = commonAttributes;
 
+    this.clientIdToOrdinalMap = new HashMap<String, Integer>();
     this.dbId = this.dbIdFromClientId(this.clientId);
     this.nthRequest = new AtomicInteger(0);
   }
 
   @VisibleForTesting
-  int dbIdFromClientId(String clientId) {
-    int i = clientId.indexOf("-");
-    String strWithValue = clientId.substring(i + 1);
-    if (Objects.equals(strWithValue, "")) {
-      strWithValue = "0";
+  synchronized int dbIdFromClientId(String clientId) {
+    Integer id = this.clientIdToOrdinalMap.get(clientId);
+    if (id == null) {
+      id = this.clientIdToOrdinalMap.size() + 1;
+      this.clientIdToOrdinalMap.put(clientId, id);
     }
-    return Integer.parseInt(strWithValue);
+    return id;
   }
 
   @VisibleForTesting
@@ -423,9 +426,13 @@ class DatabaseClientImpl implements DatabaseClient {
     if (reqId == null) {
       return options;
     }
-    ArrayList<UpdateOption> allOptions = new ArrayList(Arrays.asList(options));
-    allOptions.add(new Options.RequestIdOption(reqId));
-    return allOptions.toArray(new UpdateOption[0]);
+    if (options == null || options.length == 0) {
+      return new UpdateOption[] {new Options.RequestIdOption(reqId)};
+    }
+    UpdateOption[] allOptions = new UpdateOption[options.length + 1];
+    System.arraycopy(options, 0, allOptions, 0, options.length);
+    allOptions[options.length] = new Options.RequestIdOption(reqId);
+    return allOptions;
   }
 
   private TransactionOption[] withReqId(

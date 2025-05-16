@@ -5643,10 +5643,11 @@ public class DatabaseClientImplTest {
     TransactionOption option = mock(TransactionOption.class);
     DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
 
-    assertEquals(client.dbIdFromClientId(""), 0);
-    assertEquals(client.dbIdFromClientId("client-10"), 10);
-    assertEquals(client.dbIdFromClientId("client--10"), -10);
-    assertThrows(NumberFormatException.class, () -> client.dbIdFromClientId("client10"));
+    for (int i = 0; i < 10; i++) {
+      String dbId = String.format("%d", i);
+      int id = client.dbIdFromClientId(dbId);
+      assertEquals(id, i + 2); // There was already 1 dbId after new DatabaseClientImpl.
+    }
   }
 
   @Test
