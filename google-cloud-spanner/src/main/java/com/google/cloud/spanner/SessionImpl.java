@@ -305,7 +305,8 @@ class SessionImpl implements Session {
     try (IScope s = tracer.withSpan(span)) {
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
           () -> {
-            // TODO: Detect an abort and then refresh the reqId.
+            // TODO(@odeke-em): Only increment on UNAVAILABLE and INCREMENT,
+            // instead increment the nthRequest on ABORTED and others.
             reqId.incrementAttempt();
             return new CommitResponse(
                 spanner.getRpc().commit(request, reqId.withOptions(getOptions())));
