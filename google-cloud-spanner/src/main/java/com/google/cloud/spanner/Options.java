@@ -1025,6 +1025,8 @@ public final class Options implements Serializable {
       options.filter = filter;
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("EqualsHashCode")
     @Override
     public boolean equals(Object o) {
       if (o == this) return true;
