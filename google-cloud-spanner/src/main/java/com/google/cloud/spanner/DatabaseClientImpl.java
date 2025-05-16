@@ -465,10 +465,9 @@ class DatabaseClientImpl implements DatabaseClient {
     PooledSessionFuture session = getSession();
     XGoogSpannerRequestId reqId =
         XGoogSpannerRequestId.of(
-            this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 0);
+            this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 1);
     while (true) {
       try {
-        reqId.incrementAttempt();
         return callable.apply(session, reqId);
       } catch (SessionNotFoundException e) {
         session =
@@ -476,7 +475,7 @@ class DatabaseClientImpl implements DatabaseClient {
                 pool.getPooledSessionReplacementHandler().replaceSession(e, session);
         reqId =
             XGoogSpannerRequestId.of(
-                this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 0);
+                this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 1);
       }
     }
   }
