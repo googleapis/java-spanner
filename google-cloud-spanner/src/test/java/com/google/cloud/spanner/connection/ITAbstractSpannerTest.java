@@ -332,7 +332,8 @@ public abstract class ITAbstractSpannerTest {
           connection.startBatchDdl();
           connection.execute(
               Statement.of(
-                  "CREATE TABLE TEST (ID INT64 NOT NULL, NAME STRING(100) NOT NULL) PRIMARY KEY (ID)"));
+                  "CREATE TABLE TEST (ID INT64 NOT NULL, NAME STRING(100) NOT NULL) PRIMARY KEY"
+                      + " (ID)"));
           connection.runBatch();
         }
       }
@@ -345,7 +346,8 @@ public abstract class ITAbstractSpannerTest {
         connection.executeQuery(
             Statement.newBuilder(
                     String.format(
-                        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE UPPER(TABLE_NAME)=UPPER(\'%s\')",
+                        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE"
+                            + " UPPER(TABLE_NAME)=UPPER(\'%s\')",
                         table))
                 .build())) {
       while (rs.next()) {
@@ -360,7 +362,8 @@ public abstract class ITAbstractSpannerTest {
     try (ResultSet rs =
         connection.executeQuery(
             Statement.newBuilder(
-                    "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE UPPER(TABLE_NAME)=@table_name AND UPPER(INDEX_NAME)=@index_name")
+                    "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE"
+                        + " UPPER(TABLE_NAME)=@table_name AND UPPER(INDEX_NAME)=@index_name")
                 .bind("table_name")
                 .to(table)
                 .bind("index_name")

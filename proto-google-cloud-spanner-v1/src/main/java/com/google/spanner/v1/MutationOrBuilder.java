@@ -37,6 +37,7 @@ public interface MutationOrBuilder
    * @return Whether the insert field is set.
    */
   boolean hasInsert();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface MutationOrBuilder
    * @return The insert.
    */
   com.google.spanner.v1.Mutation.Write getInsert();
+
   /**
    *
    *
@@ -75,6 +77,7 @@ public interface MutationOrBuilder
    * @return Whether the update field is set.
    */
   boolean hasUpdate();
+
   /**
    *
    *
@@ -88,6 +91,7 @@ public interface MutationOrBuilder
    * @return The update.
    */
   com.google.spanner.v1.Mutation.Write getUpdate();
+
   /**
    *
    *
@@ -118,6 +122,7 @@ public interface MutationOrBuilder
    * @return Whether the insertOrUpdate field is set.
    */
   boolean hasInsertOrUpdate();
+
   /**
    *
    *
@@ -136,6 +141,7 @@ public interface MutationOrBuilder
    * @return The insertOrUpdate.
    */
   com.google.spanner.v1.Mutation.Write getInsertOrUpdate();
+
   /**
    *
    *
@@ -173,6 +179,7 @@ public interface MutationOrBuilder
    * @return Whether the replace field is set.
    */
   boolean hasReplace();
+
   /**
    *
    *
@@ -193,6 +200,7 @@ public interface MutationOrBuilder
    * @return The replace.
    */
   com.google.spanner.v1.Mutation.Write getReplace();
+
   /**
    *
    *
@@ -225,6 +233,7 @@ public interface MutationOrBuilder
    * @return Whether the delete field is set.
    */
   boolean hasDelete();
+
   /**
    *
    *
@@ -238,6 +247,7 @@ public interface MutationOrBuilder
    * @return The delete.
    */
   com.google.spanner.v1.Mutation.Delete getDelete();
+
   /**
    *
    *

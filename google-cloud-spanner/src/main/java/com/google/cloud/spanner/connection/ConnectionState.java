@@ -65,6 +65,7 @@ class ConnectionState {
    * used for {@link ConnectionState} that is marked as {@link Type#TRANSACTIONAL}.
    */
   private Map<String, ConnectionPropertyValue<?>> transactionProperties;
+
   /** localProperties are the modified local properties during a transaction. */
   private Map<String, ConnectionPropertyValue<?>> localProperties;
 
@@ -95,7 +96,7 @@ class ConnectionState {
             castProperty(entry.getValue().getProperty()),
             cast(entry.getValue()).getValue(),
             Context.STARTUP,
-            /* inTransaction = */ false);
+            /* inTransaction= */ false);
       }
     }
     Type configuredType = getValue(CONNECTION_STATE_TYPE).getValue();

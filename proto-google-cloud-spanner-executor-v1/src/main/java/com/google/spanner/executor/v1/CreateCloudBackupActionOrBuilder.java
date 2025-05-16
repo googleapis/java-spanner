@@ -36,6 +36,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return The instanceId.
    */
   java.lang.String getInstanceId();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return The backupId.
    */
   java.lang.String getBackupId();
+
   /**
    *
    *
@@ -113,6 +116,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return The databaseId.
    */
   java.lang.String getDatabaseId();
+
   /**
    *
    *
@@ -142,6 +146,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return Whether the expireTime field is set.
    */
   boolean hasExpireTime();
+
   /**
    *
    *
@@ -156,6 +161,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return The expireTime.
    */
   com.google.protobuf.Timestamp getExpireTime();
+
   /**
    *
    *
@@ -183,6 +189,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return Whether the versionTime field is set.
    */
   boolean hasVersionTime();
+
   /**
    *
    *
@@ -197,6 +204,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return The versionTime.
    */
   com.google.protobuf.Timestamp getVersionTime();
+
   /**
    *
    *
@@ -223,6 +231,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return Whether the encryptionConfig field is set.
    */
   boolean hasEncryptionConfig();
+
   /**
    *
    *
@@ -236,6 +245,7 @@ public interface CreateCloudBackupActionOrBuilder
    * @return The encryptionConfig.
    */
   com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+
   /**
    *
    *

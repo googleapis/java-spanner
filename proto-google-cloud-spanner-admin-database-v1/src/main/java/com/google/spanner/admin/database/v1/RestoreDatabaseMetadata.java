@@ -34,6 +34,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.RestoreDatabaseMetadata)
     RestoreDatabaseMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use RestoreDatabaseMetadata.newBuilder() to construct.
   private RestoreDatabaseMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -83,6 +84,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     private SourceInfoCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -117,6 +119,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object name_ = "";
+
   /**
    *
    *
@@ -140,6 +143,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       return s;
     }
   }
+
   /**
    *
    *
@@ -166,6 +170,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
 
   public static final int SOURCE_TYPE_FIELD_NUMBER = 2;
   private int sourceType_ = 0;
+
   /**
    *
    *
@@ -181,6 +186,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
   public int getSourceTypeValue() {
     return sourceType_;
   }
+
   /**
    *
    *
@@ -202,6 +208,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
   }
 
   public static final int BACKUP_INFO_FIELD_NUMBER = 3;
+
   /**
    *
    *
@@ -217,6 +224,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
   public boolean hasBackupInfo() {
     return sourceInfoCase_ == 3;
   }
+
   /**
    *
    *
@@ -235,6 +243,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     }
     return com.google.spanner.admin.database.v1.BackupInfo.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -254,6 +263,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
 
   public static final int PROGRESS_FIELD_NUMBER = 4;
   private com.google.spanner.admin.database.v1.OperationProgress progress_;
+
   /**
    *
    *
@@ -271,6 +281,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
   public boolean hasProgress() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -290,6 +301,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         ? com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()
         : progress_;
   }
+
   /**
    *
    *
@@ -310,6 +322,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 5;
   private com.google.protobuf.Timestamp cancelTime_;
+
   /**
    *
    *
@@ -336,6 +349,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
   public boolean hasCancelTime() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -362,6 +376,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
   public com.google.protobuf.Timestamp getCancelTime() {
     return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
+
   /**
    *
    *
@@ -391,6 +406,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object optimizeDatabaseOperationName_ = "";
+
   /**
    *
    *
@@ -424,6 +440,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       return s;
     }
   }
+
   /**
    *
    *
@@ -693,6 +710,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1003,6 +1021,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     private int bitField0_;
 
     private java.lang.Object name_ = "";
+
     /**
      *
      *
@@ -1025,6 +1044,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1047,6 +1067,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1068,6 +1089,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1085,6 +1107,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1109,6 +1132,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     }
 
     private int sourceType_ = 0;
+
     /**
      *
      *
@@ -1124,6 +1148,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     public int getSourceTypeValue() {
       return sourceType_;
     }
+
     /**
      *
      *
@@ -1142,6 +1167,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1161,6 +1187,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
           ? com.google.spanner.admin.database.v1.RestoreSourceType.UNRECOGNIZED
           : result;
     }
+
     /**
      *
      *
@@ -1182,6 +1209,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1205,6 +1233,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
             com.google.spanner.admin.database.v1.BackupInfo.Builder,
             com.google.spanner.admin.database.v1.BackupInfoOrBuilder>
         backupInfoBuilder_;
+
     /**
      *
      *
@@ -1220,6 +1249,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     public boolean hasBackupInfo() {
       return sourceInfoCase_ == 3;
     }
+
     /**
      *
      *
@@ -1245,6 +1275,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         return com.google.spanner.admin.database.v1.BackupInfo.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -1267,6 +1298,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       sourceInfoCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -1287,6 +1319,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       sourceInfoCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -1320,6 +1353,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       sourceInfoCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -1345,6 +1379,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       }
       return this;
     }
+
     /**
      *
      *
@@ -1357,6 +1392,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     public com.google.spanner.admin.database.v1.BackupInfo.Builder getBackupInfoBuilder() {
       return getBackupInfoFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1377,6 +1413,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         return com.google.spanner.admin.database.v1.BackupInfo.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -1416,6 +1453,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
             com.google.spanner.admin.database.v1.OperationProgress.Builder,
             com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
         progressBuilder_;
+
     /**
      *
      *
@@ -1432,6 +1470,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     public boolean hasProgress() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1454,6 +1493,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         return progressBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1478,6 +1518,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1500,6 +1541,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1530,6 +1572,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       }
       return this;
     }
+
     /**
      *
      *
@@ -1551,6 +1594,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1567,6 +1611,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return getProgressFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1587,6 +1632,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
             : progress_;
       }
     }
+
     /**
      *
      *
@@ -1621,6 +1667,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         cancelTimeBuilder_;
+
     /**
      *
      *
@@ -1646,6 +1693,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     public boolean hasCancelTime() {
       return ((bitField0_ & 0x00000010) != 0);
     }
+
     /**
      *
      *
@@ -1677,6 +1725,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         return cancelTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1710,6 +1759,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1740,6 +1790,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1778,6 +1829,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       }
       return this;
     }
+
     /**
      *
      *
@@ -1808,6 +1860,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1833,6 +1886,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1862,6 +1916,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
             : cancelTime_;
       }
     }
+
     /**
      *
      *
@@ -1900,6 +1955,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     }
 
     private java.lang.Object optimizeDatabaseOperationName_ = "";
+
     /**
      *
      *
@@ -1932,6 +1988,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1964,6 +2021,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1995,6 +2053,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2022,6 +2081,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *

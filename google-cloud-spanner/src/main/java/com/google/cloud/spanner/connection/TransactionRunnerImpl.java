@@ -34,7 +34,7 @@ class TransactionRunnerImpl {
   <T> T run(TransactionCallable<T> callable) {
     connection.beginTransaction();
     // Disable internal retries during this transaction.
-    connection.setRetryAbortsInternally(/* retryAbortsInternally = */ false, /* local = */ true);
+    connection.setRetryAbortsInternally(/* retryAbortsInternally= */ false, /* local= */ true);
     UnitOfWork transaction = connection.getCurrentUnitOfWorkOrStartNewUnitOfWork();
     while (true) {
       try {

@@ -36,6 +36,7 @@ public interface WriteMutationsActionOrBuilder
    * @return Whether the mutation field is set.
    */
   boolean hasMutation();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface WriteMutationsActionOrBuilder
    * @return The mutation.
    */
   com.google.spanner.executor.v1.MutationAction getMutation();
+
   /**
    *
    *

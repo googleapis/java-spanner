@@ -34,6 +34,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
     // @@protoc_insertion_point(message_implements:google.spanner.v1.PartitionResponse)
     PartitionResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use PartitionResponse.newBuilder() to construct.
   private PartitionResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -69,6 +70,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.Partition> partitions_;
+
   /**
    *
    *
@@ -82,6 +84,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
   public java.util.List<com.google.spanner.v1.Partition> getPartitionsList() {
     return partitions_;
   }
+
   /**
    *
    *
@@ -96,6 +99,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       getPartitionsOrBuilderList() {
     return partitions_;
   }
+
   /**
    *
    *
@@ -109,6 +113,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
   public int getPartitionsCount() {
     return partitions_.size();
   }
+
   /**
    *
    *
@@ -122,6 +127,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
   public com.google.spanner.v1.Partition getPartitions(int index) {
     return partitions_.get(index);
   }
+
   /**
    *
    *
@@ -138,6 +144,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
 
   public static final int TRANSACTION_FIELD_NUMBER = 2;
   private com.google.spanner.v1.Transaction transaction_;
+
   /**
    *
    *
@@ -153,6 +160,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
   public boolean hasTransaction() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -170,6 +178,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
         ? com.google.spanner.v1.Transaction.getDefaultInstance()
         : transaction_;
   }
+
   /**
    *
    *
@@ -360,6 +369,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -650,6 +660,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
         return partitionsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -666,6 +677,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
         return partitionsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -682,6 +694,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
         return partitionsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -704,6 +717,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -724,6 +738,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -746,6 +761,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -768,6 +784,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -787,6 +804,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -807,6 +825,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -827,6 +846,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -846,6 +866,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -865,6 +886,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -877,6 +899,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
     public com.google.spanner.v1.Partition.Builder getPartitionsBuilder(int index) {
       return getPartitionsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -893,6 +916,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
         return partitionsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -910,6 +934,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
         return java.util.Collections.unmodifiableList(partitions_);
       }
     }
+
     /**
      *
      *
@@ -923,6 +948,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       return getPartitionsFieldBuilder()
           .addBuilder(com.google.spanner.v1.Partition.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -936,6 +962,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       return getPartitionsFieldBuilder()
           .addBuilder(index, com.google.spanner.v1.Partition.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -972,6 +999,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
             com.google.spanner.v1.Transaction.Builder,
             com.google.spanner.v1.TransactionOrBuilder>
         transactionBuilder_;
+
     /**
      *
      *
@@ -986,6 +1014,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
     public boolean hasTransaction() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -1006,6 +1035,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
         return transactionBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1028,6 +1058,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1047,6 +1078,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1074,6 +1106,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -1093,6 +1126,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1107,6 +1141,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1125,6 +1160,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
             : transaction_;
       }
     }
+
     /**
      *
      *

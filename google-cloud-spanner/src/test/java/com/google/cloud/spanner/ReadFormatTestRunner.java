@@ -118,7 +118,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
     }
 
     private void run() throws Exception {
-      stream = new GrpcStreamIterator(10, /*cancelQueryWhenClientIsClosed=*/ false);
+      stream = new GrpcStreamIterator(10, /* cancelQueryWhenClientIsClosed= */ false);
       stream.setCall(
           new SpannerRpc.StreamingCall() {
             @Override

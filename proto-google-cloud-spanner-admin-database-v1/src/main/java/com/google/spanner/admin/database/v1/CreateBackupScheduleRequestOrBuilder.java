@@ -38,6 +38,7 @@ public interface CreateBackupScheduleRequestOrBuilder
    * @return The parent.
    */
   java.lang.String getParent();
+
   /**
    *
    *
@@ -67,6 +68,7 @@ public interface CreateBackupScheduleRequestOrBuilder
    * @return The backupScheduleId.
    */
   java.lang.String getBackupScheduleId();
+
   /**
    *
    *
@@ -96,6 +98,7 @@ public interface CreateBackupScheduleRequestOrBuilder
    * @return Whether the backupSchedule field is set.
    */
   boolean hasBackupSchedule();
+
   /**
    *
    *
@@ -110,6 +113,7 @@ public interface CreateBackupScheduleRequestOrBuilder
    * @return The backupSchedule.
    */
   com.google.spanner.admin.database.v1.BackupSchedule getBackupSchedule();
+
   /**
    *
    *

@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Convenience class for executing Data Definition Language statements on transactions that support
@@ -137,7 +138,21 @@ class DdlClient {
       dbBuilder.setProtoDescriptors(protoDescriptors);
     }
     Database db = dbBuilder.build();
-    return dbAdminClient.updateDatabaseDdl(db, statements, null);
+    return dbAdminClient.updateDatabaseDdl(
+        db,
+        statements.stream().map(DdlClient::stripTrailingSemicolon).collect(Collectors.toList()),
+        null);
+  }
+
+  static String stripTrailingSemicolon(String input) {
+    if (!input.contains(";")) {
+      return input;
+    }
+    String trimmed = input.trim();
+    if (trimmed.endsWith(";")) {
+      return trimmed.substring(0, trimmed.length() - 1);
+    }
+    return input;
   }
 
   /** Returns true if the statement is a `CREATE DATABASE ...` statement. */

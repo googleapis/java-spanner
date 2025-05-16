@@ -793,7 +793,7 @@ abstract class AbstractReadContext
         options.hasPrefetchChunks() ? options.prefetchChunks() : defaultPrefetchChunks;
     final ExecuteSqlRequest.Builder request =
         getExecuteSqlRequestBuilder(
-            statement, queryMode, options, /* withTransactionSelector = */ false);
+            statement, queryMode, options, /* withTransactionSelector= */ false);
     ResumableStreamIterator stream =
         new ResumableStreamIterator(
             MAX_BUFFERED_CHUNKS,
@@ -1036,7 +1036,7 @@ abstract class AbstractReadContext
                     getTransactionChannelHint(),
                     isRouteToLeader());
             session.markUsed(clock.instant());
-            stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
+            stream.setCall(call, /* withBeginTransaction= */ builder.getTransaction().hasBegin());
             return stream;
           }
 

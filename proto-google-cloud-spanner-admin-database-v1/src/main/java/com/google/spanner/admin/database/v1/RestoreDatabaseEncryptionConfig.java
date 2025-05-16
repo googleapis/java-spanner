@@ -33,6 +33,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig)
     RestoreDatabaseEncryptionConfigOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use RestoreDatabaseEncryptionConfig.newBuilder() to construct.
   private RestoreDatabaseEncryptionConfig(
       com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -133,6 +134,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      * <code>ENCRYPTION_TYPE_UNSPECIFIED = 0;</code>
      */
     public static final int ENCRYPTION_TYPE_UNSPECIFIED_VALUE = 0;
+
     /**
      *
      *
@@ -145,6 +147,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      * <code>USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION = 1;</code>
      */
     public static final int USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION_VALUE = 1;
+
     /**
      *
      *
@@ -155,6 +158,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      * <code>GOOGLE_DEFAULT_ENCRYPTION = 2;</code>
      */
     public static final int GOOGLE_DEFAULT_ENCRYPTION_VALUE = 2;
+
     /**
      *
      *
@@ -256,6 +260,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
 
   public static final int ENCRYPTION_TYPE_FIELD_NUMBER = 1;
   private int encryptionType_ = 0;
+
   /**
    *
    *
@@ -273,6 +278,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
   public int getEncryptionTypeValue() {
     return encryptionType_;
   }
+
   /**
    *
    *
@@ -302,6 +308,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object kmsKeyName_ = "";
+
   /**
    *
    *
@@ -331,6 +338,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       return s;
     }
   }
+
   /**
    *
    *
@@ -366,6 +374,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList kmsKeyNames_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -396,6 +405,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
   public com.google.protobuf.ProtocolStringList getKmsKeyNamesList() {
     return kmsKeyNames_;
   }
+
   /**
    *
    *
@@ -426,6 +436,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
   public int getKmsKeyNamesCount() {
     return kmsKeyNames_.size();
   }
+
   /**
    *
    *
@@ -457,6 +468,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
   public java.lang.String getKmsKeyNames(int index) {
     return kmsKeyNames_.get(index);
   }
+
   /**
    *
    *
@@ -681,6 +693,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -907,6 +920,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
     private int bitField0_;
 
     private int encryptionType_ = 0;
+
     /**
      *
      *
@@ -924,6 +938,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
     public int getEncryptionTypeValue() {
       return encryptionType_;
     }
+
     /**
      *
      *
@@ -944,6 +959,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -968,6 +984,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
               .UNRECOGNIZED
           : result;
     }
+
     /**
      *
      *
@@ -992,6 +1009,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1013,6 +1031,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
     }
 
     private java.lang.Object kmsKeyName_ = "";
+
     /**
      *
      *
@@ -1041,6 +1060,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1069,6 +1089,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1096,6 +1117,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1119,6 +1141,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1157,6 +1180,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       }
       bitField0_ |= 0x00000004;
     }
+
     /**
      *
      *
@@ -1188,6 +1212,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       kmsKeyNames_.makeImmutable();
       return kmsKeyNames_;
     }
+
     /**
      *
      *
@@ -1218,6 +1243,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
     public int getKmsKeyNamesCount() {
       return kmsKeyNames_.size();
     }
+
     /**
      *
      *
@@ -1249,6 +1275,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
     public java.lang.String getKmsKeyNames(int index) {
       return kmsKeyNames_.get(index);
     }
+
     /**
      *
      *
@@ -1280,6 +1307,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
     public com.google.protobuf.ByteString getKmsKeyNamesBytes(int index) {
       return kmsKeyNames_.getByteString(index);
     }
+
     /**
      *
      *
@@ -1319,6 +1347,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1357,6 +1386,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1392,6 +1422,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1426,6 +1457,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
       onChanged();
       return this;
     }
+
     /**
      *
      *

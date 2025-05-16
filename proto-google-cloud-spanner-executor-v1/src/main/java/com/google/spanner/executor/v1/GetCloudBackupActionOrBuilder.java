@@ -36,6 +36,7 @@ public interface GetCloudBackupActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface GetCloudBackupActionOrBuilder
    * @return The instanceId.
    */
   java.lang.String getInstanceId();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface GetCloudBackupActionOrBuilder
    * @return The backupId.
    */
   java.lang.String getBackupId();
+
   /**
    *
    *

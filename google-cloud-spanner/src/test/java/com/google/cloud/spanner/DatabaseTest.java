@@ -157,8 +157,7 @@ public class DatabaseTest {
   public void testUnspecifiedDialectDefaultsToGoogleStandardSqlDialect() {
     final Database database =
         Database.fromProto(
-            defaultProtoDatabase()
-                .toBuilder()
+            defaultProtoDatabase().toBuilder()
                 .setDatabaseDialect(DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED)
                 .build(),
             dbClient);
@@ -172,8 +171,7 @@ public class DatabaseTest {
         IllegalArgumentException.class,
         () ->
             Database.fromProto(
-                defaultProtoDatabase()
-                    .toBuilder()
+                defaultProtoDatabase().toBuilder()
                     .setDatabaseDialect(DatabaseDialect.UNRECOGNIZED)
                     .build(),
                 dbClient));

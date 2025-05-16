@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -219,7 +220,8 @@ public abstract class Value implements Serializable {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.OUT_OF_RANGE,
             String.format(
-                "Max precision for the whole component of a numeric is 29. The requested numeric has a whole component with precision %d",
+                "Max precision for the whole component of a numeric is 29. The requested numeric"
+                    + " has a whole component with precision %d",
                 test.precision() - test.scale()));
       }
     }
@@ -407,6 +409,10 @@ public abstract class Value implements Serializable {
    */
   public static Value date(@Nullable Date v) {
     return new DateImpl(v == null, v);
+  }
+
+  public static Value uuid(@Nullable UUID v) {
+    return new UuidImpl(v == null, v);
   }
 
   /** Returns a non-{@code NULL} {#code STRUCT} value. */
@@ -800,6 +806,16 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<UUID>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value uuidArray(@Nullable Iterable<UUID> v) {
+    return new UuidArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
    * Returns an {@code ARRAY<Interval>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
@@ -869,6 +885,9 @@ public abstract class Value implements Serializable {
     if (value instanceof Date) {
       return Value.date((Date) value);
     }
+    if (value instanceof UUID) {
+      return Value.uuid((UUID) value);
+    }
     if (value instanceof LocalDate) {
       return Value.date(convertLocalDateToSpannerDate((LocalDate) value));
     }
@@ -936,6 +955,9 @@ public abstract class Value implements Serializable {
       }
       if (object instanceof Date) {
         return Value.dateArray(convertToTypedIterable((Date) object, iterator));
+      }
+      if (object instanceof UUID) {
+        return Value.uuidArray(convertToTypedIterable((UUID) object, iterator));
       }
       if (object instanceof LocalDate) {
         return Value.dateArray(
@@ -1102,6 +1124,13 @@ public abstract class Value implements Serializable {
   public abstract Date getDate();
 
   /**
+   * Returns the value of a {@code UUID}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract UUID getUuid();
+
+  /**
    * Returns the value of a {@code INTERVAL}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -1227,6 +1256,14 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract List<Date> getDateArray();
+
+  /**
+   * Returns the value of an {@code ARRAY<UUID>}-typed instance. While the returned list itself will
+   * never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<UUID> getUuidArray();
 
   /**
    * Returns the value of an {@code ARRAY<INTERVAL>}-typed instance. While the returned list itself
@@ -1516,6 +1553,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public UUID getUuid() {
+      throw defaultGetter(Type.uuid());
+    }
+
+    @Override
     public Interval getInterval() {
       throw defaultGetter(Type.interval());
     }
@@ -1582,6 +1624,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<Date> getDateArray() {
       throw defaultGetter(Type.array(Type.date()));
+    }
+
+    @Override
+    public List<UUID> getUuidArray() {
+      throw defaultGetter(Type.array(Type.uuid()));
     }
 
     @Override
@@ -2006,6 +2053,24 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class UuidImpl extends AbstractObjectValue<UUID> {
+
+    private UuidImpl(boolean isNull, UUID value) {
+      super(isNull, Type.uuid(), value);
+    }
+
+    @Override
+    public UUID getUuid() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+  }
+
   private static class IntervalImpl extends AbstractObjectValue<Interval> {
 
     private IntervalImpl(boolean isNull, Interval value) {
@@ -2184,7 +2249,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> T getProtoMessage(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         return (T)
@@ -2234,7 +2300,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> T getProtoMessage(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         return (T) m.toBuilder().mergeFrom(value.toByteArray()).build();
@@ -2879,7 +2946,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         List<T> protoMessagesList = new ArrayList<>(value.size());
@@ -2950,7 +3018,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         List<T> protoMessagesList = new ArrayList<>(value.size());
@@ -3033,6 +3102,24 @@ public abstract class Value implements Serializable {
 
     @Override
     void appendElement(StringBuilder b, Date element) {
+      b.append(element);
+    }
+  }
+
+  private static class UuidArrayImpl extends AbstractArrayValue<UUID> {
+
+    private UuidArrayImpl(boolean isNull, @Nullable List<UUID> values) {
+      super(isNull, Type.uuid(), values);
+    }
+
+    @Override
+    public List<UUID> getUuidArray() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, UUID element) {
       b.append(element);
     }
   }
@@ -3201,6 +3288,8 @@ public abstract class Value implements Serializable {
           return Value.pgOid(value.getLong(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
+        case UUID:
+          return Value.uuid(value.getUuid(fieldIndex));
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
         case INTERVAL:
@@ -3241,6 +3330,8 @@ public abstract class Value implements Serializable {
                 return Value.pgNumericArray(value.getStringList(fieldIndex));
               case DATE:
                 return Value.dateArray(value.getDateList(fieldIndex));
+              case UUID:
+                return Value.uuidArray(value.getUuidList(fieldIndex));
               case TIMESTAMP:
                 return Value.timestampArray(value.getTimestampList(fieldIndex));
               case INTERVAL:

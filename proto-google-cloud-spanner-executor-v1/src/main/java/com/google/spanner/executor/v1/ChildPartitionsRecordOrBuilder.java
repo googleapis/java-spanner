@@ -37,6 +37,7 @@ public interface ChildPartitionsRecordOrBuilder
    * @return Whether the startTime field is set.
    */
   boolean hasStartTime();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface ChildPartitionsRecordOrBuilder
    * @return The startTime.
    */
   com.google.protobuf.Timestamp getStartTime();
+
   /**
    *
    *
@@ -77,6 +79,7 @@ public interface ChildPartitionsRecordOrBuilder
    * @return The recordSequence.
    */
   java.lang.String getRecordSequence();
+
   /**
    *
    *
@@ -106,6 +109,7 @@ public interface ChildPartitionsRecordOrBuilder
    */
   java.util.List<com.google.spanner.executor.v1.ChildPartitionsRecord.ChildPartition>
       getChildPartitionsList();
+
   /**
    *
    *
@@ -118,6 +122,7 @@ public interface ChildPartitionsRecordOrBuilder
    * </code>
    */
   com.google.spanner.executor.v1.ChildPartitionsRecord.ChildPartition getChildPartitions(int index);
+
   /**
    *
    *
@@ -130,6 +135,7 @@ public interface ChildPartitionsRecordOrBuilder
    * </code>
    */
   int getChildPartitionsCount();
+
   /**
    *
    *
@@ -144,6 +150,7 @@ public interface ChildPartitionsRecordOrBuilder
   java.util.List<
           ? extends com.google.spanner.executor.v1.ChildPartitionsRecord.ChildPartitionOrBuilder>
       getChildPartitionsOrBuilderList();
+
   /**
    *
    *

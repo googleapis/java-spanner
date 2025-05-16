@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Utility class for generating {@link ResultSet}s containing columns with all possible data types
@@ -68,6 +69,7 @@ public class RandomResultSetGenerator {
                     : Type.newBuilder().setCode(TypeCode.JSON).build(),
                 Type.newBuilder().setCode(TypeCode.BYTES).build(),
                 Type.newBuilder().setCode(TypeCode.DATE).build(),
+                Type.newBuilder().setCode(TypeCode.UUID).build(),
                 Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()));
     if (dialect == Dialect.POSTGRESQL) {
       types.add(
@@ -123,6 +125,10 @@ public class RandomResultSetGenerator {
             Type.newBuilder()
                 .setCode(TypeCode.ARRAY)
                 .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.UUID))
                 .build(),
             Type.newBuilder()
                 .setCode(TypeCode.ARRAY)
@@ -254,6 +260,10 @@ public class RandomResultSetGenerator {
               Date.fromYearMonthDay(
                   random.nextInt(2019) + 1, random.nextInt(11) + 1, random.nextInt(28) + 1);
           builder.setStringValue(date.toString());
+          break;
+        case UUID:
+          UUID uuid = UUID.randomUUID();
+          builder.setStringValue(uuid.toString());
           break;
         case FLOAT32:
           if (randomNaN()) {

@@ -36,6 +36,7 @@ public interface ListCloudInstancesActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -66,6 +67,7 @@ public interface ListCloudInstancesActionOrBuilder
    * @return Whether the filter field is set.
    */
   boolean hasFilter();
+
   /**
    *
    *
@@ -83,6 +85,7 @@ public interface ListCloudInstancesActionOrBuilder
    * @return The filter.
    */
   java.lang.String getFilter();
+
   /**
    *
    *
@@ -114,6 +117,7 @@ public interface ListCloudInstancesActionOrBuilder
    * @return Whether the pageSize field is set.
    */
   boolean hasPageSize();
+
   /**
    *
    *
@@ -142,6 +146,7 @@ public interface ListCloudInstancesActionOrBuilder
    * @return Whether the pageToken field is set.
    */
   boolean hasPageToken();
+
   /**
    *
    *
@@ -156,6 +161,7 @@ public interface ListCloudInstancesActionOrBuilder
    * @return The pageToken.
    */
   java.lang.String getPageToken();
+
   /**
    *
    *

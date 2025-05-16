@@ -33,6 +33,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.CopyBackupEncryptionConfig)
     CopyBackupEncryptionConfigOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use CopyBackupEncryptionConfig.newBuilder() to construct.
   private CopyBackupEncryptionConfig(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -136,6 +137,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
      * <code>ENCRYPTION_TYPE_UNSPECIFIED = 0;</code>
      */
     public static final int ENCRYPTION_TYPE_UNSPECIFIED_VALUE = 0;
+
     /**
      *
      *
@@ -152,6 +154,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
      * <code>USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION = 1;</code>
      */
     public static final int USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION_VALUE = 1;
+
     /**
      *
      *
@@ -162,6 +165,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
      * <code>GOOGLE_DEFAULT_ENCRYPTION = 2;</code>
      */
     public static final int GOOGLE_DEFAULT_ENCRYPTION_VALUE = 2;
+
     /**
      *
      *
@@ -263,6 +267,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
 
   public static final int ENCRYPTION_TYPE_FIELD_NUMBER = 1;
   private int encryptionType_ = 0;
+
   /**
    *
    *
@@ -280,6 +285,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   public int getEncryptionTypeValue() {
     return encryptionType_;
   }
+
   /**
    *
    *
@@ -309,6 +315,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object kmsKeyName_ = "";
+
   /**
    *
    *
@@ -338,6 +345,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       return s;
     }
   }
+
   /**
    *
    *
@@ -373,6 +381,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList kmsKeyNames_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -404,6 +413,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   public com.google.protobuf.ProtocolStringList getKmsKeyNamesList() {
     return kmsKeyNames_;
   }
+
   /**
    *
    *
@@ -435,6 +445,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   public int getKmsKeyNamesCount() {
     return kmsKeyNames_.size();
   }
+
   /**
    *
    *
@@ -467,6 +478,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   public java.lang.String getKmsKeyNames(int index) {
     return kmsKeyNames_.get(index);
   }
+
   /**
    *
    *
@@ -691,6 +703,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -914,6 +927,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     private int bitField0_;
 
     private int encryptionType_ = 0;
+
     /**
      *
      *
@@ -931,6 +945,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     public int getEncryptionTypeValue() {
       return encryptionType_;
     }
+
     /**
      *
      *
@@ -951,6 +966,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -975,6 +991,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
               .UNRECOGNIZED
           : result;
     }
+
     /**
      *
      *
@@ -999,6 +1016,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1020,6 +1038,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     }
 
     private java.lang.Object kmsKeyName_ = "";
+
     /**
      *
      *
@@ -1048,6 +1067,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1076,6 +1096,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1103,6 +1124,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1126,6 +1148,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1164,6 +1187,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       }
       bitField0_ |= 0x00000004;
     }
+
     /**
      *
      *
@@ -1196,6 +1220,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       kmsKeyNames_.makeImmutable();
       return kmsKeyNames_;
     }
+
     /**
      *
      *
@@ -1227,6 +1252,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     public int getKmsKeyNamesCount() {
       return kmsKeyNames_.size();
     }
+
     /**
      *
      *
@@ -1259,6 +1285,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     public java.lang.String getKmsKeyNames(int index) {
       return kmsKeyNames_.get(index);
     }
+
     /**
      *
      *
@@ -1291,6 +1318,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     public com.google.protobuf.ByteString getKmsKeyNamesBytes(int index) {
       return kmsKeyNames_.getByteString(index);
     }
+
     /**
      *
      *
@@ -1331,6 +1359,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1370,6 +1399,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1406,6 +1436,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1441,6 +1472,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       onChanged();
       return this;
     }
+
     /**
      *
      *

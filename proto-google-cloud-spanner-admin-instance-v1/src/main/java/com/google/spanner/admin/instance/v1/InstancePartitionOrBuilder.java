@@ -41,6 +41,7 @@ public interface InstancePartitionOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -76,6 +77,7 @@ public interface InstancePartitionOrBuilder
    * @return The config.
    */
   java.lang.String getConfig();
+
   /**
    *
    *
@@ -107,6 +109,7 @@ public interface InstancePartitionOrBuilder
    * @return The displayName.
    */
   java.lang.String getDisplayName();
+
   /**
    *
    *
@@ -139,6 +142,7 @@ public interface InstancePartitionOrBuilder
    * @return Whether the nodeCount field is set.
    */
   boolean hasNodeCount();
+
   /**
    *
    *
@@ -176,6 +180,7 @@ public interface InstancePartitionOrBuilder
    * @return Whether the processingUnits field is set.
    */
   boolean hasProcessingUnits();
+
   /**
    *
    *
@@ -209,6 +214,7 @@ public interface InstancePartitionOrBuilder
    * @return The enum numeric value on the wire for state.
    */
   int getStateValue();
+
   /**
    *
    *
@@ -237,6 +243,7 @@ public interface InstancePartitionOrBuilder
    * @return Whether the createTime field is set.
    */
   boolean hasCreateTime();
+
   /**
    *
    *
@@ -250,6 +257,7 @@ public interface InstancePartitionOrBuilder
    * @return The createTime.
    */
   com.google.protobuf.Timestamp getCreateTime();
+
   /**
    *
    *
@@ -276,6 +284,7 @@ public interface InstancePartitionOrBuilder
    * @return Whether the updateTime field is set.
    */
   boolean hasUpdateTime();
+
   /**
    *
    *
@@ -290,6 +299,7 @@ public interface InstancePartitionOrBuilder
    * @return The updateTime.
    */
   com.google.protobuf.Timestamp getUpdateTime();
+
   /**
    *
    *
@@ -319,6 +329,7 @@ public interface InstancePartitionOrBuilder
    * @return A list containing the referencingDatabases.
    */
   java.util.List<java.lang.String> getReferencingDatabasesList();
+
   /**
    *
    *
@@ -335,6 +346,7 @@ public interface InstancePartitionOrBuilder
    * @return The count of referencingDatabases.
    */
   int getReferencingDatabasesCount();
+
   /**
    *
    *
@@ -352,6 +364,7 @@ public interface InstancePartitionOrBuilder
    * @return The referencingDatabases at the given index.
    */
   java.lang.String getReferencingDatabases(int index);
+
   /**
    *
    *
@@ -391,6 +404,7 @@ public interface InstancePartitionOrBuilder
    */
   @java.lang.Deprecated
   java.util.List<java.lang.String> getReferencingBackupsList();
+
   /**
    *
    *
@@ -412,6 +426,7 @@ public interface InstancePartitionOrBuilder
    */
   @java.lang.Deprecated
   int getReferencingBackupsCount();
+
   /**
    *
    *
@@ -434,6 +449,7 @@ public interface InstancePartitionOrBuilder
    */
   @java.lang.Deprecated
   java.lang.String getReferencingBackups(int index);
+
   /**
    *
    *
@@ -478,6 +494,7 @@ public interface InstancePartitionOrBuilder
    * @return The etag.
    */
   java.lang.String getEtag();
+
   /**
    *
    *

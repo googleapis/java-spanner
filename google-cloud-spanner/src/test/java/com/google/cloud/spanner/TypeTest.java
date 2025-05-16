@@ -241,6 +241,16 @@ public class TypeTest {
   }
 
   @Test
+  public void uuid() {
+    new ScalarTypeTester(Type.Code.UUID, TypeCode.UUID) {
+      @Override
+      Type newType() {
+        return Type.uuid();
+      }
+    }.test();
+  }
+
+  @Test
   public void interval() {
     new ScalarTypeTester(Code.INTERVAL, TypeCode.INTERVAL) {
       @Override
@@ -434,6 +444,16 @@ public class TypeTest {
       @Override
       Type newElementType() {
         return Type.date();
+      }
+    }.test();
+  }
+
+  @Test
+  public void uuidArray() {
+    new ArrayTypeTester(Type.Code.UUID, TypeCode.UUID, true) {
+      @Override
+      Type newElementType() {
+        return Type.uuid();
       }
     }.test();
   }
@@ -635,6 +655,7 @@ public class TypeTest {
     assertEquals("STRING", Type.string().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
     assertEquals("BYTES", Type.bytes().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
     assertEquals("DATE", Type.date().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("UUID", Type.uuid().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
     assertEquals("INTERVAL", Type.interval().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
     assertEquals("TIMESTAMP", Type.timestamp().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
     assertEquals("JSON", Type.json().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
@@ -653,6 +674,8 @@ public class TypeTest {
         "ARRAY<BYTES>", Type.array(Type.bytes()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
     assertEquals(
         "ARRAY<DATE>", Type.array(Type.date()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<UUID>", Type.array(Type.uuid()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
     assertEquals(
         "ARRAY<INTERVAL>",
         Type.array(Type.interval()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
@@ -674,6 +697,7 @@ public class TypeTest {
     assertEquals("character varying", Type.string().getSpannerTypeName(Dialect.POSTGRESQL));
     assertEquals("bytea", Type.bytes().getSpannerTypeName(Dialect.POSTGRESQL));
     assertEquals("date", Type.date().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("uuid", Type.uuid().getSpannerTypeName(Dialect.POSTGRESQL));
     assertEquals("interval", Type.interval().getSpannerTypeName(Dialect.POSTGRESQL));
     assertEquals(
         "timestamp with time zone", Type.timestamp().getSpannerTypeName(Dialect.POSTGRESQL));
@@ -688,6 +712,7 @@ public class TypeTest {
         "character varying[]", Type.array(Type.string()).getSpannerTypeName(Dialect.POSTGRESQL));
     assertEquals("bytea[]", Type.array(Type.bytes()).getSpannerTypeName(Dialect.POSTGRESQL));
     assertEquals("date[]", Type.array(Type.date()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("uuid[]", Type.array(Type.uuid()).getSpannerTypeName(Dialect.POSTGRESQL));
     assertEquals("interval[]", Type.array(Type.interval()).getSpannerTypeName(Dialect.POSTGRESQL));
     assertEquals(
         "timestamp with time zone[]",

@@ -36,7 +36,7 @@ public class TransactionMutationLimitExceededException extends SpannerException 
       Throwable cause,
       @Nullable ApiException apiException,
       @Nullable XGoogSpannerRequestId reqId) {
-    super(token, errorCode, /*retryable = */ false, message, cause, apiException, reqId);
+    super(token, errorCode, /* retryable= */ false, message, cause, apiException, reqId);
   }
 
   static boolean isTransactionMutationLimitException(ErrorCode code, String message) {

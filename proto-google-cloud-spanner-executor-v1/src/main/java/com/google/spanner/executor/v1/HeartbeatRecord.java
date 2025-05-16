@@ -33,6 +33,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.HeartbeatRecord)
     HeartbeatRecordOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use HeartbeatRecord.newBuilder() to construct.
   private HeartbeatRecord(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -64,6 +65,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
   private int bitField0_;
   public static final int HEARTBEAT_TIME_FIELD_NUMBER = 1;
   private com.google.protobuf.Timestamp heartbeatTime_;
+
   /**
    *
    *
@@ -79,6 +81,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
   public boolean hasHeartbeatTime() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -96,6 +99,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
         ? com.google.protobuf.Timestamp.getDefaultInstance()
         : heartbeatTime_;
   }
+
   /**
    *
    *
@@ -276,6 +280,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -479,6 +484,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         heartbeatTimeBuilder_;
+
     /**
      *
      *
@@ -493,6 +499,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
     public boolean hasHeartbeatTime() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -513,6 +520,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
         return heartbeatTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -535,6 +543,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -554,6 +563,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -581,6 +591,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
       }
       return this;
     }
+
     /**
      *
      *
@@ -600,6 +611,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -614,6 +626,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
       onChanged();
       return getHeartbeatTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -632,6 +645,7 @@ public final class HeartbeatRecord extends com.google.protobuf.GeneratedMessageV
             : heartbeatTime_;
       }
     }
+
     /**
      *
      *

@@ -40,6 +40,7 @@ public interface InstanceConfigOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -69,6 +70,7 @@ public interface InstanceConfigOrBuilder
    * @return The displayName.
    */
   java.lang.String getDisplayName();
+
   /**
    *
    *
@@ -97,6 +99,7 @@ public interface InstanceConfigOrBuilder
    * @return The enum numeric value on the wire for configType.
    */
   int getConfigTypeValue();
+
   /**
    *
    *
@@ -129,6 +132,7 @@ public interface InstanceConfigOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
   java.util.List<com.google.spanner.admin.instance.v1.ReplicaInfo> getReplicasList();
+
   /**
    *
    *
@@ -145,6 +149,7 @@ public interface InstanceConfigOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
   com.google.spanner.admin.instance.v1.ReplicaInfo getReplicas(int index);
+
   /**
    *
    *
@@ -161,6 +166,7 @@ public interface InstanceConfigOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
   int getReplicasCount();
+
   /**
    *
    *
@@ -178,6 +184,7 @@ public interface InstanceConfigOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.instance.v1.ReplicaInfoOrBuilder>
       getReplicasOrBuilderList();
+
   /**
    *
    *
@@ -208,6 +215,7 @@ public interface InstanceConfigOrBuilder
    * </code>
    */
   java.util.List<com.google.spanner.admin.instance.v1.ReplicaInfo> getOptionalReplicasList();
+
   /**
    *
    *
@@ -221,6 +229,7 @@ public interface InstanceConfigOrBuilder
    * </code>
    */
   com.google.spanner.admin.instance.v1.ReplicaInfo getOptionalReplicas(int index);
+
   /**
    *
    *
@@ -234,6 +243,7 @@ public interface InstanceConfigOrBuilder
    * </code>
    */
   int getOptionalReplicasCount();
+
   /**
    *
    *
@@ -248,6 +258,7 @@ public interface InstanceConfigOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.instance.v1.ReplicaInfoOrBuilder>
       getOptionalReplicasOrBuilderList();
+
   /**
    *
    *
@@ -277,6 +288,7 @@ public interface InstanceConfigOrBuilder
    * @return The baseConfig.
    */
   java.lang.String getBaseConfig();
+
   /**
    *
    *
@@ -323,6 +335,7 @@ public interface InstanceConfigOrBuilder
    * <code>map&lt;string, string&gt; labels = 8;</code>
    */
   int getLabelsCount();
+
   /**
    *
    *
@@ -353,9 +366,11 @@ public interface InstanceConfigOrBuilder
    * <code>map&lt;string, string&gt; labels = 8;</code>
    */
   boolean containsLabels(java.lang.String key);
+
   /** Use {@link #getLabelsMap()} instead. */
   @java.lang.Deprecated
   java.util.Map<java.lang.String, java.lang.String> getLabels();
+
   /**
    *
    *
@@ -386,6 +401,7 @@ public interface InstanceConfigOrBuilder
    * <code>map&lt;string, string&gt; labels = 8;</code>
    */
   java.util.Map<java.lang.String, java.lang.String> getLabelsMap();
+
   /**
    *
    *
@@ -420,6 +436,7 @@ public interface InstanceConfigOrBuilder
       java.lang.String key,
       /* nullable */
       java.lang.String defaultValue);
+
   /**
    *
    *
@@ -473,6 +490,7 @@ public interface InstanceConfigOrBuilder
    * @return The etag.
    */
   java.lang.String getEtag();
+
   /**
    *
    *
@@ -509,6 +527,7 @@ public interface InstanceConfigOrBuilder
    * @return A list containing the leaderOptions.
    */
   java.util.List<java.lang.String> getLeaderOptionsList();
+
   /**
    *
    *
@@ -522,6 +541,7 @@ public interface InstanceConfigOrBuilder
    * @return The count of leaderOptions.
    */
   int getLeaderOptionsCount();
+
   /**
    *
    *
@@ -536,6 +556,7 @@ public interface InstanceConfigOrBuilder
    * @return The leaderOptions at the given index.
    */
   java.lang.String getLeaderOptions(int index);
+
   /**
    *
    *
@@ -581,6 +602,7 @@ public interface InstanceConfigOrBuilder
    * @return The enum numeric value on the wire for state.
    */
   int getStateValue();
+
   /**
    *
    *
@@ -612,6 +634,7 @@ public interface InstanceConfigOrBuilder
    * @return The enum numeric value on the wire for freeInstanceAvailability.
    */
   int getFreeInstanceAvailabilityValue();
+
   /**
    *
    *
@@ -643,6 +666,7 @@ public interface InstanceConfigOrBuilder
    * @return The enum numeric value on the wire for quorumType.
    */
   int getQuorumTypeValue();
+
   /**
    *
    *

@@ -36,6 +36,7 @@ public interface DataChangeRecordOrBuilder
    * @return Whether the commitTime field is set.
    */
   boolean hasCommitTime();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface DataChangeRecordOrBuilder
    * @return The commitTime.
    */
   com.google.protobuf.Timestamp getCommitTime();
+
   /**
    *
    *
@@ -71,6 +73,7 @@ public interface DataChangeRecordOrBuilder
    * @return The recordSequence.
    */
   java.lang.String getRecordSequence();
+
   /**
    *
    *
@@ -97,6 +100,7 @@ public interface DataChangeRecordOrBuilder
    * @return The transactionId.
    */
   java.lang.String getTransactionId();
+
   /**
    *
    *
@@ -137,6 +141,7 @@ public interface DataChangeRecordOrBuilder
    * @return The table.
    */
   java.lang.String getTable();
+
   /**
    *
    *
@@ -160,6 +165,7 @@ public interface DataChangeRecordOrBuilder
    * <code>repeated .google.spanner.executor.v1.DataChangeRecord.ColumnType column_types = 6;</code>
    */
   java.util.List<com.google.spanner.executor.v1.DataChangeRecord.ColumnType> getColumnTypesList();
+
   /**
    *
    *
@@ -170,6 +176,7 @@ public interface DataChangeRecordOrBuilder
    * <code>repeated .google.spanner.executor.v1.DataChangeRecord.ColumnType column_types = 6;</code>
    */
   com.google.spanner.executor.v1.DataChangeRecord.ColumnType getColumnTypes(int index);
+
   /**
    *
    *
@@ -180,6 +187,7 @@ public interface DataChangeRecordOrBuilder
    * <code>repeated .google.spanner.executor.v1.DataChangeRecord.ColumnType column_types = 6;</code>
    */
   int getColumnTypesCount();
+
   /**
    *
    *
@@ -191,6 +199,7 @@ public interface DataChangeRecordOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.DataChangeRecord.ColumnTypeOrBuilder>
       getColumnTypesOrBuilderList();
+
   /**
    *
    *
@@ -213,6 +222,7 @@ public interface DataChangeRecordOrBuilder
    * <code>repeated .google.spanner.executor.v1.DataChangeRecord.Mod mods = 7;</code>
    */
   java.util.List<com.google.spanner.executor.v1.DataChangeRecord.Mod> getModsList();
+
   /**
    *
    *
@@ -223,6 +233,7 @@ public interface DataChangeRecordOrBuilder
    * <code>repeated .google.spanner.executor.v1.DataChangeRecord.Mod mods = 7;</code>
    */
   com.google.spanner.executor.v1.DataChangeRecord.Mod getMods(int index);
+
   /**
    *
    *
@@ -233,6 +244,7 @@ public interface DataChangeRecordOrBuilder
    * <code>repeated .google.spanner.executor.v1.DataChangeRecord.Mod mods = 7;</code>
    */
   int getModsCount();
+
   /**
    *
    *
@@ -244,6 +256,7 @@ public interface DataChangeRecordOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.DataChangeRecord.ModOrBuilder>
       getModsOrBuilderList();
+
   /**
    *
    *
@@ -267,6 +280,7 @@ public interface DataChangeRecordOrBuilder
    * @return The modType.
    */
   java.lang.String getModType();
+
   /**
    *
    *
@@ -292,6 +306,7 @@ public interface DataChangeRecordOrBuilder
    * @return The valueCaptureType.
    */
   java.lang.String getValueCaptureType();
+
   /**
    *
    *
@@ -343,6 +358,7 @@ public interface DataChangeRecordOrBuilder
    * @return The transactionTag.
    */
   java.lang.String getTransactionTag();
+
   /**
    *
    *

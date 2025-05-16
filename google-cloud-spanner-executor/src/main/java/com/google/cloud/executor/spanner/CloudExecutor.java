@@ -368,9 +368,9 @@ public abstract class CloudExecutor {
         LOGGER.log(
             Level.INFO,
             String.format(
-                "OutcomeSender with action ID %s for change stream %s and partition token %s is "
-                    + "sending data change records with the following transaction id/record sequence "
-                    + "combinations: %s and partition tokens: %s",
+                "OutcomeSender with action ID %s for change stream %s and partition token %s is"
+                    + " sending data change records with the following transaction id/record"
+                    + " sequence combinations: %s and partition tokens: %s",
                 this.changeStreamForQuery,
                 this.partitionTokenForQuery,
                 actionId,

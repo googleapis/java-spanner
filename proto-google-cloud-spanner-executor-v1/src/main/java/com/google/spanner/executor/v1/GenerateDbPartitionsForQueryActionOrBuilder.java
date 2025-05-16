@@ -36,6 +36,7 @@ public interface GenerateDbPartitionsForQueryActionOrBuilder
    * @return Whether the query field is set.
    */
   boolean hasQuery();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface GenerateDbPartitionsForQueryActionOrBuilder
    * @return The query.
    */
   com.google.spanner.executor.v1.QueryAction getQuery();
+
   /**
    *
    *
@@ -72,6 +74,7 @@ public interface GenerateDbPartitionsForQueryActionOrBuilder
    * @return Whether the desiredBytesPerPartition field is set.
    */
   boolean hasDesiredBytesPerPartition();
+
   /**
    *
    *

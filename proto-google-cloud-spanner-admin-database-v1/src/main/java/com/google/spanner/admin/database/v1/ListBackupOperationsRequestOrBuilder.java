@@ -39,6 +39,7 @@ public interface ListBackupOperationsRequestOrBuilder
    * @return The parent.
    */
   java.lang.String getParent();
+
   /**
    *
    *
@@ -136,6 +137,7 @@ public interface ListBackupOperationsRequestOrBuilder
    * @return The filter.
    */
   java.lang.String getFilter();
+
   /**
    *
    *
@@ -248,6 +250,7 @@ public interface ListBackupOperationsRequestOrBuilder
    * @return The pageToken.
    */
   java.lang.String getPageToken();
+
   /**
    *
    *

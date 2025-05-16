@@ -36,6 +36,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * @return The database.
    */
   java.lang.String getDatabase();
+
   /**
    *
    *
@@ -62,6 +63,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * @return A list containing the statements.
    */
   java.util.List<java.lang.String> getStatementsList();
+
   /**
    *
    *
@@ -75,6 +77,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * @return The count of statements.
    */
   int getStatementsCount();
+
   /**
    *
    *
@@ -89,6 +92,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * @return The statements at the given index.
    */
   java.lang.String getStatements(int index);
+
   /**
    *
    *
@@ -116,6 +120,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
   java.util.List<com.google.protobuf.Timestamp> getCommitTimestampsList();
+
   /**
    *
    *
@@ -128,6 +133,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
   com.google.protobuf.Timestamp getCommitTimestamps(int index);
+
   /**
    *
    *
@@ -140,6 +146,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
   int getCommitTimestampsCount();
+
   /**
    *
    *
@@ -153,6 +160,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    */
   java.util.List<? extends com.google.protobuf.TimestampOrBuilder>
       getCommitTimestampsOrBuilderList();
+
   /**
    *
    *
@@ -197,6 +205,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
    */
   java.util.List<com.google.spanner.admin.database.v1.OperationProgress> getProgressList();
+
   /**
    *
    *
@@ -213,6 +222,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
    */
   com.google.spanner.admin.database.v1.OperationProgress getProgress(int index);
+
   /**
    *
    *
@@ -229,6 +239,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
    */
   int getProgressCount();
+
   /**
    *
    *
@@ -246,6 +257,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
       getProgressOrBuilderList();
+
   /**
    *
    *
@@ -274,6 +286,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
    */
   java.util.List<com.google.spanner.admin.database.v1.DdlStatementActionInfo> getActionsList();
+
   /**
    *
    *
@@ -285,6 +298,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
    */
   com.google.spanner.admin.database.v1.DdlStatementActionInfo getActions(int index);
+
   /**
    *
    *
@@ -296,6 +310,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
    */
   int getActionsCount();
+
   /**
    *
    *
@@ -308,6 +323,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder>
       getActionsOrBuilderList();
+
   /**
    *
    *

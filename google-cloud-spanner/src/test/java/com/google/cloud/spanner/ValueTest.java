@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -565,7 +566,11 @@ public class ValueTest {
   @Test
   public void jsonNested() {
     String json =
-        "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]";
+        "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's"
+            + " Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered"
+            + " Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with"
+            + " Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old"
+            + " Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]";
     Value v = Value.json(json);
     assertEquals(json, v.getJson());
     assertEquals(json, v.getAsString());
@@ -621,7 +626,11 @@ public class ValueTest {
   @Test
   public void testPgJsonbNested() {
     String json =
-        "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]";
+        "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's"
+            + " Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered"
+            + " Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with"
+            + " Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old"
+            + " Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]";
     Value v = Value.pgJsonb(json);
     assertEquals(json, v.getPgJsonb());
     assertEquals(json, v.getAsString());
@@ -745,6 +754,25 @@ public class ValueTest {
   }
 
   @Test
+  public void uuid() {
+    UUID uuid = UUID.randomUUID();
+    Value v = Value.uuid(uuid);
+    assertThat(v.getType()).isEqualTo(Type.uuid());
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getUuid()).isSameInstanceAs(uuid);
+    assertThat(v.toString()).isEqualTo(uuid.toString());
+    assertEquals(uuid.toString(), v.getAsString());
+  }
+
+  @Test
+  public void uuidNull() {
+    Value v = Value.uuid(null);
+    assertThat(v.getType()).isEqualTo(Type.uuid());
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getUuid);
+  }
+
   public void interval() {
     String interval = "P1Y2M3DT67H45M5.123478678S";
     Interval t = Interval.parseFromString(interval);
@@ -1396,6 +1424,27 @@ public class ValueTest {
   }
 
   @Test
+  public void uuidArray() {
+    UUID uuid1 = UUID.randomUUID();
+    UUID uuid2 = UUID.randomUUID();
+
+    Value v = Value.uuidArray(Arrays.asList(uuid1, null, uuid2));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getUuidArray()).containsExactly(uuid1, null, uuid2).inOrder();
+    assertThat(v.toString()).isEqualTo("[" + uuid1.toString() + ",NULL," + uuid2.toString() + "]");
+    assertEquals(
+        String.format("[%s,NULL,%s]", uuid1.toString(), uuid2.toString()), v.getAsString());
+  }
+
+  @Test
+  public void uuidArrayNull() {
+    Value v = Value.uuidArray(null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getUuidArray);
+  }
+
+  @Test
   public void intervalArray() {
     Interval interval1 = Interval.parseFromString("P123Y34M678DT478H345M345.76857863S");
     Interval interval2 = Interval.parseFromString("P-123Y-34M678DT-478H-345M-345.76857863S");
@@ -1716,6 +1765,15 @@ public class ValueTest {
         Value.date(null).toProto());
 
     assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setStringValue("e0d8a283-29d8-49ce-8d4c-e1d8cb0ea047")
+            .build(),
+        Value.uuid(UUID.fromString("e0d8a283-29d8-49ce-8d4c-e1d8cb0ea047")).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.uuid(null).toProto());
+
+    assertEquals(
         com.google.protobuf.Value.newBuilder().setStringValue("P1Y2M3DT5H6M3.624567878S").build(),
         Value.interval(Interval.fromMonthsDaysNanos(14, 3, BigInteger.valueOf(18363624567878L)))
             .toProto());
@@ -1859,6 +1917,23 @@ public class ValueTest {
                                 .build())))
             .build(),
         Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2010, 2, 28), null)).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("3fb10ff0-4a9a-428a-bc20-a947181fd76d")
+                                .build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.uuidArray(
+                Arrays.asList(UUID.fromString("3fb10ff0-4a9a-428a-bc20-a947181fd76d"), null))
+            .toProto());
 
     assertEquals(
         com.google.protobuf.Value.newBuilder()
@@ -2100,6 +2175,35 @@ public class ValueTest {
                                     .addAllValues(
                                         Arrays.asList(
                                             com.google.protobuf.Value.newBuilder()
+                                                .setStringValue(
+                                                    "9e2f9eac-8d6f-45c1-ac1d-c589daad8821")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(
+                        Value.uuidArray(
+                            Arrays.asList(
+                                UUID.fromString("9e2f9eac-8d6f-45c1-ac1d-c589daad8821"), null)))
+                    .build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
                                                 .setStringValue("2012-04-10T15:16:17.123456789Z")
                                                 .build(),
                                             com.google.protobuf.Value.newBuilder()
@@ -2220,6 +2324,11 @@ public class ValueTest {
         Value.date(Date.fromYearMonthDay(2018, 2, 26)));
     tester.addEqualityGroup(Value.date(Date.fromYearMonthDay(2018, 2, 27)));
 
+    UUID uuid = UUID.randomUUID();
+    tester.addEqualityGroup(Value.uuid(null), Value.uuid(null));
+    tester.addEqualityGroup(Value.uuid(uuid), Value.uuid(uuid));
+    tester.addEqualityGroup(Value.uuid(UUID.randomUUID()));
+
     Struct structValue1 = Struct.newBuilder().set("f1").to(20).set("f2").to("def").build();
     Struct structValue2 = Struct.newBuilder().set("f1").to(20).set("f2").to("def").build();
     assertThat(Value.struct(structValue1).equals(Value.struct(structValue2))).isTrue();
@@ -2311,6 +2420,10 @@ public class ValueTest {
     tester.addEqualityGroup(Value.dateArray(null));
 
     tester.addEqualityGroup(
+        Value.uuidArray(Arrays.asList(null, uuid)), Value.uuidArray(Arrays.asList(null, uuid)));
+    tester.addEqualityGroup(Value.uuidArray(null));
+
+    tester.addEqualityGroup(
         Value.intervalArray(
             Arrays.asList(null, Interval.fromMonthsDaysNanos(14, 3, BigInteger.valueOf(0)))),
         Value.intervalArray(
@@ -2371,6 +2484,9 @@ public class ValueTest {
         "2023-01-10T18:59:00Z",
         Value.timestamp(Timestamp.parseTimestamp("2023-01-10T18:59:00Z")).getAsString());
     assertEquals("2023-01-10", Value.date(Date.parseDate("2023-01-10")).getAsString());
+    assertEquals(
+        "4ef8ba78-3bb5-4a8f-ae39-bf59a89a491d",
+        Value.uuid(UUID.fromString("4ef8ba78-3bb5-4a8f-ae39-bf59a89a491d")).getAsString());
     assertEquals(
         "P1Y2M3DT4H5M6.789123456S",
         Value.interval(Interval.parseFromString("P1Y2M3DT4H5M6.789123456S")).getAsString());
@@ -2475,6 +2591,12 @@ public class ValueTest {
     reserializeAndAssert(Value.date(null));
     reserializeAndAssert(Value.date(Date.fromYearMonthDay(2018, 2, 26)));
     reserializeAndAssert(Value.dateArray(Arrays.asList(null, Date.fromYearMonthDay(2018, 2, 26))));
+
+    reserializeAndAssert(Value.uuid(null));
+    reserializeAndAssert(Value.uuid(UUID.fromString("20d55f8b-5cd4-46ae-81bc-38f6b53c243b")));
+    reserializeAndAssert(
+        Value.uuidArray(
+            Arrays.asList(null, UUID.fromString("20d55f8b-5cd4-46ae-81bc-38f6b53c243b"))));
 
     reserializeAndAssert(Value.interval(null));
     reserializeAndAssert(
@@ -2583,6 +2705,11 @@ public class ValueTest {
     value = Value.toValue(date);
     assertEquals(Type.date(), value.getType());
     assertEquals(date, value.getDate());
+
+    UUID uuid = UUID.randomUUID();
+    value = Value.toValue(uuid);
+    assertEquals(Type.uuid(), value.getType());
+    assertEquals(uuid, value.getUuid());
 
     LocalDate localDate = LocalDate.of(2018, 2, 26);
     value = Value.toValue(localDate);
@@ -2767,6 +2894,11 @@ public class ValueTest {
     value = Value.toValue(dates);
     assertEquals(Type.array(Type.date()), value.getType());
     assertEquals(dates, value.getDateArray());
+
+    List<UUID> uuids = Arrays.asList(UUID.randomUUID(), UUID.randomUUID());
+    value = Value.toValue(uuids);
+    assertEquals(Type.array(Type.uuid()), value.getType());
+    assertEquals(uuids, value.getUuidArray());
 
     List<LocalDate> localDates =
         Arrays.asList(LocalDate.of(2024, 8, 23), LocalDate.of(2024, 12, 27));

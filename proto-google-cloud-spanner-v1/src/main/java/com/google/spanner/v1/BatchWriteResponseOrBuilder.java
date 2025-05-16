@@ -37,6 +37,7 @@ public interface BatchWriteResponseOrBuilder
    * @return A list containing the indexes.
    */
   java.util.List<java.lang.Integer> getIndexesList();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface BatchWriteResponseOrBuilder
    * @return The count of indexes.
    */
   int getIndexesCount();
+
   /**
    *
    *
@@ -77,6 +79,7 @@ public interface BatchWriteResponseOrBuilder
    * @return Whether the status field is set.
    */
   boolean hasStatus();
+
   /**
    *
    *
@@ -89,6 +92,7 @@ public interface BatchWriteResponseOrBuilder
    * @return The status.
    */
   com.google.rpc.Status getStatus();
+
   /**
    *
    *
@@ -113,6 +117,7 @@ public interface BatchWriteResponseOrBuilder
    * @return Whether the commitTimestamp field is set.
    */
   boolean hasCommitTimestamp();
+
   /**
    *
    *
@@ -126,6 +131,7 @@ public interface BatchWriteResponseOrBuilder
    * @return The commitTimestamp.
    */
   com.google.protobuf.Timestamp getCommitTimestamp();
+
   /**
    *
    *

@@ -233,7 +233,9 @@ public class ITDirectPathFallback {
     }
   }
 
-  /** @see com.google.cloud.bigtable.data.v2.it.DirectPathFallbackIT.MyChannelHandler */
+  /**
+   * @see com.google.cloud.bigtable.data.v2.it.DirectPathFallbackIT.MyChannelHandler
+   */
   private class MyChannelFactory implements ChannelFactory<NioSocketChannel> {
     @Override
     public NioSocketChannel newChannel() {

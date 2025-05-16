@@ -250,6 +250,7 @@ public class SpannerPool {
    * threads to be created when the connection API is not used.
    */
   private boolean initialized = false;
+
   /**
    * Thread that will be run as a shutdown hook on closing the application. This thread will close
    * any Spanner instances opened by the Connection API that are still open.
@@ -492,7 +493,8 @@ public class SpannerPool {
               ErrorCode.FAILED_PRECONDITION,
               "There is/are "
                   + keysStillInUse.size()
-                  + " connection(s) still open. Close all connections before calling closeSpanner()");
+                  + " connection(s) still open. Close all connections before calling"
+                  + " closeSpanner()");
         }
       } finally {
         if (closerService != null) {

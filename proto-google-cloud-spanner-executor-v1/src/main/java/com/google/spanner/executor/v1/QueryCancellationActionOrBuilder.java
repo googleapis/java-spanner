@@ -36,6 +36,7 @@ public interface QueryCancellationActionOrBuilder
    * @return The longRunningSql.
    */
   java.lang.String getLongRunningSql();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface QueryCancellationActionOrBuilder
    * @return The cancelQuery.
    */
   java.lang.String getCancelQuery();
+
   /**
    *
    *

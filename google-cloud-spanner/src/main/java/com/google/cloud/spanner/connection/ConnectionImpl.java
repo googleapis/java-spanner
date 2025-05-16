@@ -173,6 +173,7 @@ class ConnectionImpl implements Connection {
   private volatile LeakedConnectionException leakedException;
   private final SpannerPool spannerPool;
   private AbstractStatementParser statementParser;
+
   /**
    * The {@link ConnectionStatementExecutor} is responsible for translating parsed {@link
    * ClientSideStatement}s into actual method calls on this {@link ConnectionImpl}. I.e. the {@link
@@ -264,11 +265,13 @@ class ConnectionImpl implements Connection {
   private final ConnectionState connectionState;
 
   private UnitOfWork currentUnitOfWork = null;
+
   /**
    * This field is only used in autocommit mode to indicate that the user has explicitly started a
    * transaction.
    */
   private boolean inTransaction = false;
+
   /**
    * This field is used to indicate that a transaction begin has been indicated. This is done by
    * calling beginTransaction or by setting a transaction property while not in autocommit mode.
@@ -516,7 +519,9 @@ class ConnectionImpl implements Connection {
     return unitOfWorkType;
   }
 
-  /** @return <code>true</code> if this connection is in a batch. */
+  /**
+   * @return <code>true</code> if this connection is in a batch.
+   */
   boolean isInBatch() {
     return batchMode != BatchMode.NONE;
   }
@@ -547,7 +552,7 @@ class ConnectionImpl implements Connection {
   }
 
   private <T> void setConnectionPropertyValue(ConnectionProperty<T> property, T value) {
-    setConnectionPropertyValue(property, value, /* local = */ false);
+    setConnectionPropertyValue(property, value, /* local= */ false);
   }
 
   private <T> void setConnectionPropertyValue(
@@ -671,7 +676,8 @@ class ConnectionImpl implements Connection {
         !isBatchActive(), "Cannot set autocommit DML mode while in a batch");
     ConnectionPreconditions.checkState(
         !isInTransaction() && isAutocommit(),
-        "Cannot set autocommit DML mode while not in autocommit mode or while a transaction is active");
+        "Cannot set autocommit DML mode while not in autocommit mode or while a transaction is"
+            + " active");
     ConnectionPreconditions.checkState(
         !isReadOnly(), "Cannot set autocommit DML mode for a read-only connection");
     setConnectionPropertyValue(AUTOCOMMIT_DML_MODE, mode);
@@ -1005,7 +1011,7 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setRetryAbortsInternally(boolean retryAbortsInternally) {
-    setRetryAbortsInternally(retryAbortsInternally, /* local = */ false);
+    setRetryAbortsInternally(retryAbortsInternally, /* local= */ false);
   }
 
   void setRetryAbortsInternally(boolean retryAbortsInternally, boolean local) {
@@ -1103,7 +1109,7 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setReturnCommitStats(boolean returnCommitStats) {
-    setReturnCommitStats(returnCommitStats, /* local = */ false);
+    setReturnCommitStats(returnCommitStats, /* local= */ false);
   }
 
   @VisibleForTesting
@@ -1365,7 +1371,8 @@ class ConnectionImpl implements Connection {
     SavepointSupport savepointSupport = getSavepointSupport();
     ConnectionPreconditions.checkState(
         savepointSupport.isSavepointCreationAllowed(),
-        "This connection does not allow the creation of savepoints. Current value of SavepointSupport: "
+        "This connection does not allow the creation of savepoints. Current value of"
+            + " SavepointSupport: "
             + savepointSupport);
     getCurrentUnitOfWorkOrStartNewUnitOfWork(SAVEPOINT_STATEMENT)
         .savepoint(checkValidIdentifier(name), getDialect());
@@ -2006,7 +2013,8 @@ class ConnectionImpl implements Connection {
         statement.getType() == StatementType.QUERY
             || (statement.getType() == StatementType.UPDATE
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
-        "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
+        "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning"
+            + " clause");
     boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
     QueryOption[] combinedOptions = concat(statement.getOptionsFromHints(), options);
     UnitOfWork transaction =
@@ -2091,20 +2099,20 @@ class ConnectionImpl implements Connection {
   private UnitOfWork maybeStartAutoDmlBatch(UnitOfWork transaction) {
     if (isInTransaction() && isAutoBatchDml() && !(transaction instanceof DmlBatch)) {
       // Automatically start a DML batch.
-      return startBatchDml(/* autoBatch = */ true);
+      return startBatchDml(/* autoBatch= */ true);
     }
     return transaction;
   }
 
   UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
     return getCurrentUnitOfWorkOrStartNewUnitOfWork(
-        StatementType.UNKNOWN, /* parsedStatement = */ null, /* internalMetadataQuery = */ false);
+        StatementType.UNKNOWN, /* parsedStatement= */ null, /* internalMetadataQuery= */ false);
   }
 
   private UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
       @Nonnull ParsedStatement parsedStatement) {
     return getCurrentUnitOfWorkOrStartNewUnitOfWork(
-        parsedStatement.getType(), parsedStatement, /* internalMetadataQuery = */ false);
+        parsedStatement.getType(), parsedStatement, /* internalMetadataQuery= */ false);
   }
 
   @VisibleForTesting
@@ -2130,19 +2138,19 @@ class ConnectionImpl implements Connection {
     if (isInternalMetadataQuery) {
       // Just return a temporary single-use transaction.
       return createNewUnitOfWork(
-          /* isInternalMetadataQuery = */ true,
-          /* forceSingleUse = */ true,
-          /* autoBatchDml = */ false);
+          /* isInternalMetadataQuery= */ true,
+          /* forceSingleUse= */ true,
+          /* autoBatchDml= */ false);
     }
     maybeAutoCommitOrFlushCurrentUnitOfWork(statementType, parsedStatement);
     if (this.currentUnitOfWork == null || !this.currentUnitOfWork.isActive()) {
       this.currentUnitOfWork =
           createNewUnitOfWork(
-              /* isInternalMetadataQuery = */ false,
-              /* forceSingleUse = */ statementType == StatementType.DDL
+              /* isInternalMetadataQuery= */ false,
+              /* forceSingleUse= */ statementType == StatementType.DDL
                   && getDdlInTransactionMode() != DdlInTransactionMode.FAIL
                   && !this.transactionBeginMarked,
-              /* autoBatchDml = */ false,
+              /* autoBatchDml= */ false,
               statementType);
     }
     return this.currentUnitOfWork;
@@ -2295,7 +2303,8 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
-        "This connection does not have an active transaction and the state of this connection does not allow any new transactions to be started");
+        "This connection does not have an active transaction and the state of this connection does"
+            + " not allow any new transactions to be started");
   }
 
   /** Pushes the current unit of work to the stack of nested transactions. */
@@ -2380,9 +2389,9 @@ class ConnectionImpl implements Connection {
     this.unitOfWorkType = UnitOfWorkType.DDL_BATCH;
     this.currentUnitOfWork =
         createNewUnitOfWork(
-            /* isInternalMetadataQuery = */ false,
-            /* forceSingleUse = */ false,
-            /* autoBatchDml = */ false);
+            /* isInternalMetadataQuery= */ false,
+            /* forceSingleUse= */ false,
+            /* autoBatchDml= */ false);
   }
 
   @Override
@@ -2395,7 +2404,7 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !(isInTransaction() && getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION),
         "Cannot start a DML batch when a read-only transaction is in progress");
-    startBatchDml(/* autoBatch = */ false);
+    startBatchDml(/* autoBatch= */ false);
   }
 
   private UnitOfWork startBatchDml(boolean autoBatch) {
@@ -2406,7 +2415,7 @@ class ConnectionImpl implements Connection {
     this.unitOfWorkType = UnitOfWorkType.DML_BATCH;
     return this.currentUnitOfWork =
         createNewUnitOfWork(
-            /* isInternalMetadataQuery = */ false, /* forceSingleUse = */ false, autoBatch);
+            /* isInternalMetadataQuery= */ false, /* forceSingleUse= */ false, autoBatch);
   }
 
   @Override

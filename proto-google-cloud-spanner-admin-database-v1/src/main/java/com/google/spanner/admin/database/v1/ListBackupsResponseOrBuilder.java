@@ -35,6 +35,7 @@ public interface ListBackupsResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Backup backups = 1;</code>
    */
   java.util.List<com.google.spanner.admin.database.v1.Backup> getBackupsList();
+
   /**
    *
    *
@@ -46,6 +47,7 @@ public interface ListBackupsResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Backup backups = 1;</code>
    */
   com.google.spanner.admin.database.v1.Backup getBackups(int index);
+
   /**
    *
    *
@@ -57,6 +59,7 @@ public interface ListBackupsResponseOrBuilder
    * <code>repeated .google.spanner.admin.database.v1.Backup backups = 1;</code>
    */
   int getBackupsCount();
+
   /**
    *
    *
@@ -69,6 +72,7 @@ public interface ListBackupsResponseOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.database.v1.BackupOrBuilder>
       getBackupsOrBuilderList();
+
   /**
    *
    *
@@ -95,6 +99,7 @@ public interface ListBackupsResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *

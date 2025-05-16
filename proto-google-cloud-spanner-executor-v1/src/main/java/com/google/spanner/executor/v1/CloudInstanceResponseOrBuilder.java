@@ -34,6 +34,7 @@ public interface CloudInstanceResponseOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.Instance listed_instances = 1;</code>
    */
   java.util.List<com.google.spanner.admin.instance.v1.Instance> getListedInstancesList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface CloudInstanceResponseOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.Instance listed_instances = 1;</code>
    */
   com.google.spanner.admin.instance.v1.Instance getListedInstances(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface CloudInstanceResponseOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.Instance listed_instances = 1;</code>
    */
   int getListedInstancesCount();
+
   /**
    *
    *
@@ -65,6 +68,7 @@ public interface CloudInstanceResponseOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.instance.v1.InstanceOrBuilder>
       getListedInstancesOrBuilderList();
+
   /**
    *
    *
@@ -89,6 +93,7 @@ public interface CloudInstanceResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *
@@ -115,6 +120,7 @@ public interface CloudInstanceResponseOrBuilder
    * @return Whether the instance field is set.
    */
   boolean hasInstance();
+
   /**
    *
    *
@@ -127,6 +133,7 @@ public interface CloudInstanceResponseOrBuilder
    * @return The instance.
    */
   com.google.spanner.admin.instance.v1.Instance getInstance();
+
   /**
    *
    *

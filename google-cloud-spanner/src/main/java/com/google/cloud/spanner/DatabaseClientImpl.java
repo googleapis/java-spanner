@@ -59,11 +59,11 @@ class DatabaseClientImpl implements DatabaseClient {
     this(
         "",
         pool,
-        /* useMultiplexedSessionBlindWrite = */ false,
-        /* multiplexedSessionDatabaseClient = */ null,
+        /* useMultiplexedSessionBlindWrite= */ false,
+        /* multiplexedSessionDatabaseClient= */ null,
         /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
-        /* useMultiplexedSessionForRW = */ false,
+        /* useMultiplexedSessionForRW= */ false,
         Attributes.empty());
   }
 
@@ -72,11 +72,11 @@ class DatabaseClientImpl implements DatabaseClient {
     this(
         clientId,
         pool,
-        /* useMultiplexedSessionBlindWrite = */ false,
-        /* multiplexedSessionDatabaseClient = */ null,
+        /* useMultiplexedSessionBlindWrite= */ false,
+        /* multiplexedSessionDatabaseClient= */ null,
         /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
-        /* useMultiplexedSessionForRW = */ false,
+        /* useMultiplexedSessionForRW= */ false,
         Attributes.empty());
   }
 

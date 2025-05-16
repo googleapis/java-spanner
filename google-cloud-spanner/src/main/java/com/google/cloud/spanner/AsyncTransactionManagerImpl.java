@@ -76,14 +76,27 @@ final class AsyncTransactionManagerImpl
   @Override
   public TransactionContextFutureImpl beginAsync() {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    return new TransactionContextFutureImpl(this, internalBeginAsync(true));
+    return new TransactionContextFutureImpl(this, internalBeginAsync(true, ByteString.EMPTY));
   }
 
-  private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
+  @Override
+  public TransactionContextFutureImpl beginAsync(AbortedException exception) {
+    Preconditions.checkState(txn == null, "begin can only be called once");
+    Preconditions.checkNotNull(exception, "AbortedException from the previous attempt is required");
+    ByteString abortedTransactionId =
+        exception.getTransactionID() != null ? exception.getTransactionID() : ByteString.EMPTY;
+    return new TransactionContextFutureImpl(this, internalBeginAsync(true, abortedTransactionId));
+  }
+
+  private ApiFuture<TransactionContext> internalBeginAsync(
+      boolean firstAttempt, ByteString abortedTransactionID) {
     txnState = TransactionState.STARTED;
 
     // Determine the latest transactionId when using a multiplexed session.
     ByteString multiplexedSessionPreviousTransactionId = ByteString.EMPTY;
+    if (firstAttempt && session.getIsMultiplexed()) {
+      multiplexedSessionPreviousTransactionId = abortedTransactionID;
+    }
     if (txn != null && session.getIsMultiplexed() && !firstAttempt) {
       // Use the current transactionId if available, otherwise fallback to the previous aborted
       // transactionId.
@@ -93,7 +106,7 @@ final class AsyncTransactionManagerImpl
 
     txn =
         session.newTransaction(
-            options, /* previousTransactionId = */ multiplexedSessionPreviousTransactionId);
+            options, /* previousTransactionId= */ multiplexedSessionPreviousTransactionId);
     if (firstAttempt) {
       session.setActive(this);
     }
@@ -187,7 +200,7 @@ final class AsyncTransactionManagerImpl
       throw new IllegalStateException(
           "resetForRetry can only be called if the previous attempt aborted");
     }
-    return new TransactionContextFutureImpl(this, internalBeginAsync(false));
+    return new TransactionContextFutureImpl(this, internalBeginAsync(false, ByteString.EMPTY));
   }
 
   @Override

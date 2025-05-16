@@ -33,6 +33,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     // @@protoc_insertion_point(message_implements:google.spanner.v1.ExecuteBatchDmlRequest)
     ExecuteBatchDmlRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ExecuteBatchDmlRequest.newBuilder() to construct.
   private ExecuteBatchDmlRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -81,6 +82,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * @return The sql.
      */
     java.lang.String getSql();
+
     /**
      *
      *
@@ -117,6 +119,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * @return Whether the params field is set.
      */
     boolean hasParams();
+
     /**
      *
      *
@@ -140,6 +143,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * @return The params.
      */
     com.google.protobuf.Struct getParams();
+
     /**
      *
      *
@@ -181,6 +185,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
     int getParamTypesCount();
+
     /**
      *
      *
@@ -200,9 +205,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
     boolean containsParamTypes(java.lang.String key);
+
     /** Use {@link #getParamTypesMap()} instead. */
     @java.lang.Deprecated
     java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes();
+
     /**
      *
      *
@@ -222,6 +229,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
     java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap();
+
     /**
      *
      *
@@ -245,6 +253,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         java.lang.String key,
         /* nullable */
         com.google.spanner.v1.Type defaultValue);
+
     /**
      *
      *
@@ -265,6 +274,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      */
     com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key);
   }
+
   /**
    *
    *
@@ -279,6 +289,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       // @@protoc_insertion_point(message_implements:google.spanner.v1.ExecuteBatchDmlRequest.Statement)
       StatementOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use Statement.newBuilder() to construct.
     private Statement(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -326,6 +337,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object sql_ = "";
+
     /**
      *
      *
@@ -349,6 +361,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return s;
       }
     }
+
     /**
      *
      *
@@ -375,6 +388,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
     public static final int PARAMS_FIELD_NUMBER = 2;
     private com.google.protobuf.Struct params_;
+
     /**
      *
      *
@@ -401,6 +415,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public boolean hasParams() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -427,6 +442,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public com.google.protobuf.Struct getParams() {
       return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
     }
+
     /**
      *
      *
@@ -482,6 +498,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public int getParamTypesCount() {
       return internalGetParamTypes().getMap().size();
     }
+
     /**
      *
      *
@@ -507,12 +524,14 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return internalGetParamTypes().getMap().containsKey(key);
     }
+
     /** Use {@link #getParamTypesMap()} instead. */
     @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
       return getParamTypesMap();
     }
+
     /**
      *
      *
@@ -535,6 +554,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
       return internalGetParamTypes().getMap();
     }
+
     /**
      *
      *
@@ -565,6 +585,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           internalGetParamTypes().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
+
     /**
      *
      *
@@ -788,6 +809,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -1046,6 +1068,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       private int bitField0_;
 
       private java.lang.Object sql_ = "";
+
       /**
        *
        *
@@ -1068,6 +1091,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -1090,6 +1114,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -1111,6 +1136,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1128,6 +1154,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1157,6 +1184,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
               com.google.protobuf.Struct.Builder,
               com.google.protobuf.StructOrBuilder>
           paramsBuilder_;
+
       /**
        *
        *
@@ -1182,6 +1210,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       public boolean hasParams() {
         return ((bitField0_ & 0x00000002) != 0);
       }
+
       /**
        *
        *
@@ -1211,6 +1240,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           return paramsBuilder_.getMessage();
         }
       }
+
       /**
        *
        *
@@ -1244,6 +1274,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1274,6 +1305,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1312,6 +1344,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         }
         return this;
       }
+
       /**
        *
        *
@@ -1342,6 +1375,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1367,6 +1401,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         onChanged();
         return getParamsFieldBuilder().getBuilder();
       }
+
       /**
        *
        *
@@ -1394,6 +1429,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
         }
       }
+
       /**
        *
        *
@@ -1447,7 +1483,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             defaultEntry() {
           return ParamTypesDefaultEntryHolder.defaultEntry;
         }
-      };
+      }
+      ;
 
       private static final ParamTypesConverter paramTypesConverter = new ParamTypesConverter();
 
@@ -1487,6 +1524,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       public int getParamTypesCount() {
         return internalGetParamTypes().ensureBuilderMap().size();
       }
+
       /**
        *
        *
@@ -1512,12 +1550,14 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         }
         return internalGetParamTypes().ensureBuilderMap().containsKey(key);
       }
+
       /** Use {@link #getParamTypesMap()} instead. */
       @java.lang.Override
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
         return getParamTypesMap();
       }
+
       /**
        *
        *
@@ -1540,6 +1580,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
         return internalGetParamTypes().getImmutableMap();
       }
+
       /**
        *
        *
@@ -1570,6 +1611,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             internalGetMutableParamTypes().ensureBuilderMap();
         return map.containsKey(key) ? paramTypesConverter.build(map.get(key)) : defaultValue;
       }
+
       /**
        *
        *
@@ -1606,6 +1648,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         internalGetMutableParamTypes().clear();
         return this;
       }
+
       /**
        *
        *
@@ -1631,12 +1674,14 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         internalGetMutableParamTypes().ensureBuilderMap().remove(key);
         return this;
       }
+
       /** Use alternate mutation accessors instead. */
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getMutableParamTypes() {
         bitField0_ |= 0x00000004;
         return internalGetMutableParamTypes().ensureMessageMap();
       }
+
       /**
        *
        *
@@ -1666,6 +1711,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         bitField0_ |= 0x00000004;
         return this;
       }
+
       /**
        *
        *
@@ -1696,6 +1742,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         bitField0_ |= 0x00000004;
         return this;
       }
+
       /**
        *
        *
@@ -1798,6 +1845,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object session_ = "";
+
   /**
    *
    *
@@ -1823,6 +1871,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       return s;
     }
   }
+
   /**
    *
    *
@@ -1851,6 +1900,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   public static final int TRANSACTION_FIELD_NUMBER = 2;
   private com.google.spanner.v1.TransactionSelector transaction_;
+
   /**
    *
    *
@@ -1872,6 +1922,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
   public boolean hasTransaction() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -1895,6 +1946,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
         : transaction_;
   }
+
   /**
    *
    *
@@ -1921,6 +1973,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement> statements_;
+
   /**
    *
    *
@@ -1942,6 +1995,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       getStatementsList() {
     return statements_;
   }
+
   /**
    *
    *
@@ -1963,6 +2017,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       getStatementsOrBuilderList() {
     return statements_;
   }
+
   /**
    *
    *
@@ -1983,6 +2038,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
   public int getStatementsCount() {
     return statements_.size();
   }
+
   /**
    *
    *
@@ -2003,6 +2059,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
   public com.google.spanner.v1.ExecuteBatchDmlRequest.Statement getStatements(int index) {
     return statements_.get(index);
   }
+
   /**
    *
    *
@@ -2027,6 +2084,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   public static final int SEQNO_FIELD_NUMBER = 4;
   private long seqno_ = 0L;
+
   /**
    *
    *
@@ -2052,6 +2110,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   public static final int REQUEST_OPTIONS_FIELD_NUMBER = 5;
   private com.google.spanner.v1.RequestOptions requestOptions_;
+
   /**
    *
    *
@@ -2067,6 +2126,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
   public boolean hasRequestOptions() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -2084,6 +2144,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
         : requestOptions_;
   }
+
   /**
    *
    *
@@ -2102,6 +2163,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   public static final int LAST_STATEMENTS_FIELD_NUMBER = 6;
   private boolean lastStatements_ = false;
+
   /**
    *
    *
@@ -2342,6 +2404,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -2663,6 +2726,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     private int bitField0_;
 
     private java.lang.Object session_ = "";
+
     /**
      *
      *
@@ -2687,6 +2751,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -2711,6 +2776,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -2734,6 +2800,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2753,6 +2820,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2784,6 +2852,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             com.google.spanner.v1.TransactionSelector.Builder,
             com.google.spanner.v1.TransactionSelectorOrBuilder>
         transactionBuilder_;
+
     /**
      *
      *
@@ -2804,6 +2873,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public boolean hasTransaction() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -2830,6 +2900,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return transactionBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -2858,6 +2929,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2884,6 +2956,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2917,6 +2990,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -2942,6 +3016,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2962,6 +3037,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2986,6 +3062,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             : transaction_;
       }
     }
+
     /**
      *
      *
@@ -3060,6 +3137,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return statementsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -3083,6 +3161,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return statementsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -3106,6 +3185,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return statementsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -3136,6 +3216,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3163,6 +3244,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3192,6 +3274,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3222,6 +3305,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3249,6 +3333,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3276,6 +3361,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3304,6 +3390,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3330,6 +3417,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3356,6 +3444,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3376,6 +3465,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         int index) {
       return getStatementsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -3400,6 +3490,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return statementsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -3424,6 +3515,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return java.util.Collections.unmodifiableList(statements_);
       }
     }
+
     /**
      *
      *
@@ -3444,6 +3536,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       return getStatementsFieldBuilder()
           .addBuilder(com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -3466,6 +3559,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           .addBuilder(
               index, com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -3505,6 +3599,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     }
 
     private long seqno_;
+
     /**
      *
      *
@@ -3527,6 +3622,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public long getSeqno() {
       return seqno_;
     }
+
     /**
      *
      *
@@ -3553,6 +3649,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3584,6 +3681,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             com.google.spanner.v1.RequestOptions.Builder,
             com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
+
     /**
      *
      *
@@ -3598,6 +3696,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public boolean hasRequestOptions() {
       return ((bitField0_ & 0x00000010) != 0);
     }
+
     /**
      *
      *
@@ -3618,6 +3717,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return requestOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3640,6 +3740,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3659,6 +3760,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3686,6 +3788,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -3705,6 +3808,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3719,6 +3823,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3737,6 +3842,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             : requestOptions_;
       }
     }
+
     /**
      *
      *
@@ -3764,6 +3870,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     }
 
     private boolean lastStatements_;
+
     /**
      *
      *
@@ -3787,6 +3894,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public boolean getLastStatements() {
       return lastStatements_;
     }
+
     /**
      *
      *
@@ -3814,6 +3922,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *

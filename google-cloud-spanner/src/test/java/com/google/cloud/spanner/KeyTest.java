@@ -26,6 +26,7 @@ import com.google.common.testing.EqualsTester;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import java.math.BigDecimal;
+import java.util.UUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -51,6 +52,7 @@ public class KeyTest {
     String numeric = "3.141592";
     String timestamp = "2015-09-15T00:00:00Z";
     String date = "2015-09-15";
+    String uuid = UUID.randomUUID().toString();
     String json = "{\"color\":\"red\",\"value\":\"#f00\"}";
     k =
         Key.of(
@@ -65,8 +67,9 @@ public class KeyTest {
             json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
-            Date.parseDate(date));
-    assertThat(k.size()).isEqualTo(12);
+            Date.parseDate(date),
+            UUID.fromString(uuid));
+    assertThat(k.size()).isEqualTo(13);
     assertThat(k.getParts())
         .containsExactly(
             null,
@@ -80,7 +83,8 @@ public class KeyTest {
             json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
-            Date.parseDate(date))
+            Date.parseDate(date),
+            UUID.fromString(uuid))
         .inOrder();
 
     // Singleton null key.
@@ -94,6 +98,7 @@ public class KeyTest {
     String numeric = "3.141592";
     String timestamp = "2015-09-15T00:00:00Z";
     String date = "2015-09-15";
+    String uuid = UUID.randomUUID().toString();
     String json = "{\"color\":\"red\",\"value\":\"#f00\"}";
     Key k =
         Key.newBuilder()
@@ -109,8 +114,9 @@ public class KeyTest {
             .append(ByteArray.copyFrom("y"))
             .append(Timestamp.parseTimestamp(timestamp))
             .append(Date.parseDate(date))
+            .append(UUID.fromString(uuid))
             .build();
-    assertThat(k.size()).isEqualTo(12);
+    assertThat(k.size()).isEqualTo(13);
     assertThat(k.getParts())
         .containsExactly(
             null,
@@ -124,7 +130,8 @@ public class KeyTest {
             json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
-            Date.parseDate(date))
+            Date.parseDate(date),
+            UUID.fromString(uuid))
         .inOrder();
   }
 
@@ -153,6 +160,8 @@ public class KeyTest {
         .isEqualTo("[" + timestamp + "]");
     String date = "2015-09-15";
     assertThat(Key.of(Date.parseDate(date)).toString()).isEqualTo("[" + date + "]");
+    String uuid = UUID.randomUUID().toString();
+    assertThat(Key.of(UUID.fromString(uuid)).toString()).isEqualTo("[" + uuid + "]");
     assertThat(Key.of(1, 2, 3).toString()).isEqualTo("[1,2,3]");
   }
 
@@ -173,6 +182,7 @@ public class KeyTest {
         Key.newBuilder().append((ByteArray) null).build(),
         Key.newBuilder().append((Timestamp) null).build(),
         Key.newBuilder().append((Date) null).build(),
+        Key.newBuilder().append((UUID) null).build(),
         Key.newBuilder().appendObject(null).build());
 
     tester.addEqualityGroup(Key.of(true), Key.newBuilder().append(true).build());
@@ -197,6 +207,8 @@ public class KeyTest {
     tester.addEqualityGroup(Key.of(t), Key.newBuilder().append(t).build());
     Date d = Date.parseDate("2016-09-15");
     tester.addEqualityGroup(Key.of(d), Key.newBuilder().append(d).build());
+    UUID uuid = UUID.randomUUID();
+    tester.addEqualityGroup(Key.of(uuid), Key.newBuilder().append(uuid).build());
     tester.addEqualityGroup(Key.of("a", 2, null));
 
     tester.testEquals();
@@ -215,6 +227,7 @@ public class KeyTest {
     reserializeAndAssert(Key.of(ByteArray.copyFrom("xyz")));
     reserializeAndAssert(Key.of(Timestamp.parseTimestamp("2015-09-15T00:00:00Z")));
     reserializeAndAssert(Key.of(Date.parseDate("2015-09-15")));
+    reserializeAndAssert(Key.of(UUID.randomUUID()));
     reserializeAndAssert(Key.of(1, 2, 3));
   }
 
@@ -222,6 +235,7 @@ public class KeyTest {
   public void toProto() {
     String timestamp = "2015-09-15T00:00:00Z";
     String date = "2015-09-15";
+    String uuid = UUID.randomUUID().toString();
     Key k =
         Key.newBuilder()
             .append((Boolean) null)
@@ -236,6 +250,7 @@ public class KeyTest {
             .append(ByteArray.copyFrom("y"))
             .append(Timestamp.parseTimestamp(timestamp))
             .append(Date.parseDate(date))
+            .append(UUID.fromString(uuid))
             .build();
     ListValue.Builder builder = ListValue.newBuilder();
     builder.addValuesBuilder().setNullValue(NullValue.NULL_VALUE);
@@ -250,6 +265,7 @@ public class KeyTest {
     builder.addValuesBuilder().setStringValue("eQ==");
     builder.addValuesBuilder().setStringValue(timestamp);
     builder.addValuesBuilder().setStringValue(date);
+    builder.addValuesBuilder().setStringValue(uuid);
     assertThat(k.toProto()).isEqualTo(builder.build());
   }
 }

@@ -115,8 +115,8 @@ public class ITProtoColumnTest {
                         + "  ProtoMessageArray   ARRAY<examples.spanner.music.SingerInfo>,"
                         + "  ProtoEnumArray  ARRAY<examples.spanner.music.Genre>,"
                         + "  ) PRIMARY KEY (RowID)",
-                    "CREATE INDEX SingerByNationalityAndGenre ON Singers(SingerNationality, SingerGenre)"
-                        + "  STORING (SingerId, FirstName, LastName)"))
+                    "CREATE INDEX SingerByNationalityAndGenre ON Singers(SingerNationality,"
+                        + " SingerGenre)  STORING (SingerId, FirstName, LastName)"))
             .get(5, TimeUnit.MINUTES);
 
     assertEquals(databaseID.getDatabase(), createdDatabase.getId().getDatabase());
@@ -283,7 +283,9 @@ public class ITProtoColumnTest {
             transaction -> {
               Statement statement1 =
                   Statement.newBuilder(
-                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (1, \"FirstName1\", \"LastName1\", @singerInfo, @singerGenre)")
+                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo,"
+                              + " SingerGenre) VALUES (1, \"FirstName1\", \"LastName1\","
+                              + " @singerInfo, @singerGenre)")
                       .bind("singerInfo")
                       .to(singerInfo1)
                       .bind("singerGenre")
@@ -292,7 +294,9 @@ public class ITProtoColumnTest {
 
               Statement statement2 =
                   Statement.newBuilder(
-                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (2, \"FirstName2\", \"LastName2\", @singerInfo, @singerGenre)")
+                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo,"
+                              + " SingerGenre) VALUES (2, \"FirstName2\", \"LastName2\","
+                              + " @singerInfo, @singerGenre)")
                       .bind("singerInfo")
                       .to(singerInfo2)
                       .bind("singerGenre")
@@ -353,8 +357,8 @@ public class ITProtoColumnTest {
             .singleUse()
             .executeQuery(
                 Statement.newBuilder(
-                        "SELECT SingerId, SingerInfo, SingerGenre FROM "
-                            + "Singers WHERE SingerInfo.Nationality=@country AND SingerGenre=@genre")
+                        "SELECT SingerId, SingerInfo, SingerGenre FROM Singers WHERE"
+                            + " SingerInfo.Nationality=@country AND SingerGenre=@genre")
                     .bind("country")
                     .to("Country2")
                     .bind("genre")

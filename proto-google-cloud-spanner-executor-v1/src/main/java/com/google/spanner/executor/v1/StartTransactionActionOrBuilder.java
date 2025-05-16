@@ -37,6 +37,7 @@ public interface StartTransactionActionOrBuilder
    * @return Whether the concurrency field is set.
    */
   boolean hasConcurrency();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface StartTransactionActionOrBuilder
    * @return The concurrency.
    */
   com.google.spanner.executor.v1.Concurrency getConcurrency();
+
   /**
    *
    *
@@ -73,6 +75,7 @@ public interface StartTransactionActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   java.util.List<com.google.spanner.executor.v1.TableMetadata> getTableList();
+
   /**
    *
    *
@@ -84,6 +87,7 @@ public interface StartTransactionActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   com.google.spanner.executor.v1.TableMetadata getTable(int index);
+
   /**
    *
    *
@@ -95,6 +99,7 @@ public interface StartTransactionActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   int getTableCount();
+
   /**
    *
    *
@@ -107,6 +112,7 @@ public interface StartTransactionActionOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.TableMetadataOrBuilder>
       getTableOrBuilderList();
+
   /**
    *
    *
@@ -132,6 +138,7 @@ public interface StartTransactionActionOrBuilder
    * @return The transactionSeed.
    */
   java.lang.String getTransactionSeed();
+
   /**
    *
    *
@@ -159,6 +166,7 @@ public interface StartTransactionActionOrBuilder
    * @return Whether the executionOptions field is set.
    */
   boolean hasExecutionOptions();
+
   /**
    *
    *
@@ -172,6 +180,7 @@ public interface StartTransactionActionOrBuilder
    * @return The executionOptions.
    */
   com.google.spanner.executor.v1.TransactionExecutionOptions getExecutionOptions();
+
   /**
    *
    *

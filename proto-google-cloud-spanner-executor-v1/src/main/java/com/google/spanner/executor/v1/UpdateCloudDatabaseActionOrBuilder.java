@@ -36,6 +36,7 @@ public interface UpdateCloudDatabaseActionOrBuilder
    * @return The instanceId.
    */
   java.lang.String getInstanceId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface UpdateCloudDatabaseActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface UpdateCloudDatabaseActionOrBuilder
    * @return The databaseName.
    */
   java.lang.String getDatabaseName();
+
   /**
    *
    *

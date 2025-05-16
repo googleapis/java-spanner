@@ -124,9 +124,11 @@ public final class ITDmlReturningTest {
 
   private String getInsertDmlReturningTemplate() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      return "INSERT INTO T (\"K\", \"V\") VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4) RETURNING *";
+      return "INSERT INTO T (\"K\", \"V\") VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3),"
+          + " ('%d-boo4', 4) RETURNING *";
     }
-    return "INSERT INTO T (K, V) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4) THEN RETURN *";
+    return "INSERT INTO T (K, V) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4',"
+        + " 4) THEN RETURN *";
   }
 
   private String getUpdateDmlReturningTemplate() {

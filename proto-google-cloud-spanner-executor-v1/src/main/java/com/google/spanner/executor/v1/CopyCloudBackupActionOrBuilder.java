@@ -36,6 +36,7 @@ public interface CopyCloudBackupActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface CopyCloudBackupActionOrBuilder
    * @return The instanceId.
    */
   java.lang.String getInstanceId();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface CopyCloudBackupActionOrBuilder
    * @return The backupId.
    */
   java.lang.String getBackupId();
+
   /**
    *
    *
@@ -113,6 +116,7 @@ public interface CopyCloudBackupActionOrBuilder
    * @return The sourceBackup.
    */
   java.lang.String getSourceBackup();
+
   /**
    *
    *
@@ -142,6 +146,7 @@ public interface CopyCloudBackupActionOrBuilder
    * @return Whether the expireTime field is set.
    */
   boolean hasExpireTime();
+
   /**
    *
    *
@@ -156,6 +161,7 @@ public interface CopyCloudBackupActionOrBuilder
    * @return The expireTime.
    */
   com.google.protobuf.Timestamp getExpireTime();
+
   /**
    *
    *

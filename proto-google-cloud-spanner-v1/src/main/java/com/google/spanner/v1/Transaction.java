@@ -33,6 +33,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.v1.Transaction)
     TransactionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use Transaction.newBuilder() to construct.
   private Transaction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -66,6 +67,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
   private int bitField0_;
   public static final int ID_FIELD_NUMBER = 1;
   private com.google.protobuf.ByteString id_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -91,6 +93,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
 
   public static final int READ_TIMESTAMP_FIELD_NUMBER = 2;
   private com.google.protobuf.Timestamp readTimestamp_;
+
   /**
    *
    *
@@ -111,6 +114,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasReadTimestamp() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -133,6 +137,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
         ? com.google.protobuf.Timestamp.getDefaultInstance()
         : readTimestamp_;
   }
+
   /**
    *
    *
@@ -156,6 +161,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
 
   public static final int PRECOMMIT_TOKEN_FIELD_NUMBER = 3;
   private com.google.spanner.v1.MultiplexedSessionPrecommitToken precommitToken_;
+
   /**
    *
    *
@@ -179,6 +185,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasPrecommitToken() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -204,6 +211,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance()
         : precommitToken_;
   }
+
   /**
    *
    *
@@ -414,6 +422,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -644,6 +653,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     private int bitField0_;
 
     private com.google.protobuf.ByteString id_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -666,6 +676,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     public com.google.protobuf.ByteString getId() {
       return id_;
     }
+
     /**
      *
      *
@@ -694,6 +705,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -725,6 +737,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         readTimestampBuilder_;
+
     /**
      *
      *
@@ -744,6 +757,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasReadTimestamp() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -769,6 +783,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
         return readTimestampBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -796,6 +811,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -820,6 +836,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -852,6 +869,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -876,6 +894,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -895,6 +914,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getReadTimestampFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -918,6 +938,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
             : readTimestamp_;
       }
     }
+
     /**
      *
      *
@@ -955,6 +976,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.MultiplexedSessionPrecommitToken.Builder,
             com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder>
         precommitTokenBuilder_;
+
     /**
      *
      *
@@ -977,6 +999,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasPrecommitToken() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1005,6 +1028,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
         return precommitTokenBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1035,6 +1059,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1063,6 +1088,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1100,6 +1126,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1127,6 +1154,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1150,6 +1178,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getPrecommitTokenFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1177,6 +1206,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
             : precommitToken_;
       }
     }
+
     /**
      *
      *

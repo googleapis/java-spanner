@@ -36,6 +36,7 @@ public interface QueryPlanOrBuilder
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
   java.util.List<com.google.spanner.v1.PlanNode> getPlanNodesList();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface QueryPlanOrBuilder
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
   com.google.spanner.v1.PlanNode getPlanNodes(int index);
+
   /**
    *
    *
@@ -60,6 +62,7 @@ public interface QueryPlanOrBuilder
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
   int getPlanNodesCount();
+
   /**
    *
    *
@@ -72,6 +75,7 @@ public interface QueryPlanOrBuilder
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
   java.util.List<? extends com.google.spanner.v1.PlanNodeOrBuilder> getPlanNodesOrBuilderList();
+
   /**
    *
    *

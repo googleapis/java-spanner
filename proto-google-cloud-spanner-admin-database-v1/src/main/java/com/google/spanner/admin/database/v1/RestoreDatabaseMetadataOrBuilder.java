@@ -36,6 +36,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return The enum numeric value on the wire for sourceType.
    */
   int getSourceTypeValue();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return Whether the backupInfo field is set.
    */
   boolean hasBackupInfo();
+
   /**
    *
    *
@@ -98,6 +101,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return The backupInfo.
    */
   com.google.spanner.admin.database.v1.BackupInfo getBackupInfo();
+
   /**
    *
    *
@@ -123,6 +127,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return Whether the progress field is set.
    */
   boolean hasProgress();
+
   /**
    *
    *
@@ -137,6 +142,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return The progress.
    */
   com.google.spanner.admin.database.v1.OperationProgress getProgress();
+
   /**
    *
    *
@@ -173,6 +179,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return Whether the cancelTime field is set.
    */
   boolean hasCancelTime();
+
   /**
    *
    *
@@ -196,6 +203,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return The cancelTime.
    */
   com.google.protobuf.Timestamp getCancelTime();
+
   /**
    *
    *
@@ -240,6 +248,7 @@ public interface RestoreDatabaseMetadataOrBuilder
    * @return The optimizeDatabaseOperationName.
    */
   java.lang.String getOptimizeDatabaseOperationName();
+
   /**
    *
    *

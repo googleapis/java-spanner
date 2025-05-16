@@ -185,9 +185,7 @@ public class ITQueryOptionsTest {
     // Version '1' should work.
     // Statistics package 'custom-package' should work.
     try (Spanner spanner =
-        env.getTestHelper()
-            .getOptions()
-            .toBuilder()
+        env.getTestHelper().getOptions().toBuilder()
             .setDefaultQueryOptions(
                 db.getId(),
                 QueryOptions.newBuilder()
@@ -205,9 +203,7 @@ public class ITQueryOptionsTest {
     }
     // Version 'latest' should also work.
     try (Spanner spanner =
-        env.getTestHelper()
-            .getOptions()
-            .toBuilder()
+        env.getTestHelper().getOptions().toBuilder()
             .setDefaultQueryOptions(
                 db.getId(), QueryOptions.newBuilder().setOptimizerVersion("latest").build())
             .build()
@@ -221,9 +217,7 @@ public class ITQueryOptionsTest {
     }
     // Version '100000' should not work.
     try (Spanner spanner =
-        env.getTestHelper()
-            .getOptions()
-            .toBuilder()
+        env.getTestHelper().getOptions().toBuilder()
             .setDefaultQueryOptions(
                 db.getId(), QueryOptions.newBuilder().setOptimizerVersion("100000").build())
             .build()

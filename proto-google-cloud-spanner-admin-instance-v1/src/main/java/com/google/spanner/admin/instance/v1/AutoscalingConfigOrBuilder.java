@@ -38,6 +38,7 @@ public interface AutoscalingConfigOrBuilder
    * @return Whether the autoscalingLimits field is set.
    */
   boolean hasAutoscalingLimits();
+
   /**
    *
    *
@@ -52,6 +53,7 @@ public interface AutoscalingConfigOrBuilder
    * @return The autoscalingLimits.
    */
   com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits getAutoscalingLimits();
+
   /**
    *
    *
@@ -80,6 +82,7 @@ public interface AutoscalingConfigOrBuilder
    * @return Whether the autoscalingTargets field is set.
    */
   boolean hasAutoscalingTargets();
+
   /**
    *
    *
@@ -94,6 +97,7 @@ public interface AutoscalingConfigOrBuilder
    * @return The autoscalingTargets.
    */
   com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets getAutoscalingTargets();
+
   /**
    *
    *
@@ -129,6 +133,7 @@ public interface AutoscalingConfigOrBuilder
    */
   java.util.List<com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption>
       getAsymmetricAutoscalingOptionsList();
+
   /**
    *
    *
@@ -150,6 +155,7 @@ public interface AutoscalingConfigOrBuilder
    */
   com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
       getAsymmetricAutoscalingOptions(int index);
+
   /**
    *
    *
@@ -170,6 +176,7 @@ public interface AutoscalingConfigOrBuilder
    * </code>
    */
   int getAsymmetricAutoscalingOptionsCount();
+
   /**
    *
    *
@@ -194,6 +201,7 @@ public interface AutoscalingConfigOrBuilder
               com.google.spanner.admin.instance.v1.AutoscalingConfig
                   .AsymmetricAutoscalingOptionOrBuilder>
       getAsymmetricAutoscalingOptionsOrBuilderList();
+
   /**
    *
    *

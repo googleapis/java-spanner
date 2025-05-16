@@ -33,6 +33,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.DataChangeRecord)
     DataChangeRecordOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use DataChangeRecord.newBuilder() to construct.
   private DataChangeRecord(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -87,6 +88,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
      * @return The name.
      */
     java.lang.String getName();
+
     /**
      *
      *
@@ -112,6 +114,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
      * @return The type.
      */
     java.lang.String getType();
+
     /**
      *
      *
@@ -151,6 +154,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
      */
     long getOrdinalPosition();
   }
+
   /**
    *
    *
@@ -165,6 +169,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.DataChangeRecord.ColumnType)
       ColumnTypeOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use ColumnType.newBuilder() to construct.
     private ColumnType(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -200,6 +205,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object name_ = "";
+
     /**
      *
      *
@@ -223,6 +229,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return s;
       }
     }
+
     /**
      *
      *
@@ -251,6 +258,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object type_ = "";
+
     /**
      *
      *
@@ -274,6 +282,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return s;
       }
     }
+
     /**
      *
      *
@@ -300,6 +309,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
     public static final int IS_PRIMARY_KEY_FIELD_NUMBER = 3;
     private boolean isPrimaryKey_ = false;
+
     /**
      *
      *
@@ -318,6 +328,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
     public static final int ORDINAL_POSITION_FIELD_NUMBER = 4;
     private long ordinalPosition_ = 0L;
+
     /**
      *
      *
@@ -522,6 +533,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -753,6 +765,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       private int bitField0_;
 
       private java.lang.Object name_ = "";
+
       /**
        *
        *
@@ -775,6 +788,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -797,6 +811,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -818,6 +833,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -835,6 +851,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -859,6 +876,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
 
       private java.lang.Object type_ = "";
+
       /**
        *
        *
@@ -881,6 +899,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -903,6 +922,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -924,6 +944,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -941,6 +962,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -965,6 +987,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
 
       private boolean isPrimaryKey_;
+
       /**
        *
        *
@@ -980,6 +1003,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       public boolean getIsPrimaryKey() {
         return isPrimaryKey_;
       }
+
       /**
        *
        *
@@ -999,6 +1023,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1018,6 +1043,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
 
       private long ordinalPosition_;
+
       /**
        *
        *
@@ -1033,6 +1059,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       public long getOrdinalPosition() {
         return ordinalPosition_;
       }
+
       /**
        *
        *
@@ -1052,6 +1079,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1152,6 +1180,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
      * @return The keys.
      */
     java.lang.String getKeys();
+
     /**
      *
      *
@@ -1178,6 +1207,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
      * @return The newValues.
      */
     java.lang.String getNewValues();
+
     /**
      *
      *
@@ -1205,6 +1235,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
      * @return The oldValues.
      */
     java.lang.String getOldValues();
+
     /**
      *
      *
@@ -1219,6 +1250,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
      */
     com.google.protobuf.ByteString getOldValuesBytes();
   }
+
   /**
    *
    *
@@ -1233,6 +1265,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.DataChangeRecord.Mod)
       ModOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use Mod.newBuilder() to construct.
     private Mod(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -1269,6 +1302,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object keys_ = "";
+
     /**
      *
      *
@@ -1292,6 +1326,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return s;
       }
     }
+
     /**
      *
      *
@@ -1320,6 +1355,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object newValues_ = "";
+
     /**
      *
      *
@@ -1344,6 +1380,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return s;
       }
     }
+
     /**
      *
      *
@@ -1373,6 +1410,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object oldValues_ = "";
+
     /**
      *
      *
@@ -1397,6 +1435,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return s;
       }
     }
+
     /**
      *
      *
@@ -1601,6 +1640,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -1818,6 +1858,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       private int bitField0_;
 
       private java.lang.Object keys_ = "";
+
       /**
        *
        *
@@ -1840,6 +1881,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -1862,6 +1904,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -1883,6 +1926,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1900,6 +1944,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1924,6 +1969,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
 
       private java.lang.Object newValues_ = "";
+
       /**
        *
        *
@@ -1947,6 +1993,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -1970,6 +2017,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -1992,6 +2040,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2010,6 +2059,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2035,6 +2085,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
 
       private java.lang.Object oldValues_ = "";
+
       /**
        *
        *
@@ -2058,6 +2109,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -2081,6 +2133,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -2103,6 +2156,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2121,6 +2175,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2212,6 +2267,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
   private int bitField0_;
   public static final int COMMIT_TIME_FIELD_NUMBER = 1;
   private com.google.protobuf.Timestamp commitTime_;
+
   /**
    *
    *
@@ -2227,6 +2283,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
   public boolean hasCommitTime() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -2242,6 +2299,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
   public com.google.protobuf.Timestamp getCommitTime() {
     return commitTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : commitTime_;
   }
+
   /**
    *
    *
@@ -2260,6 +2318,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object recordSequence_ = "";
+
   /**
    *
    *
@@ -2283,6 +2342,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       return s;
     }
   }
+
   /**
    *
    *
@@ -2311,6 +2371,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object transactionId_ = "";
+
   /**
    *
    *
@@ -2335,6 +2396,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       return s;
     }
   }
+
   /**
    *
    *
@@ -2362,6 +2424,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   public static final int IS_LAST_RECORD_FIELD_NUMBER = 4;
   private boolean isLastRecord_ = false;
+
   /**
    *
    *
@@ -2383,6 +2446,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object table_ = "";
+
   /**
    *
    *
@@ -2406,6 +2470,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       return s;
     }
   }
+
   /**
    *
    *
@@ -2434,6 +2499,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.executor.v1.DataChangeRecord.ColumnType> columnTypes_;
+
   /**
    *
    *
@@ -2448,6 +2514,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       getColumnTypesList() {
     return columnTypes_;
   }
+
   /**
    *
    *
@@ -2463,6 +2530,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       getColumnTypesOrBuilderList() {
     return columnTypes_;
   }
+
   /**
    *
    *
@@ -2476,6 +2544,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
   public int getColumnTypesCount() {
     return columnTypes_.size();
   }
+
   /**
    *
    *
@@ -2489,6 +2558,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
   public com.google.spanner.executor.v1.DataChangeRecord.ColumnType getColumnTypes(int index) {
     return columnTypes_.get(index);
   }
+
   /**
    *
    *
@@ -2508,6 +2578,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.executor.v1.DataChangeRecord.Mod> mods_;
+
   /**
    *
    *
@@ -2521,6 +2592,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
   public java.util.List<com.google.spanner.executor.v1.DataChangeRecord.Mod> getModsList() {
     return mods_;
   }
+
   /**
    *
    *
@@ -2535,6 +2607,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       getModsOrBuilderList() {
     return mods_;
   }
+
   /**
    *
    *
@@ -2548,6 +2621,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
   public int getModsCount() {
     return mods_.size();
   }
+
   /**
    *
    *
@@ -2561,6 +2635,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
   public com.google.spanner.executor.v1.DataChangeRecord.Mod getMods(int index) {
     return mods_.get(index);
   }
+
   /**
    *
    *
@@ -2579,6 +2654,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object modType_ = "";
+
   /**
    *
    *
@@ -2602,6 +2678,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       return s;
     }
   }
+
   /**
    *
    *
@@ -2630,6 +2707,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object valueCaptureType_ = "";
+
   /**
    *
    *
@@ -2653,6 +2731,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       return s;
     }
   }
+
   /**
    *
    *
@@ -2679,6 +2758,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   public static final int RECORD_COUNT_FIELD_NUMBER = 10;
   private long recordCount_ = 0L;
+
   /**
    *
    *
@@ -2697,6 +2777,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   public static final int PARTITION_COUNT_FIELD_NUMBER = 11;
   private long partitionCount_ = 0L;
+
   /**
    *
    *
@@ -2717,6 +2798,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object transactionTag_ = "";
+
   /**
    *
    *
@@ -2740,6 +2822,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       return s;
     }
   }
+
   /**
    *
    *
@@ -2766,6 +2849,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
 
   public static final int IS_SYSTEM_TRANSACTION_FIELD_NUMBER = 13;
   private boolean isSystemTransaction_ = false;
+
   /**
    *
    *
@@ -3058,6 +3142,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -3524,6 +3609,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         commitTimeBuilder_;
+
     /**
      *
      *
@@ -3538,6 +3624,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     public boolean hasCommitTime() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -3558,6 +3645,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return commitTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3580,6 +3668,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3599,6 +3688,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3626,6 +3716,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -3645,6 +3736,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3659,6 +3751,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return getCommitTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3677,6 +3770,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
             : commitTime_;
       }
     }
+
     /**
      *
      *
@@ -3704,6 +3798,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private java.lang.Object recordSequence_ = "";
+
     /**
      *
      *
@@ -3726,6 +3821,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -3748,6 +3844,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -3769,6 +3866,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3786,6 +3884,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3810,6 +3909,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private java.lang.Object transactionId_ = "";
+
     /**
      *
      *
@@ -3833,6 +3933,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -3856,6 +3957,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -3878,6 +3980,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3896,6 +3999,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3921,6 +4025,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private boolean isLastRecord_;
+
     /**
      *
      *
@@ -3937,6 +4042,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     public boolean getIsLastRecord() {
       return isLastRecord_;
     }
+
     /**
      *
      *
@@ -3957,6 +4063,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3977,6 +4084,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private java.lang.Object table_ = "";
+
     /**
      *
      *
@@ -3999,6 +4107,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -4021,6 +4130,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -4042,6 +4152,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4059,6 +4170,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4118,6 +4230,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return columnTypesBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -4135,6 +4248,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return columnTypesBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -4152,6 +4266,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return columnTypesBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -4176,6 +4291,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4198,6 +4314,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4222,6 +4339,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4246,6 +4364,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4267,6 +4386,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4289,6 +4409,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4311,6 +4432,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4331,6 +4453,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4351,6 +4474,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4365,6 +4489,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         int index) {
       return getColumnTypesFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -4383,6 +4508,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return columnTypesBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -4402,6 +4528,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return java.util.Collections.unmodifiableList(columnTypes_);
       }
     }
+
     /**
      *
      *
@@ -4418,6 +4545,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           .addBuilder(
               com.google.spanner.executor.v1.DataChangeRecord.ColumnType.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -4435,6 +4563,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
               index,
               com.google.spanner.executor.v1.DataChangeRecord.ColumnType.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -4499,6 +4628,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return modsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -4515,6 +4645,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return modsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -4531,6 +4662,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return modsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -4553,6 +4685,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4573,6 +4706,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4595,6 +4729,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4617,6 +4752,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4637,6 +4773,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4657,6 +4794,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4677,6 +4815,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4696,6 +4835,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4715,6 +4855,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       }
       return this;
     }
+
     /**
      *
      *
@@ -4727,6 +4868,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     public com.google.spanner.executor.v1.DataChangeRecord.Mod.Builder getModsBuilder(int index) {
       return getModsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -4744,6 +4886,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return modsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -4761,6 +4904,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return java.util.Collections.unmodifiableList(mods_);
       }
     }
+
     /**
      *
      *
@@ -4774,6 +4918,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       return getModsFieldBuilder()
           .addBuilder(com.google.spanner.executor.v1.DataChangeRecord.Mod.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -4788,6 +4933,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
           .addBuilder(
               index, com.google.spanner.executor.v1.DataChangeRecord.Mod.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -4820,6 +4966,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private java.lang.Object modType_ = "";
+
     /**
      *
      *
@@ -4842,6 +4989,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -4864,6 +5012,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -4885,6 +5034,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4902,6 +5052,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4926,6 +5077,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private java.lang.Object valueCaptureType_ = "";
+
     /**
      *
      *
@@ -4948,6 +5100,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -4970,6 +5123,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -4991,6 +5145,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5008,6 +5163,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5032,6 +5188,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private long recordCount_;
+
     /**
      *
      *
@@ -5047,6 +5204,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     public long getRecordCount() {
       return recordCount_;
     }
+
     /**
      *
      *
@@ -5066,6 +5224,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5085,6 +5244,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private long partitionCount_;
+
     /**
      *
      *
@@ -5100,6 +5260,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     public long getPartitionCount() {
       return partitionCount_;
     }
+
     /**
      *
      *
@@ -5119,6 +5280,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5138,6 +5300,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private java.lang.Object transactionTag_ = "";
+
     /**
      *
      *
@@ -5160,6 +5323,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -5182,6 +5346,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -5203,6 +5368,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5220,6 +5386,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5244,6 +5411,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     }
 
     private boolean isSystemTransaction_;
+
     /**
      *
      *
@@ -5259,6 +5427,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
     public boolean getIsSystemTransaction() {
       return isSystemTransaction_;
     }
+
     /**
      *
      *
@@ -5278,6 +5447,7 @@ public final class DataChangeRecord extends com.google.protobuf.GeneratedMessage
       onChanged();
       return this;
     }
+
     /**
      *
      *

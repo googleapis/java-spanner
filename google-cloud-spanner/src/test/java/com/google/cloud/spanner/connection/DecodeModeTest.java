@@ -155,7 +155,8 @@ public class DecodeModeTest extends AbstractMockServerTest {
             exception
                 .getMessage()
                 .contains(
-                    "Executing queries with DecodeMode#DIRECT is not supported in read/write transactions."));
+                    "Executing queries with DecodeMode#DIRECT is not supported in read/write"
+                        + " transactions."));
       }
     }
   }

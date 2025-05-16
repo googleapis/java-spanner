@@ -218,7 +218,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         statement.isQuery()
             || (statement.isUpdate()
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
-        "The statement must be a query, or the statement must be DML and AnalyzeMode must be PLAN or PROFILE");
+        "The statement must be a query, or the statement must be DML and AnalyzeMode must be PLAN"
+            + " or PROFILE");
     try (Scope ignore = span.makeCurrent()) {
       checkAndMarkUsed();
 

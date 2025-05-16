@@ -38,6 +38,7 @@ public interface PartitionQueryRequestOrBuilder
    * @return The session.
    */
   java.lang.String getSession();
+
   /**
    *
    *
@@ -66,6 +67,7 @@ public interface PartitionQueryRequestOrBuilder
    * @return Whether the transaction field is set.
    */
   boolean hasTransaction();
+
   /**
    *
    *
@@ -79,6 +81,7 @@ public interface PartitionQueryRequestOrBuilder
    * @return The transaction.
    */
   com.google.spanner.v1.TransactionSelector getTransaction();
+
   /**
    *
    *
@@ -114,6 +117,7 @@ public interface PartitionQueryRequestOrBuilder
    * @return The sql.
    */
   java.lang.String getSql();
+
   /**
    *
    *
@@ -161,6 +165,7 @@ public interface PartitionQueryRequestOrBuilder
    * @return Whether the params field is set.
    */
   boolean hasParams();
+
   /**
    *
    *
@@ -184,6 +189,7 @@ public interface PartitionQueryRequestOrBuilder
    * @return The params.
    */
   com.google.protobuf.Struct getParams();
+
   /**
    *
    *
@@ -224,6 +230,7 @@ public interface PartitionQueryRequestOrBuilder
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
   int getParamTypesCount();
+
   /**
    *
    *
@@ -242,9 +249,11 @@ public interface PartitionQueryRequestOrBuilder
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
   boolean containsParamTypes(java.lang.String key);
+
   /** Use {@link #getParamTypesMap()} instead. */
   @java.lang.Deprecated
   java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes();
+
   /**
    *
    *
@@ -263,6 +272,7 @@ public interface PartitionQueryRequestOrBuilder
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
   java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap();
+
   /**
    *
    *
@@ -285,6 +295,7 @@ public interface PartitionQueryRequestOrBuilder
       java.lang.String key,
       /* nullable */
       com.google.spanner.v1.Type defaultValue);
+
   /**
    *
    *
@@ -316,6 +327,7 @@ public interface PartitionQueryRequestOrBuilder
    * @return Whether the partitionOptions field is set.
    */
   boolean hasPartitionOptions();
+
   /**
    *
    *
@@ -328,6 +340,7 @@ public interface PartitionQueryRequestOrBuilder
    * @return The partitionOptions.
    */
   com.google.spanner.v1.PartitionOptions getPartitionOptions();
+
   /**
    *
    *

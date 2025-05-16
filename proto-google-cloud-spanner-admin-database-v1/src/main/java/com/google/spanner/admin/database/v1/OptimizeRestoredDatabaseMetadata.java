@@ -36,6 +36,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)
     OptimizeRestoredDatabaseMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use OptimizeRestoredDatabaseMetadata.newBuilder() to construct.
   private OptimizeRestoredDatabaseMetadata(
       com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -72,6 +73,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object name_ = "";
+
   /**
    *
    *
@@ -95,6 +97,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
       return s;
     }
   }
+
   /**
    *
    *
@@ -121,6 +124,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
 
   public static final int PROGRESS_FIELD_NUMBER = 2;
   private com.google.spanner.admin.database.v1.OperationProgress progress_;
+
   /**
    *
    *
@@ -136,6 +140,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
   public boolean hasProgress() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -153,6 +158,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
         ? com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()
         : progress_;
   }
+
   /**
    *
    *
@@ -344,6 +350,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -567,6 +574,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
     private int bitField0_;
 
     private java.lang.Object name_ = "";
+
     /**
      *
      *
@@ -589,6 +597,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -611,6 +620,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -632,6 +642,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -649,6 +660,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -678,6 +690,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
             com.google.spanner.admin.database.v1.OperationProgress.Builder,
             com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
         progressBuilder_;
+
     /**
      *
      *
@@ -692,6 +705,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
     public boolean hasProgress() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -712,6 +726,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
         return progressBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -734,6 +749,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -754,6 +770,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -782,6 +799,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
       }
       return this;
     }
+
     /**
      *
      *
@@ -801,6 +819,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -815,6 +834,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
       onChanged();
       return getProgressFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -833,6 +853,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
             : progress_;
       }
     }
+
     /**
      *
      *

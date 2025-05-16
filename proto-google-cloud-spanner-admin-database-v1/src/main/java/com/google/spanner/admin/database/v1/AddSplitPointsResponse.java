@@ -34,6 +34,7 @@ public final class AddSplitPointsResponse extends com.google.protobuf.GeneratedM
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.AddSplitPointsResponse)
     AddSplitPointsResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use AddSplitPointsResponse.newBuilder() to construct.
   private AddSplitPointsResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -213,6 +214,7 @@ public final class AddSplitPointsResponse extends com.google.protobuf.GeneratedM
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *

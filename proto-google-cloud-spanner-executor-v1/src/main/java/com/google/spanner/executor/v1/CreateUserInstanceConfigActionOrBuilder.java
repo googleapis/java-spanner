@@ -36,6 +36,7 @@ public interface CreateUserInstanceConfigActionOrBuilder
    * @return The userConfigId.
    */
   java.lang.String getUserConfigId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface CreateUserInstanceConfigActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface CreateUserInstanceConfigActionOrBuilder
    * @return The baseConfigId.
    */
   java.lang.String getBaseConfigId();
+
   /**
    *
    *
@@ -109,6 +112,7 @@ public interface CreateUserInstanceConfigActionOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 4;</code>
    */
   java.util.List<com.google.spanner.admin.instance.v1.ReplicaInfo> getReplicasList();
+
   /**
    *
    *
@@ -119,6 +123,7 @@ public interface CreateUserInstanceConfigActionOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 4;</code>
    */
   com.google.spanner.admin.instance.v1.ReplicaInfo getReplicas(int index);
+
   /**
    *
    *
@@ -129,6 +134,7 @@ public interface CreateUserInstanceConfigActionOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 4;</code>
    */
   int getReplicasCount();
+
   /**
    *
    *
@@ -140,6 +146,7 @@ public interface CreateUserInstanceConfigActionOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.instance.v1.ReplicaInfoOrBuilder>
       getReplicasOrBuilderList();
+
   /**
    *
    *

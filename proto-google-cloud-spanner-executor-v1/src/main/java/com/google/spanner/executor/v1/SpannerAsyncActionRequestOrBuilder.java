@@ -49,6 +49,7 @@ public interface SpannerAsyncActionRequestOrBuilder
    * @return Whether the action field is set.
    */
   boolean hasAction();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface SpannerAsyncActionRequestOrBuilder
    * @return The action.
    */
   com.google.spanner.executor.v1.SpannerAction getAction();
+
   /**
    *
    *

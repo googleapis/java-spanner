@@ -44,6 +44,7 @@ public interface BackupScheduleOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -80,6 +81,7 @@ public interface BackupScheduleOrBuilder
    * @return Whether the spec field is set.
    */
   boolean hasSpec();
+
   /**
    *
    *
@@ -95,6 +97,7 @@ public interface BackupScheduleOrBuilder
    * @return The spec.
    */
   com.google.spanner.admin.database.v1.BackupScheduleSpec getSpec();
+
   /**
    *
    *
@@ -125,6 +128,7 @@ public interface BackupScheduleOrBuilder
    * @return Whether the retentionDuration field is set.
    */
   boolean hasRetentionDuration();
+
   /**
    *
    *
@@ -141,6 +145,7 @@ public interface BackupScheduleOrBuilder
    * @return The retentionDuration.
    */
   com.google.protobuf.Duration getRetentionDuration();
+
   /**
    *
    *
@@ -172,6 +177,7 @@ public interface BackupScheduleOrBuilder
    * @return Whether the encryptionConfig field is set.
    */
   boolean hasEncryptionConfig();
+
   /**
    *
    *
@@ -188,6 +194,7 @@ public interface BackupScheduleOrBuilder
    * @return The encryptionConfig.
    */
   com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig getEncryptionConfig();
+
   /**
    *
    *
@@ -216,6 +223,7 @@ public interface BackupScheduleOrBuilder
    * @return Whether the fullBackupSpec field is set.
    */
   boolean hasFullBackupSpec();
+
   /**
    *
    *
@@ -228,6 +236,7 @@ public interface BackupScheduleOrBuilder
    * @return The fullBackupSpec.
    */
   com.google.spanner.admin.database.v1.FullBackupSpec getFullBackupSpec();
+
   /**
    *
    *
@@ -252,6 +261,7 @@ public interface BackupScheduleOrBuilder
    * @return Whether the incrementalBackupSpec field is set.
    */
   boolean hasIncrementalBackupSpec();
+
   /**
    *
    *
@@ -265,6 +275,7 @@ public interface BackupScheduleOrBuilder
    * @return The incrementalBackupSpec.
    */
   com.google.spanner.admin.database.v1.IncrementalBackupSpec getIncrementalBackupSpec();
+
   /**
    *
    *
@@ -293,6 +304,7 @@ public interface BackupScheduleOrBuilder
    * @return Whether the updateTime field is set.
    */
   boolean hasUpdateTime();
+
   /**
    *
    *
@@ -308,6 +320,7 @@ public interface BackupScheduleOrBuilder
    * @return The updateTime.
    */
   com.google.protobuf.Timestamp getUpdateTime();
+
   /**
    *
    *

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.spanner.Dialect;
 import org.junit.Test;
@@ -220,5 +221,30 @@ public class SimpleParserTest {
     assertEquals("'test 1'  'test 2'".length(), parser.getPos());
     assertEquals(NOT_FOUND, parser.eatSingleQuotedString());
     assertEquals(parser.getSql().length(), parser.getPos());
+  }
+
+  @Test
+  public void testSkipHint() {
+    assumeTrue("Hints in PostgreSQL are comments", dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    assertEquals("SELECT 1", skipHint("SELECT 1"));
+    assertEquals("SELECT 1", skipHint("@{rpc_priority=HIGH}SELECT 1"));
+    assertEquals("SELECT 1", skipHint("@{statement_tag='test'}SELECT 1"));
+    assertEquals("  \nSELECT 1", skipHint("  @{statement_tag =  'test'}  \nSELECT 1"));
+    assertEquals(
+        " /* comment after */ SELECT 1",
+        skipHint("/* comment before */ @{statement_tag='test'} /* comment after */ SELECT 1"));
+    assertEquals(
+        " -- comment after\nSELECT 1",
+        skipHint("-- comment before\n @{statement_tag='test'} -- comment after\nSELECT 1"));
+    assertEquals(
+        "-- comment @{statement_tag='test'}\n -- also a comment\nSELECT 1",
+        skipHint("-- comment @{statement_tag='test'}\n -- also a comment\nSELECT 1"));
+  }
+
+  static String skipHint(String sql) {
+    SimpleParser parser = new SimpleParser(Dialect.GOOGLE_STANDARD_SQL, sql);
+    parser.skipHint();
+    return parser.getSql().substring(parser.getPos());
   }
 }

@@ -39,6 +39,7 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * @return The parent.
    */
   java.lang.String getParent();
+
   /**
    *
    *
@@ -108,6 +109,7 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * @return The filter.
    */
   java.lang.String getFilter();
+
   /**
    *
    *
@@ -192,6 +194,7 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * @return The pageToken.
    */
   java.lang.String getPageToken();
+
   /**
    *
    *
@@ -228,6 +231,7 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * @return Whether the instancePartitionDeadline field is set.
    */
   boolean hasInstancePartitionDeadline();
+
   /**
    *
    *
@@ -247,6 +251,7 @@ public interface ListInstancePartitionOperationsRequestOrBuilder
    * @return The instancePartitionDeadline.
    */
   com.google.protobuf.Timestamp getInstancePartitionDeadline();
+
   /**
    *
    *

@@ -370,12 +370,14 @@ public class GapicSpannerRpc implements SpannerRpc {
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
               .setAllowNonDefaultServiceAccount(true);
-      String directPathXdsEnv = System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS");
-      boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
+      boolean isAttemptDirectPathXds = isEnableDirectPathXdsEnv();
       if (isAttemptDirectPathXds) {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
       }
+
+      options.enablegRPCMetrics(defaultChannelProviderBuilder);
+
       if (options.isUseVirtualThreads()) {
         ExecutorService executor =
             tryCreateVirtualThreadPerTaskExecutor("spanner-virtual-grpc-executor");
@@ -411,15 +413,13 @@ public class GapicSpannerRpc implements SpannerRpc {
         // TODO: make our retry settings to inject and increment
         // XGoogSpannerRequestId whenever a retry occurs.
         SpannerStubSettings spannerStubSettings =
-            options
-                .getSpannerStubSettings()
-                .toBuilder()
+            options.getSpannerStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         ClientContext clientContext = ClientContext.create(spannerStubSettings);
         this.spannerStub =
@@ -442,11 +442,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.commitRetrySettings =
             options.getSpannerStubSettings().commitSettings().getRetrySettings();
         partitionedDmlRetrySettings =
-            options
-                .getSpannerStubSettings()
-                .executeSqlSettings()
-                .getRetrySettings()
-                .toBuilder()
+            options.getSpannerStubSettings().executeSqlSettings().getRetrySettings().toBuilder()
                 .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
                 .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
                 .setTotalTimeout(options.getPartitionedDmlTimeout())
@@ -459,7 +455,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setStreamWatchdogProvider(watchdogProvider)
             .setTracerFactory(
                 options.getApiTracerFactory(
-                    /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
+                    /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
             .executeSqlSettings()
             .setRetrySettings(partitionedDmlRetrySettings);
         pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
@@ -481,28 +477,24 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.partitionedDmlStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(pdmlSettings.build());
         this.instanceAdminStubSettings =
-            options
-                .getInstanceAdminStubSettings()
-                .toBuilder()
+            options.getInstanceAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ true, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ true, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
         this.databaseAdminStubSettings =
-            options
-                .getDatabaseAdminStubSettings()
-                .toBuilder()
+            options.getDatabaseAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ true, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ true, isEmulatorEnabled(options, emulatorHost)))
                 .build();
 
         // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
@@ -653,9 +645,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       // Do a quick check to see if the emulator is actually running.
       try {
         InstanceAdminStubSettings.Builder testEmulatorSettings =
-            options
-                .getInstanceAdminStubSettings()
-                .toBuilder()
+            options.getInstanceAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider);
         testEmulatorSettings
@@ -689,6 +679,22 @@ public class GapicSpannerRpc implements SpannerRpc {
         && options.getHost() != null
         && options.getHost().startsWith("http://localhost")
         && options.getHost().endsWith(emulatorHost);
+  }
+
+  public static boolean isEnableAFEServerTiming() {
+    // Enable AFE metrics and add AFE header if:
+    // 1. The env var SPANNER_DISABLE_AFE_SERVER_TIMING is explicitly set to "false", OR
+    // 2. DirectPath is enabled AND the env var is not set to "true"
+    // This allows metrics to be enabled by default when DirectPath is on, unless explicitly
+    // disabled via env.
+    String afeDisableEnv = System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING");
+    boolean isDirectPathEnabled = isEnableDirectPathXdsEnv();
+    return ("false".equalsIgnoreCase(afeDisableEnv))
+        || (isDirectPathEnabled && !"true".equalsIgnoreCase(afeDisableEnv));
+  }
+
+  public static boolean isEnableDirectPathXdsEnv() {
+    return Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS"));
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
@@ -1994,6 +2000,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
     if (endToEndTracingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
+    }
+    if (isEnableAFEServerTiming()) {
+      context = context.withExtraHeaders(metadataProvider.newAfeServerTimingHeader());
     }
     return context
         .withStreamWaitTimeoutDuration(waitTimeout)

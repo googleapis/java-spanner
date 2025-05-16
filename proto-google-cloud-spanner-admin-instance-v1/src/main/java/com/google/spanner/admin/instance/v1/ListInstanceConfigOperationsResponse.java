@@ -35,6 +35,7 @@ public final class ListInstanceConfigOperationsResponse
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse)
     ListInstanceConfigOperationsResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ListInstanceConfigOperationsResponse.newBuilder() to construct.
   private ListInstanceConfigOperationsResponse(
       com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -72,6 +73,7 @@ public final class ListInstanceConfigOperationsResponse
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.longrunning.Operation> operations_;
+
   /**
    *
    *
@@ -89,6 +91,7 @@ public final class ListInstanceConfigOperationsResponse
   public java.util.List<com.google.longrunning.Operation> getOperationsList() {
     return operations_;
   }
+
   /**
    *
    *
@@ -107,6 +110,7 @@ public final class ListInstanceConfigOperationsResponse
       getOperationsOrBuilderList() {
     return operations_;
   }
+
   /**
    *
    *
@@ -124,6 +128,7 @@ public final class ListInstanceConfigOperationsResponse
   public int getOperationsCount() {
     return operations_.size();
   }
+
   /**
    *
    *
@@ -141,6 +146,7 @@ public final class ListInstanceConfigOperationsResponse
   public com.google.longrunning.Operation getOperations(int index) {
     return operations_.get(index);
   }
+
   /**
    *
    *
@@ -163,6 +169,7 @@ public final class ListInstanceConfigOperationsResponse
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object nextPageToken_ = "";
+
   /**
    *
    *
@@ -188,6 +195,7 @@ public final class ListInstanceConfigOperationsResponse
       return s;
     }
   }
+
   /**
    *
    *
@@ -387,6 +395,7 @@ public final class ListInstanceConfigOperationsResponse
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -678,6 +687,7 @@ public final class ListInstanceConfigOperationsResponse
         return operationsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -698,6 +708,7 @@ public final class ListInstanceConfigOperationsResponse
         return operationsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -718,6 +729,7 @@ public final class ListInstanceConfigOperationsResponse
         return operationsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -744,6 +756,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -768,6 +781,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -794,6 +808,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -820,6 +835,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -843,6 +859,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -867,6 +884,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -891,6 +909,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -914,6 +933,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -937,6 +957,7 @@ public final class ListInstanceConfigOperationsResponse
       }
       return this;
     }
+
     /**
      *
      *
@@ -953,6 +974,7 @@ public final class ListInstanceConfigOperationsResponse
     public com.google.longrunning.Operation.Builder getOperationsBuilder(int index) {
       return getOperationsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -973,6 +995,7 @@ public final class ListInstanceConfigOperationsResponse
         return operationsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -994,6 +1017,7 @@ public final class ListInstanceConfigOperationsResponse
         return java.util.Collections.unmodifiableList(operations_);
       }
     }
+
     /**
      *
      *
@@ -1011,6 +1035,7 @@ public final class ListInstanceConfigOperationsResponse
       return getOperationsFieldBuilder()
           .addBuilder(com.google.longrunning.Operation.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1028,6 +1053,7 @@ public final class ListInstanceConfigOperationsResponse
       return getOperationsFieldBuilder()
           .addBuilder(index, com.google.longrunning.Operation.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1063,6 +1089,7 @@ public final class ListInstanceConfigOperationsResponse
     }
 
     private java.lang.Object nextPageToken_ = "";
+
     /**
      *
      *
@@ -1087,6 +1114,7 @@ public final class ListInstanceConfigOperationsResponse
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1111,6 +1139,7 @@ public final class ListInstanceConfigOperationsResponse
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1134,6 +1163,7 @@ public final class ListInstanceConfigOperationsResponse
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1153,6 +1183,7 @@ public final class ListInstanceConfigOperationsResponse
       onChanged();
       return this;
     }
+
     /**
      *
      *

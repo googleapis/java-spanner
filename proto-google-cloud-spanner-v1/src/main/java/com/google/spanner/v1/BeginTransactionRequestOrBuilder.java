@@ -38,6 +38,7 @@ public interface BeginTransactionRequestOrBuilder
    * @return The session.
    */
   java.lang.String getSession();
+
   /**
    *
    *
@@ -67,6 +68,7 @@ public interface BeginTransactionRequestOrBuilder
    * @return Whether the options field is set.
    */
   boolean hasOptions();
+
   /**
    *
    *
@@ -81,6 +83,7 @@ public interface BeginTransactionRequestOrBuilder
    * @return The options.
    */
   com.google.spanner.v1.TransactionOptions getOptions();
+
   /**
    *
    *
@@ -110,6 +113,7 @@ public interface BeginTransactionRequestOrBuilder
    * @return Whether the requestOptions field is set.
    */
   boolean hasRequestOptions();
+
   /**
    *
    *
@@ -126,6 +130,7 @@ public interface BeginTransactionRequestOrBuilder
    * @return The requestOptions.
    */
   com.google.spanner.v1.RequestOptions getRequestOptions();
+
   /**
    *
    *
@@ -159,6 +164,7 @@ public interface BeginTransactionRequestOrBuilder
    * @return Whether the mutationKey field is set.
    */
   boolean hasMutationKey();
+
   /**
    *
    *
@@ -177,6 +183,7 @@ public interface BeginTransactionRequestOrBuilder
    * @return The mutationKey.
    */
   com.google.spanner.v1.Mutation getMutationKey();
+
   /**
    *
    *

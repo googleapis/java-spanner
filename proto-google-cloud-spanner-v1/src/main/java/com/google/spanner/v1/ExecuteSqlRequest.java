@@ -34,6 +34,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     // @@protoc_insertion_point(message_implements:google.spanner.v1.ExecuteSqlRequest)
     ExecuteSqlRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ExecuteSqlRequest.newBuilder() to construct.
   private ExecuteSqlRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -159,6 +160,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>NORMAL = 0;</code>
      */
     public static final int NORMAL_VALUE = 0;
+
     /**
      *
      *
@@ -170,6 +172,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>PLAN = 1;</code>
      */
     public static final int PLAN_VALUE = 1;
+
     /**
      *
      *
@@ -183,6 +186,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>PROFILE = 2;</code>
      */
     public static final int PROFILE_VALUE = 2;
+
     /**
      *
      *
@@ -194,6 +198,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>WITH_STATS = 3;</code>
      */
     public static final int WITH_STATS_VALUE = 3;
+
     /**
      *
      *
@@ -331,6 +336,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * @return The optimizerVersion.
      */
     java.lang.String getOptimizerVersion();
+
     /**
      *
      *
@@ -400,6 +406,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * @return The optimizerStatisticsPackage.
      */
     java.lang.String getOptimizerStatisticsPackage();
+
     /**
      *
      *
@@ -436,6 +443,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      */
     com.google.protobuf.ByteString getOptimizerStatisticsPackageBytes();
   }
+
   /**
    *
    *
@@ -450,6 +458,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       // @@protoc_insertion_point(message_implements:google.spanner.v1.ExecuteSqlRequest.QueryOptions)
       QueryOptionsOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use QueryOptions.newBuilder() to construct.
     private QueryOptions(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -485,6 +494,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object optimizerVersion_ = "";
+
     /**
      *
      *
@@ -529,6 +539,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return s;
       }
     }
+
     /**
      *
      *
@@ -578,6 +589,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object optimizerStatisticsPackage_ = "";
+
     /**
      *
      *
@@ -624,6 +636,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return s;
       }
     }
+
     /**
      *
      *
@@ -844,6 +857,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -1046,6 +1060,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       private int bitField0_;
 
       private java.lang.Object optimizerVersion_ = "";
+
       /**
        *
        *
@@ -1089,6 +1104,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -1132,6 +1148,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -1174,6 +1191,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1212,6 +1230,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1257,6 +1276,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
 
       private java.lang.Object optimizerStatisticsPackage_ = "";
+
       /**
        *
        *
@@ -1302,6 +1322,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -1347,6 +1368,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -1391,6 +1413,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1431,6 +1454,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1546,6 +1570,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object session_ = "";
+
   /**
    *
    *
@@ -1571,6 +1596,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       return s;
     }
   }
+
   /**
    *
    *
@@ -1599,6 +1625,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int TRANSACTION_FIELD_NUMBER = 2;
   private com.google.spanner.v1.TransactionSelector transaction_;
+
   /**
    *
    *
@@ -1623,6 +1650,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public boolean hasTransaction() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -1649,6 +1677,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
         : transaction_;
   }
+
   /**
    *
    *
@@ -1678,6 +1707,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object sql_ = "";
+
   /**
    *
    *
@@ -1701,6 +1731,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       return s;
     }
   }
+
   /**
    *
    *
@@ -1727,6 +1758,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int PARAMS_FIELD_NUMBER = 4;
   private com.google.protobuf.Struct params_;
+
   /**
    *
    *
@@ -1754,6 +1786,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public boolean hasParams() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -1781,6 +1814,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public com.google.protobuf.Struct getParams() {
     return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
   }
+
   /**
    *
    *
@@ -1836,6 +1870,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public int getParamTypesCount() {
     return internalGetParamTypes().getMap().size();
   }
+
   /**
    *
    *
@@ -1860,12 +1895,14 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     return internalGetParamTypes().getMap().containsKey(key);
   }
+
   /** Use {@link #getParamTypesMap()} instead. */
   @java.lang.Override
   @java.lang.Deprecated
   public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
     return getParamTypesMap();
   }
+
   /**
    *
    *
@@ -1887,6 +1924,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
     return internalGetParamTypes().getMap();
   }
+
   /**
    *
    *
@@ -1916,6 +1954,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         internalGetParamTypes().getMap();
     return map.containsKey(key) ? map.get(key) : defaultValue;
   }
+
   /**
    *
    *
@@ -1948,6 +1987,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int RESUME_TOKEN_FIELD_NUMBER = 6;
   private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -1971,6 +2011,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int QUERY_MODE_FIELD_NUMBER = 7;
   private int queryMode_ = 0;
+
   /**
    *
    *
@@ -1991,6 +2032,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public int getQueryModeValue() {
     return queryMode_;
   }
+
   /**
    *
    *
@@ -2016,6 +2058,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int PARTITION_TOKEN_FIELD_NUMBER = 8;
   private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -2037,6 +2080,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int SEQNO_FIELD_NUMBER = 9;
   private long seqno_ = 0L;
+
   /**
    *
    *
@@ -2064,6 +2108,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int QUERY_OPTIONS_FIELD_NUMBER = 10;
   private com.google.spanner.v1.ExecuteSqlRequest.QueryOptions queryOptions_;
+
   /**
    *
    *
@@ -2079,6 +2124,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public boolean hasQueryOptions() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -2096,6 +2142,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         ? com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.getDefaultInstance()
         : queryOptions_;
   }
+
   /**
    *
    *
@@ -2114,6 +2161,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int REQUEST_OPTIONS_FIELD_NUMBER = 11;
   private com.google.spanner.v1.RequestOptions requestOptions_;
+
   /**
    *
    *
@@ -2129,6 +2177,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public boolean hasRequestOptions() {
     return ((bitField0_ & 0x00000008) != 0);
   }
+
   /**
    *
    *
@@ -2146,6 +2195,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
         : requestOptions_;
   }
+
   /**
    *
    *
@@ -2164,6 +2214,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int DIRECTED_READ_OPTIONS_FIELD_NUMBER = 15;
   private com.google.spanner.v1.DirectedReadOptions directedReadOptions_;
+
   /**
    *
    *
@@ -2179,6 +2230,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   public boolean hasDirectedReadOptions() {
     return ((bitField0_ & 0x00000010) != 0);
   }
+
   /**
    *
    *
@@ -2196,6 +2248,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         ? com.google.spanner.v1.DirectedReadOptions.getDefaultInstance()
         : directedReadOptions_;
   }
+
   /**
    *
    *
@@ -2214,6 +2267,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int DATA_BOOST_ENABLED_FIELD_NUMBER = 16;
   private boolean dataBoostEnabled_ = false;
+
   /**
    *
    *
@@ -2236,6 +2290,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   public static final int LAST_STATEMENT_FIELD_NUMBER = 17;
   private boolean lastStatement_ = false;
+
   /**
    *
    *
@@ -2569,6 +2624,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -3000,6 +3056,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     private int bitField0_;
 
     private java.lang.Object session_ = "";
+
     /**
      *
      *
@@ -3024,6 +3081,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -3048,6 +3106,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -3071,6 +3130,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3090,6 +3150,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3121,6 +3182,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             com.google.spanner.v1.TransactionSelector.Builder,
             com.google.spanner.v1.TransactionSelectorOrBuilder>
         transactionBuilder_;
+
     /**
      *
      *
@@ -3144,6 +3206,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public boolean hasTransaction() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -3173,6 +3236,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return transactionBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3204,6 +3268,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3233,6 +3298,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3269,6 +3335,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -3297,6 +3364,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3320,6 +3388,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3347,6 +3416,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             : transaction_;
       }
     }
+
     /**
      *
      *
@@ -3383,6 +3453,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private java.lang.Object sql_ = "";
+
     /**
      *
      *
@@ -3405,6 +3476,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -3427,6 +3499,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -3448,6 +3521,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3465,6 +3539,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3494,6 +3569,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             com.google.protobuf.Struct.Builder,
             com.google.protobuf.StructOrBuilder>
         paramsBuilder_;
+
     /**
      *
      *
@@ -3520,6 +3596,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public boolean hasParams() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -3550,6 +3627,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return paramsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -3584,6 +3662,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3615,6 +3694,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3654,6 +3734,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -3685,6 +3766,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -3711,6 +3793,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getParamsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3739,6 +3822,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
       }
     }
+
     /**
      *
      *
@@ -3793,7 +3877,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           defaultEntry() {
         return ParamTypesDefaultEntryHolder.defaultEntry;
       }
-    };
+    }
+    ;
 
     private static final ParamTypesConverter paramTypesConverter = new ParamTypesConverter();
 
@@ -3833,6 +3918,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public int getParamTypesCount() {
       return internalGetParamTypes().ensureBuilderMap().size();
     }
+
     /**
      *
      *
@@ -3857,12 +3943,14 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       return internalGetParamTypes().ensureBuilderMap().containsKey(key);
     }
+
     /** Use {@link #getParamTypesMap()} instead. */
     @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
       return getParamTypesMap();
     }
+
     /**
      *
      *
@@ -3884,6 +3972,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
       return internalGetParamTypes().getImmutableMap();
     }
+
     /**
      *
      *
@@ -3913,6 +4002,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           internalGetMutableParamTypes().ensureBuilderMap();
       return map.containsKey(key) ? paramTypesConverter.build(map.get(key)) : defaultValue;
     }
+
     /**
      *
      *
@@ -3948,6 +4038,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       internalGetMutableParamTypes().clear();
       return this;
     }
+
     /**
      *
      *
@@ -3972,12 +4063,14 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       internalGetMutableParamTypes().ensureBuilderMap().remove(key);
       return this;
     }
+
     /** Use alternate mutation accessors instead. */
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getMutableParamTypes() {
       bitField0_ |= 0x00000010;
       return internalGetMutableParamTypes().ensureMessageMap();
     }
+
     /**
      *
      *
@@ -4006,6 +4099,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       bitField0_ |= 0x00000010;
       return this;
     }
+
     /**
      *
      *
@@ -4035,6 +4129,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       bitField0_ |= 0x00000010;
       return this;
     }
+
     /**
      *
      *
@@ -4068,6 +4163,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -4088,6 +4184,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public com.google.protobuf.ByteString getResumeToken() {
       return resumeToken_;
     }
+
     /**
      *
      *
@@ -4114,6 +4211,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4138,6 +4236,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private int queryMode_ = 0;
+
     /**
      *
      *
@@ -4158,6 +4257,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public int getQueryModeValue() {
       return queryMode_;
     }
+
     /**
      *
      *
@@ -4181,6 +4281,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4205,6 +4306,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           ? com.google.spanner.v1.ExecuteSqlRequest.QueryMode.UNRECOGNIZED
           : result;
     }
+
     /**
      *
      *
@@ -4231,6 +4333,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4255,6 +4358,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -4273,6 +4377,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public com.google.protobuf.ByteString getPartitionToken() {
       return partitionToken_;
     }
+
     /**
      *
      *
@@ -4297,6 +4402,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4319,6 +4425,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private long seqno_;
+
     /**
      *
      *
@@ -4343,6 +4450,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public long getSeqno() {
       return seqno_;
     }
+
     /**
      *
      *
@@ -4371,6 +4479,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4404,6 +4513,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.Builder,
             com.google.spanner.v1.ExecuteSqlRequest.QueryOptionsOrBuilder>
         queryOptionsBuilder_;
+
     /**
      *
      *
@@ -4418,6 +4528,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public boolean hasQueryOptions() {
       return ((bitField0_ & 0x00000200) != 0);
     }
+
     /**
      *
      *
@@ -4438,6 +4549,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return queryOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -4460,6 +4572,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4480,6 +4593,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4508,6 +4622,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -4527,6 +4642,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4541,6 +4657,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getQueryOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4560,6 +4677,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             : queryOptions_;
       }
     }
+
     /**
      *
      *
@@ -4592,6 +4710,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             com.google.spanner.v1.RequestOptions.Builder,
             com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
+
     /**
      *
      *
@@ -4606,6 +4725,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public boolean hasRequestOptions() {
       return ((bitField0_ & 0x00000400) != 0);
     }
+
     /**
      *
      *
@@ -4626,6 +4746,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return requestOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -4648,6 +4769,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4667,6 +4789,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4694,6 +4817,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -4713,6 +4837,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4727,6 +4852,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4745,6 +4871,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             : requestOptions_;
       }
     }
+
     /**
      *
      *
@@ -4777,6 +4904,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             com.google.spanner.v1.DirectedReadOptions.Builder,
             com.google.spanner.v1.DirectedReadOptionsOrBuilder>
         directedReadOptionsBuilder_;
+
     /**
      *
      *
@@ -4791,6 +4919,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public boolean hasDirectedReadOptions() {
       return ((bitField0_ & 0x00000800) != 0);
     }
+
     /**
      *
      *
@@ -4811,6 +4940,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         return directedReadOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -4833,6 +4963,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4853,6 +4984,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4881,6 +5013,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -4900,6 +5033,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -4914,6 +5048,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getDirectedReadOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4932,6 +5067,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             : directedReadOptions_;
       }
     }
+
     /**
      *
      *
@@ -4959,6 +5095,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private boolean dataBoostEnabled_;
+
     /**
      *
      *
@@ -4978,6 +5115,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public boolean getDataBoostEnabled() {
       return dataBoostEnabled_;
     }
+
     /**
      *
      *
@@ -5001,6 +5139,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5024,6 +5163,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private boolean lastStatement_;
+
     /**
      *
      *
@@ -5047,6 +5187,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     public boolean getLastStatement() {
       return lastStatement_;
     }
+
     /**
      *
      *
@@ -5074,6 +5215,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *

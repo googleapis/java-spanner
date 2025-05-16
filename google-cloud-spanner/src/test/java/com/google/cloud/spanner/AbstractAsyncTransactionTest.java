@@ -100,9 +100,7 @@ public abstract class AbstractAsyncTransactionTest {
             .build()
             .getService();
     spannerWithEmptySessionPool =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setFailOnSessionLeak()

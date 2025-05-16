@@ -1875,7 +1875,8 @@ public class InlineBeginTransactionTest {
               statement,
               Status.CANCELLED
                   .withDescription(
-                      "Read/query was cancelled due to the enclosing transaction being invalidated by a later transaction in the same session.")
+                      "Read/query was cancelled due to the enclosing transaction being invalidated"
+                          + " by a later transaction in the same session.")
                   .asRuntimeException()));
 
       DatabaseClient client =
@@ -1920,7 +1921,8 @@ public class InlineBeginTransactionTest {
               statement,
               Status.CANCELLED
                   .withDescription(
-                      "Read/query was cancelled due to the enclosing transaction being invalidated by a later transaction in the same session.")
+                      "Read/query was cancelled due to the enclosing transaction being invalidated"
+                          + " by a later transaction in the same session.")
                   .asRuntimeException()));
 
       DatabaseClient client =

@@ -36,6 +36,7 @@ public interface SessionOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -67,6 +68,7 @@ public interface SessionOrBuilder
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
   int getLabelsCount();
+
   /**
    *
    *
@@ -85,9 +87,11 @@ public interface SessionOrBuilder
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
   boolean containsLabels(java.lang.String key);
+
   /** Use {@link #getLabelsMap()} instead. */
   @java.lang.Deprecated
   java.util.Map<java.lang.String, java.lang.String> getLabels();
+
   /**
    *
    *
@@ -106,6 +110,7 @@ public interface SessionOrBuilder
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
   java.util.Map<java.lang.String, java.lang.String> getLabelsMap();
+
   /**
    *
    *
@@ -128,6 +133,7 @@ public interface SessionOrBuilder
       java.lang.String key,
       /* nullable */
       java.lang.String defaultValue);
+
   /**
    *
    *
@@ -160,6 +166,7 @@ public interface SessionOrBuilder
    * @return Whether the createTime field is set.
    */
   boolean hasCreateTime();
+
   /**
    *
    *
@@ -173,6 +180,7 @@ public interface SessionOrBuilder
    * @return The createTime.
    */
   com.google.protobuf.Timestamp getCreateTime();
+
   /**
    *
    *
@@ -200,6 +208,7 @@ public interface SessionOrBuilder
    * @return Whether the approximateLastUseTime field is set.
    */
   boolean hasApproximateLastUseTime();
+
   /**
    *
    *
@@ -215,6 +224,7 @@ public interface SessionOrBuilder
    * @return The approximateLastUseTime.
    */
   com.google.protobuf.Timestamp getApproximateLastUseTime();
+
   /**
    *
    *
@@ -241,6 +251,7 @@ public interface SessionOrBuilder
    * @return The creatorRole.
    */
   java.lang.String getCreatorRole();
+
   /**
    *
    *

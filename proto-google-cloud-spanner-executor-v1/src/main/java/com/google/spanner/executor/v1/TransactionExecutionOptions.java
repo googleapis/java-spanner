@@ -33,6 +33,7 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.TransactionExecutionOptions)
     TransactionExecutionOptionsOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use TransactionExecutionOptions.newBuilder() to construct.
   private TransactionExecutionOptions(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -63,6 +64,7 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
 
   public static final int OPTIMISTIC_FIELD_NUMBER = 1;
   private boolean optimistic_ = false;
+
   /**
    *
    *
@@ -239,6 +241,7 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -421,6 +424,7 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     private int bitField0_;
 
     private boolean optimistic_;
+
     /**
      *
      *
@@ -436,6 +440,7 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     public boolean getOptimistic() {
       return optimistic_;
     }
+
     /**
      *
      *
@@ -455,6 +460,7 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
       onChanged();
       return this;
     }
+
     /**
      *
      *

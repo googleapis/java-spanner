@@ -33,6 +33,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.UpdateCloudDatabaseDdlAction)
     UpdateCloudDatabaseDdlActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use UpdateCloudDatabaseDdlAction.newBuilder() to construct.
   private UpdateCloudDatabaseDdlAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -73,6 +74,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object instanceId_ = "";
+
   /**
    *
    *
@@ -96,6 +98,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       return s;
     }
   }
+
   /**
    *
    *
@@ -124,6 +127,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object projectId_ = "";
+
   /**
    *
    *
@@ -147,6 +151,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       return s;
     }
   }
+
   /**
    *
    *
@@ -175,6 +180,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object databaseId_ = "";
+
   /**
    *
    *
@@ -198,6 +204,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       return s;
     }
   }
+
   /**
    *
    *
@@ -227,6 +234,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList sdlStatement_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -241,6 +249,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
   public com.google.protobuf.ProtocolStringList getSdlStatementList() {
     return sdlStatement_;
   }
+
   /**
    *
    *
@@ -255,6 +264,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
   public int getSdlStatementCount() {
     return sdlStatement_.size();
   }
+
   /**
    *
    *
@@ -270,6 +280,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
   public java.lang.String getSdlStatement(int index) {
     return sdlStatement_.get(index);
   }
+
   /**
    *
    *
@@ -290,6 +301,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object operationId_ = "";
+
   /**
    *
    *
@@ -315,6 +327,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       return s;
     }
   }
+
   /**
    *
    *
@@ -343,6 +356,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
 
   public static final int PROTO_DESCRIPTORS_FIELD_NUMBER = 6;
   private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    * <code>optional bytes proto_descriptors = 6;</code>
    *
@@ -352,6 +366,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
   public boolean hasProtoDescriptors() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    * <code>optional bytes proto_descriptors = 6;</code>
    *
@@ -579,6 +594,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -846,6 +862,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     private int bitField0_;
 
     private java.lang.Object instanceId_ = "";
+
     /**
      *
      *
@@ -868,6 +885,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -890,6 +908,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -911,6 +930,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -928,6 +948,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -952,6 +973,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     }
 
     private java.lang.Object projectId_ = "";
+
     /**
      *
      *
@@ -974,6 +996,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -996,6 +1019,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1017,6 +1041,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1034,6 +1059,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1058,6 +1084,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     }
 
     private java.lang.Object databaseId_ = "";
+
     /**
      *
      *
@@ -1080,6 +1107,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1102,6 +1130,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1123,6 +1152,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1140,6 +1170,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1172,6 +1203,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       }
       bitField0_ |= 0x00000008;
     }
+
     /**
      *
      *
@@ -1187,6 +1219,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       sdlStatement_.makeImmutable();
       return sdlStatement_;
     }
+
     /**
      *
      *
@@ -1201,6 +1234,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     public int getSdlStatementCount() {
       return sdlStatement_.size();
     }
+
     /**
      *
      *
@@ -1216,6 +1250,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     public java.lang.String getSdlStatement(int index) {
       return sdlStatement_.get(index);
     }
+
     /**
      *
      *
@@ -1231,6 +1266,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     public com.google.protobuf.ByteString getSdlStatementBytes(int index) {
       return sdlStatement_.getByteString(index);
     }
+
     /**
      *
      *
@@ -1254,6 +1290,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1276,6 +1313,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1295,6 +1333,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1313,6 +1352,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1338,6 +1378,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     }
 
     private java.lang.Object operationId_ = "";
+
     /**
      *
      *
@@ -1362,6 +1403,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1386,6 +1428,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1409,6 +1452,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1428,6 +1472,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1454,6 +1499,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     }
 
     private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      * <code>optional bytes proto_descriptors = 6;</code>
      *
@@ -1463,6 +1509,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     public boolean hasProtoDescriptors() {
       return ((bitField0_ & 0x00000020) != 0);
     }
+
     /**
      * <code>optional bytes proto_descriptors = 6;</code>
      *
@@ -1472,6 +1519,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
     public com.google.protobuf.ByteString getProtoDescriptors() {
       return protoDescriptors_;
     }
+
     /**
      * <code>optional bytes proto_descriptors = 6;</code>
      *
@@ -1487,6 +1535,7 @@ public final class UpdateCloudDatabaseDdlAction extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      * <code>optional bytes proto_descriptors = 6;</code>
      *

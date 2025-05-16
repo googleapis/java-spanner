@@ -38,6 +38,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The session.
    */
   java.lang.String getSession();
+
   /**
    *
    *
@@ -74,6 +75,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return Whether the transaction field is set.
    */
   boolean hasTransaction();
+
   /**
    *
    *
@@ -95,6 +97,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The transaction.
    */
   com.google.spanner.v1.TransactionSelector getTransaction();
+
   /**
    *
    *
@@ -127,6 +130,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The sql.
    */
   java.lang.String getSql();
+
   /**
    *
    *
@@ -164,6 +168,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return Whether the params field is set.
    */
   boolean hasParams();
+
   /**
    *
    *
@@ -188,6 +193,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The params.
    */
   com.google.protobuf.Struct getParams();
+
   /**
    *
    *
@@ -229,6 +235,7 @@ public interface ExecuteSqlRequestOrBuilder
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
   int getParamTypesCount();
+
   /**
    *
    *
@@ -247,9 +254,11 @@ public interface ExecuteSqlRequestOrBuilder
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
   boolean containsParamTypes(java.lang.String key);
+
   /** Use {@link #getParamTypesMap()} instead. */
   @java.lang.Deprecated
   java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes();
+
   /**
    *
    *
@@ -268,6 +277,7 @@ public interface ExecuteSqlRequestOrBuilder
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
   java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap();
+
   /**
    *
    *
@@ -290,6 +300,7 @@ public interface ExecuteSqlRequestOrBuilder
       java.lang.String key,
       /* nullable */
       com.google.spanner.v1.Type defaultValue);
+
   /**
    *
    *
@@ -344,6 +355,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The enum numeric value on the wire for queryMode.
    */
   int getQueryModeValue();
+
   /**
    *
    *
@@ -412,6 +424,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return Whether the queryOptions field is set.
    */
   boolean hasQueryOptions();
+
   /**
    *
    *
@@ -424,6 +437,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The queryOptions.
    */
   com.google.spanner.v1.ExecuteSqlRequest.QueryOptions getQueryOptions();
+
   /**
    *
    *
@@ -447,6 +461,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return Whether the requestOptions field is set.
    */
   boolean hasRequestOptions();
+
   /**
    *
    *
@@ -459,6 +474,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The requestOptions.
    */
   com.google.spanner.v1.RequestOptions getRequestOptions();
+
   /**
    *
    *
@@ -482,6 +498,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return Whether the directedReadOptions field is set.
    */
   boolean hasDirectedReadOptions();
+
   /**
    *
    *
@@ -494,6 +511,7 @@ public interface ExecuteSqlRequestOrBuilder
    * @return The directedReadOptions.
    */
   com.google.spanner.v1.DirectedReadOptions getDirectedReadOptions();
+
   /**
    *
    *

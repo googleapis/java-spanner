@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.CommitResponse;
@@ -128,6 +129,11 @@ public class SingleUseTransactionTest {
     public TransactionContext begin() {
       state = TransactionState.STARTED;
       return txContext;
+    }
+
+    @Override
+    public TransactionContext begin(AbortedException exception) {
+      return begin();
     }
 
     @Override

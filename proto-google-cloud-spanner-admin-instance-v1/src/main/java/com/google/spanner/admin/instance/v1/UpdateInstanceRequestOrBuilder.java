@@ -41,6 +41,7 @@ public interface UpdateInstanceRequestOrBuilder
    * @return Whether the instance field is set.
    */
   boolean hasInstance();
+
   /**
    *
    *
@@ -58,6 +59,7 @@ public interface UpdateInstanceRequestOrBuilder
    * @return The instance.
    */
   com.google.spanner.admin.instance.v1.Instance getInstance();
+
   /**
    *
    *
@@ -91,6 +93,7 @@ public interface UpdateInstanceRequestOrBuilder
    * @return Whether the fieldMask field is set.
    */
   boolean hasFieldMask();
+
   /**
    *
    *
@@ -108,6 +111,7 @@ public interface UpdateInstanceRequestOrBuilder
    * @return The fieldMask.
    */
   com.google.protobuf.FieldMask getFieldMask();
+
   /**
    *
    *

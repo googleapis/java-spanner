@@ -46,10 +46,14 @@ interface ClientSideStatement {
    */
   boolean isQuery();
 
-  /** @return <code>true</code> if this {@link ClientSideStatement} will return an update count. */
+  /**
+   * @return <code>true</code> if this {@link ClientSideStatement} will return an update count.
+   */
   boolean isUpdate();
 
-  /** @return the statement type */
+  /**
+   * @return the statement type
+   */
   ClientSideStatementType getStatementType();
 
   /**

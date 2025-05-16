@@ -74,6 +74,7 @@ public class ITTransactionTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
   private static DatabaseClient client;
+
   /** Sequence for assigning unique keys to test cases. */
   private static int seq;
 

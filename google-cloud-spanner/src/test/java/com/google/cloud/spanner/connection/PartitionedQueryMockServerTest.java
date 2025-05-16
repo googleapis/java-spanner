@@ -415,9 +415,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         assertFalse(resultSet.next());
         assertNotNull(resultSet.getMetadata());
-        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(24, resultSet.getType().getStructFields().size());
+        assertEquals(26, resultSet.getType().getStructFields().size());
       }
       if (isMultiplexedSessionsEnabled(connection.getSpanner())) {
         assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
@@ -447,15 +447,15 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           connection.runPartitionedQuery(
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         assertNotNull(resultSet.getMetadata());
-        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(24, resultSet.getType().getStructFields().size());
+        assertEquals(26, resultSet.getType().getStructFields().size());
 
         assertTrue(resultSet.next());
         assertNotNull(resultSet.getMetadata());
-        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(24, resultSet.getType().getStructFields().size());
+        assertEquals(26, resultSet.getType().getStructFields().size());
 
         assertFalse(resultSet.next());
       }
@@ -482,9 +482,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
           connection.runPartitionedQuery(
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         assertNotNull(resultSet.getMetadata());
-        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(24, resultSet.getType().getStructFields().size());
+        assertEquals(26, resultSet.getType().getStructFields().size());
 
         assertFalse(resultSet.next());
       }
@@ -568,7 +568,8 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
         try (ResultSet resultSet =
             connection.executeQuery(
                 Statement.newBuilder(
-                        "run\tpartitioned   query\n select * from random_table where active=@active")
+                        "run\tpartitioned   query\n"
+                            + " select * from random_table where active=@active")
                     .bind("active")
                     .to(true)
                     .build())) {
@@ -642,7 +643,8 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
         // only one of the partition executors will see it.
         assertTrue(
             String.format(
-                "rowCount (%d) should be <= maxPartitions (%d) * generatedRowCount (%d) - (generatedRowCount (%d) - errorIndex (%d))",
+                "rowCount (%d) should be <= maxPartitions (%d) * generatedRowCount (%d) -"
+                    + " (generatedRowCount (%d) - errorIndex (%d))",
                 rowCount, maxPartitions, generatedRowCount, generatedRowCount, errorIndex),
             rowCount <= (maxPartitions * generatedRowCount - (generatedRowCount - errorIndex)));
       }

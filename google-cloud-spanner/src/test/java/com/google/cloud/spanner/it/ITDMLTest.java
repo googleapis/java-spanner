@@ -63,6 +63,7 @@ public final class ITDMLTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static DatabaseClient googleStandardSQLClient;
   private static DatabaseClient postgreSQLClient;
+
   /** Sequence for assigning unique keys to test cases. */
   private static int seq;
 

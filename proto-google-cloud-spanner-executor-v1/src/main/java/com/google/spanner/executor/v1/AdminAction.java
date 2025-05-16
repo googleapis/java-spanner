@@ -34,6 +34,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.AdminAction)
     AdminActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use AdminAction.newBuilder() to construct.
   private AdminAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -105,6 +106,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     private ActionCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -190,6 +192,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CREATE_USER_INSTANCE_CONFIG_FIELD_NUMBER = 1;
+
   /**
    *
    *
@@ -207,6 +210,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCreateUserInstanceConfig() {
     return actionCase_ == 1;
   }
+
   /**
    *
    *
@@ -228,6 +232,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.CreateUserInstanceConfigAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -249,6 +254,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int UPDATE_USER_INSTANCE_CONFIG_FIELD_NUMBER = 2;
+
   /**
    *
    *
@@ -266,6 +272,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasUpdateUserInstanceConfig() {
     return actionCase_ == 2;
   }
+
   /**
    *
    *
@@ -287,6 +294,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.UpdateUserInstanceConfigAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -308,6 +316,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DELETE_USER_INSTANCE_CONFIG_FIELD_NUMBER = 3;
+
   /**
    *
    *
@@ -325,6 +334,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasDeleteUserInstanceConfig() {
     return actionCase_ == 3;
   }
+
   /**
    *
    *
@@ -346,6 +356,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.DeleteUserInstanceConfigAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -367,6 +378,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int GET_CLOUD_INSTANCE_CONFIG_FIELD_NUMBER = 4;
+
   /**
    *
    *
@@ -383,6 +395,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasGetCloudInstanceConfig() {
     return actionCase_ == 4;
   }
+
   /**
    *
    *
@@ -402,6 +415,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.GetCloudInstanceConfigAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -422,6 +436,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LIST_INSTANCE_CONFIGS_FIELD_NUMBER = 5;
+
   /**
    *
    *
@@ -438,6 +453,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasListInstanceConfigs() {
     return actionCase_ == 5;
   }
+
   /**
    *
    *
@@ -457,6 +473,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ListCloudInstanceConfigsAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -477,6 +494,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CREATE_CLOUD_INSTANCE_FIELD_NUMBER = 6;
+
   /**
    *
    *
@@ -492,6 +510,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCreateCloudInstance() {
     return actionCase_ == 6;
   }
+
   /**
    *
    *
@@ -510,6 +529,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.CreateCloudInstanceAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -529,6 +549,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int UPDATE_CLOUD_INSTANCE_FIELD_NUMBER = 7;
+
   /**
    *
    *
@@ -544,6 +565,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasUpdateCloudInstance() {
     return actionCase_ == 7;
   }
+
   /**
    *
    *
@@ -562,6 +584,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.UpdateCloudInstanceAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -581,6 +604,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DELETE_CLOUD_INSTANCE_FIELD_NUMBER = 8;
+
   /**
    *
    *
@@ -596,6 +620,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasDeleteCloudInstance() {
     return actionCase_ == 8;
   }
+
   /**
    *
    *
@@ -614,6 +639,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.DeleteCloudInstanceAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -633,6 +659,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LIST_CLOUD_INSTANCES_FIELD_NUMBER = 9;
+
   /**
    *
    *
@@ -648,6 +675,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasListCloudInstances() {
     return actionCase_ == 9;
   }
+
   /**
    *
    *
@@ -666,6 +694,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ListCloudInstancesAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -685,6 +714,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int GET_CLOUD_INSTANCE_FIELD_NUMBER = 10;
+
   /**
    *
    *
@@ -700,6 +730,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasGetCloudInstance() {
     return actionCase_ == 10;
   }
+
   /**
    *
    *
@@ -718,6 +749,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.GetCloudInstanceAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -737,6 +769,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CREATE_CLOUD_DATABASE_FIELD_NUMBER = 11;
+
   /**
    *
    *
@@ -752,6 +785,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCreateCloudDatabase() {
     return actionCase_ == 11;
   }
+
   /**
    *
    *
@@ -770,6 +804,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.CreateCloudDatabaseAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -789,6 +824,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int UPDATE_CLOUD_DATABASE_DDL_FIELD_NUMBER = 12;
+
   /**
    *
    *
@@ -805,6 +841,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasUpdateCloudDatabaseDdl() {
     return actionCase_ == 12;
   }
+
   /**
    *
    *
@@ -824,6 +861,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -844,6 +882,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int UPDATE_CLOUD_DATABASE_FIELD_NUMBER = 27;
+
   /**
    *
    *
@@ -859,6 +898,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasUpdateCloudDatabase() {
     return actionCase_ == 27;
   }
+
   /**
    *
    *
@@ -877,6 +917,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.UpdateCloudDatabaseAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -896,6 +937,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DROP_CLOUD_DATABASE_FIELD_NUMBER = 13;
+
   /**
    *
    *
@@ -911,6 +953,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasDropCloudDatabase() {
     return actionCase_ == 13;
   }
+
   /**
    *
    *
@@ -929,6 +972,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.DropCloudDatabaseAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -948,6 +992,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LIST_CLOUD_DATABASES_FIELD_NUMBER = 14;
+
   /**
    *
    *
@@ -963,6 +1008,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasListCloudDatabases() {
     return actionCase_ == 14;
   }
+
   /**
    *
    *
@@ -981,6 +1027,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ListCloudDatabasesAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1000,6 +1047,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LIST_CLOUD_DATABASE_OPERATIONS_FIELD_NUMBER = 15;
+
   /**
    *
    *
@@ -1017,6 +1065,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasListCloudDatabaseOperations() {
     return actionCase_ == 15;
   }
+
   /**
    *
    *
@@ -1038,6 +1087,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ListCloudDatabaseOperationsAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1059,6 +1109,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int RESTORE_CLOUD_DATABASE_FIELD_NUMBER = 16;
+
   /**
    *
    *
@@ -1075,6 +1126,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasRestoreCloudDatabase() {
     return actionCase_ == 16;
   }
+
   /**
    *
    *
@@ -1094,6 +1146,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.RestoreCloudDatabaseAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1114,6 +1167,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int GET_CLOUD_DATABASE_FIELD_NUMBER = 17;
+
   /**
    *
    *
@@ -1129,6 +1183,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasGetCloudDatabase() {
     return actionCase_ == 17;
   }
+
   /**
    *
    *
@@ -1147,6 +1202,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.GetCloudDatabaseAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1166,6 +1222,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CREATE_CLOUD_BACKUP_FIELD_NUMBER = 18;
+
   /**
    *
    *
@@ -1181,6 +1238,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCreateCloudBackup() {
     return actionCase_ == 18;
   }
+
   /**
    *
    *
@@ -1199,6 +1257,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.CreateCloudBackupAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1218,6 +1277,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int COPY_CLOUD_BACKUP_FIELD_NUMBER = 19;
+
   /**
    *
    *
@@ -1233,6 +1293,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCopyCloudBackup() {
     return actionCase_ == 19;
   }
+
   /**
    *
    *
@@ -1251,6 +1312,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.CopyCloudBackupAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1270,6 +1332,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int GET_CLOUD_BACKUP_FIELD_NUMBER = 20;
+
   /**
    *
    *
@@ -1285,6 +1348,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasGetCloudBackup() {
     return actionCase_ == 20;
   }
+
   /**
    *
    *
@@ -1303,6 +1367,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.GetCloudBackupAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1321,6 +1386,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int UPDATE_CLOUD_BACKUP_FIELD_NUMBER = 21;
+
   /**
    *
    *
@@ -1336,6 +1402,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasUpdateCloudBackup() {
     return actionCase_ == 21;
   }
+
   /**
    *
    *
@@ -1354,6 +1421,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.UpdateCloudBackupAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1373,6 +1441,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DELETE_CLOUD_BACKUP_FIELD_NUMBER = 22;
+
   /**
    *
    *
@@ -1388,6 +1457,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasDeleteCloudBackup() {
     return actionCase_ == 22;
   }
+
   /**
    *
    *
@@ -1406,6 +1476,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.DeleteCloudBackupAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1425,6 +1496,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LIST_CLOUD_BACKUPS_FIELD_NUMBER = 23;
+
   /**
    *
    *
@@ -1440,6 +1512,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasListCloudBackups() {
     return actionCase_ == 23;
   }
+
   /**
    *
    *
@@ -1458,6 +1531,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ListCloudBackupsAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1477,6 +1551,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LIST_CLOUD_BACKUP_OPERATIONS_FIELD_NUMBER = 24;
+
   /**
    *
    *
@@ -1494,6 +1569,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasListCloudBackupOperations() {
     return actionCase_ == 24;
   }
+
   /**
    *
    *
@@ -1515,6 +1591,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ListCloudBackupOperationsAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1536,6 +1613,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int GET_OPERATION_FIELD_NUMBER = 25;
+
   /**
    *
    *
@@ -1551,6 +1629,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasGetOperation() {
     return actionCase_ == 25;
   }
+
   /**
    *
    *
@@ -1569,6 +1648,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.GetOperationAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1587,6 +1667,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CANCEL_OPERATION_FIELD_NUMBER = 26;
+
   /**
    *
    *
@@ -1602,6 +1683,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCancelOperation() {
     return actionCase_ == 26;
   }
+
   /**
    *
    *
@@ -1620,6 +1702,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.CancelOperationAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1639,6 +1722,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CHANGE_QUORUM_CLOUD_DATABASE_FIELD_NUMBER = 28;
+
   /**
    *
    *
@@ -1656,6 +1740,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasChangeQuorumCloudDatabase() {
     return actionCase_ == 28;
   }
+
   /**
    *
    *
@@ -1677,6 +1762,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -2290,6 +2376,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -2991,6 +3078,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CreateUserInstanceConfigAction.Builder,
             com.google.spanner.executor.v1.CreateUserInstanceConfigActionOrBuilder>
         createUserInstanceConfigBuilder_;
+
     /**
      *
      *
@@ -3008,6 +3096,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCreateUserInstanceConfig() {
       return actionCase_ == 1;
     }
+
     /**
      *
      *
@@ -3036,6 +3125,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CreateUserInstanceConfigAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3061,6 +3151,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -3083,6 +3174,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -3120,6 +3212,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -3147,6 +3240,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3162,6 +3256,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getCreateUserInstanceConfigBuilder() {
       return getCreateUserInstanceConfigFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3185,6 +3280,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CreateUserInstanceConfigAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3226,6 +3322,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.UpdateUserInstanceConfigAction.Builder,
             com.google.spanner.executor.v1.UpdateUserInstanceConfigActionOrBuilder>
         updateUserInstanceConfigBuilder_;
+
     /**
      *
      *
@@ -3243,6 +3340,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasUpdateUserInstanceConfig() {
       return actionCase_ == 2;
     }
+
     /**
      *
      *
@@ -3271,6 +3369,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateUserInstanceConfigAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3296,6 +3395,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -3318,6 +3418,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -3355,6 +3456,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -3382,6 +3484,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3397,6 +3500,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getUpdateUserInstanceConfigBuilder() {
       return getUpdateUserInstanceConfigFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3420,6 +3524,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateUserInstanceConfigAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3461,6 +3566,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.DeleteUserInstanceConfigAction.Builder,
             com.google.spanner.executor.v1.DeleteUserInstanceConfigActionOrBuilder>
         deleteUserInstanceConfigBuilder_;
+
     /**
      *
      *
@@ -3478,6 +3584,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasDeleteUserInstanceConfig() {
       return actionCase_ == 3;
     }
+
     /**
      *
      *
@@ -3506,6 +3613,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DeleteUserInstanceConfigAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3531,6 +3639,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -3553,6 +3662,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -3590,6 +3700,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -3617,6 +3728,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3632,6 +3744,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getDeleteUserInstanceConfigBuilder() {
       return getDeleteUserInstanceConfigFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3655,6 +3768,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DeleteUserInstanceConfigAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3696,6 +3810,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.GetCloudInstanceConfigAction.Builder,
             com.google.spanner.executor.v1.GetCloudInstanceConfigActionOrBuilder>
         getCloudInstanceConfigBuilder_;
+
     /**
      *
      *
@@ -3712,6 +3827,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasGetCloudInstanceConfig() {
       return actionCase_ == 4;
     }
+
     /**
      *
      *
@@ -3738,6 +3854,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetCloudInstanceConfigAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3762,6 +3879,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -3783,6 +3901,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -3819,6 +3938,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 4;
       return this;
     }
+
     /**
      *
      *
@@ -3845,6 +3965,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3859,6 +3980,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getGetCloudInstanceConfigBuilder() {
       return getGetCloudInstanceConfigFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3881,6 +4003,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetCloudInstanceConfigAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3921,6 +4044,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ListCloudInstanceConfigsAction.Builder,
             com.google.spanner.executor.v1.ListCloudInstanceConfigsActionOrBuilder>
         listInstanceConfigsBuilder_;
+
     /**
      *
      *
@@ -3937,6 +4061,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasListInstanceConfigs() {
       return actionCase_ == 5;
     }
+
     /**
      *
      *
@@ -3963,6 +4088,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudInstanceConfigsAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3987,6 +4113,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 5;
       return this;
     }
+
     /**
      *
      *
@@ -4008,6 +4135,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 5;
       return this;
     }
+
     /**
      *
      *
@@ -4044,6 +4172,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 5;
       return this;
     }
+
     /**
      *
      *
@@ -4070,6 +4199,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4084,6 +4214,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getListInstanceConfigsBuilder() {
       return getListInstanceConfigsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4106,6 +4237,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudInstanceConfigsAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4146,6 +4278,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CreateCloudInstanceAction.Builder,
             com.google.spanner.executor.v1.CreateCloudInstanceActionOrBuilder>
         createCloudInstanceBuilder_;
+
     /**
      *
      *
@@ -4161,6 +4294,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCreateCloudInstance() {
       return actionCase_ == 6;
     }
+
     /**
      *
      *
@@ -4186,6 +4320,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CreateCloudInstanceAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4209,6 +4344,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 6;
       return this;
     }
+
     /**
      *
      *
@@ -4229,6 +4365,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 6;
       return this;
     }
+
     /**
      *
      *
@@ -4263,6 +4400,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 6;
       return this;
     }
+
     /**
      *
      *
@@ -4288,6 +4426,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4301,6 +4440,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getCreateCloudInstanceBuilder() {
       return getCreateCloudInstanceFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4322,6 +4462,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CreateCloudInstanceAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4360,6 +4501,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.UpdateCloudInstanceAction.Builder,
             com.google.spanner.executor.v1.UpdateCloudInstanceActionOrBuilder>
         updateCloudInstanceBuilder_;
+
     /**
      *
      *
@@ -4375,6 +4517,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasUpdateCloudInstance() {
       return actionCase_ == 7;
     }
+
     /**
      *
      *
@@ -4400,6 +4543,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateCloudInstanceAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4423,6 +4567,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 7;
       return this;
     }
+
     /**
      *
      *
@@ -4443,6 +4588,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 7;
       return this;
     }
+
     /**
      *
      *
@@ -4477,6 +4623,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 7;
       return this;
     }
+
     /**
      *
      *
@@ -4502,6 +4649,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4515,6 +4663,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getUpdateCloudInstanceBuilder() {
       return getUpdateCloudInstanceFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4536,6 +4685,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateCloudInstanceAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4574,6 +4724,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.DeleteCloudInstanceAction.Builder,
             com.google.spanner.executor.v1.DeleteCloudInstanceActionOrBuilder>
         deleteCloudInstanceBuilder_;
+
     /**
      *
      *
@@ -4589,6 +4740,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasDeleteCloudInstance() {
       return actionCase_ == 8;
     }
+
     /**
      *
      *
@@ -4614,6 +4766,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DeleteCloudInstanceAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4637,6 +4790,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 8;
       return this;
     }
+
     /**
      *
      *
@@ -4657,6 +4811,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 8;
       return this;
     }
+
     /**
      *
      *
@@ -4691,6 +4846,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 8;
       return this;
     }
+
     /**
      *
      *
@@ -4716,6 +4872,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4729,6 +4886,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getDeleteCloudInstanceBuilder() {
       return getDeleteCloudInstanceFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4750,6 +4908,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DeleteCloudInstanceAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4788,6 +4947,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ListCloudInstancesAction.Builder,
             com.google.spanner.executor.v1.ListCloudInstancesActionOrBuilder>
         listCloudInstancesBuilder_;
+
     /**
      *
      *
@@ -4803,6 +4963,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasListCloudInstances() {
       return actionCase_ == 9;
     }
+
     /**
      *
      *
@@ -4828,6 +4989,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudInstancesAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4851,6 +5013,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 9;
       return this;
     }
+
     /**
      *
      *
@@ -4871,6 +5034,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 9;
       return this;
     }
+
     /**
      *
      *
@@ -4905,6 +5069,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 9;
       return this;
     }
+
     /**
      *
      *
@@ -4930,6 +5095,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4943,6 +5109,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getListCloudInstancesBuilder() {
       return getListCloudInstancesFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4964,6 +5131,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudInstancesAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5002,6 +5170,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.GetCloudInstanceAction.Builder,
             com.google.spanner.executor.v1.GetCloudInstanceActionOrBuilder>
         getCloudInstanceBuilder_;
+
     /**
      *
      *
@@ -5017,6 +5186,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasGetCloudInstance() {
       return actionCase_ == 10;
     }
+
     /**
      *
      *
@@ -5042,6 +5212,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetCloudInstanceAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5065,6 +5236,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 10;
       return this;
     }
+
     /**
      *
      *
@@ -5085,6 +5257,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 10;
       return this;
     }
+
     /**
      *
      *
@@ -5119,6 +5292,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 10;
       return this;
     }
+
     /**
      *
      *
@@ -5144,6 +5318,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -5157,6 +5332,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getGetCloudInstanceBuilder() {
       return getGetCloudInstanceFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5178,6 +5354,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetCloudInstanceAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5216,6 +5393,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CreateCloudDatabaseAction.Builder,
             com.google.spanner.executor.v1.CreateCloudDatabaseActionOrBuilder>
         createCloudDatabaseBuilder_;
+
     /**
      *
      *
@@ -5232,6 +5410,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCreateCloudDatabase() {
       return actionCase_ == 11;
     }
+
     /**
      *
      *
@@ -5258,6 +5437,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CreateCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5282,6 +5462,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 11;
       return this;
     }
+
     /**
      *
      *
@@ -5303,6 +5484,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 11;
       return this;
     }
+
     /**
      *
      *
@@ -5338,6 +5520,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 11;
       return this;
     }
+
     /**
      *
      *
@@ -5364,6 +5547,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -5378,6 +5562,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getCreateCloudDatabaseBuilder() {
       return getCreateCloudDatabaseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5400,6 +5585,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CreateCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5439,6 +5625,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction.Builder,
             com.google.spanner.executor.v1.UpdateCloudDatabaseDdlActionOrBuilder>
         updateCloudDatabaseDdlBuilder_;
+
     /**
      *
      *
@@ -5456,6 +5643,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasUpdateCloudDatabaseDdl() {
       return actionCase_ == 12;
     }
+
     /**
      *
      *
@@ -5483,6 +5671,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5508,6 +5697,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 12;
       return this;
     }
+
     /**
      *
      *
@@ -5530,6 +5720,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 12;
       return this;
     }
+
     /**
      *
      *
@@ -5567,6 +5758,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 12;
       return this;
     }
+
     /**
      *
      *
@@ -5594,6 +5786,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -5609,6 +5802,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getUpdateCloudDatabaseDdlBuilder() {
       return getUpdateCloudDatabaseDdlFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5632,6 +5826,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5673,6 +5868,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.UpdateCloudDatabaseAction.Builder,
             com.google.spanner.executor.v1.UpdateCloudDatabaseActionOrBuilder>
         updateCloudDatabaseBuilder_;
+
     /**
      *
      *
@@ -5689,6 +5885,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasUpdateCloudDatabase() {
       return actionCase_ == 27;
     }
+
     /**
      *
      *
@@ -5715,6 +5912,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5739,6 +5937,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 27;
       return this;
     }
+
     /**
      *
      *
@@ -5760,6 +5959,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 27;
       return this;
     }
+
     /**
      *
      *
@@ -5795,6 +5995,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 27;
       return this;
     }
+
     /**
      *
      *
@@ -5821,6 +6022,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -5835,6 +6037,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getUpdateCloudDatabaseBuilder() {
       return getUpdateCloudDatabaseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5857,6 +6060,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5896,6 +6100,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.DropCloudDatabaseAction.Builder,
             com.google.spanner.executor.v1.DropCloudDatabaseActionOrBuilder>
         dropCloudDatabaseBuilder_;
+
     /**
      *
      *
@@ -5911,6 +6116,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasDropCloudDatabase() {
       return actionCase_ == 13;
     }
+
     /**
      *
      *
@@ -5936,6 +6142,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DropCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5959,6 +6166,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 13;
       return this;
     }
+
     /**
      *
      *
@@ -5979,6 +6187,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 13;
       return this;
     }
+
     /**
      *
      *
@@ -6013,6 +6222,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 13;
       return this;
     }
+
     /**
      *
      *
@@ -6038,6 +6248,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -6051,6 +6262,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getDropCloudDatabaseBuilder() {
       return getDropCloudDatabaseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -6072,6 +6284,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DropCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6110,6 +6323,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ListCloudDatabasesAction.Builder,
             com.google.spanner.executor.v1.ListCloudDatabasesActionOrBuilder>
         listCloudDatabasesBuilder_;
+
     /**
      *
      *
@@ -6125,6 +6339,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasListCloudDatabases() {
       return actionCase_ == 14;
     }
+
     /**
      *
      *
@@ -6150,6 +6365,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudDatabasesAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6173,6 +6389,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 14;
       return this;
     }
+
     /**
      *
      *
@@ -6193,6 +6410,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 14;
       return this;
     }
+
     /**
      *
      *
@@ -6227,6 +6445,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 14;
       return this;
     }
+
     /**
      *
      *
@@ -6252,6 +6471,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -6265,6 +6485,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getListCloudDatabasesBuilder() {
       return getListCloudDatabasesFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -6286,6 +6507,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudDatabasesAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6324,6 +6546,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ListCloudDatabaseOperationsAction.Builder,
             com.google.spanner.executor.v1.ListCloudDatabaseOperationsActionOrBuilder>
         listCloudDatabaseOperationsBuilder_;
+
     /**
      *
      *
@@ -6341,6 +6564,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasListCloudDatabaseOperations() {
       return actionCase_ == 15;
     }
+
     /**
      *
      *
@@ -6371,6 +6595,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             .getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6396,6 +6621,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 15;
       return this;
     }
+
     /**
      *
      *
@@ -6418,6 +6644,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 15;
       return this;
     }
+
     /**
      *
      *
@@ -6455,6 +6682,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 15;
       return this;
     }
+
     /**
      *
      *
@@ -6482,6 +6710,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -6497,6 +6726,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getListCloudDatabaseOperationsBuilder() {
       return getListCloudDatabaseOperationsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -6521,6 +6751,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             .getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6562,6 +6793,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.RestoreCloudDatabaseAction.Builder,
             com.google.spanner.executor.v1.RestoreCloudDatabaseActionOrBuilder>
         restoreCloudDatabaseBuilder_;
+
     /**
      *
      *
@@ -6578,6 +6810,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasRestoreCloudDatabase() {
       return actionCase_ == 16;
     }
+
     /**
      *
      *
@@ -6604,6 +6837,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.RestoreCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6628,6 +6862,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 16;
       return this;
     }
+
     /**
      *
      *
@@ -6649,6 +6884,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 16;
       return this;
     }
+
     /**
      *
      *
@@ -6684,6 +6920,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 16;
       return this;
     }
+
     /**
      *
      *
@@ -6710,6 +6947,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -6724,6 +6962,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getRestoreCloudDatabaseBuilder() {
       return getRestoreCloudDatabaseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -6746,6 +6985,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.RestoreCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6785,6 +7025,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.GetCloudDatabaseAction.Builder,
             com.google.spanner.executor.v1.GetCloudDatabaseActionOrBuilder>
         getCloudDatabaseBuilder_;
+
     /**
      *
      *
@@ -6800,6 +7041,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasGetCloudDatabase() {
       return actionCase_ == 17;
     }
+
     /**
      *
      *
@@ -6825,6 +7067,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6848,6 +7091,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 17;
       return this;
     }
+
     /**
      *
      *
@@ -6868,6 +7112,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 17;
       return this;
     }
+
     /**
      *
      *
@@ -6902,6 +7147,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 17;
       return this;
     }
+
     /**
      *
      *
@@ -6927,6 +7173,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -6940,6 +7187,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getGetCloudDatabaseBuilder() {
       return getGetCloudDatabaseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -6961,6 +7209,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -6999,6 +7248,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CreateCloudBackupAction.Builder,
             com.google.spanner.executor.v1.CreateCloudBackupActionOrBuilder>
         createCloudBackupBuilder_;
+
     /**
      *
      *
@@ -7014,6 +7264,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCreateCloudBackup() {
       return actionCase_ == 18;
     }
+
     /**
      *
      *
@@ -7039,6 +7290,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CreateCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7062,6 +7314,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 18;
       return this;
     }
+
     /**
      *
      *
@@ -7082,6 +7335,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 18;
       return this;
     }
+
     /**
      *
      *
@@ -7116,6 +7370,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 18;
       return this;
     }
+
     /**
      *
      *
@@ -7141,6 +7396,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -7154,6 +7410,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getCreateCloudBackupBuilder() {
       return getCreateCloudBackupFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -7175,6 +7432,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CreateCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7213,6 +7471,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CopyCloudBackupAction.Builder,
             com.google.spanner.executor.v1.CopyCloudBackupActionOrBuilder>
         copyCloudBackupBuilder_;
+
     /**
      *
      *
@@ -7228,6 +7487,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCopyCloudBackup() {
       return actionCase_ == 19;
     }
+
     /**
      *
      *
@@ -7253,6 +7513,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CopyCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7275,6 +7536,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 19;
       return this;
     }
+
     /**
      *
      *
@@ -7295,6 +7557,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 19;
       return this;
     }
+
     /**
      *
      *
@@ -7329,6 +7592,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 19;
       return this;
     }
+
     /**
      *
      *
@@ -7354,6 +7618,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -7367,6 +7632,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getCopyCloudBackupBuilder() {
       return getCopyCloudBackupFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -7388,6 +7654,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CopyCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7426,6 +7693,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.GetCloudBackupAction.Builder,
             com.google.spanner.executor.v1.GetCloudBackupActionOrBuilder>
         getCloudBackupBuilder_;
+
     /**
      *
      *
@@ -7441,6 +7709,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasGetCloudBackup() {
       return actionCase_ == 20;
     }
+
     /**
      *
      *
@@ -7466,6 +7735,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7488,6 +7758,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 20;
       return this;
     }
+
     /**
      *
      *
@@ -7508,6 +7779,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 20;
       return this;
     }
+
     /**
      *
      *
@@ -7541,6 +7813,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 20;
       return this;
     }
+
     /**
      *
      *
@@ -7566,6 +7839,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -7578,6 +7852,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.GetCloudBackupAction.Builder getGetCloudBackupBuilder() {
       return getGetCloudBackupFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -7599,6 +7874,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7637,6 +7913,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.UpdateCloudBackupAction.Builder,
             com.google.spanner.executor.v1.UpdateCloudBackupActionOrBuilder>
         updateCloudBackupBuilder_;
+
     /**
      *
      *
@@ -7652,6 +7929,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasUpdateCloudBackup() {
       return actionCase_ == 21;
     }
+
     /**
      *
      *
@@ -7677,6 +7955,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7700,6 +7979,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 21;
       return this;
     }
+
     /**
      *
      *
@@ -7720,6 +8000,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 21;
       return this;
     }
+
     /**
      *
      *
@@ -7754,6 +8035,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 21;
       return this;
     }
+
     /**
      *
      *
@@ -7779,6 +8061,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -7792,6 +8075,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getUpdateCloudBackupBuilder() {
       return getUpdateCloudBackupFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -7813,6 +8097,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.UpdateCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7851,6 +8136,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.DeleteCloudBackupAction.Builder,
             com.google.spanner.executor.v1.DeleteCloudBackupActionOrBuilder>
         deleteCloudBackupBuilder_;
+
     /**
      *
      *
@@ -7866,6 +8152,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasDeleteCloudBackup() {
       return actionCase_ == 22;
     }
+
     /**
      *
      *
@@ -7891,6 +8178,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DeleteCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -7914,6 +8202,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 22;
       return this;
     }
+
     /**
      *
      *
@@ -7934,6 +8223,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 22;
       return this;
     }
+
     /**
      *
      *
@@ -7968,6 +8258,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 22;
       return this;
     }
+
     /**
      *
      *
@@ -7993,6 +8284,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -8006,6 +8298,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getDeleteCloudBackupBuilder() {
       return getDeleteCloudBackupFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -8027,6 +8320,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DeleteCloudBackupAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8065,6 +8359,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ListCloudBackupsAction.Builder,
             com.google.spanner.executor.v1.ListCloudBackupsActionOrBuilder>
         listCloudBackupsBuilder_;
+
     /**
      *
      *
@@ -8080,6 +8375,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasListCloudBackups() {
       return actionCase_ == 23;
     }
+
     /**
      *
      *
@@ -8105,6 +8401,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudBackupsAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8128,6 +8425,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 23;
       return this;
     }
+
     /**
      *
      *
@@ -8148,6 +8446,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 23;
       return this;
     }
+
     /**
      *
      *
@@ -8182,6 +8481,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 23;
       return this;
     }
+
     /**
      *
      *
@@ -8207,6 +8507,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -8220,6 +8521,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getListCloudBackupsBuilder() {
       return getListCloudBackupsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -8241,6 +8543,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudBackupsAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8279,6 +8582,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ListCloudBackupOperationsAction.Builder,
             com.google.spanner.executor.v1.ListCloudBackupOperationsActionOrBuilder>
         listCloudBackupOperationsBuilder_;
+
     /**
      *
      *
@@ -8296,6 +8600,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasListCloudBackupOperations() {
       return actionCase_ == 24;
     }
+
     /**
      *
      *
@@ -8324,6 +8629,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudBackupOperationsAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8349,6 +8655,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 24;
       return this;
     }
+
     /**
      *
      *
@@ -8371,6 +8678,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 24;
       return this;
     }
+
     /**
      *
      *
@@ -8408,6 +8716,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 24;
       return this;
     }
+
     /**
      *
      *
@@ -8435,6 +8744,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -8450,6 +8760,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getListCloudBackupOperationsBuilder() {
       return getListCloudBackupOperationsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -8473,6 +8784,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ListCloudBackupOperationsAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8514,6 +8826,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.GetOperationAction.Builder,
             com.google.spanner.executor.v1.GetOperationActionOrBuilder>
         getOperationBuilder_;
+
     /**
      *
      *
@@ -8529,6 +8842,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasGetOperation() {
       return actionCase_ == 25;
     }
+
     /**
      *
      *
@@ -8554,6 +8868,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetOperationAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8576,6 +8891,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 25;
       return this;
     }
+
     /**
      *
      *
@@ -8596,6 +8912,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 25;
       return this;
     }
+
     /**
      *
      *
@@ -8628,6 +8945,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 25;
       return this;
     }
+
     /**
      *
      *
@@ -8653,6 +8971,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -8665,6 +8984,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.GetOperationAction.Builder getGetOperationBuilder() {
       return getGetOperationFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -8685,6 +9005,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.GetOperationAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8723,6 +9044,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CancelOperationAction.Builder,
             com.google.spanner.executor.v1.CancelOperationActionOrBuilder>
         cancelOperationBuilder_;
+
     /**
      *
      *
@@ -8738,6 +9060,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCancelOperation() {
       return actionCase_ == 26;
     }
+
     /**
      *
      *
@@ -8763,6 +9086,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CancelOperationAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8785,6 +9109,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 26;
       return this;
     }
+
     /**
      *
      *
@@ -8805,6 +9130,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 26;
       return this;
     }
+
     /**
      *
      *
@@ -8839,6 +9165,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 26;
       return this;
     }
+
     /**
      *
      *
@@ -8864,6 +9191,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -8877,6 +9205,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getCancelOperationBuilder() {
       return getCancelOperationFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -8898,6 +9227,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CancelOperationAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -8936,6 +9266,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.Builder,
             com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseActionOrBuilder>
         changeQuorumCloudDatabaseBuilder_;
+
     /**
      *
      *
@@ -8953,6 +9284,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasChangeQuorumCloudDatabase() {
       return actionCase_ == 28;
     }
+
     /**
      *
      *
@@ -8981,6 +9313,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -9006,6 +9339,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 28;
       return this;
     }
+
     /**
      *
      *
@@ -9028,6 +9362,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 28;
       return this;
     }
+
     /**
      *
      *
@@ -9065,6 +9400,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 28;
       return this;
     }
+
     /**
      *
      *
@@ -9092,6 +9428,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -9107,6 +9444,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         getChangeQuorumCloudDatabaseBuilder() {
       return getChangeQuorumCloudDatabaseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -9130,6 +9468,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *

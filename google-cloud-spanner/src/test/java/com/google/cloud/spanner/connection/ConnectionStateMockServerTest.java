@@ -223,7 +223,7 @@ public class ConnectionStateMockServerTest extends AbstractMockServerTest {
 
           connection.beginTransaction();
           // Change the value and read it back in the same transaction.
-          connection.setReturnCommitStats(true, /* local = */ true);
+          connection.setReturnCommitStats(true, /* local= */ true);
           assertTrue(connection.isReturnCommitStats());
           // Both rolling back and committing will undo the connection state change.
           if (commit) {

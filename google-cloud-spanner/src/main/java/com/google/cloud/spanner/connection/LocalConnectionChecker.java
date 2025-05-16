@@ -87,9 +87,10 @@ class LocalConnectionChecker {
         } else {
           msg =
               String.format(
-                  "The environment variable SPANNER_EMULATOR_HOST has been set to '%s', but no running"
-                      + " emulator or other server could be found at that address.\n"
-                      + "Please check the environment variable and/or that the emulator is running.",
+                  "The environment variable SPANNER_EMULATOR_HOST has been set to '%s', but no"
+                      + " running emulator or other server could be found at that address.\n"
+                      + "Please check the environment variable and/or that the emulator is"
+                      + " running.",
                   emulatorHost);
         }
         throw SpannerExceptionFactory.newSpannerException(ErrorCode.UNAVAILABLE, msg);

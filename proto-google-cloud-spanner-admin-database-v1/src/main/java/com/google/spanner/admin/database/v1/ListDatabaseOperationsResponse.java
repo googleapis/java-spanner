@@ -34,6 +34,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.ListDatabaseOperationsResponse)
     ListDatabaseOperationsResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ListDatabaseOperationsResponse.newBuilder() to construct.
   private ListDatabaseOperationsResponse(
       com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -70,6 +71,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.longrunning.Operation> operations_;
+
   /**
    *
    *
@@ -87,6 +89,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
   public java.util.List<com.google.longrunning.Operation> getOperationsList() {
     return operations_;
   }
+
   /**
    *
    *
@@ -105,6 +108,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       getOperationsOrBuilderList() {
     return operations_;
   }
+
   /**
    *
    *
@@ -122,6 +126,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
   public int getOperationsCount() {
     return operations_.size();
   }
+
   /**
    *
    *
@@ -139,6 +144,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
   public com.google.longrunning.Operation getOperations(int index) {
     return operations_.get(index);
   }
+
   /**
    *
    *
@@ -161,6 +167,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object nextPageToken_ = "";
+
   /**
    *
    *
@@ -186,6 +193,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       return s;
     }
   }
+
   /**
    *
    *
@@ -384,6 +392,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -671,6 +680,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
         return operationsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -691,6 +701,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
         return operationsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -711,6 +722,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
         return operationsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -737,6 +749,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -761,6 +774,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -787,6 +801,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -813,6 +828,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -836,6 +852,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -860,6 +877,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -884,6 +902,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -907,6 +926,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -930,6 +950,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       }
       return this;
     }
+
     /**
      *
      *
@@ -946,6 +967,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
     public com.google.longrunning.Operation.Builder getOperationsBuilder(int index) {
       return getOperationsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -966,6 +988,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
         return operationsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -987,6 +1010,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
         return java.util.Collections.unmodifiableList(operations_);
       }
     }
+
     /**
      *
      *
@@ -1004,6 +1028,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       return getOperationsFieldBuilder()
           .addBuilder(com.google.longrunning.Operation.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1021,6 +1046,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       return getOperationsFieldBuilder()
           .addBuilder(index, com.google.longrunning.Operation.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1056,6 +1082,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
     }
 
     private java.lang.Object nextPageToken_ = "";
+
     /**
      *
      *
@@ -1080,6 +1107,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1104,6 +1132,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1127,6 +1156,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1146,6 +1176,7 @@ public final class ListDatabaseOperationsResponse extends com.google.protobuf.Ge
       onChanged();
       return this;
     }
+
     /**
      *
      *

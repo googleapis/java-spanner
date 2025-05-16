@@ -36,6 +36,7 @@ public interface ReplicaInfoOrBuilder
    * @return The location.
    */
   java.lang.String getLocation();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface ReplicaInfoOrBuilder
    * @return The enum numeric value on the wire for type.
    */
   int getTypeValue();
+
   /**
    *
    *

@@ -2170,6 +2170,279 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertFalse(mockSpanner.getSession(executeSqlRequests.get(2).getSession()).getMultiplexed());
   }
 
+  @Test
+  public void
+      testRWTransactionWithTransactionManager_CommitAborted_SetsTransactionId_AndUsedInNewInstance() {
+    // The below test verifies the behaviour of begin(AbortedException) method which is used to
+    // maintain transaction priority if resetForRetry() is not called.
+
+    // This test performs the following steps:
+    // 1. Simulates an ABORTED exception during commit and verifies that the transaction ID is
+    // included in the AbortedException.
+    // 2. Passes the ABORTED exception to the begin(AbortedException) method of a new
+    // TransactionManager, and verifies that the transaction ID from the failed transaction is sent
+    // during the inline begin of the first request.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+
+    ByteString abortedTransactionID = null;
+    AbortedException exception = null;
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
+      try {
+        try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+          //noinspection StatementWithEmptyBody
+          while (resultSet.next()) {
+            // ignore
+          }
+        }
+        manager.commit();
+        assertNotNull(manager.getCommitTimestamp());
+      } catch (AbortedException e) {
+        // The transactionID of the Aborted transaction should be set in AbortedException class.
+        assertNotNull(e.getTransactionID());
+        abortedTransactionID = e.getTransactionID();
+        exception = e;
+      }
+    }
+    // Verify that the transactionID of the aborted transaction is set.
+    assertNotNull(abortedTransactionID);
+    assertNotNull(exception);
+    mockSpanner.clearRequests();
+
+    // Pass AbortedException while invoking begin on the new manager instance.
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin(exception);
+      while (true) {
+        try {
+          try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+            //noinspection StatementWithEmptyBody
+            while (resultSet.next()) {
+              // ignore
+            }
+          }
+          manager.commit();
+          assertNotNull(manager.getCommitTimestamp());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetry();
+        }
+      }
+    }
+
+    // Verify that the ExecuteSqlRequest with the inline begin passes the transactionID of the
+    // previously aborted transaction.
+    List<ExecuteSqlRequest> executeSqlRequests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1, executeSqlRequests.size());
+    assertTrue(mockSpanner.getSession(executeSqlRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId(),
+        abortedTransactionID);
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
+  @Test
+  public void
+      testRWTransactionWithTransactionManager_ExecuteSQLAborted_SetsTransactionId_AndUsedInNewInstance() {
+    // This test performs the following steps:
+    // 1. Simulates an ABORTED exception during ExecuteSQL and verifies that the transaction ID is
+    // included in the AbortedException.
+    // 2. Passes the ABORTED exception to the begin(AbortedException) method of a new
+    // TransactionManager, and verifies that the transaction ID from the failed transaction is sent
+    // during the inline begin of the first request.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    ByteString abortedTransactionID = null;
+    AbortedException exception = null;
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
+      try {
+        try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+          //noinspection StatementWithEmptyBody
+          while (resultSet.next()) {
+            // ignore
+          }
+        }
+
+        // Simulate an ABORTED in next ExecuteSQL request.
+        mockSpanner.setExecuteStreamingSqlExecutionTime(
+            SimulatedExecutionTime.ofException(
+                mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+
+        try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+          //noinspection StatementWithEmptyBody
+          while (resultSet.next()) {
+            // ignore
+          }
+        }
+        manager.commit();
+        assertNotNull(manager.getCommitTimestamp());
+      } catch (AbortedException e) {
+        // The transactionID of the Aborted transaction should be set in AbortedException class.
+        assertNotNull(e.getTransactionID());
+        abortedTransactionID = e.getTransactionID();
+        exception = e;
+      }
+    }
+    // Verify that the transactionID of the aborted transaction is set.
+    assertNotNull(abortedTransactionID);
+    assertNotNull(exception);
+    mockSpanner.clearRequests();
+
+    // Pass AbortedException while invoking begin on the new manager instance.
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin(exception);
+      while (true) {
+        try {
+          try (ResultSet resultSet = transaction.executeQuery(STATEMENT)) {
+            //noinspection StatementWithEmptyBody
+            while (resultSet.next()) {
+              // ignore
+            }
+          }
+          manager.commit();
+          assertNotNull(manager.getCommitTimestamp());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetry();
+        }
+      }
+    }
+
+    // Verify that the ExecuteSqlRequest with inline begin includes the transaction ID from the
+    // previously aborted transaction.
+    List<ExecuteSqlRequest> executeSqlRequests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1, executeSqlRequests.size());
+    assertTrue(mockSpanner.getSession(executeSqlRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId(),
+        abortedTransactionID);
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
+  @Test
+  public void
+      testRWTransactionWithAsyncTransactionManager_CommitAborted_SetsTransactionId_AndUsedInNewInstance()
+          throws Exception {
+    // This test performs the following steps:
+    // 1. Simulates an ABORTED exception during ExecuteSQL and verifies that the transaction ID is
+    // included in the AbortedException.
+    // 2. Passes the ABORTED exception to the begin(AbortedException) method of a new
+    // AsyncTransactionManager, and verifies that the transaction ID from the failed transaction is
+    // sent
+    // during the inline begin of the first request.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    ByteString abortedTransactionID = null;
+    AbortedException exception = null;
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
+      try {
+        AsyncTransactionStep<Void, Long> updateCount =
+            transactionContextFuture.then(
+                (transaction, ignored) -> transaction.executeUpdateAsync(UPDATE_STATEMENT),
+                MoreExecutors.directExecutor());
+        CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
+        assertEquals(UPDATE_COUNT, updateCount.get().longValue());
+        assertNotNull(commitTimestamp.get());
+      } catch (AbortedException e) {
+        assertNotNull(e.getTransactionID());
+        exception = e;
+        abortedTransactionID = e.getTransactionID();
+      }
+    }
+
+    // Verify that the transactionID of the aborted transaction is set.
+    assertNotNull(abortedTransactionID);
+    assertNotNull(exception);
+    mockSpanner.clearRequests();
+
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync(exception);
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, Long> updateCount =
+              transactionContextFuture.then(
+                  (transaction, ignored) -> transaction.executeUpdateAsync(UPDATE_STATEMENT),
+                  MoreExecutors.directExecutor());
+          CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
+          assertEquals(UPDATE_COUNT, updateCount.get().longValue());
+          assertNotNull(commitTimestamp.get());
+          break;
+        } catch (AbortedException e) {
+          transactionContextFuture = manager.resetForRetryAsync();
+        }
+      }
+    }
+
+    List<ExecuteSqlRequest> executeSqlRequests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1, executeSqlRequests.size());
+    assertTrue(mockSpanner.getSession(executeSqlRequests.get(0).getSession()).getMultiplexed());
+    assertNotNull(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId());
+    assertEquals(
+        executeSqlRequests
+            .get(0)
+            .getTransaction()
+            .getBegin()
+            .getReadWrite()
+            .getMultiplexedSessionPreviousTransactionId(),
+        abortedTransactionID);
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
     assertNotNull(client.multiplexedSessionDatabaseClient);
     SessionReference sessionReference =

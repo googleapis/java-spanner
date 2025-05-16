@@ -219,7 +219,8 @@ public class ITTransactionManagerAsyncTest {
   }
 
   @Ignore(
-      "Cloud Spanner now seems to return CANCELLED instead of ABORTED when a transaction is invalidated by a later transaction in the same session")
+      "Cloud Spanner now seems to return CANCELLED instead of ABORTED when a transaction is"
+          + " invalidated by a later transaction in the same session")
   @Test
   public void testAbortAndRetry() throws InterruptedException, ExecutionException {
     assumeFalse(

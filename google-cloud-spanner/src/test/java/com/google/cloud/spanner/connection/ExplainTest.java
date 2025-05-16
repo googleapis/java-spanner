@@ -120,7 +120,8 @@ public class ExplainTest extends AbstractMockServerTest {
         while (resultSet.next()) {
           if (count == 1) {
             fail(
-                "The resultset was expected t contains exactly 1 row but it contains more than 1 row");
+                "The resultset was expected t contains exactly 1 row but it contains more than 1"
+                    + " row");
           }
 
           ++count;
@@ -153,7 +154,8 @@ public class ExplainTest extends AbstractMockServerTest {
         while (resultSet.next()) {
           if (count == 1) {
             fail(
-                "The resultset was expected t contains exactly 1 row but it contains more than 1 row");
+                "The resultset was expected t contains exactly 1 row but it contains more than 1"
+                    + " row");
           }
 
           ++count;

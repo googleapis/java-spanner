@@ -37,6 +37,7 @@ public class SpannerRpcViews {
 
   /** Unit to represent milliseconds. */
   private static final String MILLISECOND = "ms";
+
   /** Unit to represent counts. */
   private static final String COUNT = "1";
 
@@ -51,13 +52,16 @@ public class SpannerRpcViews {
   public static final MeasureLong SPANNER_GFE_LATENCY =
       MeasureLong.create(
           "cloud.google.com/java/spanner/gfe_latency",
-          "Latency between Google's network receiving an RPC and reading back the first byte of the response",
+          "Latency between Google's network receiving an RPC and reading back the first byte of the"
+              + " response",
           MILLISECOND);
+
   /** Number of responses without the server-timing header. */
   public static final MeasureLong SPANNER_GFE_HEADER_MISSING_COUNT =
       MeasureLong.create(
           "cloud.google.com/java/spanner/gfe_header_missing_count",
-          "Number of RPC responses received without the server-timing header, most likely means that the RPC never reached Google's network",
+          "Number of RPC responses received without the server-timing header, most likely means"
+              + " that the RPC never reached Google's network",
           COUNT);
 
   static final List<Double> RPC_MILLIS_BUCKET_BOUNDARIES =
@@ -72,7 +76,8 @@ public class SpannerRpcViews {
   static final View SPANNER_GFE_LATENCY_VIEW =
       View.create(
           View.Name.create("cloud.google.com/java/spanner/gfe_latency"),
-          "Latency between Google's network receiving an RPC and reading back the first byte of the response",
+          "Latency between Google's network receiving an RPC and reading back the first byte of the"
+              + " response",
           SPANNER_GFE_LATENCY,
           AGGREGATION_WITH_MILLIS_HISTOGRAM,
           ImmutableList.of(METHOD, PROJECT_ID, INSTANCE_ID, DATABASE_ID));
@@ -81,7 +86,8 @@ public class SpannerRpcViews {
   static final View SPANNER_GFE_HEADER_MISSING_COUNT_VIEW =
       View.create(
           View.Name.create("cloud.google.com/java/spanner/gfe_header_missing_count"),
-          "Number of RPC responses received without the server-timing header, most likely means that the RPC never reached Google's network",
+          "Number of RPC responses received without the server-timing header, most likely means"
+              + " that the RPC never reached Google's network",
           SPANNER_GFE_HEADER_MISSING_COUNT,
           SUM,
           ImmutableList.of(METHOD, PROJECT_ID, INSTANCE_ID, DATABASE_ID));
@@ -99,7 +105,8 @@ public class SpannerRpcViews {
    */
   @VisibleForTesting
   @ObsoleteApi(
-      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
+      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and"
+          + " gfe_header_missing_count metrics.")
   public static void registerGfeLatencyAndHeaderMissingCountViews() {
     if (SpannerOptions.isEnabledOpenCensusMetrics()) {
       viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
@@ -116,7 +123,8 @@ public class SpannerRpcViews {
    */
   @VisibleForTesting
   @ObsoleteApi(
-      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
+      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and"
+          + " gfe_header_missing_count metrics.")
   public static void registerGfeLatencyView() {
     if (SpannerOptions.isEnabledOpenCensusMetrics()) {
       viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
@@ -132,7 +140,8 @@ public class SpannerRpcViews {
    */
   @VisibleForTesting
   @ObsoleteApi(
-      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
+      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and"
+          + " gfe_header_missing_count metrics.")
   public static void registerGfeHeaderMissingCountView() {
     if (SpannerOptions.isEnabledOpenCensusMetrics()) {
       viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);

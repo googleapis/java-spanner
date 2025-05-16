@@ -61,8 +61,8 @@ class StatementHintParser {
         new SimpleParser(
             dialect,
             sql,
-            /* pos = */ 0,
-            /* treatHintCommentsAsTokens = */ dialect == Dialect.POSTGRESQL);
+            /* pos= */ 0,
+            /* treatHintCommentsAsTokens= */ dialect == Dialect.POSTGRESQL);
     this.hasStatementHints = parser.peekTokens(getStartHintTokens(dialect));
     if (this.hasStatementHints) {
       Tuple<String, Map<String, String>> hints = extract(parser, clientSideStatementHintNames);

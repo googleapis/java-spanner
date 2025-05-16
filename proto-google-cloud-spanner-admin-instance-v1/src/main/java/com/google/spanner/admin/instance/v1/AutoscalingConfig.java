@@ -33,6 +33,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.AutoscalingConfig)
     AutoscalingConfigOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use AutoscalingConfig.newBuilder() to construct.
   private AutoscalingConfig(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -81,6 +82,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * @return Whether the minNodes field is set.
      */
     boolean hasMinNodes();
+
     /**
      *
      *
@@ -108,6 +110,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * @return Whether the minProcessingUnits field is set.
      */
     boolean hasMinProcessingUnits();
+
     /**
      *
      *
@@ -135,6 +138,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * @return Whether the maxNodes field is set.
      */
     boolean hasMaxNodes();
+
     /**
      *
      *
@@ -163,6 +167,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * @return Whether the maxProcessingUnits field is set.
      */
     boolean hasMaxProcessingUnits();
+
     /**
      *
      *
@@ -184,6 +189,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.MaxLimitCase
         getMaxLimitCase();
   }
+
   /**
    *
    *
@@ -202,6 +208,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits)
       AutoscalingLimitsOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use AutoscalingLimits.newBuilder() to construct.
     private AutoscalingLimits(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -248,6 +255,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       private MinLimitCase(int value) {
         this.value = value;
       }
+
       /**
        * @param value The number of the enum to look for.
        * @return The enum associated with the given number.
@@ -297,6 +305,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       private MaxLimitCase(int value) {
         this.value = value;
       }
+
       /**
        * @param value The number of the enum to look for.
        * @return The enum associated with the given number.
@@ -330,6 +339,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     }
 
     public static final int MIN_NODES_FIELD_NUMBER = 1;
+
     /**
      *
      *
@@ -346,6 +356,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public boolean hasMinNodes() {
       return minLimitCase_ == 1;
     }
+
     /**
      *
      *
@@ -367,6 +378,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     }
 
     public static final int MIN_PROCESSING_UNITS_FIELD_NUMBER = 2;
+
     /**
      *
      *
@@ -383,6 +395,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public boolean hasMinProcessingUnits() {
       return minLimitCase_ == 2;
     }
+
     /**
      *
      *
@@ -404,6 +417,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     }
 
     public static final int MAX_NODES_FIELD_NUMBER = 3;
+
     /**
      *
      *
@@ -420,6 +434,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public boolean hasMaxNodes() {
       return maxLimitCase_ == 3;
     }
+
     /**
      *
      *
@@ -441,6 +456,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     }
 
     public static final int MAX_PROCESSING_UNITS_FIELD_NUMBER = 4;
+
     /**
      *
      *
@@ -458,6 +474,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public boolean hasMaxProcessingUnits() {
       return maxLimitCase_ == 4;
     }
+
     /**
      *
      *
@@ -716,6 +733,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -1014,6 +1032,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public boolean hasMinNodes() {
         return minLimitCase_ == 1;
       }
+
       /**
        *
        *
@@ -1032,6 +1051,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
         return 0;
       }
+
       /**
        *
        *
@@ -1052,6 +1072,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1088,6 +1109,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public boolean hasMinProcessingUnits() {
         return minLimitCase_ == 2;
       }
+
       /**
        *
        *
@@ -1106,6 +1128,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
         return 0;
       }
+
       /**
        *
        *
@@ -1126,6 +1149,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1162,6 +1186,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public boolean hasMaxNodes() {
         return maxLimitCase_ == 3;
       }
+
       /**
        *
        *
@@ -1180,6 +1205,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
         return 0;
       }
+
       /**
        *
        *
@@ -1200,6 +1226,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1237,6 +1264,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public boolean hasMaxProcessingUnits() {
         return maxLimitCase_ == 4;
       }
+
       /**
        *
        *
@@ -1256,6 +1284,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
         return 0;
       }
+
       /**
        *
        *
@@ -1277,6 +1306,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1406,6 +1436,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      */
     int getStorageUtilizationPercent();
   }
+
   /**
    *
    *
@@ -1420,6 +1451,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets)
       AutoscalingTargetsOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use AutoscalingTargets.newBuilder() to construct.
     private AutoscalingTargets(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -1451,6 +1483,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
 
     public static final int HIGH_PRIORITY_CPU_UTILIZATION_PERCENT_FIELD_NUMBER = 1;
     private int highPriorityCpuUtilizationPercent_ = 0;
+
     /**
      *
      *
@@ -1474,6 +1507,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
 
     public static final int STORAGE_UTILIZATION_PERCENT_FIELD_NUMBER = 2;
     private int storageUtilizationPercent_ = 0;
+
     /**
      *
      *
@@ -1674,6 +1708,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -1883,6 +1918,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       private int bitField0_;
 
       private int highPriorityCpuUtilizationPercent_;
+
       /**
        *
        *
@@ -1903,6 +1939,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public int getHighPriorityCpuUtilizationPercent() {
         return highPriorityCpuUtilizationPercent_;
       }
+
       /**
        *
        *
@@ -1927,6 +1964,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1951,6 +1989,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
 
       private int storageUtilizationPercent_;
+
       /**
        *
        *
@@ -1970,6 +2009,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public int getStorageUtilizationPercent() {
         return storageUtilizationPercent_;
       }
+
       /**
        *
        *
@@ -1993,6 +2033,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2103,6 +2144,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * @return Whether the replicaSelection field is set.
      */
     boolean hasReplicaSelection();
+
     /**
      *
      *
@@ -2118,6 +2160,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * @return The replicaSelection.
      */
     com.google.spanner.admin.instance.v1.ReplicaSelection getReplicaSelection();
+
     /**
      *
      *
@@ -2147,6 +2190,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      * @return Whether the overrides field is set.
      */
     boolean hasOverrides();
+
     /**
      *
      *
@@ -2164,6 +2208,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
             .AutoscalingConfigOverrides
         getOverrides();
+
     /**
      *
      *
@@ -2180,6 +2225,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             .AutoscalingConfigOverridesOrBuilder
         getOverridesOrBuilder();
   }
+
   /**
    *
    *
@@ -2197,6 +2243,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption)
       AsymmetricAutoscalingOptionOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use AsymmetricAutoscalingOption.newBuilder() to construct.
     private AsymmetricAutoscalingOption(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -2247,6 +2294,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        * @return Whether the autoscalingLimits field is set.
        */
       boolean hasAutoscalingLimits();
+
       /**
        *
        *
@@ -2263,6 +2311,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        */
       com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
           getAutoscalingLimits();
+
       /**
        *
        *
@@ -2295,6 +2344,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        */
       int getAutoscalingTargetHighPriorityCpuUtilizationPercent();
     }
+
     /**
      *
      *
@@ -2314,6 +2364,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides)
         AutoscalingConfigOverridesOrBuilder {
       private static final long serialVersionUID = 0L;
+
       // Use AutoscalingConfigOverrides.newBuilder() to construct.
       private AutoscalingConfigOverrides(
           com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -2349,6 +2400,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public static final int AUTOSCALING_LIMITS_FIELD_NUMBER = 1;
       private com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
           autoscalingLimits_;
+
       /**
        *
        *
@@ -2367,6 +2419,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public boolean hasAutoscalingLimits() {
         return ((bitField0_ & 0x00000001) != 0);
       }
+
       /**
        *
        *
@@ -2389,6 +2442,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
                 .getDefaultInstance()
             : autoscalingLimits_;
       }
+
       /**
        *
        *
@@ -2413,6 +2467,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public static final int
           AUTOSCALING_TARGET_HIGH_PRIORITY_CPU_UTILIZATION_PERCENT_FIELD_NUMBER = 2;
       private int autoscalingTargetHighPriorityCpuUtilizationPercent_ = 0;
+
       /**
        *
        *
@@ -2641,6 +2696,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         Builder builder = new Builder(parent);
         return builder;
       }
+
       /**
        *
        *
@@ -2900,6 +2956,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
                 com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.Builder,
                 com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimitsOrBuilder>
             autoscalingLimitsBuilder_;
+
         /**
          *
          *
@@ -2917,6 +2974,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         public boolean hasAutoscalingLimits() {
           return ((bitField0_ & 0x00000001) != 0);
         }
+
         /**
          *
          *
@@ -2942,6 +3000,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             return autoscalingLimitsBuilder_.getMessage();
           }
         }
+
         /**
          *
          *
@@ -2968,6 +3027,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           onChanged();
           return this;
         }
+
         /**
          *
          *
@@ -2992,6 +3052,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           onChanged();
           return this;
         }
+
         /**
          *
          *
@@ -3025,6 +3086,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           }
           return this;
         }
+
         /**
          *
          *
@@ -3047,6 +3109,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           onChanged();
           return this;
         }
+
         /**
          *
          *
@@ -3065,6 +3128,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           onChanged();
           return getAutoscalingLimitsFieldBuilder().getBuilder();
         }
+
         /**
          *
          *
@@ -3088,6 +3152,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
                 : autoscalingLimits_;
           }
         }
+
         /**
          *
          *
@@ -3120,6 +3185,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
 
         private int autoscalingTargetHighPriorityCpuUtilizationPercent_;
+
         /**
          *
          *
@@ -3139,6 +3205,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         public int getAutoscalingTargetHighPriorityCpuUtilizationPercent() {
           return autoscalingTargetHighPriorityCpuUtilizationPercent_;
         }
+
         /**
          *
          *
@@ -3162,6 +3229,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           onChanged();
           return this;
         }
+
         /**
          *
          *
@@ -3259,6 +3327,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     private int bitField0_;
     public static final int REPLICA_SELECTION_FIELD_NUMBER = 1;
     private com.google.spanner.admin.instance.v1.ReplicaSelection replicaSelection_;
+
     /**
      *
      *
@@ -3277,6 +3346,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public boolean hasReplicaSelection() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -3297,6 +3367,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           ? com.google.spanner.admin.instance.v1.ReplicaSelection.getDefaultInstance()
           : replicaSelection_;
     }
+
     /**
      *
      *
@@ -3321,6 +3392,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     private com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
             .AutoscalingConfigOverrides
         overrides_;
+
     /**
      *
      *
@@ -3339,6 +3411,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public boolean hasOverrides() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -3362,6 +3435,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
               .AutoscalingConfigOverrides.getDefaultInstance()
           : overrides_;
     }
+
     /**
      *
      *
@@ -3573,6 +3647,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -3823,6 +3898,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
               com.google.spanner.admin.instance.v1.ReplicaSelection.Builder,
               com.google.spanner.admin.instance.v1.ReplicaSelectionOrBuilder>
           replicaSelectionBuilder_;
+
       /**
        *
        *
@@ -3840,6 +3916,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public boolean hasReplicaSelection() {
         return ((bitField0_ & 0x00000001) != 0);
       }
+
       /**
        *
        *
@@ -3863,6 +3940,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           return replicaSelectionBuilder_.getMessage();
         }
       }
+
       /**
        *
        *
@@ -3889,6 +3967,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -3912,6 +3991,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -3944,6 +4024,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -3966,6 +4047,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -3984,6 +4066,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return getReplicaSelectionFieldBuilder().getBuilder();
       }
+
       /**
        *
        *
@@ -4006,6 +4089,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
               : replicaSelection_;
         }
       }
+
       /**
        *
        *
@@ -4046,6 +4130,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
               com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
                   .AutoscalingConfigOverridesOrBuilder>
           overridesBuilder_;
+
       /**
        *
        *
@@ -4063,6 +4148,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public boolean hasOverrides() {
         return ((bitField0_ & 0x00000002) != 0);
       }
+
       /**
        *
        *
@@ -4089,6 +4175,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           return overridesBuilder_.getMessage();
         }
       }
+
       /**
        *
        *
@@ -4117,6 +4204,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -4142,6 +4230,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -4178,6 +4267,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
         return this;
       }
+
       /**
        *
        *
@@ -4200,6 +4290,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -4219,6 +4310,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         onChanged();
         return getOverridesFieldBuilder().getBuilder();
       }
+
       /**
        *
        *
@@ -4243,6 +4335,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
               : overrides_;
         }
       }
+
       /**
        *
        *
@@ -4351,6 +4444,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
   public static final int AUTOSCALING_LIMITS_FIELD_NUMBER = 1;
   private com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
       autoscalingLimits_;
+
   /**
    *
    *
@@ -4368,6 +4462,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
   public boolean hasAutoscalingLimits() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -4389,6 +4484,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             .getDefaultInstance()
         : autoscalingLimits_;
   }
+
   /**
    *
    *
@@ -4412,6 +4508,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
   public static final int AUTOSCALING_TARGETS_FIELD_NUMBER = 2;
   private com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
       autoscalingTargets_;
+
   /**
    *
    *
@@ -4429,6 +4526,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
   public boolean hasAutoscalingTargets() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -4450,6 +4548,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             .getDefaultInstance()
         : autoscalingTargets_;
   }
+
   /**
    *
    *
@@ -4476,6 +4575,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
   private java.util.List<
           com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption>
       asymmetricAutoscalingOptions_;
+
   /**
    *
    *
@@ -4501,6 +4601,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       getAsymmetricAutoscalingOptionsList() {
     return asymmetricAutoscalingOptions_;
   }
+
   /**
    *
    *
@@ -4528,6 +4629,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       getAsymmetricAutoscalingOptionsOrBuilderList() {
     return asymmetricAutoscalingOptions_;
   }
+
   /**
    *
    *
@@ -4551,6 +4653,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
   public int getAsymmetricAutoscalingOptionsCount() {
     return asymmetricAutoscalingOptions_.size();
   }
+
   /**
    *
    *
@@ -4575,6 +4678,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       getAsymmetricAutoscalingOptions(int index) {
     return asymmetricAutoscalingOptions_.get(index);
   }
+
   /**
    *
    *
@@ -4793,6 +4897,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -5091,6 +5196,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.Builder,
             com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimitsOrBuilder>
         autoscalingLimitsBuilder_;
+
     /**
      *
      *
@@ -5107,6 +5213,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public boolean hasAutoscalingLimits() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -5131,6 +5238,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         return autoscalingLimitsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -5156,6 +5264,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5179,6 +5288,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5211,6 +5321,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5232,6 +5343,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5249,6 +5361,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getAutoscalingLimitsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5271,6 +5384,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             : autoscalingLimits_;
       }
     }
+
     /**
      *
      *
@@ -5306,6 +5420,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.Builder,
             com.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargetsOrBuilder>
         autoscalingTargetsBuilder_;
+
     /**
      *
      *
@@ -5322,6 +5437,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     public boolean hasAutoscalingTargets() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -5346,6 +5462,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         return autoscalingTargetsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -5371,6 +5488,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5394,6 +5512,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5426,6 +5545,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5447,6 +5567,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -5464,6 +5585,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       onChanged();
       return getAutoscalingTargetsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5486,6 +5608,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             : autoscalingTargets_;
       }
     }
+
     /**
      *
      *
@@ -5564,6 +5687,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         return asymmetricAutoscalingOptionsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -5590,6 +5714,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         return asymmetricAutoscalingOptionsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -5617,6 +5742,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         return asymmetricAutoscalingOptionsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -5651,6 +5777,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5683,6 +5810,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5716,6 +5844,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5750,6 +5879,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5781,6 +5911,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5813,6 +5944,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5848,6 +5980,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5877,6 +6010,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5906,6 +6040,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       }
       return this;
     }
+
     /**
      *
      *
@@ -5930,6 +6065,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         getAsymmetricAutoscalingOptionsBuilder(int index) {
       return getAsymmetricAutoscalingOptionsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -5958,6 +6094,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         return asymmetricAutoscalingOptionsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -5988,6 +6125,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         return java.util.Collections.unmodifiableList(asymmetricAutoscalingOptions_);
       }
     }
+
     /**
      *
      *
@@ -6015,6 +6153,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
               com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
                   .getDefaultInstance());
     }
+
     /**
      *
      *
@@ -6043,6 +6182,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
               com.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption
                   .getDefaultInstance());
     }
+
     /**
      *
      *

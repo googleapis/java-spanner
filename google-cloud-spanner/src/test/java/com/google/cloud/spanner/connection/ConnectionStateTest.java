@@ -78,7 +78,7 @@ public class ConnectionStateTest {
     assertEquals(connectionStateType, state.getType());
 
     assertEquals(false, state.getValue(READONLY).getValue());
-    state.setValue(READONLY, true, Context.USER, /* inTransaction = */ false);
+    state.setValue(READONLY, true, Context.USER, /* inTransaction= */ false);
     assertEquals(true, state.getValue(READONLY).getValue());
   }
 
@@ -86,7 +86,7 @@ public class ConnectionStateTest {
   public void testSetToNullOutsideTransaction() {
     ConnectionState state = getConnectionState();
     assertEquals(AutocommitDmlMode.TRANSACTIONAL, state.getValue(AUTOCOMMIT_DML_MODE).getValue());
-    state.setValue(AUTOCOMMIT_DML_MODE, null, Context.USER, /* inTransaction = */ false);
+    state.setValue(AUTOCOMMIT_DML_MODE, null, Context.USER, /* inTransaction= */ false);
     assertNull(state.getValue(AUTOCOMMIT_DML_MODE).getValue());
   }
 
@@ -94,7 +94,7 @@ public class ConnectionStateTest {
   public void testSetInTransactionCommit() {
     ConnectionState state = getConnectionState();
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
-    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction = */ true);
+    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction= */ true);
     assertEquals(false, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
 
     // Verify that the change is persisted if the transaction is committed.
@@ -106,7 +106,7 @@ public class ConnectionStateTest {
   public void testSetInTransactionRollback() {
     ConnectionState state = getConnectionState();
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
-    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction = */ true);
+    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction= */ true);
     assertEquals(false, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
 
     // Verify that the change is rolled back if the transaction is rolled back and the connection
@@ -122,12 +122,12 @@ public class ConnectionStateTest {
   public void testResetInTransactionCommit() {
     ConnectionState state = getConnectionState();
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
-    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction = */ true);
+    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction= */ true);
     assertEquals(false, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
     state.commit();
 
     // Reset the value to the default (true).
-    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction = */ true);
+    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction= */ true);
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
 
     // Verify that the change is persisted if the transaction is committed.
@@ -139,12 +139,12 @@ public class ConnectionStateTest {
   public void testResetInTransactionRollback() {
     ConnectionState state = getConnectionState();
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
-    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction = */ true);
+    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction= */ true);
     assertEquals(false, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
     state.commit();
 
     // Reset the value to the default (true).
-    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction = */ true);
+    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction= */ true);
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
 
     // Verify that the change is rolled back if the transaction is rolled back and the connection
@@ -190,7 +190,7 @@ public class ConnectionStateTest {
                     CONNECTION_STATE_TYPE,
                     Type.TRANSACTIONAL,
                     Context.USER,
-                    /* inTransaction = */ true));
+                    /* inTransaction= */ true));
     assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
   }
 
@@ -205,7 +205,7 @@ public class ConnectionStateTest {
                     CONNECTION_STATE_TYPE,
                     Type.TRANSACTIONAL,
                     Context.USER,
-                    /* inTransaction = */ false));
+                    /* inTransaction= */ false));
     assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
   }
 
@@ -214,11 +214,11 @@ public class ConnectionStateTest {
     ConnectionState state = getConnectionState();
     // The default should be true.
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
-    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction = */ false);
+    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction= */ false);
     assertEquals(false, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
 
     // Resetting the property should reset it to the default value.
-    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction = */ false);
+    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction= */ false);
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
   }
 
@@ -227,12 +227,12 @@ public class ConnectionStateTest {
     ConnectionState state = getConnectionState();
     // The default should be true.
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
-    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction = */ true);
+    state.setValue(RETRY_ABORTS_INTERNALLY, false, Context.USER, /* inTransaction= */ true);
     assertEquals(false, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
     state.commit();
 
     // Resetting the property should reset it to the default value.
-    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction = */ true);
+    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction= */ true);
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
   }
 
@@ -243,7 +243,7 @@ public class ConnectionStateTest {
         assertThrows(
             SpannerException.class,
             () ->
-                state.resetValue(CONNECTION_STATE_TYPE, Context.USER, /* inTransaction = */ false));
+                state.resetValue(CONNECTION_STATE_TYPE, Context.USER, /* inTransaction= */ false));
     assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
   }
 
@@ -257,11 +257,11 @@ public class ConnectionStateTest {
     ConnectionState state = new ConnectionState(options.getInitialConnectionPropertyValues());
 
     assertEquals(false, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
-    state.setValue(RETRY_ABORTS_INTERNALLY, true, Context.USER, /* inTransaction = */ false);
+    state.setValue(RETRY_ABORTS_INTERNALLY, true, Context.USER, /* inTransaction= */ false);
     assertEquals(true, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
 
     // Resetting the property should reset it to the value that was set in the connection URL.
-    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction = */ false);
+    state.resetValue(RETRY_ABORTS_INTERNALLY, Context.USER, /* inTransaction= */ false);
     assertEquals(false, state.getValue(RETRY_ABORTS_INTERNALLY).getValue());
   }
 }

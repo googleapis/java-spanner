@@ -33,6 +33,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.AdminResult)
     AdminResultOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use AdminResult.newBuilder() to construct.
   private AdminResult(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -64,6 +65,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
   private int bitField0_;
   public static final int BACKUP_RESPONSE_FIELD_NUMBER = 1;
   private com.google.spanner.executor.v1.CloudBackupResponse backupResponse_;
+
   /**
    *
    *
@@ -79,6 +81,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
   public boolean hasBackupResponse() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -96,6 +99,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.executor.v1.CloudBackupResponse.getDefaultInstance()
         : backupResponse_;
   }
+
   /**
    *
    *
@@ -114,6 +118,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
 
   public static final int OPERATION_RESPONSE_FIELD_NUMBER = 2;
   private com.google.spanner.executor.v1.OperationResponse operationResponse_;
+
   /**
    *
    *
@@ -129,6 +134,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
   public boolean hasOperationResponse() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -146,6 +152,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.executor.v1.OperationResponse.getDefaultInstance()
         : operationResponse_;
   }
+
   /**
    *
    *
@@ -164,6 +171,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
 
   public static final int DATABASE_RESPONSE_FIELD_NUMBER = 3;
   private com.google.spanner.executor.v1.CloudDatabaseResponse databaseResponse_;
+
   /**
    *
    *
@@ -179,6 +187,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
   public boolean hasDatabaseResponse() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -196,6 +205,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.executor.v1.CloudDatabaseResponse.getDefaultInstance()
         : databaseResponse_;
   }
+
   /**
    *
    *
@@ -215,6 +225,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
 
   public static final int INSTANCE_RESPONSE_FIELD_NUMBER = 4;
   private com.google.spanner.executor.v1.CloudInstanceResponse instanceResponse_;
+
   /**
    *
    *
@@ -230,6 +241,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
   public boolean hasInstanceResponse() {
     return ((bitField0_ & 0x00000008) != 0);
   }
+
   /**
    *
    *
@@ -247,6 +259,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.executor.v1.CloudInstanceResponse.getDefaultInstance()
         : instanceResponse_;
   }
+
   /**
    *
    *
@@ -266,6 +279,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
 
   public static final int INSTANCE_CONFIG_RESPONSE_FIELD_NUMBER = 5;
   private com.google.spanner.executor.v1.CloudInstanceConfigResponse instanceConfigResponse_;
+
   /**
    *
    *
@@ -282,6 +296,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
   public boolean hasInstanceConfigResponse() {
     return ((bitField0_ & 0x00000010) != 0);
   }
+
   /**
    *
    *
@@ -300,6 +315,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.executor.v1.CloudInstanceConfigResponse.getDefaultInstance()
         : instanceConfigResponse_;
   }
+
   /**
    *
    *
@@ -539,6 +555,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -830,6 +847,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CloudBackupResponse.Builder,
             com.google.spanner.executor.v1.CloudBackupResponseOrBuilder>
         backupResponseBuilder_;
+
     /**
      *
      *
@@ -844,6 +862,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
     public boolean hasBackupResponse() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -864,6 +883,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         return backupResponseBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -886,6 +906,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -906,6 +927,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -934,6 +956,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -953,6 +976,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -967,6 +991,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getBackupResponseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -986,6 +1011,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             : backupResponse_;
       }
     }
+
     /**
      *
      *
@@ -1018,6 +1044,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.OperationResponse.Builder,
             com.google.spanner.executor.v1.OperationResponseOrBuilder>
         operationResponseBuilder_;
+
     /**
      *
      *
@@ -1032,6 +1059,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
     public boolean hasOperationResponse() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -1052,6 +1080,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         return operationResponseBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1074,6 +1103,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1094,6 +1124,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1122,6 +1153,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1141,6 +1173,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1155,6 +1188,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getOperationResponseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1174,6 +1208,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             : operationResponse_;
       }
     }
+
     /**
      *
      *
@@ -1206,6 +1241,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CloudDatabaseResponse.Builder,
             com.google.spanner.executor.v1.CloudDatabaseResponseOrBuilder>
         databaseResponseBuilder_;
+
     /**
      *
      *
@@ -1220,6 +1256,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
     public boolean hasDatabaseResponse() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1240,6 +1277,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         return databaseResponseBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1262,6 +1300,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1282,6 +1321,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1311,6 +1351,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1330,6 +1371,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1345,6 +1387,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getDatabaseResponseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1364,6 +1407,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             : databaseResponse_;
       }
     }
+
     /**
      *
      *
@@ -1396,6 +1440,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CloudInstanceResponse.Builder,
             com.google.spanner.executor.v1.CloudInstanceResponseOrBuilder>
         instanceResponseBuilder_;
+
     /**
      *
      *
@@ -1410,6 +1455,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
     public boolean hasInstanceResponse() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1430,6 +1476,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         return instanceResponseBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1452,6 +1499,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1472,6 +1520,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1501,6 +1550,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1520,6 +1570,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1535,6 +1586,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getInstanceResponseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1554,6 +1606,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             : instanceResponse_;
       }
     }
+
     /**
      *
      *
@@ -1586,6 +1639,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CloudInstanceConfigResponse.Builder,
             com.google.spanner.executor.v1.CloudInstanceConfigResponseOrBuilder>
         instanceConfigResponseBuilder_;
+
     /**
      *
      *
@@ -1601,6 +1655,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
     public boolean hasInstanceConfigResponse() {
       return ((bitField0_ & 0x00000010) != 0);
     }
+
     /**
      *
      *
@@ -1622,6 +1677,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
         return instanceConfigResponseBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1646,6 +1702,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1667,6 +1724,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1698,6 +1756,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -1718,6 +1777,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1734,6 +1794,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getInstanceConfigResponseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1754,6 +1815,7 @@ public final class AdminResult extends com.google.protobuf.GeneratedMessageV3
             : instanceConfigResponse_;
       }
     }
+
     /**
      *
      *

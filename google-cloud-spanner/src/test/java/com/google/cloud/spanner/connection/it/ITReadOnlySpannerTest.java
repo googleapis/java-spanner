@@ -113,7 +113,8 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
       try (ResultSet rs =
           connection.executeQuery(
               Statement.of(
-                  "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"))) {
+                  "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS"
+                      + " PRIME_NUMBER_RATIO"))) {
         fail("Expected exception");
       }
       // should never be reached
@@ -132,7 +133,8 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
         try (ResultSet rs =
             connection.executeQuery(
                 Statement.of(
-                    "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"))) {
+                    "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS"
+                        + " PRIME_NUMBER_RATIO"))) {
           fail("Missing expected exception");
         } catch (SpannerException e) {
           assertThat(e.getErrorCode(), is(ErrorCode.DEADLINE_EXCEEDED));
@@ -150,7 +152,8 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
       try (ResultSet rs =
           connection.executeQuery(
               Statement.of(
-                  "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"))) {
+                  "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS"
+                      + " PRIME_NUMBER_RATIO"))) {
         fail("Expected exception");
       } catch (SpannerException ex) {
         assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
@@ -166,7 +169,8 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
         try (ResultSet rs =
             connection.analyzeQuery(
                 Statement.of(
-                    "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"),
+                    "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS"
+                        + " PRIME_NUMBER_RATIO"),
                 mode)) {
           // next has not yet returned false
           assertThat(rs.getStats(), is(nullValue()));
@@ -185,7 +189,8 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
       try (ResultSet rs =
           connection.executeQuery(
               Statement.of(
-                  "SELECT (SELECT CAST(COUNT(*) AS FLOAT64) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"),
+                  "SELECT (SELECT CAST(COUNT(*) AS FLOAT64) FROM PRIME_NUMBERS)/(SELECT COUNT(*)"
+                      + " FROM NUMBERS) AS PRIME_NUMBER_RATIO"),
               Options.prefetchChunks(100000))) {
         assertThat(rs.next(), is(true));
         assertThat(rs.getDouble(0), is(notNullValue()));

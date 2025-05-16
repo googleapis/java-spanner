@@ -34,6 +34,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata)
     UpdateDatabaseDdlMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use UpdateDatabaseDdlMetadata.newBuilder() to construct.
   private UpdateDatabaseDdlMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -72,6 +73,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object database_ = "";
+
   /**
    *
    *
@@ -95,6 +97,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       return s;
     }
   }
+
   /**
    *
    *
@@ -124,6 +127,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList statements_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -139,6 +143,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public com.google.protobuf.ProtocolStringList getStatementsList() {
     return statements_;
   }
+
   /**
    *
    *
@@ -154,6 +159,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public int getStatementsCount() {
     return statements_.size();
   }
+
   /**
    *
    *
@@ -170,6 +176,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public java.lang.String getStatements(int index) {
     return statements_.get(index);
   }
+
   /**
    *
    *
@@ -191,6 +198,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.protobuf.Timestamp> commitTimestamps_;
+
   /**
    *
    *
@@ -206,6 +214,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public java.util.List<com.google.protobuf.Timestamp> getCommitTimestampsList() {
     return commitTimestamps_;
   }
+
   /**
    *
    *
@@ -222,6 +231,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       getCommitTimestampsOrBuilderList() {
     return commitTimestamps_;
   }
+
   /**
    *
    *
@@ -237,6 +247,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public int getCommitTimestampsCount() {
     return commitTimestamps_.size();
   }
+
   /**
    *
    *
@@ -252,6 +263,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public com.google.protobuf.Timestamp getCommitTimestamps(int index) {
     return commitTimestamps_.get(index);
   }
+
   /**
    *
    *
@@ -270,6 +282,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
 
   public static final int THROTTLED_FIELD_NUMBER = 4;
   private boolean throttled_ = false;
+
   /**
    *
    *
@@ -292,6 +305,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.admin.database.v1.OperationProgress> progress_;
+
   /**
    *
    *
@@ -311,6 +325,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public java.util.List<com.google.spanner.admin.database.v1.OperationProgress> getProgressList() {
     return progress_;
   }
+
   /**
    *
    *
@@ -331,6 +346,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       getProgressOrBuilderList() {
     return progress_;
   }
+
   /**
    *
    *
@@ -350,6 +366,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public int getProgressCount() {
     return progress_.size();
   }
+
   /**
    *
    *
@@ -369,6 +386,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public com.google.spanner.admin.database.v1.OperationProgress getProgress(int index) {
     return progress_.get(index);
   }
+
   /**
    *
    *
@@ -394,6 +412,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.admin.database.v1.DdlStatementActionInfo> actions_;
+
   /**
    *
    *
@@ -409,6 +428,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       getActionsList() {
     return actions_;
   }
+
   /**
    *
    *
@@ -425,6 +445,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       getActionsOrBuilderList() {
     return actions_;
   }
+
   /**
    *
    *
@@ -439,6 +460,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public int getActionsCount() {
     return actions_.size();
   }
+
   /**
    *
    *
@@ -453,6 +475,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public com.google.spanner.admin.database.v1.DdlStatementActionInfo getActions(int index) {
     return actions_.get(index);
   }
+
   /**
    *
    *
@@ -687,6 +710,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1084,6 +1108,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     private int bitField0_;
 
     private java.lang.Object database_ = "";
+
     /**
      *
      *
@@ -1106,6 +1131,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1128,6 +1154,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1149,6 +1176,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1166,6 +1194,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1198,6 +1227,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       bitField0_ |= 0x00000002;
     }
+
     /**
      *
      *
@@ -1214,6 +1244,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       statements_.makeImmutable();
       return statements_;
     }
+
     /**
      *
      *
@@ -1229,6 +1260,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     public int getStatementsCount() {
       return statements_.size();
     }
+
     /**
      *
      *
@@ -1245,6 +1277,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     public java.lang.String getStatements(int index) {
       return statements_.get(index);
     }
+
     /**
      *
      *
@@ -1261,6 +1294,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     public com.google.protobuf.ByteString getStatementsBytes(int index) {
       return statements_.getByteString(index);
     }
+
     /**
      *
      *
@@ -1285,6 +1319,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1308,6 +1343,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1328,6 +1364,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1347,6 +1384,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1407,6 +1445,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return commitTimestampsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -1425,6 +1464,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return commitTimestampsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -1443,6 +1483,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return commitTimestampsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -1467,6 +1508,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1489,6 +1531,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1513,6 +1556,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1537,6 +1581,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1558,6 +1603,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1580,6 +1626,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1602,6 +1649,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1623,6 +1671,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1644,6 +1693,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1658,6 +1708,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     public com.google.protobuf.Timestamp.Builder getCommitTimestampsBuilder(int index) {
       return getCommitTimestampsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -1676,6 +1727,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return commitTimestampsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -1695,6 +1747,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return java.util.Collections.unmodifiableList(commitTimestamps_);
       }
     }
+
     /**
      *
      *
@@ -1710,6 +1763,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       return getCommitTimestampsFieldBuilder()
           .addBuilder(com.google.protobuf.Timestamp.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1725,6 +1779,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       return getCommitTimestampsFieldBuilder()
           .addBuilder(index, com.google.protobuf.Timestamp.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1761,6 +1816,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     }
 
     private boolean throttled_;
+
     /**
      *
      *
@@ -1778,6 +1834,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     public boolean getThrottled() {
       return throttled_;
     }
+
     /**
      *
      *
@@ -1799,6 +1856,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1860,6 +1918,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return progressBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -1882,6 +1941,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return progressBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -1904,6 +1964,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return progressBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -1933,6 +1994,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1959,6 +2021,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -1987,6 +2050,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2016,6 +2080,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2042,6 +2107,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2068,6 +2134,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2095,6 +2162,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2120,6 +2188,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2145,6 +2214,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2164,6 +2234,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         int index) {
       return getProgressFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -2187,6 +2258,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return progressBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -2210,6 +2282,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return java.util.Collections.unmodifiableList(progress_);
       }
     }
+
     /**
      *
      *
@@ -2229,6 +2302,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       return getProgressFieldBuilder()
           .addBuilder(com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -2250,6 +2324,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
           .addBuilder(
               index, com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -2323,6 +2398,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return actionsBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -2340,6 +2416,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return actionsBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -2357,6 +2434,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return actionsBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -2381,6 +2459,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2403,6 +2482,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2426,6 +2506,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2450,6 +2531,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2471,6 +2553,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2493,6 +2576,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2515,6 +2599,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2535,6 +2620,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2555,6 +2641,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -2569,6 +2656,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         int index) {
       return getActionsFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -2587,6 +2675,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return actionsBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -2606,6 +2695,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         return java.util.Collections.unmodifiableList(actions_);
       }
     }
+
     /**
      *
      *
@@ -2621,6 +2711,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
           .addBuilder(
               com.google.spanner.admin.database.v1.DdlStatementActionInfo.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -2638,6 +2729,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
               index,
               com.google.spanner.admin.database.v1.DdlStatementActionInfo.getDefaultInstance());
     }
+
     /**
      *
      *

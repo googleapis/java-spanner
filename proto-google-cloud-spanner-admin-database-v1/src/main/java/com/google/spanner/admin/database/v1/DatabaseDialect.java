@@ -74,6 +74,7 @@ public enum DatabaseDialect implements com.google.protobuf.ProtocolMessageEnum {
    * <code>DATABASE_DIALECT_UNSPECIFIED = 0;</code>
    */
   public static final int DATABASE_DIALECT_UNSPECIFIED_VALUE = 0;
+
   /**
    *
    *
@@ -84,6 +85,7 @@ public enum DatabaseDialect implements com.google.protobuf.ProtocolMessageEnum {
    * <code>GOOGLE_STANDARD_SQL = 1;</code>
    */
   public static final int GOOGLE_STANDARD_SQL_VALUE = 1;
+
   /**
    *
    *

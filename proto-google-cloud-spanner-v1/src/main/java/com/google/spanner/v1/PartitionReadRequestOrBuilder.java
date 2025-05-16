@@ -38,6 +38,7 @@ public interface PartitionReadRequestOrBuilder
    * @return The session.
    */
   java.lang.String getSession();
+
   /**
    *
    *
@@ -66,6 +67,7 @@ public interface PartitionReadRequestOrBuilder
    * @return Whether the transaction field is set.
    */
   boolean hasTransaction();
+
   /**
    *
    *
@@ -79,6 +81,7 @@ public interface PartitionReadRequestOrBuilder
    * @return The transaction.
    */
   com.google.spanner.v1.TransactionSelector getTransaction();
+
   /**
    *
    *
@@ -103,6 +106,7 @@ public interface PartitionReadRequestOrBuilder
    * @return The table.
    */
   java.lang.String getTable();
+
   /**
    *
    *
@@ -133,6 +137,7 @@ public interface PartitionReadRequestOrBuilder
    * @return The index.
    */
   java.lang.String getIndex();
+
   /**
    *
    *
@@ -164,6 +169,7 @@ public interface PartitionReadRequestOrBuilder
    * @return A list containing the columns.
    */
   java.util.List<java.lang.String> getColumnsList();
+
   /**
    *
    *
@@ -177,6 +183,7 @@ public interface PartitionReadRequestOrBuilder
    * @return The count of columns.
    */
   int getColumnsCount();
+
   /**
    *
    *
@@ -191,6 +198,7 @@ public interface PartitionReadRequestOrBuilder
    * @return The columns at the given index.
    */
   java.lang.String getColumns(int index);
+
   /**
    *
    *
@@ -227,6 +235,7 @@ public interface PartitionReadRequestOrBuilder
    * @return Whether the keySet field is set.
    */
   boolean hasKeySet();
+
   /**
    *
    *
@@ -248,6 +257,7 @@ public interface PartitionReadRequestOrBuilder
    * @return The keySet.
    */
   com.google.spanner.v1.KeySet getKeySet();
+
   /**
    *
    *
@@ -280,6 +290,7 @@ public interface PartitionReadRequestOrBuilder
    * @return Whether the partitionOptions field is set.
    */
   boolean hasPartitionOptions();
+
   /**
    *
    *
@@ -292,6 +303,7 @@ public interface PartitionReadRequestOrBuilder
    * @return The partitionOptions.
    */
   com.google.spanner.v1.PartitionOptions getPartitionOptions();
+
   /**
    *
    *

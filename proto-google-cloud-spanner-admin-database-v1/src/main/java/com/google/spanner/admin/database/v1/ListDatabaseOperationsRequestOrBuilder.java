@@ -39,6 +39,7 @@ public interface ListDatabaseOperationsRequestOrBuilder
    * @return The parent.
    */
   java.lang.String getParent();
+
   /**
    *
    *
@@ -111,6 +112,7 @@ public interface ListDatabaseOperationsRequestOrBuilder
    * @return The filter.
    */
   java.lang.String getFilter();
+
   /**
    *
    *
@@ -198,6 +200,7 @@ public interface ListDatabaseOperationsRequestOrBuilder
    * @return The pageToken.
    */
   java.lang.String getPageToken();
+
   /**
    *
    *

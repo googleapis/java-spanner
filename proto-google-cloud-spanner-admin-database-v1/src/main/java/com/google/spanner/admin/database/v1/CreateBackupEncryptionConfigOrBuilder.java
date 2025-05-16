@@ -38,6 +38,7 @@ public interface CreateBackupEncryptionConfigOrBuilder
    * @return The enum numeric value on the wire for encryptionType.
    */
   int getEncryptionTypeValue();
+
   /**
    *
    *
@@ -72,6 +73,7 @@ public interface CreateBackupEncryptionConfigOrBuilder
    * @return The kmsKeyName.
    */
   java.lang.String getKmsKeyName();
+
   /**
    *
    *
@@ -119,6 +121,7 @@ public interface CreateBackupEncryptionConfigOrBuilder
    * @return A list containing the kmsKeyNames.
    */
   java.util.List<java.lang.String> getKmsKeyNamesList();
+
   /**
    *
    *
@@ -147,6 +150,7 @@ public interface CreateBackupEncryptionConfigOrBuilder
    * @return The count of kmsKeyNames.
    */
   int getKmsKeyNamesCount();
+
   /**
    *
    *
@@ -176,6 +180,7 @@ public interface CreateBackupEncryptionConfigOrBuilder
    * @return The kmsKeyNames at the given index.
    */
   java.lang.String getKmsKeyNames(int index);
+
   /**
    *
    *

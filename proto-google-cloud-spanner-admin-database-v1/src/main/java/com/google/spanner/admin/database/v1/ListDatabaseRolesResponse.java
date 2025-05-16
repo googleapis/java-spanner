@@ -34,6 +34,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.ListDatabaseRolesResponse)
     ListDatabaseRolesResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ListDatabaseRolesResponse.newBuilder() to construct.
   private ListDatabaseRolesResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -69,6 +70,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.admin.database.v1.DatabaseRole> databaseRoles_;
+
   /**
    *
    *
@@ -82,6 +84,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
   public java.util.List<com.google.spanner.admin.database.v1.DatabaseRole> getDatabaseRolesList() {
     return databaseRoles_;
   }
+
   /**
    *
    *
@@ -96,6 +99,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       getDatabaseRolesOrBuilderList() {
     return databaseRoles_;
   }
+
   /**
    *
    *
@@ -109,6 +113,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
   public int getDatabaseRolesCount() {
     return databaseRoles_.size();
   }
+
   /**
    *
    *
@@ -122,6 +127,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
   public com.google.spanner.admin.database.v1.DatabaseRole getDatabaseRoles(int index) {
     return databaseRoles_.get(index);
   }
+
   /**
    *
    *
@@ -141,6 +147,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object nextPageToken_ = "";
+
   /**
    *
    *
@@ -166,6 +173,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       return s;
     }
   }
+
   /**
    *
    *
@@ -363,6 +371,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -647,6 +656,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
         return databaseRolesBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -663,6 +673,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
         return databaseRolesBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -679,6 +690,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
         return databaseRolesBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -702,6 +714,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -722,6 +735,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -744,6 +758,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -767,6 +782,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -787,6 +803,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -807,6 +824,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -827,6 +845,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -846,6 +865,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -865,6 +885,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       }
       return this;
     }
+
     /**
      *
      *
@@ -878,6 +899,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
         int index) {
       return getDatabaseRolesFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -895,6 +917,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
         return databaseRolesBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -912,6 +935,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
         return java.util.Collections.unmodifiableList(databaseRoles_);
       }
     }
+
     /**
      *
      *
@@ -925,6 +949,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       return getDatabaseRolesFieldBuilder()
           .addBuilder(com.google.spanner.admin.database.v1.DatabaseRole.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -940,6 +965,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
           .addBuilder(
               index, com.google.spanner.admin.database.v1.DatabaseRole.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -975,6 +1001,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
     }
 
     private java.lang.Object nextPageToken_ = "";
+
     /**
      *
      *
@@ -999,6 +1026,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1023,6 +1051,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1046,6 +1075,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1065,6 +1095,7 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
       onChanged();
       return this;
     }
+
     /**
      *
      *

@@ -36,6 +36,7 @@ public interface QueryActionOrBuilder
    * @return The sql.
    */
   java.lang.String getSql();
+
   /**
    *
    *
@@ -59,6 +60,7 @@ public interface QueryActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.QueryAction.Parameter params = 2;</code>
    */
   java.util.List<com.google.spanner.executor.v1.QueryAction.Parameter> getParamsList();
+
   /**
    *
    *
@@ -69,6 +71,7 @@ public interface QueryActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.QueryAction.Parameter params = 2;</code>
    */
   com.google.spanner.executor.v1.QueryAction.Parameter getParams(int index);
+
   /**
    *
    *
@@ -79,6 +82,7 @@ public interface QueryActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.QueryAction.Parameter params = 2;</code>
    */
   int getParamsCount();
+
   /**
    *
    *
@@ -90,6 +94,7 @@ public interface QueryActionOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.QueryAction.ParameterOrBuilder>
       getParamsOrBuilderList();
+
   /**
    *
    *

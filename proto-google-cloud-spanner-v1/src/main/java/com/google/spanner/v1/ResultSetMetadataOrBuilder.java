@@ -43,6 +43,7 @@ public interface ResultSetMetadataOrBuilder
    * @return Whether the rowType field is set.
    */
   boolean hasRowType();
+
   /**
    *
    *
@@ -62,6 +63,7 @@ public interface ResultSetMetadataOrBuilder
    * @return The rowType.
    */
   com.google.spanner.v1.StructType getRowType();
+
   /**
    *
    *
@@ -93,6 +95,7 @@ public interface ResultSetMetadataOrBuilder
    * @return Whether the transaction field is set.
    */
   boolean hasTransaction();
+
   /**
    *
    *
@@ -106,6 +109,7 @@ public interface ResultSetMetadataOrBuilder
    * @return The transaction.
    */
   com.google.spanner.v1.Transaction getTransaction();
+
   /**
    *
    *
@@ -139,6 +143,7 @@ public interface ResultSetMetadataOrBuilder
    * @return Whether the undeclaredParameters field is set.
    */
   boolean hasUndeclaredParameters();
+
   /**
    *
    *
@@ -160,6 +165,7 @@ public interface ResultSetMetadataOrBuilder
    * @return The undeclaredParameters.
    */
   com.google.spanner.v1.StructType getUndeclaredParameters();
+
   /**
    *
    *

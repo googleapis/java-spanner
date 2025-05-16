@@ -37,6 +37,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     // @@protoc_insertion_point(message_implements:google.spanner.v1.DirectedReadOptions)
     DirectedReadOptionsOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use DirectedReadOptions.newBuilder() to construct.
   private DirectedReadOptions(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -82,6 +83,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      * @return The location.
      */
     java.lang.String getLocation();
+
     /**
      *
      *
@@ -107,6 +109,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      * @return The enum numeric value on the wire for type.
      */
     int getTypeValue();
+
     /**
      *
      *
@@ -120,6 +123,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      */
     com.google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type getType();
   }
+
   /**
    *
    *
@@ -151,6 +155,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       // @@protoc_insertion_point(message_implements:google.spanner.v1.DirectedReadOptions.ReplicaSelection)
       ReplicaSelectionOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use ReplicaSelection.newBuilder() to construct.
     private ReplicaSelection(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -235,6 +240,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        * <code>TYPE_UNSPECIFIED = 0;</code>
        */
       public static final int TYPE_UNSPECIFIED_VALUE = 0;
+
       /**
        *
        *
@@ -245,6 +251,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        * <code>READ_WRITE = 1;</code>
        */
       public static final int READ_WRITE_VALUE = 1;
+
       /**
        *
        *
@@ -345,6 +352,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object location_ = "";
+
     /**
      *
      *
@@ -368,6 +376,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         return s;
       }
     }
+
     /**
      *
      *
@@ -394,6 +403,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
 
     public static final int TYPE_FIELD_NUMBER = 2;
     private int type_ = 0;
+
     /**
      *
      *
@@ -409,6 +419,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     public int getTypeValue() {
       return type_;
     }
+
     /**
      *
      *
@@ -603,6 +614,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -823,6 +835,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       private int bitField0_;
 
       private java.lang.Object location_ = "";
+
       /**
        *
        *
@@ -845,6 +858,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -867,6 +881,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -888,6 +903,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -905,6 +921,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -929,6 +946,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       }
 
       private int type_ = 0;
+
       /**
        *
        *
@@ -944,6 +962,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       public int getTypeValue() {
         return type_;
       }
+
       /**
        *
        *
@@ -962,6 +981,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -981,6 +1001,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
             ? com.google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type.UNRECOGNIZED
             : result;
       }
+
       /**
        *
        *
@@ -1003,6 +1024,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1104,6 +1126,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      */
     java.util.List<com.google.spanner.v1.DirectedReadOptions.ReplicaSelection>
         getReplicaSelectionsList();
+
     /**
      *
      *
@@ -1116,6 +1139,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      * </code>
      */
     com.google.spanner.v1.DirectedReadOptions.ReplicaSelection getReplicaSelections(int index);
+
     /**
      *
      *
@@ -1128,6 +1152,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      * </code>
      */
     int getReplicaSelectionsCount();
+
     /**
      *
      *
@@ -1141,6 +1166,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      */
     java.util.List<? extends com.google.spanner.v1.DirectedReadOptions.ReplicaSelectionOrBuilder>
         getReplicaSelectionsOrBuilderList();
+
     /**
      *
      *
@@ -1170,6 +1196,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      */
     boolean getAutoFailoverDisabled();
   }
+
   /**
    *
    *
@@ -1185,6 +1212,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       // @@protoc_insertion_point(message_implements:google.spanner.v1.DirectedReadOptions.IncludeReplicas)
       IncludeReplicasOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use IncludeReplicas.newBuilder() to construct.
     private IncludeReplicas(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -1220,6 +1248,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     @SuppressWarnings("serial")
     private java.util.List<com.google.spanner.v1.DirectedReadOptions.ReplicaSelection>
         replicaSelections_;
+
     /**
      *
      *
@@ -1236,6 +1265,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         getReplicaSelectionsList() {
       return replicaSelections_;
     }
+
     /**
      *
      *
@@ -1253,6 +1283,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         getReplicaSelectionsOrBuilderList() {
       return replicaSelections_;
     }
+
     /**
      *
      *
@@ -1268,6 +1299,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     public int getReplicaSelectionsCount() {
       return replicaSelections_.size();
     }
+
     /**
      *
      *
@@ -1284,6 +1316,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         int index) {
       return replicaSelections_.get(index);
     }
+
     /**
      *
      *
@@ -1303,6 +1336,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
 
     public static final int AUTO_FAILOVER_DISABLED_FIELD_NUMBER = 2;
     private boolean autoFailoverDisabled_ = false;
+
     /**
      *
      *
@@ -1494,6 +1528,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -1778,6 +1813,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return replicaSelectionsBuilder_.getMessageList();
         }
       }
+
       /**
        *
        *
@@ -1796,6 +1832,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return replicaSelectionsBuilder_.getCount();
         }
       }
+
       /**
        *
        *
@@ -1815,6 +1852,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return replicaSelectionsBuilder_.getMessage(index);
         }
       }
+
       /**
        *
        *
@@ -1840,6 +1878,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -1863,6 +1902,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -1888,6 +1928,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -1913,6 +1954,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -1935,6 +1977,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -1958,6 +2001,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -1981,6 +2025,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -2002,6 +2047,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -2023,6 +2069,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -2038,6 +2085,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           getReplicaSelectionsBuilder(int index) {
         return getReplicaSelectionsFieldBuilder().getBuilder(index);
       }
+
       /**
        *
        *
@@ -2057,6 +2105,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return replicaSelectionsBuilder_.getMessageOrBuilder(index);
         }
       }
+
       /**
        *
        *
@@ -2077,6 +2126,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return java.util.Collections.unmodifiableList(replicaSelections_);
         }
       }
+
       /**
        *
        *
@@ -2094,6 +2144,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
             .addBuilder(
                 com.google.spanner.v1.DirectedReadOptions.ReplicaSelection.getDefaultInstance());
       }
+
       /**
        *
        *
@@ -2112,6 +2163,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
                 index,
                 com.google.spanner.v1.DirectedReadOptions.ReplicaSelection.getDefaultInstance());
       }
+
       /**
        *
        *
@@ -2149,6 +2201,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       }
 
       private boolean autoFailoverDisabled_;
+
       /**
        *
        *
@@ -2166,6 +2219,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       public boolean getAutoFailoverDisabled() {
         return autoFailoverDisabled_;
       }
+
       /**
        *
        *
@@ -2187,6 +2241,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -2289,6 +2344,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      */
     java.util.List<com.google.spanner.v1.DirectedReadOptions.ReplicaSelection>
         getReplicaSelectionsList();
+
     /**
      *
      *
@@ -2301,6 +2357,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      * </code>
      */
     com.google.spanner.v1.DirectedReadOptions.ReplicaSelection getReplicaSelections(int index);
+
     /**
      *
      *
@@ -2313,6 +2370,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      * </code>
      */
     int getReplicaSelectionsCount();
+
     /**
      *
      *
@@ -2326,6 +2384,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      */
     java.util.List<? extends com.google.spanner.v1.DirectedReadOptions.ReplicaSelectionOrBuilder>
         getReplicaSelectionsOrBuilderList();
+
     /**
      *
      *
@@ -2340,6 +2399,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     com.google.spanner.v1.DirectedReadOptions.ReplicaSelectionOrBuilder
         getReplicaSelectionsOrBuilder(int index);
   }
+
   /**
    *
    *
@@ -2355,6 +2415,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       // @@protoc_insertion_point(message_implements:google.spanner.v1.DirectedReadOptions.ExcludeReplicas)
       ExcludeReplicasOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use ExcludeReplicas.newBuilder() to construct.
     private ExcludeReplicas(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -2390,6 +2451,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     @SuppressWarnings("serial")
     private java.util.List<com.google.spanner.v1.DirectedReadOptions.ReplicaSelection>
         replicaSelections_;
+
     /**
      *
      *
@@ -2406,6 +2468,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         getReplicaSelectionsList() {
       return replicaSelections_;
     }
+
     /**
      *
      *
@@ -2423,6 +2486,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         getReplicaSelectionsOrBuilderList() {
       return replicaSelections_;
     }
+
     /**
      *
      *
@@ -2438,6 +2502,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     public int getReplicaSelectionsCount() {
       return replicaSelections_.size();
     }
+
     /**
      *
      *
@@ -2454,6 +2519,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         int index) {
       return replicaSelections_.get(index);
     }
+
     /**
      *
      *
@@ -2635,6 +2701,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      *
      *
@@ -2906,6 +2973,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return replicaSelectionsBuilder_.getMessageList();
         }
       }
+
       /**
        *
        *
@@ -2924,6 +2992,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return replicaSelectionsBuilder_.getCount();
         }
       }
+
       /**
        *
        *
@@ -2943,6 +3012,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return replicaSelectionsBuilder_.getMessage(index);
         }
       }
+
       /**
        *
        *
@@ -2968,6 +3038,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -2991,6 +3062,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -3016,6 +3088,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -3041,6 +3114,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -3063,6 +3137,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -3086,6 +3161,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -3109,6 +3185,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -3130,6 +3207,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -3151,6 +3229,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         }
         return this;
       }
+
       /**
        *
        *
@@ -3166,6 +3245,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           getReplicaSelectionsBuilder(int index) {
         return getReplicaSelectionsFieldBuilder().getBuilder(index);
       }
+
       /**
        *
        *
@@ -3185,6 +3265,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return replicaSelectionsBuilder_.getMessageOrBuilder(index);
         }
       }
+
       /**
        *
        *
@@ -3205,6 +3286,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
           return java.util.Collections.unmodifiableList(replicaSelections_);
         }
       }
+
       /**
        *
        *
@@ -3222,6 +3304,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
             .addBuilder(
                 com.google.spanner.v1.DirectedReadOptions.ReplicaSelection.getDefaultInstance());
       }
+
       /**
        *
        *
@@ -3240,6 +3323,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
                 index,
                 com.google.spanner.v1.DirectedReadOptions.ReplicaSelection.getDefaultInstance());
       }
+
       /**
        *
        *
@@ -3357,6 +3441,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     private ReplicasCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -3390,6 +3475,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
   }
 
   public static final int INCLUDE_REPLICAS_FIELD_NUMBER = 1;
+
   /**
    *
    *
@@ -3409,6 +3495,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
   public boolean hasIncludeReplicas() {
     return replicasCase_ == 1;
   }
+
   /**
    *
    *
@@ -3431,6 +3518,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     }
     return com.google.spanner.v1.DirectedReadOptions.IncludeReplicas.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -3454,6 +3542,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
   }
 
   public static final int EXCLUDE_REPLICAS_FIELD_NUMBER = 2;
+
   /**
    *
    *
@@ -3471,6 +3560,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
   public boolean hasExcludeReplicas() {
     return replicasCase_ == 2;
   }
+
   /**
    *
    *
@@ -3491,6 +3581,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     }
     return com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -3700,6 +3791,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -3938,6 +4030,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
             com.google.spanner.v1.DirectedReadOptions.IncludeReplicas.Builder,
             com.google.spanner.v1.DirectedReadOptions.IncludeReplicasOrBuilder>
         includeReplicasBuilder_;
+
     /**
      *
      *
@@ -3957,6 +4050,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     public boolean hasIncludeReplicas() {
       return replicasCase_ == 1;
     }
+
     /**
      *
      *
@@ -3986,6 +4080,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         return com.google.spanner.v1.DirectedReadOptions.IncludeReplicas.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4013,6 +4108,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       replicasCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -4037,6 +4133,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       replicasCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -4075,6 +4172,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       replicasCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -4104,6 +4202,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       }
       return this;
     }
+
     /**
      *
      *
@@ -4121,6 +4220,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         getIncludeReplicasBuilder() {
       return getIncludeReplicasFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4146,6 +4246,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         return com.google.spanner.v1.DirectedReadOptions.IncludeReplicas.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4189,6 +4290,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
             com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.Builder,
             com.google.spanner.v1.DirectedReadOptions.ExcludeReplicasOrBuilder>
         excludeReplicasBuilder_;
+
     /**
      *
      *
@@ -4206,6 +4308,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
     public boolean hasExcludeReplicas() {
       return replicasCase_ == 2;
     }
+
     /**
      *
      *
@@ -4233,6 +4336,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         return com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4258,6 +4362,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       replicasCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -4280,6 +4385,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       replicasCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -4316,6 +4422,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       replicasCase_ = 2;
       return this;
     }
+
     /**
      *
      *
@@ -4343,6 +4450,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
       }
       return this;
     }
+
     /**
      *
      *
@@ -4358,6 +4466,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         getExcludeReplicasBuilder() {
       return getExcludeReplicasFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4381,6 +4490,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
         return com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.getDefaultInstance();
       }
     }
+
     /**
      *
      *

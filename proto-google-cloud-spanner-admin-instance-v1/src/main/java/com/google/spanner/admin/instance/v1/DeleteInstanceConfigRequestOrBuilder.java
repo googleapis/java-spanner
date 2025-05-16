@@ -40,6 +40,7 @@ public interface DeleteInstanceConfigRequestOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -75,6 +76,7 @@ public interface DeleteInstanceConfigRequestOrBuilder
    * @return The etag.
    */
   java.lang.String getEtag();
+
   /**
    *
    *

@@ -74,6 +74,7 @@ public enum FulfillmentPeriod implements com.google.protobuf.ProtocolMessageEnum
    * <code>FULFILLMENT_PERIOD_UNSPECIFIED = 0;</code>
    */
   public static final int FULFILLMENT_PERIOD_UNSPECIFIED_VALUE = 0;
+
   /**
    *
    *
@@ -85,6 +86,7 @@ public enum FulfillmentPeriod implements com.google.protobuf.ProtocolMessageEnum
    * <code>FULFILLMENT_PERIOD_NORMAL = 1;</code>
    */
   public static final int FULFILLMENT_PERIOD_NORMAL_VALUE = 1;
+
   /**
    *
    *

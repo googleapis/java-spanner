@@ -183,7 +183,9 @@ class GrpcValueIterator extends AbstractIterator<com.google.protobuf.Value> {
     return stream.isWithBeginTransaction();
   }
 
-  /** @param a is a mutable list and b will be concatenated into a. */
+  /**
+   * @param a is a mutable list and b will be concatenated into a.
+   */
   private void concatLists(List<com.google.protobuf.Value> a, List<com.google.protobuf.Value> b) {
     if (a.size() == 0 || b.size() == 0) {
       a.addAll(b);

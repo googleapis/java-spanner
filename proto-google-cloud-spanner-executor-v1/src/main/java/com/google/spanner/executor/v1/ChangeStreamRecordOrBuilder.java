@@ -36,6 +36,7 @@ public interface ChangeStreamRecordOrBuilder
    * @return Whether the dataChange field is set.
    */
   boolean hasDataChange();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface ChangeStreamRecordOrBuilder
    * @return The dataChange.
    */
   com.google.spanner.executor.v1.DataChangeRecord getDataChange();
+
   /**
    *
    *
@@ -71,6 +73,7 @@ public interface ChangeStreamRecordOrBuilder
    * @return Whether the childPartition field is set.
    */
   boolean hasChildPartition();
+
   /**
    *
    *
@@ -83,6 +86,7 @@ public interface ChangeStreamRecordOrBuilder
    * @return The childPartition.
    */
   com.google.spanner.executor.v1.ChildPartitionsRecord getChildPartition();
+
   /**
    *
    *
@@ -106,6 +110,7 @@ public interface ChangeStreamRecordOrBuilder
    * @return Whether the heartbeat field is set.
    */
   boolean hasHeartbeat();
+
   /**
    *
    *
@@ -118,6 +123,7 @@ public interface ChangeStreamRecordOrBuilder
    * @return The heartbeat.
    */
   com.google.spanner.executor.v1.HeartbeatRecord getHeartbeat();
+
   /**
    *
    *

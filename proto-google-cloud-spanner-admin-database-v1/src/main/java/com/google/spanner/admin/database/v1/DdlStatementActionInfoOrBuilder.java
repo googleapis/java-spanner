@@ -37,6 +37,7 @@ public interface DdlStatementActionInfoOrBuilder
    * @return The action.
    */
   java.lang.String getAction();
+
   /**
    *
    *
@@ -65,6 +66,7 @@ public interface DdlStatementActionInfoOrBuilder
    * @return The entityType.
    */
   java.lang.String getEntityType();
+
   /**
    *
    *
@@ -96,6 +98,7 @@ public interface DdlStatementActionInfoOrBuilder
    * @return A list containing the entityNames.
    */
   java.util.List<java.lang.String> getEntityNamesList();
+
   /**
    *
    *
@@ -112,6 +115,7 @@ public interface DdlStatementActionInfoOrBuilder
    * @return The count of entityNames.
    */
   int getEntityNamesCount();
+
   /**
    *
    *
@@ -129,6 +133,7 @@ public interface DdlStatementActionInfoOrBuilder
    * @return The entityNames at the given index.
    */
   java.lang.String getEntityNames(int index);
+
   /**
    *
    *

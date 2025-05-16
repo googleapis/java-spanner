@@ -37,6 +37,7 @@ public interface BackupInstancePartitionOrBuilder
    * @return The instancePartition.
    */
   java.lang.String getInstancePartition();
+
   /**
    *
    *

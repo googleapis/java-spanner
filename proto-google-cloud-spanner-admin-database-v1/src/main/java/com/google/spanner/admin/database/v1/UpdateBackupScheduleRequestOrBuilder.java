@@ -40,6 +40,7 @@ public interface UpdateBackupScheduleRequestOrBuilder
    * @return Whether the backupSchedule field is set.
    */
   boolean hasBackupSchedule();
+
   /**
    *
    *
@@ -56,6 +57,7 @@ public interface UpdateBackupScheduleRequestOrBuilder
    * @return The backupSchedule.
    */
   com.google.spanner.admin.database.v1.BackupSchedule getBackupSchedule();
+
   /**
    *
    *
@@ -88,6 +90,7 @@ public interface UpdateBackupScheduleRequestOrBuilder
    * @return Whether the updateMask field is set.
    */
   boolean hasUpdateMask();
+
   /**
    *
    *
@@ -105,6 +108,7 @@ public interface UpdateBackupScheduleRequestOrBuilder
    * @return The updateMask.
    */
   com.google.protobuf.FieldMask getUpdateMask();
+
   /**
    *
    *

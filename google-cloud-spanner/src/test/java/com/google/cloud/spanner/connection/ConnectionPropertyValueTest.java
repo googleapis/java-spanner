@@ -86,9 +86,9 @@ public class ConnectionPropertyValueTest {
   public void testCopy() {
     ConnectionPropertyValue<AutocommitDmlMode> value =
         new ConnectionPropertyValue<>(
-            /* property = */ AUTOCOMMIT_DML_MODE,
-            /* resetValue = */ AutocommitDmlMode.PARTITIONED_NON_ATOMIC,
-            /* value = */ AutocommitDmlMode.TRANSACTIONAL);
+            /* property= */ AUTOCOMMIT_DML_MODE,
+            /* resetValue= */ AutocommitDmlMode.PARTITIONED_NON_ATOMIC,
+            /* value= */ AutocommitDmlMode.TRANSACTIONAL);
     ConnectionPropertyValue<AutocommitDmlMode> copy = value.copy();
 
     assertEquals(value, copy);

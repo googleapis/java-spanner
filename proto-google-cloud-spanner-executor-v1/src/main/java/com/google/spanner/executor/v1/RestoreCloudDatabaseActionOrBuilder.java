@@ -36,6 +36,7 @@ public interface RestoreCloudDatabaseActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface RestoreCloudDatabaseActionOrBuilder
    * @return The backupInstanceId.
    */
   java.lang.String getBackupInstanceId();
+
   /**
    *
    *
@@ -86,6 +88,7 @@ public interface RestoreCloudDatabaseActionOrBuilder
    * @return The backupId.
    */
   java.lang.String getBackupId();
+
   /**
    *
    *
@@ -112,6 +115,7 @@ public interface RestoreCloudDatabaseActionOrBuilder
    * @return The databaseInstanceId.
    */
   java.lang.String getDatabaseInstanceId();
+
   /**
    *
    *
@@ -139,6 +143,7 @@ public interface RestoreCloudDatabaseActionOrBuilder
    * @return The databaseId.
    */
   java.lang.String getDatabaseId();
+
   /**
    *
    *
@@ -166,6 +171,7 @@ public interface RestoreCloudDatabaseActionOrBuilder
    * @return Whether the encryptionConfig field is set.
    */
   boolean hasEncryptionConfig();
+
   /**
    *
    *
@@ -179,6 +185,7 @@ public interface RestoreCloudDatabaseActionOrBuilder
    * @return The encryptionConfig.
    */
   com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+
   /**
    *
    *

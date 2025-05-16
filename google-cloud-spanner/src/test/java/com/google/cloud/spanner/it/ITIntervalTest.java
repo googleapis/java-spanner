@@ -16,11 +16,8 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.*;
@@ -29,7 +26,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.junit.AfterClass;
@@ -66,7 +62,8 @@ public class ITIntervalTest {
             + "  create_time TIMESTAMP,\n"
             + "  expiry_time TIMESTAMP,\n"
             + "  expiry_within_month bool AS (expiry_time - create_time < INTERVAL 30 DAY),\n"
-            + "  interval_array_len INT64 AS (ARRAY_LENGTH(ARRAY<INTERVAL>[INTERVAL '1-2 3 4:5:6' YEAR TO SECOND]))\n"
+            + "  interval_array_len INT64 AS (ARRAY_LENGTH(ARRAY<INTERVAL>[INTERVAL '1-2 3 4:5:6'"
+            + " YEAR TO SECOND]))\n"
             + ") PRIMARY KEY (key)"
       };
 
@@ -76,25 +73,18 @@ public class ITIntervalTest {
             + "  key text primary key,\n"
             + "  create_time timestamptz,\n"
             + "  expiry_time timestamptz,\n"
-            + "  expiry_within_month bool GENERATED ALWAYS AS (expiry_time - create_time < INTERVAL '30' DAY) STORED,\n"
-            + "  interval_array_len bigint GENERATED ALWAYS AS (ARRAY_LENGTH(ARRAY[INTERVAL '1-2 3 4:5:6'], 1)) STORED\n"
+            + "  expiry_within_month bool GENERATED ALWAYS AS (expiry_time - create_time < INTERVAL"
+            + " '30' DAY) STORED,\n"
+            + "  interval_array_len bigint GENERATED ALWAYS AS (ARRAY_LENGTH(ARRAY[INTERVAL '1-2 3"
+            + " 4:5:6'], 1)) STORED\n"
             + ")"
       };
 
   private static DatabaseClient client;
 
-  private static boolean isUsingCloudDevel() {
-    return Objects.equals(
-        System.getProperty("spanner.gce.config.server_url"),
-        "https://staging-wrenchworks.sandbox.googleapis.com");
-  }
-
   @BeforeClass
   public static void setUpDatabase()
       throws ExecutionException, InterruptedException, TimeoutException {
-    assumeTrue("INTERVAL is supported only in Cloud-Devel for now", isUsingCloudDevel());
-    assumeFalse("INTERVAL is not yet supported on Emulator", isUsingEmulator());
-
     Database googleStandardSQLDatabase =
         env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA);
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
@@ -181,10 +171,12 @@ public class ITIntervalTest {
     String query;
     if (dialect.dialect == Dialect.POSTGRESQL) {
       query =
-          "SELECT COUNT(*) FROM IntervalTable WHERE create_time < TIMESTAMPTZ '2004-11-30T10:23:54+0530' - $1";
+          "SELECT COUNT(*) FROM IntervalTable WHERE create_time < TIMESTAMPTZ"
+              + " '2004-11-30T10:23:54+0530' - $1";
     } else {
       query =
-          "SELECT COUNT(*) FROM IntervalTable WHERE create_time < TIMESTAMP('2004-11-30T10:23:54+0530') - @p1";
+          "SELECT COUNT(*) FROM IntervalTable WHERE create_time <"
+              + " TIMESTAMP('2004-11-30T10:23:54+0530') - @p1";
     }
 
     try (ResultSet resultSet =
@@ -258,7 +250,8 @@ public class ITIntervalTest {
   @Test
   public void queryIntervalArray() {
     String query =
-        "SELECT ARRAY[CAST('P1Y2M3DT4H5M6.789123S' AS INTERVAL), null, CAST('P-1Y-2M-3DT-4H-5M-6.789123S' AS INTERVAL)] AS Col1";
+        "SELECT ARRAY[CAST('P1Y2M3DT4H5M6.789123S' AS INTERVAL), null,"
+            + " CAST('P-1Y-2M-3DT-4H-5M-6.789123S' AS INTERVAL)] AS Col1";
     try (ResultSet resultSet = client.singleUse().executeQuery(Statement.of(query))) {
       assertTrue(resultSet.next());
       assertEquals(

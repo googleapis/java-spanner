@@ -35,6 +35,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.SpannerAction)
     SpannerActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use SpannerAction.newBuilder() to construct.
   private SpannerAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -98,6 +99,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     private ActionCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -164,6 +166,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object databasePath_ = "";
+
   /**
    *
    *
@@ -189,6 +192,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       return s;
     }
   }
+
   /**
    *
    *
@@ -217,6 +221,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
 
   public static final int SPANNER_OPTIONS_FIELD_NUMBER = 2;
   private com.google.spanner.executor.v1.SpannerOptions spannerOptions_;
+
   /**
    *
    *
@@ -232,6 +237,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasSpannerOptions() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -249,6 +255,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         ? com.google.spanner.executor.v1.SpannerOptions.getDefaultInstance()
         : spannerOptions_;
   }
+
   /**
    *
    *
@@ -266,6 +273,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int START_FIELD_NUMBER = 10;
+
   /**
    *
    *
@@ -281,6 +289,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasStart() {
     return actionCase_ == 10;
   }
+
   /**
    *
    *
@@ -299,6 +308,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.StartTransactionAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -317,6 +327,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int FINISH_FIELD_NUMBER = 11;
+
   /**
    *
    *
@@ -332,6 +343,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasFinish() {
     return actionCase_ == 11;
   }
+
   /**
    *
    *
@@ -350,6 +362,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.FinishTransactionAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -368,6 +381,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int READ_FIELD_NUMBER = 20;
+
   /**
    *
    *
@@ -383,6 +397,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasRead() {
     return actionCase_ == 20;
   }
+
   /**
    *
    *
@@ -401,6 +416,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ReadAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -419,6 +435,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int QUERY_FIELD_NUMBER = 21;
+
   /**
    *
    *
@@ -434,6 +451,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasQuery() {
     return actionCase_ == 21;
   }
+
   /**
    *
    *
@@ -452,6 +470,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.QueryAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -470,6 +489,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int MUTATION_FIELD_NUMBER = 22;
+
   /**
    *
    *
@@ -485,6 +505,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasMutation() {
     return actionCase_ == 22;
   }
+
   /**
    *
    *
@@ -503,6 +524,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.MutationAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -521,6 +543,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DML_FIELD_NUMBER = 23;
+
   /**
    *
    *
@@ -536,6 +559,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasDml() {
     return actionCase_ == 23;
   }
+
   /**
    *
    *
@@ -554,6 +578,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.DmlAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -572,6 +597,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int BATCH_DML_FIELD_NUMBER = 24;
+
   /**
    *
    *
@@ -587,6 +613,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasBatchDml() {
     return actionCase_ == 24;
   }
+
   /**
    *
    *
@@ -605,6 +632,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.BatchDmlAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -623,6 +651,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int WRITE_FIELD_NUMBER = 25;
+
   /**
    *
    *
@@ -638,6 +667,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasWrite() {
     return actionCase_ == 25;
   }
+
   /**
    *
    *
@@ -656,6 +686,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.WriteMutationsAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -674,6 +705,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int PARTITIONED_UPDATE_FIELD_NUMBER = 27;
+
   /**
    *
    *
@@ -689,6 +721,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasPartitionedUpdate() {
     return actionCase_ == 27;
   }
+
   /**
    *
    *
@@ -707,6 +740,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.PartitionedUpdateAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -726,6 +760,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int ADMIN_FIELD_NUMBER = 30;
+
   /**
    *
    *
@@ -742,6 +777,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasAdmin() {
     return actionCase_ == 30;
   }
+
   /**
    *
    *
@@ -761,6 +797,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.AdminAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -780,6 +817,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int START_BATCH_TXN_FIELD_NUMBER = 40;
+
   /**
    *
    *
@@ -795,6 +833,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasStartBatchTxn() {
     return actionCase_ == 40;
   }
+
   /**
    *
    *
@@ -813,6 +852,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -832,6 +872,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CLOSE_BATCH_TXN_FIELD_NUMBER = 41;
+
   /**
    *
    *
@@ -847,6 +888,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasCloseBatchTxn() {
     return actionCase_ == 41;
   }
+
   /**
    *
    *
@@ -865,6 +907,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -884,6 +927,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int GENERATE_DB_PARTITIONS_READ_FIELD_NUMBER = 42;
+
   /**
    *
    *
@@ -901,6 +945,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasGenerateDbPartitionsRead() {
     return actionCase_ == 42;
   }
+
   /**
    *
    *
@@ -922,6 +967,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -943,6 +989,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int GENERATE_DB_PARTITIONS_QUERY_FIELD_NUMBER = 43;
+
   /**
    *
    *
@@ -960,6 +1007,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasGenerateDbPartitionsQuery() {
     return actionCase_ == 43;
   }
+
   /**
    *
    *
@@ -981,6 +1029,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1002,6 +1051,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int EXECUTE_PARTITION_FIELD_NUMBER = 44;
+
   /**
    *
    *
@@ -1017,6 +1067,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasExecutePartition() {
     return actionCase_ == 44;
   }
+
   /**
    *
    *
@@ -1035,6 +1086,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1054,6 +1106,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int EXECUTE_CHANGE_STREAM_QUERY_FIELD_NUMBER = 50;
+
   /**
    *
    *
@@ -1070,6 +1123,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasExecuteChangeStreamQuery() {
     return actionCase_ == 50;
   }
+
   /**
    *
    *
@@ -1089,6 +1143,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1109,6 +1164,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int QUERY_CANCELLATION_FIELD_NUMBER = 51;
+
   /**
    *
    *
@@ -1124,6 +1180,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
   public boolean hasQueryCancellation() {
     return actionCase_ == 51;
   }
+
   /**
    *
    *
@@ -1142,6 +1199,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -1602,6 +1660,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -2140,6 +2199,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     private int bitField0_;
 
     private java.lang.Object databasePath_ = "";
+
     /**
      *
      *
@@ -2164,6 +2224,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -2188,6 +2249,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -2211,6 +2273,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2230,6 +2293,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2261,6 +2325,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.SpannerOptions.Builder,
             com.google.spanner.executor.v1.SpannerOptionsOrBuilder>
         spannerOptionsBuilder_;
+
     /**
      *
      *
@@ -2275,6 +2340,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasSpannerOptions() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -2295,6 +2361,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return spannerOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -2317,6 +2384,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2337,6 +2405,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2365,6 +2434,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -2384,6 +2454,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -2398,6 +2469,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return getSpannerOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2416,6 +2488,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             : spannerOptions_;
       }
     }
+
     /**
      *
      *
@@ -2447,6 +2520,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.StartTransactionAction.Builder,
             com.google.spanner.executor.v1.StartTransactionActionOrBuilder>
         startBuilder_;
+
     /**
      *
      *
@@ -2462,6 +2536,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasStart() {
       return actionCase_ == 10;
     }
+
     /**
      *
      *
@@ -2487,6 +2562,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.StartTransactionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -2509,6 +2585,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 10;
       return this;
     }
+
     /**
      *
      *
@@ -2529,6 +2606,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 10;
       return this;
     }
+
     /**
      *
      *
@@ -2562,6 +2640,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 10;
       return this;
     }
+
     /**
      *
      *
@@ -2587,6 +2666,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -2599,6 +2679,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.StartTransactionAction.Builder getStartBuilder() {
       return getStartFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2619,6 +2700,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.StartTransactionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -2657,6 +2739,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.FinishTransactionAction.Builder,
             com.google.spanner.executor.v1.FinishTransactionActionOrBuilder>
         finishBuilder_;
+
     /**
      *
      *
@@ -2672,6 +2755,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasFinish() {
       return actionCase_ == 11;
     }
+
     /**
      *
      *
@@ -2697,6 +2781,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.FinishTransactionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -2719,6 +2804,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 11;
       return this;
     }
+
     /**
      *
      *
@@ -2739,6 +2825,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 11;
       return this;
     }
+
     /**
      *
      *
@@ -2772,6 +2859,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 11;
       return this;
     }
+
     /**
      *
      *
@@ -2797,6 +2885,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -2809,6 +2898,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.FinishTransactionAction.Builder getFinishBuilder() {
       return getFinishFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -2829,6 +2919,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.FinishTransactionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -2867,6 +2958,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ReadAction.Builder,
             com.google.spanner.executor.v1.ReadActionOrBuilder>
         readBuilder_;
+
     /**
      *
      *
@@ -2882,6 +2974,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasRead() {
       return actionCase_ == 20;
     }
+
     /**
      *
      *
@@ -2907,6 +3000,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ReadAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -2929,6 +3023,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 20;
       return this;
     }
+
     /**
      *
      *
@@ -2948,6 +3043,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 20;
       return this;
     }
+
     /**
      *
      *
@@ -2980,6 +3076,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 20;
       return this;
     }
+
     /**
      *
      *
@@ -3005,6 +3102,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3017,6 +3115,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.ReadAction.Builder getReadBuilder() {
       return getReadFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3037,6 +3136,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ReadAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3075,6 +3175,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.QueryAction.Builder,
             com.google.spanner.executor.v1.QueryActionOrBuilder>
         queryBuilder_;
+
     /**
      *
      *
@@ -3090,6 +3191,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasQuery() {
       return actionCase_ == 21;
     }
+
     /**
      *
      *
@@ -3115,6 +3217,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.QueryAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3137,6 +3240,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 21;
       return this;
     }
+
     /**
      *
      *
@@ -3156,6 +3260,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 21;
       return this;
     }
+
     /**
      *
      *
@@ -3188,6 +3293,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 21;
       return this;
     }
+
     /**
      *
      *
@@ -3213,6 +3319,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3225,6 +3332,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.QueryAction.Builder getQueryBuilder() {
       return getQueryFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3245,6 +3353,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.QueryAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3283,6 +3392,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.MutationAction.Builder,
             com.google.spanner.executor.v1.MutationActionOrBuilder>
         mutationBuilder_;
+
     /**
      *
      *
@@ -3298,6 +3408,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasMutation() {
       return actionCase_ == 22;
     }
+
     /**
      *
      *
@@ -3323,6 +3434,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.MutationAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3345,6 +3457,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 22;
       return this;
     }
+
     /**
      *
      *
@@ -3365,6 +3478,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 22;
       return this;
     }
+
     /**
      *
      *
@@ -3397,6 +3511,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 22;
       return this;
     }
+
     /**
      *
      *
@@ -3422,6 +3537,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3434,6 +3550,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.MutationAction.Builder getMutationBuilder() {
       return getMutationFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3454,6 +3571,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.MutationAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3492,6 +3610,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.DmlAction.Builder,
             com.google.spanner.executor.v1.DmlActionOrBuilder>
         dmlBuilder_;
+
     /**
      *
      *
@@ -3507,6 +3626,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasDml() {
       return actionCase_ == 23;
     }
+
     /**
      *
      *
@@ -3532,6 +3652,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DmlAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3554,6 +3675,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 23;
       return this;
     }
+
     /**
      *
      *
@@ -3573,6 +3695,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 23;
       return this;
     }
+
     /**
      *
      *
@@ -3605,6 +3728,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 23;
       return this;
     }
+
     /**
      *
      *
@@ -3630,6 +3754,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3642,6 +3767,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.DmlAction.Builder getDmlBuilder() {
       return getDmlFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3662,6 +3788,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.DmlAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3700,6 +3827,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.BatchDmlAction.Builder,
             com.google.spanner.executor.v1.BatchDmlActionOrBuilder>
         batchDmlBuilder_;
+
     /**
      *
      *
@@ -3715,6 +3843,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasBatchDml() {
       return actionCase_ == 24;
     }
+
     /**
      *
      *
@@ -3740,6 +3869,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.BatchDmlAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3762,6 +3892,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 24;
       return this;
     }
+
     /**
      *
      *
@@ -3782,6 +3913,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 24;
       return this;
     }
+
     /**
      *
      *
@@ -3814,6 +3946,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 24;
       return this;
     }
+
     /**
      *
      *
@@ -3839,6 +3972,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -3851,6 +3985,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.BatchDmlAction.Builder getBatchDmlBuilder() {
       return getBatchDmlFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -3871,6 +4006,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.BatchDmlAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3909,6 +4045,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.WriteMutationsAction.Builder,
             com.google.spanner.executor.v1.WriteMutationsActionOrBuilder>
         writeBuilder_;
+
     /**
      *
      *
@@ -3924,6 +4061,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasWrite() {
       return actionCase_ == 25;
     }
+
     /**
      *
      *
@@ -3949,6 +4087,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.WriteMutationsAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -3971,6 +4110,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 25;
       return this;
     }
+
     /**
      *
      *
@@ -3991,6 +4131,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 25;
       return this;
     }
+
     /**
      *
      *
@@ -4024,6 +4165,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 25;
       return this;
     }
+
     /**
      *
      *
@@ -4049,6 +4191,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4061,6 +4204,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.WriteMutationsAction.Builder getWriteBuilder() {
       return getWriteFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4081,6 +4225,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.WriteMutationsAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4119,6 +4264,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.PartitionedUpdateAction.Builder,
             com.google.spanner.executor.v1.PartitionedUpdateActionOrBuilder>
         partitionedUpdateBuilder_;
+
     /**
      *
      *
@@ -4134,6 +4280,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasPartitionedUpdate() {
       return actionCase_ == 27;
     }
+
     /**
      *
      *
@@ -4159,6 +4306,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.PartitionedUpdateAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4182,6 +4330,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 27;
       return this;
     }
+
     /**
      *
      *
@@ -4202,6 +4351,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 27;
       return this;
     }
+
     /**
      *
      *
@@ -4236,6 +4386,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 27;
       return this;
     }
+
     /**
      *
      *
@@ -4261,6 +4412,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4274,6 +4426,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         getPartitionedUpdateBuilder() {
       return getPartitionedUpdateFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4295,6 +4448,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.PartitionedUpdateAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4333,6 +4487,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.AdminAction.Builder,
             com.google.spanner.executor.v1.AdminActionOrBuilder>
         adminBuilder_;
+
     /**
      *
      *
@@ -4349,6 +4504,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasAdmin() {
       return actionCase_ == 30;
     }
+
     /**
      *
      *
@@ -4375,6 +4531,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.AdminAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4398,6 +4555,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 30;
       return this;
     }
+
     /**
      *
      *
@@ -4418,6 +4576,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 30;
       return this;
     }
+
     /**
      *
      *
@@ -4451,6 +4610,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 30;
       return this;
     }
+
     /**
      *
      *
@@ -4477,6 +4637,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4490,6 +4651,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.executor.v1.AdminAction.Builder getAdminBuilder() {
       return getAdminFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4511,6 +4673,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.AdminAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4550,6 +4713,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.StartBatchTransactionAction.Builder,
             com.google.spanner.executor.v1.StartBatchTransactionActionOrBuilder>
         startBatchTxnBuilder_;
+
     /**
      *
      *
@@ -4565,6 +4729,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasStartBatchTxn() {
       return actionCase_ == 40;
     }
+
     /**
      *
      *
@@ -4590,6 +4755,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4613,6 +4779,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 40;
       return this;
     }
+
     /**
      *
      *
@@ -4633,6 +4800,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 40;
       return this;
     }
+
     /**
      *
      *
@@ -4668,6 +4836,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 40;
       return this;
     }
+
     /**
      *
      *
@@ -4693,6 +4862,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4706,6 +4876,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         getStartBatchTxnBuilder() {
       return getStartBatchTxnFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4727,6 +4898,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4765,6 +4937,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.CloseBatchTransactionAction.Builder,
             com.google.spanner.executor.v1.CloseBatchTransactionActionOrBuilder>
         closeBatchTxnBuilder_;
+
     /**
      *
      *
@@ -4780,6 +4953,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasCloseBatchTxn() {
       return actionCase_ == 41;
     }
+
     /**
      *
      *
@@ -4805,6 +4979,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4828,6 +5003,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 41;
       return this;
     }
+
     /**
      *
      *
@@ -4848,6 +5024,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 41;
       return this;
     }
+
     /**
      *
      *
@@ -4883,6 +5060,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 41;
       return this;
     }
+
     /**
      *
      *
@@ -4908,6 +5086,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -4921,6 +5100,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         getCloseBatchTxnBuilder() {
       return getCloseBatchTxnFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -4942,6 +5122,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -4980,6 +5161,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.Builder,
             com.google.spanner.executor.v1.GenerateDbPartitionsForReadActionOrBuilder>
         generateDbPartitionsReadBuilder_;
+
     /**
      *
      *
@@ -4997,6 +5179,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasGenerateDbPartitionsRead() {
       return actionCase_ == 42;
     }
+
     /**
      *
      *
@@ -5027,6 +5210,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             .getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5052,6 +5236,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 42;
       return this;
     }
+
     /**
      *
      *
@@ -5074,6 +5259,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 42;
       return this;
     }
+
     /**
      *
      *
@@ -5111,6 +5297,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 42;
       return this;
     }
+
     /**
      *
      *
@@ -5138,6 +5325,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -5153,6 +5341,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         getGenerateDbPartitionsReadBuilder() {
       return getGenerateDbPartitionsReadFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5177,6 +5366,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             .getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5218,6 +5408,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.Builder,
             com.google.spanner.executor.v1.GenerateDbPartitionsForQueryActionOrBuilder>
         generateDbPartitionsQueryBuilder_;
+
     /**
      *
      *
@@ -5235,6 +5426,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasGenerateDbPartitionsQuery() {
       return actionCase_ == 43;
     }
+
     /**
      *
      *
@@ -5265,6 +5457,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             .getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5290,6 +5483,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 43;
       return this;
     }
+
     /**
      *
      *
@@ -5312,6 +5506,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 43;
       return this;
     }
+
     /**
      *
      *
@@ -5349,6 +5544,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 43;
       return this;
     }
+
     /**
      *
      *
@@ -5376,6 +5572,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -5391,6 +5588,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         getGenerateDbPartitionsQueryBuilder() {
       return getGenerateDbPartitionsQueryFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5415,6 +5613,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             .getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5457,6 +5656,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ExecutePartitionAction.Builder,
             com.google.spanner.executor.v1.ExecutePartitionActionOrBuilder>
         executePartitionBuilder_;
+
     /**
      *
      *
@@ -5472,6 +5672,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasExecutePartition() {
       return actionCase_ == 44;
     }
+
     /**
      *
      *
@@ -5497,6 +5698,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5520,6 +5722,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 44;
       return this;
     }
+
     /**
      *
      *
@@ -5540,6 +5743,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 44;
       return this;
     }
+
     /**
      *
      *
@@ -5574,6 +5778,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 44;
       return this;
     }
+
     /**
      *
      *
@@ -5599,6 +5804,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -5612,6 +5818,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         getExecutePartitionBuilder() {
       return getExecutePartitionFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5633,6 +5840,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5671,6 +5879,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.ExecuteChangeStreamQuery.Builder,
             com.google.spanner.executor.v1.ExecuteChangeStreamQueryOrBuilder>
         executeChangeStreamQueryBuilder_;
+
     /**
      *
      *
@@ -5687,6 +5896,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasExecuteChangeStreamQuery() {
       return actionCase_ == 50;
     }
+
     /**
      *
      *
@@ -5713,6 +5923,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5737,6 +5948,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 50;
       return this;
     }
+
     /**
      *
      *
@@ -5758,6 +5970,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 50;
       return this;
     }
+
     /**
      *
      *
@@ -5793,6 +6006,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 50;
       return this;
     }
+
     /**
      *
      *
@@ -5819,6 +6033,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -5833,6 +6048,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         getExecuteChangeStreamQueryBuilder() {
       return getExecuteChangeStreamQueryFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -5855,6 +6071,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5894,6 +6111,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.QueryCancellationAction.Builder,
             com.google.spanner.executor.v1.QueryCancellationActionOrBuilder>
         queryCancellationBuilder_;
+
     /**
      *
      *
@@ -5909,6 +6127,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     public boolean hasQueryCancellation() {
       return actionCase_ == 51;
     }
+
     /**
      *
      *
@@ -5934,6 +6153,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -5957,6 +6177,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 51;
       return this;
     }
+
     /**
      *
      *
@@ -5977,6 +6198,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 51;
       return this;
     }
+
     /**
      *
      *
@@ -6011,6 +6233,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 51;
       return this;
     }
+
     /**
      *
      *
@@ -6036,6 +6259,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
     /**
      *
      *
@@ -6049,6 +6273,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         getQueryCancellationBuilder() {
       return getQueryCancellationFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -6070,6 +6295,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
       }
     }
+
     /**
      *
      *

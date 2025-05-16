@@ -87,16 +87,24 @@ interface UnitOfWork {
   /** Cancel the currently running statement (if any and the statement may be cancelled). */
   void cancel();
 
-  /** @return the type of unit of work. */
+  /**
+   * @return the type of unit of work.
+   */
   Type getType();
 
-  /** @return the current state of this unit of work. */
+  /**
+   * @return the current state of this unit of work.
+   */
   UnitOfWorkState getState();
 
-  /** @return <code>true</code> if this unit of work is still active. */
+  /**
+   * @return <code>true</code> if this unit of work is still active.
+   */
   boolean isActive();
 
-  /** @return the {@link Span} that is used by this {@link UnitOfWork}. */
+  /**
+   * @return the {@link Span} that is used by this {@link UnitOfWork}.
+   */
   Span getSpan();
 
   /** Returns true if this transaction can only be used for a single statement. */
@@ -129,13 +137,19 @@ interface UnitOfWork {
     throw new UnsupportedOperationException();
   }
 
-  /** @see Connection#savepoint(String) */
+  /**
+   * @see Connection#savepoint(String)
+   */
   void savepoint(@Nonnull String name, @Nonnull Dialect dialect);
 
-  /** @see Connection#releaseSavepoint(String) */
+  /**
+   * @see Connection#releaseSavepoint(String)
+   */
   void releaseSavepoint(@Nonnull String name);
 
-  /** @see Connection#rollbackToSavepoint(String) */
+  /**
+   * @see Connection#rollbackToSavepoint(String)
+   */
   void rollbackToSavepoint(@Nonnull String name, @Nonnull SavepointSupport savepointSupport);
 
   /**
@@ -157,7 +171,9 @@ interface UnitOfWork {
    */
   void abortBatch();
 
-  /** @return <code>true</code> if this unit of work is read-only. */
+  /**
+   * @return <code>true</code> if this unit of work is read-only.
+   */
   boolean isReadOnly();
 
   /**
@@ -202,7 +218,9 @@ interface UnitOfWork {
    */
   Timestamp getReadTimestamp();
 
-  /** @return the read timestamp of this transaction or null if there is no read timestamp. */
+  /**
+   * @return the read timestamp of this transaction or null if there is no read timestamp.
+   */
   Timestamp getReadTimestampOrNull();
 
   /**
@@ -211,7 +229,9 @@ interface UnitOfWork {
    */
   Timestamp getCommitTimestamp();
 
-  /** @return the commit timestamp of this transaction or null if there is no commit timestamp. */
+  /**
+   * @return the commit timestamp of this transaction or null if there is no commit timestamp.
+   */
   Timestamp getCommitTimestampOrNull();
 
   /**

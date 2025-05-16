@@ -184,7 +184,8 @@ public final class SpannerExceptionFactory {
           AbortedException cause, SpannerException databaseError) {
     return new AbortedDueToConcurrentModificationException(
         DoNotConstructDirectly.ALLOWED,
-        "The transaction was aborted and could not be retried due to a database error during the retry",
+        "The transaction was aborted and could not be retried due to a database error during the"
+            + " retry",
         cause,
         databaseError);
   }
@@ -199,7 +200,8 @@ public final class SpannerExceptionFactory {
           AbortedDueToConcurrentModificationException cause) {
     return new AbortedDueToConcurrentModificationException(
         DoNotConstructDirectly.ALLOWED,
-        "This transaction has already been aborted and could not be retried due to a concurrent modification. Rollback this transaction to start a new one.",
+        "This transaction has already been aborted and could not be retried due to a concurrent"
+            + " modification. Rollback this transaction to start a new one.",
         cause);
   }
 
@@ -388,7 +390,7 @@ public final class SpannerExceptionFactory {
           return new MissingDefaultSequenceKindException(
               token, code, message, cause, apiException, reqId);
         }
-        // Fall through to the default.
+      // Fall through to the default.
       default:
         return new SpannerException(
             token, code, isRetryable(code, cause), message, cause, apiException, reqId);

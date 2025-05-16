@@ -498,8 +498,7 @@ class SessionImpl implements Session {
         BeginTransactionRequest.newBuilder()
             .setSession(getName())
             .setOptions(
-                defaultTransactionOptions()
-                    .toBuilder()
+                defaultTransactionOptions().toBuilder()
                     .mergeFrom(
                         createReadWriteTransactionOptions(
                             transactionOptions, previousTransactionId)));

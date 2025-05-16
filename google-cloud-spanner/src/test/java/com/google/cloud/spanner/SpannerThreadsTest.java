@@ -90,7 +90,8 @@ public class SpannerThreadsTest {
   @BeforeClass
   public static void startServer() throws IOException {
     assumeTrue(
-        "Skip tests when emulator is enabled as this test interferes with the check whether the emulator is running",
+        "Skip tests when emulator is enabled as this test interferes with the check whether the"
+            + " emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
 
     mockSpanner = new MockSpannerServiceImpl();

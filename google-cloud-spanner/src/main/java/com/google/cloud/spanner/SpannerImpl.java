@@ -359,7 +359,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         }
         BatchClientImpl batchClient =
             new BatchClientImpl(
-                getSessionClient(db), /*useMultiplexedSessionPartitionedOps=*/ true);
+                getSessionClient(db), /* useMultiplexedSessionPartitionedOps= */ true);
         this.dbBatchClients.put(db, batchClient);
         return batchClient;
       } finally {
@@ -367,7 +367,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       }
     }
     return new BatchClientImpl(
-        getSessionClient(db), /*useMultiplexedSessionPartitionedOps=*/ false);
+        getSessionClient(db), /* useMultiplexedSessionPartitionedOps= */ false);
   }
 
   @Override

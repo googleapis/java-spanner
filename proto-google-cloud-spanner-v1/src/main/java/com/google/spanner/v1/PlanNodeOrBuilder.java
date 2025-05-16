@@ -53,6 +53,7 @@ public interface PlanNodeOrBuilder
    * @return The enum numeric value on the wire for kind.
    */
   int getKindValue();
+
   /**
    *
    *
@@ -82,6 +83,7 @@ public interface PlanNodeOrBuilder
    * @return The displayName.
    */
   java.lang.String getDisplayName();
+
   /**
    *
    *
@@ -105,6 +107,7 @@ public interface PlanNodeOrBuilder
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
   java.util.List<com.google.spanner.v1.PlanNode.ChildLink> getChildLinksList();
+
   /**
    *
    *
@@ -115,6 +118,7 @@ public interface PlanNodeOrBuilder
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
   com.google.spanner.v1.PlanNode.ChildLink getChildLinks(int index);
+
   /**
    *
    *
@@ -125,6 +129,7 @@ public interface PlanNodeOrBuilder
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
   int getChildLinksCount();
+
   /**
    *
    *
@@ -136,6 +141,7 @@ public interface PlanNodeOrBuilder
    */
   java.util.List<? extends com.google.spanner.v1.PlanNode.ChildLinkOrBuilder>
       getChildLinksOrBuilderList();
+
   /**
    *
    *
@@ -159,6 +165,7 @@ public interface PlanNodeOrBuilder
    * @return Whether the shortRepresentation field is set.
    */
   boolean hasShortRepresentation();
+
   /**
    *
    *
@@ -171,6 +178,7 @@ public interface PlanNodeOrBuilder
    * @return The shortRepresentation.
    */
   com.google.spanner.v1.PlanNode.ShortRepresentation getShortRepresentation();
+
   /**
    *
    *
@@ -201,6 +209,7 @@ public interface PlanNodeOrBuilder
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
+
   /**
    *
    *
@@ -220,6 +229,7 @@ public interface PlanNodeOrBuilder
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
+
   /**
    *
    *
@@ -253,6 +263,7 @@ public interface PlanNodeOrBuilder
    * @return Whether the executionStats field is set.
    */
   boolean hasExecutionStats();
+
   /**
    *
    *
@@ -268,6 +279,7 @@ public interface PlanNodeOrBuilder
    * @return The executionStats.
    */
   com.google.protobuf.Struct getExecutionStats();
+
   /**
    *
    *

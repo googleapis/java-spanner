@@ -37,6 +37,7 @@ public interface ResultSetStatsOrBuilder
    * @return Whether the queryPlan field is set.
    */
   boolean hasQueryPlan();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface ResultSetStatsOrBuilder
    * @return The queryPlan.
    */
   com.google.spanner.v1.QueryPlan getQueryPlan();
+
   /**
    *
    *
@@ -82,6 +84,7 @@ public interface ResultSetStatsOrBuilder
    * @return Whether the queryStats field is set.
    */
   boolean hasQueryStats();
+
   /**
    *
    *
@@ -102,6 +105,7 @@ public interface ResultSetStatsOrBuilder
    * @return The queryStats.
    */
   com.google.protobuf.Struct getQueryStats();
+
   /**
    *
    *
@@ -133,6 +137,7 @@ public interface ResultSetStatsOrBuilder
    * @return Whether the rowCountExact field is set.
    */
   boolean hasRowCountExact();
+
   /**
    *
    *
@@ -159,6 +164,7 @@ public interface ResultSetStatsOrBuilder
    * @return Whether the rowCountLowerBound field is set.
    */
   boolean hasRowCountLowerBound();
+
   /**
    *
    *

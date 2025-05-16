@@ -1146,28 +1146,15 @@ public class ITWriteTest {
                 transaction ->
                     transaction.executeUpdate(
                         Statement.newBuilder(
-                                "insert into T ("
-                                    + "K,"
-                                    + "BoolValue,"
-                                    + "Int64Value,"
-                                    + "Float64Value,"
-                                    + "StringValue,"
-                                    + "JsonValue,"
-                                    + "BytesValue,"
-                                    + "TimestampValue,"
-                                    + "DateValue,"
-                                    + "NumericValue,"
-                                    + "BoolArrayValue,"
-                                    + "Int64ArrayValue,"
-                                    + "Float64ArrayValue,"
-                                    + "StringArrayValue,"
-                                    + "JsonArrayValue,"
-                                    + "BytesArrayValue,"
-                                    + "TimestampArrayValue,"
-                                    + "DateArrayValue,"
-                                    + "NumericArrayValue"
-                                    + ") values (@k, @bool, @int64, @float64, @string, @json, @bytes, @timestamp, @date, @numeric, "
-                                    + "@boolArray, @int64Array, @float64Array, @stringArray, @jsonArray, @bytesArray, @timestampArray, @dateArray, @numericArray)")
+                                "insert into T (K,BoolValue,Int64Value,Float64Value,StringValue,"
+                                    + "JsonValue,BytesValue,TimestampValue,DateValue,NumericValue,"
+                                    + "BoolArrayValue,Int64ArrayValue,Float64ArrayValue,"
+                                    + "StringArrayValue,JsonArrayValue,BytesArrayValue,"
+                                    + "TimestampArrayValue,DateArrayValue,NumericArrayValue) values"
+                                    + " (@k, @bool, @int64, @float64, @string, @json, @bytes,"
+                                    + " @timestamp, @date, @numeric, @boolArray, @int64Array,"
+                                    + " @float64Array, @stringArray, @jsonArray, @bytesArray,"
+                                    + " @timestampArray, @dateArray, @numericArray)")
                             .bind("k")
                             .to(uniqueString())
                             .bind("bool")

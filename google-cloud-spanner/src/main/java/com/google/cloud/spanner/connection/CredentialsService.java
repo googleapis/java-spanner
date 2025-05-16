@@ -32,7 +32,8 @@ import java.io.InputStream;
 /** Service class for getting credentials from key files. */
 class CredentialsService {
   static final String GCS_NOT_SUPPORTED_MSG =
-      "Credentials that is stored on Google Cloud Storage is no longer supported. Download the credentials to a local file and reference the local file in the connection URL.";
+      "Credentials that is stored on Google Cloud Storage is no longer supported. Download the"
+          + " credentials to a local file and reference the local file in the connection URL.";
   static final CredentialsService INSTANCE = new CredentialsService();
 
   CredentialsService() {}
@@ -61,10 +62,12 @@ class CredentialsService {
       if (credentialsUrl == null) {
         msg =
             msg
-                + "There are no credentials set in the connection string, "
-                + "and the default application credentials are not set or are pointing to an invalid or non-existing file.\n"
-                + "Please check the GOOGLE_APPLICATION_CREDENTIALS environment variable and/or "
-                + "the credentials that have been set using the Google Cloud SDK gcloud auth application-default login command";
+                + "There are no credentials set in the connection string, and the default"
+                + " application credentials are not set or are pointing to an invalid or"
+                + " non-existing file.\n"
+                + "Please check the GOOGLE_APPLICATION_CREDENTIALS environment variable and/or the"
+                + " credentials that have been set using the Google Cloud SDK gcloud auth"
+                + " application-default login command";
       } else {
         msg = msg + credentialsUrl;
       }

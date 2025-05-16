@@ -34,6 +34,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.CreateInstanceMetadata)
     CreateInstanceMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use CreateInstanceMetadata.newBuilder() to construct.
   private CreateInstanceMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -67,6 +68,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   private int bitField0_;
   public static final int INSTANCE_FIELD_NUMBER = 1;
   private com.google.spanner.admin.instance.v1.Instance instance_;
+
   /**
    *
    *
@@ -82,6 +84,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   public boolean hasInstance() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -99,6 +102,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
         ? com.google.spanner.admin.instance.v1.Instance.getDefaultInstance()
         : instance_;
   }
+
   /**
    *
    *
@@ -117,6 +121,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
 
   public static final int START_TIME_FIELD_NUMBER = 2;
   private com.google.protobuf.Timestamp startTime_;
+
   /**
    *
    *
@@ -134,6 +139,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   public boolean hasStartTime() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -151,6 +157,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   public com.google.protobuf.Timestamp getStartTime() {
     return startTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : startTime_;
   }
+
   /**
    *
    *
@@ -169,6 +176,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 3;
   private com.google.protobuf.Timestamp cancelTime_;
+
   /**
    *
    *
@@ -186,6 +194,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   public boolean hasCancelTime() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -203,6 +212,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   public com.google.protobuf.Timestamp getCancelTime() {
     return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
+
   /**
    *
    *
@@ -221,6 +231,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
 
   public static final int END_TIME_FIELD_NUMBER = 4;
   private com.google.protobuf.Timestamp endTime_;
+
   /**
    *
    *
@@ -236,6 +247,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   public boolean hasEndTime() {
     return ((bitField0_ & 0x00000008) != 0);
   }
+
   /**
    *
    *
@@ -251,6 +263,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   public com.google.protobuf.Timestamp getEndTime() {
     return endTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : endTime_;
   }
+
   /**
    *
    *
@@ -267,6 +280,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
 
   public static final int EXPECTED_FULFILLMENT_PERIOD_FIELD_NUMBER = 5;
   private int expectedFulfillmentPeriod_ = 0;
+
   /**
    *
    *
@@ -283,6 +297,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
   public int getExpectedFulfillmentPeriodValue() {
     return expectedFulfillmentPeriod_;
   }
+
   /**
    *
    *
@@ -525,6 +540,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -799,6 +815,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
             com.google.spanner.admin.instance.v1.Instance.Builder,
             com.google.spanner.admin.instance.v1.InstanceOrBuilder>
         instanceBuilder_;
+
     /**
      *
      *
@@ -813,6 +830,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
     public boolean hasInstance() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -833,6 +851,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
         return instanceBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -855,6 +874,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -875,6 +895,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -902,6 +923,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -921,6 +943,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -935,6 +958,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return getInstanceFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -953,6 +977,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
             : instance_;
       }
     }
+
     /**
      *
      *
@@ -985,6 +1010,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         startTimeBuilder_;
+
     /**
      *
      *
@@ -1001,6 +1027,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
     public boolean hasStartTime() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -1021,6 +1048,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
         return startTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1045,6 +1073,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1066,6 +1095,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1095,6 +1125,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1116,6 +1147,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1132,6 +1164,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return getStartTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1150,6 +1183,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
         return startTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : startTime_;
       }
     }
+
     /**
      *
      *
@@ -1184,6 +1218,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         cancelTimeBuilder_;
+
     /**
      *
      *
@@ -1200,6 +1235,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
     public boolean hasCancelTime() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1222,6 +1258,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
         return cancelTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1246,6 +1283,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1267,6 +1305,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1296,6 +1335,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1317,6 +1357,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1333,6 +1374,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1353,6 +1395,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
             : cancelTime_;
       }
     }
+
     /**
      *
      *
@@ -1387,6 +1430,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         endTimeBuilder_;
+
     /**
      *
      *
@@ -1401,6 +1445,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
     public boolean hasEndTime() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1419,6 +1464,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
         return endTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1441,6 +1487,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1460,6 +1507,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1487,6 +1535,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1506,6 +1555,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1520,6 +1570,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return getEndTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1536,6 +1587,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
         return endTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : endTime_;
       }
     }
+
     /**
      *
      *
@@ -1563,6 +1615,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
     }
 
     private int expectedFulfillmentPeriod_ = 0;
+
     /**
      *
      *
@@ -1579,6 +1632,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
     public int getExpectedFulfillmentPeriodValue() {
       return expectedFulfillmentPeriod_;
     }
+
     /**
      *
      *
@@ -1598,6 +1652,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1619,6 +1674,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
           ? com.google.spanner.admin.instance.v1.FulfillmentPeriod.UNRECOGNIZED
           : result;
     }
+
     /**
      *
      *
@@ -1642,6 +1698,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *

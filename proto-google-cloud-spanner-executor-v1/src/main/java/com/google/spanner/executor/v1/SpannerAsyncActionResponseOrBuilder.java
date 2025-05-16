@@ -50,6 +50,7 @@ public interface SpannerAsyncActionResponseOrBuilder
    * @return Whether the outcome field is set.
    */
   boolean hasOutcome();
+
   /**
    *
    *
@@ -63,6 +64,7 @@ public interface SpannerAsyncActionResponseOrBuilder
    * @return The outcome.
    */
   com.google.spanner.executor.v1.SpannerActionOutcome getOutcome();
+
   /**
    *
    *

@@ -24,21 +24,24 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.tracing.ApiTracerFactory;
-import com.google.api.gax.tracing.MetricsTracerFactory;
-import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
+import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Server;
 import io.grpc.Status;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -47,6 +50,9 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
@@ -61,55 +67,39 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServerTest {
-
   private static final Statement SELECT_RANDOM = Statement.of("SELECT * FROM random");
-
   private static final Statement UPDATE_RANDOM = Statement.of("UPDATE random SET foo=1 WHERE id=1");
   private static InMemoryMetricReader metricReader;
+  private static Map<String, String> attributes =
+      BuiltInMetricsProvider.INSTANCE.createClientAttributes();
+  private static Attributes expectedCommonBaseAttributes =
+      Attributes.builder()
+          .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, "spanner-java/")
+          .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
+          .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, "i")
+          .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
+          .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
+          .build();
+  ;
+  private static Attributes expectedCommonRequestAttributes =
+      Attributes.builder().put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false").build();
+  ;
 
-  private static OpenTelemetry openTelemetry;
-
-  private static Map<String, String> attributes;
-
-  private static Attributes expectedCommonBaseAttributes;
-  private static Attributes expectedCommonRequestAttributes;
-
-  private static final long MIN_LATENCY = 0;
+  private static final double MIN_LATENCY = 0;
 
   private DatabaseClient client;
 
-  @BeforeClass
-  public static void setup() {
+  public ApiTracerFactory createMetricsTracerFactory() {
     metricReader = InMemoryMetricReader.create();
-
-    BuiltInMetricsProvider provider = BuiltInMetricsProvider.INSTANCE;
 
     SdkMeterProviderBuilder meterProvider =
         SdkMeterProvider.builder().registerMetricReader(metricReader);
-
     BuiltInMetricsConstant.getAllViews().forEach(meterProvider::registerView);
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
 
-    String client_name = "spanner-java/";
-    openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
-    attributes = provider.createClientAttributes("test-project", client_name);
-
-    expectedCommonBaseAttributes =
-        Attributes.builder()
-            .put(BuiltInMetricsConstant.PROJECT_ID_KEY, "test-project")
-            .put(BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY, "unknown")
-            .put(
-                BuiltInMetricsConstant.LOCATION_ID_KEY,
-                BuiltInMetricsProvider.detectClientLocation())
-            .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, client_name)
-            .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
-            .put(BuiltInMetricsConstant.CLIENT_HASH_KEY, attributes.get("client_hash"))
-            .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, "i")
-            .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
-            .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
-            .build();
-
-    expectedCommonRequestAttributes =
-        Attributes.builder().put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false").build();
+    return new BuiltInMetricsTracerFactory(
+        new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME), attributes);
   }
 
   @BeforeClass
@@ -120,18 +110,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   }
 
   @After
-  public void clearRequests() {
+  public void clearRequests() throws IOException {
     mockSpanner.clearRequests();
+    metricReader.close();
   }
 
   @Override
   public void createSpannerInstance() {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
-
-    ApiTracerFactory metricsTracerFactory =
-        new BuiltInMetricsTracerFactory(
-            new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            attributes);
     // Set a quick polling algorithm to prevent this from slowing down the test unnecessarily.
     builder
         .getDatabaseAdminStubSettingsBuilder()
@@ -160,7 +146,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             // Setting this to false so that Spanner Options does not register Metrics Tracer
             // factory again.
             .setBuiltInMetricsEnabled(false)
-            .setApiTracerFactory(metricsTracerFactory)
+            .setApiTracerFactory(createMetricsTracerFactory())
             .build()
             .getService();
     client = spanner.getDatabaseClient(DatabaseId.of("test-project", "i", "d"));
@@ -174,10 +160,9 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
       assertFalse(resultSet.next());
     }
 
-    long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+    double elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
     Attributes expectedAttributes =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteStreamingSql")
@@ -186,13 +171,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     MetricData operationLatencyMetricData =
         getMetricData(metricReader, BuiltInMetricsConstant.OPERATION_LATENCIES_NAME);
     assertNotNull(operationLatencyMetricData);
-    long operationLatencyValue = getAggregatedValue(operationLatencyMetricData, expectedAttributes);
+    double operationLatencyValue =
+        getAggregatedValue(operationLatencyMetricData, expectedAttributes);
     assertThat(operationLatencyValue).isIn(Range.closed(MIN_LATENCY, elapsed));
 
     MetricData attemptLatencyMetricData =
         getMetricData(metricReader, BuiltInMetricsConstant.ATTEMPT_LATENCIES_NAME);
     assertNotNull(attemptLatencyMetricData);
-    long attemptLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
+    double attemptLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
     assertThat(attemptLatencyValue).isIn(Range.closed(MIN_LATENCY, elapsed));
 
     MetricData operationCountMetricData =
@@ -205,10 +191,100 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     assertNotNull(attemptCountMetricData);
     assertThat(getAggregatedValue(attemptCountMetricData, expectedAttributes)).isEqualTo(1);
 
-    MetricData gfeLatencyMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
-    long gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
-    assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
+    assertFalse(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
+    assertFalse(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    if (GapicSpannerRpc.isEnableDirectPathXdsEnv()) {
+      // AFE metrics are enabled for DirectPath.
+      MetricData afeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
+      double afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 1e-6);
+    } else {
+      MetricData gfeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
+      double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 1e-6);
+      assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
+    }
+  }
+
+  private boolean isJava8() {
+    return JavaVersionUtil.getJavaMajorVersion() == 8;
+  }
+
+  private boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase().contains("windows");
+  }
+
+  @Test
+  public void testMetricsSingleUseQueryWithAfeEnabled() throws Exception {
+    assumeTrue(isJava8() && !isWindows());
+    assumeFalse(System.getenv().containsKey("SPANNER_DISABLE_AFE_SERVER_TIMING"));
+
+    Class<?> classOfMap = System.getenv().getClass();
+    Field field = classOfMap.getDeclaredField("m");
+    field.setAccessible(true);
+    Map<String, String> writeableEnvironmentVariables =
+        (Map<String, String>) field.get(System.getenv());
+
+    try {
+      writeableEnvironmentVariables.put("SPANNER_DISABLE_AFE_SERVER_TIMING", "false");
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+      try (ResultSet resultSet = client.singleUse().executeQuery(SELECT_RANDOM)) {
+        assertTrue(resultSet.next());
+        assertFalse(resultSet.next());
+      }
+
+      double elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+      Attributes expectedAttributes =
+          expectedCommonBaseAttributes.toBuilder()
+              .putAll(expectedCommonRequestAttributes)
+              .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
+              .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteStreamingSql")
+              .build();
+
+      MetricData operationLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.OPERATION_LATENCIES_NAME);
+      assertNotNull(operationLatencyMetricData);
+      double operationLatencyValue =
+          getAggregatedValue(operationLatencyMetricData, expectedAttributes);
+      assertThat(operationLatencyValue).isIn(Range.closed(MIN_LATENCY, elapsed));
+
+      MetricData attemptLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.ATTEMPT_LATENCIES_NAME);
+      assertNotNull(attemptLatencyMetricData);
+      double attemptLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
+      assertThat(attemptLatencyValue).isIn(Range.closed(MIN_LATENCY, elapsed));
+
+      MetricData operationCountMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.OPERATION_COUNT_NAME);
+      assertNotNull(operationCountMetricData);
+      assertThat(getAggregatedValue(operationCountMetricData, expectedAttributes)).isEqualTo(1);
+
+      MetricData attemptCountMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.ATTEMPT_COUNT_NAME);
+      assertNotNull(attemptCountMetricData);
+      assertThat(getAggregatedValue(attemptCountMetricData, expectedAttributes)).isEqualTo(1);
+
+      assertFalse(
+          checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
+      assertFalse(
+          checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+      MetricData afeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
+      double afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 1e-6);
+
+      MetricData gfeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
+      double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 1e-6);
+    } finally {
+      writeableEnvironmentVariables.remove("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+    }
   }
 
   @Test
@@ -225,16 +301,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
     Attributes expectedAttributesBeginTransactionOK =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")
             .build();
 
     Attributes expectedAttributesBeginTransactionFailed =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .put(BuiltInMetricsConstant.STATUS_KEY, "UNAVAILABLE")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")
             .build();
@@ -281,10 +355,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
               return null;
             });
 
-    ApiTracerFactory metricsTracerFactory =
-        new MetricsTracerFactory(
-            new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            attributes);
     Spanner spanner =
         builder
             .setProjectId("test-project")
@@ -302,7 +372,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             // Setting this to false so that Spanner Options does not register Metrics Tracer
             // factory again.
             .setBuiltInMetricsEnabled(false)
-            .setApiTracerFactory(metricsTracerFactory)
+            .setApiTracerFactory(createMetricsTracerFactory())
             .build()
             .getService();
     String instance = "i";
@@ -316,8 +386,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
 
     Attributes expectedAttributesCreateSessionOK =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
@@ -327,8 +396,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .build();
 
     Attributes expectedAttributesCreateSessionFailed =
-        expectedCommonBaseAttributes
-            .toBuilder()
+        expectedCommonBaseAttributes.toBuilder()
             .put(BuiltInMetricsConstant.STATUS_KEY, "UNAVAILABLE")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
             // Include the additional attributes that are added by the HeaderInterceptor in the
@@ -342,7 +410,65 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     // Attempt count should have a failed metric point for CreateSession.
     assertEquals(
-        1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed));
+        1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed), 0);
+  }
+
+  @Test
+  public void testNoServerTimingHeader() throws IOException, InterruptedException {
+    // Create Spanner Object without headers
+    InetSocketAddress addressNoHeader = new InetSocketAddress("localhost", 0);
+    Server serverNoHeader =
+        NettyServerBuilder.forAddress(addressNoHeader).addService(mockSpanner).build().start();
+    String endpoint = address.getHostString() + ":" + serverNoHeader.getPort();
+    Spanner spannerNoHeader =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://" + endpoint)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
+                    .setFailOnSessionLeak()
+                    .setSkipVerifyingBeginTransactionForMuxRW(true)
+                    .build())
+            // Setting this to false so that Spanner Options does not register Metrics Tracer
+            // factory again.
+            .setBuiltInMetricsEnabled(false)
+            .setApiTracerFactory(createMetricsTracerFactory())
+            .build()
+            .getService();
+    DatabaseClient databaseClientNoHeader =
+        spannerNoHeader.getDatabaseClient(DatabaseId.of("test-project", "i", "d"));
+
+    databaseClientNoHeader
+        .readWriteTransaction()
+        .run(transaction -> transaction.executeUpdate(UPDATE_RANDOM));
+
+    Attributes expectedAttributes =
+        expectedCommonBaseAttributes.toBuilder()
+            .putAll(expectedCommonRequestAttributes)
+            .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
+            .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteSql")
+            .build();
+
+    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
+    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME));
+    if (GapicSpannerRpc.isEnableDirectPathXdsEnv()) {
+      MetricData afeConnectivityMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME);
+      assertThat(getAggregatedValue(afeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+    } else {
+      MetricData gfeConnectivityMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
+      assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+      assertFalse(
+          checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    }
+
+    spannerNoHeader.close();
+    serverNoHeader.shutdown();
+    serverNoHeader.awaitTermination();
   }
 
   private MetricData getMetricData(InMemoryMetricReader reader, String metricName) {
@@ -378,14 +504,34 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     return null;
   }
 
-  private long getAggregatedValue(MetricData metricData, Attributes attributes) {
+  private boolean checkIfMetricExists(InMemoryMetricReader reader, String metricName) {
+    String fullMetricName = BuiltInMetricsConstant.METER_NAME + "/" + metricName;
+
+    for (int attemptsLeft = 1000; attemptsLeft > 0; attemptsLeft--) {
+      boolean exists =
+          reader.collectAllMetrics().stream().anyMatch(md -> md.getName().equals(fullMetricName));
+      if (exists) {
+        return true;
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(e);
+      }
+    }
+
+    return false;
+  }
+
+  private float getAggregatedValue(MetricData metricData, Attributes attributes) {
     switch (metricData.getType()) {
       case HISTOGRAM:
         return metricData.getHistogramData().getPoints().stream()
             .filter(pd -> pd.getAttributes().equals(attributes))
-            .map(data -> (long) data.getSum() / data.getCount())
+            .map(data -> (float) data.getSum() / data.getCount())
             .findFirst()
-            .orElse(0L);
+            .orElse(0F);
       case LONG_SUM:
         return metricData.getLongSumData().getPoints().stream()
             .filter(pd -> pd.getAttributes().equals(attributes))

@@ -86,14 +86,12 @@ public class InstanceTest {
     assertEquals(Timestamp.ofTimeMicroseconds(46000), instance.getCreateTime());
 
     AutoscalingConfig newAutoscalingConfig =
-        autoscalingConfig
-            .toBuilder()
+        autoscalingConfig.toBuilder()
             .setAutoscalingLimits(
                 AutoscalingConfig.AutoscalingLimits.newBuilder().setMinNodes(10).setMaxNodes(100))
             .build();
     instance =
-        instance
-            .toBuilder()
+        instance.toBuilder()
             .setDisplayName("new test instance")
             .setAutoscalingConfig(newAutoscalingConfig)
             .build();
@@ -172,12 +170,9 @@ public class InstanceTest {
             .build();
 
     AutoscalingConfig autoscalingConfig2 =
-        autoscalingConfig1
-            .toBuilder()
+        autoscalingConfig1.toBuilder()
             .setAutoscalingLimits(
-                autoscalingConfig1
-                    .getAutoscalingLimits()
-                    .toBuilder()
+                autoscalingConfig1.getAutoscalingLimits().toBuilder()
                     .setMinNodes(50)
                     .setMaxNodes(100))
             .build();

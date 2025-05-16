@@ -34,6 +34,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.PartitionedUpdateAction)
     PartitionedUpdateActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use PartitionedUpdateAction.newBuilder() to construct.
   private PartitionedUpdateAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -79,6 +80,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
      * @return Whether the rpcPriority field is set.
      */
     boolean hasRpcPriority();
+
     /**
      *
      *
@@ -91,6 +93,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
      * @return The enum numeric value on the wire for rpcPriority.
      */
     int getRpcPriorityValue();
+
     /**
      *
      *
@@ -116,6 +119,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
      * @return Whether the tag field is set.
      */
     boolean hasTag();
+
     /**
      *
      *
@@ -128,6 +132,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
      * @return The tag.
      */
     java.lang.String getTag();
+
     /**
      *
      *
@@ -141,6 +146,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
      */
     com.google.protobuf.ByteString getTagBytes();
   }
+
   /**
    * Protobuf type {@code
    * google.spanner.executor.v1.PartitionedUpdateAction.ExecutePartitionedUpdateOptions}
@@ -151,6 +157,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.PartitionedUpdateAction.ExecutePartitionedUpdateOptions)
       ExecutePartitionedUpdateOptionsOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use ExecutePartitionedUpdateOptions.newBuilder() to construct.
     private ExecutePartitionedUpdateOptions(
         com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -188,6 +195,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
     private int bitField0_;
     public static final int RPC_PRIORITY_FIELD_NUMBER = 1;
     private int rpcPriority_ = 0;
+
     /**
      *
      *
@@ -203,6 +211,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
     public boolean hasRpcPriority() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -218,6 +227,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
     public int getRpcPriorityValue() {
       return rpcPriority_;
     }
+
     /**
      *
      *
@@ -240,6 +250,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
 
     @SuppressWarnings("serial")
     private volatile java.lang.Object tag_ = "";
+
     /**
      *
      *
@@ -255,6 +266,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
     public boolean hasTag() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -278,6 +290,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
         return s;
       }
     }
+
     /**
      *
      *
@@ -504,6 +517,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       Builder builder = new Builder(parent);
       return builder;
     }
+
     /**
      * Protobuf type {@code
      * google.spanner.executor.v1.PartitionedUpdateAction.ExecutePartitionedUpdateOptions}
@@ -725,6 +739,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       private int bitField0_;
 
       private int rpcPriority_ = 0;
+
       /**
        *
        *
@@ -740,6 +755,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       public boolean hasRpcPriority() {
         return ((bitField0_ & 0x00000001) != 0);
       }
+
       /**
        *
        *
@@ -755,6 +771,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       public int getRpcPriorityValue() {
         return rpcPriority_;
       }
+
       /**
        *
        *
@@ -773,6 +790,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -790,6 +808,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
             com.google.spanner.v1.RequestOptions.Priority.forNumber(rpcPriority_);
         return result == null ? com.google.spanner.v1.RequestOptions.Priority.UNRECOGNIZED : result;
       }
+
       /**
        *
        *
@@ -811,6 +830,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -830,6 +850,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       }
 
       private java.lang.Object tag_ = "";
+
       /**
        *
        *
@@ -844,6 +865,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       public boolean hasTag() {
         return ((bitField0_ & 0x00000002) != 0);
       }
+
       /**
        *
        *
@@ -866,6 +888,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
           return (java.lang.String) ref;
         }
       }
+
       /**
        *
        *
@@ -888,6 +911,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
           return (com.google.protobuf.ByteString) ref;
         }
       }
+
       /**
        *
        *
@@ -909,6 +933,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -926,6 +951,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
         onChanged();
         return this;
       }
+
       /**
        *
        *
@@ -1024,6 +1050,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
   public static final int OPTIONS_FIELD_NUMBER = 1;
   private com.google.spanner.executor.v1.PartitionedUpdateAction.ExecutePartitionedUpdateOptions
       options_;
+
   /**
    *
    *
@@ -1041,6 +1068,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
   public boolean hasOptions() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -1062,6 +1090,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
             .getDefaultInstance()
         : options_;
   }
+
   /**
    *
    *
@@ -1085,6 +1114,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
 
   public static final int UPDATE_FIELD_NUMBER = 2;
   private com.google.spanner.executor.v1.QueryAction update_;
+
   /**
    *
    *
@@ -1100,6 +1130,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
   public boolean hasUpdate() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -1117,6 +1148,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
         ? com.google.spanner.executor.v1.QueryAction.getDefaultInstance()
         : update_;
   }
+
   /**
    *
    *
@@ -1312,6 +1344,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -1538,6 +1571,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
             com.google.spanner.executor.v1.PartitionedUpdateAction
                 .ExecutePartitionedUpdateOptionsOrBuilder>
         optionsBuilder_;
+
     /**
      *
      *
@@ -1554,6 +1588,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
     public boolean hasOptions() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -1578,6 +1613,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
         return optionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1604,6 +1640,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1628,6 +1665,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1661,6 +1699,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       }
       return this;
     }
+
     /**
      *
      *
@@ -1682,6 +1721,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1700,6 +1740,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       onChanged();
       return getOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1723,6 +1764,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
             : options_;
       }
     }
+
     /**
      *
      *
@@ -1762,6 +1804,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
             com.google.spanner.executor.v1.QueryAction.Builder,
             com.google.spanner.executor.v1.QueryActionOrBuilder>
         updateBuilder_;
+
     /**
      *
      *
@@ -1776,6 +1819,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
     public boolean hasUpdate() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -1796,6 +1840,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
         return updateBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1818,6 +1863,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1837,6 +1883,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1864,6 +1911,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       }
       return this;
     }
+
     /**
      *
      *
@@ -1883,6 +1931,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1897,6 +1946,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
       onChanged();
       return getUpdateFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1915,6 +1965,7 @@ public final class PartitionedUpdateAction extends com.google.protobuf.Generated
             : update_;
       }
     }
+
     /**
      *
      *

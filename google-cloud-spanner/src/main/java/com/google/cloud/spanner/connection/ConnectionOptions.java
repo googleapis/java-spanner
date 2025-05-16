@@ -182,79 +182,109 @@ public class ConnectionOptions {
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
   private static final String SPANNER_EMULATOR_HOST_ENV_VAR = "SPANNER_EMULATOR_HOST";
   private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
+
   /** Use plain text is only for local testing purposes. */
   static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
+
   /** Connect to a Experimental Host * */
   static final String IS_EXPERIMENTAL_HOST_PROPERTY_NAME = "isExperimentalHost";
+
   /** Client certificate path to establish mTLS */
   static final String CLIENT_CERTIFICATE_PROPERTY_NAME = "clientCertificate";
+
   /** Client key path to establish mTLS */
   static final String CLIENT_KEY_PROPERTY_NAME = "clientKey";
+
   /** Name of the 'autocommit' connection property. */
   public static final String AUTOCOMMIT_PROPERTY_NAME = "autocommit";
+
   /** Name of the 'readonly' connection property. */
   public static final String READONLY_PROPERTY_NAME = "readonly";
+
   /** Name of the 'routeToLeader' connection property. */
   public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
+
   /** Name of the 'retry aborts internally' connection property. */
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
+
   /** Name of the property to enable/disable virtual threads for the statement executor. */
   public static final String USE_VIRTUAL_THREADS_PROPERTY_NAME = "useVirtualThreads";
+
   /** Name of the property to enable/disable virtual threads for gRPC transport. */
   public static final String USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME =
       "useVirtualGrpcTransportThreads";
+
   /** Name of the 'credentials' connection property. */
   public static final String CREDENTIALS_PROPERTY_NAME = "credentials";
+
   /** Name of the 'encodedCredentials' connection property. */
   public static final String ENCODED_CREDENTIALS_PROPERTY_NAME = "encodedCredentials";
 
   public static final String ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY =
       "ENABLE_ENCODED_CREDENTIALS";
+
   /** Name of the 'credentialsProvider' connection property. */
   public static final String CREDENTIALS_PROVIDER_PROPERTY_NAME = "credentialsProvider";
 
   public static final String ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY =
       "ENABLE_CREDENTIALS_PROVIDER";
+
   /**
    * OAuth token to use for authentication. Cannot be used in combination with a credentials file.
    */
   public static final String OAUTH_TOKEN_PROPERTY_NAME = "oauthToken";
+
   /** Name of the 'minSessions' connection property. */
   public static final String MIN_SESSIONS_PROPERTY_NAME = "minSessions";
+
   /** Name of the 'maxSessions' connection property. */
   public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
+
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
+
   /** Name of the 'endpoint' connection property. */
   public static final String ENDPOINT_PROPERTY_NAME = "endpoint";
+
   /** Name of the 'channelProvider' connection property. */
   public static final String CHANNEL_PROVIDER_PROPERTY_NAME = "channelProvider";
 
   public static final String ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY = "ENABLE_CHANNEL_PROVIDER";
+
   /** Custom user agent string is only for other Google libraries. */
   static final String USER_AGENT_PROPERTY_NAME = "userAgent";
+
   /** Query optimizer version to use for a connection. */
   static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+
   /** Query optimizer statistics package to use for a connection. */
   static final String OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME = "optimizerStatisticsPackage";
+
   /** Name of the 'lenientMode' connection property. */
   public static final String LENIENT_PROPERTY_NAME = "lenient";
+
   /** Name of the 'rpcPriority' connection property. */
   public static final String RPC_PRIORITY_NAME = "rpcPriority";
 
   public static final String DDL_IN_TRANSACTION_MODE_PROPERTY_NAME = "ddlInTransactionMode";
   public static final String DEFAULT_SEQUENCE_KIND_PROPERTY_NAME = "defaultSequenceKind";
+
   /** Dialect to use for a connection. */
   static final String DIALECT_PROPERTY_NAME = "dialect";
+
   /** Name of the 'databaseRole' connection property. */
   public static final String DATABASE_ROLE_PROPERTY_NAME = "databaseRole";
+
   /** Name of the 'delay transaction start until first write' property. */
   public static final String DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME =
       "delayTransactionStartUntilFirstWrite";
+
   /** Name of the 'keep transaction alive' property. */
   public static final String KEEP_TRANSACTION_ALIVE_PROPERTY_NAME = "keepTransactionAlive";
+
   /** Name of the 'trackStackTraceOfSessionCheckout' connection property. */
   public static final String TRACK_SESSION_LEAKS_PROPERTY_NAME = "trackSessionLeaks";
+
   /** Name of the 'trackStackTraceOfConnectionCreation' connection property. */
   public static final String TRACK_CONNECTION_LEAKS_PROPERTY_NAME = "trackConnectionLeaks";
 
@@ -446,7 +476,9 @@ public class ConnectionOptions {
       if (!isValidExperimentalHostUri(uri)) {
         Preconditions.checkArgument(
             isValidUri(uri),
-            "The specified URI is not a valid Cloud Spanner connection URI. Please specify a URI in the format \"cloudspanner:[//host[:port]]/projects/project-id[/instances/instance-id[/databases/database-name]][\\?property-name=property-value[;property-name=property-value]*]?\"");
+            "The specified URI is not a valid Cloud Spanner connection URI. Please specify a URI in"
+                + " the format"
+                + " \"cloudspanner:[//host[:port]]/projects/project-id[/instances/instance-id[/databases/database-name]][\\?property-name=property-value[;property-name=property-value]*]?\"");
       }
       ConnectionPropertyValue<Boolean> value =
           cast(ConnectionProperties.parseValues(uri).get(LENIENT.getKey()));
@@ -524,7 +556,11 @@ public class ConnectionOptions {
       return this;
     }
 
-    Builder setStatementExecutorType(StatementExecutorType statementExecutorType) {
+    /**
+     * Sets the executor type to use for connections. See {@link StatementExecutorType} for more
+     * information on what the different options mean.
+     */
+    public Builder setStatementExecutorType(StatementExecutorType statementExecutorType) {
       this.statementExecutorType = statementExecutorType;
       return this;
     }
@@ -539,7 +575,9 @@ public class ConnectionOptions {
       return this;
     }
 
-    /** @return the {@link ConnectionOptions} */
+    /**
+     * @return the {@link ConnectionOptions}
+     */
     public ConnectionOptions build() {
       Preconditions.checkState(this.uri != null, "Connection URI is required");
       return new ConnectionOptions(this);
@@ -615,7 +653,8 @@ public class ConnectionOptions {
                 .filter(Objects::nonNull)
                 .count()
             <= 1,
-        "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token");
+        "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth"
+            + " token");
     checkGuardedProperty(
         getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
         ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY,
@@ -815,7 +854,8 @@ public class ConnectionOptions {
       Preconditions.checkArgument(
           invalidProperties.length() == 0,
           String.format(
-              "Invalid properties found in connection URI. Add lenient=true to the connection string to ignore unknown properties. Invalid properties: %s",
+              "Invalid properties found in connection URI. Add lenient=true to the connection"
+                  + " string to ignore unknown properties. Invalid properties: %s",
               invalidProperties));
       return null;
     }
@@ -884,7 +924,11 @@ public class ConnectionOptions {
     return getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER);
   }
 
-  StatementExecutorType getStatementExecutorType() {
+  /**
+   * Returns the executor type that is used by connections that are created from this {@link
+   * ConnectionOptions} instance.
+   */
+  public StatementExecutorType getStatementExecutorType() {
     return this.statementExecutorType;
   }
 

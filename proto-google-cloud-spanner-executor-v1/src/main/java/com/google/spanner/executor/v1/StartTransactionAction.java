@@ -33,6 +33,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.StartTransactionAction)
     StartTransactionActionOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use StartTransactionAction.newBuilder() to construct.
   private StartTransactionAction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -67,6 +68,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
   private int bitField0_;
   public static final int CONCURRENCY_FIELD_NUMBER = 1;
   private com.google.spanner.executor.v1.Concurrency concurrency_;
+
   /**
    *
    *
@@ -83,6 +85,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
   public boolean hasConcurrency() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -101,6 +104,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         ? com.google.spanner.executor.v1.Concurrency.getDefaultInstance()
         : concurrency_;
   }
+
   /**
    *
    *
@@ -122,6 +126,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
 
   @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.executor.v1.TableMetadata> table_;
+
   /**
    *
    *
@@ -136,6 +141,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
   public java.util.List<com.google.spanner.executor.v1.TableMetadata> getTableList() {
     return table_;
   }
+
   /**
    *
    *
@@ -151,6 +157,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       getTableOrBuilderList() {
     return table_;
   }
+
   /**
    *
    *
@@ -165,6 +172,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
   public int getTableCount() {
     return table_.size();
   }
+
   /**
    *
    *
@@ -179,6 +187,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
   public com.google.spanner.executor.v1.TableMetadata getTable(int index) {
     return table_.get(index);
   }
+
   /**
    *
    *
@@ -198,6 +207,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object transactionSeed_ = "";
+
   /**
    *
    *
@@ -222,6 +232,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       return s;
     }
   }
+
   /**
    *
    *
@@ -249,6 +260,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
 
   public static final int EXECUTION_OPTIONS_FIELD_NUMBER = 4;
   private com.google.spanner.executor.v1.TransactionExecutionOptions executionOptions_;
+
   /**
    *
    *
@@ -265,6 +277,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
   public boolean hasExecutionOptions() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -283,6 +296,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         ? com.google.spanner.executor.v1.TransactionExecutionOptions.getDefaultInstance()
         : executionOptions_;
   }
+
   /**
    *
    *
@@ -500,6 +514,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -802,6 +817,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
             com.google.spanner.executor.v1.Concurrency.Builder,
             com.google.spanner.executor.v1.ConcurrencyOrBuilder>
         concurrencyBuilder_;
+
     /**
      *
      *
@@ -817,6 +833,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
     public boolean hasConcurrency() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -838,6 +855,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return concurrencyBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -861,6 +879,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -882,6 +901,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -910,6 +930,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -930,6 +951,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -945,6 +967,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return getConcurrencyFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -964,6 +987,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
             : concurrency_;
       }
     }
+
     /**
      *
      *
@@ -1024,6 +1048,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return tableBuilder_.getMessageList();
       }
     }
+
     /**
      *
      *
@@ -1041,6 +1066,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return tableBuilder_.getCount();
       }
     }
+
     /**
      *
      *
@@ -1058,6 +1084,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return tableBuilder_.getMessage(index);
       }
     }
+
     /**
      *
      *
@@ -1081,6 +1108,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1102,6 +1130,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1125,6 +1154,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1148,6 +1178,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1168,6 +1199,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1189,6 +1221,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1210,6 +1243,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1230,6 +1264,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1250,6 +1285,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1263,6 +1299,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
     public com.google.spanner.executor.v1.TableMetadata.Builder getTableBuilder(int index) {
       return getTableFieldBuilder().getBuilder(index);
     }
+
     /**
      *
      *
@@ -1280,6 +1317,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return tableBuilder_.getMessageOrBuilder(index);
       }
     }
+
     /**
      *
      *
@@ -1298,6 +1336,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return java.util.Collections.unmodifiableList(table_);
       }
     }
+
     /**
      *
      *
@@ -1312,6 +1351,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       return getTableFieldBuilder()
           .addBuilder(com.google.spanner.executor.v1.TableMetadata.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1326,6 +1366,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       return getTableFieldBuilder()
           .addBuilder(index, com.google.spanner.executor.v1.TableMetadata.getDefaultInstance());
     }
+
     /**
      *
      *
@@ -1359,6 +1400,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
     }
 
     private java.lang.Object transactionSeed_ = "";
+
     /**
      *
      *
@@ -1382,6 +1424,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1405,6 +1448,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1427,6 +1471,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1445,6 +1490,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1475,6 +1521,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
             com.google.spanner.executor.v1.TransactionExecutionOptions.Builder,
             com.google.spanner.executor.v1.TransactionExecutionOptionsOrBuilder>
         executionOptionsBuilder_;
+
     /**
      *
      *
@@ -1490,6 +1537,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
     public boolean hasExecutionOptions() {
       return ((bitField0_ & 0x00000008) != 0);
     }
+
     /**
      *
      *
@@ -1511,6 +1559,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
         return executionOptionsBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1535,6 +1584,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1556,6 +1606,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1587,6 +1638,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -1607,6 +1659,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1623,6 +1676,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
       onChanged();
       return getExecutionOptionsFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1643,6 +1697,7 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
             : executionOptions_;
       }
     }
+
     /**
      *
      *

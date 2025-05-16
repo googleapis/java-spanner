@@ -36,6 +36,7 @@ public interface CommitResponseOrBuilder
    * @return Whether the commitTimestamp field is set.
    */
   boolean hasCommitTimestamp();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface CommitResponseOrBuilder
    * @return The commitTimestamp.
    */
   com.google.protobuf.Timestamp getCommitTimestamp();
+
   /**
    *
    *
@@ -73,6 +75,7 @@ public interface CommitResponseOrBuilder
    * @return Whether the commitStats field is set.
    */
   boolean hasCommitStats();
+
   /**
    *
    *
@@ -87,6 +90,7 @@ public interface CommitResponseOrBuilder
    * @return The commitStats.
    */
   com.google.spanner.v1.CommitResponse.CommitStats getCommitStats();
+
   /**
    *
    *
@@ -113,6 +117,7 @@ public interface CommitResponseOrBuilder
    * @return Whether the precommitToken field is set.
    */
   boolean hasPrecommitToken();
+
   /**
    *
    *
@@ -126,6 +131,7 @@ public interface CommitResponseOrBuilder
    * @return The precommitToken.
    */
   com.google.spanner.v1.MultiplexedSessionPrecommitToken getPrecommitToken();
+
   /**
    *
    *

@@ -37,6 +37,7 @@ public interface GetDatabaseDdlResponseOrBuilder
    * @return A list containing the statements.
    */
   java.util.List<java.lang.String> getStatementsList();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface GetDatabaseDdlResponseOrBuilder
    * @return The count of statements.
    */
   int getStatementsCount();
+
   /**
    *
    *
@@ -64,6 +66,7 @@ public interface GetDatabaseDdlResponseOrBuilder
    * @return The statements at the given index.
    */
   java.lang.String getStatements(int index);
+
   /**
    *
    *

@@ -284,7 +284,8 @@ public class SpannerPoolTest {
     verify(spanner).close();
 
     final String expectedLogPart =
-        "WARNING: There is/are 1 connection(s) still open. Close all connections before stopping the application";
+        "WARNING: There is/are 1 connection(s) still open. Close all connections before stopping"
+            + " the application";
     Spanner spanner2 = pool.getSpanner(options1, connection1);
     pool.checkAndCloseSpanners(CheckAndCloseSpannersMode.WARN);
     String capturedLog = getTestCapturedLog();

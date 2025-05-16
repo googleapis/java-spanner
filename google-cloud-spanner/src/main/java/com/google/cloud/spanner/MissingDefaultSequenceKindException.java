@@ -29,7 +29,8 @@ public class MissingDefaultSequenceKindException extends SpannerException {
 
   private static final Pattern PATTERN =
       Pattern.compile(
-          "The sequence kind of an identity column .+ is not specified\\. Please specify the sequence kind explicitly or set the database option `default_sequence_kind`\\.");
+          "The sequence kind of an identity column .+ is not specified\\. Please specify the"
+              + " sequence kind explicitly or set the database option `default_sequence_kind`\\.");
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   MissingDefaultSequenceKindException(
@@ -39,7 +40,7 @@ public class MissingDefaultSequenceKindException extends SpannerException {
       Throwable cause,
       @Nullable ApiException apiException,
       @Nullable XGoogSpannerRequestId reqId) {
-    super(token, errorCode, /*retryable = */ false, message, cause, apiException, reqId);
+    super(token, errorCode, /* retryable= */ false, message, cause, apiException, reqId);
   }
 
   static boolean isMissingDefaultSequenceKindException(Throwable cause) {

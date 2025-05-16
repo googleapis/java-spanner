@@ -67,5 +67,6 @@ public interface BatchClient {
    */
   default String getDatabaseRole() {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 }

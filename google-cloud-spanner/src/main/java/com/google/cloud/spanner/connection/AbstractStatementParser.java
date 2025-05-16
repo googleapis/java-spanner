@@ -321,13 +321,17 @@ public abstract class AbstractStatementParser {
           && Objects.equals(this.sqlWithoutComments, o.sqlWithoutComments);
     }
 
-    /** @return the type of statement that was recognized by the parser. */
+    /**
+     * @return the type of statement that was recognized by the parser.
+     */
     @InternalApi
     public StatementType getType() {
       return type;
     }
 
-    /** @return whether the statement has a returning clause or not. */
+    /**
+     * @return whether the statement has a returning clause or not.
+     */
     @InternalApi
     public boolean hasReturningClause() {
       return this.returningClause.get();
@@ -376,7 +380,9 @@ public abstract class AbstractStatementParser {
       return false;
     }
 
-    /** @return true if the statement is a DDL statement. */
+    /**
+     * @return true if the statement is a DDL statement.
+     */
     @InternalApi
     public boolean isDdl() {
       switch (type) {
@@ -418,14 +424,15 @@ public abstract class AbstractStatementParser {
       if (statement.getQueryOptions() == null) {
         return statement.toBuilder().withQueryOptions(defaultQueryOptions).build();
       }
-      return statement
-          .toBuilder()
+      return statement.toBuilder()
           .withQueryOptions(
               defaultQueryOptions.toBuilder().mergeFrom(statement.getQueryOptions()).build())
           .build();
     }
 
-    /** @return the original SQL statement */
+    /**
+     * @return the original SQL statement
+     */
     @InternalApi
     public String getSql() {
       return statement.getSql();
@@ -923,9 +930,9 @@ public abstract class AbstractStatementParser {
     } else if (currentChar == HYPHEN
         && sql.length() > (currentIndex + 1)
         && sql.charAt(currentIndex + 1) == HYPHEN) {
-      return skipSingleLineComment(sql, /* prefixLength = */ 2, currentIndex, result);
+      return skipSingleLineComment(sql, /* prefixLength= */ 2, currentIndex, result);
     } else if (currentChar == DASH && supportsHashSingleLineComments()) {
-      return skipSingleLineComment(sql, /* prefixLength = */ 1, currentIndex, result);
+      return skipSingleLineComment(sql, /* prefixLength= */ 1, currentIndex, result);
     } else if (currentChar == SLASH
         && sql.length() > (currentIndex + 1)
         && sql.charAt(currentIndex + 1) == ASTERISK) {

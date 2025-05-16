@@ -38,6 +38,7 @@ public interface CopyBackupEncryptionConfigOrBuilder
    * @return The enum numeric value on the wire for encryptionType.
    */
   int getEncryptionTypeValue();
+
   /**
    *
    *
@@ -72,6 +73,7 @@ public interface CopyBackupEncryptionConfigOrBuilder
    * @return The kmsKeyName.
    */
   java.lang.String getKmsKeyName();
+
   /**
    *
    *
@@ -120,6 +122,7 @@ public interface CopyBackupEncryptionConfigOrBuilder
    * @return A list containing the kmsKeyNames.
    */
   java.util.List<java.lang.String> getKmsKeyNamesList();
+
   /**
    *
    *
@@ -149,6 +152,7 @@ public interface CopyBackupEncryptionConfigOrBuilder
    * @return The count of kmsKeyNames.
    */
   int getKmsKeyNamesCount();
+
   /**
    *
    *
@@ -179,6 +183,7 @@ public interface CopyBackupEncryptionConfigOrBuilder
    * @return The kmsKeyNames at the given index.
    */
   java.lang.String getKmsKeyNames(int index);
+
   /**
    *
    *

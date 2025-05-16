@@ -77,7 +77,8 @@ public class MockSpannerExecutorProxyImpl extends SpannerExecutorProxyImplBase {
               responseObserver.onError(
                   new IllegalArgumentException(
                       String.format(
-                          "Unrecognized response type %s for method ExecuteActionAsync, expected %s or %s",
+                          "Unrecognized response type %s for method ExecuteActionAsync, expected %s"
+                              + " or %s",
                           response == null ? "null" : response.getClass().getName(),
                           SpannerAsyncActionResponse.class.getName(),
                           Exception.class.getName())));

@@ -36,6 +36,7 @@ public interface TableMetadataOrBuilder
    * @return The name.
    */
   java.lang.String getName();
+
   /**
    *
    *
@@ -59,6 +60,7 @@ public interface TableMetadataOrBuilder
    * <code>repeated .google.spanner.executor.v1.ColumnMetadata column = 2;</code>
    */
   java.util.List<com.google.spanner.executor.v1.ColumnMetadata> getColumnList();
+
   /**
    *
    *
@@ -69,6 +71,7 @@ public interface TableMetadataOrBuilder
    * <code>repeated .google.spanner.executor.v1.ColumnMetadata column = 2;</code>
    */
   com.google.spanner.executor.v1.ColumnMetadata getColumn(int index);
+
   /**
    *
    *
@@ -79,6 +82,7 @@ public interface TableMetadataOrBuilder
    * <code>repeated .google.spanner.executor.v1.ColumnMetadata column = 2;</code>
    */
   int getColumnCount();
+
   /**
    *
    *
@@ -90,6 +94,7 @@ public interface TableMetadataOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.ColumnMetadataOrBuilder>
       getColumnOrBuilderList();
+
   /**
    *
    *
@@ -111,6 +116,7 @@ public interface TableMetadataOrBuilder
    * <code>repeated .google.spanner.executor.v1.ColumnMetadata key_column = 3;</code>
    */
   java.util.List<com.google.spanner.executor.v1.ColumnMetadata> getKeyColumnList();
+
   /**
    *
    *
@@ -121,6 +127,7 @@ public interface TableMetadataOrBuilder
    * <code>repeated .google.spanner.executor.v1.ColumnMetadata key_column = 3;</code>
    */
   com.google.spanner.executor.v1.ColumnMetadata getKeyColumn(int index);
+
   /**
    *
    *
@@ -131,6 +138,7 @@ public interface TableMetadataOrBuilder
    * <code>repeated .google.spanner.executor.v1.ColumnMetadata key_column = 3;</code>
    */
   int getKeyColumnCount();
+
   /**
    *
    *
@@ -142,6 +150,7 @@ public interface TableMetadataOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.ColumnMetadataOrBuilder>
       getKeyColumnOrBuilderList();
+
   /**
    *
    *

@@ -185,8 +185,7 @@ public class DatabaseAdminClientTest {
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));
     builder.setRetryAdministrativeRequestsSettings(
-        SpannerOptions.Builder.DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS
-            .toBuilder()
+        SpannerOptions.Builder.DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS.toBuilder()
             .setInitialRetryDelayDuration(Duration.ofNanos(1L))
             .build());
     spanner =
@@ -952,9 +951,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.clearRequests();
 
     try (Spanner spannerWithoutRetries =
-        spanner
-            .getOptions()
-            .toBuilder()
+        spanner.getOptions().toBuilder()
             .disableAdministrativeRequestRetries()
             .build()
             .getService()) {

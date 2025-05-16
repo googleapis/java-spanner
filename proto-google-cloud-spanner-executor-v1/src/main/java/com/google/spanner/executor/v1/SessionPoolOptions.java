@@ -33,6 +33,7 @@ public final class SessionPoolOptions extends com.google.protobuf.GeneratedMessa
     // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.SessionPoolOptions)
     SessionPoolOptionsOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use SessionPoolOptions.newBuilder() to construct.
   private SessionPoolOptions(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -63,6 +64,7 @@ public final class SessionPoolOptions extends com.google.protobuf.GeneratedMessa
 
   public static final int USE_MULTIPLEXED_FIELD_NUMBER = 1;
   private boolean useMultiplexed_ = false;
+
   /**
    *
    *
@@ -239,6 +241,7 @@ public final class SessionPoolOptions extends com.google.protobuf.GeneratedMessa
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -421,6 +424,7 @@ public final class SessionPoolOptions extends com.google.protobuf.GeneratedMessa
     private int bitField0_;
 
     private boolean useMultiplexed_;
+
     /**
      *
      *
@@ -437,6 +441,7 @@ public final class SessionPoolOptions extends com.google.protobuf.GeneratedMessa
     public boolean getUseMultiplexed() {
       return useMultiplexed_;
     }
+
     /**
      *
      *
@@ -457,6 +462,7 @@ public final class SessionPoolOptions extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
     /**
      *
      *

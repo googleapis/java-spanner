@@ -38,13 +38,15 @@ public class DmlBatchUpdateCountVerificationFailedException extends AbortedExcep
     super(
         token,
         String.format(
-            "Actual update counts that were returned during execution do not match the previously returned update counts.\n"
+            "Actual update counts that were returned during execution do not match the previously"
+                + " returned update counts.\n"
                 + "Expected: %s\n"
                 + "Actual: %s\n"
-                + "Set auto_batch_dml_update_count_verification to false to skip this verification.",
+                + "Set auto_batch_dml_update_count_verification to false to skip this"
+                + " verification.",
             Arrays.stream(expected).mapToObj(Long::toString).collect(Collectors.joining()),
             Arrays.stream(actual).mapToObj(Long::toString).collect(Collectors.joining())),
-        /* cause = */ null);
+        /* cause= */ null);
     this.expected = expected;
     this.actual = actual;
   }

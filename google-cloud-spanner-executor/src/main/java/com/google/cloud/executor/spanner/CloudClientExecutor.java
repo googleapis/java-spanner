@@ -424,6 +424,7 @@ public class CloudClientExecutor extends CloudExecutor {
       }
     }
   }
+
   /**
    * All the context in which SpannerActions are executed. It stores the current running transaction
    * and table metadata, shared by all the action executor and protected by a lock. There will only
@@ -790,7 +791,7 @@ public class CloudClientExecutor extends CloudExecutor {
     if (client != null) {
       return client;
     }
-    client = getClient(/*timeoutSeconds=*/ 0, useMultiplexedSession);
+    client = getClient(/* timeoutSeconds= */ 0, useMultiplexedSession);
     return client;
   }
 
@@ -1021,7 +1022,7 @@ public class CloudClientExecutor extends CloudExecutor {
         return executeFinishTxn(action.getFinish(), outcomeSender, executionContext);
       } else if (action.hasMutation()) {
         return executeMutation(
-            action.getMutation(), outcomeSender, executionContext, /*isWrite=*/ false);
+            action.getMutation(), outcomeSender, executionContext, /* isWrite= */ false);
       } else if (action.hasRead()) {
         return executeRead(
             useMultiplexedSession, action.getRead(), outcomeSender, executionContext);
@@ -1035,7 +1036,7 @@ public class CloudClientExecutor extends CloudExecutor {
         return executeCloudBatchDmlUpdates(action.getBatchDml(), outcomeSender, executionContext);
       } else if (action.hasWrite()) {
         return executeMutation(
-            action.getWrite().getMutation(), outcomeSender, executionContext, /*isWrite=*/ true);
+            action.getWrite().getMutation(), outcomeSender, executionContext, /* isWrite= */ true);
       } else if (action.hasStartBatchTxn()) {
         if (dbPath == null) {
           throw SpannerExceptionFactory.newSpannerException(
@@ -3197,7 +3198,7 @@ public class CloudClientExecutor extends CloudExecutor {
         return KeyRange.openClosed(start, end);
       case OPEN_OPEN:
         return KeyRange.openOpen(start, end);
-        // Unreachable.
+      // Unreachable.
       default:
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unrecognized key range type");
@@ -3250,7 +3251,7 @@ public class CloudClientExecutor extends CloudExecutor {
           case BYTES:
             cloudKey.append(toByteArray(part.getBytesValue()));
             break;
-            // Unreachable
+          // Unreachable
           default:
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT, "Unsupported key part type: " + type.getCode().name());

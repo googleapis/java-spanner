@@ -34,6 +34,7 @@ public interface BatchDmlActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.QueryAction updates = 1;</code>
    */
   java.util.List<com.google.spanner.executor.v1.QueryAction> getUpdatesList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface BatchDmlActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.QueryAction updates = 1;</code>
    */
   com.google.spanner.executor.v1.QueryAction getUpdates(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface BatchDmlActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.QueryAction updates = 1;</code>
    */
   int getUpdatesCount();
+
   /**
    *
    *
@@ -65,6 +68,7 @@ public interface BatchDmlActionOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.QueryActionOrBuilder>
       getUpdatesOrBuilderList();
+
   /**
    *
    *

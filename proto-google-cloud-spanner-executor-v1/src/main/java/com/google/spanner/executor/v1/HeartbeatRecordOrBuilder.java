@@ -36,6 +36,7 @@ public interface HeartbeatRecordOrBuilder
    * @return Whether the heartbeatTime field is set.
    */
   boolean hasHeartbeatTime();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface HeartbeatRecordOrBuilder
    * @return The heartbeatTime.
    */
   com.google.protobuf.Timestamp getHeartbeatTime();
+
   /**
    *
    *

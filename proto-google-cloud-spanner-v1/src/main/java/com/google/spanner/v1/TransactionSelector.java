@@ -38,6 +38,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     // @@protoc_insertion_point(message_implements:google.spanner.v1.TransactionSelector)
     TransactionSelectorOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use TransactionSelector.newBuilder() to construct.
   private TransactionSelector(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -84,6 +85,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     private SelectorCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -119,6 +121,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   }
 
   public static final int SINGLE_USE_FIELD_NUMBER = 1;
+
   /**
    *
    *
@@ -136,6 +139,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   public boolean hasSingleUse() {
     return selectorCase_ == 1;
   }
+
   /**
    *
    *
@@ -156,6 +160,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     }
     return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -176,6 +181,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   }
 
   public static final int ID_FIELD_NUMBER = 2;
+
   /**
    *
    *
@@ -191,6 +197,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   public boolean hasId() {
     return selectorCase_ == 2;
   }
+
   /**
    *
    *
@@ -211,6 +218,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   }
 
   public static final int BEGIN_FIELD_NUMBER = 3;
+
   /**
    *
    *
@@ -229,6 +237,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   public boolean hasBegin() {
     return selectorCase_ == 3;
   }
+
   /**
    *
    *
@@ -250,6 +259,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     }
     return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
   }
+
   /**
    *
    *
@@ -474,6 +484,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -724,6 +735,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
             com.google.spanner.v1.TransactionOptions.Builder,
             com.google.spanner.v1.TransactionOptionsOrBuilder>
         singleUseBuilder_;
+
     /**
      *
      *
@@ -741,6 +753,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     public boolean hasSingleUse() {
       return selectorCase_ == 1;
     }
+
     /**
      *
      *
@@ -768,6 +781,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
         return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -792,6 +806,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       selectorCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -813,6 +828,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       selectorCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -847,6 +863,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       selectorCase_ = 1;
       return this;
     }
+
     /**
      *
      *
@@ -874,6 +891,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       }
       return this;
     }
+
     /**
      *
      *
@@ -888,6 +906,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     public com.google.spanner.v1.TransactionOptions.Builder getSingleUseBuilder() {
       return getSingleUseFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -910,6 +929,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
         return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -959,6 +979,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     public boolean hasId() {
       return selectorCase_ == 2;
     }
+
     /**
      *
      *
@@ -976,6 +997,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       }
       return com.google.protobuf.ByteString.EMPTY;
     }
+
     /**
      *
      *
@@ -997,6 +1019,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1022,6 +1045,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
             com.google.spanner.v1.TransactionOptions.Builder,
             com.google.spanner.v1.TransactionOptionsOrBuilder>
         beginBuilder_;
+
     /**
      *
      *
@@ -1040,6 +1064,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     public boolean hasBegin() {
       return selectorCase_ == 3;
     }
+
     /**
      *
      *
@@ -1068,6 +1093,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
         return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       }
     }
+
     /**
      *
      *
@@ -1093,6 +1119,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       selectorCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -1115,6 +1142,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       selectorCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -1150,6 +1178,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       selectorCase_ = 3;
       return this;
     }
+
     /**
      *
      *
@@ -1178,6 +1207,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       }
       return this;
     }
+
     /**
      *
      *
@@ -1193,6 +1223,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     public com.google.spanner.v1.TransactionOptions.Builder getBeginBuilder() {
       return getBeginFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1216,6 +1247,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
         return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       }
     }
+
     /**
      *
      *

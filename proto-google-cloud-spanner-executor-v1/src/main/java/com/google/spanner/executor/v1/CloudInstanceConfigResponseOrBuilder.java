@@ -36,6 +36,7 @@ public interface CloudInstanceConfigResponseOrBuilder
    */
   java.util.List<com.google.spanner.admin.instance.v1.InstanceConfig>
       getListedInstanceConfigsList();
+
   /**
    *
    *
@@ -47,6 +48,7 @@ public interface CloudInstanceConfigResponseOrBuilder
    * </code>
    */
   com.google.spanner.admin.instance.v1.InstanceConfig getListedInstanceConfigs(int index);
+
   /**
    *
    *
@@ -58,6 +60,7 @@ public interface CloudInstanceConfigResponseOrBuilder
    * </code>
    */
   int getListedInstanceConfigsCount();
+
   /**
    *
    *
@@ -70,6 +73,7 @@ public interface CloudInstanceConfigResponseOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder>
       getListedInstanceConfigsOrBuilderList();
+
   /**
    *
    *
@@ -96,6 +100,7 @@ public interface CloudInstanceConfigResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *
@@ -122,6 +127,7 @@ public interface CloudInstanceConfigResponseOrBuilder
    * @return Whether the instanceConfig field is set.
    */
   boolean hasInstanceConfig();
+
   /**
    *
    *
@@ -134,6 +140,7 @@ public interface CloudInstanceConfigResponseOrBuilder
    * @return The instanceConfig.
    */
   com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig();
+
   /**
    *
    *

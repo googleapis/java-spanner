@@ -34,6 +34,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.ReplicaComputeCapacity)
     ReplicaComputeCapacityOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use ReplicaComputeCapacity.newBuilder() to construct.
   private ReplicaComputeCapacity(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -80,6 +81,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
     private ComputeCapacityCase(int value) {
       this.value = value;
     }
+
     /**
      * @param value The number of the enum to look for.
      * @return The enum associated with the given number.
@@ -114,6 +116,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
 
   public static final int REPLICA_SELECTION_FIELD_NUMBER = 1;
   private com.google.spanner.admin.instance.v1.ReplicaSelection replicaSelection_;
+
   /**
    *
    *
@@ -132,6 +135,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
   public boolean hasReplicaSelection() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -152,6 +156,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
         ? com.google.spanner.admin.instance.v1.ReplicaSelection.getDefaultInstance()
         : replicaSelection_;
   }
+
   /**
    *
    *
@@ -173,6 +178,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
   }
 
   public static final int NODE_COUNT_FIELD_NUMBER = 2;
+
   /**
    *
    *
@@ -191,6 +197,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
   public boolean hasNodeCount() {
     return computeCapacityCase_ == 2;
   }
+
   /**
    *
    *
@@ -214,6 +221,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
   }
 
   public static final int PROCESSING_UNITS_FIELD_NUMBER = 3;
+
   /**
    *
    *
@@ -232,6 +240,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
   public boolean hasProcessingUnits() {
     return computeCapacityCase_ == 3;
   }
+
   /**
    *
    *
@@ -458,6 +467,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -715,6 +725,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
             com.google.spanner.admin.instance.v1.ReplicaSelection.Builder,
             com.google.spanner.admin.instance.v1.ReplicaSelectionOrBuilder>
         replicaSelectionBuilder_;
+
     /**
      *
      *
@@ -732,6 +743,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
     public boolean hasReplicaSelection() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -755,6 +767,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
         return replicaSelectionBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -781,6 +794,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -804,6 +818,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -836,6 +851,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       }
       return this;
     }
+
     /**
      *
      *
@@ -858,6 +874,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -876,6 +893,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       onChanged();
       return getReplicaSelectionFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -898,6 +916,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
             : replicaSelection_;
       }
     }
+
     /**
      *
      *
@@ -944,6 +963,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
     public boolean hasNodeCount() {
       return computeCapacityCase_ == 2;
     }
+
     /**
      *
      *
@@ -964,6 +984,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       }
       return 0;
     }
+
     /**
      *
      *
@@ -986,6 +1007,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1026,6 +1048,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
     public boolean hasProcessingUnits() {
       return computeCapacityCase_ == 3;
     }
+
     /**
      *
      *
@@ -1046,6 +1069,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       }
       return 0;
     }
+
     /**
      *
      *
@@ -1068,6 +1092,7 @@ public final class ReplicaComputeCapacity extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *

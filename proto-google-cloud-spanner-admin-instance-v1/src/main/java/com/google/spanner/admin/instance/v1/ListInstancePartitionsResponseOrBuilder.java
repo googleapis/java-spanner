@@ -36,6 +36,7 @@ public interface ListInstancePartitionsResponseOrBuilder
    */
   java.util.List<com.google.spanner.admin.instance.v1.InstancePartition>
       getInstancePartitionsList();
+
   /**
    *
    *
@@ -47,6 +48,7 @@ public interface ListInstancePartitionsResponseOrBuilder
    * </code>
    */
   com.google.spanner.admin.instance.v1.InstancePartition getInstancePartitions(int index);
+
   /**
    *
    *
@@ -58,6 +60,7 @@ public interface ListInstancePartitionsResponseOrBuilder
    * </code>
    */
   int getInstancePartitionsCount();
+
   /**
    *
    *
@@ -70,6 +73,7 @@ public interface ListInstancePartitionsResponseOrBuilder
    */
   java.util.List<? extends com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder>
       getInstancePartitionsOrBuilderList();
+
   /**
    *
    *
@@ -97,6 +101,7 @@ public interface ListInstancePartitionsResponseOrBuilder
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
+
   /**
    *
    *
@@ -127,6 +132,7 @@ public interface ListInstancePartitionsResponseOrBuilder
    * @return A list containing the unreachable.
    */
   java.util.List<java.lang.String> getUnreachableList();
+
   /**
    *
    *
@@ -142,6 +148,7 @@ public interface ListInstancePartitionsResponseOrBuilder
    * @return The count of unreachable.
    */
   int getUnreachableCount();
+
   /**
    *
    *
@@ -158,6 +165,7 @@ public interface ListInstancePartitionsResponseOrBuilder
    * @return The unreachable at the given index.
    */
   java.lang.String getUnreachable(int index);
+
   /**
    *
    *

@@ -35,6 +35,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.DdlStatementActionInfo)
     DdlStatementActionInfoOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use DdlStatementActionInfo.newBuilder() to construct.
   private DdlStatementActionInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -71,6 +72,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object action_ = "";
+
   /**
    *
    *
@@ -95,6 +97,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       return s;
     }
   }
+
   /**
    *
    *
@@ -124,6 +127,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object entityType_ = "";
+
   /**
    *
    *
@@ -149,6 +153,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       return s;
     }
   }
+
   /**
    *
    *
@@ -180,6 +185,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList entityNames_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -198,6 +204,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
   public com.google.protobuf.ProtocolStringList getEntityNamesList() {
     return entityNames_;
   }
+
   /**
    *
    *
@@ -216,6 +223,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
   public int getEntityNamesCount() {
     return entityNames_.size();
   }
+
   /**
    *
    *
@@ -235,6 +243,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
   public java.lang.String getEntityNames(int index) {
     return entityNames_.get(index);
   }
+
   /**
    *
    *
@@ -440,6 +449,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -663,6 +673,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
     private int bitField0_;
 
     private java.lang.Object action_ = "";
+
     /**
      *
      *
@@ -686,6 +697,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -709,6 +721,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -731,6 +744,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -749,6 +763,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -774,6 +789,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
     }
 
     private java.lang.Object entityType_ = "";
+
     /**
      *
      *
@@ -798,6 +814,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -822,6 +839,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -845,6 +863,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -864,6 +883,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -898,6 +918,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       }
       bitField0_ |= 0x00000004;
     }
+
     /**
      *
      *
@@ -917,6 +938,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       entityNames_.makeImmutable();
       return entityNames_;
     }
+
     /**
      *
      *
@@ -935,6 +957,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
     public int getEntityNamesCount() {
       return entityNames_.size();
     }
+
     /**
      *
      *
@@ -954,6 +977,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
     public java.lang.String getEntityNames(int index) {
       return entityNames_.get(index);
     }
+
     /**
      *
      *
@@ -973,6 +997,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
     public com.google.protobuf.ByteString getEntityNamesBytes(int index) {
       return entityNames_.getByteString(index);
     }
+
     /**
      *
      *
@@ -1000,6 +1025,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1026,6 +1052,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1049,6 +1076,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1071,6 +1099,7 @@ public final class DdlStatementActionInfo extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
     /**
      *
      *

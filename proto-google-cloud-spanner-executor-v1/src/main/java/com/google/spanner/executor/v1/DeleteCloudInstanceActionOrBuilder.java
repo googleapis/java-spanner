@@ -36,6 +36,7 @@ public interface DeleteCloudInstanceActionOrBuilder
    * @return The instanceId.
    */
   java.lang.String getInstanceId();
+
   /**
    *
    *
@@ -61,6 +62,7 @@ public interface DeleteCloudInstanceActionOrBuilder
    * @return The projectId.
    */
   java.lang.String getProjectId();
+
   /**
    *
    *

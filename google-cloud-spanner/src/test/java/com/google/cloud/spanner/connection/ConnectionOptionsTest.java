@@ -593,7 +593,8 @@ public class ConnectionOptionsTest {
         exception
             .getMessage()
             .contains(
-                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and"
+                    + " OAuth token"));
 
     // Now try to use only an OAuth token.
     builder =
@@ -638,7 +639,8 @@ public class ConnectionOptionsTest {
         exception
             .getMessage()
             .contains(
-                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and"
+                    + " OAuth token"));
   }
 
   @Test
@@ -943,7 +945,8 @@ public class ConnectionOptionsTest {
           assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
           assertThat(e.getMessage())
               .contains(
-                  "The encoded credentials do not contain a valid Google Cloud credentials JSON string.");
+                  "The encoded credentials do not contain a valid Google Cloud credentials JSON"
+                      + " string.");
         });
   }
 
@@ -1000,7 +1003,8 @@ public class ConnectionOptionsTest {
               e.getMessage(),
               e.getMessage()
                   .contains(
-                      "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+                      "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider"
+                          + " and OAuth token"));
         });
   }
 
@@ -1052,8 +1056,9 @@ public class ConnectionOptionsTest {
             SpannerException.class, () -> ConnectionOptions.newBuilder().setUri(uri).build());
     assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
     assertEquals(
-        "FAILED_PRECONDITION: credentialsProvider can only be used if the system property ENABLE_CREDENTIALS_PROVIDER has been set to true. "
-            + "Start the application with the JVM command line option -DENABLE_CREDENTIALS_PROVIDER=true",
+        "FAILED_PRECONDITION: credentialsProvider can only be used if the system property"
+            + " ENABLE_CREDENTIALS_PROVIDER has been set to true. Start the application with the"
+            + " JVM command line option -DENABLE_CREDENTIALS_PROVIDER=true",
         exception.getMessage());
   }
 
@@ -1075,7 +1080,8 @@ public class ConnectionOptionsTest {
               e.getMessage(),
               e.getMessage()
                   .contains(
-                      "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+                      "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider"
+                          + " and OAuth token"));
         });
   }
 

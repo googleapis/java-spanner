@@ -36,6 +36,7 @@ public interface ReplicaSelectionOrBuilder
    * @return The location.
    */
   java.lang.String getLocation();
+
   /**
    *
    *

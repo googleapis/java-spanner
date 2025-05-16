@@ -62,6 +62,21 @@ public interface TransactionManager extends AutoCloseable {
   TransactionContext begin();
 
   /**
+   * Initializes a new read-write transaction that is a retry of a previously aborted transaction.
+   * This method must be called before performing any operations, and it can only be invoked once
+   * per transaction lifecycle.
+   *
+   * <p>This method should only be used when multiplexed sessions are enabled to create a retry for
+   * a previously aborted transaction. This method can be used instead of {@link #resetForRetry()}
+   * to create a retry. Using this method or {@link #resetForRetry()} will have the same effect. You
+   * must pass in the {@link AbortedException} from the previous attempt to preserve the
+   * transaction's priority.
+   *
+   * <p>For regular sessions, this behaves the same as {@link #begin()}.
+   */
+  TransactionContext begin(AbortedException exception);
+
+  /**
    * Commits the currently active transaction. If the transaction was already aborted, then this
    * would throw an {@link AbortedException}.
    */
