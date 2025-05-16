@@ -34,6 +34,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -5653,25 +5654,33 @@ public class DatabaseClientImplTest {
   @Test
   public void testrunWithSessionRetry_withRequestId() {
     // Tests that DatabaseClientImpl.runWithSessionRetry correctly returns a XGoogSpannerRequestId
-    // and correctly increases its nthRequest ordinal number and that attempts stay at 1.
+    // and correctly increases its nthRequest ordinal number and that attempts stay at 1, given
+    // a fresh session returned on SessionNotFoundException.
     SessionPool pool = mock(SessionPool.class);
     PooledSessionFuture sessionFut = mock(PooledSessionFuture.class);
     when(pool.getSession()).thenReturn(sessionFut);
-    // TODO:(@olavloite) to kindly help with resolving this mocking that's failing.
-    // when(pool.getPooledSessionReplacementHandler()).thenReturn(pool.new
-    // PooledSessionReplacementHandler());
-    TransactionOption option = mock(TransactionOption.class);
+    SessionPool.PooledSession pooledSession = mock(SessionPool.PooledSession.class);
+    when(sessionFut.get()).thenReturn(pooledSession);
+    SessionPool.PooledSessionReplacementHandler sessionReplacementHandler =
+        mock(SessionPool.PooledSessionReplacementHandler.class);
+    when(pool.getPooledSessionReplacementHandler()).thenReturn(sessionReplacementHandler);
+    when(sessionReplacementHandler.replaceSession(any(), any())).thenReturn(sessionFut);
     DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
 
-    // 1. Run with no fail has a single attempt.
+    // 1. Run with no fail runs a single attempt.
+    final AtomicInteger nCalls = new AtomicInteger(0);
     client.runWithSessionRetry(
         (session, reqId) -> {
           assertEquals(reqId.getAttempt(), 1);
+          nCalls.incrementAndGet();
           return 1;
         });
+    assertEquals(nCalls.get(), 1);
 
-    // 2. Run with SessionNotFoundException.
-    final AtomicInteger i = new AtomicInteger(0);
+    // Reset the call counter.
+    nCalls.set(0);
+
+    // 2. Run with SessionNotFoundException and ensure that a fresh requestId is returned each time.
     SessionNotFoundException excSessionNotFound =
         SpannerExceptionFactoryTest.newSessionNotFoundException(
             "projects/p/instances/i/databases/d/sessions/s");
@@ -5687,11 +5696,13 @@ public class DatabaseClientImplTest {
           // a fresh requestId is generated.
           assertEquals(reqId.getAttempt(), 1);
 
-          if (i.addAndGet(1) < 4) {
+          if (nCalls.addAndGet(1) < 4) {
             throw excSessionNotFound;
           }
 
           return 1;
         });
+
+    assertEquals(nCalls.get(), 4);
   }
 }
