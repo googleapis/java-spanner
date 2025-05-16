@@ -185,9 +185,9 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
 
   // SessionClient is created long before a DatabaseClientImpl is created,
   // as batch sessions are firstly created then later attached to each Client.
-  private static AtomicInteger NTH_ID = new AtomicInteger(0);
-  private final int nthId;
-  private final AtomicInteger nthRequest;
+  private static final AtomicInteger NTH_ID = new AtomicInteger(0);
+  private final int nthId = NTH_ID.incrementAndGet();
+  private final AtomicInteger nthRequest = new AtomicInteger(0);
 
   @GuardedBy("this")
   private volatile long sessionChannelCounter;
@@ -201,8 +201,6 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     this.executorFactory = executorFactory;
     this.executor = executorFactory.get();
     this.commonAttributes = spanner.getTracer().createCommonAttributes(db);
-    this.nthId = SessionClient.NTH_ID.incrementAndGet();
-    this.nthRequest = new AtomicInteger(0);
   }
 
   @Override
@@ -220,7 +218,8 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
 
   @Override
   public XGoogSpannerRequestId nextRequestId(long channelId, int attempt) {
-    return XGoogSpannerRequestId.of(this.nthId, this.nthRequest.incrementAndGet(), channelId, 1);
+    return XGoogSpannerRequestId.of(
+        this.nthId, this.nthRequest.incrementAndGet(), channelId, attempt);
   }
 
   /** Create a single session. */
@@ -287,6 +286,9 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
         spanner
             .getTracer()
             .spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION, this.commonAttributes);
+    // MultiplexedSession doesn't use a channelId hence this hard-coded value.
+    int channelId = 0;
+    XGoogSpannerRequestId reqId = nextRequestId(channelId, 1);
     try (IScope s = spanner.getTracer().withSpan(span)) {
       com.google.spanner.v1.Session session =
           spanner
@@ -295,7 +297,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
                   db.getName(),
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
-                  null,
+                  createRequestOptions(channelId, reqId),
                   true);
       SessionImpl sessionImpl =
           new SessionImpl(
