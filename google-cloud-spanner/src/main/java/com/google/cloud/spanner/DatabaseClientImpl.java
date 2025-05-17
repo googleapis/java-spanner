@@ -440,9 +440,13 @@ class DatabaseClientImpl implements DatabaseClient {
     if (reqId == null) {
       return options;
     }
-    ArrayList<TransactionOption> allOptions = new ArrayList(Arrays.asList(options));
-    allOptions.add(new Options.RequestIdOption(reqId));
-    return allOptions.toArray(new TransactionOption[0]);
+    if (options == null || options.length == 0) {
+      return new TransactionOption[] {new Options.RequestIdOption(reqId)};
+    }
+    TransactionOption[] allOptions = new TransactionOption[options.length + 1];
+    System.arraycopy(options, 0, allOptions, 0, options.length);
+    allOptions[options.length] = new Options.RequestIdOption(reqId);
+    return allOptions;
   }
 
   private long executePartitionedUpdateWithPooledSession(
