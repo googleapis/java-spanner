@@ -2052,10 +2052,7 @@ public class GapicSpannerRpc implements SpannerRpc {
           context = context.withChannelAffinity(affinity.intValue());
         }
       }
-      if (method != null) {
-        String methodName = method.getFullMethodName();
-        context = withRequestId(context, options);
-      }
+      context = withRequestId(context, options);
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
