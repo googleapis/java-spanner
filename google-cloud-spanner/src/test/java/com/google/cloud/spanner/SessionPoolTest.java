@@ -1644,13 +1644,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Collections.singletonList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
-    when(closedSession.writeWithOptions(mutations)).thenThrow(sessionNotFound);
+    closedSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(closedSession.writeWithOptions(eq(mutations), any())).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
-    when(openSession.writeWithOptions(mutations)).thenReturn(response);
+    openSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(openSession.writeWithOptions(eq(mutations), any())).thenReturn(response);
     doAnswer(
             invocation -> {
               executor.submit(
@@ -1687,13 +1689,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Collections.singletonList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
-    when(closedSession.writeAtLeastOnceWithOptions(mutations)).thenThrow(sessionNotFound);
+    closedSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(closedSession.writeAtLeastOnceWithOptions(eq(mutations), any()))
+        .thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
-    when(openSession.writeAtLeastOnceWithOptions(mutations)).thenReturn(response);
+    openSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(openSession.writeAtLeastOnceWithOptions(eq(mutations), any())).thenReturn(response);
     doAnswer(
             invocation -> {
               executor.submit(
@@ -1729,10 +1734,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE 1=1");
     final SessionImpl closedSession = mockSession();
-    when(closedSession.executePartitionedUpdate(statement)).thenThrow(sessionNotFound);
+    when(closedSession.executePartitionedUpdate(eq(statement), any())).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-    when(openSession.executePartitionedUpdate(statement)).thenReturn(1L);
+    when(openSession.executePartitionedUpdate(eq(statement), any())).thenReturn(1L);
     doAnswer(
             invocation -> {
               executor.submit(
