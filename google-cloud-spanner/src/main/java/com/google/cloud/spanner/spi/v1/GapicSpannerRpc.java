@@ -60,6 +60,7 @@ import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
@@ -579,9 +580,24 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (metricsOptions.getNamePrefix().equals("")) {
       metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
     }
-    return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
-        .withMetricsOptions(metricsOptionsBuilder.build())
-        .build();
+    GcpManagedChannelOptions.Builder channelOptionsBuilder =
+        GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
+            .withMetricsOptions(metricsOptionsBuilder.build());
+
+    boolean isMultiplexedSessionEnabledForAllTransactions =
+        options.getSessionPoolOptions().getUseMultiplexedSession()
+            && options.getSessionPoolOptions().getUseMultiplexedSessionForRW()
+            && options.getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps();
+    if (isMultiplexedSessionEnabledForAllTransactions) {
+      // When multiplexed session is enabled for all the transactions then enable dynamic channel
+      // pooling by default.
+      // TODO: What if backend throws an unimplemented error and the transactions fallback to using
+      // regular sessions? Is there a way to disable dynamic scaling on the fly?
+      GcpChannelPoolOptions.Builder channelPoolOptionsBuilder =
+          GcpChannelPoolOptions.newBuilder().setDynamicScaling(0, 100, Duration.ofMinutes(30L));
+      channelOptionsBuilder.withChannelPoolOptions(channelPoolOptionsBuilder.build());
+    }
+    return channelOptionsBuilder.build();
   }
 
   @SuppressWarnings("rawtypes")
