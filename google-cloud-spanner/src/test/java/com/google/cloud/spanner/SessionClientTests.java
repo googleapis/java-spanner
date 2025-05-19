@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -207,7 +208,9 @@ public class SessionClientTests {
       client.createMultiplexedSession(consumer);
     }
     // for multiplexed session there is no channel hint pass in the RPC options
-    assertNull(options.getValue());
+    assertNotNull(options.getValue());
+    assertEquals(options.getValue().get(Option.CHANNEL_HINT), null);
+    assertNotNull(options.getValue().get(Option.REQUEST_ID));
     assertEquals(1, returnedSessionCount.get());
   }
 
@@ -239,7 +242,9 @@ public class SessionClientTests {
       client.createMultiplexedSession(consumer);
     }
     // for multiplexed session there is no channel hint pass in the RPC options
-    assertNull(options.getValue());
+    assertNotNull(options.getValue());
+    assertEquals(options.getValue().get(Option.CHANNEL_HINT), null);
+    assertNotNull(options.getValue().get(Option.REQUEST_ID));
   }
 
   @SuppressWarnings("unchecked")

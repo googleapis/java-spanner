@@ -117,6 +117,11 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
         Option.REQUEST_ID, requestId);
   }
 
+  static Map<SpannerRpc.Option, ?> createRequestOptions(
+      XGoogSpannerRequestId requestId) {
+    return ImmutableMap.of(Option.REQUEST_ID, requestId);
+  }
+
   private final class BatchCreateSessionsRunnable implements Runnable {
     private final long channelHint;
     private final int sessionCount;
@@ -297,7 +302,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
                   db.getName(),
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
-                  createRequestOptions(channelId, reqId),
+                  createRequestOptions(reqId),
                   true);
       SessionImpl sessionImpl =
           new SessionImpl(
