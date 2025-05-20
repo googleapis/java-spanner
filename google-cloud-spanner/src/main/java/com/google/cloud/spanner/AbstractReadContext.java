@@ -55,6 +55,7 @@ import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
+import io.grpc.internal.PerformanceHandler;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
@@ -826,6 +827,7 @@ abstract class AbstractReadContext
             if (selector != null) {
               request.setTransaction(selector);
             }
+            PerformanceHandler.BEFORE_SEND_PAYLOAD.start();
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
                     request.build(),

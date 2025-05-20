@@ -427,10 +427,8 @@ public class GapicSpannerRpc implements SpannerRpc {
                 spannerStubSettings, clientContext);
         this.directPathEnabledSupplier =
             Suppliers.memoize(
-                () -> {
-                  return ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
-                      && isAttemptDirectPathXds;
-                });
+                () -> ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
+                    && isAttemptDirectPathXds);
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
         this.readRetryableCodes =
