@@ -399,7 +399,7 @@ public class ITUuidTest {
               return null;
             });
 
-    verifyKeyContents(Arrays.asList(uuid1, uuid2));
+    verifyKeyContents(Arrays.asList(uuid2, uuid1));
   }
 
   private void verifyKeyContents(List<UUID> uuids) {

@@ -1583,6 +1583,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .addAllStatements(new ArrayList<String>())
    *           .setOperationId("operationId129704162")
    *           .setProtoDescriptors(ByteString.EMPTY)
+   *           .setThroughputMode(true)
    *           .build();
    *   databaseAdminClient.updateDatabaseDdlAsync(request).get();
    * }
@@ -1621,6 +1622,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .addAllStatements(new ArrayList<String>())
    *           .setOperationId("operationId129704162")
    *           .setProtoDescriptors(ByteString.EMPTY)
+   *           .setThroughputMode(true)
    *           .build();
    *   OperationFuture<Empty, UpdateDatabaseDdlMetadata> future =
    *       databaseAdminClient.updateDatabaseDdlOperationCallable().futureCall(request);
@@ -1659,6 +1661,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .addAllStatements(new ArrayList<String>())
    *           .setOperationId("operationId129704162")
    *           .setProtoDescriptors(ByteString.EMPTY)
+   *           .setThroughputMode(true)
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.updateDatabaseDdlCallable().futureCall(request);
