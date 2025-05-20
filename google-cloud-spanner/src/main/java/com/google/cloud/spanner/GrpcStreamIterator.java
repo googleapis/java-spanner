@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.spanner.v1.PartialResultSet;
+import io.grpc.internal.PerformanceHandler;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -111,6 +112,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   public void requestPrefetchChunks() {
     Preconditions.checkState(call != null, "The StreamingCall object is not initialized");
     PerformanceClock.BEFORE_GRPC_INSTANCE.stop();
+    PerformanceHandler.BEFORE_REQUEST_DATA.start();
     call.request(prefetchChunks);
   }
 

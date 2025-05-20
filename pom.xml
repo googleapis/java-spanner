@@ -143,7 +143,7 @@
     <module>proto-google-cloud-spanner-v1</module>
     <module>proto-google-cloud-spanner-admin-database-v1</module>
     <module>proto-google-cloud-spanner-executor-v1</module>
-    <module>google-cloud-spanner-executor</module>
+<!--    <module>google-cloud-spanner-executor</module>-->
     <module>google-cloud-spanner-bom</module>
   </modules>
 

@@ -18,13 +18,7 @@ package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertFalse;
 
-import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.protobuf.ListValue;
-import com.google.spanner.v1.ResultSetMetadata;
-import com.google.spanner.v1.StructType;
-import com.google.spanner.v1.StructType.Field;
-import com.google.spanner.v1.TypeCode;
+import io.grpc.internal.PerformanceHandler;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -72,6 +66,8 @@ public class ITMicroBenchmark {
 
     List<Long> beforeGrpcs = new ArrayList<>();
     List<Long> afterGrpcs = new ArrayList<>();
+    List<Long> beforeGrpcsWire = new ArrayList<>();
+    List<Long> beforeGrpcRequest = new ArrayList<>();
     Instant perfEndTime = Instant.now().plus(30, ChronoUnit.MINUTES);
 
     System.out.println("Running benchmarking for 30 minutes, Started at " + currentTimeInIST());
@@ -79,12 +75,16 @@ public class ITMicroBenchmark {
       PerformanceClock.BEFORE_GRPC_INSTANCE.reset();
       PerformanceClock.AFTER_GRPC_INSTANCE.reset();
       PerformanceClock.BEFORE_GRPC_INSTANCE.start();
+      PerformanceHandler.BEFORE_REQUEST_DATA.reset();
+      PerformanceHandler.BEFORE_SEND_PAYLOAD.reset();
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
           while (resultSet.next()) {}
           PerformanceClock.AFTER_GRPC_INSTANCE.stop();
           beforeGrpcs.add(PerformanceClock.BEFORE_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
           afterGrpcs.add(PerformanceClock.AFTER_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
+          beforeGrpcsWire.add(PerformanceHandler.BEFORE_SEND_PAYLOAD.elapsed(TimeUnit.MICROSECONDS));
+          beforeGrpcRequest.add(PerformanceHandler.BEFORE_REQUEST_DATA.elapsed(TimeUnit.MICROSECONDS));
           assertFalse(resultSet.next());
         }
       }
@@ -94,12 +94,20 @@ public class ITMicroBenchmark {
 
     Collections.sort(beforeGrpcs);
     Collections.sort(afterGrpcs);
+    Collections.sort(beforeGrpcsWire);
+    Collections.sort(beforeGrpcRequest);
     System.out.println(
         "Total time spent in the client library before requesting data from grpc "
             + percentile(beforeGrpcs, 0.5));
     System.out.println(
         "Total time spent in the client library after receiving PartialResultSet from grpc "
             + percentile(afterGrpcs, 0.5));
+    System.out.println(
+        "Total time spent in the gRPC library before sending the request via wire "
+            + percentile(beforeGrpcsWire, 0.5));
+    System.out.println(
+        "Total time spent in the gRPC library before requesting data"
+            + percentile(beforeGrpcRequest, 0.5));
   }
 
   private String currentTimeInIST() {
