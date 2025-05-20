@@ -34,6 +34,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
+import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -84,7 +85,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
       Attributes.builder().put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false").build();
   ;
 
-  private static final long MIN_LATENCY = 0;
+  private static final double MIN_LATENCY = 0;
 
   private DatabaseClient client;
 
@@ -159,7 +160,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
       assertFalse(resultSet.next());
     }
 
-    long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+    double elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
     Attributes expectedAttributes =
         expectedCommonBaseAttributes.toBuilder()
             .putAll(expectedCommonRequestAttributes)
@@ -170,13 +171,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     MetricData operationLatencyMetricData =
         getMetricData(metricReader, BuiltInMetricsConstant.OPERATION_LATENCIES_NAME);
     assertNotNull(operationLatencyMetricData);
-    long operationLatencyValue = getAggregatedValue(operationLatencyMetricData, expectedAttributes);
+    double operationLatencyValue =
+        getAggregatedValue(operationLatencyMetricData, expectedAttributes);
     assertThat(operationLatencyValue).isIn(Range.closed(MIN_LATENCY, elapsed));
 
     MetricData attemptLatencyMetricData =
         getMetricData(metricReader, BuiltInMetricsConstant.ATTEMPT_LATENCIES_NAME);
     assertNotNull(attemptLatencyMetricData);
-    long attemptLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
+    double attemptLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
     assertThat(attemptLatencyValue).isIn(Range.closed(MIN_LATENCY, elapsed));
 
     MetricData operationCountMetricData =
@@ -189,16 +191,23 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     assertNotNull(attemptCountMetricData);
     assertThat(getAggregatedValue(attemptCountMetricData, expectedAttributes)).isEqualTo(1);
 
-    MetricData gfeLatencyMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
-    long gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
-    assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
-
     assertFalse(
         checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
-    assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
     assertFalse(
         checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    if (GapicSpannerRpc.isEnableDirectPathXdsEnv()) {
+      // AFE metrics are enabled for DirectPath.
+      MetricData afeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
+      double afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 1e-6);
+    } else {
+      MetricData gfeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
+      double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 1e-6);
+      assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
+    }
   }
 
   private boolean isJava8() {
@@ -229,7 +238,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
         assertFalse(resultSet.next());
       }
 
-      long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+      double elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
       Attributes expectedAttributes =
           expectedCommonBaseAttributes.toBuilder()
               .putAll(expectedCommonRequestAttributes)
@@ -240,14 +249,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
       MetricData operationLatencyMetricData =
           getMetricData(metricReader, BuiltInMetricsConstant.OPERATION_LATENCIES_NAME);
       assertNotNull(operationLatencyMetricData);
-      long operationLatencyValue =
+      double operationLatencyValue =
           getAggregatedValue(operationLatencyMetricData, expectedAttributes);
       assertThat(operationLatencyValue).isIn(Range.closed(MIN_LATENCY, elapsed));
 
       MetricData attemptLatencyMetricData =
           getMetricData(metricReader, BuiltInMetricsConstant.ATTEMPT_LATENCIES_NAME);
       assertNotNull(attemptLatencyMetricData);
-      long attemptLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
+      double attemptLatencyValue = getAggregatedValue(attemptLatencyMetricData, expectedAttributes);
       assertThat(attemptLatencyValue).isIn(Range.closed(MIN_LATENCY, elapsed));
 
       MetricData operationCountMetricData =
@@ -260,20 +269,19 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
       assertNotNull(attemptCountMetricData);
       assertThat(getAggregatedValue(attemptCountMetricData, expectedAttributes)).isEqualTo(1);
 
-      MetricData gfeLatencyMetricData =
-          getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
-      long gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
-      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 0);
-
       assertFalse(
           checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
-
-      MetricData afeLatencyMetricData =
-          getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
-      long afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
-      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 0);
       assertFalse(
           checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+      MetricData afeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME);
+      double afeLatencyValue = getAggregatedValue(afeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeAFEServerTiming.get(), afeLatencyValue, 1e-6);
+
+      MetricData gfeLatencyMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME);
+      double gfeLatencyValue = getAggregatedValue(gfeLatencyMetricData, expectedAttributes);
+      assertEquals(fakeServerTiming.get(), gfeLatencyValue, 1e-6);
     } finally {
       writeableEnvironmentVariables.remove("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
     }
@@ -402,7 +410,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     // Attempt count should have a failed metric point for CreateSession.
     assertEquals(
-        1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed));
+        1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed), 0);
   }
 
   @Test
@@ -444,13 +452,20 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteSql")
             .build();
 
-    MetricData gfeConnectivityMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
-    assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME));
-    assertFalse(
-        checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    if (GapicSpannerRpc.isEnableDirectPathXdsEnv()) {
+      MetricData afeConnectivityMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME);
+      assertThat(getAggregatedValue(afeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+    } else {
+      MetricData gfeConnectivityMetricData =
+          getMetricData(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME);
+      assertThat(getAggregatedValue(gfeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+      assertFalse(
+          checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    }
+
     spannerNoHeader.close();
     serverNoHeader.shutdown();
     serverNoHeader.awaitTermination();
@@ -509,14 +524,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     return false;
   }
 
-  private long getAggregatedValue(MetricData metricData, Attributes attributes) {
+  private float getAggregatedValue(MetricData metricData, Attributes attributes) {
     switch (metricData.getType()) {
       case HISTOGRAM:
         return metricData.getHistogramData().getPoints().stream()
             .filter(pd -> pd.getAttributes().equals(attributes))
-            .map(data -> (long) data.getSum() / data.getCount())
+            .map(data -> (float) data.getSum() / data.getCount())
             .findFirst()
-            .orElse(0L);
+            .orElse(0F);
       case LONG_SUM:
         return metricData.getLongSumData().getPoints().stream()
             .filter(pd -> pd.getAttributes().equals(attributes))

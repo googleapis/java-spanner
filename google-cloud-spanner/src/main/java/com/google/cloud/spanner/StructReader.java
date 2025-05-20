@@ -648,7 +648,7 @@ public interface StructReader {
 
   List<UUID> getUuidList(int columnIndex);
 
-  List<UUID> getUuidList(String columnNameÏ);
+  List<UUID> getUuidList(String columnName);
 
   /**
    * @param columnIndex index of the column

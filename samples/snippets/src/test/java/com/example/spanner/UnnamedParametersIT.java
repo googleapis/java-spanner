@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DatabaseAddSplitPointsIT extends SampleTestBase {
+public class UnnamedParametersIT extends SampleTestBase {
   private static String databaseId;
 
   @Before
@@ -36,22 +36,26 @@ public class DatabaseAddSplitPointsIT extends SampleTestBase {
                 .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
                 .build(),
             ImmutableList.of(
-                "CREATE TABLE Singers ("
-                    + "  SingerId   INT64 NOT NULL,"
-                    + "  FirstName  STRING(1024),"
-                    + "  LastName   STRING(1024)"
-                    + ") PRIMARY KEY (SingerId)",
-                " CREATE INDEX IF NOT EXISTS SingersByFirstLastName ON Singers(FirstName,"
-                    + " LastName)"))
+                "CREATE TABLE Students ("
+                    + "  StudentId INT64 NOT NULL PRIMARY KEY,"
+                    + "  Name STRING(1024) NOT NULL,"
+                    + "  IsNRI BOOL NOT NULL,"
+                    + "  AvgMarks FLOAT32 NOT NULL,"
+                    + "  JoinedAt DATE NOT NULL,"
+                    + "  PinCode  INT64 NOT NULL,"
+                    + "  CreatedAt TIMESTAMP NOT NULL"
+                    + ")"))
         .get();
   }
 
-  // TODO: Enable the test once the issue with split points is resolved
-  // @Test
-  public void testAddSplits() throws Exception {
+  @Test
+  public void testUnnamedParameters() throws Exception {
     final String out =
         SampleRunner.runSample(
-            () -> DatabaseAddSplitPointsSample.addSplitPoints(projectId, instanceId, databaseId));
-    assertTrue(out.contains(""));
+            () -> UnnamedParametersExample.executeQueryWithUnnamedParameters(projectId, instanceId,
+                databaseId));
+    assertTrue(out.contains("Row is inserted."));
+    assertTrue(out.contains("Google"));
+    assertTrue(out.contains("Row is fetched."));
   }
 }

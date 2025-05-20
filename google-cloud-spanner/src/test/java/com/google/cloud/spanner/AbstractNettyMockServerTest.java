@@ -31,7 +31,7 @@ import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -44,11 +44,10 @@ abstract class AbstractNettyMockServerTest {
   protected static InetSocketAddress address;
   static ExecutorService executor;
   protected static LocalChannelProvider channelProvider;
-  protected static AtomicInteger fakeServerTiming =
-      new AtomicInteger(new Random().nextInt(1000) + 1);
-
-  protected static AtomicInteger fakeAFEServerTiming =
-      new AtomicInteger(new Random().nextInt(500) + 1);
+  protected static final AtomicReference<Float> fakeServerTiming =
+      new AtomicReference<>((float) (new Random().nextDouble() * 1000) + 1);
+  protected static final AtomicReference<Float> fakeAFEServerTiming =
+      new AtomicReference<>((float) new Random().nextInt(500) + 1);
 
   protected Spanner spanner;
 
@@ -76,7 +75,7 @@ abstract class AbstractNettyMockServerTest {
                             headers.put(
                                 Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER),
                                 String.format(
-                                    "afe; dur=%d, gfet4t7; dur=%d",
+                                    "afe; dur=%f, gfet4t7; dur=%f",
                                     fakeAFEServerTiming.get(), fakeServerTiming.get()));
                             super.sendHeaders(headers);
                           }
