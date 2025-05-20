@@ -857,6 +857,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
+    default boolean isEnableGRPCTracing() {
+      return false;
+    }
+
     default boolean isEnableEndToEndTracing() {
       return false;
     }
@@ -933,6 +937,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       boolean isDirectPathEnabled = GapicSpannerRpc.isEnableDirectPathXdsEnv();
       return ("false".equalsIgnoreCase(grpcDisableEnv))
           || (isDirectPathEnabled && !"true".equalsIgnoreCase(grpcDisableEnv));
+    }
+
+    @Override
+    public boolean isEnableGRPCTracing() {
+      return Boolean.parseBoolean(System.getenv("SPANNER_ENABLE_GRPC_TRACING"));
     }
 
     @Override
@@ -1750,7 +1759,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
       synchronized (lock) {
         if (activeTracingFramework == null) {
-          activeTracingFramework = TracingFramework.OPEN_CENSUS;
+          activeTracingFramework = TracingFramework.OPEN_TELEMETRY;
         }
       }
       return new SpannerOptions(this);
@@ -2001,10 +2010,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return createApiTracerFactory(false, false);
   }
 
-  public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
-    if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
-      this.builtInMetricsProvider.enableGrpcMetrics(
-          channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+  public void enableGRPCMetricsAndTraces(
+      InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
+    if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()
+        || SpannerOptions.environment.isEnableGRPCTracing()) {
+      this.builtInMetricsProvider.enableGRPCMetricsAndTraces(
+          channelProviderBuilder,
+          this.getProjectId(),
+          this.openTelemetry,
+          getCredentials(),
+          this.monitoringHost,
+          SpannerOptions.environment.isEnableGRPCBuiltInMetrics(),
+          SpannerOptions.environment.isEnableGRPCTracing());
     }
   }
 
