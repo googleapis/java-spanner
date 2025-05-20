@@ -46,7 +46,7 @@ public class ITMicroBenchmark {
             .setEnableApiTracing(true)
             .build()
             .getService();
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("span-cloud-testing", "sakthi-spanner-testing", "benchmarking"));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("span-cloud-testing", "sakthi-spanner-eu-west10", "benchmarking"));
 
     final String SELECT_QUERY = "SELECT ID FROM Employees WHERE id = 1";
 
