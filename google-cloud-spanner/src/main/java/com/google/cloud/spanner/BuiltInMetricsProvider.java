@@ -36,6 +36,7 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.opentelemetry.GrpcOpenTelemetry;
+import io.grpc.opentelemetry.InternalGrpcOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -91,23 +92,38 @@ final class BuiltInMetricsProvider {
     }
   }
 
-  void enableGrpcMetrics(
+  void enableGRPCMetricsAndTraces(
       InstantiatingGrpcChannelProvider.Builder channelProviderBuilder,
       String projectId,
+      OpenTelemetry openTelemetry,
       @Nullable Credentials credentials,
-      @Nullable String monitoringHost) {
-    GrpcOpenTelemetry grpcOpenTelemetry =
+      @Nullable String monitoringHost,
+      boolean enableGRPCMetrics,
+      boolean enableTraces) {
+    GrpcOpenTelemetry.Builder grpcOpenTelemetryBuilder =
         GrpcOpenTelemetry.newBuilder()
-            .sdk(this.getOrCreateOpenTelemetry(projectId, credentials, monitoringHost))
-            .enableMetrics(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE)
-            // Disable gRPCs default metrics as they are not needed for Spanner.
-            .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT)
-            .build();
+            .sdk(
+                openTelemetry == null
+                    ? this.getOrCreateOpenTelemetry(projectId, credentials, monitoringHost)
+                    : openTelemetry);
+
+    if (enableGRPCMetrics) {
+      grpcOpenTelemetryBuilder
+          .enableMetrics(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE)
+          // Disable gRPCs default metrics as they are not needed for Spanner.
+          .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT);
+    } else {
+      grpcOpenTelemetryBuilder.disableAllMetrics();
+    }
+    if (enableTraces) {
+      InternalGrpcOpenTelemetry.enableTracing(grpcOpenTelemetryBuilder, true);
+    }
+
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator =
         channelProviderBuilder.getChannelConfigurator();
     channelProviderBuilder.setChannelConfigurator(
         b -> {
-          grpcOpenTelemetry.configureChannelBuilder(b);
+          grpcOpenTelemetryBuilder.build().configureChannelBuilder(b);
           if (channelConfigurator != null) {
             return channelConfigurator.apply(b);
           }
