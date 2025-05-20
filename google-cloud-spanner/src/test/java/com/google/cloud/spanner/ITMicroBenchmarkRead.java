@@ -126,6 +126,9 @@ public class ITMicroBenchmarkRead extends AbstractMockServerTest {
       }
       randomWait(waitTimeMilli);
     }
+
+    Collections.sort(beforeGrpcs);
+    Collections.sort(afterGrpcs);
     System.out.println(
         "Total time spent in the client library before requesting data from grpc "
             + percentile(beforeGrpcs, 0.5));
