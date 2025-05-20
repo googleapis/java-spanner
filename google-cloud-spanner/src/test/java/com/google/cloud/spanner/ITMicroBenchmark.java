@@ -31,6 +31,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -123,6 +124,9 @@ public class ITMicroBenchmark extends AbstractMockServerTest {
       }
       randomWait(waitTimeMilli);
     }
+
+    Collections.sort(beforeGrpcs);
+    Collections.sort(afterGrpcs);
     System.out.println(
         "Total time spent in the client library before requesting data from grpc "
             + percentile(beforeGrpcs, 0.5));
