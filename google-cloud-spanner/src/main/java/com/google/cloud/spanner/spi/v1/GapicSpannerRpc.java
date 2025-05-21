@@ -188,6 +188,7 @@ import io.grpc.CallCredentials;
 import io.grpc.Context;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.grpc.internal.PerformanceHandler;
 import io.opencensus.metrics.Metrics;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -1809,6 +1810,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             routeToLeader);
 
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
+    PerformanceHandler.CLIENT_REQUEST_OVERHEAD.stop();
+    PerformanceHandler.GRPC_REQUEST_OVERHEAD.start();
     spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
     return new GrpcStreamingCall(context, responseObserver.getController());
   }
@@ -2214,6 +2217,8 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public void onResponse(PartialResultSet response) {
+      PerformanceHandler.GRPC_RESPONSE_OVERHEAD.stop();
+      PerformanceHandler.CLIENT_RESPONSE_OVERHEAD.start();
       consumer.onPartialResultSet(response);
     }
 

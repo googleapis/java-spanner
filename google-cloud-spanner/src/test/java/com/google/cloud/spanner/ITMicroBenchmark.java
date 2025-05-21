@@ -50,7 +50,7 @@ public class ITMicroBenchmark {
 
     final String SELECT_QUERY = "SELECT ID FROM Employees WHERE id = 1";
 
-    Instant warmUpEndTime = Instant.now().plus(5, ChronoUnit.MINUTES);
+    Instant warmUpEndTime = Instant.now().plus(10, ChronoUnit.SECONDS);
     int waitTimeMilli = 5;
 
     System.out.println("Running warmup for 5 minutes, Started at " + currentTimeInIST());
@@ -64,27 +64,40 @@ public class ITMicroBenchmark {
     }
     System.out.println("Warmup completed");
 
-    List<Long> beforeGrpcs = new ArrayList<>();
-    List<Long> afterGrpcs = new ArrayList<>();
-    List<Long> beforeGrpcsWire = new ArrayList<>();
-    List<Long> beforeGrpcRequest = new ArrayList<>();
-    Instant perfEndTime = Instant.now().plus(30, ChronoUnit.MINUTES);
+    List<Long> overallRequestLatencies = new ArrayList<>();
+    List<Long> gRPCRequestLatencies = new ArrayList<>();
+    List<Long> clientRequestLatencies = new ArrayList<>();
+
+    List<Long> overallResponseLatencies = new ArrayList<>();
+    List<Long> gRPCResponseLatencies = new ArrayList<>();
+    List<Long> clientResponseLatencies = new ArrayList<>();
+
+    List<Long> requestInterceptorLatencies = new ArrayList<>();
+    List<Long> responseInterceptorLatencies = new ArrayList<>();
+
+    Instant perfEndTime = Instant.now().plus(10, ChronoUnit.SECONDS);
 
     System.out.println("Running benchmarking for 30 minutes, Started at " + currentTimeInIST());
     while (perfEndTime.isAfter(Instant.now())) {
-      PerformanceClock.BEFORE_GRPC_INSTANCE.reset();
-      PerformanceClock.AFTER_GRPC_INSTANCE.reset();
-      PerformanceClock.BEFORE_GRPC_INSTANCE.start();
-      PerformanceHandler.BEFORE_REQUEST_DATA.reset();
-      PerformanceHandler.BEFORE_SEND_PAYLOAD.reset();
+      PerformanceHandler.resetAll();
+      PerformanceHandler.CLIENT_REQUEST_OVERHEAD.start();
+      PerformanceHandler.OVERALL_REQUEST_OVERHEAD.start();
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
           while (resultSet.next()) {}
-          PerformanceClock.AFTER_GRPC_INSTANCE.stop();
-          beforeGrpcs.add(PerformanceClock.BEFORE_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
-          afterGrpcs.add(PerformanceClock.AFTER_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
-          beforeGrpcsWire.add(PerformanceHandler.BEFORE_SEND_PAYLOAD.elapsed(TimeUnit.MICROSECONDS));
-          beforeGrpcRequest.add(PerformanceHandler.BEFORE_REQUEST_DATA.elapsed(TimeUnit.MICROSECONDS));
+          PerformanceHandler.OVERALL_RESPONSE_OVERHEAD.stop();
+          PerformanceHandler.CLIENT_RESPONSE_OVERHEAD.stop();
+
+          overallRequestLatencies.add(PerformanceHandler.OVERALL_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          gRPCRequestLatencies.add(PerformanceHandler.GRPC_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          clientRequestLatencies.add(PerformanceHandler.CLIENT_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+
+          overallResponseLatencies.add(PerformanceHandler.OVERALL_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          gRPCResponseLatencies.add(PerformanceHandler.GRPC_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          clientResponseLatencies.add(PerformanceHandler.CLIENT_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+
+          requestInterceptorLatencies.add(PerformanceHandler.getRequestInterceptorLatency());
+          responseInterceptorLatencies.add(PerformanceHandler.getResponseInterceptorLatency());
           assertFalse(resultSet.next());
         }
       }
@@ -92,22 +105,27 @@ public class ITMicroBenchmark {
     }
     spanner.close();
 
-    Collections.sort(beforeGrpcs);
-    Collections.sort(afterGrpcs);
-    Collections.sort(beforeGrpcsWire);
-    Collections.sort(beforeGrpcRequest);
-    System.out.println(
-        "Total time spent in the client library before requesting data from grpc "
-            + percentile(beforeGrpcs, 0.5));
-    System.out.println(
-        "Total time spent in the client library after receiving PartialResultSet from grpc "
-            + percentile(afterGrpcs, 0.5));
-    System.out.println(
-        "Total time spent in the gRPC library before sending the request via wire "
-            + percentile(beforeGrpcsWire, 0.5));
-    System.out.println(
-        "Total time spent in the gRPC library before requesting data"
-            + percentile(beforeGrpcRequest, 0.5));
+    Collections.sort(overallRequestLatencies);
+    Collections.sort(gRPCRequestLatencies);
+    Collections.sort(clientRequestLatencies);
+
+    Collections.sort(overallResponseLatencies);
+    Collections.sort(gRPCResponseLatencies);
+    Collections.sort(clientResponseLatencies);
+
+    Collections.sort(requestInterceptorLatencies);
+    Collections.sort(responseInterceptorLatencies);
+
+    System.out.println("Overall Request latencies: " + percentile(overallRequestLatencies, 0.5));
+    System.out.println("GRPC Request latencies: " + percentile(gRPCRequestLatencies, 0.5));
+    System.out.println("Client Request latencies: " + percentile(clientRequestLatencies, 0.5));
+
+    System.out.println("Overall Response latencies: " + percentile(overallResponseLatencies, 0.5));
+    System.out.println("GRPC Response latencies: " + percentile(gRPCResponseLatencies, 0.5));
+    System.out.println("Client Response latencies: " + percentile(clientResponseLatencies, 0.5));
+
+    System.out.println("Request Interceptor latencies: " + percentile(requestInterceptorLatencies, 0.5));
+    System.out.println("Response Interceptor latencies: " + percentile(responseInterceptorLatencies, 0.5));
   }
 
   private String currentTimeInIST() {

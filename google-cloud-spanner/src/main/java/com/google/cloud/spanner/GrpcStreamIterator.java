@@ -111,8 +111,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   @InternalApi
   public void requestPrefetchChunks() {
     Preconditions.checkState(call != null, "The StreamingCall object is not initialized");
-    PerformanceClock.BEFORE_GRPC_INSTANCE.stop();
-    PerformanceHandler.BEFORE_REQUEST_DATA.start();
     call.request(prefetchChunks);
   }
 
@@ -169,7 +167,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
 
     @Override
     public void onPartialResultSet(PartialResultSet results) {
-      PerformanceClock.AFTER_GRPC_INSTANCE.start();
       addToStream(results);
       if (results.getLast()) {
         done = true;

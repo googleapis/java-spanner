@@ -827,7 +827,6 @@ abstract class AbstractReadContext
             if (selector != null) {
               request.setTransaction(selector);
             }
-            PerformanceHandler.BEFORE_SEND_PAYLOAD.start();
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
                     request.build(),
