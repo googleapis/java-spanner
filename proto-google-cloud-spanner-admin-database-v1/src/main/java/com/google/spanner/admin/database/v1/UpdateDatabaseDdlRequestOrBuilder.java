@@ -199,4 +199,19 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * @return The protoDescriptors.
    */
   com.google.protobuf.ByteString getProtoDescriptors();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. This field is exposed to be used by the Spanner Migration Tool.
+   * For more details, see
+   * [SMT](https://github.com/GoogleCloudPlatform/spanner-migration-tool).
+   * </pre>
+   *
+   * <code>bool throughput_mode = 5 [(.google.api.field_behavior) = OPTIONAL];</code>
+   *
+   * @return The throughputMode.
+   */
+  boolean getThroughputMode();
 }
