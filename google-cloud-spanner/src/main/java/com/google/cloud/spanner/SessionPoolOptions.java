@@ -613,7 +613,7 @@ public class SessionPoolOptions {
 
     // This field controls the default behavior of session management in Java client.
     // Set useMultiplexedSession to true to make multiplexed session the default.
-    private boolean useMultiplexedSession = false;
+    private boolean useMultiplexedSession = true;
 
     // This field controls the default behavior of session management for RW operations in Java
     // client.
