@@ -86,7 +86,8 @@ public class ITMicroBenchmark {
             .setEnableApiTracing(true)
             .build()
             .getService();
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("span-cloud-testing", "sakthi-spanner-eu-west10", "benchmarking"));
+    String instanceName = System.getenv("SPANNER_DATABASE") == null ? "sakthi-spanner-eu-west10" : System.getenv("SPANNER_DATABASE");
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("span-cloud-testing", instanceName, "benchmarking"));
 
     final String SELECT_QUERY = "SELECT ID FROM Employees WHERE id = 1";
 
@@ -132,7 +133,7 @@ public class ITMicroBenchmark {
           overallRequestLatencies.add(PerformanceHandler.OVERALL_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
           gRPCRequestLatencies.add(PerformanceHandler.GRPC_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
           clientRequestLatencies.add(PerformanceHandler.CLIENT_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
-          aftergRPCClientRequestLatencies.add(PerformanceHandler.AFTER_GRPC_CLIENT_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          aftergRPCClientRequestLatencies.add(PerformanceHandler.AFTER_GRPC_CLIENT_OVERHEAD.elapsed(TimeUnit.NANOSECONDS));
 
           overallResponseLatencies.add(PerformanceHandler.OVERALL_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
           gRPCResponseLatencies.add(PerformanceHandler.GRPC_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
