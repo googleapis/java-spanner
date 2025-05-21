@@ -50,7 +50,7 @@ public class ITMicroBenchmark {
 
     final String SELECT_QUERY = "SELECT ID FROM Employees WHERE id = 1";
 
-    Instant warmUpEndTime = Instant.now().plus(10, ChronoUnit.SECONDS);
+    Instant warmUpEndTime = Instant.now().plus(5, ChronoUnit.MINUTES);
     int waitTimeMilli = 5;
 
     System.out.println("Running warmup for 5 minutes, Started at " + currentTimeInIST());
@@ -75,7 +75,7 @@ public class ITMicroBenchmark {
     List<Long> requestInterceptorLatencies = new ArrayList<>();
     List<Long> responseInterceptorLatencies = new ArrayList<>();
 
-    Instant perfEndTime = Instant.now().plus(10, ChronoUnit.SECONDS);
+    Instant perfEndTime = Instant.now().plus(30, ChronoUnit.MINUTES);
 
     System.out.println("Running benchmarking for 30 minutes, Started at " + currentTimeInIST());
     while (perfEndTime.isAfter(Instant.now())) {
