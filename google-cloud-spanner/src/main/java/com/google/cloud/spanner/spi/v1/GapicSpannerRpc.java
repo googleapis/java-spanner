@@ -1813,6 +1813,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     PerformanceHandler.CLIENT_REQUEST_OVERHEAD.stop();
     PerformanceHandler.GRPC_REQUEST_OVERHEAD.start();
     spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
+    PerformanceHandler.AFTER_GRPC_CLIENT_OVERHEAD.start();
     return new GrpcStreamingCall(context, responseObserver.getController());
   }
 

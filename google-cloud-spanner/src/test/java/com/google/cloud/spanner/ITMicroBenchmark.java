@@ -58,7 +58,7 @@ public class ITMicroBenchmark {
                     Attributes.of(
                         AttributeKey.stringKey("service.name"),
                         "Java-MultiplexedSession-Benchmark")))
-            .setSampler(Sampler.alwaysOn())
+            .setSampler(Sampler.traceIdRatioBased(0.1))
             .build();
     MetricExporter cloudMonitoringExporter =
         GoogleCloudMetricExporter.createWithDefaultConfiguration();
@@ -106,6 +106,7 @@ public class ITMicroBenchmark {
 
     List<Long> overallRequestLatencies = new ArrayList<>();
     List<Long> gRPCRequestLatencies = new ArrayList<>();
+    List<Long> aftergRPCClientRequestLatencies = new ArrayList<>();
     List<Long> clientRequestLatencies = new ArrayList<>();
 
     List<Long> overallResponseLatencies = new ArrayList<>();
@@ -131,6 +132,7 @@ public class ITMicroBenchmark {
           overallRequestLatencies.add(PerformanceHandler.OVERALL_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
           gRPCRequestLatencies.add(PerformanceHandler.GRPC_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
           clientRequestLatencies.add(PerformanceHandler.CLIENT_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          aftergRPCClientRequestLatencies.add(PerformanceHandler.AFTER_GRPC_CLIENT_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
 
           overallResponseLatencies.add(PerformanceHandler.OVERALL_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
           gRPCResponseLatencies.add(PerformanceHandler.GRPC_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
@@ -148,6 +150,7 @@ public class ITMicroBenchmark {
     Collections.sort(overallRequestLatencies);
     Collections.sort(gRPCRequestLatencies);
     Collections.sort(clientRequestLatencies);
+    Collections.sort(aftergRPCClientRequestLatencies);
 
     Collections.sort(overallResponseLatencies);
     Collections.sort(gRPCResponseLatencies);
@@ -159,6 +162,7 @@ public class ITMicroBenchmark {
     System.out.println("Overall Request latencies: " + percentile(overallRequestLatencies, 0.5));
     System.out.println("GRPC Request latencies: " + percentile(gRPCRequestLatencies, 0.5));
     System.out.println("Client Request latencies: " + percentile(clientRequestLatencies, 0.5));
+    System.out.println("After gRPC Client Request latencies: " + percentile(aftergRPCClientRequestLatencies, 0.5));
 
     System.out.println("Overall Response latencies: " + percentile(overallResponseLatencies, 0.5));
     System.out.println("GRPC Response latencies: " + percentile(gRPCResponseLatencies, 0.5));
