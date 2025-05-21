@@ -111,16 +111,10 @@ public class ITMicroBenchmarkRead extends AbstractMockServerTest {
 
     System.out.println("Running benchmarking for 30 minutes, Started at " + currentTimeInIST());
     while (perfEndTime.isAfter(Instant.now())) {
-      PerformanceClock.BEFORE_GRPC_INSTANCE.reset();
-      PerformanceClock.AFTER_GRPC_INSTANCE.reset();
-      PerformanceClock.BEFORE_GRPC_INSTANCE.start();
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet =
             readContext.read("random", KeySet.all(), Collections.singletonList("*"))) {
           while (resultSet.next()) {}
-          PerformanceClock.AFTER_GRPC_INSTANCE.stop();
-          beforeGrpcs.add(PerformanceClock.BEFORE_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
-          afterGrpcs.add(PerformanceClock.AFTER_GRPC_INSTANCE.elapsed(TimeUnit.MICROSECONDS));
           assertFalse(resultSet.next());
         }
       }

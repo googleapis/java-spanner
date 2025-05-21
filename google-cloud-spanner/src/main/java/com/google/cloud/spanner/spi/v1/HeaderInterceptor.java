@@ -28,6 +28,7 @@ import com.google.cloud.spanner.BuiltInMetricsConstant;
 import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
+import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.spanner.admin.database.v1.DatabaseName;
@@ -40,6 +41,7 @@ import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
 import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
+import io.grpc.internal.PerformanceHandler;
 import io.opencensus.stats.MeasureMap;
 import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
@@ -56,6 +58,7 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -117,6 +120,7 @@ class HeaderInterceptor implements ClientInterceptor {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
         try {
+          Stopwatch stopwatch = Stopwatch.createStarted();
           Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = extractKey(databaseName, method.getFullMethodName());
@@ -126,15 +130,20 @@ class HeaderInterceptor implements ClientInterceptor {
           Map<String, String> builtInMetricsAttributes =
               getBuiltInMetricAttributes(key, databaseName);
           addBuiltInMetricAttributes(compositeTracer, builtInMetricsAttributes);
+          stopwatch.stop();
+          PerformanceHandler.recordRequestInterceptorLatency(stopwatch.elapsed(TimeUnit.MICROSECONDS));
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
+                  Stopwatch stopwatch = Stopwatch.createStarted();
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
                   processHeader(
                       metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
+                  stopwatch.stop();
+                  PerformanceHandler.recordResponseInterceptorLatency(stopwatch.elapsed(TimeUnit.MICROSECONDS));
                   super.onHeaders(metadata);
                 }
               },
