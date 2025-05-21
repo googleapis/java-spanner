@@ -18,7 +18,21 @@ package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertFalse;
 
+import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
+import com.google.cloud.opentelemetry.trace.TraceExporter;
 import io.grpc.internal.PerformanceHandler;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -35,9 +49,35 @@ public class ITMicroBenchmark {
 
   @Test
   public void testSingleUseQuery() throws InterruptedException {
+    SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+            .setResource(
+                Resource.create(
+                    Attributes.of(
+                        AttributeKey.stringKey("service.name"),
+                        "Java-MultiplexedSession-Benchmark")))
+            .setSampler(Sampler.alwaysOn())
+            .build();
+    MetricExporter cloudMonitoringExporter =
+        GoogleCloudMetricExporter.createWithDefaultConfiguration();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .registerMetricReader(PeriodicMetricReader.create(cloudMonitoringExporter))
+            .build();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setMeterProvider(sdkMeterProvider)
+            .setTracerProvider(tracerProvider)
+            .build();
+    SpannerOptions.enableOpenTelemetryMetrics();
+    SpannerOptions.enableOpenTelemetryTraces();
+
     Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("span-cloud-testing")
+            .setOpenTelemetry(openTelemetry)
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
