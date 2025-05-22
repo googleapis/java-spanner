@@ -587,6 +587,8 @@ class SessionPool {
       }
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     @Override
     public PooledSessionFuture denyListSession(
         RetryOnDifferentGrpcChannelException retryException, PooledSessionFuture session) {
@@ -1777,6 +1779,8 @@ class SessionPool {
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     @Override
     public void close() {
       synchronized (lock) {
@@ -1857,12 +1861,16 @@ class SessionPool {
       return this.delegate;
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     @Override
     public void markBusy(ISpan span) {
       this.delegate.setCurrentSpan(span);
       this.state = SessionState.BUSY;
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     private void markClosing() {
       this.state = SessionState.CLOSING;
     }
@@ -2100,6 +2108,8 @@ class SessionPool {
       removeLongRunningSessions(currTime);
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     private void removeIdleSessions(Instant currTime) {
       synchronized (lock) {
         // Determine the minimum last use time for a session to be deemed to still be alive. Remove
@@ -2199,6 +2209,8 @@ class SessionPool {
       }
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     private void removeLongRunningSessions(
         final Instant currentTime,
         final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions) {
@@ -2700,6 +2712,8 @@ class SessionPool {
     }
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   private Tuple<PooledSession, Integer> findSessionToKeepAlive(
       Queue<PooledSession> queue, Instant keepAliveThreshold, int numAlreadyChecked) {
     int numChecked = 0;
@@ -2894,6 +2908,8 @@ class SessionPool {
   }
 
   /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   private void releaseSession(
       PooledSession session, boolean isNewSession, @Nullable Integer position) {
     Preconditions.checkNotNull(session);
@@ -2954,6 +2970,8 @@ class SessionPool {
    * running many small, quick queries using a small number of parallel threads. This can cause a
    * high TPS, without actually having a high degree of parallelism.
    */
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   @VisibleForTesting
   boolean shouldRandomize() {
     return this.options.getRandomizePositionQPSThreshold() > 0
@@ -2961,6 +2979,8 @@ class SessionPool {
         && this.numSessionsInUse >= this.numChannels;
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   private boolean isUnbalanced(PooledSession session) {
     int channel = session.getChannel();
     int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
@@ -3063,10 +3083,14 @@ class SessionPool {
     }
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   void setResourceNotFoundException(ResourceNotFoundException e) {
     this.resourceNotFoundException = MoreObjects.firstNonNull(this.resourceNotFoundException, e);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   private void decrementPendingClosures(int count) {
     pendingClosure -= count;
     if (pendingClosure == 0) {
@@ -3079,6 +3103,8 @@ class SessionPool {
    * {@code IllegalStateException}. The returned future blocks till all the sessions created in this
    * pool have been closed.
    */
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
     ListenableFuture<Void> retFuture = null;
     synchronized (lock) {
@@ -3285,6 +3311,8 @@ class SessionPool {
    * Initializes and creates Spanner session relevant metrics using OpenCensus. When coupled with an
    * exporter, it allows users to monitor client behavior.
    */
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   private void initOpenCensusMetricsCollection(
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues,
@@ -3418,6 +3446,8 @@ class SessionPool {
    * Initializes and creates Spanner session relevant metrics using OpenTelemetry. When coupled with
    * an exporter, it allows users to monitor client behavior.
    */
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   private void initOpenTelemetryMetricsCollection(
       OpenTelemetry openTelemetry,
       Attributes attributes,
