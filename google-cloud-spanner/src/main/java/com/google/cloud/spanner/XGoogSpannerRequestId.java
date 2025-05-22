@@ -17,16 +17,26 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.InternalApi;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import io.grpc.Metadata;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @InternalApi
 public class XGoogSpannerRequestId {
   // 1. Generate the random process Id singleton.
   @VisibleForTesting
   static final String RAND_PROCESS_ID = XGoogSpannerRequestId.generateRandProcessId();
+
+  public static final Metadata.Key<String> REQUEST_HEADER_KEY =
+      Metadata.Key.of("x-goog-spanner-request-id", Metadata.ASCII_STRING_MARSHALLER);
 
   @VisibleForTesting
   static final long VERSION = 1; // The version of the specification being implemented.
@@ -48,6 +58,36 @@ public class XGoogSpannerRequestId {
     return new XGoogSpannerRequestId(nthClientId, nthChannelId, nthRequest, attempt);
   }
 
+  @VisibleForTesting
+  long getAttempt() {
+    return this.attempt;
+  }
+
+  @VisibleForTesting
+  long getNthRequest() {
+    return this.nthRequest;
+  }
+
+  @VisibleForTesting
+  static final Pattern REGEX =
+      Pattern.compile("^(\\d)\\.([0-9a-z]{16})\\.(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)$");
+
+  public static XGoogSpannerRequestId of(String s) {
+    Matcher m = XGoogSpannerRequestId.REGEX.matcher(s);
+    if (!m.matches()) {
+      throw new IllegalStateException(
+          s + " does not match " + XGoogSpannerRequestId.REGEX.pattern());
+    }
+
+    MatchResult mr = m.toMatchResult();
+
+    return new XGoogSpannerRequestId(
+        Long.parseLong(mr.group(3)),
+        Long.parseLong(mr.group(4)),
+        Long.parseLong(mr.group(5)),
+        Long.parseLong(mr.group(6)));
+  }
+
   private static String generateRandProcessId() {
     // Expecting to use 64-bits of randomness to avoid clashes.
     BigInteger bigInt = new BigInteger(64, new SecureRandom());
@@ -66,6 +106,14 @@ public class XGoogSpannerRequestId {
         this.attempt);
   }
 
+  @VisibleForTesting
+  boolean isGreaterThan(XGoogSpannerRequestId other) {
+    return this.nthClientId > other.nthClientId
+        && this.nthChannelId > other.nthChannelId
+        && this.nthRequest > other.nthRequest
+        && this.attempt > other.attempt;
+  }
+
   @Override
   public boolean equals(Object other) {
     // instanceof for a null object returns false.
@@ -81,8 +129,34 @@ public class XGoogSpannerRequestId {
         && Objects.equals(this.attempt, otherReqId.attempt);
   }
 
+  public void incrementAttempt() {
+    this.attempt++;
+  }
+
+  Map<SpannerRpc.Option, ?> withOptions(Map<SpannerRpc.Option, ?> options) {
+    Map copyOptions = new HashMap<>();
+    if (options != null) {
+      copyOptions.putAll(options);
+    }
+    copyOptions.put(SpannerRpc.Option.REQUEST_ID, this);
+    return copyOptions;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(this.nthClientId, this.nthChannelId, this.nthRequest, this.attempt);
+  }
+
+  interface RequestIdCreator {
+    XGoogSpannerRequestId nextRequestId(long channelId, int attempt);
+  }
+
+  static class NoopRequestIdCreator implements RequestIdCreator {
+    NoopRequestIdCreator() {}
+
+    @Override
+    public XGoogSpannerRequestId nextRequestId(long channelId, int attempt) {
+      return XGoogSpannerRequestId.of(1, 1, 1, 0);
+    }
   }
 }
