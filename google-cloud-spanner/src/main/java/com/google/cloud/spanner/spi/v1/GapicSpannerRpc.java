@@ -2034,11 +2034,12 @@ public class GapicSpannerRpc implements SpannerRpc {
       MethodDescriptor<ReqT, RespT> method,
       boolean routeToLeader) {
     GrpcCallContext context = this.baseGrpcCallContext;
-    if (options != null) {
+    Long affinity = options == null ? null : Option.CHANNEL_HINT.getLong(options);
+    if (affinity != null) {
       if (this.isGrpcGcpExtensionEnabled) {
         // Set channel affinity in gRPC-GCP.
         // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
-        int boundedChannelHint = Option.CHANNEL_HINT.getLong(options).intValue() % this.numChannels;
+        int boundedChannelHint = affinity.intValue() % this.numChannels;
         context =
             context.withCallOptions(
                 context
@@ -2047,11 +2048,10 @@ public class GapicSpannerRpc implements SpannerRpc {
                         GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
       } else {
         // Set channel affinity in GAX.
-        Long affinity = Option.CHANNEL_HINT.getLong(options);
-        if (affinity != null) {
-          context = context.withChannelAffinity(affinity.intValue());
-        }
+        context = context.withChannelAffinity(affinity.intValue());
       }
+    }
+    if (options != null) {
       context = withRequestId(context, options);
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
