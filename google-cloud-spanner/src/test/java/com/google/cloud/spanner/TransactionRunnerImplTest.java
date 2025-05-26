@@ -193,7 +193,7 @@ public class TransactionRunnerImplTest {
             Mockito.anyString(),
             Mockito.anyString(),
             Mockito.anyMap(),
-            Mockito.eq(null),
+            Mockito.anyMap(),
             Mockito.eq(true)))
         .thenAnswer(
             invocation ->
