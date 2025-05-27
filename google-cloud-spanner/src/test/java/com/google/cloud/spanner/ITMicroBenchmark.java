@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 
 import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
+import com.google.common.base.Stopwatch;
 import io.grpc.internal.PerformanceHandler;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
@@ -91,7 +92,7 @@ public class ITMicroBenchmark {
 
     final String SELECT_QUERY = "SELECT ID FROM Employees WHERE id = 1";
 
-    Instant warmUpEndTime = Instant.now().plus(5, ChronoUnit.MINUTES);
+    Instant warmUpEndTime = Instant.now().plus(1, ChronoUnit.MINUTES);
     int waitTimeMilli = 5;
 
     System.out.println("Running warmup for 5 minutes, Started at " + currentTimeInIST());
@@ -105,6 +106,7 @@ public class ITMicroBenchmark {
     }
     System.out.println("Warmup completed");
 
+    List<Long> totalLatencies = new ArrayList<>();
     List<Long> overallRequestLatencies = new ArrayList<>();
     List<Long> gRPCRequestLatencies = new ArrayList<>();
     List<Long> aftergRPCClientRequestLatencies = new ArrayList<>();
@@ -117,18 +119,22 @@ public class ITMicroBenchmark {
     List<Long> requestInterceptorLatencies = new ArrayList<>();
     List<Long> responseInterceptorLatencies = new ArrayList<>();
 
-    Instant perfEndTime = Instant.now().plus(30, ChronoUnit.MINUTES);
+    Instant perfEndTime = Instant.now().plus(1, ChronoUnit.MINUTES);
 
     System.out.println("Running benchmarking for 30 minutes, Started at " + currentTimeInIST());
     while (perfEndTime.isAfter(Instant.now())) {
       PerformanceHandler.resetAll();
       PerformanceHandler.CLIENT_REQUEST_OVERHEAD.start();
       PerformanceHandler.OVERALL_REQUEST_OVERHEAD.start();
+      Stopwatch stopwatch = Stopwatch.createStarted();
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
           while (resultSet.next()) {}
+          stopwatch.stop();
           PerformanceHandler.OVERALL_RESPONSE_OVERHEAD.stop();
           PerformanceHandler.CLIENT_RESPONSE_OVERHEAD.stop();
+
+          totalLatencies.add(stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
           overallRequestLatencies.add(PerformanceHandler.OVERALL_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
           gRPCRequestLatencies.add(PerformanceHandler.GRPC_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
@@ -148,6 +154,8 @@ public class ITMicroBenchmark {
     }
     spanner.close();
 
+    Collections.sort(totalLatencies);
+
     Collections.sort(overallRequestLatencies);
     Collections.sort(gRPCRequestLatencies);
     Collections.sort(clientRequestLatencies);
@@ -159,6 +167,8 @@ public class ITMicroBenchmark {
 
     Collections.sort(requestInterceptorLatencies);
     Collections.sort(responseInterceptorLatencies);
+
+    System.out.println("Total latencies: " + percentile(totalLatencies, 0.5));
 
     System.out.println("Overall Request latencies: " + percentile(overallRequestLatencies, 0.5));
     System.out.println("GRPC Request latencies: " + percentile(gRPCRequestLatencies, 0.5));
