@@ -56,7 +56,6 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -99,12 +98,8 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
-  private final Supplier<Boolean> directPathEnabledSupplier;
-
-  HeaderInterceptor(
-      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
+  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
     this.spannerRpcMetrics = spannerRpcMetrics;
-    this.directPathEnabledSupplier = directPathEnabledSupplier;
   }
 
   @Override
@@ -293,7 +288,7 @@ class HeaderInterceptor implements ClientInterceptor {
               BuiltInMetricsConstant.INSTANCE_ID_KEY.getKey(), databaseName.getInstance());
           attributes.put(
               BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY.getKey(),
-              String.valueOf(this.directPathEnabledSupplier.get()));
+              String.valueOf(GapicSpannerRpc.DIRECTPATH_CHANNEL_CREATED));
           return attributes;
         });
   }
