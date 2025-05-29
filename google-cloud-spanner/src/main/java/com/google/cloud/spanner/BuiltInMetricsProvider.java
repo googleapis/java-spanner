@@ -36,6 +36,7 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.opentelemetry.GrpcOpenTelemetry;
+import io.grpc.opentelemetry.InternalGrpcOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -50,6 +51,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,21 +95,22 @@ final class BuiltInMetricsProvider {
 
   void enableGrpcMetrics(
       InstantiatingGrpcChannelProvider.Builder channelProviderBuilder,
-      String projectId,
+      OpenTelemetry openTelemetry, String projectId,
       @Nullable Credentials credentials,
       @Nullable String monitoringHost) {
-    GrpcOpenTelemetry grpcOpenTelemetry =
+    GrpcOpenTelemetry.Builder grpcOpenTelemetryBuilder =
         GrpcOpenTelemetry.newBuilder()
-            .sdk(this.getOrCreateOpenTelemetry(projectId, credentials, monitoringHost))
+            .sdk(Optional.ofNullable(openTelemetry).orElse(this.getOrCreateOpenTelemetry(projectId, credentials, monitoringHost)))
             .enableMetrics(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE)
             // Disable gRPCs default metrics as they are not needed for Spanner.
-            .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT)
-            .build();
+            .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT);
+    InternalGrpcOpenTelemetry.enableTracing(grpcOpenTelemetryBuilder, true);
+
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator =
         channelProviderBuilder.getChannelConfigurator();
     channelProviderBuilder.setChannelConfigurator(
         b -> {
-          grpcOpenTelemetry.configureChannelBuilder(b);
+          grpcOpenTelemetryBuilder.build().configureChannelBuilder(b);
           if (channelConfigurator != null) {
             return channelConfigurator.apply(b);
           }

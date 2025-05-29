@@ -929,10 +929,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       // 2. DirectPath is enabled AND the env var is not set to "true"
       // This allows metrics to be enabled by default when DirectPath is on, unless explicitly
       // disabled via env.
-      String grpcDisableEnv = System.getenv("SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS");
-      boolean isDirectPathEnabled = GapicSpannerRpc.isEnableDirectPathXdsEnv();
-      return ("false".equalsIgnoreCase(grpcDisableEnv))
-          || (isDirectPathEnabled && !"true".equalsIgnoreCase(grpcDisableEnv));
+      // String grpcDisableEnv = System.getenv("SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS");
+      // boolean isDirectPathEnabled = GapicSpannerRpc.isEnableDirectPathXdsEnv();
+      // return ("false".equalsIgnoreCase(grpcDisableEnv))
+      //     || (isDirectPathEnabled && !"true".equalsIgnoreCase(grpcDisableEnv));
+      return true;
     }
 
     @Override
@@ -2004,7 +2005,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
     if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
       this.builtInMetricsProvider.enableGrpcMetrics(
-          channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+          channelProviderBuilder, this.openTelemetry, this.getProjectId(), getCredentials(), this.monitoringHost);
     }
   }
 
