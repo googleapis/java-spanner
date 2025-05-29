@@ -92,10 +92,10 @@ public class ITMicroBenchmark {
 
     final String SELECT_QUERY = "SELECT ID FROM Employees WHERE id = 1";
 
-    Instant warmUpEndTime = Instant.now().plus(1, ChronoUnit.MINUTES);
+    Instant warmUpEndTime = Instant.now().plus(2, ChronoUnit.MINUTES);
     int waitTimeMilli = 5;
 
-    System.out.println("Running warmup for 5 minutes, Started at " + currentTimeInIST());
+    System.out.println("Running warmup for 2 minutes, Started at " + currentTimeInIST());
     while (warmUpEndTime.isAfter(Instant.now())) {
       try (ReadContext readContext = client.singleUse()) {
         try (ResultSet resultSet = readContext.executeQuery(Statement.of(SELECT_QUERY))) {
@@ -119,9 +119,9 @@ public class ITMicroBenchmark {
     List<Long> requestInterceptorLatencies = new ArrayList<>();
     List<Long> responseInterceptorLatencies = new ArrayList<>();
 
-    Instant perfEndTime = Instant.now().plus(1, ChronoUnit.MINUTES);
+    Instant perfEndTime = Instant.now().plus(10, ChronoUnit.MINUTES);
 
-    System.out.println("Running benchmarking for 30 minutes, Started at " + currentTimeInIST());
+    System.out.println("Running benchmarking for 10 minutes, Started at " + currentTimeInIST());
     while (perfEndTime.isAfter(Instant.now())) {
       PerformanceHandler.resetAll();
       PerformanceHandler.CLIENT_REQUEST_OVERHEAD.start();
