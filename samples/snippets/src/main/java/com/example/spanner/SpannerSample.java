@@ -684,17 +684,17 @@ public class SpannerSample {
               Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
         while (queryResultSet.next()) {
           System.out.printf(
-            "%d %d %s\n",
-            queryResultSet.getLong(0), queryResultSet.getLong(1), queryResultSet.getString(2));
+              "%d %d %s\n",
+              queryResultSet.getLong(0), queryResultSet.getLong(1), queryResultSet.getString(2));
         }
       } // queryResultSet.close() is automatically called here
       try (ResultSet readResultSet =
-        transaction.read(
+          transaction.read(
             "Albums", KeySet.all(), Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
         while (readResultSet.next()) {
           System.out.printf(
-            "%d %d %s\n",
-            readResultSet.getLong(0), readResultSet.getLong(1), readResultSet.getString(2));
+              "%d %d %s\n",
+              readResultSet.getLong(0), readResultSet.getLong(1), readResultSet.getString(2));
         }
       } // readResultSet.close() is automatically called here
     } // transaction.close() is automatically called here
