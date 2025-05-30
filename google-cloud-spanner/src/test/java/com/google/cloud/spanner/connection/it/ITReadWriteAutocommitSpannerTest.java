@@ -183,7 +183,8 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
   @Test
   public void test06_AnalyzeUpdate() {
     assumeFalse(
-        "Emulator does not support PLAN and PROFILE", EmulatorSpannerHelper.isUsingEmulator());
+        "Emulator does not support PLAN, PROFILE, WITH_STATS, AND WITH_PLAN_AND_STATS",
+        EmulatorSpannerHelper.isUsingEmulator());
 
     // PLAN should not execute the update.
     try (ITConnection connection = createConnection()) {
@@ -215,6 +216,30 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
 
       assertTrue(resultSetStats.hasRowCountExact());
       assertTrue(resultSetStats.getRowCountExact() > 0);
+    }
+
+    try (ITConnection connection = createConnection()) {
+      ResultSetStats resultSetStats =
+          connection.analyzeUpdate(
+              Statement.of("UPDATE TEST SET NAME='test_updated' WHERE ID > 0"),
+              QueryAnalyzeMode.WITH_STATS);
+
+      // Executing the update in WITH_STATS mode should execute the update
+      assertNotNull(resultSetStats);
+      assertFalse(resultSetStats.hasQueryPlan());
+      assertTrue(resultSetStats.hasQueryStats());
+    }
+
+    try (ITConnection connection = createConnection()) {
+      ResultSetStats resultSetStats =
+          connection.analyzeUpdate(
+              Statement.of("UPDATE TEST SET NAME='test_updated' WHERE ID > 0"),
+              QueryAnalyzeMode.WITH_STATS);
+
+      // Executing the update in WITH_PLAN_AND_STATS mode should execute the update
+      assertNotNull(resultSetStats);
+      assertTrue(resultSetStats.hasQueryPlan());
+      assertTrue(resultSetStats.hasQueryStats());
     }
   }
 }
