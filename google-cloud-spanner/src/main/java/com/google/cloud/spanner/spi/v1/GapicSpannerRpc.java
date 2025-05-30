@@ -86,8 +86,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -239,6 +237,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final String CLIENT_LIBRARY_LANGUAGE = "spanner-java";
   public static final String DEFAULT_USER_AGENT =
       CLIENT_LIBRARY_LANGUAGE + "/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
+  public static boolean DIRECTPATH_CHANNEL_CREATED = false;
   private static final String API_FILE = "grpc-gcp-apiconfig.json";
 
   private boolean rpcIsClosed;
@@ -280,8 +279,6 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final boolean endToEndTracingEnabled;
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
-
-  private Supplier<Boolean> directPathEnabledSupplier = () -> false;
 
   private final GrpcCallContext baseGrpcCallContext;
 
@@ -361,9 +358,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                   SpannerInterceptorProvider.create(
                           MoreObjects.firstNonNull(
                               options.getInterceptorProvider(),
-                              SpannerInterceptorProvider.createDefault(
-                                  options.getOpenTelemetry(),
-                                  (() -> directPathEnabledSupplier.get()))))
+                              SpannerInterceptorProvider.createDefault(options.getOpenTelemetry())))
                       // This sets the trace context headers.
                       .withTraceContext(endToEndTracingEnabled, options.getOpenTelemetry())
                       // This sets the response compressor (Server -> Client).
@@ -425,12 +420,9 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.spannerStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(
                 spannerStubSettings, clientContext);
-        this.directPathEnabledSupplier =
-            Suppliers.memoize(
-                () -> {
-                  return ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
-                      && isAttemptDirectPathXds;
-                });
+        DIRECTPATH_CHANNEL_CREATED =
+            ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
+                && isAttemptDirectPathXds;
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
         this.readRetryableCodes =
