@@ -929,9 +929,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(
               statement, queryMode, options, /* withTransactionSelector= */ true);
+      XGoogSpannerRequestId reqId =
+          session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 1);
       try {
         com.google.spanner.v1.ResultSet resultSet =
-            rpc.executeQuery(builder.build(), getTransactionChannelHint(), isRouteToLeader());
+            rpc.executeQuery(
+                builder.build(), reqId.withOptions(getTransactionChannelHint()), isRouteToLeader());
         session.markUsed(clock.instant());
         if (resultSet.getMetadata().hasTransaction()) {
           onTransactionMetadata(
