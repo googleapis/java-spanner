@@ -923,16 +923,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @Override
     public boolean isEnableGRPCBuiltInMetrics() {
-      // Enable gRPC built-in metrics if:
-      // 1. The env var SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS is explicitly set to
-      // "false", OR
-      // 2. DirectPath is enabled AND the env var is not set to "true"
-      // This allows metrics to be enabled by default when DirectPath is on, unless explicitly
+      // Enable gRPC built-in metrics as default unless explicitly
       // disabled via env.
-      String grpcDisableEnv = System.getenv("SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS");
-      boolean isDirectPathEnabled = GapicSpannerRpc.isEnableDirectPathXdsEnv();
-      return ("false".equalsIgnoreCase(grpcDisableEnv))
-          || (isDirectPathEnabled && !"true".equalsIgnoreCase(grpcDisableEnv));
+      return !Boolean.parseBoolean(
+          System.getenv(SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS));
     }
 
     @Override
