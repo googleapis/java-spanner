@@ -71,6 +71,8 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
   private CloseableIterator<PartialResultSet> stream;
   private ByteString resumeToken;
   private boolean finished;
+  public XGoogSpannerRequestId xGoogRequestId;
+  private XGoogSpannerRequestId.RequestIdCreator xGoogRequestIdCreator;
 
   /**
    * Indicates whether it is currently safe to retry RPCs. This will be {@code false} if we have
@@ -86,7 +88,8 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       TraceWrapper tracer,
       ErrorHandler errorHandler,
       RetrySettings streamingRetrySettings,
-      Set<Code> retryableCodes) {
+      Set<Code> retryableCodes,
+      XGoogSpannerRequestId.RequestIdCreator xGoogRequestIdCreator) {
     this(
         maxBufferSize,
         streamName,
@@ -95,7 +98,8 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
         Attributes.empty(),
         errorHandler,
         streamingRetrySettings,
-        retryableCodes);
+        retryableCodes,
+        xGoogRequestIdCreator);
   }
 
   protected ResumableStreamIterator(
@@ -106,7 +110,8 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       Attributes attributes,
       ErrorHandler errorHandler,
       RetrySettings streamingRetrySettings,
-      Set<Code> retryableCodes) {
+      Set<Code> retryableCodes,
+      XGoogSpannerRequestId.RequestIdCreator xGoogRequestIdCreator) {
     checkArgument(maxBufferSize >= 0);
     this.maxBufferSize = maxBufferSize;
     this.tracer = tracer;
@@ -114,6 +119,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
     this.errorHandler = errorHandler;
     this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
     this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
+    this.xGoogRequestIdCreator = xGoogRequestIdCreator;
   }
 
   private ExponentialBackOff newBackOff() {
@@ -188,6 +194,14 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
     } finally {
       context.removeListener(listener);
     }
+  }
+
+  public void incrementXGoogRequestIdAttempt() {
+    if (this.xGoogRequestId == null) {
+      this.xGoogRequestId =
+          this.xGoogRequestIdCreator.nextRequestId(1 /*TODO: infer channelId*/, 0 /*attempt*/);
+    }
+    this.xGoogRequestId.incrementAttempt();
   }
 
   private enum DirectExecutor implements Executor {
@@ -281,6 +295,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
           }
           assert buffer.isEmpty() || buffer.getLast().getResumeToken().equals(resumeToken);
           stream = null;
+          incrementXGoogRequestIdAttempt();
           try (IScope s = tracer.withSpan(span)) {
             long delay = spannerException.getRetryDelayInMillis();
             if (delay != -1) {
@@ -302,6 +317,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
             if (++numAttemptsOnOtherChannel < errorHandler.getMaxAttempts()
                 && prepareIteratorForRetryOnDifferentGrpcChannel()) {
               stream = null;
+              xGoogRequestId = null;
               continue;
             }
           }
@@ -328,6 +344,10 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
         // this Span.
         stream = checkNotNull(startStream(resumeToken, streamMessageListener));
         stream.requestPrefetchChunks();
+        if (this.xGoogRequestId == null) {
+          this.xGoogRequestId =
+              this.xGoogRequestIdCreator.nextRequestId(1 /*TODO: retrieve channelId*/, 0);
+        }
       }
     }
   }
