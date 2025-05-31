@@ -162,7 +162,8 @@ public class ResumableStreamIteratorTest {
             new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false),
             DefaultErrorHandler.INSTANCE,
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
-            SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
+            SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes(),
+            new XGoogSpannerRequestId.NoopRequestIdCreator()) {
           @Override
           AbstractResultSet.CloseableIterator<PartialResultSet> startStream(
               @Nullable ByteString resumeToken,
