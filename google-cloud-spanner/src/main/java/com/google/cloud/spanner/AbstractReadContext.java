@@ -810,7 +810,7 @@ abstract class AbstractReadContext
               @Nullable ByteString resumeToken,
               AsyncResultSet.StreamMessageListener streamListener) {
             GrpcStreamIterator stream =
-                new GrpcStreamIterator(statement, prefetchChunks, cancelQueryWhenClientIsClosed);
+                new GrpcStreamIterator(statement, prefetchChunks, span, cancelQueryWhenClientIsClosed);
             if (streamListener != null) {
               stream.registerListener(streamListener);
             }
@@ -1015,7 +1015,7 @@ abstract class AbstractReadContext
               @Nullable ByteString resumeToken,
               AsyncResultSet.StreamMessageListener streamListener) {
             GrpcStreamIterator stream =
-                new GrpcStreamIterator(prefetchChunks, cancelQueryWhenClientIsClosed);
+                new GrpcStreamIterator(prefetchChunks, span,cancelQueryWhenClientIsClosed);
             if (streamListener != null) {
               stream.registerListener(streamListener);
             }

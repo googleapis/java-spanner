@@ -190,6 +190,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.grpc.internal.PerformanceHandler;
 import io.opencensus.metrics.Metrics;
+import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -1812,6 +1813,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     PerformanceHandler.CLIENT_REQUEST_OVERHEAD.stop();
     PerformanceHandler.GRPC_REQUEST_OVERHEAD.start();
+    Span span = Span.current();
+    span.addEvent("gRPC overhead started");
     spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
     PerformanceHandler.AFTER_GRPC_CLIENT_OVERHEAD.start();
     return new GrpcStreamingCall(context, responseObserver.getController());

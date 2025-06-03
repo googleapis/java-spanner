@@ -47,6 +47,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private final ConsumerImpl consumer;
   private final BlockingQueue<PartialResultSet> stream;
   private final Statement statement;
+  private final ISpan span;
 
   private SpannerRpc.StreamingCall call;
   private volatile boolean withBeginTransaction;
@@ -56,16 +57,17 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private boolean done;
 
   @VisibleForTesting
-  GrpcStreamIterator(int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
-    this(null, prefetchChunks, cancelQueryWhenClientIsClosed);
+  GrpcStreamIterator(int prefetchChunks, ISpan span, boolean cancelQueryWhenClientIsClosed) {
+    this(null, prefetchChunks, span, cancelQueryWhenClientIsClosed);
   }
 
   @VisibleForTesting
   GrpcStreamIterator(
-      Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
+      Statement statement, int prefetchChunks, ISpan span, boolean cancelQueryWhenClientIsClosed) {
     this.statement = statement;
     this.prefetchChunks = prefetchChunks;
     this.consumer = new ConsumerImpl(cancelQueryWhenClientIsClosed);
+    this.span = span;
     // One extra to allow for END_OF_STREAM message.
     this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
   }
@@ -169,6 +171,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     @Override
     public void onPartialResultSet(PartialResultSet results) {
       addToStream(results);
+      span.addAnnotation("first partial result set");
       if (results.getLast()) {
         done = true;
         addToStream(END_OF_STREAM);

@@ -58,8 +58,8 @@ public class ITMicroBenchmark {
                 Resource.create(
                     Attributes.of(
                         AttributeKey.stringKey("service.name"),
-                        "Java-MultiplexedSession-Benchmark")))
-            .setSampler(Sampler.traceIdRatioBased(0.1))
+                        "Java-MultiplexedSession-Benchmark-Test")))
+            .setSampler(Sampler.traceIdRatioBased(0.3))
             .build();
     MetricExporter cloudMonitoringExporter =
         GoogleCloudMetricExporter.createWithDefaultConfiguration();
@@ -81,7 +81,7 @@ public class ITMicroBenchmark {
             .setOpenTelemetry(openTelemetry)
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
-                    .setWaitForMinSessionsDuration(Duration.ofSeconds(5L))
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(100L))
                     .setFailOnSessionLeak()
                     .build())
             .setEnableApiTracing(true)
@@ -134,16 +134,23 @@ public class ITMicroBenchmark {
           PerformanceHandler.OVERALL_RESPONSE_OVERHEAD.stop();
           PerformanceHandler.CLIENT_RESPONSE_OVERHEAD.stop();
 
-          totalLatencies.add(stopwatch.elapsed(TimeUnit.MILLISECONDS));
+          totalLatencies.add(stopwatch.elapsed(TimeUnit.MICROSECONDS));
 
-          overallRequestLatencies.add(PerformanceHandler.OVERALL_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
-          gRPCRequestLatencies.add(PerformanceHandler.GRPC_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
-          clientRequestLatencies.add(PerformanceHandler.CLIENT_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
-          aftergRPCClientRequestLatencies.add(PerformanceHandler.AFTER_GRPC_CLIENT_OVERHEAD.elapsed(TimeUnit.NANOSECONDS));
+          overallRequestLatencies.add(
+              PerformanceHandler.OVERALL_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          gRPCRequestLatencies.add(
+              PerformanceHandler.GRPC_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          clientRequestLatencies.add(
+              PerformanceHandler.CLIENT_REQUEST_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          aftergRPCClientRequestLatencies.add(
+              PerformanceHandler.AFTER_GRPC_CLIENT_OVERHEAD.elapsed(TimeUnit.NANOSECONDS));
 
-          overallResponseLatencies.add(PerformanceHandler.OVERALL_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
-          gRPCResponseLatencies.add(PerformanceHandler.GRPC_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
-          clientResponseLatencies.add(PerformanceHandler.CLIENT_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          overallResponseLatencies.add(
+              PerformanceHandler.OVERALL_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          gRPCResponseLatencies.add(
+              PerformanceHandler.GRPC_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
+          clientResponseLatencies.add(
+              PerformanceHandler.CLIENT_RESPONSE_OVERHEAD.elapsed(TimeUnit.MICROSECONDS));
 
           requestInterceptorLatencies.add(PerformanceHandler.getRequestInterceptorLatency());
           responseInterceptorLatencies.add(PerformanceHandler.getResponseInterceptorLatency());
@@ -153,6 +160,7 @@ public class ITMicroBenchmark {
       randomWait(waitTimeMilli);
     }
     spanner.close();
+    tracerProvider.close();
 
     Collections.sort(totalLatencies);
 
