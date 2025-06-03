@@ -1088,12 +1088,20 @@ public final class Options implements Serializable {
 
     @Override
     public int hashCode() {
-      return RequestIdOption.class.hashCode();
+      return this.reqId.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
-      return o instanceof RequestIdOption;
+      // instanceof for a null object returns false.
+      if (!(o instanceof RequestIdOption)) {
+        return false;
+      }
+      RequestIdOption other = (RequestIdOption) o;
+      if (this.reqId == null || other.reqId == null) {
+        return this.reqId == null && other.reqId == null;
+      }
+      return this.reqId.equals(other.reqId);
     }
   }
 }
