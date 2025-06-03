@@ -923,8 +923,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @Override
     public boolean isEnableGRPCBuiltInMetrics() {
-      return "false"
-          .equalsIgnoreCase(System.getenv(SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS));
+      // Enable gRPC built-in metrics as default unless explicitly
+      // disabled via env.
+      return !Boolean.parseBoolean(
+          System.getenv(SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS));
     }
 
     @Override

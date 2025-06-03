@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.92.1-SNAPSHOT</version>
+      <version>6.94.0</version>
     </dependency>
     <!-- {x-version-update-end} -->
     
@@ -144,7 +144,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.5.2</version>
+        <version>3.5.3</version>
         <configuration>
           <forkCount>10</forkCount>
           <reuseForks>false</reuseForks>

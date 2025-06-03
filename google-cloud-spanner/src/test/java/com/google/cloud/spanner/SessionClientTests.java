@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -153,8 +153,17 @@ public class SessionClientTests {
       assertThat(session.getName()).isEqualTo(sessionName);
 
       session.close();
+
+      final ArgumentCaptor<Map<SpannerRpc.Option, ?>> deleteOptionsCaptor =
+          ArgumentCaptor.forClass(Map.class);
+      final ArgumentCaptor<String> sessionNameCaptor = ArgumentCaptor.forClass(String.class);
+      Mockito.verify(rpc).deleteSession(sessionNameCaptor.capture(), deleteOptionsCaptor.capture());
+      assertEquals(sessionName, sessionNameCaptor.getValue());
       // The same channelHint is passed for deleteSession (contained in "options").
-      Mockito.verify(rpc).deleteSession(sessionName, options.getValue());
+      assertEquals(
+          deleteOptionsCaptor.getValue().get(SpannerRpc.Option.CHANNEL_HINT),
+          options.getValue().get(SpannerRpc.Option.CHANNEL_HINT));
+      assertTrue(deleteOptionsCaptor.getValue().containsKey(SpannerRpc.Option.REQUEST_ID));
     }
   }
 
@@ -198,7 +207,9 @@ public class SessionClientTests {
       client.createMultiplexedSession(consumer);
     }
     // for multiplexed session there is no channel hint pass in the RPC options
-    assertNull(options.getValue());
+    assertNotNull(options.getValue());
+    assertEquals(options.getValue().get(Option.CHANNEL_HINT), null);
+    assertNotNull(options.getValue().get(Option.REQUEST_ID));
     assertEquals(1, returnedSessionCount.get());
   }
 
@@ -230,7 +241,9 @@ public class SessionClientTests {
       client.createMultiplexedSession(consumer);
     }
     // for multiplexed session there is no channel hint pass in the RPC options
-    assertNull(options.getValue());
+    assertNotNull(options.getValue());
+    assertEquals(options.getValue().get(Option.CHANNEL_HINT), null);
+    assertNotNull(options.getValue().get(Option.REQUEST_ID));
   }
 
   @SuppressWarnings("unchecked")
