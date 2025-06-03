@@ -1053,6 +1053,26 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             HttpRule.newBuilder()
                                 .setPost("/v1/{name=projects/*/instances/*/operations/*}:cancel")
                                 .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setPost(
+                                    "/v1/{name=projects/*/instances/*/backups/*/operations/*}:cancel")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setPost(
+                                    "/v1/{name=projects/*/instances/*/instancePartitions/*/operations/*}:cancel")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setPost(
+                                    "/v1/{name=projects/*/instanceConfigs/*/operations/*}:cancel")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setPost(
+                                    "/v1/{name=projects/*/instanceConfigs/*/ssdCaches/*/operations/*}:cancel")
+                                .build())
                         .build())
                 .put(
                     "google.longrunning.Operations.DeleteOperation",
@@ -1061,6 +1081,25 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                         .addAdditionalBindings(
                             HttpRule.newBuilder()
                                 .setDelete("/v1/{name=projects/*/instances/*/operations/*}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setDelete(
+                                    "/v1/{name=projects/*/instances/*/backups/*/operations/*}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setDelete(
+                                    "/v1/{name=projects/*/instances/*/instancePartitions/*/operations/*}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setDelete("/v1/{name=projects/*/instanceConfigs/*/operations/*}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setDelete(
+                                    "/v1/{name=projects/*/instanceConfigs/*/ssdCaches/*/operations/*}")
                                 .build())
                         .build())
                 .put(
@@ -1071,6 +1110,24 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             HttpRule.newBuilder()
                                 .setGet("/v1/{name=projects/*/instances/*/operations/*}")
                                 .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setGet("/v1/{name=projects/*/instances/*/backups/*/operations/*}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setGet(
+                                    "/v1/{name=projects/*/instances/*/instancePartitions/*/operations/*}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setGet("/v1/{name=projects/*/instanceConfigs/*/operations/*}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setGet(
+                                    "/v1/{name=projects/*/instanceConfigs/*/ssdCaches/*/operations/*}")
+                                .build())
                         .build())
                 .put(
                     "google.longrunning.Operations.ListOperations",
@@ -1079,6 +1136,24 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                         .addAdditionalBindings(
                             HttpRule.newBuilder()
                                 .setGet("/v1/{name=projects/*/instances/*/operations}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setGet("/v1/{name=projects/*/instances/*/backups/*/operations}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setGet(
+                                    "/v1/{name=projects/*/instances/*/instancePartitions/*/operations}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setGet("/v1/{name=projects/*/instanceConfigs/*/operations}")
+                                .build())
+                        .addAdditionalBindings(
+                            HttpRule.newBuilder()
+                                .setGet(
+                                    "/v1/{name=projects/*/instanceConfigs/*/ssdCaches/*/operations}")
                                 .build())
                         .build())
                 .build());
