@@ -239,9 +239,8 @@ public class DatabaseClientImplTest {
                 "google.spanner.v1.Spanner/ExecuteStreamingSql",
                 "google.spanner.v1.Spanner/GetSession",
                 "google.spanner.v1.Spanner/ListSessions",
-                // TODO: Uncomment the methods when the implementation is completed.
-                // "google.spanner.v1.Spanner/PartitionQuery",
-                // "google.spanner.v1.Spanner/PartitionRead",
+                "google.spanner.v1.Spanner/PartitionQuery",
+                "google.spanner.v1.Spanner/PartitionRead",
                 "google.spanner.v1.Spanner/Read",
                 "google.spanner.v1.Spanner/Rollback",
                 "google.spanner.v1.Spanner/StreamingRead"));

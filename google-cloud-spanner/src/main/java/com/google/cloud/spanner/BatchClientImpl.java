@@ -250,9 +250,11 @@ public class BatchClientImpl implements BatchClient {
       }
       builder.setPartitionOptions(pbuilder.build());
 
+      XGoogSpannerRequestId reqId =
+          session.getRequestIdCreator().nextRequestId(1 /*TODO: retrieve channelId*/, 1);
       final PartitionReadRequest request = builder.build();
       try {
-        PartitionResponse response = rpc.partitionRead(request, options);
+        PartitionResponse response = rpc.partitionRead(request, reqId.withOptions(options));
         ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
         for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
           Partition partition =
@@ -313,9 +315,11 @@ public class BatchClientImpl implements BatchClient {
       }
       builder.setPartitionOptions(pbuilder.build());
 
+      XGoogSpannerRequestId reqId =
+          session.getRequestIdCreator().nextRequestId(1 /*TODO: retrieve channelId*/, 1);
       final PartitionQueryRequest request = builder.build();
       try {
-        PartitionResponse response = rpc.partitionQuery(request, options);
+        PartitionResponse response = rpc.partitionQuery(request, reqId.withOptions(options));
         ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
         for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
           Partition partition =
