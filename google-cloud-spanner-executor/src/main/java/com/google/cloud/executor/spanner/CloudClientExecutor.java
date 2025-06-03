@@ -47,6 +47,7 @@ import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceConfigInfo;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
+import com.google.cloud.spanner.Interval;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
@@ -176,6 +177,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -2898,6 +2900,12 @@ public class CloudClientExecutor extends CloudExecutor {
           case DATE:
             value.setDateDaysValue(daysFromDate(struct.getDate(i)));
             break;
+          case INTERVAL:
+            value.setStringValue(struct.getInterval(i).toISO8601());
+            break;
+          case UUID:
+            value.setStringValue(struct.getUuid(i).toString());
+            break;
           case NUMERIC:
             String ascii = struct.getBigDecimal(i).toPlainString();
             value.setStringValue(ascii);
@@ -3064,6 +3072,44 @@ public class CloudClientExecutor extends CloudExecutor {
                       com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.TIMESTAMP).build());
                 }
                 break;
+              case INTERVAL:
+                {
+                  com.google.spanner.executor.v1.ValueList.Builder builder =
+                      com.google.spanner.executor.v1.ValueList.newBuilder();
+                  List<Interval> values = struct.getIntervalList(i);
+                  for (Interval interval : values) {
+                    com.google.spanner.executor.v1.Value.Builder valueProto =
+                        com.google.spanner.executor.v1.Value.newBuilder();
+                    if (interval == null) {
+                      builder.addValue(valueProto.setIsNull(true).build());
+                    } else {
+                      builder.addValue(valueProto.setStringValue(interval.toISO8601()).build());
+                    }
+                  }
+                  value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.INTERVAL).build());
+                }
+                break;
+              case UUID:
+                {
+                  com.google.spanner.executor.v1.ValueList.Builder builder =
+                      com.google.spanner.executor.v1.ValueList.newBuilder();
+                  List<UUID> values = struct.getUuidList(i);
+                  for (UUID uuidValue : values) {
+                    com.google.spanner.executor.v1.Value.Builder valueProto =
+                        com.google.spanner.executor.v1.Value.newBuilder();
+                    if (uuidValue == null) {
+                      builder.addValue(valueProto.setIsNull(true).build());
+                    } else {
+                      builder.addValue(valueProto.setStringValue(uuidValue.toString()).build());
+                    }
+                  }
+                  value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.UUID).build());
+                }
+                break;
               case NUMERIC:
                 {
                   com.google.spanner.executor.v1.ValueList.Builder builder =
@@ -3227,6 +3273,7 @@ public class CloudClientExecutor extends CloudExecutor {
           case BYTES:
           case FLOAT64:
           case DATE:
+          case UUID:
           case TIMESTAMP:
           case NUMERIC:
           case JSON:
@@ -3260,6 +3307,8 @@ public class CloudClientExecutor extends CloudExecutor {
         if (type.getCode() == TypeCode.NUMERIC) {
           String ascii = part.getStringValue();
           cloudKey.append(new BigDecimal(ascii));
+        } else if (type.getCode() == TypeCode.UUID) {
+          cloudKey.append(UUID.fromString(part.getStringValue()));
         } else {
           cloudKey.append(part.getStringValue());
         }
@@ -3314,6 +3363,12 @@ public class CloudClientExecutor extends CloudExecutor {
       case DATE:
         return com.google.cloud.spanner.Value.date(
             value.hasIsNull() ? null : dateFromDays(value.getDateDaysValue()));
+      case INTERVAL:
+        return com.google.cloud.spanner.Value.interval(
+            value.hasIsNull() ? null : Interval.parseFromString(value.getStringValue()));
+      case UUID:
+        return com.google.cloud.spanner.Value.uuid(
+            value.hasIsNull() ? null : UUID.fromString(value.getStringValue()));
       case NUMERIC:
         {
           if (value.hasIsNull()) {
@@ -3437,6 +3492,34 @@ public class CloudClientExecutor extends CloudExecutor {
                           .map(com.google.spanner.executor.v1.Value::getDateDaysValue)
                           .collect(Collectors.toList()),
                       CloudClientExecutor::dateFromDays));
+            }
+          case INTERVAL:
+            if (value.hasIsNull()) {
+              return com.google.cloud.spanner.Value.intervalArray(null);
+            } else {
+              return com.google.cloud.spanner.Value.intervalArray(
+                  unmarshallValueList(
+                      value.getArrayValue().getValueList().stream()
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
+                          .collect(Collectors.toList()),
+                      value.getArrayValue().getValueList().stream()
+                          .map(com.google.spanner.executor.v1.Value::getStringValue)
+                          .collect(Collectors.toList()),
+                      Interval::parseFromString));
+            }
+          case UUID:
+            if (value.hasIsNull()) {
+              return com.google.cloud.spanner.Value.uuidArray(null);
+            } else {
+              return com.google.cloud.spanner.Value.uuidArray(
+                  unmarshallValueList(
+                      value.getArrayValue().getValueList().stream()
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
+                          .collect(Collectors.toList()),
+                      value.getArrayValue().getValueList().stream()
+                          .map(com.google.spanner.executor.v1.Value::getStringValue)
+                          .collect(Collectors.toList()),
+                      UUID::fromString));
             }
           case NUMERIC:
             {
@@ -3605,6 +3688,10 @@ public class CloudClientExecutor extends CloudExecutor {
         return com.google.cloud.spanner.Type.date();
       case TIMESTAMP:
         return com.google.cloud.spanner.Type.timestamp();
+      case INTERVAL:
+        return com.google.cloud.spanner.Type.interval();
+      case UUID:
+        return com.google.cloud.spanner.Type.uuid();
       case NUMERIC:
         if (typeProto.getTypeAnnotation().equals(TypeAnnotationCode.PG_NUMERIC)) {
           return com.google.cloud.spanner.Type.pgNumeric();
@@ -3659,6 +3746,10 @@ public class CloudClientExecutor extends CloudExecutor {
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.TIMESTAMP).build();
       case DATE:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.DATE).build();
+      case INTERVAL:
+        return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.INTERVAL).build();
+      case UUID:
+        return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.UUID).build();
       case NUMERIC:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.NUMERIC).build();
       case PG_NUMERIC:

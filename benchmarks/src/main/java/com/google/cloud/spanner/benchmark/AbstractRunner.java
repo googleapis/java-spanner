@@ -18,46 +18,80 @@ package com.google.cloud.spanner.benchmark;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 abstract class AbstractRunner implements BenchmarkRunner {
-  static final int TOTAL_RECORDS = 1000000;
-  static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
-  static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
+  static final int TOTAL_RECORDS = 100000;
+  static final String TABLE_NAME = "Employees";
+  static final String SELECT_QUERY = String.format("SELECT ID FROM %s WHERE ID = @id", TABLE_NAME);
+  static final String UPDATE_QUERY =
+      String.format("UPDATE %s SET Name=Google WHERE ID = @id", TABLE_NAME);
   static final String ID_COLUMN_NAME = "id";
-  static final String SERVER_URL = "https://staging-wrenchworks.sandbox.googleapis.com";
+  static final Map<Environment, String> SERVER_URL_MAPPING = new HashMap<>();
 
-  private final AtomicInteger operationCounter = new AtomicInteger();
+  static {
+    SERVER_URL_MAPPING.put(
+        Environment.CLOUD_DEVEL, "https://staging-wrenchworks.sandbox.googleapis.com");
+    SERVER_URL_MAPPING.put(Environment.PROD, "https://spanner.googleapis.com");
+  }
 
-  protected void incOperations() {
-    operationCounter.incrementAndGet();
+  Map<Integer, TimerConfiguration> timerConfigurations = new HashMap<>();
+  private final Set<Integer> completedClients = new HashSet<>();
+  private final Set<Integer> finishedClients = new HashSet<>();
+
+  protected void initiateTimer(int clientId, String message, Instant endTime) {
+    TimerConfiguration timerConfiguration =
+        timerConfigurations.getOrDefault(clientId, new TimerConfiguration());
+    timerConfiguration.setMessage(message);
+    timerConfiguration.setEndTime(endTime);
+    timerConfigurations.put(clientId, timerConfiguration);
+  }
+
+  protected void setBenchmarkingCompleted(int clientId) {
+    this.completedClients.add(clientId);
   }
 
   protected List<Duration> collectResults(
       ExecutorService service,
       List<Future<List<Duration>>> results,
-      int numClients,
-      int numOperations)
+      BenchmarkingConfiguration configuration)
       throws Exception {
-    int totalOperations = numClients * numOperations;
+    while (!(finishedClients.size() == configuration.getNumOfClients()))
+      for (int i = 0; i < configuration.getNumOfClients(); i++) {
+        TimerConfiguration timerConfiguration =
+            timerConfigurations.getOrDefault(i, new TimerConfiguration());
+        long totalSeconds =
+            ChronoUnit.SECONDS.between(Instant.now(), timerConfiguration.getEndTime());
+        if (completedClients.contains(i)) {
+          if (!finishedClients.contains(i)) {
+            System.out.printf("Client %s: Completed", i);
+            finishedClients.add(i);
+          }
+        } else {
+          System.out.printf(
+              "Client %s: %s %s Minutes %s Seconds\r",
+              i + 1, timerConfiguration.getMessage(), totalSeconds / 60, totalSeconds % 60);
+        }
+        //noinspection BusyWait
+        Thread.sleep(1000L);
+      }
     service.shutdown();
-    while (!service.isTerminated()) {
-      //noinspection BusyWait
-      Thread.sleep(1000L);
-      System.out.printf("\r%d/%d", operationCounter.get(), totalOperations);
-    }
-    System.out.println();
     if (!service.awaitTermination(60L, TimeUnit.MINUTES)) {
       throw new TimeoutException();
     }
-    List<Duration> allResults = new ArrayList<>(numClients * numOperations);
+    List<Duration> allResults = new ArrayList<>();
     for (Future<List<Duration>> result : results) {
       allResults.addAll(result.get());
     }
@@ -76,5 +110,26 @@ abstract class AbstractRunner implements BenchmarkRunner {
     byte[] bytes = new byte[64];
     ThreadLocalRandom.current().nextBytes(bytes);
     return new String(bytes, StandardCharsets.UTF_8);
+  }
+
+  static class TimerConfiguration {
+    private Instant endTime = Instant.now();
+    private String message = "Waiting for benchmarks to start...";
+
+    Instant getEndTime() {
+      return endTime;
+    }
+
+    void setEndTime(Instant endTime) {
+      this.endTime = endTime;
+    }
+
+    String getMessage() {
+      return message;
+    }
+
+    void setMessage(String message) {
+      this.message = message;
+    }
   }
 }
