@@ -24,7 +24,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.93.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.94.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -90,7 +90,7 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-bom</artifactId>
-      <version>1.47.0</version>
+      <version>1.50.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>

@@ -34,6 +34,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -105,6 +106,7 @@ import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Server;
+import io.grpc.ServerInterceptors;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -119,6 +121,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -128,6 +131,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -152,6 +156,7 @@ public class DatabaseClientImplTest {
   private static final String DATABASE_NAME =
       String.format(
           "projects/%s/instances/%s/databases/%s", TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE);
+  private static XGoogSpannerRequestIdTest.ServerHeaderEnforcer xGoogReqIdInterceptor;
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
@@ -220,13 +225,31 @@ public class DatabaseClientImplTest {
         StatementResult.query(SELECT1_FROM_TABLE, MockSpannerTestUtil.SELECT1_RESULTSET));
     mockSpanner.setBatchWriteResult(BATCH_WRITE_RESPONSES);
 
+    Set<String> checkMethods =
+        new HashSet(
+            Arrays.asList(
+                "google.spanner.v1.Spanner/BatchCreateSessions"
+                // As functionality is added, uncomment each method.
+                // "google.spanner.v1.Spanner/BatchWrite",
+                // "google.spanner.v1.Spanner/BeginTransaction",
+                // "google.spanner.v1.Spanner/CreateSession",
+                // "google.spanner.v1.Spanner/DeleteSession",
+                // "google.spanner.v1.Spanner/ExecuteBatchDml",
+                // "google.spanner.v1.Spanner/ExecuteSql",
+                // "google.spanner.v1.Spanner/ExecuteStreamingSql",
+                // "google.spanner.v1.Spanner/StreamingRead",
+                // "google.spanner.v1.Spanner/PartitionQuery",
+                // "google.spanner.v1.Spanner/PartitionRead",
+                // "google.spanner.v1.Spanner/Commit",
+                ));
+    xGoogReqIdInterceptor = new XGoogSpannerRequestIdTest.ServerHeaderEnforcer(checkMethods);
     executor = Executors.newSingleThreadExecutor();
     String uniqueName = InProcessServerBuilder.generateName();
     server =
         InProcessServerBuilder.forName(uniqueName)
             // We need to use a real executor for timeouts to occur.
             .scheduledExecutorService(new ScheduledThreadPoolExecutor(1))
-            .addService(mockSpanner)
+            .addService(ServerInterceptors.intercept(mockSpanner, xGoogReqIdInterceptor))
             .build()
             .start();
     channelProvider = LocalChannelProvider.create(uniqueName);
@@ -264,6 +287,7 @@ public class DatabaseClientImplTest {
     spanner.close();
     spannerWithEmptySessionPool.close();
     mockSpanner.reset();
+    xGoogReqIdInterceptor.reset();
     mockSpanner.removeAllExecutionTimes();
   }
 
@@ -1391,6 +1415,7 @@ public class DatabaseClientImplTest {
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(2, commitRequests.size());
+    xGoogReqIdInterceptor.assertIntegrity();
   }
 
   @Test
@@ -5198,6 +5223,26 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testSelectHasXGoogRequestIdHeader() {
+    Statement statement =
+        Statement.newBuilder("select id from test where b=@p1")
+            .bind("p1")
+            .toBytesArray(
+                Arrays.asList(ByteArray.copyFrom("test1"), null, ByteArray.copyFrom("test2")))
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, SELECT1_RESULTSET));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
+    } finally {
+      xGoogReqIdInterceptor.assertIntegrity();
+    }
+  }
+
+  @Test
   public void testSessionPoolExhaustedError_containsStackTraces() {
     assumeFalse(
         "Session pool tests are skipped for multiplexed sessions",
@@ -5589,5 +5634,75 @@ public class DatabaseClientImplTest {
       return false;
     }
     return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
+  }
+
+  @Test
+  public void testdbIdFromClientId() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+
+    for (int i = 0; i < 10; i++) {
+      String dbId = String.format("%d", i);
+      int id = client.dbIdFromClientId(dbId);
+      assertEquals(id, i + 2); // There was already 1 dbId after new DatabaseClientImpl.
+    }
+  }
+
+  @Test
+  public void testrunWithSessionRetry_withRequestId() {
+    // Tests that DatabaseClientImpl.runWithSessionRetry correctly returns a XGoogSpannerRequestId
+    // and correctly increases its nthRequest ordinal number and that attempts stay at 1, given
+    // a fresh session returned on SessionNotFoundException.
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture sessionFut = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(sessionFut);
+    SessionPool.PooledSession pooledSession = mock(SessionPool.PooledSession.class);
+    when(sessionFut.get()).thenReturn(pooledSession);
+    SessionPool.PooledSessionReplacementHandler sessionReplacementHandler =
+        mock(SessionPool.PooledSessionReplacementHandler.class);
+    when(pool.getPooledSessionReplacementHandler()).thenReturn(sessionReplacementHandler);
+    when(sessionReplacementHandler.replaceSession(any(), any())).thenReturn(sessionFut);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+
+    // 1. Run with no fail runs a single attempt.
+    final AtomicInteger nCalls = new AtomicInteger(0);
+    client.runWithSessionRetry(
+        (session, reqId) -> {
+          assertEquals(reqId.getAttempt(), 1);
+          nCalls.incrementAndGet();
+          return 1;
+        });
+    assertEquals(nCalls.get(), 1);
+
+    // Reset the call counter.
+    nCalls.set(0);
+
+    // 2. Run with SessionNotFoundException and ensure that a fresh requestId is returned each time.
+    SessionNotFoundException excSessionNotFound =
+        SpannerExceptionFactoryTest.newSessionNotFoundException(
+            "projects/p/instances/i/databases/d/sessions/s");
+
+    final AtomicLong priorNthRequest = new AtomicLong(client.getNthRequest());
+    client.runWithSessionRetry(
+        (session, reqId) -> {
+          // Monotonically increasing priorNthRequest.
+          assertEquals(reqId.getNthRequest() - priorNthRequest.get(), 1);
+          priorNthRequest.set(reqId.getNthRequest());
+
+          // Attempts stay at 1 since with a SessionNotFound exception,
+          // a fresh requestId is generated.
+          assertEquals(reqId.getAttempt(), 1);
+
+          if (nCalls.addAndGet(1) < 4) {
+            throw excSessionNotFound;
+          }
+
+          return 1;
+        });
+
+    assertEquals(nCalls.get(), 4);
   }
 }
