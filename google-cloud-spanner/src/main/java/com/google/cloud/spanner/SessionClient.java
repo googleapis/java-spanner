@@ -148,6 +148,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
             .addAnnotation(String.format("Creating %d sessions", sessionCount));
         while (remainingSessionsToCreate > 0) {
           try {
+            System.out.println("\033[35mchannelHint: " + channelHint + "\033[00m");
             sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint);
           } catch (Throwable t) {
             spanner.getTracer().getCurrentSpan().setStatus(t);
