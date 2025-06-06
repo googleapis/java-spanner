@@ -2920,24 +2920,29 @@ public class DatabaseClientImplTest {
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
       };
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
 
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BeginTransaction",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, NON_DETERMINISTIC, 1)),
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/CreateSession",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, 1, 1)),
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 2, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 3, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BeginTransaction",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
             "google.spanner.v1.Spanner/ExecuteSql",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
       };
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 
@@ -2972,6 +2977,42 @@ public class DatabaseClientImplTest {
               .readWriteTransaction()
               .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+
+      DatabaseClientImpl dbImpl = ((DatabaseClientImpl) client);
+      int channelId = dbImpl.getSession().getChannel();
+      int dbId = dbImpl.dbId;
+      long NON_DETERMINISTIC = XGoogSpannerRequestIdTest.NON_DETERMINISTIC;
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 5, 1)),
+      };
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 2, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 3, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BeginTransaction",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/Commit",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
+      };
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 
@@ -3031,27 +3072,32 @@ public class DatabaseClientImplTest {
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 5, 1)),
       };
 
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
 
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BeginTransaction",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, NON_DETERMINISTIC, 1)),
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/CreateSession",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, 1, 1)),
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 2, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 3, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BeginTransaction",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
             "google.spanner.v1.Spanner/ExecuteSql",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
       };
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 
@@ -3069,6 +3115,37 @@ public class DatabaseClientImplTest {
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+
+      DatabaseClientImpl dbImpl = ((DatabaseClientImpl) client);
+      int channelId = dbImpl.getSession().getChannel();
+      int dbId = dbImpl.dbId;
+      long NON_DETERMINISTIC = XGoogSpannerRequestIdTest.NON_DETERMINISTIC;
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 5, 1)),
+      };
+
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 2, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 3, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BeginTransaction",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
+      };
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 
@@ -3476,6 +3553,34 @@ public class DatabaseClientImplTest {
     // All sessions should now be checked back in to the pools.
     assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
     assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+
+    int channelId = client1.getSession().getChannel();
+    int dbId = client1.dbId;
+    XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
+      XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+          "google.spanner.v1.Spanner/ExecuteStreamingSql",
+          new XGoogSpannerRequestId(dbId, 1, 5, 1)),
+    };
+    xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+
+    XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+      XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+          "google.spanner.v1.Spanner/BatchCreateSessions",
+          new XGoogSpannerRequestId(dbId, 0, XGoogSpannerRequestIdTest.NON_DETERMINISTIC, 1)),
+      XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+          "google.spanner.v1.Spanner/BatchCreateSessions",
+          new XGoogSpannerRequestId(dbId, 1, XGoogSpannerRequestIdTest.NON_DETERMINISTIC, 1)),
+      XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+          "google.spanner.v1.Spanner/BatchCreateSessions",
+          new XGoogSpannerRequestId(dbId, 2, XGoogSpannerRequestIdTest.NON_DETERMINISTIC, 1)),
+      XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+          "google.spanner.v1.Spanner/BatchCreateSessions",
+          new XGoogSpannerRequestId(dbId, 3, XGoogSpannerRequestIdTest.NON_DETERMINISTIC, 1)),
+      XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+          "google.spanner.v1.Spanner/BeginTransaction",
+          new XGoogSpannerRequestId(dbId, channelId, 6, 1)),
+    };
+    xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
   }
 
   @Test
@@ -5238,9 +5343,9 @@ public class DatabaseClientImplTest {
         .setRetryableCodes(StatusCode.Code.UNAVAILABLE, StatusCode.Code.RESOURCE_EXHAUSTED)
         .setRetrySettings(retrySettings);
 
+    DatabaseClient client;
     try (Spanner spanner = builder.build().getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      client = spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       final int expectedRowCount = 5;
       RandomResultSetGenerator generator = new RandomResultSetGenerator(expectedRowCount);
       Statement statement = Statement.of("select * from random_table");
@@ -5285,6 +5390,77 @@ public class DatabaseClientImplTest {
           mockSpanner.clearRequests();
         }
       }
+
+      DatabaseClientImpl dbClient = (DatabaseClientImpl) client;
+      int channelId = dbClient.getSession().getChannel();
+      int dbId = dbClient.dbId;
+      long NON_DETERMINISTIC = XGoogSpannerRequestIdTest.NON_DETERMINISTIC;
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 5, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(
+                NON_DETERMINISTIC, 1, 5, 1)), // TODO(@odeke-em): investigate why not 2.
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 6, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(
+                NON_DETERMINISTIC, 1, 6, 1)), // TODO(@odeke-em): investigate why not 2.
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 7, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 7, 2)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 8, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 8, 2)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 9, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 9, 2)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 10, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 10, 2)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 11, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 11, 2)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 12, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, 12, 2)),
+      };
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+
+      // BatchCreateSession can create a non-deterministic number of calls so
+      // we have to just ensure that we have at least the following.
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 1, NON_DETERMINISTIC, 1)),
+      };
+      xGoogReqIdInterceptor.checkAtLeastHasExpectedUnaryXGoogRequestIds(wantUnaryValues);
+      // xGoogReqIdInterceptor.assertIntegrity();
     }
   }
 
@@ -5349,7 +5525,8 @@ public class DatabaseClientImplTest {
           spannerException.getMessage(),
           spannerException.getMessage().contains("Session was checked out from the pool at"));
 
-      SessionPool pool = ((DatabaseClientImpl) client).pool;
+      DatabaseClientImpl dbClient = (DatabaseClientImpl) client;
+      SessionPool pool = dbClient.pool;
       // Verify that there are no sessions in the pool.
       assertEquals(0, pool.getNumberOfSessionsInPool());
       // Verify that the sessions have not (yet) been marked as in use.
@@ -5387,16 +5564,16 @@ public class DatabaseClientImplTest {
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {};
 
       xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
-      long NON_DETERMINISTIC = XGoogSpannerRequestIdTest.NON_DETERMINISTIC;
 
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/CreateSession",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, 1, 1)),
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(dbId, 0, XGoogSpannerRequestIdTest.NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(dbId, 1, XGoogSpannerRequestIdTest.NON_DETERMINISTIC, 1)),
       };
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 

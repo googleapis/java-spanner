@@ -194,7 +194,7 @@ public class XGoogSpannerRequestIdTest {
     public void checkAtLeastHasExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
       MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
       sortValues(gotUnaryValues);
-      for (int i = 0; i < gotUnaryValues.length && false; i++) {
+      for (int i = 0; i < gotUnaryValues.length; i++) {
         System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
       }
       if (wantUnaryValues.length < gotUnaryValues.length) {
@@ -231,7 +231,7 @@ public class XGoogSpannerRequestIdTest {
 
     public void checkExpectedStreamingXGoogRequestIds(MethodAndRequestId... wantStreamingValues) {
       MethodAndRequestId[] gotStreamingValues = this.accumulatedStreamingValues();
-      for (int i = 0; i < gotStreamingValues.length && false; i++) {
+      for (int i = 0; i < gotStreamingValues.length; i++) {
         System.out.println(
             "\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
       }
