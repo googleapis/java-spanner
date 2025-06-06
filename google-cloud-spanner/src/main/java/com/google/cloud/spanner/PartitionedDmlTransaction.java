@@ -80,16 +80,22 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     long updateCount = 0L;
     Stopwatch stopwatch = Stopwatch.createStarted(ticker);
     Options options = Options.fromUpdateOptions(updateOptions);
+    XGoogSpannerRequestId reqId = options.reqId();
+    if (reqId == null) {
+      reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 0);
+    }
 
     try {
       ExecuteSqlRequest request = newTransactionRequestFrom(statement, options);
 
       while (true) {
+        reqId.incrementAttempt();
         final Duration remainingTimeout = tryUpdateTimeout(timeout, stopwatch);
 
         try {
           ServerStream<PartialResultSet> stream =
-              rpc.executeStreamingPartitionedDml(request, session.getOptions(), remainingTimeout);
+              rpc.executeStreamingPartitionedDml(
+                  request, reqId.withOptions(session.getOptions()), remainingTimeout);
 
           for (PartialResultSet rs : stream) {
             if (rs.getResumeToken() != null && !rs.getResumeToken().isEmpty()) {
@@ -119,12 +125,18 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
           foundStats = false;
           updateCount = 0L;
           request = newTransactionRequestFrom(statement, options);
+          // Create a new xGoogSpannerRequestId.
+          reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 0);
+        } catch (SpannerException e) {
+          e.setRequestId(reqId);
+          throw e;
         }
       }
       if (!foundStats) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
-            "Partitioned DML response missing stats possibly due to non-DML statement as input");
+            "Partitioned DML response missing stats possibly due to non-DML statement as input",
+            reqId);
       }
       LOGGER.log(Level.FINER, "Finished PartitionedUpdate statement");
       return updateCount;
@@ -209,11 +221,16 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
                     .setExcludeTxnFromChangeStreams(
                         options.withExcludeTxnFromChangeStreams() == Boolean.TRUE))
             .build();
-    Transaction tx = rpc.beginTransaction(request, session.getOptions(), true);
+    XGoogSpannerRequestId reqId = options.reqId();
+    if (reqId == null) {
+      reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 1);
+    }
+    Transaction tx = rpc.beginTransaction(request, reqId.withOptions(session.getOptions()), true);
     if (tx.getId().isEmpty()) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INTERNAL,
-          "Failed to init transaction, missing transaction id\n" + session.getName());
+          "Failed to init transaction, missing transaction id\n" + session.getName(),
+          reqId);
     }
     return tx.getId();
   }
