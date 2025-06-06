@@ -187,10 +187,10 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       }
       if (latch.await(backoffMillis, TimeUnit.MILLISECONDS)) {
         // Woken by context cancellation.
-        throw newSpannerExceptionForCancellation(context, null, null /*TODO: requestId*/);
+        throw newSpannerExceptionForCancellation(context, null, this.xGoogRequestId);
       }
     } catch (InterruptedException interruptExcept) {
-      throw newSpannerExceptionForCancellation(context, interruptExcept, null /*TODO: requestId*/);
+      throw newSpannerExceptionForCancellation(context, interruptExcept, this.xGoogRequestId);
     } finally {
       context.removeListener(listener);
     }
@@ -324,6 +324,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
         }
         span.addAnnotation("Stream broken. Not safe to retry", spannerException);
         span.setStatus(spannerException);
+        spannerException.setRequestId(this.xGoogRequestId);
         throw spannerException;
       } catch (RuntimeException e) {
         span.addAnnotation("Stream broken. Not safe to retry", e);
