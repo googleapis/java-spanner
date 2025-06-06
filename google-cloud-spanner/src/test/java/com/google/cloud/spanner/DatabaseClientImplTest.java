@@ -2904,6 +2904,21 @@ public class DatabaseClientImplTest {
                             return null;
                           }));
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+
+      DatabaseClientImpl dbImpl = ((DatabaseClientImpl) client);
+      int channelId = dbImpl.getSession().getChannel();
+      int dbId = dbImpl.dbId;
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(1, dbId, channelId, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(1, dbId, channelId, 1)),
+      };
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {};
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
     }
   }
 
@@ -5138,6 +5153,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testRetryOnResourceExhausted() {
+    // MARK: Retries here.
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
@@ -5172,9 +5188,9 @@ public class DatabaseClientImplTest {
         .setRetryableCodes(StatusCode.Code.UNAVAILABLE, StatusCode.Code.RESOURCE_EXHAUSTED)
         .setRetrySettings(retrySettings);
 
+    DatabaseClient client;
     try (Spanner spanner = builder.build().getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      client = spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       final int expectedRowCount = 5;
       RandomResultSetGenerator generator = new RandomResultSetGenerator(expectedRowCount);
       Statement statement = Statement.of("select * from random_table");
@@ -5219,6 +5235,8 @@ public class DatabaseClientImplTest {
           mockSpanner.clearRequests();
         }
       }
+
+      xGoogReqIdInterceptor.assertIntegrity();
     }
   }
 
