@@ -198,6 +198,12 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
 
   public void ensureNonNullXGoogRequestId() {
     if (this.xGoogRequestId == null) {
+      System.out.println(
+          "\033[34mXGoogRequestId.ensureNonNull: "
+              + this.xGoogRequestId
+              + " for:: "
+              + System.identityHashCode(this)
+              + "\033[00m");
       this.xGoogRequestId =
           this.xGoogRequestIdCreator.nextRequestId(1 /*TODO: infer channelId*/, 1 /*attempt*/);
     }
@@ -206,6 +212,11 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
   public void incrementXGoogRequestIdAttempt() {
     this.ensureNonNullXGoogRequestId();
     this.xGoogRequestId.incrementAttempt();
+    System.out.println(
+        "\033[35mincrementXGoogAttempt: "
+            + this.xGoogRequestId
+            + " :: "
+            + System.identityHashCode(this));
   }
 
   private enum DirectExecutor implements Executor {
