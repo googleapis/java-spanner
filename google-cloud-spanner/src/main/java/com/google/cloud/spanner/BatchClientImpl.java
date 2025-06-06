@@ -274,6 +274,7 @@ public class BatchClientImpl implements BatchClient {
           return partitionReadUsingIndex(
               partitionOptions, table, index, keys, columns, true, option);
         }
+        e.setRequestId(reqId);
         throw e;
       }
     }
@@ -332,6 +333,7 @@ public class BatchClientImpl implements BatchClient {
         if (!isFallback && maybeMarkUnimplementedForPartitionedOps(e)) {
           return partitionQuery(partitionOptions, statement, true, option);
         }
+        e.setRequestId(reqId);
         throw e;
       }
     }
