@@ -127,6 +127,9 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
           request = newTransactionRequestFrom(statement, options);
           // Create a new xGoogSpannerRequestId.
           reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 0);
+        } catch (SpannerException e) {
+          e.setRequestId(reqId);
+          throw e;
         }
       }
       if (!foundStats) {
@@ -226,7 +229,8 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     if (tx.getId().isEmpty()) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INTERNAL,
-          "Failed to init transaction, missing transaction id\n" + session.getName());
+          "Failed to init transaction, missing transaction id\n" + session.getName(),
+          reqId);
     }
     return tx.getId();
   }
