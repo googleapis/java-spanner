@@ -15,7 +15,7 @@
  */
 
 /**
- * A client to Cloud Spanner Instance Admin API
+ * A client to Cloud Spanner API
  *
  * <p>The interfaces provided are listed below, along with usage samples.
  *
