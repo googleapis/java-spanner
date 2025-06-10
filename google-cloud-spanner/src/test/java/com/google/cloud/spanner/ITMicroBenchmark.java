@@ -59,7 +59,7 @@ public class ITMicroBenchmark {
                     Attributes.of(
                         AttributeKey.stringKey("service.name"),
                         "Java-MultiplexedSession-Benchmark-Test")))
-            .setSampler(Sampler.traceIdRatioBased(0.3))
+            .setSampler(Sampler.traceIdRatioBased(0.1))
             .build();
     MetricExporter cloudMonitoringExporter =
         GoogleCloudMetricExporter.createWithDefaultConfiguration();
