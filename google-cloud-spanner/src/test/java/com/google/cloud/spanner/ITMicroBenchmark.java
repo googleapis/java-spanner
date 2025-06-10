@@ -50,41 +50,41 @@ public class ITMicroBenchmark {
 
   @Test
   public void testSingleUseQuery() throws InterruptedException {
-    SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
-    SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-            .setResource(
-                Resource.create(
-                    Attributes.of(
-                        AttributeKey.stringKey("service.name"),
-                        "Java-MultiplexedSession-Benchmark-Test")))
-            .setSampler(Sampler.traceIdRatioBased(0.1))
-            .build();
-    MetricExporter cloudMonitoringExporter =
-        GoogleCloudMetricExporter.createWithDefaultConfiguration();
-    SdkMeterProvider sdkMeterProvider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(PeriodicMetricReader.create(cloudMonitoringExporter))
-            .build();
-    OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setMeterProvider(sdkMeterProvider)
-            .setTracerProvider(tracerProvider)
-            .build();
-    SpannerOptions.enableOpenTelemetryMetrics();
-    SpannerOptions.enableOpenTelemetryTraces();
+    // SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
+    // SdkTracerProvider tracerProvider =
+    //     SdkTracerProvider.builder()
+    //         .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+    //         .setResource(
+    //             Resource.create(
+    //                 Attributes.of(
+    //                     AttributeKey.stringKey("service.name"),
+    //                     "Java-MultiplexedSession-Benchmark-Test")))
+    //         .setSampler(Sampler.traceIdRatioBased(0.1))
+    //         .build();
+    // MetricExporter cloudMonitoringExporter =
+    //     GoogleCloudMetricExporter.createWithDefaultConfiguration();
+    // SdkMeterProvider sdkMeterProvider =
+    //     SdkMeterProvider.builder()
+    //         .registerMetricReader(PeriodicMetricReader.create(cloudMonitoringExporter))
+    //         .build();
+    // OpenTelemetry openTelemetry =
+    //     OpenTelemetrySdk.builder()
+    //         .setMeterProvider(sdkMeterProvider)
+    //         .setTracerProvider(tracerProvider)
+    //         .build();
+    // SpannerOptions.enableOpenTelemetryMetrics();
+    // SpannerOptions.enableOpenTelemetryTraces();
 
     Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("span-cloud-testing")
-            .setOpenTelemetry(openTelemetry)
+            // .setOpenTelemetry(openTelemetry)
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setWaitForMinSessionsDuration(Duration.ofSeconds(100L))
                     .setFailOnSessionLeak()
                     .build())
-            .setEnableApiTracing(true)
+            // .setEnableApiTracing(true)
             .build()
             .getService();
     String instanceName = System.getenv("SPANNER_DATABASE") == null ? "sakthi-spanner-eu-west10" : System.getenv("SPANNER_DATABASE");
@@ -160,7 +160,7 @@ public class ITMicroBenchmark {
       randomWait(waitTimeMilli);
     }
     spanner.close();
-    tracerProvider.close();
+    // tracerProvider.close();
 
     Collections.sort(totalLatencies);
 
