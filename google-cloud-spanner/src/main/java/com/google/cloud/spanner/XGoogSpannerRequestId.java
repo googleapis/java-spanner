@@ -159,4 +159,8 @@ public class XGoogSpannerRequestId {
       return XGoogSpannerRequestId.of(1, 1, 1, 0);
     }
   }
+
+  public static String getRequestIdFromMetadata(Metadata md) {
+    return md.get(REQUEST_HEADER_KEY);
+  }
 }
