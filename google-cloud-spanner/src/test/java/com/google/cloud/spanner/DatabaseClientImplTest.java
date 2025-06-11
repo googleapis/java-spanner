@@ -2918,9 +2918,13 @@ public class DatabaseClientImplTest {
             "google.spanner.v1.Spanner/BatchCreateSessions",
             new XGoogSpannerRequestId(1, dbId, channelId, 1)),
       };
-      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {};
-      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(1, channelId, dbId, 2)),
+      };
       xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 

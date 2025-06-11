@@ -28,6 +28,8 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -162,7 +164,7 @@ public class XGoogSpannerRequestIdTest {
       this.unaryResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
             for (int i = 0; i < values.size(); i++) {
-              accumulated.add(new MethodAndRequestId(method, values.get(i).toString()));
+              accumulated.add(new MethodAndRequestId(method, values.get(i)));
             }
           });
       return accumulated.toArray(new MethodAndRequestId[0]);
@@ -173,7 +175,7 @@ public class XGoogSpannerRequestIdTest {
       this.streamingResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
             for (int i = 0; i < values.size(); i++) {
-              accumulated.add(new MethodAndRequestId(method, values.get(i).toString()));
+              accumulated.add(new MethodAndRequestId(method, values.get(i)));
             }
           });
       return accumulated.toArray(new MethodAndRequestId[0]);
@@ -181,17 +183,25 @@ public class XGoogSpannerRequestIdTest {
 
     public void checkExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
       MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
-      System.out.println("\033[34mUnary: " + gotUnaryValues + "\033[00m");
       for (int i = 0; i < gotUnaryValues.length; i++) {
-        System.out.println("ith: " + i + ":: " + gotUnaryValues[i]);
+        System.out.println("\033[34misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
+      }
+      sortValues(gotUnaryValues);
+      for (int i = 0; i < gotUnaryValues.length; i++) {
+        System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
       }
       assertEquals(wantUnaryValues, gotUnaryValues);
     }
 
+    private void sortValues(MethodAndRequestId[] values) {
+        Arrays.sort(values, new MethodAndRequestIdComparator());
+    }
+
     public void checkExpectedStreamingXGoogRequestIds(MethodAndRequestId... wantStreamingValues) {
       MethodAndRequestId[] gotStreamingValues = this.accumulatedStreamingValues();
+      sortValues(gotStreamingValues);
       for (int i = 0; i < gotStreamingValues.length; i++) {
-        System.out.println("ith: " + i + ":: " + gotStreamingValues[i]);
+        System.out.println("\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
       }
       assertEquals(wantStreamingValues, gotStreamingValues);
     }
@@ -205,24 +215,50 @@ public class XGoogSpannerRequestIdTest {
 
   public static class MethodAndRequestId {
     String method;
-    String requestId;
+    XGoogSpannerRequestId requestId;
 
-    public MethodAndRequestId(String method, String requestId) {
+    public MethodAndRequestId(String method, XGoogSpannerRequestId requestId) {
       this.method = method;
       this.requestId = requestId;
     }
 
     public String toString() {
-      return "{" + this.method + ":" + this.requestId + "}";
+      return "{" + this.method + ":" + this.requestId.toString() + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof MethodAndRequestId)) {
+          return false;
+      }
+      MethodAndRequestId other = (MethodAndRequestId) o;
+      return Objects.equals(this.method, other.method) && Objects.equals(this.requestId, other.requestId);
     }
   }
 
+  static class MethodAndRequestIdComparator implements Comparator<MethodAndRequestId> {
+      @Override
+      public int compare(MethodAndRequestId mr1, MethodAndRequestId mr2) {
+          int cmpMethod = mr1.method.compareTo(mr2.method);
+          if (cmpMethod != 0) {
+              return cmpMethod;
+          }
+          if (Objects.equals(mr1.requestId, mr2.requestId)) {
+             return 0;
+          } 
+          if (mr1.requestId.isGreaterThan(mr2.requestId)) {
+              return +1;
+          }
+          return -1;
+      }
+  }
+
   public static MethodAndRequestId ofMethodAndRequestId(String method, String reqId) {
-    return new MethodAndRequestId(method, reqId);
+    return new MethodAndRequestId(method, XGoogSpannerRequestId.of(reqId));
   }
 
   public static MethodAndRequestId ofMethodAndRequestId(
       String method, XGoogSpannerRequestId reqId) {
-    return new MethodAndRequestId(method, reqId.toString());
+    return new MethodAndRequestId(method, reqId);
   }
 }

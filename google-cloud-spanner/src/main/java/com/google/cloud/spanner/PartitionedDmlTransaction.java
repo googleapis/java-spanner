@@ -82,7 +82,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     Options options = Options.fromUpdateOptions(updateOptions);
     XGoogSpannerRequestId reqId = options.reqId();
     if (reqId == null) {
-      reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 0);
+      reqId = session.getRequestIdCreator().nextRequestId(session.getChannel(), 0);
     }
 
     try {
@@ -223,7 +223,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
             .build();
     XGoogSpannerRequestId reqId = options.reqId();
     if (reqId == null) {
-      reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 1);
+      reqId = session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
     }
     Transaction tx = rpc.beginTransaction(request, reqId.withOptions(session.getOptions()), true);
     if (tx.getId().isEmpty()) {

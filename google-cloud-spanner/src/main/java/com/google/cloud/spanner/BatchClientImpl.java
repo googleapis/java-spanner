@@ -251,7 +251,7 @@ public class BatchClientImpl implements BatchClient {
       builder.setPartitionOptions(pbuilder.build());
 
       XGoogSpannerRequestId reqId =
-          session.getRequestIdCreator().nextRequestId(1 /*TODO: retrieve channelId*/, 1);
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       final PartitionReadRequest request = builder.build();
       try {
         PartitionResponse response = rpc.partitionRead(request, reqId.withOptions(options));
@@ -317,7 +317,7 @@ public class BatchClientImpl implements BatchClient {
       builder.setPartitionOptions(pbuilder.build());
 
       XGoogSpannerRequestId reqId =
-          session.getRequestIdCreator().nextRequestId(1 /*TODO: retrieve channelId*/, 1);
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       final PartitionQueryRequest request = builder.build();
       try {
         PartitionResponse response = rpc.partitionQuery(request, reqId.withOptions(options));
