@@ -178,6 +178,38 @@ public interface StructReader {
 
   /**
    * @param columnIndex index of the column
+   * @return the value of a column with type T. return value(T) can be null.
+   */
+  default <T> T getOrNull(int columnIndex, Function<Integer, T> function) {
+    return isNull(columnIndex) ? null : function.apply(columnIndex);
+  }
+
+  /**
+   * @param columnName index of the column
+   * @return the value of a column with type T. return value(T) can be null.
+   */
+  default <T> T getOrNull(String columnName, Function<String, T> function) {
+    return isNull(columnName) ? null : function.apply(columnName);
+  }
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a column with type T. if column value is null, returns default value.
+   */
+  default <T> T getOrDefault(int columnIndex, Function<Integer, T> function, T defaultValue) {
+    return isNull(columnIndex) ? defaultValue : function.apply(columnIndex);
+  }
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a column with type T. if column value is null, returns default value.
+   */
+  default <T> T getOrDefault(String columnName, Function<String, T> function, T defaultValue) {
+    return isNull(columnName) ? defaultValue : function.apply(columnName);
+  }
+
+  /**
+   * @param columnIndex index of the column
    * @return the value of a non-{@code NULL} column with type {@link Type#json()}.
    */
   default String getJson(int columnIndex) {

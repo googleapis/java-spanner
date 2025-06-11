@@ -58,6 +58,48 @@ public class StructTest {
   }
 
   @Test
+  public void getOrNullTests() {
+    Struct struct =
+        Struct.newBuilder()
+            .set("f1")
+            .to("x")
+            .set("f2")
+            .to(2)
+            .set("f3")
+            .to(Value.bool(null))
+            .build();
+    String column1 = struct.getOrNull(0, struct::getString);
+    assertThat(column1).isEqualTo("x");
+
+    Long column2 = struct.getOrNull(1, struct::getLong);
+    assertThat(column2).isEqualTo(2);
+
+    String column3 = struct.getOrNull("f3", struct::getString);
+    assertThat(column3).isNull();
+  }
+
+  @Test
+  public void getOrDefaultTests() {
+    Struct struct =
+        Struct.newBuilder()
+            .set("f1")
+            .to("x")
+            .set("f2")
+            .to(2)
+            .set("f3")
+            .to(Value.bool(null))
+            .build();
+    String column1 = struct.getOrDefault(0, struct::getString, "");
+    assertThat(column1).isEqualTo("x");
+
+    Long column2 = struct.getOrDefault("f2", struct::getLong, -1L);
+    assertThat(column2).isEqualTo(2);
+
+    String column3 = struct.getOrDefault(2, struct::getString, "");
+    assertThat(column3).isEqualTo("");
+  }
+
+  @Test
   public void duplicateFields() {
     // Duplicate fields are allowed - some SQL queries produce this type of value.
     Struct struct = Struct.newBuilder().set("").to("x").set("").to(Value.int64(2)).build();
