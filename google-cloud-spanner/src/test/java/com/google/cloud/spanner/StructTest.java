@@ -68,13 +68,13 @@ public class StructTest {
             .set("f3")
             .to(Value.bool(null))
             .build();
-    String column1 = struct.getOrNull(0, struct::getString);
+    String column1 = struct.getOrNull(0, StructReader::getString);
     assertThat(column1).isEqualTo("x");
 
-    Long column2 = struct.getOrNull(1, struct::getLong);
+    Long column2 = struct.getOrNull(1, StructReader::getLong);
     assertThat(column2).isEqualTo(2);
 
-    String column3 = struct.getOrNull("f3", struct::getString);
+    String column3 = struct.getOrNull("f3", StructReader::getString);
     assertThat(column3).isNull();
   }
 
@@ -89,13 +89,13 @@ public class StructTest {
             .set("f3")
             .to(Value.bool(null))
             .build();
-    String column1 = struct.getOrDefault(0, struct::getString, "");
+    String column1 = struct.getOrDefault(0, StructReader::getString, "");
     assertThat(column1).isEqualTo("x");
 
-    Long column2 = struct.getOrDefault("f2", struct::getLong, -1L);
+    Long column2 = struct.getOrDefault("f2", StructReader::getLong, -1L);
     assertThat(column2).isEqualTo(2);
 
-    String column3 = struct.getOrDefault(2, struct::getString, "");
+    String column3 = struct.getOrDefault(2, StructReader::getString, "");
     assertThat(column3).isEqualTo("");
   }
 
