@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -754,12 +753,8 @@ public class OpenTelemetrySpanTest {
 
   private void verifyAtLeast1SpanHasXGoogSpannerRequestIdAttribute(List<SpanData> finishedSpans) {
     AttributeKey<String> attributeKey = AttributeKey.stringKey("x_goog_spanner_request_id");
-    SpanData matchedSpan =
-        finishedSpans.stream()
-            .filter(span -> !span.getAttributes().get(attributeKey).isEmpty())
-            .findAny()
-            .orElseThrow(IllegalStateException::new);
-    assertNotNull(matchedSpan);
+    assertTrue(
+        finishedSpans.stream().anyMatch(span -> !span.getAttributes().get(attributeKey).isEmpty()));
   }
 
   @Test
