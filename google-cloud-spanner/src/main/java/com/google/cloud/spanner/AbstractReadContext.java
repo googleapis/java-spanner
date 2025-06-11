@@ -458,24 +458,29 @@ abstract class AbstractReadContext
 
     private void initTransactionInternal(BeginTransactionRequest request) {
       XGoogSpannerRequestId reqId =
-          session.getRequestIdCreator().nextRequestId(1 /*TODO: retrieve channelId*/, 1);
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       try {
         Transaction transaction =
             rpc.beginTransaction(
                 request, reqId.withOptions(getTransactionChannelHint()), isRouteToLeader());
         if (!transaction.hasReadTimestamp()) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
+              ErrorCode.INTERNAL,
+              "Missing expected transaction.read_timestamp metadata field",
+              reqId);
         }
         if (transaction.getId().isEmpty()) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL, "Missing expected transaction.id metadata field");
+              ErrorCode.INTERNAL, "Missing expected transaction.id metadata field", reqId);
         }
         try {
           timestamp = Timestamp.fromProto(transaction.getReadTimestamp());
         } catch (IllegalArgumentException e) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL, "Bad value in transaction.read_timestamp metadata field", e);
+              ErrorCode.INTERNAL,
+              "Bad value in transaction.read_timestamp metadata field",
+              e,
+              reqId);
         }
         transactionId = transaction.getId();
         span.addAnnotation(

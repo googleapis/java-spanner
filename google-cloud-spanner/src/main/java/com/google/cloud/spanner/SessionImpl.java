@@ -465,8 +465,7 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
-    XGoogSpannerRequestId reqId =
-        this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
+    XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
     return spanner.getRpc().asyncDeleteSession(getName(), reqId.withOptions(getOptions()));
   }
 
@@ -474,8 +473,7 @@ class SessionImpl implements Session {
   public void close() {
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
-      XGoogSpannerRequestId reqId =
-          this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
+      XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
       spanner.getRpc().deleteSession(getName(), reqId.withOptions(getOptions()));
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -506,8 +504,7 @@ class SessionImpl implements Session {
     }
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
-    XGoogSpannerRequestId reqId =
-        this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
+    XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
     try (IScope ignore = tracer.withSpan(span)) {
       requestFuture =
           spanner

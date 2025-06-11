@@ -82,14 +82,13 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     Options options = Options.fromUpdateOptions(updateOptions);
     XGoogSpannerRequestId reqId = options.reqId();
     if (reqId == null) {
-      reqId = session.getRequestIdCreator().nextRequestId(session.getChannel(), 0);
+      reqId = session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
     }
 
     try {
       ExecuteSqlRequest request = newTransactionRequestFrom(statement, options);
 
       while (true) {
-        reqId.incrementAttempt();
         final Duration remainingTimeout = tryUpdateTimeout(timeout, stopwatch);
 
         try {
@@ -110,6 +109,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
         } catch (UnavailableException e) {
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after UnavailableException", e);
+          reqId.incrementAttempt();
           request = resumeOrRestartRequest(resumeToken, statement, request, options);
         } catch (InternalException e) {
           if (!isRetryableInternalErrorPredicate.apply(e)) {
@@ -118,6 +118,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after InternalException - EOS", e);
+          reqId.incrementAttempt();
           request = resumeOrRestartRequest(resumeToken, statement, request, options);
         } catch (AbortedException e) {
           LOGGER.log(Level.FINER, "Retrying PartitionedDml transaction after AbortedException", e);
@@ -126,7 +127,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
           updateCount = 0L;
           request = newTransactionRequestFrom(statement, options);
           // Create a new xGoogSpannerRequestId.
-          reqId = session.getRequestIdCreator().nextRequestId(1 /*TODO: infer channelId*/, 0);
+          reqId = session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
         } catch (SpannerException e) {
           e.setRequestId(reqId);
           throw e;
@@ -141,7 +142,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
       LOGGER.log(Level.FINER, "Finished PartitionedUpdate statement");
       return updateCount;
     } catch (Exception e) {
-      throw SpannerExceptionFactory.newSpannerException(e);
+      throw SpannerExceptionFactory.newSpannerException(e, reqId);
     }
   }
 

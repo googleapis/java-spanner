@@ -183,9 +183,6 @@ public class XGoogSpannerRequestIdTest {
 
     public void checkExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
       MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
-      for (int i = 0; i < gotUnaryValues.length; i++) {
-        System.out.println("\033[34misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
-      }
       sortValues(gotUnaryValues);
       for (int i = 0; i < gotUnaryValues.length; i++) {
         System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
@@ -194,14 +191,15 @@ public class XGoogSpannerRequestIdTest {
     }
 
     private void sortValues(MethodAndRequestId[] values) {
-        Arrays.sort(values, new MethodAndRequestIdComparator());
+      Arrays.sort(values, new MethodAndRequestIdComparator());
     }
 
     public void checkExpectedStreamingXGoogRequestIds(MethodAndRequestId... wantStreamingValues) {
       MethodAndRequestId[] gotStreamingValues = this.accumulatedStreamingValues();
       sortValues(gotStreamingValues);
       for (int i = 0; i < gotStreamingValues.length; i++) {
-        System.out.println("\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
+        System.out.println(
+            "\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
       }
       assertEquals(wantStreamingValues, gotStreamingValues);
     }
@@ -223,34 +221,35 @@ public class XGoogSpannerRequestIdTest {
     }
 
     public String toString() {
-      return "{" + this.method + ":" + this.requestId.toString() + "}";
+      return "{" + this.method + ":" + this.requestId.debugToString() + "}";
     }
 
     @Override
     public boolean equals(Object o) {
       if (!(o instanceof MethodAndRequestId)) {
-          return false;
+        return false;
       }
       MethodAndRequestId other = (MethodAndRequestId) o;
-      return Objects.equals(this.method, other.method) && Objects.equals(this.requestId, other.requestId);
+      return Objects.equals(this.method, other.method)
+          && Objects.equals(this.requestId, other.requestId);
     }
   }
 
   static class MethodAndRequestIdComparator implements Comparator<MethodAndRequestId> {
-      @Override
-      public int compare(MethodAndRequestId mr1, MethodAndRequestId mr2) {
-          int cmpMethod = mr1.method.compareTo(mr2.method);
-          if (cmpMethod != 0) {
-              return cmpMethod;
-          }
-          if (Objects.equals(mr1.requestId, mr2.requestId)) {
-             return 0;
-          } 
-          if (mr1.requestId.isGreaterThan(mr2.requestId)) {
-              return +1;
-          }
-          return -1;
+    @Override
+    public int compare(MethodAndRequestId mr1, MethodAndRequestId mr2) {
+      int cmpMethod = mr1.method.compareTo(mr2.method);
+      if (cmpMethod != 0) {
+        return cmpMethod;
       }
+      if (Objects.equals(mr1.requestId, mr2.requestId)) {
+        return 0;
+      }
+      if (mr1.requestId.isGreaterThan(mr2.requestId)) {
+        return +1;
+      }
+      return -1;
+    }
   }
 
   public static MethodAndRequestId ofMethodAndRequestId(String method, String reqId) {

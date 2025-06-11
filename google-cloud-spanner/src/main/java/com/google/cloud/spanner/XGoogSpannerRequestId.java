@@ -106,12 +106,29 @@ public class XGoogSpannerRequestId {
         this.attempt);
   }
 
+  public String debugToString() {
+    return String.format(
+        "%d.%s.nth_client=%d.nth_chan=%d.nth_req=%d.attempt=%d",
+        XGoogSpannerRequestId.VERSION,
+        XGoogSpannerRequestId.RAND_PROCESS_ID,
+        this.nthClientId,
+        this.nthChannelId,
+        this.nthRequest,
+        this.attempt);
+  }
+
   @VisibleForTesting
   boolean isGreaterThan(XGoogSpannerRequestId other) {
-    return this.nthClientId > other.nthClientId
-        && this.nthChannelId > other.nthChannelId
-        && this.nthRequest > other.nthRequest
-        && this.attempt > other.attempt;
+    if (this.nthClientId != other.nthClientId) {
+      return this.nthClientId > other.nthClientId;
+    }
+    if (this.nthChannelId != other.nthChannelId) {
+      return this.nthChannelId > other.nthChannelId;
+    }
+    if (this.nthRequest != other.nthRequest) {
+      return this.nthRequest > other.nthRequest;
+    }
+    return this.attempt > other.attempt;
   }
 
   @Override

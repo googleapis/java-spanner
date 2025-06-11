@@ -2910,20 +2910,32 @@ public class DatabaseClientImplTest {
       DatabaseClientImpl dbImpl = ((DatabaseClientImpl) client);
       int channelId = dbImpl.getSession().getChannel();
       int dbId = dbImpl.dbId;
-      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(1, dbId, channelId, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(1, dbId, channelId, 1)),
-      };
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
-            new XGoogSpannerRequestId(1, channelId, dbId, 2)),
+            new XGoogSpannerRequestId(dbId, channelId, 1, 1)),
       };
       xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(dbId, 0, 4, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(dbId, 1, 2, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(dbId, 2, 3, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(dbId, 3, 1, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BeginTransaction", new XGoogSpannerRequestId(dbId, 3, 1, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteSql",
+            new XGoogSpannerRequestId(dbId, channelId, 5, 1)),
+      };
       xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
