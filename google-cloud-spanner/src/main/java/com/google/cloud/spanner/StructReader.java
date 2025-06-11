@@ -178,7 +178,13 @@ public interface StructReader {
 
   /**
    * @param columnIndex index of the column
-   * @return the value of a column with type T. return value(T) can be null.
+   * @return the value of a column with type T or null if the column contains a null value
+   * <p>Example
+   *
+   * <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrNull(1, row::getString)
+   * }</pre>
    */
   default <T> T getOrNull(int columnIndex, Function<Integer, T> function) {
     return isNull(columnIndex) ? null : function.apply(columnIndex);
@@ -186,7 +192,13 @@ public interface StructReader {
 
   /**
    * @param columnName index of the column
-   * @return the value of a column with type T. return value(T) can be null.
+   * @return the value of a column with type T or null if the column contains a null value
+   * <p>Example
+   *
+   * <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrNull("name", row::getString)
+   * }</pre>
    */
   default <T> T getOrNull(String columnName, Function<String, T> function) {
     return isNull(columnName) ? null : function.apply(columnName);
@@ -194,7 +206,13 @@ public interface StructReader {
 
   /**
    * @param columnIndex index of the column
-   * @return the value of a column with type T. if column value is null, returns default value.
+   * @return the value of a column with type T, or the given default if the column value is null
+   * <p>Example
+   *
+   * <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrDefault(1, row::getString, "")
+   * }</pre>
    */
   default <T> T getOrDefault(int columnIndex, Function<Integer, T> function, T defaultValue) {
     return isNull(columnIndex) ? defaultValue : function.apply(columnIndex);
@@ -202,7 +220,14 @@ public interface StructReader {
 
   /**
    * @param columnName name of the column
-   * @return the value of a column with type T. if column value is null, returns default value.
+   * @return the value of a column with type T, or the given default if the column value is null
+   *
+   * <p>Example
+   *
+   * <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrDefault("name", row::getString, "")
+   * }</pre>
    */
   default <T> T getOrDefault(String columnName, Function<String, T> function, T defaultValue) {
     return isNull(columnName) ? defaultValue : function.apply(columnName);
