@@ -24,6 +24,7 @@ import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -175,6 +176,60 @@ public interface StructReader {
    * @return the value of a non-{@code NULL} column with type {@link Type#string()}.
    */
   String getString(String columnName);
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a column with type T or null if the column contains a null value
+   *     <p>Example
+   *     <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrNull(1, StructReader::getString)
+   * }</pre>
+   */
+  default <T> T getOrNull(int columnIndex, BiFunction<StructReader, Integer, T> function) {
+    return isNull(columnIndex) ? null : function.apply(this, columnIndex);
+  }
+
+  /**
+   * @param columnName index of the column
+   * @return the value of a column with type T or null if the column contains a null value
+   *     <p>Example
+   *     <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrNull("name", StructReader::getString)
+   * }</pre>
+   */
+  default <T> T getOrNull(String columnName, BiFunction<StructReader, String, T> function) {
+    return isNull(columnName) ? null : function.apply(this, columnName);
+  }
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a column with type T, or the given default if the column value is null
+   *     <p>Example
+   *     <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrDefault(1, StructReader::getString, "")
+   * }</pre>
+   */
+  default <T> T getOrDefault(
+      int columnIndex, BiFunction<StructReader, Integer, T> function, T defaultValue) {
+    return isNull(columnIndex) ? defaultValue : function.apply(this, columnIndex);
+  }
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a column with type T, or the given default if the column value is null
+   *     <p>Example
+   *     <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrDefault("name", StructReader::getString, "")
+   * }</pre>
+   */
+  default <T> T getOrDefault(
+      String columnName, BiFunction<StructReader, String, T> function, T defaultValue) {
+    return isNull(columnName) ? defaultValue : function.apply(this, columnName);
+  }
 
   /**
    * @param columnIndex index of the column
