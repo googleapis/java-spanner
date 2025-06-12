@@ -450,7 +450,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       @Override
       public void run() {
         XGoogSpannerRequestId reqId =
-            session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 1);
+            session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
         try {
           prev.get();
           if (transactionId == null && transactionIdFuture == null) {
@@ -930,7 +930,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           getExecuteSqlRequestBuilder(
               statement, queryMode, options, /* withTransactionSelector= */ true);
       XGoogSpannerRequestId reqId =
-          session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 1);
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       try {
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(
@@ -1066,7 +1066,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         final ExecuteBatchDmlRequest.Builder builder =
             getExecuteBatchDmlRequestBuilder(statements, options);
         XGoogSpannerRequestId reqId =
-            session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 1);
+            session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
         try {
           com.google.spanner.v1.ExecuteBatchDmlResponse response =
               rpc.executeBatchDml(builder.build(), reqId.withOptions(getTransactionChannelHint()));
@@ -1128,7 +1128,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             getExecuteBatchDmlRequestBuilder(statements, options);
         ApiFuture<com.google.spanner.v1.ExecuteBatchDmlResponse> response;
         XGoogSpannerRequestId reqId =
-            session.getRequestIdCreator().nextRequestId(1 /*TODO: channelId */, 1);
+            session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
         try {
           // Register the update as an async operation that must finish before the transaction may
           // commit.
