@@ -41,6 +41,7 @@ import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -79,11 +80,11 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     boolean foundStats = false;
     long updateCount = 0L;
     Stopwatch stopwatch = Stopwatch.createStarted(ticker);
-    Options options = Options.fromUpdateOptions(updateOptions);
-    XGoogSpannerRequestId reqId = options.reqId();
-    if (reqId == null) {
-      reqId = session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
-    }
+    XGoogSpannerRequestId reqId =
+        session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
+    UpdateOption[] allOptions = Arrays.copyOf(updateOptions, updateOptions.length + 1);
+    allOptions[updateOptions.length] = new Options.RequestIdOption(reqId);
+    Options options = Options.fromUpdateOptions(allOptions);
 
     try {
       ExecuteSqlRequest request = newTransactionRequestFrom(statement, options);
@@ -222,10 +223,8 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
                     .setExcludeTxnFromChangeStreams(
                         options.withExcludeTxnFromChangeStreams() == Boolean.TRUE))
             .build();
-    XGoogSpannerRequestId reqId = options.reqId();
-    if (reqId == null) {
-      reqId = session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
-    }
+    XGoogSpannerRequestId reqId =
+        session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
     Transaction tx = rpc.beginTransaction(request, reqId.withOptions(session.getOptions()), true);
     if (tx.getId().isEmpty()) {
       throw SpannerExceptionFactory.newSpannerException(

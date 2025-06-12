@@ -176,4 +176,10 @@ public class XGoogSpannerRequestId {
       return XGoogSpannerRequestId.of(1, 1, 1, 0);
     }
   }
+
+  @VisibleForTesting
+  XGoogSpannerRequestId withNthRequest(long replacementNthRequest) {
+    return XGoogSpannerRequestId.of(
+        this.nthClientId, this.nthChannelId, replacementNthRequest, this.attempt);
+  }
 }

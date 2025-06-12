@@ -43,6 +43,7 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class XGoogSpannerRequestIdTest {
+  public static long UNNECESSARY = -1;
 
   @Test
   public void testEquals() {
@@ -184,20 +185,21 @@ public class XGoogSpannerRequestIdTest {
     public void checkExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
       MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
       sortValues(gotUnaryValues);
-      for (int i = 0; i < gotUnaryValues.length; i++) {
+      for (int i = 0; i < gotUnaryValues.length && false; i++) {
         System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
       }
       assertEquals(wantUnaryValues, gotUnaryValues);
     }
 
     private void sortValues(MethodAndRequestId[] values) {
+      massageValues(values);
       Arrays.sort(values, new MethodAndRequestIdComparator());
     }
 
     public void checkExpectedStreamingXGoogRequestIds(MethodAndRequestId... wantStreamingValues) {
       MethodAndRequestId[] gotStreamingValues = this.accumulatedStreamingValues();
       sortValues(gotStreamingValues);
-      for (int i = 0; i < gotStreamingValues.length; i++) {
+      for (int i = 0; i < gotStreamingValues.length && false; i++) {
         System.out.println(
             "\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
       }
@@ -242,6 +244,7 @@ public class XGoogSpannerRequestIdTest {
       if (cmpMethod != 0) {
         return cmpMethod;
       }
+
       if (Objects.equals(mr1.requestId, mr2.requestId)) {
         return 0;
       }
@@ -249,6 +252,18 @@ public class XGoogSpannerRequestIdTest {
         return +1;
       }
       return -1;
+    }
+  }
+
+  static void massageValues(MethodAndRequestId[] mreqs) {
+    for (int i = 0; i < mreqs.length; i++) {
+      MethodAndRequestId mreq = mreqs[i];
+      // BatchCreateSessions is so hard to control as the round-robin doling out
+      // hence we might need to be able to scrub the nth_request that won't match
+      // nth_req in consecutive order of nth_client.
+      if (mreq.method.compareTo("google.spanner.v1.Spanner/BatchCreateSessions") == 0) {
+        mreqs[i] = new MethodAndRequestId(mreq.method, mreq.requestId.withNthRequest(UNNECESSARY));
+      }
     }
   }
 
