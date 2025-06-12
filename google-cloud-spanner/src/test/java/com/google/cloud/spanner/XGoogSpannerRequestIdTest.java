@@ -43,7 +43,7 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class XGoogSpannerRequestIdTest {
-  public static long UNNECESSARY = -1;
+  public static long NON_DETERMINISTIC = -1;
 
   @Test
   public void testEquals() {
@@ -185,7 +185,7 @@ public class XGoogSpannerRequestIdTest {
     public void checkExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
       MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
       sortValues(gotUnaryValues);
-      for (int i = 0; i < gotUnaryValues.length && false; i++) {
+      for (int i = 0; i < gotUnaryValues.length; i++) {
         System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
       }
       assertEquals(wantUnaryValues, gotUnaryValues);
@@ -199,7 +199,7 @@ public class XGoogSpannerRequestIdTest {
     public void checkExpectedStreamingXGoogRequestIds(MethodAndRequestId... wantStreamingValues) {
       MethodAndRequestId[] gotStreamingValues = this.accumulatedStreamingValues();
       sortValues(gotStreamingValues);
-      for (int i = 0; i < gotStreamingValues.length && false; i++) {
+      for (int i = 0; i < gotStreamingValues.length; i++) {
         System.out.println(
             "\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
       }
@@ -262,7 +262,8 @@ public class XGoogSpannerRequestIdTest {
       // hence we might need to be able to scrub the nth_request that won't match
       // nth_req in consecutive order of nth_client.
       if (mreq.method.compareTo("google.spanner.v1.Spanner/BatchCreateSessions") == 0) {
-        mreqs[i] = new MethodAndRequestId(mreq.method, mreq.requestId.withNthRequest(UNNECESSARY));
+        mreqs[i] =
+            new MethodAndRequestId(mreq.method, mreq.requestId.withNthRequest(NON_DETERMINISTIC));
       }
     }
   }
