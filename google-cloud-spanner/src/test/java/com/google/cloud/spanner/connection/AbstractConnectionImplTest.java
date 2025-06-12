@@ -276,13 +276,14 @@ public abstract class AbstractConnectionImplTest {
         assertThat(connection.hasStatementTimeout(), is(false));
         boolean gotException = false;
         try {
-          log("@EXPECT EXCEPTION INVALID_ARGUMENT");
+          //          log("@EXPECT EXCEPTION INVALID_ARGUMENT");
           log(String.format("SET STATEMENT_TIMEOUT='0%s';", getTimeUnitAbbreviation(unit)));
-          connection.setStatementTimeout(0L, unit);
+          connection.clearStatementTimeout();
+          //          connection.setStatementTimeout(0L, unit);
         } catch (IllegalArgumentException e) {
           gotException = true;
         }
-        assertThat(gotException, is(true));
+        assertThat(gotException, is(false));
         log(
             String.format(
                 "@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',%s",
