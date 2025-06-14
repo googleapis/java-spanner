@@ -121,6 +121,8 @@ public class TransactionRunnerImplTest {
     when(session.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
     when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     when(session.getTracer()).thenReturn(tracer);
+    when(session.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation -> {
@@ -334,6 +336,7 @@ public class TransactionRunnerImplTest {
             spanner,
             new SessionReference(
                 "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP)) {};
+    session.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(span);

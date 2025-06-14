@@ -1481,6 +1481,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
       when(closedSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
+      when(closedSession.getRequestIdCreator())
+          .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
 
       Span oTspan = mock(Span.class);
       ISpan span = new OpenTelemetrySpan(oTspan);
@@ -1521,6 +1523,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(span);
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
+      when(openSession.getRequestIdCreator())
+          .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
 
       ResultSet openResultSet = mock(ResultSet.class);
       when(openResultSet.next()).thenReturn(true, false);
