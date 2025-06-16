@@ -45,7 +45,7 @@ public class PgDurationConverterTest {
 
     assertEquals(
         Duration.ofNanos((int) TimeUnit.MILLISECONDS.toNanos(100L)), converter.convert("'100ms'"));
-    assertNull(converter.convert("'0ms'"));
+    assertEquals(Duration.ZERO, converter.convert("'0ms'"));
     assertNull(converter.convert("'-100ms'"));
     assertEquals(Duration.ofSeconds(315576000000L), converter.convert("'315576000000000ms'"));
     assertEquals(Duration.ofSeconds(1L), converter.convert("'1s'"));
