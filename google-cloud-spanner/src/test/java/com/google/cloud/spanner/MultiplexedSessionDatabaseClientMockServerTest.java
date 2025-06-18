@@ -70,10 +70,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @BeforeClass
   public static void setupResults() {
-    assumeFalse(
-        System.getenv()
-            .getOrDefault("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS", "")
-            .equalsIgnoreCase("false"));
+    assumeFalse(TestHelper.isMultiplexSessionDisabled());
     mockSpanner.putStatementResults(
         StatementResult.query(STATEMENT, new RandomResultSetGenerator(1).generate()));
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
