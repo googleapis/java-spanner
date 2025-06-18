@@ -284,6 +284,7 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
 
   @Test
   public void testSingleUseQuery_retriesOnNewChannel() {
+    assumeFalse(TestHelper.isMultiplexSessionDisabled());
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
         SessionPoolOptions.newBuilder().setUseMultiplexedSession(true).build());
