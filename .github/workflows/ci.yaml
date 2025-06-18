@@ -54,7 +54,7 @@ jobs:
         JOB_TYPE: test
         GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS: true
         GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW: true
-  units-without-multiplexed-session:
+  units-with-regular-session:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -112,7 +112,7 @@ jobs:
           GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS: true
           GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS: true
           GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW: true
-  units-without-multiplexed-session8:
+  units-with-regular-session8:
     # Building using Java 17 and run the tests with Java 8 runtime
     name: "units-with-multiplexed-session (8)"
     runs-on: ubuntu-latest
