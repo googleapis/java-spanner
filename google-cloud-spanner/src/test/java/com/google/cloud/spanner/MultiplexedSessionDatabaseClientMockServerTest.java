@@ -27,6 +27,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -69,6 +71,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @BeforeClass
   public static void setupResults() {
+    assumeFalse(System.getenv().getOrDefault("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS", "")
+        .equalsIgnoreCase("false"));
     mockSpanner.putStatementResults(
         StatementResult.query(STATEMENT, new RandomResultSetGenerator(1).generate()));
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
