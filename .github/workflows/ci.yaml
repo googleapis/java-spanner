@@ -114,7 +114,7 @@ jobs:
           GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW: true
   units-with-regular-session8:
     # Building using Java 17 and run the tests with Java 8 runtime
-    name: "units-with-multiplexed-session (8)"
+    name: "units-with-regular-session (8)"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
