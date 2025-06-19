@@ -596,6 +596,9 @@ class SessionImpl implements Session {
   }
 
   int getChannel() {
+    if (getIsMultiplexed()) {
+      return 0;
+    }
     Long channelHint = (Long) this.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
     return (int) (channelHint % this.spanner.getOptions().getNumChannels());
   }
