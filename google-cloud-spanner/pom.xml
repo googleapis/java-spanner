@@ -355,13 +355,6 @@
       <artifactId>grpc-rls</artifactId>
       <scope>runtime</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.graalvm.sdk</groupId>
-      <artifactId>graal-sdk</artifactId>
-      <version>${graal-sdk.version}</version>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>org.graalvm.sdk</groupId>
       <artifactId>nativeimage</artifactId>
