@@ -458,7 +458,7 @@ abstract class AbstractReadContext
 
     private void initTransactionInternal(BeginTransactionRequest request) {
       XGoogSpannerRequestId reqId =
-          session.getRequestIdCreator().nextRequestId(1 /*TODO: retrieve channelId*/, 1);
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       try {
         Transaction transaction =
             rpc.beginTransaction(
