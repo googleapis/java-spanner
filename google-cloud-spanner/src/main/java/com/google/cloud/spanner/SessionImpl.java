@@ -319,7 +319,7 @@ class SessionImpl implements Session {
   private XGoogSpannerRequestId reqIdOrFresh(Options options) {
     XGoogSpannerRequestId reqId = options.reqId();
     if (reqId == null) {
-      reqId = this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 1);
+      reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
     }
     return reqId;
   }
@@ -464,8 +464,7 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
-    XGoogSpannerRequestId reqId =
-        this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 0);
+    XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 0);
     return spanner.getRpc().asyncDeleteSession(getName(), reqId.withOptions(getOptions()));
   }
 
@@ -473,8 +472,7 @@ class SessionImpl implements Session {
   public void close() {
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
-      XGoogSpannerRequestId reqId =
-          this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 0);
+      XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 0);
       spanner.getRpc().deleteSession(getName(), reqId.withOptions(getOptions()));
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -505,8 +503,7 @@ class SessionImpl implements Session {
     }
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;
-    XGoogSpannerRequestId reqId =
-        this.getRequestIdCreator().nextRequestId(1 /* TODO: channelId */, 1);
+    XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
     try (IScope ignore = tracer.withSpan(span)) {
       requestFuture =
           spanner
@@ -596,5 +593,13 @@ class SessionImpl implements Session {
 
   public XGoogSpannerRequestId.RequestIdCreator getRequestIdCreator() {
     return this.requestIdCreator;
+  }
+
+  int getChannel() {
+    if (getIsMultiplexed()) {
+      return 0;
+    }
+    Long channelHint = (Long) this.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
+    return (int) (channelHint % this.spanner.getOptions().getNumChannels());
   }
 }
