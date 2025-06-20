@@ -92,6 +92,7 @@ javadoc)
 integration)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
+      -Dprotobuf.version=4.29.4 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
