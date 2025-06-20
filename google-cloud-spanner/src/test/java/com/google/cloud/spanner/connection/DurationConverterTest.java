@@ -42,7 +42,7 @@ public class DurationConverterTest {
     DurationConverter converter = new DurationConverter(allowedValues);
     assertThat(converter.convert("'100ms'"), is(equalTo(Duration.ofMillis(100L))));
     assertThat(converter.convert("100"), is(equalTo(Duration.ofMillis(100))));
-    assertThat(converter.convert("'0ms'"), is(nullValue()));
+    assertThat(converter.convert("'0ms'"), is(Duration.ZERO));
     assertThat(converter.convert("'-100ms'"), is(nullValue()));
     assertThat(
         converter.convert("'315576000000000ms'"), is(equalTo(Duration.ofSeconds(315576000000L))));
