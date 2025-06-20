@@ -83,7 +83,20 @@ public class MaxCommitDelayTest extends AbstractMockServerTest {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
         executeCommit(connection);
-        assertMaxCommitDelay(Duration.getDefaultInstance());
+        assertMaxCommitDelay(Duration.getDefaultInstance(), false);
+        mockSpanner.clearRequests();
+      }
+    }
+  }
+
+  @Test
+  public void testZeroMaxCommitDelay() {
+    try (Connection connection = createConnection()) {
+      for (boolean autocommit : new boolean[] {true, false}) {
+        connection.setAutocommit(autocommit);
+        connection.setMaxCommitDelay(java.time.Duration.ZERO);
+        executeCommit(connection);
+        assertMaxCommitDelay(Duration.getDefaultInstance(), true);
         mockSpanner.clearRequests();
       }
     }
@@ -95,7 +108,19 @@ public class MaxCommitDelayTest extends AbstractMockServerTest {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
         executeCommit(connection);
-        assertMaxCommitDelay(Duration.newBuilder().setSeconds(1).build());
+        assertMaxCommitDelay(Duration.newBuilder().setSeconds(1).build(), true);
+        mockSpanner.clearRequests();
+      }
+    }
+  }
+
+  @Test
+  public void testZeroMaxCommitDelayInConnectionString() {
+    try (Connection connection = createConnection(";maxCommitDelay=0")) {
+      for (boolean autocommit : new boolean[] {true, false}) {
+        connection.setAutocommit(autocommit);
+        executeCommit(connection);
+        assertMaxCommitDelay(Duration.getDefaultInstance(), true);
         mockSpanner.clearRequests();
       }
     }
@@ -121,20 +146,31 @@ public class MaxCommitDelayTest extends AbstractMockServerTest {
               () -> {
                 executeCommit(connection);
                 assertMaxCommitDelay(
-                    Duration.newBuilder()
-                        .setNanos((int) TimeUnit.MILLISECONDS.toNanos(40))
-                        .build());
+                    Duration.newBuilder().setNanos((int) TimeUnit.MILLISECONDS.toNanos(40)).build(),
+                    true);
                 mockSpanner.clearRequests();
               });
 
           if (useSql) {
+            // This is translated to Duration.ZERO.
             connection.execute(
                 Statement.of(String.format("set %smax_commit_delay=null", getVariablePrefix())));
           } else {
             connection.setMaxCommitDelay(null);
           }
           executeCommit(connection);
-          assertMaxCommitDelay(Duration.getDefaultInstance());
+          // The SQL statement set max_commit_delay=null is translated to Duration.ZERO.
+          assertMaxCommitDelay(Duration.getDefaultInstance(), useSql);
+          mockSpanner.clearRequests();
+
+          if (useSql) {
+            connection.execute(
+                Statement.of(String.format("set %smax_commit_delay=0", getVariablePrefix())));
+          } else {
+            connection.setMaxCommitDelay(java.time.Duration.ZERO);
+          }
+          executeCommit(connection);
+          assertMaxCommitDelay(Duration.getDefaultInstance(), true);
           mockSpanner.clearRequests();
         }
       }
@@ -150,10 +186,11 @@ public class MaxCommitDelayTest extends AbstractMockServerTest {
     }
   }
 
-  private void assertMaxCommitDelay(Duration expected) {
+  private void assertMaxCommitDelay(Duration expected, boolean hasMaxCommitDelay) {
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(1, requests.size());
     CommitRequest request = requests.get(0);
     assertEquals(expected, request.getMaxCommitDelay());
+    assertEquals(hasMaxCommitDelay, request.hasMaxCommitDelay());
   }
 }
