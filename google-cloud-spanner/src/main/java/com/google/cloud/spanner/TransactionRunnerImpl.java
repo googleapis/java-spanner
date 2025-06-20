@@ -449,6 +449,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       @Override
       public void run() {
+        XGoogSpannerRequestId reqId =
+            session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
         try {
           prev.get();
           if (transactionId == null && transactionIdFuture == null) {
@@ -491,7 +493,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture;
           final ISpan opSpan = tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span);
           try (IScope ignore = tracer.withSpan(opSpan)) {
-            commitFuture = rpc.commitAsync(commitRequest, getTransactionChannelHint());
+            commitFuture =
+                rpc.commitAsync(commitRequest, reqId.withOptions(getTransactionChannelHint()));
           }
           session.markUsed(clock.instant());
           commitFuture.addListener(
@@ -502,7 +505,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     // future, but we add a result here as well as a safety precaution.
                     res.setException(
                         SpannerExceptionFactory.newSpannerException(
-                            ErrorCode.INTERNAL, "commitFuture is not done"));
+                            ErrorCode.INTERNAL, "commitFuture is not done", reqId));
                     return;
                   }
                   com.google.spanner.v1.CommitResponse proto = commitFuture.get();
@@ -532,7 +535,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   }
                   if (!proto.hasCommitTimestamp()) {
                     throw newSpannerException(
-                        ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
+                        ErrorCode.INTERNAL,
+                        "Missing commitTimestamp:\n" + session.getName(),
+                        reqId);
                   }
                   span.addAnnotation("Commit Done");
                   opSpan.end();
@@ -568,7 +573,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           res.setException(SpannerExceptionFactory.propagateTimeout(e));
         } catch (Throwable e) {
           res.setException(
-              SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
+              SpannerExceptionFactory.newSpannerException(
+                  e.getCause() == null ? e : e.getCause(), reqId));
         }
       }
     }
@@ -923,9 +929,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(
               statement, queryMode, options, /* withTransactionSelector= */ true);
+      XGoogSpannerRequestId reqId =
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       try {
         com.google.spanner.v1.ResultSet resultSet =
-            rpc.executeQuery(builder.build(), getTransactionChannelHint(), isRouteToLeader());
+            rpc.executeQuery(
+                builder.build(), reqId.withOptions(getTransactionChannelHint()), isRouteToLeader());
         session.markUsed(clock.instant());
         if (resultSet.getMetadata().hasTransaction()) {
           onTransactionMetadata(
@@ -1056,9 +1065,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         final ExecuteBatchDmlRequest.Builder builder =
             getExecuteBatchDmlRequestBuilder(statements, options);
+        XGoogSpannerRequestId reqId =
+            session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
         try {
           com.google.spanner.v1.ExecuteBatchDmlResponse response =
-              rpc.executeBatchDml(builder.build(), getTransactionChannelHint());
+              rpc.executeBatchDml(builder.build(), reqId.withOptions(getTransactionChannelHint()));
           session.markUsed(clock.instant());
           long[] results = new long[response.getResultSetsCount()];
           for (int i = 0; i < response.getResultSetsCount(); ++i) {
@@ -1083,7 +1094,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 ErrorCode.fromRpcStatus(response.getStatus()),
                 response.getStatus().getMessage(),
                 results,
-                null /*TODO: requestId*/);
+                reqId);
           }
           return results;
         } catch (Throwable e) {
@@ -1116,11 +1127,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         final ExecuteBatchDmlRequest.Builder builder =
             getExecuteBatchDmlRequestBuilder(statements, options);
         ApiFuture<com.google.spanner.v1.ExecuteBatchDmlResponse> response;
+        XGoogSpannerRequestId reqId =
+            session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
         try {
           // Register the update as an async operation that must finish before the transaction may
           // commit.
           increaseAsyncOperations();
-          response = rpc.executeBatchDmlAsync(builder.build(), getTransactionChannelHint());
+          response =
+              rpc.executeBatchDmlAsync(
+                  builder.build(), reqId.withOptions(getTransactionChannelHint()));
           session.markUsed(clock.instant());
         } catch (Throwable t) {
           decreaseAsyncOperations();
@@ -1151,7 +1166,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                         ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
                         batchDmlResponse.getStatus().getMessage(),
                         results,
-                        null /*TODO: requestId*/);
+                        reqId);
                   }
                   return results;
                 },
