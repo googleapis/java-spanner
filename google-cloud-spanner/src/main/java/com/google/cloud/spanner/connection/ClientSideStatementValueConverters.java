@@ -248,7 +248,8 @@ class ClientSideStatementValueConverters {
             } else {
               duration = Duration.ofMillis(Long.parseLong(value.trim()));
             }
-            if (duration.isZero()) {
+            // Converters should return null for invalid values.
+            if (duration.isNegative()) {
               return null;
             }
             return duration;
