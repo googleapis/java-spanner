@@ -1008,4 +1008,24 @@
     <className>com/google/cloud/spanner/TransactionManager</className>
     <method>com.google.cloud.spanner.TransactionContext begin(com.google.cloud.spanner.AbortedException)</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.Object getOrNull(int, java.util.function.BiFunction)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.Object getOrNull(java.lang.String, java.util.function.BiFunction)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.Object getOrDefault(int, java.util.function.BiFunction, java.lang.Object)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.Object getOrDefault(java.lang.String, java.util.function.BiFunction, java.lang.Object)</method>
+  </difference>
 </differences>
