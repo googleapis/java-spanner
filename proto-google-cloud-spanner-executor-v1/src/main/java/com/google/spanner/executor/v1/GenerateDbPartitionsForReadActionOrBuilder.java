@@ -36,6 +36,7 @@ public interface GenerateDbPartitionsForReadActionOrBuilder
    * @return Whether the read field is set.
    */
   boolean hasRead();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface GenerateDbPartitionsForReadActionOrBuilder
    * @return The read.
    */
   com.google.spanner.executor.v1.ReadAction getRead();
+
   /**
    *
    *
@@ -69,6 +71,7 @@ public interface GenerateDbPartitionsForReadActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   java.util.List<com.google.spanner.executor.v1.TableMetadata> getTableList();
+
   /**
    *
    *
@@ -79,6 +82,7 @@ public interface GenerateDbPartitionsForReadActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   com.google.spanner.executor.v1.TableMetadata getTable(int index);
+
   /**
    *
    *
@@ -89,6 +93,7 @@ public interface GenerateDbPartitionsForReadActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   int getTableCount();
+
   /**
    *
    *
@@ -100,6 +105,7 @@ public interface GenerateDbPartitionsForReadActionOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.TableMetadataOrBuilder>
       getTableOrBuilderList();
+
   /**
    *
    *
@@ -124,6 +130,7 @@ public interface GenerateDbPartitionsForReadActionOrBuilder
    * @return Whether the desiredBytesPerPartition field is set.
    */
   boolean hasDesiredBytesPerPartition();
+
   /**
    *
    *
@@ -151,6 +158,7 @@ public interface GenerateDbPartitionsForReadActionOrBuilder
    * @return Whether the maxPartitionCount field is set.
    */
   boolean hasMaxPartitionCount();
+
   /**
    *
    *

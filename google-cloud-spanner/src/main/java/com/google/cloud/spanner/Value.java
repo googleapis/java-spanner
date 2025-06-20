@@ -16,6 +16,14 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerTypeConverter.atUTC;
+import static com.google.cloud.spanner.SpannerTypeConverter.convertLocalDateToSpannerDate;
+import static com.google.cloud.spanner.SpannerTypeConverter.convertToISO8601;
+import static com.google.cloud.spanner.SpannerTypeConverter.convertToTypedIterable;
+import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedArrayValue;
+import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedIterableValue;
+import static com.google.cloud.spanner.SpannerTypeConverter.createUntypedStringValue;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -39,16 +47,23 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -205,7 +220,8 @@ public abstract class Value implements Serializable {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.OUT_OF_RANGE,
             String.format(
-                "Max precision for the whole component of a numeric is 29. The requested numeric has a whole component with precision %d",
+                "Max precision for the whole component of a numeric is 29. The requested numeric"
+                    + " has a whole component with precision %d",
                 test.precision() - test.scale()));
       }
     }
@@ -393,6 +409,10 @@ public abstract class Value implements Serializable {
    */
   public static Value date(@Nullable Date v) {
     return new DateImpl(v == null, v);
+  }
+
+  public static Value uuid(@Nullable UUID v) {
+    return new UuidImpl(v == null, v);
   }
 
   /** Returns a non-{@code NULL} {#code STRUCT} value. */
@@ -786,6 +806,16 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<UUID>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value uuidArray(@Nullable Iterable<UUID> v) {
+    return new UuidArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
    * Returns an {@code ARRAY<Interval>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
@@ -823,6 +853,165 @@ public abstract class Value implements Serializable {
   }
 
   private Value() {}
+
+  static Value toValue(Object value) {
+    if (value == null) {
+      return Value.untyped(NULL_PROTO);
+    }
+    if (value instanceof Value) {
+      return (Value) value;
+    }
+    if (value instanceof Boolean) {
+      return Value.bool((Boolean) value);
+    }
+    if (value instanceof Long || value instanceof Integer) {
+      return createUntypedStringValue(String.valueOf(value));
+    }
+    if (value instanceof Float) {
+      return Value.float32((Float) value);
+    }
+    if (value instanceof Double) {
+      return Value.float64((Double) value);
+    }
+    if (value instanceof BigDecimal) {
+      return Value.numeric((BigDecimal) value);
+    }
+    if (value instanceof ByteArray) {
+      return Value.bytes((ByteArray) value);
+    }
+    if (value instanceof byte[]) {
+      return Value.bytes(ByteArray.copyFrom((byte[]) value));
+    }
+    if (value instanceof Date) {
+      return Value.date((Date) value);
+    }
+    if (value instanceof UUID) {
+      return Value.uuid((UUID) value);
+    }
+    if (value instanceof LocalDate) {
+      return Value.date(convertLocalDateToSpannerDate((LocalDate) value));
+    }
+    if (value instanceof LocalDateTime) {
+      return createUntypedStringValue(convertToISO8601(atUTC((LocalDateTime) value)));
+    }
+    if (value instanceof OffsetDateTime) {
+      return createUntypedStringValue(convertToISO8601(atUTC((OffsetDateTime) value)));
+    }
+    if (value instanceof ZonedDateTime) {
+      return createUntypedStringValue(convertToISO8601(atUTC((ZonedDateTime) value)));
+    }
+    if (value instanceof ProtocolMessageEnum) {
+      return Value.protoEnum((ProtocolMessageEnum) value);
+    }
+    if (value instanceof AbstractMessage) {
+      return Value.protoMessage((AbstractMessage) value);
+    }
+    if (value instanceof Interval) {
+      return Value.interval((Interval) value);
+    }
+    if (value instanceof Struct) {
+      return Value.struct((Struct) value);
+    }
+    if (value instanceof Timestamp) {
+      return Value.timestamp((Timestamp) value);
+    }
+    if (value instanceof Iterable<?>) {
+      Iterator<?> iterator = ((Iterable<?>) value).iterator();
+      if (!iterator.hasNext()) {
+        return createUntypedArrayValue(Stream.empty());
+      }
+      Object object = iterator.next();
+      if (object instanceof Boolean) {
+        return Value.boolArray(convertToTypedIterable((Boolean) object, iterator));
+      }
+      if (object instanceof Integer) {
+        return createUntypedIterableValue((Integer) object, iterator, String::valueOf);
+      }
+      if (object instanceof Long) {
+        return createUntypedIterableValue((Long) object, iterator, String::valueOf);
+      }
+      if (object instanceof Float) {
+        return Value.float32Array(convertToTypedIterable((Float) object, iterator));
+      }
+      if (object instanceof Double) {
+        return Value.float64Array(convertToTypedIterable((Double) object, iterator));
+      }
+      if (object instanceof BigDecimal) {
+        return Value.numericArray(convertToTypedIterable((BigDecimal) object, iterator));
+      }
+      if (object instanceof ByteArray) {
+        return Value.bytesArray(convertToTypedIterable((ByteArray) object, iterator));
+      }
+      if (object instanceof byte[]) {
+        return Value.bytesArray(
+            SpannerTypeConverter.convertToTypedIterable(
+                ByteArray::copyFrom, (byte[]) object, iterator));
+      }
+      if (object instanceof Interval) {
+        return Value.intervalArray(convertToTypedIterable((Interval) object, iterator));
+      }
+      if (object instanceof Timestamp) {
+        return Value.timestampArray(convertToTypedIterable((Timestamp) object, iterator));
+      }
+      if (object instanceof Date) {
+        return Value.dateArray(convertToTypedIterable((Date) object, iterator));
+      }
+      if (object instanceof UUID) {
+        return Value.uuidArray(convertToTypedIterable((UUID) object, iterator));
+      }
+      if (object instanceof LocalDate) {
+        return Value.dateArray(
+            SpannerTypeConverter.convertToTypedIterable(
+                SpannerTypeConverter::convertLocalDateToSpannerDate, (LocalDate) object, iterator));
+      }
+      if (object instanceof LocalDateTime) {
+        return createUntypedIterableValue(
+            (LocalDateTime) object, iterator, val -> convertToISO8601(atUTC(val)));
+      }
+      if (object instanceof OffsetDateTime) {
+        return createUntypedIterableValue(
+            (OffsetDateTime) object, iterator, val -> convertToISO8601(atUTC(val)));
+      }
+      if (object instanceof ZonedDateTime) {
+        return createUntypedIterableValue(
+            (ZonedDateTime) object, iterator, val -> convertToISO8601(atUTC(val)));
+      }
+    }
+
+    // array and primitive array
+    if (value instanceof Boolean[]) {
+      return Value.boolArray(Arrays.asList((Boolean[]) value));
+    }
+    if (value instanceof boolean[]) {
+      return Value.boolArray((boolean[]) value);
+    }
+    if (value instanceof Float[]) {
+      return Value.float32Array(Arrays.asList((Float[]) value));
+    }
+    if (value instanceof float[]) {
+      return Value.float32Array((float[]) value);
+    }
+    if (value instanceof Double[]) {
+      return Value.float64Array(Arrays.asList((Double[]) value));
+    }
+    if (value instanceof double[]) {
+      return Value.float64Array((double[]) value);
+    }
+    if (value instanceof Long[]) {
+      return createUntypedArrayValue(Arrays.stream((Long[]) value));
+    }
+    if (value instanceof long[]) {
+      return createUntypedArrayValue(Arrays.stream((long[]) value).boxed());
+    }
+    if (value instanceof Integer[]) {
+      return createUntypedArrayValue(Arrays.stream((Integer[]) value));
+    }
+    if (value instanceof int[]) {
+      return createUntypedArrayValue(Arrays.stream((int[]) value).boxed());
+    }
+
+    return createUntypedStringValue(value);
+  }
 
   /** Returns the type of this value. This will return a type even if {@code isNull()} is true. */
   public abstract Type getType();
@@ -933,6 +1122,13 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract Date getDate();
+
+  /**
+   * Returns the value of a {@code UUID}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract UUID getUuid();
 
   /**
    * Returns the value of a {@code INTERVAL}-typed instance.
@@ -1060,6 +1256,14 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract List<Date> getDateArray();
+
+  /**
+   * Returns the value of an {@code ARRAY<UUID>}-typed instance. While the returned list itself will
+   * never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<UUID> getUuidArray();
 
   /**
    * Returns the value of an {@code ARRAY<INTERVAL>}-typed instance. While the returned list itself
@@ -1349,6 +1553,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public UUID getUuid() {
+      throw defaultGetter(Type.uuid());
+    }
+
+    @Override
     public Interval getInterval() {
       throw defaultGetter(Type.interval());
     }
@@ -1415,6 +1624,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<Date> getDateArray() {
       throw defaultGetter(Type.array(Type.date()));
+    }
+
+    @Override
+    public List<UUID> getUuidArray() {
+      throw defaultGetter(Type.array(Type.uuid()));
     }
 
     @Override
@@ -1839,6 +2053,24 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class UuidImpl extends AbstractObjectValue<UUID> {
+
+    private UuidImpl(boolean isNull, UUID value) {
+      super(isNull, Type.uuid(), value);
+    }
+
+    @Override
+    public UUID getUuid() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+  }
+
   private static class IntervalImpl extends AbstractObjectValue<Interval> {
 
     private IntervalImpl(boolean isNull, Interval value) {
@@ -2017,7 +2249,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> T getProtoMessage(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         return (T)
@@ -2067,7 +2300,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> T getProtoMessage(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         return (T) m.toBuilder().mergeFrom(value.toByteArray()).build();
@@ -2712,7 +2946,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         List<T> protoMessagesList = new ArrayList<>(value.size());
@@ -2783,7 +3018,8 @@ public abstract class Value implements Serializable {
     public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
       Preconditions.checkNotNull(
           m,
-          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter"
+              + " value.");
       checkNotNull();
       try {
         List<T> protoMessagesList = new ArrayList<>(value.size());
@@ -2866,6 +3102,24 @@ public abstract class Value implements Serializable {
 
     @Override
     void appendElement(StringBuilder b, Date element) {
+      b.append(element);
+    }
+  }
+
+  private static class UuidArrayImpl extends AbstractArrayValue<UUID> {
+
+    private UuidArrayImpl(boolean isNull, @Nullable List<UUID> values) {
+      super(isNull, Type.uuid(), values);
+    }
+
+    @Override
+    public List<UUID> getUuidArray() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, UUID element) {
       b.append(element);
     }
   }
@@ -3034,6 +3288,8 @@ public abstract class Value implements Serializable {
           return Value.pgOid(value.getLong(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
+        case UUID:
+          return Value.uuid(value.getUuid(fieldIndex));
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
         case INTERVAL:
@@ -3074,6 +3330,8 @@ public abstract class Value implements Serializable {
                 return Value.pgNumericArray(value.getStringList(fieldIndex));
               case DATE:
                 return Value.dateArray(value.getDateList(fieldIndex));
+              case UUID:
+                return Value.uuidArray(value.getUuidList(fieldIndex));
               case TIMESTAMP:
                 return Value.timestampArray(value.getTimestampList(fieldIndex));
               case INTERVAL:

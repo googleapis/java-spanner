@@ -65,7 +65,7 @@ class ClientSideStatementRunPartitionExecutor implements ClientSideStatementExec
     // 2. If the matcher matches and returns zero groups, we know that the statement is valid, but
     //    that it does not contain a partition-id in the SQL statement. The partition-id must then
     //    be included in the statement as a query parameter.
-    Matcher matcher = statement.getPattern().matcher(parsedStatement.getSqlWithoutComments());
+    Matcher matcher = statement.getPattern().matcher(parsedStatement.getSql());
     if (matcher.find() && matcher.groupCount() >= 1) {
       String value = matcher.group(1);
       if (!Strings.isNullOrEmpty(value)) {

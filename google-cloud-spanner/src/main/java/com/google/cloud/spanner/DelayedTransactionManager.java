@@ -50,6 +50,11 @@ class DelayedTransactionManager implements TransactionManager {
   }
 
   @Override
+  public TransactionContext begin(AbortedException exception) {
+    return getTransactionManager().begin(exception);
+  }
+
+  @Override
   public void commit() {
     getTransactionManager().commit();
   }

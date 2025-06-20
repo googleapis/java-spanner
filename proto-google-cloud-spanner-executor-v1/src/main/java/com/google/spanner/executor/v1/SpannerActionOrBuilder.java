@@ -38,6 +38,7 @@ public interface SpannerActionOrBuilder
    * @return The databasePath.
    */
   java.lang.String getDatabasePath();
+
   /**
    *
    *
@@ -65,6 +66,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the spannerOptions field is set.
    */
   boolean hasSpannerOptions();
+
   /**
    *
    *
@@ -77,6 +79,7 @@ public interface SpannerActionOrBuilder
    * @return The spannerOptions.
    */
   com.google.spanner.executor.v1.SpannerOptions getSpannerOptions();
+
   /**
    *
    *
@@ -100,6 +103,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the start field is set.
    */
   boolean hasStart();
+
   /**
    *
    *
@@ -112,6 +116,7 @@ public interface SpannerActionOrBuilder
    * @return The start.
    */
   com.google.spanner.executor.v1.StartTransactionAction getStart();
+
   /**
    *
    *
@@ -135,6 +140,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the finish field is set.
    */
   boolean hasFinish();
+
   /**
    *
    *
@@ -147,6 +153,7 @@ public interface SpannerActionOrBuilder
    * @return The finish.
    */
   com.google.spanner.executor.v1.FinishTransactionAction getFinish();
+
   /**
    *
    *
@@ -170,6 +177,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the read field is set.
    */
   boolean hasRead();
+
   /**
    *
    *
@@ -182,6 +190,7 @@ public interface SpannerActionOrBuilder
    * @return The read.
    */
   com.google.spanner.executor.v1.ReadAction getRead();
+
   /**
    *
    *
@@ -205,6 +214,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the query field is set.
    */
   boolean hasQuery();
+
   /**
    *
    *
@@ -217,6 +227,7 @@ public interface SpannerActionOrBuilder
    * @return The query.
    */
   com.google.spanner.executor.v1.QueryAction getQuery();
+
   /**
    *
    *
@@ -240,6 +251,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the mutation field is set.
    */
   boolean hasMutation();
+
   /**
    *
    *
@@ -252,6 +264,7 @@ public interface SpannerActionOrBuilder
    * @return The mutation.
    */
   com.google.spanner.executor.v1.MutationAction getMutation();
+
   /**
    *
    *
@@ -275,6 +288,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the dml field is set.
    */
   boolean hasDml();
+
   /**
    *
    *
@@ -287,6 +301,7 @@ public interface SpannerActionOrBuilder
    * @return The dml.
    */
   com.google.spanner.executor.v1.DmlAction getDml();
+
   /**
    *
    *
@@ -310,6 +325,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the batchDml field is set.
    */
   boolean hasBatchDml();
+
   /**
    *
    *
@@ -322,6 +338,7 @@ public interface SpannerActionOrBuilder
    * @return The batchDml.
    */
   com.google.spanner.executor.v1.BatchDmlAction getBatchDml();
+
   /**
    *
    *
@@ -345,6 +362,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the write field is set.
    */
   boolean hasWrite();
+
   /**
    *
    *
@@ -357,6 +375,7 @@ public interface SpannerActionOrBuilder
    * @return The write.
    */
   com.google.spanner.executor.v1.WriteMutationsAction getWrite();
+
   /**
    *
    *
@@ -380,6 +399,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the partitionedUpdate field is set.
    */
   boolean hasPartitionedUpdate();
+
   /**
    *
    *
@@ -392,6 +412,7 @@ public interface SpannerActionOrBuilder
    * @return The partitionedUpdate.
    */
   com.google.spanner.executor.v1.PartitionedUpdateAction getPartitionedUpdate();
+
   /**
    *
    *
@@ -416,6 +437,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the admin field is set.
    */
   boolean hasAdmin();
+
   /**
    *
    *
@@ -429,6 +451,7 @@ public interface SpannerActionOrBuilder
    * @return The admin.
    */
   com.google.spanner.executor.v1.AdminAction getAdmin();
+
   /**
    *
    *
@@ -453,6 +476,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the startBatchTxn field is set.
    */
   boolean hasStartBatchTxn();
+
   /**
    *
    *
@@ -465,6 +489,7 @@ public interface SpannerActionOrBuilder
    * @return The startBatchTxn.
    */
   com.google.spanner.executor.v1.StartBatchTransactionAction getStartBatchTxn();
+
   /**
    *
    *
@@ -488,6 +513,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the closeBatchTxn field is set.
    */
   boolean hasCloseBatchTxn();
+
   /**
    *
    *
@@ -500,6 +526,7 @@ public interface SpannerActionOrBuilder
    * @return The closeBatchTxn.
    */
   com.google.spanner.executor.v1.CloseBatchTransactionAction getCloseBatchTxn();
+
   /**
    *
    *
@@ -525,6 +552,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the generateDbPartitionsRead field is set.
    */
   boolean hasGenerateDbPartitionsRead();
+
   /**
    *
    *
@@ -539,6 +567,7 @@ public interface SpannerActionOrBuilder
    * @return The generateDbPartitionsRead.
    */
   com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction getGenerateDbPartitionsRead();
+
   /**
    *
    *
@@ -567,6 +596,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the generateDbPartitionsQuery field is set.
    */
   boolean hasGenerateDbPartitionsQuery();
+
   /**
    *
    *
@@ -581,6 +611,7 @@ public interface SpannerActionOrBuilder
    * @return The generateDbPartitionsQuery.
    */
   com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction getGenerateDbPartitionsQuery();
+
   /**
    *
    *
@@ -607,6 +638,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the executePartition field is set.
    */
   boolean hasExecutePartition();
+
   /**
    *
    *
@@ -619,6 +651,7 @@ public interface SpannerActionOrBuilder
    * @return The executePartition.
    */
   com.google.spanner.executor.v1.ExecutePartitionAction getExecutePartition();
+
   /**
    *
    *
@@ -643,6 +676,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the executeChangeStreamQuery field is set.
    */
   boolean hasExecuteChangeStreamQuery();
+
   /**
    *
    *
@@ -656,6 +690,7 @@ public interface SpannerActionOrBuilder
    * @return The executeChangeStreamQuery.
    */
   com.google.spanner.executor.v1.ExecuteChangeStreamQuery getExecuteChangeStreamQuery();
+
   /**
    *
    *
@@ -681,6 +716,7 @@ public interface SpannerActionOrBuilder
    * @return Whether the queryCancellation field is set.
    */
   boolean hasQueryCancellation();
+
   /**
    *
    *
@@ -693,6 +729,7 @@ public interface SpannerActionOrBuilder
    * @return The queryCancellation.
    */
   com.google.spanner.executor.v1.QueryCancellationAction getQueryCancellation();
+
   /**
    *
    *

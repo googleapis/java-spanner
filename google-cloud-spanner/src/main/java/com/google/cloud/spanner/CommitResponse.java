@@ -41,7 +41,9 @@ public class CommitResponse {
     return Timestamp.fromProto(proto.getCommitTimestamp());
   }
 
-  /** @return true if the {@link CommitResponse} includes {@link CommitStats} */
+  /**
+   * @return true if the {@link CommitResponse} includes {@link CommitStats}
+   */
   public boolean hasCommitStats() {
     return proto.hasCommitStats();
   }

@@ -208,7 +208,8 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
         connection.execute(
             Statement.of(
                 String.format(
-                    "set %sautocommit_dml_mode = 'transactional_with_fallback_to_partitioned_non_atomic'",
+                    "set %sautocommit_dml_mode ="
+                        + " 'transactional_with_fallback_to_partitioned_non_atomic'",
                     prefix)));
         try (ResultSet resultSet =
             connection.executeQuery(

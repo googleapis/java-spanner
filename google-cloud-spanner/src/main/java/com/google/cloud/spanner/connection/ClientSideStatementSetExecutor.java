@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.Tuple;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
@@ -27,6 +28,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.nio.CharBuffer;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,8 +106,8 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
     try {
       value =
           this.cache.get(
-              statement.getSqlWithoutComments(),
-              () -> getParameterValue(statement.getSqlWithoutComments()));
+              statement.getSql(),
+              () -> getParameterValue(connection.getDialect(), statement.getSql()));
     } catch (ExecutionException | UncheckedExecutionException executionException) {
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
     }
@@ -115,8 +117,13 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
     return (StatementResult) method.invoke(connection, value.x());
   }
 
-  Tuple<T, Boolean> getParameterValue(String sql) {
-    Matcher matcher = allowedValuesPattern.matcher(sql);
+  Tuple<T, Boolean> getParameterValue(Dialect dialect, String sql) {
+    // Get rid of any spaces/comments at the start of the string.
+    SimpleParser simpleParser = new SimpleParser(dialect, sql);
+    simpleParser.skipWhitespaces();
+    // Create a wrapper around the SQL string from the point after the first whitespace.
+    CharBuffer sqlAfterWhitespaces = CharBuffer.wrap(sql, simpleParser.getPos(), sql.length());
+    Matcher matcher = allowedValuesPattern.matcher(sqlAfterWhitespaces);
     if (matcher.find() && matcher.groupCount() >= 2) {
       boolean local = matcher.group(1) != null && "local".equalsIgnoreCase(matcher.group(1).trim());
       String value = matcher.group(2);
@@ -130,7 +137,7 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
               "Unknown value for %s: %s",
               this.statement.getSetStatement().getPropertyName(), value));
     } else {
-      Matcher invalidMatcher = this.statement.getPattern().matcher(sql);
+      Matcher invalidMatcher = this.statement.getPattern().matcher(sqlAfterWhitespaces);
       int valueGroup = this.supportsLocal ? 2 : 1;
       if (invalidMatcher.find() && invalidMatcher.groupCount() == valueGroup) {
         String invalidValue = invalidMatcher.group(valueGroup);

@@ -194,7 +194,47 @@ public class CompositeTracer extends BaseApiTracer {
   public void recordGFELatency(Long gfeLatency) {
     for (ApiTracer child : children) {
       if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordGFELatency(Float.valueOf(gfeLatency));
+      }
+    }
+  }
+
+  public void recordGfeHeaderMissingCount(Long value) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordGfeHeaderMissingCount(value);
+      }
+    }
+  }
+
+  public void recordAFELatency(Long afeLatency) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordAFELatency(Float.valueOf(afeLatency));
+      }
+    }
+  }
+
+  public void recordAfeHeaderMissingCount(Long value) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordAfeHeaderMissingCount(value);
+      }
+    }
+  }
+
+  public void recordGFELatency(Float gfeLatency) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
         ((BuiltInMetricsTracer) child).recordGFELatency(gfeLatency);
+      }
+    }
+  }
+
+  public void recordAFELatency(Float afeLatency) {
+    for (ApiTracer child : children) {
+      if (child instanceof BuiltInMetricsTracer) {
+        ((BuiltInMetricsTracer) child).recordAFELatency(afeLatency);
       }
     }
   }

@@ -23,6 +23,8 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -177,6 +179,60 @@ public interface StructReader {
 
   /**
    * @param columnIndex index of the column
+   * @return the value of a column with type T or null if the column contains a null value
+   *     <p>Example
+   *     <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrNull(1, StructReader::getString)
+   * }</pre>
+   */
+  default <T> T getOrNull(int columnIndex, BiFunction<StructReader, Integer, T> function) {
+    return isNull(columnIndex) ? null : function.apply(this, columnIndex);
+  }
+
+  /**
+   * @param columnName index of the column
+   * @return the value of a column with type T or null if the column contains a null value
+   *     <p>Example
+   *     <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrNull("name", StructReader::getString)
+   * }</pre>
+   */
+  default <T> T getOrNull(String columnName, BiFunction<StructReader, String, T> function) {
+    return isNull(columnName) ? null : function.apply(this, columnName);
+  }
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a column with type T, or the given default if the column value is null
+   *     <p>Example
+   *     <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrDefault(1, StructReader::getString, "")
+   * }</pre>
+   */
+  default <T> T getOrDefault(
+      int columnIndex, BiFunction<StructReader, Integer, T> function, T defaultValue) {
+    return isNull(columnIndex) ? defaultValue : function.apply(this, columnIndex);
+  }
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a column with type T, or the given default if the column value is null
+   *     <p>Example
+   *     <pre>{@code
+   * Struct row = ...
+   * String name = row.getOrDefault("name", StructReader::getString, "")
+   * }</pre>
+   */
+  default <T> T getOrDefault(
+      String columnName, BiFunction<StructReader, String, T> function, T defaultValue) {
+    return isNull(columnName) ? defaultValue : function.apply(this, columnName);
+  }
+
+  /**
+   * @param columnIndex index of the column
    * @return the value of a non-{@code NULL} column with type {@link Type#json()}.
    */
   default String getJson(int columnIndex) {
@@ -291,11 +347,15 @@ public interface StructReader {
    */
   Date getDate(int columnIndex);
 
+  UUID getUuid(int columnIndex);
+
   /**
    * @param columnName name of the column
    * @return the value of a non-{@code NULL} column with type {@link Type#date()}.
    */
   Date getDate(String columnName);
+
+  UUID getUuid(String columnName);
 
   /**
    * @param columnIndex index of the column
@@ -499,7 +559,8 @@ public interface StructReader {
    */
   default List<String> getJsonList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnName name of the column
@@ -509,7 +570,8 @@ public interface StructReader {
    */
   default List<String> getJsonList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnIndex index of the column
@@ -519,7 +581,8 @@ public interface StructReader {
    */
   default List<String> getPgJsonbList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * @param columnName name of the column
@@ -529,7 +592,8 @@ public interface StructReader {
    */
   default List<String> getPgJsonbList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
-  };
+  }
+  ;
 
   /**
    * To get the proto message of generic type {@code T} from Struct.
@@ -636,6 +700,10 @@ public interface StructReader {
    *     access each element in the list multiple times.
    */
   List<Date> getDateList(String columnName);
+
+  List<UUID> getUuidList(int columnIndex);
+
+  List<UUID> getUuidList(String columnName);
 
   /**
    * @param columnIndex index of the column

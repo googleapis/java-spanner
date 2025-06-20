@@ -50,6 +50,7 @@ public interface ReadContext extends AutoCloseable {
      */
     WITH_PLAN_AND_STATS
   }
+
   /**
    * Reads zero or more rows from a database.
    *

@@ -40,6 +40,7 @@ public interface TransactionOptionsOrBuilder
    * @return Whether the readWrite field is set.
    */
   boolean hasReadWrite();
+
   /**
    *
    *
@@ -56,6 +57,7 @@ public interface TransactionOptionsOrBuilder
    * @return The readWrite.
    */
   com.google.spanner.v1.TransactionOptions.ReadWrite getReadWrite();
+
   /**
    *
    *
@@ -87,6 +89,7 @@ public interface TransactionOptionsOrBuilder
    * @return Whether the partitionedDml field is set.
    */
   boolean hasPartitionedDml();
+
   /**
    *
    *
@@ -103,6 +106,7 @@ public interface TransactionOptionsOrBuilder
    * @return The partitionedDml.
    */
   com.google.spanner.v1.TransactionOptions.PartitionedDml getPartitionedDml();
+
   /**
    *
    *
@@ -134,6 +138,7 @@ public interface TransactionOptionsOrBuilder
    * @return Whether the readOnly field is set.
    */
   boolean hasReadOnly();
+
   /**
    *
    *
@@ -150,6 +155,7 @@ public interface TransactionOptionsOrBuilder
    * @return The readOnly.
    */
   com.google.spanner.v1.TransactionOptions.ReadOnly getReadOnly();
+
   /**
    *
    *
@@ -203,6 +209,7 @@ public interface TransactionOptionsOrBuilder
    * @return The enum numeric value on the wire for isolationLevel.
    */
   int getIsolationLevelValue();
+
   /**
    *
    *

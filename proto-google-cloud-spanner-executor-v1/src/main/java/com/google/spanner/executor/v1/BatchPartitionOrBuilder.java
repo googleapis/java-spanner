@@ -63,6 +63,7 @@ public interface BatchPartitionOrBuilder
    * @return Whether the table field is set.
    */
   boolean hasTable();
+
   /**
    *
    *
@@ -76,6 +77,7 @@ public interface BatchPartitionOrBuilder
    * @return The table.
    */
   java.lang.String getTable();
+
   /**
    *
    *
@@ -102,6 +104,7 @@ public interface BatchPartitionOrBuilder
    * @return Whether the index field is set.
    */
   boolean hasIndex();
+
   /**
    *
    *
@@ -114,6 +117,7 @@ public interface BatchPartitionOrBuilder
    * @return The index.
    */
   java.lang.String getIndex();
+
   /**
    *
    *

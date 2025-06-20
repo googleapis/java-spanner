@@ -40,6 +40,7 @@ public interface DirectedReadOptionsOrBuilder
    * @return Whether the includeReplicas field is set.
    */
   boolean hasIncludeReplicas();
+
   /**
    *
    *
@@ -56,6 +57,7 @@ public interface DirectedReadOptionsOrBuilder
    * @return The includeReplicas.
    */
   com.google.spanner.v1.DirectedReadOptions.IncludeReplicas getIncludeReplicas();
+
   /**
    *
    *
@@ -85,6 +87,7 @@ public interface DirectedReadOptionsOrBuilder
    * @return Whether the excludeReplicas field is set.
    */
   boolean hasExcludeReplicas();
+
   /**
    *
    *
@@ -99,6 +102,7 @@ public interface DirectedReadOptionsOrBuilder
    * @return The excludeReplicas.
    */
   com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas getExcludeReplicas();
+
   /**
    *
    *

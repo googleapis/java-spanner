@@ -35,15 +35,17 @@ public class InstanceNotFoundException extends ResourceNotFoundException {
       @Nullable String message,
       ResourceInfo resourceInfo,
       @Nullable Throwable cause) {
-    this(token, message, resourceInfo, cause, null);
+    this(token, message, resourceInfo, cause, null, null);
   }
+
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   InstanceNotFoundException(
       DoNotConstructDirectly token,
       @Nullable String message,
       ResourceInfo resourceInfo,
       @Nullable Throwable cause,
-      @Nullable ApiException apiException) {
-    super(token, message, resourceInfo, cause, apiException);
+      @Nullable ApiException apiException,
+      @Nullable XGoogSpannerRequestId reqId) {
+    super(token, message, resourceInfo, cause, apiException, reqId);
   }
 }

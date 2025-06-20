@@ -36,6 +36,7 @@ public interface CancelOperationActionOrBuilder
    * @return The operation.
    */
   java.lang.String getOperation();
+
   /**
    *
    *

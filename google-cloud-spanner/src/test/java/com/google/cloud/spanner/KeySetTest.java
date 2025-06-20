@@ -90,8 +90,7 @@ public class KeySetTest {
     assertThat(set.getRanges()).isEmpty();
 
     set =
-        KeySet.range(KeyRange.closedOpen(Key.of("a"), Key.of("b")))
-            .toBuilder()
+        KeySet.range(KeyRange.closedOpen(Key.of("a"), Key.of("b"))).toBuilder()
             .addRange(KeyRange.closedOpen(Key.of("c"), Key.of("d")))
             .build();
     assertThat(set.isAll()).isFalse();
@@ -250,8 +249,7 @@ public class KeySetTest {
   @Test
   public void serializationMultiWithAll() {
     KeySet keySet =
-        KeySet.all()
-            .toBuilder()
+        KeySet.all().toBuilder()
             .addKey(Key.of("a", 1))
             .addRange(KeyRange.closedOpen(Key.of("m"), Key.of("p")))
             .build();
@@ -266,8 +264,7 @@ public class KeySetTest {
   @Test
   public void javaSerialization() {
     reserializeAndAssert(
-        KeySet.all()
-            .toBuilder()
+        KeySet.all().toBuilder()
             .addKey(Key.of("a", 1))
             .addRange(KeyRange.closedOpen(Key.of("m"), Key.of("p")))
             .build());

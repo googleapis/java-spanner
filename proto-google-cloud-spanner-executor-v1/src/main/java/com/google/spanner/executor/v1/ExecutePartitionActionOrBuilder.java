@@ -36,6 +36,7 @@ public interface ExecutePartitionActionOrBuilder
    * @return Whether the partition field is set.
    */
   boolean hasPartition();
+
   /**
    *
    *
@@ -48,6 +49,7 @@ public interface ExecutePartitionActionOrBuilder
    * @return The partition.
    */
   com.google.spanner.executor.v1.BatchPartition getPartition();
+
   /**
    *
    *

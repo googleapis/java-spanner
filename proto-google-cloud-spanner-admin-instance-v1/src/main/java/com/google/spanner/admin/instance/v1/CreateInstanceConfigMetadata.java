@@ -34,6 +34,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
     CreateInstanceConfigMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use CreateInstanceConfigMetadata.newBuilder() to construct.
   private CreateInstanceConfigMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -65,6 +66,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
   private int bitField0_;
   public static final int INSTANCE_CONFIG_FIELD_NUMBER = 1;
   private com.google.spanner.admin.instance.v1.InstanceConfig instanceConfig_;
+
   /**
    *
    *
@@ -80,6 +82,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
   public boolean hasInstanceConfig() {
     return ((bitField0_ & 0x00000001) != 0);
   }
+
   /**
    *
    *
@@ -97,6 +100,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
         ? com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()
         : instanceConfig_;
   }
+
   /**
    *
    *
@@ -115,6 +119,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
 
   public static final int PROGRESS_FIELD_NUMBER = 2;
   private com.google.spanner.admin.instance.v1.OperationProgress progress_;
+
   /**
    *
    *
@@ -132,6 +137,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
   public boolean hasProgress() {
     return ((bitField0_ & 0x00000002) != 0);
   }
+
   /**
    *
    *
@@ -151,6 +157,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
         ? com.google.spanner.admin.instance.v1.OperationProgress.getDefaultInstance()
         : progress_;
   }
+
   /**
    *
    *
@@ -171,6 +178,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 3;
   private com.google.protobuf.Timestamp cancelTime_;
+
   /**
    *
    *
@@ -186,6 +194,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
   public boolean hasCancelTime() {
     return ((bitField0_ & 0x00000004) != 0);
   }
+
   /**
    *
    *
@@ -201,6 +210,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
   public com.google.protobuf.Timestamp getCancelTime() {
     return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
+
   /**
    *
    *
@@ -409,6 +419,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -657,6 +668,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
             com.google.spanner.admin.instance.v1.InstanceConfig.Builder,
             com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder>
         instanceConfigBuilder_;
+
     /**
      *
      *
@@ -671,6 +683,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     public boolean hasInstanceConfig() {
       return ((bitField0_ & 0x00000001) != 0);
     }
+
     /**
      *
      *
@@ -691,6 +704,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
         return instanceConfigBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -713,6 +727,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -733,6 +748,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -761,6 +777,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       }
       return this;
     }
+
     /**
      *
      *
@@ -780,6 +797,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -794,6 +812,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return getInstanceConfigFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -813,6 +832,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
             : instanceConfig_;
       }
     }
+
     /**
      *
      *
@@ -845,6 +865,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
             com.google.spanner.admin.instance.v1.OperationProgress.Builder,
             com.google.spanner.admin.instance.v1.OperationProgressOrBuilder>
         progressBuilder_;
+
     /**
      *
      *
@@ -861,6 +882,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     public boolean hasProgress() {
       return ((bitField0_ & 0x00000002) != 0);
     }
+
     /**
      *
      *
@@ -883,6 +905,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
         return progressBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -907,6 +930,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -929,6 +953,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -959,6 +984,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       }
       return this;
     }
+
     /**
      *
      *
@@ -980,6 +1006,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -996,6 +1023,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return getProgressFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1016,6 +1044,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
             : progress_;
       }
     }
+
     /**
      *
      *
@@ -1050,6 +1079,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
             com.google.protobuf.Timestamp.Builder,
             com.google.protobuf.TimestampOrBuilder>
         cancelTimeBuilder_;
+
     /**
      *
      *
@@ -1064,6 +1094,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     public boolean hasCancelTime() {
       return ((bitField0_ & 0x00000004) != 0);
     }
+
     /**
      *
      *
@@ -1084,6 +1115,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
         return cancelTimeBuilder_.getMessage();
       }
     }
+
     /**
      *
      *
@@ -1106,6 +1138,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1125,6 +1158,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1152,6 +1186,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       }
       return this;
     }
+
     /**
      *
      *
@@ -1171,6 +1206,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1185,6 +1221,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }
+
     /**
      *
      *
@@ -1203,6 +1240,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
             : cancelTime_;
       }
     }
+
     /**
      *
      *

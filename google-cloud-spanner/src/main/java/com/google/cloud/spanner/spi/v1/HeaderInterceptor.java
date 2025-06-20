@@ -56,7 +56,6 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -72,10 +71,11 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Metadata.Key<String> SERVER_TIMING_HEADER_KEY =
       Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER);
   private static final String GFE_TIMING_HEADER = "gfet4t7";
+  private static final String AFE_TIMING_HEADER = "afe";
   private static final Metadata.Key<String> GOOGLE_CLOUD_RESOURCE_PREFIX_KEY =
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
   private static final Pattern SERVER_TIMING_PATTERN =
-      Pattern.compile("(?<metricName>[a-zA-Z0-9_-]+);\\s*dur=(?<duration>\\d+)");
+      Pattern.compile("(?<metricName>[a-zA-Z0-9_-]+);\\s*dur=(?<duration>\\d+(\\.\\d+)?)");
   private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN =
       Pattern.compile(
           ".*projects/(?<project>\\p{ASCII}[^/]*)(/instances/(?<instance>\\p{ASCII}[^/]*))?(/databases/(?<database>\\p{ASCII}[^/]*))?");
@@ -87,6 +87,8 @@ class HeaderInterceptor implements ClientInterceptor {
       CacheBuilder.newBuilder().maximumSize(1000).build();
   private final Cache<String, Map<String, String>> builtInAttributesCache =
       CacheBuilder.newBuilder().maximumSize(1000).build();
+  private final Cache<DatabaseName, Cache<String, String>> keyCache =
+      CacheBuilder.newBuilder().maximumSize(1000).build();
 
   // Get the global singleton Tagger object.
   private static final Tagger TAGGER = Tags.getTagger();
@@ -96,12 +98,8 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
   private final SpannerRpcMetrics spannerRpcMetrics;
 
-  private final Supplier<Boolean> directPathEnabledSupplier;
-
-  HeaderInterceptor(
-      SpannerRpcMetrics spannerRpcMetrics, Supplier<Boolean> directPathEnabledSupplier) {
+  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
     this.spannerRpcMetrics = spannerRpcMetrics;
-    this.directPathEnabledSupplier = directPathEnabledSupplier;
   }
 
   @Override
@@ -116,7 +114,7 @@ class HeaderInterceptor implements ClientInterceptor {
         try {
           Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
-          String key = databaseName + method.getFullMethodName();
+          String key = extractKey(databaseName, method.getFullMethodName());
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
@@ -130,7 +128,8 @@ class HeaderInterceptor implements ClientInterceptor {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
-                  processHeader(metadata, tagContext, attributes, span, compositeTracer);
+                  processHeader(
+                      metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
                   super.onHeaders(metadata);
                 }
               },
@@ -148,7 +147,8 @@ class HeaderInterceptor implements ClientInterceptor {
       TagContext tagContext,
       Attributes attributes,
       Span span,
-      CompositeTracer compositeTracer) {
+      CompositeTracer compositeTracer,
+      boolean isDirectPathUsed) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
     try {
@@ -159,34 +159,46 @@ class HeaderInterceptor implements ClientInterceptor {
       // would fail to parse it correctly. To make the parsing more robust, the logic has been
       // updated to handle multiple metrics gracefully.
 
-      Map<String, Long> serverTimingMetrics = parseServerTimingHeader(serverTiming);
+      Map<String, Float> serverTimingMetrics = parseServerTimingHeader(serverTiming);
       if (serverTimingMetrics.containsKey(GFE_TIMING_HEADER)) {
-        long gfeLatency = serverTimingMetrics.get(GFE_TIMING_HEADER);
+        float gfeLatency = serverTimingMetrics.get(GFE_TIMING_HEADER);
 
-        measureMap.put(SPANNER_GFE_LATENCY, gfeLatency);
+        measureMap.put(SPANNER_GFE_LATENCY, (long) gfeLatency);
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
         measureMap.record(tagContext);
 
-        spannerRpcMetrics.recordGfeLatency(gfeLatency, attributes);
+        spannerRpcMetrics.recordGfeLatency((long) gfeLatency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
-        if (compositeTracer != null) {
+        if (compositeTracer != null && !isDirectPathUsed) {
           compositeTracer.recordGFELatency(gfeLatency);
         }
-
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
         }
       } else {
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
         spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
+        if (compositeTracer != null && !isDirectPathUsed) {
+          compositeTracer.recordGfeHeaderMissingCount(1L);
+        }
+      }
+
+      // Record AFE metrics
+      if (compositeTracer != null && GapicSpannerRpc.isEnableAFEServerTiming()) {
+        if (serverTimingMetrics.containsKey(AFE_TIMING_HEADER)) {
+          float afeLatency = serverTimingMetrics.get(AFE_TIMING_HEADER);
+          compositeTracer.recordAFELatency(afeLatency);
+        } else {
+          compositeTracer.recordAfeHeaderMissingCount(1L);
+        }
       }
     } catch (NumberFormatException e) {
       LOGGER.log(LEVEL, "Invalid server-timing object in header: {}", serverTiming);
     }
   }
 
-  private Map<String, Long> parseServerTimingHeader(String serverTiming) {
-    Map<String, Long> serverTimingMetrics = new HashMap<>();
+  private Map<String, Float> parseServerTimingHeader(String serverTiming) {
+    Map<String, Float> serverTimingMetrics = new HashMap<>();
     if (serverTiming != null) {
       Matcher matcher = SERVER_TIMING_PATTERN.matcher(serverTiming);
       while (matcher.find()) {
@@ -194,11 +206,18 @@ class HeaderInterceptor implements ClientInterceptor {
         String durationStr = matcher.group("duration");
 
         if (metricName != null && durationStr != null) {
-          serverTimingMetrics.put(metricName, Long.valueOf(durationStr));
+          serverTimingMetrics.put(metricName, Float.valueOf(durationStr));
         }
       }
     }
     return serverTimingMetrics;
+  }
+
+  private String extractKey(DatabaseName databaseName, String methodName)
+      throws ExecutionException {
+    Cache<String, String> keys =
+        keyCache.get(databaseName, () -> CacheBuilder.newBuilder().maximumSize(1000).build());
+    return keys.get(methodName, () -> databaseName + methodName);
   }
 
   private DatabaseName extractDatabaseName(Metadata headers) throws ExecutionException {
@@ -269,7 +288,7 @@ class HeaderInterceptor implements ClientInterceptor {
               BuiltInMetricsConstant.INSTANCE_ID_KEY.getKey(), databaseName.getInstance());
           attributes.put(
               BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY.getKey(),
-              String.valueOf(this.directPathEnabledSupplier.get()));
+              String.valueOf(GapicSpannerRpc.DIRECTPATH_CHANNEL_CREATED));
           return attributes;
         });
   }

@@ -155,6 +155,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public Dialect getDialect() {
+    return getConnection().getDialect();
+  }
+
+  @Override
   public StatementResult statementSetAutocommit(Boolean autocommit) {
     Preconditions.checkNotNull(autocommit);
     getConnection().setAutocommit(autocommit);
@@ -356,7 +361,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetMaxCommitDelay(Duration duration) {
-    getConnection().setMaxCommitDelay(duration == null || duration.isZero() ? null : duration);
+    getConnection().setMaxCommitDelay(duration);
     return noResult(SET_MAX_COMMIT_DELAY);
   }
 

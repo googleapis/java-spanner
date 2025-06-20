@@ -170,7 +170,9 @@ public interface Connection extends AutoCloseable {
    */
   ApiFuture<Void> closeAsync();
 
-  /** @return <code>true</code> if this connection has been closed. */
+  /**
+   * @return <code>true</code> if this connection has been closed.
+   */
   boolean isClosed();
 
   /**
@@ -205,7 +207,9 @@ public interface Connection extends AutoCloseable {
    */
   void setAutocommit(boolean autocommit);
 
-  /** @return <code>true</code> if this connection is in autocommit mode */
+  /**
+   * @return <code>true</code> if this connection is in autocommit mode
+   */
   boolean isAutocommit();
 
   /**
@@ -217,7 +221,9 @@ public interface Connection extends AutoCloseable {
    */
   void setReadOnly(boolean readOnly);
 
-  /** @return <code>true</code> if this connection is in read-only mode */
+  /**
+   * @return <code>true</code> if this connection is in read-only mode
+   */
   boolean isReadOnly();
 
   /** Sets the default isolation level for read/write transactions for this connection. */
@@ -273,7 +279,9 @@ public interface Connection extends AutoCloseable {
    */
   long getStatementTimeout(TimeUnit unit);
 
-  /** @return <code>true</code> if this {@link Connection} has a statement timeout value. */
+  /**
+   * @return <code>true</code> if this {@link Connection} has a statement timeout value.
+   */
   boolean hasStatementTimeout();
 
   /**
@@ -391,7 +399,9 @@ public interface Connection extends AutoCloseable {
     throw new UnsupportedOperationException();
   }
 
-  /** @return The transaction tag of the current transaction. */
+  /**
+   * @return The transaction tag of the current transaction.
+   */
   default String getTransactionTag() {
     throw new UnsupportedOperationException();
   }
@@ -625,7 +635,9 @@ public interface Connection extends AutoCloseable {
    */
   void setReturnCommitStats(boolean returnCommitStats);
 
-  /** @return true if this connection requests commit statistics from Cloud Spanner */
+  /**
+   * @return true if this connection requests commit statistics from Cloud Spanner
+   */
   boolean isReturnCommitStats();
 
   /** Sets the max_commit_delay that will be applied to commit requests from this connection. */
@@ -1077,10 +1089,14 @@ public interface Connection extends AutoCloseable {
    */
   void abortBatch();
 
-  /** @return <code>true</code> if a DDL batch is active on this connection. */
+  /**
+   * @return <code>true</code> if a DDL batch is active on this connection.
+   */
   boolean isDdlBatchActive();
 
-  /** @return <code>true</code> if a DML batch is active on this connection. */
+  /**
+   * @return <code>true</code> if a DML batch is active on this connection.
+   */
   boolean isDmlBatchActive();
 
   /**

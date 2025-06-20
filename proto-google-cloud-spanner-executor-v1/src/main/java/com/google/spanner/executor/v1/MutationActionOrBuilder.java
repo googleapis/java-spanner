@@ -34,6 +34,7 @@ public interface MutationActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.MutationAction.Mod mod = 1;</code>
    */
   java.util.List<com.google.spanner.executor.v1.MutationAction.Mod> getModList();
+
   /**
    *
    *
@@ -44,6 +45,7 @@ public interface MutationActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.MutationAction.Mod mod = 1;</code>
    */
   com.google.spanner.executor.v1.MutationAction.Mod getMod(int index);
+
   /**
    *
    *
@@ -54,6 +56,7 @@ public interface MutationActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.MutationAction.Mod mod = 1;</code>
    */
   int getModCount();
+
   /**
    *
    *
@@ -65,6 +68,7 @@ public interface MutationActionOrBuilder
    */
   java.util.List<? extends com.google.spanner.executor.v1.MutationAction.ModOrBuilder>
       getModOrBuilderList();
+
   /**
    *
    *

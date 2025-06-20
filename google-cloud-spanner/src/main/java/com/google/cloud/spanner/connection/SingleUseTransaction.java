@@ -218,7 +218,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         statement.isQuery()
             || (statement.isUpdate()
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
-        "The statement must be a query, or the statement must be DML and AnalyzeMode must be PLAN or PROFILE");
+        "The statement must be a query, or the statement must be DML and AnalyzeMode must be PLAN"
+            + " or PROFILE");
     try (Scope ignore = span.makeCurrent()) {
       checkAndMarkUsed();
 
@@ -386,13 +387,13 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       Callable<Void> callable =
           () -> {
             try {
-              if (isCreateDatabaseStatement(ddl.getSqlWithoutComments())) {
+              if (isCreateDatabaseStatement(dbClient.getDialect(), ddl.getSql())) {
                 executeCreateDatabase(ddl);
               } else {
                 ddlClient.runWithRetryForMissingDefaultSequenceKind(
                     restartIndex -> {
                       OperationFuture<?, ?> operation =
-                          ddlClient.executeDdl(ddl.getSqlWithoutComments(), protoDescriptors);
+                          ddlClient.executeDdl(ddl.getSql(), protoDescriptors);
                       getWithStatementTimeout(operation, ddl);
                     },
                     connectionState.getValue(DEFAULT_SEQUENCE_KIND).getValue(),
@@ -413,7 +414,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
   private void executeCreateDatabase(ParsedStatement ddl) {
     OperationFuture<?, ?> operation =
-        ddlClient.executeCreateDatabase(ddl.getSqlWithoutComments(), dbClient.getDialect());
+        ddlClient.executeCreateDatabase(ddl.getSql(), dbClient.getDialect());
     getWithStatementTimeout(operation, ddl);
   }
 
@@ -474,8 +475,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Preconditions.checkNotNull(updates);
     for (ParsedStatement update : updates) {
       Preconditions.checkArgument(
-          update.isUpdate(),
-          "Statement is not an update statement: " + update.getSqlWithoutComments());
+          update.isUpdate(), "Statement is not an update statement: " + update.getSql());
     }
     ConnectionPreconditions.checkState(
         !isReadOnly(), "Batch update statements are not allowed in read-only mode");

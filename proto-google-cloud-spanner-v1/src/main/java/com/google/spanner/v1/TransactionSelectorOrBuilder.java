@@ -38,6 +38,7 @@ public interface TransactionSelectorOrBuilder
    * @return Whether the singleUse field is set.
    */
   boolean hasSingleUse();
+
   /**
    *
    *
@@ -52,6 +53,7 @@ public interface TransactionSelectorOrBuilder
    * @return The singleUse.
    */
   com.google.spanner.v1.TransactionOptions getSingleUse();
+
   /**
    *
    *
@@ -77,6 +79,7 @@ public interface TransactionSelectorOrBuilder
    * @return Whether the id field is set.
    */
   boolean hasId();
+
   /**
    *
    *
@@ -105,6 +108,7 @@ public interface TransactionSelectorOrBuilder
    * @return Whether the begin field is set.
    */
   boolean hasBegin();
+
   /**
    *
    *
@@ -120,6 +124,7 @@ public interface TransactionSelectorOrBuilder
    * @return The begin.
    */
   com.google.spanner.v1.TransactionOptions getBegin();
+
   /**
    *
    *

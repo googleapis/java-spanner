@@ -163,6 +163,7 @@ public class SpannerPool {
     private final boolean enableEndToEndTracing;
     private final String clientCertificate;
     private final String clientCertificateKey;
+    private final boolean isExperimentalHost;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -196,6 +197,7 @@ public class SpannerPool {
       this.enableEndToEndTracing = options.isEndToEndTracingEnabled();
       this.clientCertificate = options.getClientCertificate();
       this.clientCertificateKey = options.getClientCertificateKey();
+      this.isExperimentalHost = options.isExperimentalHost();
     }
 
     @Override
@@ -220,7 +222,8 @@ public class SpannerPool {
           && Objects.equals(this.enableApiTracing, other.enableApiTracing)
           && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing)
           && Objects.equals(this.clientCertificate, other.clientCertificate)
-          && Objects.equals(this.clientCertificateKey, other.clientCertificateKey);
+          && Objects.equals(this.clientCertificateKey, other.clientCertificateKey)
+          && Objects.equals(this.isExperimentalHost, other.isExperimentalHost);
     }
 
     @Override
@@ -241,7 +244,8 @@ public class SpannerPool {
           this.enableApiTracing,
           this.enableEndToEndTracing,
           this.clientCertificate,
-          this.clientCertificateKey);
+          this.clientCertificateKey,
+          this.isExperimentalHost);
     }
   }
 
@@ -250,6 +254,7 @@ public class SpannerPool {
    * threads to be created when the connection API is not used.
    */
   private boolean initialized = false;
+
   /**
    * Thread that will be run as a shutdown hook on closing the application. This thread will close
    * any Spanner instances opened by the Connection API that are still open.
@@ -404,6 +409,9 @@ public class SpannerPool {
     if (key.clientCertificate != null && key.clientCertificateKey != null) {
       builder.useClientCert(key.clientCertificate, key.clientCertificateKey);
     }
+    if (key.isExperimentalHost) {
+      builder.setExperimentalHost(key.host);
+    }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);
     }
@@ -492,7 +500,8 @@ public class SpannerPool {
               ErrorCode.FAILED_PRECONDITION,
               "There is/are "
                   + keysStillInUse.size()
-                  + " connection(s) still open. Close all connections before calling closeSpanner()");
+                  + " connection(s) still open. Close all connections before calling"
+                  + " closeSpanner()");
         }
       } finally {
         if (closerService != null) {

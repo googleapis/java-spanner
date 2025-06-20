@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -267,9 +268,6 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32() {
-    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0f), Type.float32());
     assertThat(row.isNull(0)).isFalse();
@@ -278,9 +276,6 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32Null() {
-    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Float) null), Type.float32());
     assertThat(row.isNull(0)).isTrue();
@@ -342,7 +337,6 @@ public class ITQueryTest {
   @Test
   public void bindJson() {
     assumeFalse("JSON are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
-    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -356,7 +350,6 @@ public class ITQueryTest {
   @Test
   public void bindJsonEmpty() {
     assumeFalse("JSON are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
-    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").to(Value.json("{}")), Type.json());
@@ -367,7 +360,6 @@ public class ITQueryTest {
   @Test
   public void bindJsonNull() {
     assumeFalse("JSON is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
-    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").to(Value.json(null)), Type.json());
@@ -425,9 +417,32 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindUuid() {
+    // TODO: Remove once it is enabled in emulator.
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    UUID uuid = UUID.randomUUID();
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(uuid), Type.uuid());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getUuid(0)).isEqualTo(uuid);
+  }
+
+  @Test
+  public void bindUuidNull() {
+    // TODO: Remove once it is enabled in emulator.
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((UUID) null), Type.uuid());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
   public void bindInterval() {
-    assumeFalse(
-        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Interval d = Interval.parseFromString("P1Y2M3DT4H5M6.789123S");
     Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(d), Type.interval());
     assertThat(row.isNull(0)).isFalse();
@@ -436,8 +451,6 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalNull() {
-    assumeFalse(
-        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").to((Interval) null), Type.interval());
@@ -446,7 +459,6 @@ public class ITQueryTest {
 
   @Test
   public void bindNumeric() {
-    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b = new BigDecimal("1.1");
     Statement.Builder statement = Statement.newBuilder(selectValueQuery);
     Type expectedType = Type.numeric();
@@ -471,7 +483,6 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericNull() {
-    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Statement.Builder statement = Statement.newBuilder(selectValueQuery);
     Type expectedType = Type.numeric();
     if (dialect.dialect == Dialect.POSTGRESQL) {
@@ -486,7 +497,6 @@ public class ITQueryTest {
 
   @Test
   public void bindNumeric_doesNotPreservePrecision() {
-    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b = new BigDecimal("1.10");
     Statement.Builder statement = Statement.newBuilder(selectValueQuery);
     Type expectedType = Type.numeric();
@@ -574,9 +584,6 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32Array() {
-    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -599,9 +606,6 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32ArrayEmpty() {
-    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -614,9 +618,6 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32ArrayNull() {
-    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toFloat32Array((float[]) null),
@@ -702,7 +703,6 @@ public class ITQueryTest {
   public void bindJsonArray() {
     assumeFalse(
         "array JSON binding is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
-    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -718,7 +718,6 @@ public class ITQueryTest {
   @Test
   public void bindJsonArrayEmpty() {
     assumeFalse("JSON is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
-    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toJsonArray(Collections.emptyList()),
@@ -730,7 +729,6 @@ public class ITQueryTest {
   @Test
   public void bindJsonArrayNull() {
     assumeFalse("JSON is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
-    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toJsonArray(null),
@@ -839,9 +837,54 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindUuidArray() {
+    // TODO: Remove once it is enabled in emulator.
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    UUID u1 = UUID.randomUUID();
+    UUID u2 = UUID.randomUUID();
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toUuidArray(asList(u1, u2, null)),
+            Type.array(Type.uuid()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getUuidList(0)).containsExactly(u1, u2, null).inOrder();
+  }
+
+  @Test
+  public void bindUuidArrayEmpty() {
+    // TODO: Remove once it is enabled in emulator.
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toUuidArray(Collections.emptyList()),
+            Type.array(Type.uuid()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getUuidList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindUuidArrayNull() {
+    // TODO: Remove once it is enabled in emulator.
+    assumeFalse("Emulator does not support UUID yet", isUsingEmulator());
+    // TODO: Remove once it is enabled in production universe.
+    assumeTrue("UUID is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toUuidArray(null),
+            Type.array(Type.uuid()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
   public void bindIntervalArray() {
-    assumeFalse(
-        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Interval d1 = Interval.parseFromString("P-1Y-2M-3DT4H5M6.789123S");
     Interval d2 = Interval.parseFromString("P1Y2M3DT-4H-5M-6.789123S");
     Struct row =
@@ -854,8 +897,6 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalArrayEmpty() {
-    assumeFalse(
-        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -868,8 +909,6 @@ public class ITQueryTest {
 
   @Test
   public void bindIntervalArrayNull() {
-    assumeFalse(
-        "INTERVAL is not yet supported on Emulator", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toIntervalArray(null),
@@ -880,7 +919,6 @@ public class ITQueryTest {
   @Test
   public void bindNumericArrayGoogleStandardSQL() {
     assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
-    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b1 = new BigDecimal("3.14");
     BigDecimal b2 = new BigDecimal("6.626");
 
@@ -895,7 +933,6 @@ public class ITQueryTest {
   @Test
   public void bindNumericArrayPostgreSQL() {
     assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
-    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -909,7 +946,6 @@ public class ITQueryTest {
   @Test
   public void bindNumericArrayEmptyGoogleStandardSQL() {
     assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
-    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -923,7 +959,6 @@ public class ITQueryTest {
   @Test
   public void bindNumericArrayEmptyPostgreSQL() {
     assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
-    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)

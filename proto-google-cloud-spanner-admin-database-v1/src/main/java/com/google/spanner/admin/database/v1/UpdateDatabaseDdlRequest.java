@@ -48,6 +48,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.UpdateDatabaseDdlRequest)
     UpdateDatabaseDdlRequestOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use UpdateDatabaseDdlRequest.newBuilder() to construct.
   private UpdateDatabaseDdlRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -85,6 +86,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object database_ = "";
+
   /**
    *
    *
@@ -110,6 +112,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       return s;
     }
   }
+
   /**
    *
    *
@@ -141,6 +144,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList statements_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
+
   /**
    *
    *
@@ -155,6 +159,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   public com.google.protobuf.ProtocolStringList getStatementsList() {
     return statements_;
   }
+
   /**
    *
    *
@@ -169,6 +174,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   public int getStatementsCount() {
     return statements_.size();
   }
+
   /**
    *
    *
@@ -184,6 +190,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   public java.lang.String getStatements(int index) {
     return statements_.get(index);
   }
+
   /**
    *
    *
@@ -204,6 +211,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   @SuppressWarnings("serial")
   private volatile java.lang.Object operationId_ = "";
+
   /**
    *
    *
@@ -247,6 +255,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       return s;
     }
   }
+
   /**
    *
    *
@@ -293,6 +302,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   public static final int PROTO_DESCRIPTORS_FIELD_NUMBER = 4;
   private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+
   /**
    *
    *
@@ -322,6 +332,27 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     return protoDescriptors_;
   }
 
+  public static final int THROUGHPUT_MODE_FIELD_NUMBER = 5;
+  private boolean throughputMode_ = false;
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. This field is exposed to be used by the Spanner Migration Tool.
+   * For more details, see
+   * [SMT](https://github.com/GoogleCloudPlatform/spanner-migration-tool).
+   * </pre>
+   *
+   * <code>bool throughput_mode = 5 [(.google.api.field_behavior) = OPTIONAL];</code>
+   *
+   * @return The throughputMode.
+   */
+  @java.lang.Override
+  public boolean getThroughputMode() {
+    return throughputMode_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -347,6 +378,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     }
     if (!protoDescriptors_.isEmpty()) {
       output.writeBytes(4, protoDescriptors_);
+    }
+    if (throughputMode_ != false) {
+      output.writeBool(5, throughputMode_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -374,6 +408,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     if (!protoDescriptors_.isEmpty()) {
       size += com.google.protobuf.CodedOutputStream.computeBytesSize(4, protoDescriptors_);
     }
+    if (throughputMode_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(5, throughputMode_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -394,6 +431,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     if (!getStatementsList().equals(other.getStatementsList())) return false;
     if (!getOperationId().equals(other.getOperationId())) return false;
     if (!getProtoDescriptors().equals(other.getProtoDescriptors())) return false;
+    if (getThroughputMode() != other.getThroughputMode()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -415,6 +453,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     hash = (53 * hash) + getOperationId().hashCode();
     hash = (37 * hash) + PROTO_DESCRIPTORS_FIELD_NUMBER;
     hash = (53 * hash) + getProtoDescriptors().hashCode();
+    hash = (37 * hash) + THROUGHPUT_MODE_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getThroughputMode());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -516,6 +556,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *
@@ -574,6 +615,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       operationId_ = "";
       protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+      throughputMode_ = false;
       return this;
     }
 
@@ -624,6 +666,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.protoDescriptors_ = protoDescriptors_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.throughputMode_ = throughputMode_;
       }
     }
 
@@ -697,6 +742,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       if (other.getProtoDescriptors() != com.google.protobuf.ByteString.EMPTY) {
         setProtoDescriptors(other.getProtoDescriptors());
       }
+      if (other.getThroughputMode() != false) {
+        setThroughputMode(other.getThroughputMode());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -748,6 +796,12 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
                 bitField0_ |= 0x00000008;
                 break;
               } // case 34
+            case 40:
+              {
+                throughputMode_ = input.readBool();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 40
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -768,6 +822,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     private int bitField0_;
 
     private java.lang.Object database_ = "";
+
     /**
      *
      *
@@ -792,6 +847,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -816,6 +872,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -839,6 +896,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -858,6 +916,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -892,6 +951,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       }
       bitField0_ |= 0x00000002;
     }
+
     /**
      *
      *
@@ -907,6 +967,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       statements_.makeImmutable();
       return statements_;
     }
+
     /**
      *
      *
@@ -921,6 +982,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public int getStatementsCount() {
       return statements_.size();
     }
+
     /**
      *
      *
@@ -936,6 +998,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public java.lang.String getStatements(int index) {
       return statements_.get(index);
     }
+
     /**
      *
      *
@@ -951,6 +1014,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public com.google.protobuf.ByteString getStatementsBytes(int index) {
       return statements_.getByteString(index);
     }
+
     /**
      *
      *
@@ -974,6 +1038,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -996,6 +1061,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1015,6 +1081,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1033,6 +1100,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1058,6 +1126,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     }
 
     private java.lang.Object operationId_ = "";
+
     /**
      *
      *
@@ -1100,6 +1169,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return (java.lang.String) ref;
       }
     }
+
     /**
      *
      *
@@ -1142,6 +1212,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return (com.google.protobuf.ByteString) ref;
       }
     }
+
     /**
      *
      *
@@ -1183,6 +1254,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1220,6 +1292,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1264,6 +1337,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     }
 
     private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+
     /**
      *
      *
@@ -1292,6 +1366,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public com.google.protobuf.ByteString getProtoDescriptors() {
       return protoDescriptors_;
     }
+
     /**
      *
      *
@@ -1326,6 +1401,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       onChanged();
       return this;
     }
+
     /**
      *
      *
@@ -1353,6 +1429,68 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public Builder clearProtoDescriptors() {
       bitField0_ = (bitField0_ & ~0x00000008);
       protoDescriptors_ = getDefaultInstance().getProtoDescriptors();
+      onChanged();
+      return this;
+    }
+
+    private boolean throughputMode_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. This field is exposed to be used by the Spanner Migration Tool.
+     * For more details, see
+     * [SMT](https://github.com/GoogleCloudPlatform/spanner-migration-tool).
+     * </pre>
+     *
+     * <code>bool throughput_mode = 5 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @return The throughputMode.
+     */
+    @java.lang.Override
+    public boolean getThroughputMode() {
+      return throughputMode_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. This field is exposed to be used by the Spanner Migration Tool.
+     * For more details, see
+     * [SMT](https://github.com/GoogleCloudPlatform/spanner-migration-tool).
+     * </pre>
+     *
+     * <code>bool throughput_mode = 5 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @param value The throughputMode to set.
+     * @return This builder for chaining.
+     */
+    public Builder setThroughputMode(boolean value) {
+
+      throughputMode_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. This field is exposed to be used by the Spanner Migration Tool.
+     * For more details, see
+     * [SMT](https://github.com/GoogleCloudPlatform/spanner-migration-tool).
+     * </pre>
+     *
+     * <code>bool throughput_mode = 5 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearThroughputMode() {
+      bitField0_ = (bitField0_ & ~0x00000010);
+      throughputMode_ = false;
       onChanged();
       return this;
     }

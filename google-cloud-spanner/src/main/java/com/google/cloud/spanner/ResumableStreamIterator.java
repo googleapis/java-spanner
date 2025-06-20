@@ -71,6 +71,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
   private CloseableIterator<PartialResultSet> stream;
   private ByteString resumeToken;
   private boolean finished;
+
   /**
    * Indicates whether it is currently safe to retry RPCs. This will be {@code false} if we have
    * reached the maximum buffer size without seeing a restart token; in this case, we will drain the
@@ -180,10 +181,10 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       }
       if (latch.await(backoffMillis, TimeUnit.MILLISECONDS)) {
         // Woken by context cancellation.
-        throw newSpannerExceptionForCancellation(context, null);
+        throw newSpannerExceptionForCancellation(context, null, null /*TODO: requestId*/);
       }
     } catch (InterruptedException interruptExcept) {
-      throw newSpannerExceptionForCancellation(context, interruptExcept);
+      throw newSpannerExceptionForCancellation(context, interruptExcept, null /*TODO: requestId*/);
     } finally {
       context.removeListener(listener);
     }

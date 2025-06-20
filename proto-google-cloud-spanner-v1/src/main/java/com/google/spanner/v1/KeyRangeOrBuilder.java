@@ -37,6 +37,7 @@ public interface KeyRangeOrBuilder
    * @return Whether the startClosed field is set.
    */
   boolean hasStartClosed();
+
   /**
    *
    *
@@ -50,6 +51,7 @@ public interface KeyRangeOrBuilder
    * @return The startClosed.
    */
   com.google.protobuf.ListValue getStartClosed();
+
   /**
    *
    *
@@ -75,6 +77,7 @@ public interface KeyRangeOrBuilder
    * @return Whether the startOpen field is set.
    */
   boolean hasStartOpen();
+
   /**
    *
    *
@@ -88,6 +91,7 @@ public interface KeyRangeOrBuilder
    * @return The startOpen.
    */
   com.google.protobuf.ListValue getStartOpen();
+
   /**
    *
    *
@@ -113,6 +117,7 @@ public interface KeyRangeOrBuilder
    * @return Whether the endClosed field is set.
    */
   boolean hasEndClosed();
+
   /**
    *
    *
@@ -126,6 +131,7 @@ public interface KeyRangeOrBuilder
    * @return The endClosed.
    */
   com.google.protobuf.ListValue getEndClosed();
+
   /**
    *
    *
@@ -151,6 +157,7 @@ public interface KeyRangeOrBuilder
    * @return Whether the endOpen field is set.
    */
   boolean hasEndOpen();
+
   /**
    *
    *
@@ -164,6 +171,7 @@ public interface KeyRangeOrBuilder
    * @return The endOpen.
    */
   com.google.protobuf.ListValue getEndOpen();
+
   /**
    *
    *

@@ -78,7 +78,8 @@ import javax.annotation.Nullable;
 public interface SpannerRpc extends ServiceRpc {
   /** Options passed in {@link SpannerRpc} methods to control how an RPC is issued. */
   enum Option {
-    CHANNEL_HINT("Channel Hint");
+    CHANNEL_HINT("Channel Hint"),
+    REQUEST_ID("Request Id");
 
     private final String value;
 
@@ -269,6 +270,7 @@ public interface SpannerRpc extends ServiceRpc {
       Database database, FieldMask fieldMask) throws SpannerException;
 
   GetDatabaseDdlResponse getDatabaseDdl(String databaseName) throws SpannerException;
+
   /** Lists the backups in the specified instance. */
   Paginated<Backup> listBackups(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)

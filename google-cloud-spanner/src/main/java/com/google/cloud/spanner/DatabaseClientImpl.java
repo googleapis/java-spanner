@@ -22,11 +22,19 @@ import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.Statement.StatementFactory;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
@@ -40,6 +48,9 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
   @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
+  private final int dbId;
+  private final AtomicInteger nthRequest;
+  private final Map<String, Integer> clientIdToOrdinalMap;
 
   final boolean useMultiplexedSessionBlindWrite;
 
@@ -48,11 +59,11 @@ class DatabaseClientImpl implements DatabaseClient {
     this(
         "",
         pool,
-        /* useMultiplexedSessionBlindWrite = */ false,
-        /* multiplexedSessionDatabaseClient = */ null,
+        /* useMultiplexedSessionBlindWrite= */ false,
+        /* multiplexedSessionDatabaseClient= */ null,
         /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
-        /* useMultiplexedSessionForRW = */ false,
+        /* useMultiplexedSessionForRW= */ false,
         Attributes.empty());
   }
 
@@ -61,11 +72,11 @@ class DatabaseClientImpl implements DatabaseClient {
     this(
         clientId,
         pool,
-        /* useMultiplexedSessionBlindWrite = */ false,
-        /* multiplexedSessionDatabaseClient = */ null,
+        /* useMultiplexedSessionBlindWrite= */ false,
+        /* multiplexedSessionDatabaseClient= */ null,
         /* useMultiplexedSessionPartitionedOps= */ false,
         tracer,
-        /* useMultiplexedSessionForRW = */ false,
+        /* useMultiplexedSessionForRW= */ false,
         Attributes.empty());
   }
 
@@ -86,6 +97,20 @@ class DatabaseClientImpl implements DatabaseClient {
     this.tracer = tracer;
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
     this.commonAttributes = commonAttributes;
+
+    this.clientIdToOrdinalMap = new HashMap<String, Integer>();
+    this.dbId = this.dbIdFromClientId(this.clientId);
+    this.nthRequest = new AtomicInteger(0);
+  }
+
+  @VisibleForTesting
+  synchronized int dbIdFromClientId(String clientId) {
+    Integer id = this.clientIdToOrdinalMap.get(clientId);
+    if (id == null) {
+      id = this.clientIdToOrdinalMap.size() + 1;
+      this.clientIdToOrdinalMap.put(clientId, id);
+    }
+    return id;
   }
 
   @VisibleForTesting
@@ -139,6 +164,30 @@ class DatabaseClientImpl implements DatabaseClient {
     return pool.getDialect();
   }
 
+  private final AbstractLazyInitializer<StatementFactory> statementFactorySupplier =
+      new AbstractLazyInitializer<StatementFactory>() {
+        @Override
+        protected StatementFactory initialize() {
+          try {
+            Dialect dialect = getDialectAsync().get(30, TimeUnit.SECONDS);
+            return new StatementFactory(dialect);
+          } catch (ExecutionException | TimeoutException e) {
+            throw SpannerExceptionFactory.asSpannerException(e);
+          } catch (InterruptedException e) {
+            throw SpannerExceptionFactory.propagateInterrupt(e);
+          }
+        }
+      };
+
+  @Override
+  public StatementFactory getStatementFactory() {
+    try {
+      return statementFactorySupplier.get();
+    } catch (Exception exception) {
+      throw SpannerExceptionFactory.asSpannerException(exception);
+    }
+  }
+
   @Override
   @Nullable
   public String getDatabaseRole() {
@@ -159,7 +208,11 @@ class DatabaseClientImpl implements DatabaseClient {
       if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient().writeWithOptions(mutations, options);
       }
-      return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));
+
+      return runWithSessionRetry(
+          (session, reqId) -> {
+            return session.writeWithOptions(mutations, withReqId(reqId, options));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -184,13 +237,23 @@ class DatabaseClientImpl implements DatabaseClient {
             .writeAtLeastOnceWithOptions(mutations, options);
       }
       return runWithSessionRetry(
-          session -> session.writeAtLeastOnceWithOptions(mutations, options));
+          (session, reqId) ->
+              session.writeAtLeastOnceWithOptions(mutations, withReqId(reqId, options)));
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
     } finally {
       span.end();
     }
+  }
+
+  private int nextNthRequest() {
+    return this.nthRequest.incrementAndGet();
+  }
+
+  @VisibleForTesting
+  int getNthRequest() {
+    return this.nthRequest.get();
   }
 
   @Override
@@ -202,7 +265,9 @@ class DatabaseClientImpl implements DatabaseClient {
       if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient().batchWriteAtLeastOnce(mutationGroups, options);
       }
-      return runWithSessionRetry(session -> session.batchWriteAtLeastOnce(mutationGroups, options));
+      return runWithSessionRetry(
+          (session, reqId) ->
+              session.batchWriteAtLeastOnce(mutationGroups, withReqId(reqId, options)));
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -346,11 +411,50 @@ class DatabaseClientImpl implements DatabaseClient {
     return executePartitionedUpdateWithPooledSession(stmt, options);
   }
 
+  private Future<Dialect> getDialectAsync() {
+    MultiplexedSessionDatabaseClient client = getMultiplexedSessionDatabaseClient();
+    if (client != null) {
+      return client.getDialectAsync();
+    }
+    return pool.getDialectAsync();
+  }
+
+  private UpdateOption[] withReqId(
+      final XGoogSpannerRequestId reqId, final UpdateOption... options) {
+    if (reqId == null) {
+      return options;
+    }
+    if (options == null || options.length == 0) {
+      return new UpdateOption[] {new Options.RequestIdOption(reqId)};
+    }
+    UpdateOption[] allOptions = new UpdateOption[options.length + 1];
+    System.arraycopy(options, 0, allOptions, 0, options.length);
+    allOptions[options.length] = new Options.RequestIdOption(reqId);
+    return allOptions;
+  }
+
+  private TransactionOption[] withReqId(
+      final XGoogSpannerRequestId reqId, final TransactionOption... options) {
+    if (reqId == null) {
+      return options;
+    }
+    if (options == null || options.length == 0) {
+      return new TransactionOption[] {new Options.RequestIdOption(reqId)};
+    }
+    TransactionOption[] allOptions = new TransactionOption[options.length + 1];
+    System.arraycopy(options, 0, allOptions, 0, options.length);
+    allOptions[options.length] = new Options.RequestIdOption(reqId);
+    return allOptions;
+  }
+
   private long executePartitionedUpdateWithPooledSession(
       final Statement stmt, final UpdateOption... options) {
     ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION, commonAttributes);
     try (IScope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
+      return runWithSessionRetry(
+          (session, reqId) -> {
+            return session.executePartitionedUpdate(stmt, withReqId(reqId, options));
+          });
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -358,15 +462,22 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
-  private <T> T runWithSessionRetry(Function<Session, T> callable) {
+  @VisibleForTesting
+  <T> T runWithSessionRetry(BiFunction<Session, XGoogSpannerRequestId, T> callable) {
     PooledSessionFuture session = getSession();
+    XGoogSpannerRequestId reqId =
+        XGoogSpannerRequestId.of(
+            this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 1);
     while (true) {
       try {
-        return callable.apply(session);
+        return callable.apply(session, reqId);
       } catch (SessionNotFoundException e) {
         session =
             (PooledSessionFuture)
                 pool.getPooledSessionReplacementHandler().replaceSession(e, session);
+        reqId =
+            XGoogSpannerRequestId.of(
+                this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 1);
       }
     }
   }

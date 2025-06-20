@@ -34,6 +34,7 @@ public final class MoveInstanceResponse extends com.google.protobuf.GeneratedMes
     // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.MoveInstanceResponse)
     MoveInstanceResponseOrBuilder {
   private static final long serialVersionUID = 0L;
+
   // Use MoveInstanceResponse.newBuilder() to construct.
   private MoveInstanceResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
@@ -213,6 +214,7 @@ public final class MoveInstanceResponse extends com.google.protobuf.GeneratedMes
     Builder builder = new Builder(parent);
     return builder;
   }
+
   /**
    *
    *

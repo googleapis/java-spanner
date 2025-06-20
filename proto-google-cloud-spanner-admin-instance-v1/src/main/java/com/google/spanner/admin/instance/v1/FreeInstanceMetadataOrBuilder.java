@@ -40,6 +40,7 @@ public interface FreeInstanceMetadataOrBuilder
    * @return Whether the expireTime field is set.
    */
   boolean hasExpireTime();
+
   /**
    *
    *
@@ -56,6 +57,7 @@ public interface FreeInstanceMetadataOrBuilder
    * @return The expireTime.
    */
   com.google.protobuf.Timestamp getExpireTime();
+
   /**
    *
    *
@@ -85,6 +87,7 @@ public interface FreeInstanceMetadataOrBuilder
    * @return Whether the upgradeTime field is set.
    */
   boolean hasUpgradeTime();
+
   /**
    *
    *
@@ -99,6 +102,7 @@ public interface FreeInstanceMetadataOrBuilder
    * @return The upgradeTime.
    */
   com.google.protobuf.Timestamp getUpgradeTime();
+
   /**
    *
    *
@@ -128,6 +132,7 @@ public interface FreeInstanceMetadataOrBuilder
    * @return The enum numeric value on the wire for expireBehavior.
    */
   int getExpireBehaviorValue();
+
   /**
    *
    *
