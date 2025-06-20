@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
@@ -255,6 +256,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
   @Test
   public void testNoNetworkConnection() {
+    assumeFalse(TestHelper.isMultiplexSessionDisabled());
     // Create a Spanner instance that tries to connect to a server that does not exist.
     // This simulates a bad network connection.
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
