@@ -157,40 +157,43 @@ public class XGoogSpannerRequestIdTest {
               + String.join("\n\t", violations.toArray(new String[0])));
     }
 
-    public static class methodAndRequestId {
-      String method;
-      String requestId;
-
-      public methodAndRequestId(String method, String requestId) {
-        this.method = method;
-        this.requestId = requestId;
-      }
-
-      public String toString() {
-        return "{" + this.method + ":" + this.requestId + "}";
-      }
-    }
-
-    public methodAndRequestId[] accumulatedUnaryValues() {
-      List<methodAndRequestId> accumulated = new ArrayList();
+    public MethodAndRequestId[] accumulatedUnaryValues() {
+      List<MethodAndRequestId> accumulated = new ArrayList();
       this.unaryResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
             for (int i = 0; i < values.size(); i++) {
-              accumulated.add(new methodAndRequestId(method, values.get(i).toString()));
+              accumulated.add(new MethodAndRequestId(method, values.get(i).toString()));
             }
           });
-      return accumulated.toArray(new methodAndRequestId[0]);
+      return accumulated.toArray(new MethodAndRequestId[0]);
     }
 
-    public methodAndRequestId[] accumulatedStreamingValues() {
-      List<methodAndRequestId> accumulated = new ArrayList();
+    public MethodAndRequestId[] accumulatedStreamingValues() {
+      List<MethodAndRequestId> accumulated = new ArrayList();
       this.streamingResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
             for (int i = 0; i < values.size(); i++) {
-              accumulated.add(new methodAndRequestId(method, values.get(i).toString()));
+              accumulated.add(new MethodAndRequestId(method, values.get(i).toString()));
             }
           });
-      return accumulated.toArray(new methodAndRequestId[0]);
+      return accumulated.toArray(new MethodAndRequestId[0]);
+    }
+
+    public void checkExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
+      MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
+      System.out.println("\033[34mUnary: " + gotUnaryValues + "\033[00m");
+      for (int i = 0; i < gotUnaryValues.length; i++) {
+        System.out.println("ith: " + i + ":: " + gotUnaryValues[i]);
+      }
+      assertEquals(wantUnaryValues, gotUnaryValues);
+    }
+
+    public void checkExpectedStreamingXGoogRequestIds(MethodAndRequestId... wantStreamingValues) {
+      MethodAndRequestId[] gotStreamingValues = this.accumulatedStreamingValues();
+      for (int i = 0; i < gotStreamingValues.length; i++) {
+        System.out.println("ith: " + i + ":: " + gotStreamingValues[i]);
+      }
+      assertEquals(wantStreamingValues, gotStreamingValues);
     }
 
     public void reset() {
@@ -198,5 +201,28 @@ public class XGoogSpannerRequestIdTest {
       this.unaryResults.clear();
       this.streamingResults.clear();
     }
+  }
+
+  public static class MethodAndRequestId {
+    String method;
+    String requestId;
+
+    public MethodAndRequestId(String method, String requestId) {
+      this.method = method;
+      this.requestId = requestId;
+    }
+
+    public String toString() {
+      return "{" + this.method + ":" + this.requestId + "}";
+    }
+  }
+
+  public static MethodAndRequestId ofMethodAndRequestId(String method, String reqId) {
+    return new MethodAndRequestId(method, reqId);
+  }
+
+  public static MethodAndRequestId ofMethodAndRequestId(
+      String method, XGoogSpannerRequestId reqId) {
+    return new MethodAndRequestId(method, reqId.toString());
   }
 }
