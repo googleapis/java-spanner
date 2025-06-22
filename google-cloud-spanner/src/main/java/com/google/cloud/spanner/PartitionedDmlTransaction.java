@@ -41,6 +41,7 @@ import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -79,7 +80,11 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     boolean foundStats = false;
     long updateCount = 0L;
     Stopwatch stopwatch = Stopwatch.createStarted(ticker);
-    Options options = Options.fromUpdateOptions(updateOptions);
+    XGoogSpannerRequestId reqId =
+        session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
+    UpdateOption[] allOptions = Arrays.copyOf(updateOptions, updateOptions.length + 1);
+    allOptions[updateOptions.length] = new Options.RequestIdOption(reqId);
+    Options options = Options.fromUpdateOptions(allOptions);
 
     try {
       ExecuteSqlRequest request = newTransactionRequestFrom(statement, options);
@@ -89,7 +94,8 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
         try {
           ServerStream<PartialResultSet> stream =
-              rpc.executeStreamingPartitionedDml(request, session.getOptions(), remainingTimeout);
+              rpc.executeStreamingPartitionedDml(
+                  request, reqId.withOptions(session.getOptions()), remainingTimeout);
 
           for (PartialResultSet rs : stream) {
             if (rs.getResumeToken() != null && !rs.getResumeToken().isEmpty()) {
@@ -104,6 +110,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
         } catch (UnavailableException e) {
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after UnavailableException", e);
+          reqId.incrementAttempt();
           request = resumeOrRestartRequest(resumeToken, statement, request, options);
         } catch (InternalException e) {
           if (!isRetryableInternalErrorPredicate.apply(e)) {
@@ -112,6 +119,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after InternalException - EOS", e);
+          reqId.incrementAttempt();
           request = resumeOrRestartRequest(resumeToken, statement, request, options);
         } catch (AbortedException e) {
           LOGGER.log(Level.FINER, "Retrying PartitionedDml transaction after AbortedException", e);
@@ -119,17 +127,23 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
           foundStats = false;
           updateCount = 0L;
           request = newTransactionRequestFrom(statement, options);
+          // Create a new xGoogSpannerRequestId.
+          reqId = session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
+        } catch (SpannerException e) {
+          e.setRequestId(reqId);
+          throw e;
         }
       }
       if (!foundStats) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
-            "Partitioned DML response missing stats possibly due to non-DML statement as input");
+            "Partitioned DML response missing stats possibly due to non-DML statement as input",
+            reqId);
       }
       LOGGER.log(Level.FINER, "Finished PartitionedUpdate statement");
       return updateCount;
     } catch (Exception e) {
-      throw SpannerExceptionFactory.newSpannerException(e);
+      throw SpannerExceptionFactory.newSpannerException(e, reqId);
     }
   }
 
@@ -209,11 +223,14 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
                     .setExcludeTxnFromChangeStreams(
                         options.withExcludeTxnFromChangeStreams() == Boolean.TRUE))
             .build();
-    Transaction tx = rpc.beginTransaction(request, session.getOptions(), true);
+    XGoogSpannerRequestId reqId =
+        session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
+    Transaction tx = rpc.beginTransaction(request, reqId.withOptions(session.getOptions()), true);
     if (tx.getId().isEmpty()) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INTERNAL,
-          "Failed to init transaction, missing transaction id\n" + session.getName());
+          "Failed to init transaction, missing transaction id\n" + session.getName(),
+          reqId);
     }
     return tx.getId();
   }

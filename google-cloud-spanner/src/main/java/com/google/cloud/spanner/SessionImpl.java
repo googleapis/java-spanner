@@ -300,11 +300,12 @@ class SessionImpl implements Session {
     }
     CommitRequest request = requestBuilder.build();
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
-    final XGoogSpannerRequestId reqId = reqIdOrFresh(options);
 
     try (IScope s = tracer.withSpan(span)) {
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
           () -> {
+            // On Aborted, we have to start a fresh request id.
+            final XGoogSpannerRequestId reqId = reqIdOrFresh(options);
             return new CommitResponse(
                 spanner.getRpc().commit(request, reqId.withOptions(getOptions())));
           });
@@ -464,7 +465,7 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
-    XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 0);
+    XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
     return spanner.getRpc().asyncDeleteSession(getName(), reqId.withOptions(getOptions()));
   }
 
@@ -472,7 +473,7 @@ class SessionImpl implements Session {
   public void close() {
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
-      XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 0);
+      XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
       spanner.getRpc().deleteSession(getName(), reqId.withOptions(getOptions()));
     } catch (RuntimeException e) {
       span.setStatus(e);
@@ -516,7 +517,7 @@ class SessionImpl implements Session {
             Transaction txn = requestFuture.get();
             if (txn.getId().isEmpty()) {
               throw newSpannerException(
-                  ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
+                  ErrorCode.INTERNAL, "Missing id in transaction\n" + getName(), reqId);
             }
             span.end();
             res.set(txn);
@@ -525,7 +526,7 @@ class SessionImpl implements Session {
             span.end();
             res.setException(
                 SpannerExceptionFactory.newSpannerException(
-                    e.getCause() == null ? e : e.getCause()));
+                    e.getCause() == null ? e : e.getCause(), reqId));
           } catch (InterruptedException e) {
             span.setStatus(e);
             span.end();
