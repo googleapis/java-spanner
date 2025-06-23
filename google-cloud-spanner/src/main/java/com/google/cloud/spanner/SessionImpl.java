@@ -600,7 +600,11 @@ class SessionImpl implements Session {
     if (getIsMultiplexed()) {
       return 0;
     }
-    Long channelHint = (Long) this.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
+    Map<SpannerRpc.Option, ?> options = this.getOptions();
+    if (options == null) {
+      return 0;
+    }
+    Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
     if (channelHint == null) {
       return 0;
     }
