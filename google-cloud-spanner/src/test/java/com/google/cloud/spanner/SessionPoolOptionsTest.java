@@ -283,6 +283,7 @@ public class SessionPoolOptionsTest {
 
   @Test
   public void testUseMultiplexedSession() {
+    assumeFalse(TestHelper.isMultiplexSessionDisabled());
     // skip these tests since this configuration can have dual behaviour in different test-runners
     assumeFalse(SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
     assertEquals(false, SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
@@ -304,6 +305,7 @@ public class SessionPoolOptionsTest {
   @Test
   public void testUseMultiplexedSessionForRW() {
     // skip these tests since this configuration can have dual behaviour in different test-runners
+    assumeFalse(TestHelper.isMultiplexSessionDisabled());
     assumeFalse(
         Boolean.parseBoolean(System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW")));
     assumeFalse(SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
