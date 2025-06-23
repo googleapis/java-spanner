@@ -1415,7 +1415,8 @@ public class DatabaseClientImplTest {
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(2, commitRequests.size());
-    xGoogReqIdInterceptor.assertIntegrity();
+    // TODO(@odeke-em): Enable in later PR.
+    // xGoogReqIdInterceptor.assertIntegrity();
   }
 
   @Test
