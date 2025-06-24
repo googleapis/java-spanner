@@ -1575,9 +1575,9 @@ public class SpannerSample {
         .readWriteTransaction(Options.isolationLevel(IsolationLevel.REPEATABLE_READ))
         .run(transaction -> {
           // Read an AlbumTitle.
-          String select_sql =
+          String selectSql =
               "SELECT AlbumTitle from Albums WHERE SingerId = 1 and AlbumId = 1";
-          ResultSet resultSet = transaction.executeQuery(Statement.of(select_sql));
+          ResultSet resultSet = transaction.executeQuery(Statement.of(selectSql));
           String title = null;
           while (resultSet.next()) {
             title = resultSet.getString("AlbumTitle");
@@ -1585,11 +1585,11 @@ public class SpannerSample {
           System.out.printf("Current album title: %s\n", title);
 
           // Update the title.
-          String update_sql =
+          String updateSql =
               "UPDATE Albums "
                   + "SET AlbumTitle = 'New Album Title' "
                   + "WHERE SingerId = 1 and AlbumId = 1";
-          long rowCount = transaction.executeUpdate(Statement.of(update_sql));
+          long rowCount = transaction.executeUpdate(Statement.of(updateSql));
           System.out.printf("%d record updated.\n", rowCount);
           return null;
         });
