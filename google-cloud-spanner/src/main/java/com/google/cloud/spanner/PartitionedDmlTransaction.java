@@ -41,7 +41,6 @@ import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -82,8 +81,9 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     Stopwatch stopwatch = Stopwatch.createStarted(ticker);
     XGoogSpannerRequestId reqId =
         session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
-    UpdateOption[] allOptions = Arrays.copyOf(updateOptions, updateOptions.length + 1);
-    allOptions[updateOptions.length] = new Options.RequestIdOption(reqId);
+    UpdateOption[] allOptions = new UpdateOption[updateOptions.length + 1];
+    System.arraycopy(updateOptions, 0, allOptions, 0, updateOptions.length);
+    allOptions[allOptions.length - 1] = new Options.RequestIdOption(reqId);
     Options options = Options.fromUpdateOptions(allOptions);
 
     try {
