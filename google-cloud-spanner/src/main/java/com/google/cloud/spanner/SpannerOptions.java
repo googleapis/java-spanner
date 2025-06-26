@@ -1000,7 +1000,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
-    private boolean attemptDirectPath = true;
+    private boolean attemptDirectPath = false;
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
     private OpenTelemetry openTelemetry;
@@ -1601,6 +1601,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder disableLeaderAwareRouting() {
       this.leaderAwareRoutingEnabled = false;
+      return this;
+    }
+
+    @BetaApi
+    public Builder enableDirectPath() {
+      this.attemptDirectPath = true;
       return this;
     }
 

@@ -183,6 +183,18 @@ public class ConnectionProperties {
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
+  static final ConnectionProperty<Boolean> ATTEMPT_DIRECT_PATH =
+      create(
+          "attemptDirectPath",
+          "Automatically configure the connection to try to connect to the Cloud Spanner "
+              + "using DirectPath (true/false). Client will try to connect to Spanner directly "
+              + "instead of connecting to GFE(Google Front End). Directpath will work only if "
+              + "client is trying to establish a connect from GCP VM. Otherwise it will fallback to"
+              + "GFE path.",
+          false,
+          BOOLEANS,
+          BooleanConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_AUTO_SAVEPOINTS_FOR_EMULATOR =
       create(
           "useAutoSavepointsForEmulator",
