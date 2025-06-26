@@ -93,6 +93,7 @@ integration)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -108,6 +109,7 @@ integration-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -123,6 +125,7 @@ integration-multiplexed-sessions-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -138,6 +141,7 @@ integration-cloud-devel)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -154,6 +158,7 @@ integration-cloud-devel-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -170,6 +175,7 @@ integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
