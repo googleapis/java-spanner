@@ -1311,4 +1311,17 @@ public class ConnectionOptionsTest {
             .getSessionPoolOptions()
             .getUseMultiplexedSessionPartitionedOps());
   }
+
+  @Test
+  public void testAttemptDirectPath() {
+    ConnectionOptions.Builder builderWithoutDirectPathParam = ConnectionOptions.newBuilder();
+    builderWithoutDirectPathParam.setUri(
+        "spanner://localhost:15000/instances/default/databases/singers-db;usePlainText=true");
+    assertFalse(builderWithoutDirectPathParam.build().isAttemptDirectPath());
+
+    ConnectionOptions.Builder builderWithDirectPathParam = ConnectionOptions.newBuilder();
+    builderWithDirectPathParam.setUri(
+        "spanner://localhost:15000/projects/default/instances/default/databases/singers-db;usePlainText=true;attemptDirectPath=true");
+    assertTrue(builderWithDirectPathParam.build().isAttemptDirectPath());
+  }
 }

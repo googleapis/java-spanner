@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionProperties.ATTEMPT_DIRECT_PATH;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_CONFIG_EMULATOR;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
@@ -1079,6 +1080,10 @@ public class ConnectionOptions {
 
   boolean isExperimentalHost() {
     return getInitialConnectionPropertyValue(IS_EXPERIMENTAL_HOST);
+  }
+
+  boolean isAttemptDirectPath() {
+    return getInitialConnectionPropertyValue(ATTEMPT_DIRECT_PATH);
   }
 
   String getClientCertificate() {
