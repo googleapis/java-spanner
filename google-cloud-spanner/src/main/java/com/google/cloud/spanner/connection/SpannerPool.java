@@ -164,7 +164,7 @@ public class SpannerPool {
     private final String clientCertificate;
     private final String clientCertificateKey;
     private final boolean isExperimentalHost;
-    private final boolean attemptDirectPath;
+    private final boolean enableDirectAccess;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -199,7 +199,7 @@ public class SpannerPool {
       this.clientCertificate = options.getClientCertificate();
       this.clientCertificateKey = options.getClientCertificateKey();
       this.isExperimentalHost = options.isExperimentalHost();
-      this.attemptDirectPath = options.isAttemptDirectPath();
+      this.enableDirectAccess = options.isEnableDirectAccess();
     }
 
     @Override
@@ -226,7 +226,7 @@ public class SpannerPool {
           && Objects.equals(this.clientCertificate, other.clientCertificate)
           && Objects.equals(this.clientCertificateKey, other.clientCertificateKey)
           && Objects.equals(this.isExperimentalHost, other.isExperimentalHost)
-          && Objects.equals(this.attemptDirectPath, other.attemptDirectPath);
+          && Objects.equals(this.enableDirectAccess, other.enableDirectAccess);
     }
 
     @Override
@@ -249,7 +249,7 @@ public class SpannerPool {
           this.clientCertificate,
           this.clientCertificateKey,
           this.isExperimentalHost,
-          this.attemptDirectPath);
+          this.enableDirectAccess);
     }
   }
 
@@ -416,8 +416,8 @@ public class SpannerPool {
     if (key.isExperimentalHost) {
       builder.setExperimentalHost(key.host);
     }
-    if (key.attemptDirectPath) {
-      builder.enableDirectPath();
+    if (key.enableDirectAccess) {
+      builder.enableDirectAccess();
     }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);
