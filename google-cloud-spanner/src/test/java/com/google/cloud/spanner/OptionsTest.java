@@ -901,6 +901,22 @@ public class OptionsTest {
   }
 
   @Test
+  public void testRequestIdOptionEqualsAndHashCode() {
+    XGoogSpannerRequestId reqId1 = XGoogSpannerRequestId.of(1, 2, 3, 4);
+    XGoogSpannerRequestId reqId2 = XGoogSpannerRequestId.of(2, 3, 4, 5);
+    Options.RequestIdOption opt1 = Options.requestId(reqId1);
+    Options.RequestIdOption opt1Prime = Options.requestId(reqId1);
+    Options.RequestIdOption opt2 = Options.requestId(reqId2);
+
+    assertTrue(opt1.equals(opt1));
+    assertTrue(opt1.equals(opt1Prime));
+    assertEquals(opt1.hashCode(), opt1Prime.hashCode());
+    assertFalse(opt1.equals(opt2));
+    assertNotEquals(opt1, opt2);
+    assertNotEquals(opt1.hashCode(), opt2.hashCode());
+  }
+
+  @Test
   public void testOptions_WithMultipleDifferentRequestIds() {
     XGoogSpannerRequestId reqId1 = XGoogSpannerRequestId.of(1, 1, 1, 1);
     XGoogSpannerRequestId reqId2 = XGoogSpannerRequestId.of(1, 1, 1, 2);
