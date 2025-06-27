@@ -186,11 +186,13 @@ public class ConnectionProperties {
   static final ConnectionProperty<Boolean> ATTEMPT_DIRECT_PATH =
       create(
           "attemptDirectPath",
-          "Automatically configure the connection to try to connect to the Cloud Spanner "
-              + "using DirectPath (true/false). Client will try to connect to Spanner directly "
-              + "instead of connecting to GFE(Google Front End). Directpath will work only if "
-              + "client is trying to establish a connect from GCP VM. Otherwise it will fallback to"
-              + "GFE path.",
+          "Configure the connection to try to connect to Spanner using "
+              + "DirectPath (true/false). The client will try to connect to Spanner "
+              + "using a direct Google network connection. DirectPath will work only "
+              + "if the client is trying to establish a connection from a Google Cloud VM. "
+              + "Otherwise it will automatically fallback to the standard network path. "
+              + "NOTE: The default for this property is currently false, "
+              + "but this could be changed in the future.",
           false,
           BOOLEANS,
           BooleanConverter.INSTANCE,
