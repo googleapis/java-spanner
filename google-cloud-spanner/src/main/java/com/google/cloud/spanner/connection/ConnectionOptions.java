@@ -1082,7 +1082,7 @@ public class ConnectionOptions {
     return getInitialConnectionPropertyValue(IS_EXPERIMENTAL_HOST);
   }
 
-  boolean isEnableDirectAccess() {
+  Boolean isEnableDirectAccess() {
     return getInitialConnectionPropertyValue(ENABLE_DIRECT_ACCESS);
   }
 

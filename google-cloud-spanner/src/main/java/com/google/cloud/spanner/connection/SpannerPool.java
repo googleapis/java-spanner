@@ -164,7 +164,7 @@ public class SpannerPool {
     private final String clientCertificate;
     private final String clientCertificateKey;
     private final boolean isExperimentalHost;
-    private final boolean enableDirectAccess;
+    private final Boolean enableDirectAccess;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -416,8 +416,8 @@ public class SpannerPool {
     if (key.isExperimentalHost) {
       builder.setExperimentalHost(key.host);
     }
-    if (key.enableDirectAccess) {
-      builder.enableDirectAccess();
+    if (key.enableDirectAccess != null) {
+      builder.setEnableDirectAccess(key.enableDirectAccess);
     }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);

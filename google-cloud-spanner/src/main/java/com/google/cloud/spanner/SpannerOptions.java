@@ -1616,18 +1616,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @BetaApi
-    public Builder enableDirectAccess() {
-      this.enableDirectAccess = true;
+    public Builder setEnableDirectAccess(boolean enableDirectAccess) {
+      this.enableDirectAccess = enableDirectAccess;
       return this;
     }
 
-    @BetaApi
-    public Builder disableDirectAccess() {
-      this.enableDirectAccess = false;
-      return this;
-    }
-
-    @ObsoleteApi("Use disableDirectAccess() instead")
+    @ObsoleteApi("Use setEnableDirectAccess(false) instead")
     @Deprecated
     public Builder disableDirectPath() {
       this.enableDirectAccess = false;

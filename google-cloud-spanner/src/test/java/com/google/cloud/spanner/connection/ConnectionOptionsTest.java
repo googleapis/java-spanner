@@ -1317,7 +1317,12 @@ public class ConnectionOptionsTest {
     ConnectionOptions.Builder builderWithoutDirectPathParam = ConnectionOptions.newBuilder();
     builderWithoutDirectPathParam.setUri(
         "spanner://localhost:15000/instances/default/databases/singers-db;usePlainText=true");
-    assertFalse(builderWithoutDirectPathParam.build().isEnableDirectAccess());
+    assertNull(builderWithoutDirectPathParam.build().isEnableDirectAccess());
+
+    ConnectionOptions.Builder builderWithDirectPathParamFalse = ConnectionOptions.newBuilder();
+    builderWithDirectPathParamFalse.setUri(
+        "spanner://localhost:15000/instances/default/databases/singers-db;usePlainText=true;enableDirectAccess=false");
+    assertFalse(builderWithDirectPathParamFalse.build().isEnableDirectAccess());
 
     ConnectionOptions.Builder builderWithDirectPathParam = ConnectionOptions.newBuilder();
     builderWithDirectPathParam.setUri(

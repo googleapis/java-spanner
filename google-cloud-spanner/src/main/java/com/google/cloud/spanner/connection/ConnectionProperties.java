@@ -193,7 +193,7 @@ public class ConnectionProperties {
               + "Otherwise it will automatically fallback to the standard network path. "
               + "NOTE: The default for this property is currently false, "
               + "but this could be changed in the future.",
-          false,
+          null,
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
