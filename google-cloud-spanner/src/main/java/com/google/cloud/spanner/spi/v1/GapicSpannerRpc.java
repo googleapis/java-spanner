@@ -365,8 +365,8 @@ public class GapicSpannerRpc implements SpannerRpc {
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
               .setAllowNonDefaultServiceAccount(true);
-      boolean isAttemptDirectPathXds = isEnableDirectPathXdsEnv();
-      if (isAttemptDirectPathXds) {
+      boolean isEnableDirectAccess = options.isEnableDirectAccess();
+      if (isEnableDirectAccess) {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
         // This will let the credentials try to fetch a hard-bound access token if the runtime
         // environment supports it.
@@ -426,7 +426,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 spannerStubSettings, clientContext);
         DIRECTPATH_CHANNEL_CREATED =
             ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
-                && isAttemptDirectPathXds;
+                && isEnableDirectAccess;
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
         this.readRetryableCodes =
