@@ -592,7 +592,7 @@
                 <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
                 <spanner.testenv.instance>projects/directpath-prod-manual-testing/instances/spanner-testing</spanner.testenv.instance>
                 <spanner.gce.config.project_id>directpath-prod-manual-testing</spanner.gce.config.project_id>
-                <spanner.attempt_directpath>true</spanner.attempt_directpath>
+                <spanner.enable_direct_access>true</spanner.enable_direct_access>
                 <spanner.directpath_test_scenario>ipv4</spanner.directpath_test_scenario>
               </systemPropertyVariables>
               <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
