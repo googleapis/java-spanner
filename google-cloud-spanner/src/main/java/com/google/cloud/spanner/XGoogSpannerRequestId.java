@@ -42,8 +42,8 @@ public class XGoogSpannerRequestId {
   static final long VERSION = 1; // The version of the specification being implemented.
 
   private final long nthClientId;
-  private final long nthChannelId;
   private final long nthRequest;
+  private long nthChannelId;
   private long attempt;
 
   XGoogSpannerRequestId(long nthClientId, long nthChannelId, long nthRequest, long attempt) {
@@ -106,12 +106,29 @@ public class XGoogSpannerRequestId {
         this.attempt);
   }
 
+  public String debugToString() {
+    return String.format(
+        "%d.%s.nth_client=%d.nth_chan=%d.nth_req=%d.attempt=%d",
+        XGoogSpannerRequestId.VERSION,
+        XGoogSpannerRequestId.RAND_PROCESS_ID,
+        this.nthClientId,
+        this.nthChannelId,
+        this.nthRequest,
+        this.attempt);
+  }
+
   @VisibleForTesting
   boolean isGreaterThan(XGoogSpannerRequestId other) {
-    return this.nthClientId > other.nthClientId
-        && this.nthChannelId > other.nthChannelId
-        && this.nthRequest > other.nthRequest
-        && this.attempt > other.attempt;
+    if (this.nthClientId != other.nthClientId) {
+      return this.nthClientId > other.nthClientId;
+    }
+    if (this.nthChannelId != other.nthChannelId) {
+      return this.nthChannelId > other.nthChannelId;
+    }
+    if (this.nthRequest != other.nthRequest) {
+      return this.nthRequest > other.nthRequest;
+    }
+    return this.attempt > other.attempt;
   }
 
   @Override
@@ -158,5 +175,27 @@ public class XGoogSpannerRequestId {
     public XGoogSpannerRequestId nextRequestId(long channelId, int attempt) {
       return XGoogSpannerRequestId.of(1, 1, 1, 0);
     }
+  }
+
+  public void setChannelId(long channelId) {
+    this.nthChannelId = channelId;
+  }
+
+  @VisibleForTesting
+  XGoogSpannerRequestId withNthRequest(long replacementNthRequest) {
+    return XGoogSpannerRequestId.of(
+        this.nthClientId, this.nthChannelId, replacementNthRequest, this.attempt);
+  }
+
+  @VisibleForTesting
+  XGoogSpannerRequestId withChannelId(long replacementChannelId) {
+    return XGoogSpannerRequestId.of(
+        this.nthClientId, replacementChannelId, this.nthRequest, this.attempt);
+  }
+
+  @VisibleForTesting
+  XGoogSpannerRequestId withNthClientId(long replacementClientId) {
+    return XGoogSpannerRequestId.of(
+        replacementClientId, this.nthChannelId, this.nthRequest, this.attempt);
   }
 }

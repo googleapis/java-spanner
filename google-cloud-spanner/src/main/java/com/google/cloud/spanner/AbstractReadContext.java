@@ -457,22 +457,30 @@ abstract class AbstractReadContext
     }
 
     private void initTransactionInternal(BeginTransactionRequest request) {
+      XGoogSpannerRequestId reqId =
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       try {
         Transaction transaction =
-            rpc.beginTransaction(request, getTransactionChannelHint(), isRouteToLeader());
+            rpc.beginTransaction(
+                request, reqId.withOptions(getTransactionChannelHint()), isRouteToLeader());
         if (!transaction.hasReadTimestamp()) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
+              ErrorCode.INTERNAL,
+              "Missing expected transaction.read_timestamp metadata field",
+              reqId);
         }
         if (transaction.getId().isEmpty()) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL, "Missing expected transaction.id metadata field");
+              ErrorCode.INTERNAL, "Missing expected transaction.id metadata field", reqId);
         }
         try {
           timestamp = Timestamp.fromProto(transaction.getReadTimestamp());
         } catch (IllegalArgumentException e) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL, "Bad value in transaction.read_timestamp metadata field", e);
+              ErrorCode.INTERNAL,
+              "Bad value in transaction.read_timestamp metadata field",
+              e,
+              reqId);
         }
         transactionId = transaction.getId();
         span.addAnnotation(
@@ -803,7 +811,8 @@ abstract class AbstractReadContext
             tracer.createStatementAttributes(statement, options),
             session.getErrorHandler(),
             rpc.getExecuteQueryRetrySettings(),
-            rpc.getExecuteQueryRetryableCodes()) {
+            rpc.getExecuteQueryRetryableCodes(),
+            session.getRequestIdCreator()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(
               @Nullable ByteString resumeToken,
@@ -826,11 +835,12 @@ abstract class AbstractReadContext
             if (selector != null) {
               request.setTransaction(selector);
             }
+            this.ensureNonNullXGoogRequestId();
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
                     request.build(),
                     stream.consumer(),
-                    getTransactionChannelHint(),
+                    this.xGoogRequestId.withOptions(getTransactionChannelHint()),
                     isRouteToLeader());
             session.markUsed(clock.instant());
             stream.setCall(call, request.getTransaction().hasBegin());
@@ -1008,7 +1018,8 @@ abstract class AbstractReadContext
             tracer.createTableAttributes(table, readOptions),
             session.getErrorHandler(),
             rpc.getReadRetrySettings(),
-            rpc.getReadRetryableCodes()) {
+            rpc.getReadRetryableCodes(),
+            session.getRequestIdCreator()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(
               @Nullable ByteString resumeToken,
@@ -1029,11 +1040,13 @@ abstract class AbstractReadContext
               builder.setTransaction(selector);
             }
             builder.setRequestOptions(buildRequestOptions(readOptions));
+            this.incrementXGoogRequestIdAttempt();
+            this.xGoogRequestId.setChannelId(session.getChannel());
             SpannerRpc.StreamingCall call =
                 rpc.read(
                     builder.build(),
                     stream.consumer(),
-                    getTransactionChannelHint(),
+                    this.xGoogRequestId.withOptions(getTransactionChannelHint()),
                     isRouteToLeader());
             session.markUsed(clock.instant());
             stream.setCall(call, /* withBeginTransaction= */ builder.getTransaction().hasBegin());
