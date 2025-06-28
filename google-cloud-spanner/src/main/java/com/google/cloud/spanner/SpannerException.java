@@ -57,7 +57,7 @@ public class SpannerException extends BaseGrpcServiceException {
 
   private final ErrorCode code;
   private final ApiException apiException;
-  private final XGoogSpannerRequestId requestId;
+  private XGoogSpannerRequestId requestId;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   SpannerException(
@@ -196,5 +196,10 @@ public class SpannerException extends BaseGrpcServiceException {
       return this.apiException.getErrorDetails();
     }
     return null;
+  }
+
+  /** Sets the requestId. This method is meant to be used internally and not by customers. */
+  public void setRequestId(XGoogSpannerRequestId reqId) {
+    this.requestId = reqId;
   }
 }
