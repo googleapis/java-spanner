@@ -375,6 +375,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     close(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("GuardedBy")
   void close(long timeout, TimeUnit unit) {
     List<ListenableFuture<Void>> closureFutures;
     synchronized (this) {
