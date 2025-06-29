@@ -2907,6 +2907,45 @@ public class DatabaseClientImplTest {
                             return null;
                           }));
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+
+      DatabaseClientImpl dbImpl = ((DatabaseClientImpl) client);
+      int channelId = 0;
+      try (Session session = dbImpl.getSession()) {
+        channelId = ((PooledSessionFuture) session).getChannel();
+      }
+      int dbId = dbImpl.dbId;
+      long NON_DETERMINISTIC = XGoogSpannerRequestIdTest.NON_DETERMINISTIC;
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
+      };
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BeginTransaction",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/CreateSession",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, 1, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
+      };
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 
@@ -2989,6 +3028,46 @@ public class DatabaseClientImplTest {
                       .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+
+      DatabaseClientImpl dbImpl = ((DatabaseClientImpl) client);
+      int channelId = 0;
+      try (Session session = dbImpl.getSession()) {
+        channelId = ((PooledSessionFuture) session).getChannel();
+      }
+      int dbId = dbImpl.dbId;
+      long NON_DETERMINISTIC = XGoogSpannerRequestIdTest.NON_DETERMINISTIC;
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
+      };
+
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BeginTransaction",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/CreateSession",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, 1, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/ExecuteSql",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
+      };
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 
@@ -5314,6 +5393,30 @@ public class DatabaseClientImplTest {
       }
       // Closing the transactions should return the sessions to the pool.
       assertEquals(4, pool.getNumberOfSessionsInPool());
+
+      DatabaseClientImpl dbClient = (DatabaseClientImpl) client;
+      int channelId = 0;
+      try (Session session = dbClient.getSession()) {
+        channelId = ((PooledSessionFuture) session).getChannel();
+      }
+      int dbId = dbClient.dbId;
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantStreamingValues = {};
+
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
+      long NON_DETERMINISTIC = XGoogSpannerRequestIdTest.NON_DETERMINISTIC;
+
+      XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/BatchCreateSessions",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
+        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
+            "google.spanner.v1.Spanner/CreateSession",
+            new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, 1, 1)),
+      };
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
     }
   }
 
