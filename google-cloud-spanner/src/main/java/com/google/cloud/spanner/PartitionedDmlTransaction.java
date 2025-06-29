@@ -93,7 +93,6 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
         final Duration remainingTimeout = tryUpdateTimeout(timeout, stopwatch);
 
         try {
-          System.out.println("\033[31mreqIdPump: " + reqId + "\033[00m");
           ServerStream<PartialResultSet> stream =
               rpc.executeStreamingPartitionedDml(
                   request, reqId.withOptions(session.getOptions()), remainingTimeout);

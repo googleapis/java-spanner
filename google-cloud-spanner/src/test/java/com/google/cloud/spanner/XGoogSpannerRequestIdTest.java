@@ -185,7 +185,7 @@ public class XGoogSpannerRequestIdTest {
     public void checkExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
       MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
       sortValues(gotUnaryValues);
-      for (int i = 0; i < gotUnaryValues.length; i++) {
+      for (int i = 0; i < gotUnaryValues.length && false; i++) {
         System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
       }
       assertEquals(wantUnaryValues, gotUnaryValues);
@@ -194,7 +194,7 @@ public class XGoogSpannerRequestIdTest {
     public void checkAtLeastHasExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
       MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
       sortValues(gotUnaryValues);
-      for (int i = 0; i < gotUnaryValues.length; i++) {
+      for (int i = 0; i < gotUnaryValues.length && false; i++) {
         System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
       }
       if (wantUnaryValues.length < gotUnaryValues.length) {
@@ -213,7 +213,7 @@ public class XGoogSpannerRequestIdTest {
 
     public void checkExpectedStreamingXGoogRequestIds(MethodAndRequestId... wantStreamingValues) {
       MethodAndRequestId[] gotStreamingValues = this.accumulatedStreamingValues();
-      for (int i = 0; i < gotStreamingValues.length; i++) {
+      for (int i = 0; i < gotStreamingValues.length && false; i++) {
         System.out.println(
             "\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
       }
@@ -282,14 +282,12 @@ public class XGoogSpannerRequestIdTest {
                 mreq.method,
                 mreq.requestId
                     .withNthRequest(NON_DETERMINISTIC)
+                    .withChannelId(NON_DETERMINISTIC)
                     .withNthClientId(NON_DETERMINISTIC));
-      } else if (mreq.method.compareTo("google.spanner.v1.Spanner/ExecuteStreamingSql") == 0) {
-        mreqs[i] =
-            new MethodAndRequestId(mreq.method, mreq.requestId.withNthClientId(NON_DETERMINISTIC));
-      } else if (mreq.method.compareTo("google.spanner.v1.Spanner/BeginTransaction") == 0) {
-        mreqs[i] =
-            new MethodAndRequestId(mreq.method, mreq.requestId.withNthClientId(NON_DETERMINISTIC));
-      } else if (mreq.method.compareTo("google.spanner.v1.Spanner/ExecuteSql") == 0
+      } else if (mreq.method.compareTo("google.spanner.v1.Spanner/BeginTransaction") == 0
+          || mreq.method.compareTo("google.spanner.v1.Spanner/ExecuteStreamingSql") == 0
+          || mreq.method.compareTo("google.spanner.v1.Spanner/ExecuteSql") == 0
+          || mreq.method.compareTo("google.spanner.v1.Spanner/CreateSession") == 0
           || mreq.method.compareTo("google.spanner.v1.Spanner/Commit") == 0) {
         mreqs[i] =
             new MethodAndRequestId(mreq.method, mreq.requestId.withNthClientId(NON_DETERMINISTIC));

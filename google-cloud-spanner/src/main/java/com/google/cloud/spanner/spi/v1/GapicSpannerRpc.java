@@ -2064,7 +2064,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     // Debug the call headers before this.
     Map<String, List<String>> hdrs = context.getExtraHeaders();
-    if (method.getFullMethodName().compareTo("google.spanner.v1.Spanner/DeleteSession") != 0) {
+    if (false
+        && method != null
+        && method.getFullMethodName().compareTo("google.spanner.v1.Spanner/DeleteSession") != 0) {
       System.out.println(
           "\033[32mextraHeaders going out for " + method.getFullMethodName() + "\033[00m");
       for (Map.Entry<String, List<String>> entry : hdrs.entrySet()) {
@@ -2084,8 +2086,10 @@ public class GapicSpannerRpc implements SpannerRpc {
       return context;
     }
 
-    String methodName = method.getFullMethodName();
-    if (methodName.compareTo("google.spanner.v1.Spanner/ExecuteStreamingSql") == 0) {
+    if (false
+        && method != null
+        && method.getFullMethodName().compareTo("google.spanner.v1.Spanner/ExecuteStreamingSql")
+            == 0) {
       System.out.println(
           "\033[36mGapiSpannerRpc.withRequestId: "
               + reqId
