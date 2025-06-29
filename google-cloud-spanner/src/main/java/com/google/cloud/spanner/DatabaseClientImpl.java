@@ -48,7 +48,7 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
   @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
-  private final int dbId;
+  @VisibleForTesting final int dbId;
   private final AtomicInteger nthRequest;
   private final Map<String, Integer> clientIdToOrdinalMap;
 
