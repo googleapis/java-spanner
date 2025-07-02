@@ -42,24 +42,17 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   private Float gfeLatency = null;
   private Float afeLatency = null;
 
-  private final TraceWrapper traceWrapper;
+  private TraceWrapper traceWrapper;
   private long gfeHeaderMissingCount = 0;
   private long afeHeaderMissingCount = 0;
   private ISpan currentSpan;
 
   BuiltInMetricsTracer(
       MethodName methodName,
-      BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder,
-      TraceWrapper traceWrapper) {
+      BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
     super(methodName, builtInOpenTelemetryMetricsRecorder);
     this.builtInOpenTelemetryMetricsRecorder = builtInOpenTelemetryMetricsRecorder;
     this.attributes.put(METHOD_ATTRIBUTE, methodName.toString());
-    // Metrics attributes which are filtered from metrics views are sent to exemplars as
-    // filtered_attributes.
-    // Below testmetric attribute will be available in exemplar as we have added a attributefilter
-    // for our metric views.
-    this.attributes.put("testmetric", "testm");
-    this.traceWrapper = traceWrapper;
   }
 
   BuiltInMetricsTracer(
@@ -85,8 +78,6 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
    */
   @Override
   public void attemptSucceeded() {
-    AttributesBuilder builder = Attributes.builder();
-    builder.put("test1", "abc");
     try (IScope s = this.traceWrapper.withSpan(this.currentSpan)) {
       super.attemptSucceeded();
       attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());

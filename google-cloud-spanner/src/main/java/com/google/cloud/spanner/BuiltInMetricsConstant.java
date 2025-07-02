@@ -176,6 +176,14 @@ public class BuiltInMetricsConstant {
         BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
         InstrumentType.HISTOGRAM,
         "ms");
+    defineView(
+        views,
+        BuiltInMetricsConstant.SPANNER_METER_NAME,
+        BuiltInMetricsConstant.AFE_LATENCIES_NAME,
+        BuiltInMetricsConstant.AFE_LATENCIES_NAME,
+        BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
+        InstrumentType.HISTOGRAM,
+        "ms");
     defineGRPCView(views);
     return views.build();
   }

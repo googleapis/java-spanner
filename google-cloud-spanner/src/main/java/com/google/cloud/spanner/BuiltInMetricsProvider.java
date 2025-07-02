@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.opentelemetry.detection.GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_HASH_KEY;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
@@ -26,6 +27,7 @@ import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_RESOURCE_TYPE;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
@@ -75,6 +77,9 @@ final class BuiltInMetricsProvider {
     try {
       if (this.openTelemetry == null) {
         SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
+        // BuiltInMetricsView.registerBuiltinMetrics(
+        //     SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
+        //     sdkMeterProviderBuilder);
 
         // Use GoogleCloudMetricExporter with service time series as the current custom exporter
         // does not export exemplars
@@ -153,8 +158,9 @@ final class BuiltInMetricsProvider {
 
   Map<String, String> createClientAttributes() {
     Map<String, String> clientAttributes = new HashMap<>();
-    String clientUid = getDefaultTaskValue();
-    clientAttributes.put(CLIENT_UID_KEY.getKey(), clientUid);
+    clientAttributes.put(
+        CLIENT_NAME_KEY.getKey(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass()));
+    clientAttributes.put(CLIENT_UID_KEY.getKey(), getDefaultTaskValue());
     return clientAttributes;
   }
 
