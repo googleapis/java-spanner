@@ -45,6 +45,7 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   private final TraceWrapper traceWrapper;
   private long gfeHeaderMissingCount = 0;
   private long afeHeaderMissingCount = 0;
+  private ISpan currentSpan;
 
   BuiltInMetricsTracer(
       MethodName methodName,
@@ -61,25 +62,37 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     this.traceWrapper = traceWrapper;
   }
 
+  BuiltInMetricsTracer(
+      MethodName methodName,
+      BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder,
+      TraceWrapper traceWrapper,
+      ISpan currentSpan) {
+    super(methodName, builtInOpenTelemetryMetricsRecorder);
+    this.builtInOpenTelemetryMetricsRecorder = builtInOpenTelemetryMetricsRecorder;
+    this.attributes.put(METHOD_ATTRIBUTE, methodName.toString());
+    // Metrics attributes which are filtered from metrics views are sent to exemplars as
+    // filtered_attributes.
+    // Below testmetric attribute will be available in exemplar as we have added a attributefilter
+    // for our metric views.
+    this.attributes.put("request_id", "test");
+    this.traceWrapper = traceWrapper;
+    this.currentSpan = currentSpan;
+  }
+
   /**
    * Adds an annotation that the attempt succeeded. Successful attempt add "OK" value to the status
    * attribute key.
    */
   @Override
   public void attemptSucceeded() {
-    // For exemplars to worj metrics should be recorded with the span context.
-    // Creating a new span to verify this.
-    ISpan currentSpan = this.traceWrapper.getCurrentSpan();
     AttributesBuilder builder = Attributes.builder();
     builder.put("test1", "abc");
-    ISpan span = this.traceWrapper.spanBuilder("attempt succeeded", builder.build());
-    try (IScope s = this.traceWrapper.withSpan(span)) {
+    try (IScope s = this.traceWrapper.withSpan(this.currentSpan)) {
       super.attemptSucceeded();
       attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
       builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
           gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
     }
-    span.end();
   }
 
   /**

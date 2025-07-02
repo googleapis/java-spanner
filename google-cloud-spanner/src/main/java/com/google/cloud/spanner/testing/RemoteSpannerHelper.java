@@ -35,6 +35,8 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -274,7 +276,8 @@ public class RemoteSpannerHelper {
 
     // Export to a collector that is expecting OTLP using gRPC.
     OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).build();
+        OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).setPropagators(
+            ContextPropagators.create(W3CTraceContextPropagator.getInstance())).build();
 
     return openTelemetry;
   }

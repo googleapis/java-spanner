@@ -91,6 +91,8 @@ public class GceTestEnvConfig implements TestEnvConfig {
           interceptorProvider.with(new DirectPathAddressCheckInterceptor(directPathTestScenario));
     }
     builder.setInterceptorProvider(interceptorProvider);
+    builder.setEnableEndToEndTracing(true);
+    builder.setEnableApiTracing(true);
     builder.setOpenTelemetry(RemoteSpannerHelper.createTraceExporter());
     // DirectPath tests need to set a custom endpoint to the ChannelProvider
     InstantiatingGrpcChannelProvider.Builder customChannelProviderBuilder =

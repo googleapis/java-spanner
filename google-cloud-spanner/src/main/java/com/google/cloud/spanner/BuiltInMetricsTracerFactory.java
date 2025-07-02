@@ -56,11 +56,13 @@ class BuiltInMetricsTracerFactory extends MetricsTracerFactory {
 
   @Override
   public ApiTracer newTracer(ApiTracer parent, SpanName spanName, OperationType operationType) {
+    ISpan currentSpan = this.traceWrapper.getCurrentSpan();
     BuiltInMetricsTracer metricsTracer =
         new BuiltInMetricsTracer(
             MethodName.of(spanName.getClientName(), spanName.getMethodName()),
             builtInMetricsRecorder,
-            this.traceWrapper);
+            this.traceWrapper, 
+            currentSpan);
     metricsTracer.addAttributes(attributes);
     return metricsTracer;
   }
