@@ -61,7 +61,7 @@ class BuiltInMetricsTracerFactory extends MetricsTracerFactory {
         new BuiltInMetricsTracer(
             MethodName.of(spanName.getClientName(), spanName.getMethodName()),
             builtInMetricsRecorder,
-            this.traceWrapper, 
+            this.traceWrapper,
             currentSpan);
     metricsTracer.addAttributes(attributes);
     return metricsTracer;

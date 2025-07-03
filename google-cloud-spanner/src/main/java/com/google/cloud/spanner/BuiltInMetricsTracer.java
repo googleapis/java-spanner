@@ -21,8 +21,6 @@ import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.MethodName;
 import com.google.api.gax.tracing.MetricsTracer;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -48,8 +46,7 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   private ISpan currentSpan;
 
   BuiltInMetricsTracer(
-      MethodName methodName,
-      BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
+      MethodName methodName, BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
     super(methodName, builtInOpenTelemetryMetricsRecorder);
     this.builtInOpenTelemetryMetricsRecorder = builtInOpenTelemetryMetricsRecorder;
     this.attributes.put(METHOD_ATTRIBUTE, methodName.toString());

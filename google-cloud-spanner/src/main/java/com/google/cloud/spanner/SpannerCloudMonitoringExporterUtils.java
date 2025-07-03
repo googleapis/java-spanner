@@ -22,11 +22,6 @@ import static com.google.api.MetricDescriptor.MetricKind.UNRECOGNIZED;
 import static com.google.api.MetricDescriptor.ValueType.DISTRIBUTION;
 import static com.google.api.MetricDescriptor.ValueType.DOUBLE;
 import static com.google.api.MetricDescriptor.ValueType.INT64;
-
-import com.google.monitoring.v3.DroppedLabels;
-import com.google.monitoring.v3.SpanContext;
-import com.google.protobuf.Any;
-import com.google.protobuf.Timestamp;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.GAX_METER_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.GRPC_METER_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;

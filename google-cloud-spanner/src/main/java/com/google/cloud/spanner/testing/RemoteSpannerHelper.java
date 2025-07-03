@@ -276,8 +276,10 @@ public class RemoteSpannerHelper {
 
     // Export to a collector that is expecting OTLP using gRPC.
     OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).setPropagators(
-            ContextPropagators.create(W3CTraceContextPropagator.getInstance())).build();
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(sdkTracerProvider)
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .build();
 
     return openTelemetry;
   }

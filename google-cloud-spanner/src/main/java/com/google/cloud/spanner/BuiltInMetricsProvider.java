@@ -24,7 +24,6 @@ import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
-import static com.google.cloud.spanner.BuiltInMetricsConstant.SPANNER_RESOURCE_TYPE;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.core.GaxProperties;
@@ -33,10 +32,6 @@ import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
-import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
-import com.google.cloud.opentelemetry.metric.MetricConfiguration;
-import com.google.cloud.opentelemetry.metric.MonitoredResourceDescription;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.grpc.ManagedChannelBuilder;
@@ -47,8 +42,8 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -80,15 +75,13 @@ final class BuiltInMetricsProvider {
         BuiltInMetricsView.registerBuiltinMetrics(
             SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
             sdkMeterProviderBuilder);
-
         sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-
         this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
         Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
       }
       return this.openTelemetry;
-    } catch (Exception ex) {
+    } catch (IOException ex) {
       logger.log(
           Level.WARNING,
           "Unable to get OpenTelemetry object for client side metrics, will skip exporting client"
