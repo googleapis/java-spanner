@@ -77,31 +77,10 @@ final class BuiltInMetricsProvider {
     try {
       if (this.openTelemetry == null) {
         SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
-        // BuiltInMetricsView.registerBuiltinMetrics(
-        //     SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
-        //     sdkMeterProviderBuilder);
+        BuiltInMetricsView.registerBuiltinMetrics(
+            SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
+            sdkMeterProviderBuilder);
 
-        // Use GoogleCloudMetricExporter with service time series as the current custom exporter
-        // does not export exemplars
-        // GoogleCloudMetricExporter expect to pass the resource labels at the time of creating
-        // exporter. Hence we need to hardcode instance_id here.
-        MonitoredResourceDescription monitoredResourceDescription =
-            new MonitoredResourceDescription(
-                SPANNER_RESOURCE_TYPE,
-                ImmutableSet.of(
-                    "project_id", "instance_id", "location", "instance_config", "client_hash"));
-
-        MetricExporter metricExporter =
-            GoogleCloudMetricExporter.createWithConfiguration(
-                MetricConfiguration.builder()
-                    .setProjectId(projectId)
-                    .setMonitoredResourceDescription(monitoredResourceDescription)
-                    .setInstrumentationLibraryLabelsEnabled(false)
-                    .setMetricServiceEndpoint("monitoring.googleapis.com:443")
-                    .setPrefix("spanner.googleapis.com/internal/client")
-                    .setUseServiceTimeSeries(true)
-                    .build());
-        BuiltInMetricsView.registerBuiltinMetrics(metricExporter, sdkMeterProviderBuilder);
         sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
 
@@ -150,8 +129,7 @@ final class BuiltInMetricsProvider {
             .put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown")
             .put(CLIENT_HASH_KEY.getKey(), generateClientHash(getDefaultTaskValue()))
             .put(INSTANCE_ID_KEY.getKey(), "unknown")
-            .put(LOCATION_ID_KEY.getKey(), detectClientLocation())
-            .put("gcp.resource_type", SPANNER_RESOURCE_TYPE);
+            .put(LOCATION_ID_KEY.getKey(), detectClientLocation());
 
     return attributesBuilder.build();
   }
