@@ -141,7 +141,8 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     List<TimeSeries> spannerTimeSeries;
     try {
       spannerTimeSeries =
-          SpannerCloudMonitoringExporterUtils.convertToSpannerTimeSeries(spannerMetricData);
+          SpannerCloudMonitoringExporterUtils.convertToSpannerTimeSeries(
+              spannerMetricData, this.spannerProjectId);
     } catch (Throwable e) {
       logger.log(
           Level.WARNING,
