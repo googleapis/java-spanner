@@ -77,6 +77,8 @@ class OpenTelemetryApiTracer implements ApiTracer {
 
   @Override
   public Scope inScope() {
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("MustBeClosedChecker")
     final io.opentelemetry.context.Scope openTelemetryScope = span.makeCurrent();
     return openTelemetryScope::close;
   }

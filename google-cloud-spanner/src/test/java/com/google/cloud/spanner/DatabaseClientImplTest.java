@@ -2359,6 +2359,8 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
@@ -3947,6 +3949,8 @@ public class DatabaseClientImplTest {
   @Test
   public void testReadWriteTransaction_usesOptions() {
     SessionPool pool = mock(SessionPool.class);
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("DoNotMock")
     PooledSessionFuture session = mock(PooledSessionFuture.class);
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
@@ -3963,6 +3967,8 @@ public class DatabaseClientImplTest {
   @Test
   public void testTransactionManager_usesOptions() {
     SessionPool pool = mock(SessionPool.class);
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("DoNotMock")
     PooledSessionFuture session = mock(PooledSessionFuture.class);
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
@@ -3976,6 +3982,8 @@ public class DatabaseClientImplTest {
   @Test
   public void testRunAsync_usesOptions() {
     SessionPool pool = mock(SessionPool.class);
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("DoNotMock")
     PooledSessionFuture session = mock(PooledSessionFuture.class);
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
@@ -3989,6 +3997,8 @@ public class DatabaseClientImplTest {
   @Test
   public void testTransactionManagerAsync_usesOptions() {
     SessionPool pool = mock(SessionPool.class);
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("DoNotMock")
     PooledSessionFuture session = mock(PooledSessionFuture.class);
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
@@ -4268,6 +4278,8 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
@@ -4283,6 +4295,8 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
@@ -4296,6 +4310,8 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
@@ -4309,6 +4325,8 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
@@ -4322,6 +4340,8 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
