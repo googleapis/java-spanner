@@ -103,7 +103,8 @@ class SpannerCloudMonitoringExporterUtils {
       metricData.getData().getPoints().stream()
           .map(
               pointData ->
-                  convertPointToSpannerTimeSeries(metricData, pointData, monitoredResourceBuilder))
+                  convertPointToSpannerTimeSeries(
+                      metricData, pointData, monitoredResourceBuilder, projectId))
           .forEach(allTimeSeries::add);
     }
     return allTimeSeries;
@@ -112,7 +113,8 @@ class SpannerCloudMonitoringExporterUtils {
   private static TimeSeries convertPointToSpannerTimeSeries(
       MetricData metricData,
       PointData pointData,
-      MonitoredResource.Builder monitoredResourceBuilder) {
+      MonitoredResource.Builder monitoredResourceBuilder,
+      String projectId) {
     TimeSeries.Builder builder =
         TimeSeries.newBuilder()
             .setMetricKind(convertMetricKind(metricData))
@@ -208,7 +210,8 @@ class SpannerCloudMonitoringExporterUtils {
         return builder
             .setValue(
                 TypedValue.newBuilder()
-                    .setDistributionValue(convertHistogramData((HistogramPointData) pointData))
+                    .setDistributionValue(
+                        convertHistogramData((HistogramPointData) pointData, projectId))
                     .build())
             .build();
       case DOUBLE_GAUGE:
@@ -238,6 +241,49 @@ class SpannerCloudMonitoringExporterUtils {
             BucketOptions.newBuilder()
                 .setExplicitBuckets(Explicit.newBuilder().addAllBounds(pointData.getBoundaries())))
         .addAllBucketCounts(pointData.getCounts())
+        .addAllExemplars(
+            pointData.getExemplars().stream()
+                .map(e -> mapExemplar(e, projectId))
+                .collect(Collectors.toList()))
+        .build();
+  }
+
+  private static Distribution.Exemplar mapExemplar(ExemplarData exemplar, String projectId) {
+    double value = 0;
+    if (exemplar instanceof DoubleExemplarData) {
+      value = ((DoubleExemplarData) exemplar).getValue();
+    } else if (exemplar instanceof LongExemplarData) {
+      value = ((LongExemplarData) exemplar).getValue();
+    }
+
+    Distribution.Exemplar.Builder exemplarBuilder =
+        Distribution.Exemplar.newBuilder()
+            .setValue(value)
+            .setTimestamp(mapTimestamp(exemplar.getEpochNanos()));
+    if (exemplar.getSpanContext().isValid()) {
+      exemplarBuilder.addAttachments(
+          Any.pack(
+              SpanContext.newBuilder()
+                  .setSpanName(
+                      makeSpanName(
+                          projectId,
+                          exemplar.getSpanContext().getTraceId(),
+                          exemplar.getSpanContext().getSpanId()))
+                  .build()));
+    }
+    if (!exemplar.getFilteredAttributes().isEmpty()) {
+      exemplarBuilder.addAttachments(
+          Any.pack(mapFilteredAttributes(exemplar.getFilteredAttributes())));
+    }
+    return exemplarBuilder.build();
+  }
+
+  static final long NANO_PER_SECOND = (long) 1e9;
+
+  private static Timestamp mapTimestamp(long epochNanos) {
+    return Timestamp.newBuilder()
+        .setSeconds(epochNanos / NANO_PER_SECOND)
+        .setNanos((int) (epochNanos % NANO_PER_SECOND))
         .build();
   }
 

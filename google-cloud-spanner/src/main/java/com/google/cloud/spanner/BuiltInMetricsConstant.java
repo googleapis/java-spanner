@@ -168,22 +168,7 @@ public class BuiltInMetricsConstant {
         Aggregation.sum(),
         InstrumentType.COUNTER,
         "1");
-    defineView(
-        views,
-        BuiltInMetricsConstant.SPANNER_METER_NAME,
-        BuiltInMetricsConstant.GFE_LATENCIES_NAME,
-        BuiltInMetricsConstant.GFE_LATENCIES_NAME,
-        BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
-        InstrumentType.HISTOGRAM,
-        "ms");
-    defineView(
-        views,
-        BuiltInMetricsConstant.SPANNER_METER_NAME,
-        BuiltInMetricsConstant.AFE_LATENCIES_NAME,
-        BuiltInMetricsConstant.AFE_LATENCIES_NAME,
-        BuiltInMetricsConstant.AGGREGATION_WITH_MILLIS_HISTOGRAM,
-        InstrumentType.HISTOGRAM,
-        "ms");
+    defineSpannerView(views);
     defineGRPCView(views);
     return views.build();
   }
@@ -213,6 +198,19 @@ public class BuiltInMetricsConstant {
             .setAggregation(aggregation)
             .setAttributeFilter(attributesFilter)
             .build();
+    viewMap.put(selector, view);
+  }
+
+  private static void defineSpannerView(ImmutableMap.Builder<InstrumentSelector, View> viewMap) {
+    InstrumentSelector selector =
+        InstrumentSelector.builder()
+            .setMeterName(BuiltInMetricsConstant.SPANNER_METER_NAME)
+            .build();
+    Set<String> attributesFilter =
+        BuiltInMetricsConstant.COMMON_ATTRIBUTES.stream()
+            .map(AttributeKey::getKey)
+            .collect(Collectors.toSet());
+    View view = View.builder().setAttributeFilter(attributesFilter).build();
     viewMap.put(selector, view);
   }
 
