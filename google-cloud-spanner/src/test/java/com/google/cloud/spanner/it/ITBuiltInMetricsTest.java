@@ -35,6 +35,13 @@ import com.google.protobuf.util.Timestamps;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -89,11 +96,40 @@ public class ITBuiltInMetricsTest {
             .setEndTime(Timestamps.fromMillis(end.toEpochMilli()))
             .build();
 
-    for (int i = 0; i < 100; i++) {
-      client
-          .readWriteTransaction()
-          .run(transaction -> transaction.executeQuery(Statement.of("Select 1")));
+    int totalQueries = 1;
+    int batchSize = 1;
+    ExecutorService executor = Executors.newFixedThreadPool(100);
+
+    for (int batch = 0; batch < totalQueries / batchSize; batch++) {
+      List<Callable<Void>> tasks = new ArrayList<>();
+      for (int i = 0; i < batchSize; i++) {
+        tasks.add(
+            () -> {
+              client
+                  .readWriteTransaction()
+                  .run(
+                      transaction -> {
+                        transaction.executeQuery(Statement.of("SELECT 1"));
+                        return null;
+                      });
+              return null;
+            });
+      }
+
+      List<Future<Void>> futures = executor.invokeAll(tasks);
+      for (Future<Void> future : futures) {
+        try {
+          future.get(); // propagate exceptions
+        } catch (ExecutionException e) {
+          System.err.println("Error in query: " + e.getCause());
+        }
+      }
+
+      System.out.println("Completed batch " + (batch + 1));
     }
+
+    executor.shutdown();
+    executor.awaitTermination(1, TimeUnit.HOURS);
 
     for (String metric : METRICS) {
       String metricFilter =

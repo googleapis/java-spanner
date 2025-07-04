@@ -64,7 +64,7 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     // filtered_attributes.
     // Below testmetric attribute will be available in exemplar as we have added a attributefilter
     // for our metric views.
-    this.attributes.put("request_id", "test");
+    // this.attributes.put("request_id", "test");
     this.traceWrapper = traceWrapper;
     this.currentSpan = currentSpan;
   }
