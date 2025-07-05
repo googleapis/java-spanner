@@ -28,6 +28,8 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +43,7 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class XGoogSpannerRequestIdTest {
+  public static long NON_DETERMINISTIC = -1;
 
   @Test
   public void testEquals() {
@@ -157,40 +160,65 @@ public class XGoogSpannerRequestIdTest {
               + String.join("\n\t", violations.toArray(new String[0])));
     }
 
-    public static class methodAndRequestId {
-      String method;
-      String requestId;
-
-      public methodAndRequestId(String method, String requestId) {
-        this.method = method;
-        this.requestId = requestId;
-      }
-
-      public String toString() {
-        return "{" + this.method + ":" + this.requestId + "}";
-      }
-    }
-
-    public methodAndRequestId[] accumulatedUnaryValues() {
-      List<methodAndRequestId> accumulated = new ArrayList();
+    public MethodAndRequestId[] accumulatedUnaryValues() {
+      List<MethodAndRequestId> accumulated = new ArrayList();
       this.unaryResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
             for (int i = 0; i < values.size(); i++) {
-              accumulated.add(new methodAndRequestId(method, values.get(i).toString()));
+              accumulated.add(new MethodAndRequestId(method, values.get(i)));
             }
           });
-      return accumulated.toArray(new methodAndRequestId[0]);
+      return accumulated.toArray(new MethodAndRequestId[0]);
     }
 
-    public methodAndRequestId[] accumulatedStreamingValues() {
-      List<methodAndRequestId> accumulated = new ArrayList();
+    public MethodAndRequestId[] accumulatedStreamingValues() {
+      List<MethodAndRequestId> accumulated = new ArrayList();
       this.streamingResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
             for (int i = 0; i < values.size(); i++) {
-              accumulated.add(new methodAndRequestId(method, values.get(i).toString()));
+              accumulated.add(new MethodAndRequestId(method, values.get(i)));
             }
           });
-      return accumulated.toArray(new methodAndRequestId[0]);
+      return accumulated.toArray(new MethodAndRequestId[0]);
+    }
+
+    public void checkExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
+      MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
+      sortValues(gotUnaryValues);
+      for (int i = 0; i < gotUnaryValues.length && false; i++) {
+        System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
+      }
+      assertEquals(wantUnaryValues, gotUnaryValues);
+    }
+
+    public void checkAtLeastHasExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
+      MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
+      sortValues(gotUnaryValues);
+      for (int i = 0; i < gotUnaryValues.length && false; i++) {
+        System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
+      }
+      if (wantUnaryValues.length < gotUnaryValues.length) {
+        MethodAndRequestId[] gotSliced =
+            Arrays.copyOfRange(gotUnaryValues, 0, wantUnaryValues.length);
+        assertEquals(wantUnaryValues, gotSliced);
+      } else {
+        assertEquals(wantUnaryValues, gotUnaryValues);
+      }
+    }
+
+    private void sortValues(MethodAndRequestId[] values) {
+      massageValues(values);
+      Arrays.sort(values, new MethodAndRequestIdComparator());
+    }
+
+    public void checkExpectedStreamingXGoogRequestIds(MethodAndRequestId... wantStreamingValues) {
+      MethodAndRequestId[] gotStreamingValues = this.accumulatedStreamingValues();
+      for (int i = 0; i < gotStreamingValues.length && false; i++) {
+        System.out.println(
+            "\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
+      }
+      sortValues(gotStreamingValues);
+      assertEquals(wantStreamingValues, gotStreamingValues);
     }
 
     public void reset() {
@@ -198,5 +226,81 @@ public class XGoogSpannerRequestIdTest {
       this.unaryResults.clear();
       this.streamingResults.clear();
     }
+  }
+
+  public static class MethodAndRequestId {
+    String method;
+    XGoogSpannerRequestId requestId;
+
+    public MethodAndRequestId(String method, XGoogSpannerRequestId requestId) {
+      this.method = method;
+      this.requestId = requestId;
+    }
+
+    public String toString() {
+      return "{" + this.method + ":" + this.requestId.debugToString() + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof MethodAndRequestId)) {
+        return false;
+      }
+      MethodAndRequestId other = (MethodAndRequestId) o;
+      return Objects.equals(this.method, other.method)
+          && Objects.equals(this.requestId, other.requestId);
+    }
+  }
+
+  static class MethodAndRequestIdComparator implements Comparator<MethodAndRequestId> {
+    @Override
+    public int compare(MethodAndRequestId mr1, MethodAndRequestId mr2) {
+      int cmpMethod = mr1.method.compareTo(mr2.method);
+      if (cmpMethod != 0) {
+        return cmpMethod;
+      }
+
+      if (Objects.equals(mr1.requestId, mr2.requestId)) {
+        return 0;
+      }
+      if (mr1.requestId.isGreaterThan(mr2.requestId)) {
+        return +1;
+      }
+      return -1;
+    }
+  }
+
+  static void massageValues(MethodAndRequestId[] mreqs) {
+    for (int i = 0; i < mreqs.length; i++) {
+      MethodAndRequestId mreq = mreqs[i];
+      // BatchCreateSessions is so hard to control as the round-robin doling out
+      // hence we might need to be able to scrub the nth_request that won't match
+      // nth_req in consecutive order of nth_client.
+      if (mreq.method.compareTo("google.spanner.v1.Spanner/BatchCreateSessions") == 0) {
+        mreqs[i] =
+            new MethodAndRequestId(
+                mreq.method,
+                mreq.requestId
+                    .withNthRequest(NON_DETERMINISTIC)
+                    .withChannelId(NON_DETERMINISTIC)
+                    .withNthClientId(NON_DETERMINISTIC));
+      } else if (mreq.method.compareTo("google.spanner.v1.Spanner/BeginTransaction") == 0
+          || mreq.method.compareTo("google.spanner.v1.Spanner/ExecuteStreamingSql") == 0
+          || mreq.method.compareTo("google.spanner.v1.Spanner/ExecuteSql") == 0
+          || mreq.method.compareTo("google.spanner.v1.Spanner/CreateSession") == 0
+          || mreq.method.compareTo("google.spanner.v1.Spanner/Commit") == 0) {
+        mreqs[i] =
+            new MethodAndRequestId(mreq.method, mreq.requestId.withNthClientId(NON_DETERMINISTIC));
+      }
+    }
+  }
+
+  public static MethodAndRequestId ofMethodAndRequestId(String method, String reqId) {
+    return new MethodAndRequestId(method, XGoogSpannerRequestId.of(reqId));
+  }
+
+  public static MethodAndRequestId ofMethodAndRequestId(
+      String method, XGoogSpannerRequestId reqId) {
+    return new MethodAndRequestId(method, reqId);
   }
 }
