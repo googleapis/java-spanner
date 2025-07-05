@@ -28,6 +28,7 @@ import com.google.cloud.spanner.BuiltInMetricsConstant;
 import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
+import com.google.cloud.spanner.XGoogSpannerRequestId;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.spanner.admin.database.v1.DatabaseName;
@@ -174,6 +175,10 @@ class HeaderInterceptor implements ClientInterceptor {
         }
         if (span != null) {
           span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
+          String reqId = XGoogSpannerRequestId.getRequestIdFromMetadata(metadata);
+          if (reqId != null) {
+            span.setAttribute("x_goog_spanner_request_id", reqId);
+          }
         }
       } else {
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);

@@ -198,4 +198,8 @@ public class XGoogSpannerRequestId {
     return XGoogSpannerRequestId.of(
         replacementClientId, this.nthChannelId, this.nthRequest, this.attempt);
   }
+
+  public static String getRequestIdFromMetadata(Metadata md) {
+    return md.get(REQUEST_HEADER_KEY);
+  }
 }
