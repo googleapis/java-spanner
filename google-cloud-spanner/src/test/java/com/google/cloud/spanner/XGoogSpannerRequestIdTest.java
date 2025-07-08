@@ -206,6 +206,21 @@ public class XGoogSpannerRequestIdTest {
       }
     }
 
+    public void checkExpectedUnaryXGoogRequestIdsAsSuffixes(MethodAndRequestId... wantUnaryValues) {
+      MethodAndRequestId[] gotUnaryValues = this.accumulatedUnaryValues();
+      sortValues(gotUnaryValues);
+      for (int i = 0; i < gotUnaryValues.length && false; i++) {
+        System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
+      }
+      if (wantUnaryValues.length < gotUnaryValues.length) {
+        MethodAndRequestId[] gotSliced =
+            Arrays.copyOfRange(gotUnaryValues, wantUnaryValues.length+1, gotUnaryValues.length);
+        assertEquals(wantUnaryValues, gotSliced);
+      } else {
+        assertEquals(wantUnaryValues, gotUnaryValues);
+      }
+    }
+
     private void sortValues(MethodAndRequestId[] values) {
       massageValues(values);
       Arrays.sort(values, new MethodAndRequestIdComparator());
