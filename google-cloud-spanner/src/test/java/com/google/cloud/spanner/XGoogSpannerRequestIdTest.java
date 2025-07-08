@@ -214,7 +214,10 @@ public class XGoogSpannerRequestIdTest {
       }
       if (wantUnaryValues.length < gotUnaryValues.length) {
         MethodAndRequestId[] gotSliced =
-            Arrays.copyOfRange(gotUnaryValues, wantUnaryValues.length+1, gotUnaryValues.length);
+            Arrays.copyOfRange(
+                gotUnaryValues,
+                gotUnaryValues.length - wantUnaryValues.length,
+                gotUnaryValues.length);
         assertEquals(wantUnaryValues, gotSliced);
       } else {
         assertEquals(wantUnaryValues, gotUnaryValues);
