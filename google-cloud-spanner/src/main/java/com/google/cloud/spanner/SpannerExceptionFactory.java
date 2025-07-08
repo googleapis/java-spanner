@@ -352,6 +352,7 @@ public final class SpannerExceptionFactory {
       @Nullable XGoogSpannerRequestId reqId) {
     // This is the one place in the codebase that is allowed to call constructors directly.
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;
+    System.out.println("Inside newSpannerExceptionPreformatted " + cause + " -- " + code + " -- " + message);
     switch (code) {
       case ABORTED:
         return new AbortedException(token, message, cause, apiException, reqId);
