@@ -54,6 +54,7 @@ public class TransactionMutationLimitExceededException extends SpannerException 
     // as there is no other specific metadata in the error that identifies it (other than the error
     // message).
     ErrorDetails errorDetails = extractErrorDetails(cause);
+    System.out.println("Error details " + errorDetails + " ");
     if (errorDetails != null && errorDetails.getHelp() != null) {
       return errorDetails.getHelp().getLinksCount() == 1
           && errorDetails
