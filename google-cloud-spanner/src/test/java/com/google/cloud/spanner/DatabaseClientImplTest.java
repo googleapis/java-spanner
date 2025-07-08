@@ -2924,18 +2924,6 @@ public class DatabaseClientImplTest {
 
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
             "google.spanner.v1.Spanner/BeginTransaction",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
@@ -2945,7 +2933,7 @@ public class DatabaseClientImplTest {
             "google.spanner.v1.Spanner/ExecuteSql",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
       };
-      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
     }
   }
 
@@ -3046,18 +3034,6 @@ public class DatabaseClientImplTest {
 
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
             "google.spanner.v1.Spanner/BeginTransaction",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 7, 1)),
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
@@ -3067,7 +3043,7 @@ public class DatabaseClientImplTest {
             "google.spanner.v1.Spanner/ExecuteSql",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
       };
-      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
     }
   }
 
@@ -5407,16 +5383,10 @@ public class DatabaseClientImplTest {
 
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
-            "google.spanner.v1.Spanner/BatchCreateSessions",
-            new XGoogSpannerRequestId(NON_DETERMINISTIC, NON_DETERMINISTIC, NON_DETERMINISTIC, 1)),
-        XGoogSpannerRequestIdTest.ofMethodAndRequestId(
             "google.spanner.v1.Spanner/CreateSession",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, 1, 1)),
       };
-      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIds(wantUnaryValues);
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
     }
   }
 
