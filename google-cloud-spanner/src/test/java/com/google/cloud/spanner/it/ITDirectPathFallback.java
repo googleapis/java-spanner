@@ -100,7 +100,7 @@ public class ITDirectPathFallback {
 
   // TODO(mohanli): Remove this temporary endpoint once DirectPath goes to public beta.
   private static final String DIRECT_PATH_ENDPOINT = "aa423245250f2bbf.sandbox.googleapis.com:443";
-  private static final String ATTEMPT_DIRECT_PATH = "spanner.attempt_directpath";
+  private static final String ENABLE_DIRECT_ACCESS = "spanner.enable_direct_access";
 
   public ITDirectPathFallback() {
     // Create a transport channel provider that can intercept ipv6 packets.
@@ -112,7 +112,7 @@ public class ITDirectPathFallback {
   public void setup() {
     assume()
         .withMessage("DirectPath integration tests can only run against DirectPathEnv")
-        .that(Boolean.getBoolean(ATTEMPT_DIRECT_PATH))
+        .that(Boolean.getBoolean(ENABLE_DIRECT_ACCESS))
         .isTrue();
     // Get default spanner options for Ingetration test
     SpannerOptions.Builder builder = env.getTestHelper().getOptions().toBuilder();

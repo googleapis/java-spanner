@@ -1585,6 +1585,10 @@ class SessionPool {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       }
     }
+
+    public int getChannel() {
+      return get().getChannel();
+    }
   }
 
   interface CachedSession extends Session {

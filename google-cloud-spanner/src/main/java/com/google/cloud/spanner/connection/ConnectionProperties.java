@@ -183,6 +183,20 @@ public class ConnectionProperties {
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
+  static final ConnectionProperty<Boolean> ENABLE_DIRECT_ACCESS =
+      create(
+          "enableDirectAccess",
+          "Configure the connection to try to connect to Spanner using "
+              + "DirectPath (true/false). The client will try to connect to Spanner "
+              + "using a direct Google network connection. DirectPath will work only "
+              + "if the client is trying to establish a connection from a Google Cloud VM. "
+              + "Otherwise it will automatically fallback to the standard network path. "
+              + "NOTE: The default for this property is currently false, "
+              + "but this could be changed in the future.",
+          null,
+          BOOLEANS,
+          BooleanConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_AUTO_SAVEPOINTS_FOR_EMULATOR =
       create(
           "useAutoSavepointsForEmulator",

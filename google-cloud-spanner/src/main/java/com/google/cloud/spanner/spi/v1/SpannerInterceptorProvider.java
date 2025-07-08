@@ -56,14 +56,14 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
             }));
   }
 
+  @ObsoleteApi("DirectPathEnabledSupplier is not used")
   public static SpannerInterceptorProvider createDefault(
       OpenTelemetry openTelemetry, Supplier<Boolean> directPathEnabledSupplier) {
     List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
     defaultInterceptorList.add(new SpannerErrorInterceptor());
     defaultInterceptorList.add(
         new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
-    defaultInterceptorList.add(
-        new HeaderInterceptor(new SpannerRpcMetrics(openTelemetry), directPathEnabledSupplier));
+    defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(openTelemetry)));
     return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
   }
 

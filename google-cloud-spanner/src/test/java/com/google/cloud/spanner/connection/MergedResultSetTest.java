@@ -32,6 +32,8 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
+import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.StructType;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -103,7 +105,7 @@ public class MergedResultSetTest {
     return params;
   }
 
-  private MockedResults setupResults(boolean withErrors) {
+  private MockedResults setupResults(boolean withErrors, boolean withEmptyResults) {
     Random random = new Random();
     Connection connection = mock(Connection.class);
     List<String> partitions = new ArrayList<>();
@@ -122,10 +124,22 @@ public class MergedResultSetTest {
         when(connection.runPartition(partition))
             .thenReturn(new ResultSetWithError(ResultSetsHelper.fromProto(proto), errorIndex));
       } else {
-        when(connection.runPartition(partition)).thenReturn(ResultSetsHelper.fromProto(proto));
-        try (ResultSet resultSet = ResultSetsHelper.fromProto(proto)) {
-          while (resultSet.next()) {
-            allRows.add(resultSet.getCurrentRowAsStruct());
+        if (withEmptyResults && numPartitions > 1 && index == 0) {
+          when(connection.runPartition(partition))
+              .thenReturn(
+                  ResultSetsHelper.fromProto(
+                      com.google.spanner.v1.ResultSet.newBuilder()
+                          .setMetadata(
+                              ResultSetMetadata.newBuilder()
+                                  .setRowType(StructType.newBuilder().build())
+                                  .build())
+                          .build()));
+        } else {
+          when(connection.runPartition(partition)).thenReturn(ResultSetsHelper.fromProto(proto));
+          try (ResultSet resultSet = ResultSetsHelper.fromProto(proto)) {
+            while (resultSet.next()) {
+              allRows.add(resultSet.getCurrentRowAsStruct());
+            }
           }
         }
       }
@@ -135,7 +149,7 @@ public class MergedResultSetTest {
 
   @Test
   public void testAllResultsAreReturned() {
-    MockedResults results = setupResults(false);
+    MockedResults results = setupResults(/* withErrors= */ false, /* withEmptyResults= */ false);
     BitSet rowsFound = new BitSet(results.allRows.size());
     try (MergedResultSet resultSet =
         new MergedResultSet(results.connection, results.partitions, maxParallelism)) {
@@ -170,7 +184,7 @@ public class MergedResultSetTest {
 
   @Test
   public void testResultSetStopsAfterFirstError() {
-    MockedResults results = setupResults(true);
+    MockedResults results = setupResults(/* withErrors= */ true, /* withEmptyResults= */ false);
     try (MergedResultSet resultSet =
         new MergedResultSet(results.connection, results.partitions, maxParallelism)) {
       if (numPartitions > 0) {
@@ -190,6 +204,40 @@ public class MergedResultSetTest {
         assertEquals(exception, nextException);
         // We should see at least minErrorIndex rows before an error.
         assertTrue(rowCount.get() >= results.minErrorIndex);
+      }
+    }
+  }
+
+  @Test
+  public void testResultSetReturnsNonEmptyMetadata() {
+    MockedResults results = setupResults(/* withErrors= */ false, /* withEmptyResults= */ true);
+    BitSet rowsFound = new BitSet(results.allRows.size());
+    try (MergedResultSet resultSet =
+        new MergedResultSet(results.connection, results.partitions, maxParallelism)) {
+      if (numPartitions > 0) {
+        assertNotNull(resultSet.getMetadata());
+        assertEquals(26, resultSet.getMetadata().getRowType().getFieldsCount());
+      }
+      while (resultSet.next()) {
+        assertRowExists(results.allRows, resultSet.getCurrentRowAsStruct(), rowsFound);
+      }
+      if (numPartitions == 0) {
+        assertEquals(0, resultSet.getColumnCount());
+      } else {
+        assertEquals(26, resultSet.getColumnCount());
+        assertEquals(Type.bool(), resultSet.getColumnType(0));
+        assertEquals(Type.bool(), resultSet.getColumnType("COL0"));
+        assertEquals(10, resultSet.getColumnIndex("COL10"));
+      }
+      // Check that all rows were found.
+      assertEquals(results.allRows.size(), rowsFound.nextClearBit(0));
+      // Check extended metadata.
+      assertEquals(numPartitions, resultSet.getNumPartitions());
+      if (maxParallelism > 0) {
+        assertEquals(Math.min(numPartitions, maxParallelism), resultSet.getParallelism());
+      } else {
+        int processors = Runtime.getRuntime().availableProcessors();
+        assertEquals(Math.min(numPartitions, processors), resultSet.getParallelism());
       }
     }
   }

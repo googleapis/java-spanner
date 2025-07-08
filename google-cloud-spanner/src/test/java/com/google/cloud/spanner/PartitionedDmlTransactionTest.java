@@ -96,7 +96,11 @@ public class PartitionedDmlTransactionTest {
   public void setup() {
     MockitoAnnotations.initMocks(this);
     when(session.getName()).thenReturn(sessionId);
+    when(session.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(session.getOptions()).thenReturn(Collections.EMPTY_MAP);
+    when(session.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(rpc.beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true)))
         .thenReturn(Transaction.newBuilder().setId(txId).build());
 

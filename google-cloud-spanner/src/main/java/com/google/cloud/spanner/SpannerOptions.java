@@ -175,7 +175,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
-  private final boolean attemptDirectPath;
+  private final boolean enableDirectAccess;
   private final DirectedReadOptions directedReadOptions;
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
@@ -806,7 +806,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
-    attemptDirectPath = builder.attemptDirectPath;
+    enableDirectAccess = builder.enableDirectAccess;
     directedReadOptions = builder.directedReadOptions;
     useVirtualThreads = builder.useVirtualThreads;
     openTelemetry = builder.openTelemetry;
@@ -849,6 +849,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
+    default boolean isEnableDirectAccess() {
+      return false;
+    }
+
     default boolean isEnableBuiltInMetrics() {
       return true;
     }
@@ -884,6 +888,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
+    private static final String GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS =
+        "GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS";
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
@@ -917,22 +923,21 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
+    public boolean isEnableDirectAccess() {
+      return Boolean.parseBoolean(System.getenv(GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS));
+    }
+
+    @Override
     public boolean isEnableBuiltInMetrics() {
       return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_BUILTIN_METRICS));
     }
 
     @Override
     public boolean isEnableGRPCBuiltInMetrics() {
-      // Enable gRPC built-in metrics if:
-      // 1. The env var SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS is explicitly set to
-      // "false", OR
-      // 2. DirectPath is enabled AND the env var is not set to "true"
-      // This allows metrics to be enabled by default when DirectPath is on, unless explicitly
+      // Enable gRPC built-in metrics as default unless explicitly
       // disabled via env.
-      String grpcDisableEnv = System.getenv("SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS");
-      boolean isDirectPathEnabled = GapicSpannerRpc.isEnableDirectPathXdsEnv();
-      return ("false".equalsIgnoreCase(grpcDisableEnv))
-          || (isDirectPathEnabled && !"true".equalsIgnoreCase(grpcDisableEnv));
+      return !Boolean.parseBoolean(
+          System.getenv(SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS));
     }
 
     @Override
@@ -1006,7 +1011,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
-    private boolean attemptDirectPath = true;
+    private boolean enableDirectAccess = SpannerOptions.environment.isEnableDirectAccess();
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
     private OpenTelemetry openTelemetry;
@@ -1078,7 +1083,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
-      this.attemptDirectPath = options.attemptDirectPath;
+      this.enableDirectAccess = options.enableDirectAccess;
       this.directedReadOptions = options.directedReadOptions;
       this.useVirtualThreads = options.useVirtualThreads;
       this.enableApiTracing = options.enableApiTracing;
@@ -1611,8 +1616,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @BetaApi
+    public Builder setEnableDirectAccess(boolean enableDirectAccess) {
+      this.enableDirectAccess = enableDirectAccess;
+      return this;
+    }
+
+    @ObsoleteApi("Use setEnableDirectAccess(false) instead")
+    @Deprecated
     public Builder disableDirectPath() {
-      this.attemptDirectPath = false;
+      this.enableDirectAccess = false;
       return this;
     }
 
@@ -1980,8 +1992,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   @BetaApi
+  public Boolean isEnableDirectAccess() {
+    return enableDirectAccess;
+  }
+
+  @ObsoleteApi("Use isEnableDirectAccess() instead")
+  @Deprecated
   public boolean isAttemptDirectPath() {
-    return attemptDirectPath;
+    return enableDirectAccess;
   }
 
   /**

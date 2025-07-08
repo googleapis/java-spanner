@@ -28,6 +28,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.DATABASE_
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIALECT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_API_TRACING;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_DIRECT_ACCESS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_END_TO_END_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENCODED_CREDENTIALS;
@@ -1079,6 +1080,10 @@ public class ConnectionOptions {
 
   boolean isExperimentalHost() {
     return getInitialConnectionPropertyValue(IS_EXPERIMENTAL_HOST);
+  }
+
+  Boolean isEnableDirectAccess() {
+    return getInitialConnectionPropertyValue(ENABLE_DIRECT_ACCESS);
   }
 
   String getClientCertificate() {

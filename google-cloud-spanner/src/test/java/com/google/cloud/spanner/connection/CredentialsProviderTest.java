@@ -93,7 +93,7 @@ public class CredentialsProviderTest extends AbstractMockServerTest {
                   .setConfigurator(
                       spannerOptions -> {
                         spannerOptions.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
-                        spannerOptions.disableDirectPath();
+                        spannerOptions.setEnableDirectAccess(false);
                       })
                   .build();
 
@@ -135,7 +135,7 @@ public class CredentialsProviderTest extends AbstractMockServerTest {
                   .setConfigurator(
                       spannerOptions -> {
                         spannerOptions.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
-                        spannerOptions.disableDirectPath();
+                        spannerOptions.setEnableDirectAccess(false);
                       })
                   .build();
           try (Connection connection = options.getConnection()) {

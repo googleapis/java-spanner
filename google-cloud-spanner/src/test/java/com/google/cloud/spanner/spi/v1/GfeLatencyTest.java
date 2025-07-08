@@ -290,7 +290,7 @@ public class GfeLatencyTest {
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
         .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
-        .disableDirectPath()
+        .setEnableDirectAccess(false)
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)

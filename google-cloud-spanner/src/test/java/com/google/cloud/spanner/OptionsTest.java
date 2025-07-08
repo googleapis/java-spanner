@@ -83,6 +83,7 @@ public class OptionsTest {
 
   @Test
   public void allOptionsPresent() {
+    XGoogSpannerRequestId reqId1 = XGoogSpannerRequestId.of(2, 3, 4, 5);
     Options options =
         Options.fromReadOptions(
             Options.limit(10),
@@ -90,6 +91,7 @@ public class OptionsTest {
             Options.dataBoostEnabled(true),
             Options.directedRead(DIRECTED_READ_OPTIONS),
             Options.orderBy(RpcOrderBy.NO_ORDER),
+            Options.requestId(reqId1),
             Options.lockHint(Options.RpcLockHint.SHARED));
     assertThat(options.hasLimit()).isTrue();
     assertThat(options.limit()).isEqualTo(10);
@@ -101,6 +103,7 @@ public class OptionsTest {
     assertTrue(options.hasOrderBy());
     assertTrue(options.hasLockHint());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
+    assertEquals(options.reqId(), reqId1);
   }
 
   @Test
@@ -872,5 +875,56 @@ public class OptionsTest {
     };
     Options options = Options.fromTransactionOptions(transactionOptions);
     assertEquals(options.isolationLevel(), IsolationLevel.SERIALIZABLE);
+  }
+
+  @Test
+  public void testRequestId() {
+    XGoogSpannerRequestId reqId1 = XGoogSpannerRequestId.of(1, 2, 3, 4);
+    XGoogSpannerRequestId reqId2 = XGoogSpannerRequestId.of(2, 3, 4, 5);
+    Options option1 = Options.fromUpdateOptions(Options.requestId(reqId1));
+    Options option1Prime = Options.fromUpdateOptions(Options.requestId(reqId1));
+    Options option2 = Options.fromUpdateOptions(Options.requestId(reqId2));
+    Options option3 = Options.fromUpdateOptions();
+
+    assertEquals(option1, option1Prime);
+    assertNotEquals(option1, option2);
+    assertEquals(option1.hashCode(), option1Prime.hashCode());
+    assertNotEquals(option1, option2);
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+
+    assertTrue(option1.hasReqId());
+    assertThat(option1.toString()).contains("requestId: " + reqId1.toString());
+
+    assertFalse(option3.hasReqId());
+    assertThat(option3.toString()).doesNotContain("requestId");
+  }
+
+  @Test
+  public void testRequestIdOptionEqualsAndHashCode() {
+    XGoogSpannerRequestId reqId1 = XGoogSpannerRequestId.of(1, 2, 3, 4);
+    XGoogSpannerRequestId reqId2 = XGoogSpannerRequestId.of(2, 3, 4, 5);
+    Options.RequestIdOption opt1 = Options.requestId(reqId1);
+    Options.RequestIdOption opt1Prime = Options.requestId(reqId1);
+    Options.RequestIdOption opt2 = Options.requestId(reqId2);
+
+    assertTrue(opt1.equals(opt1));
+    assertTrue(opt1.equals(opt1Prime));
+    assertEquals(opt1.hashCode(), opt1Prime.hashCode());
+    assertFalse(opt1.equals(opt2));
+    assertNotEquals(opt1, opt2);
+    assertNotEquals(opt1.hashCode(), opt2.hashCode());
+  }
+
+  @Test
+  public void testOptions_WithMultipleDifferentRequestIds() {
+    XGoogSpannerRequestId reqId1 = XGoogSpannerRequestId.of(1, 1, 1, 1);
+    XGoogSpannerRequestId reqId2 = XGoogSpannerRequestId.of(1, 1, 1, 2);
+    TransactionOption[] transactionOptions = {
+      Options.requestId(reqId1), Options.requestId(reqId2),
+    };
+    Options options = Options.fromTransactionOptions(transactionOptions);
+    assertNotEquals(options.reqId(), reqId1);
+    assertEquals(options.reqId(), reqId2);
   }
 }
