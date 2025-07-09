@@ -49,12 +49,22 @@ public class TransactionMutationLimitExceededException extends SpannerException 
         || !cause.getMessage().contains(ERROR_MESSAGE)) {
       return false;
     }
+
+    System.out.println(cause.getClass().getName());
+    if (cause instanceof ApiException) {
+      Throwable apiCause = cause.getCause();
+      System.out.println(apiCause.getClass().getName());
+      if (apiCause instanceof io.grpc.StatusRuntimeException) {
+        io.grpc.StatusRuntimeException statusRuntimeException = (io.grpc.StatusRuntimeException) apiCause;
+        System.out.println(statusRuntimeException.getTrailers());
+      }
+    }
+
     // Spanner includes a hint that points to the Spanner limits documentation page when the error
     // was that the transaction mutation limit was exceeded. We use that here to identify the error,
     // as there is no other specific metadata in the error that identifies it (other than the error
     // message).
     ErrorDetails errorDetails = extractErrorDetails(cause);
-    System.out.println("Error details " + errorDetails + " ");
     if (errorDetails != null && errorDetails.getHelp() != null) {
       return errorDetails.getHelp().getLinksCount() == 1
           && errorDetails
