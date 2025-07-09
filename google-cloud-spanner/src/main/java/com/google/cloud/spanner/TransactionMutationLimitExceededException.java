@@ -50,14 +50,18 @@ public class TransactionMutationLimitExceededException extends SpannerException 
       return false;
     }
 
-    System.out.println(cause.getClass().getName());
+    System.out.println("1 " +  cause.getClass().getName());
     if (cause instanceof ApiException) {
       Throwable apiCause = cause.getCause();
-      System.out.println(apiCause.getClass().getName());
+      System.out.println("2 " + apiCause.getClass().getName());
       if (apiCause instanceof io.grpc.StatusRuntimeException) {
         io.grpc.StatusRuntimeException statusRuntimeException = (io.grpc.StatusRuntimeException) apiCause;
-        System.out.println(statusRuntimeException.getTrailers());
+        System.out.println("3 " + statusRuntimeException.getTrailers());
       }
+    }
+    if (cause instanceof io.grpc.StatusRuntimeException) {
+      io.grpc.StatusRuntimeException statusRuntimeException = (io.grpc.StatusRuntimeException) cause;
+      System.out.println("4 " + statusRuntimeException.getTrailers());
     }
 
     // Spanner includes a hint that points to the Spanner limits documentation page when the error
