@@ -1,42 +1,39 @@
-on:
+'on':
   push:
     branches:
-    - main
-  pull_request:
+      - 6.96.x
+  pull_request: null
 name: integration-tests-against-emulator
 jobs:
   units:
     runs-on: ubuntu-latest
-
     services:
       emulator:
         image: gcr.io/cloud-spanner-emulator/emulator:latest
         ports:
-          - 9010:9010
-          - 9020:9020
-
+          - '9010:9010'
+          - '9020:9020'
     steps:
-    - uses: actions/checkout@v4
-    - uses: stCarolas/setup-maven@v5
-      with:
-        maven-version: 3.8.1
-    # Build with JDK 11 and run tests with JDK 8
-    - uses: actions/setup-java@v4
-      with:
-        java-version: 11
-        distribution: temurin
-    - name: Compiling main library
-      run: .kokoro/build.sh
-    - uses: actions/setup-java@v4
-      with:
-        java-version: 8
-        distribution: temurin
-    - name: Running tests
-      run: |
-        mvn -V -B -Dspanner.testenv.instance="" -Penable-integration-tests \
-            -DtrimStackTrace=false -Dclirr.skip=true -Denforcer.skip=true \
-            -Dmaven.main.skip=true -fae verify
-      env:
-        JOB_TYPE: test
-        SPANNER_EMULATOR_HOST: localhost:9010
-        GOOGLE_CLOUD_PROJECT: emulator-test-project
+      - uses: actions/checkout@v4
+      - uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.8.1
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: temurin
+      - name: Compiling main library
+        run: .kokoro/build.sh
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 8
+          distribution: temurin
+      - name: Running tests
+        run: |
+          mvn -V -B -Dspanner.testenv.instance="" -Penable-integration-tests \
+              -DtrimStackTrace=false -Dclirr.skip=true -Denforcer.skip=true \
+              -Dmaven.main.skip=true -fae verify
+        env:
+          JOB_TYPE: test
+          SPANNER_EMULATOR_HOST: localhost:9010
+          GOOGLE_CLOUD_PROJECT: emulator-test-project
