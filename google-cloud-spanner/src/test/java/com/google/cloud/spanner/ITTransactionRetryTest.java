@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -34,6 +36,8 @@ public class ITTransactionRetryTest {
 
   @Test
   public void TestRetryInfo() {
+    assumeFalse("emulator does not support parallel transaction", isUsingEmulator());
+
     // Creating a database with the table which contains INT64 columns
     Database db =
         env.getTestHelper()
