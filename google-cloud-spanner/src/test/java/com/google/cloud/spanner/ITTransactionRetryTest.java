@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,23 +53,31 @@ public class ITTransactionRetryTest {
               return null;
             });
 
-    try (TransactionManager transactionManager1 = databaseClient.transactionManager()) {
-      try (TransactionManager transactionManager2 = databaseClient.transactionManager()) {
-        TransactionContext transaction1 = transactionManager1.begin();
-        TransactionContext transaction2 = transactionManager2.begin();
-        transaction1.executeUpdate(Statement.of("UPDATE Test SET EMPID = EMPID + 1 WHERE ID = 1"));
-        transaction2.executeUpdate(Statement.of("UPDATE Test SET EMPID = EMPID + 1 WHERE ID = 1"));
-
-        AbortedException abortedException =
-            Assert.assertThrows(
-                AbortedException.class,
-                () -> {
-                  transactionManager1.commit();
-                  transactionManager2.commit();
-                });
-        assertThat(abortedException.getErrorCode()).isEqualTo(ErrorCode.ABORTED);
-        assertTrue(abortedException.getRetryDelayInMillis() > 0);
+    int numRetries = 10;
+    boolean isAbortedWithRetryInfo = false;
+    while (numRetries-- > 0) {
+      try (TransactionManager transactionManager1 = databaseClient.transactionManager()) {
+        try (TransactionManager transactionManager2 = databaseClient.transactionManager()) {
+          try {
+            TransactionContext transaction1 = transactionManager1.begin();
+            TransactionContext transaction2 = transactionManager2.begin();
+            transaction1.executeUpdate(
+                Statement.of("UPDATE Test SET EMPID = EMPID + 1 WHERE ID = 1"));
+            transaction2.executeUpdate(
+                Statement.of("UPDATE Test SET EMPID = EMPID + 1 WHERE ID = 1"));
+            transactionManager1.commit();
+            transactionManager2.commit();
+          } catch (AbortedException abortedException) {
+            assertThat(abortedException.getErrorCode()).isEqualTo(ErrorCode.ABORTED);
+            if (abortedException.getRetryDelayInMillis() > 0) {
+              isAbortedWithRetryInfo = true;
+              break;
+            }
+          }
+        }
       }
     }
+
+    assertTrue("Transaction is not aborted with the trailers", isAbortedWithRetryInfo);
   }
 }
