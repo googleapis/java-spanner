@@ -60,9 +60,14 @@ public class ITTransactionRetryTest {
         TransactionContext transaction2 = transactionManager2.begin();
         transaction1.executeUpdate(Statement.of("UPDATE Test SET EMPID = EMPID + 1 WHERE ID = 1"));
         transaction2.executeUpdate(Statement.of("UPDATE Test SET EMPID = EMPID + 1 WHERE ID = 1"));
-        transactionManager1.commit();
+
         AbortedException abortedException =
-            Assert.assertThrows(AbortedException.class, transactionManager2::commit);
+            Assert.assertThrows(
+                AbortedException.class,
+                () -> {
+                  transactionManager1.commit();
+                  transactionManager2.commit();
+                });
         assertThat(abortedException.getErrorCode()).isEqualTo(ErrorCode.ABORTED);
         assertTrue(abortedException.getRetryDelayInMillis() > 0);
       }
