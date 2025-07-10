@@ -344,6 +344,8 @@ public class GapicSpannerRpc implements SpannerRpc {
           InstantiatingGrpcChannelProvider.newBuilder()
               .setChannelConfigurator(options.getChannelConfigurator())
               .setEndpoint(options.getEndpoint())
+              .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
+              .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
               .setPoolSize(options.getNumChannels())
 
               // Set a keepalive time of 120 seconds to help long running
