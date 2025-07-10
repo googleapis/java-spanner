@@ -224,7 +224,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       PathTemplate.create("projects/{project}");
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
       PathTemplate.create("{database=projects/*/instances/*/databases/*}/operations/{operation}");
-  private static final int MAX_MESSAGE_SIZE = 100 * 1024 * 1024;
+  private static final int MAX_MESSAGE_SIZE = 256 * 1024 * 1024;
   private static final int MAX_METADATA_SIZE = 32 * 1024; // bytes
   private static final String PROPERTY_TIMEOUT_SECONDS =
       "com.google.cloud.spanner.watchdogTimeoutSeconds";
@@ -344,6 +344,8 @@ public class GapicSpannerRpc implements SpannerRpc {
           InstantiatingGrpcChannelProvider.newBuilder()
               .setChannelConfigurator(options.getChannelConfigurator())
               .setEndpoint(options.getEndpoint())
+              .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
+              .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
               .setPoolSize(options.getNumChannels())
 
               // Set a keepalive time of 120 seconds to help long running
