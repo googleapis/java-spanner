@@ -141,6 +141,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   @VisibleForTesting
   SpannerImpl(SpannerRpc gapicRpc, SpannerOptions options) {
     super(options);
+    // Log Spanner client creation with version information
+    String version = GaxProperties.getLibraryVersion(this.getOptions().getClass());
+    logger.info(String.format("Creating new Spanner client with spanner-java version: %s", version));
+    
     this.gapicRpc = gapicRpc;
     this.asyncExecutorProvider =
         MoreObjects.firstNonNull(
