@@ -332,6 +332,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       boolean useMultiplexedSessionPartitionedOps,
       boolean useMultiplexedSessionForRW,
       Attributes commonAttributes) {
+    if (multiplexedSessionClient != null) {
+      // Set the session pool in the multiplexed session client.
+      // This is required to handle fallback to regular sessions for in-progress transactions that
+      // use multiplexed sessions but fail with UNIMPLEMENTED errors.
+      multiplexedSessionClient.setPool(pool);
+    }
     return new DatabaseClientImpl(
         clientId,
         pool,
@@ -353,7 +359,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         }
         BatchClientImpl batchClient =
             new BatchClientImpl(
-                getSessionClient(db), /*useMultiplexedSessionPartitionedOps=*/ true);
+                getSessionClient(db), /* useMultiplexedSessionPartitionedOps= */ true);
         this.dbBatchClients.put(db, batchClient);
         return batchClient;
       } finally {
@@ -361,7 +367,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       }
     }
     return new BatchClientImpl(
-        getSessionClient(db), /*useMultiplexedSessionPartitionedOps=*/ false);
+        getSessionClient(db), /* useMultiplexedSessionPartitionedOps= */ false);
   }
 
   @Override

@@ -71,6 +71,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
+import com.google.cloud.spanner.XGoogSpannerRequestId;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminCallableFactory;
@@ -85,9 +86,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.RateLimiter;
@@ -224,7 +224,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       PathTemplate.create("projects/{project}");
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
       PathTemplate.create("{database=projects/*/instances/*/databases/*}/operations/{operation}");
-  private static final int MAX_MESSAGE_SIZE = 100 * 1024 * 1024;
+  private static final int MAX_MESSAGE_SIZE = 256 * 1024 * 1024;
   private static final int MAX_METADATA_SIZE = 32 * 1024; // bytes
   private static final String PROPERTY_TIMEOUT_SECONDS =
       "com.google.cloud.spanner.watchdogTimeoutSeconds";
@@ -237,6 +237,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final String CLIENT_LIBRARY_LANGUAGE = "spanner-java";
   public static final String DEFAULT_USER_AGENT =
       CLIENT_LIBRARY_LANGUAGE + "/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
+  public static boolean DIRECTPATH_CHANNEL_CREATED = false;
   private static final String API_FILE = "grpc-gcp-apiconfig.json";
 
   private boolean rpcIsClosed;
@@ -279,7 +280,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
 
-  private Supplier<Boolean> directPathEnabledSupplier = () -> false;
+  private final GrpcCallContext baseGrpcCallContext;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -334,6 +335,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.endToEndTracingEnabled = options.isEndToEndTracingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
+    this.baseGrpcCallContext = createBaseCallContext();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -356,18 +358,15 @@ public class GapicSpannerRpc implements SpannerRpc {
                   SpannerInterceptorProvider.create(
                           MoreObjects.firstNonNull(
                               options.getInterceptorProvider(),
-                              SpannerInterceptorProvider.createDefault(
-                                  options.getOpenTelemetry(),
-                                  (() -> directPathEnabledSupplier.get()))))
+                              SpannerInterceptorProvider.createDefault(options.getOpenTelemetry())))
                       // This sets the trace context headers.
                       .withTraceContext(endToEndTracingEnabled, options.getOpenTelemetry())
                       // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
               .setAllowNonDefaultServiceAccount(true);
-      String directPathXdsEnv = System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS");
-      boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
-      if (isAttemptDirectPathXds) {
+      boolean isEnableDirectAccess = options.isEnableDirectAccess();
+      if (isEnableDirectAccess) {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
         // This will let the credentials try to fetch a hard-bound access token if the runtime
         // environment supports it.
@@ -375,6 +374,9 @@ public class GapicSpannerRpc implements SpannerRpc {
             Collections.singletonList(InstantiatingGrpcChannelProvider.HardBoundTokenTypes.ALTS));
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
       }
+
+      options.enablegRPCMetrics(defaultChannelProviderBuilder);
+
       if (options.isUseVirtualThreads()) {
         ExecutorService executor =
             tryCreateVirtualThreadPerTaskExecutor("spanner-virtual-grpc-executor");
@@ -407,27 +409,24 @@ public class GapicSpannerRpc implements SpannerRpc {
       final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
       try {
+        // TODO: make our retry settings to inject and increment
+        // XGoogSpannerRequestId whenever a retry occurs.
         SpannerStubSettings spannerStubSettings =
-            options
-                .getSpannerStubSettings()
-                .toBuilder()
+            options.getSpannerStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         ClientContext clientContext = ClientContext.create(spannerStubSettings);
         this.spannerStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(
                 spannerStubSettings, clientContext);
-        this.directPathEnabledSupplier =
-            Suppliers.memoize(
-                () -> {
-                  return ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
-                      && isAttemptDirectPathXds;
-                });
+        DIRECTPATH_CHANNEL_CREATED =
+            ((GrpcTransportChannel) clientContext.getTransportChannel()).isDirectPath()
+                && isEnableDirectAccess;
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
         this.readRetryableCodes =
@@ -439,11 +438,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.commitRetrySettings =
             options.getSpannerStubSettings().commitSettings().getRetrySettings();
         partitionedDmlRetrySettings =
-            options
-                .getSpannerStubSettings()
-                .executeSqlSettings()
-                .getRetrySettings()
-                .toBuilder()
+            options.getSpannerStubSettings().executeSqlSettings().getRetrySettings().toBuilder()
                 .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
                 .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
                 .setTotalTimeout(options.getPartitionedDmlTimeout())
@@ -456,7 +451,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setStreamWatchdogProvider(watchdogProvider)
             .setTracerFactory(
                 options.getApiTracerFactory(
-                    /* isAdminClient = */ false, isEmulatorEnabled(options, emulatorHost)))
+                    /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
             .executeSqlSettings()
             .setRetrySettings(partitionedDmlRetrySettings);
         pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
@@ -478,28 +473,24 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.partitionedDmlStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(pdmlSettings.build());
         this.instanceAdminStubSettings =
-            options
-                .getInstanceAdminStubSettings()
-                .toBuilder()
+            options.getInstanceAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ true, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ true, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
         this.databaseAdminStubSettings =
-            options
-                .getDatabaseAdminStubSettings()
-                .toBuilder()
+            options.getDatabaseAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient = */ true, isEmulatorEnabled(options, emulatorHost)))
+                        /* isAdminClient= */ true, isEmulatorEnabled(options, emulatorHost)))
                 .build();
 
         // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
@@ -650,9 +641,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       // Do a quick check to see if the emulator is actually running.
       try {
         InstanceAdminStubSettings.Builder testEmulatorSettings =
-            options
-                .getInstanceAdminStubSettings()
-                .toBuilder()
+            options.getInstanceAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider);
         testEmulatorSettings
@@ -686,6 +675,16 @@ public class GapicSpannerRpc implements SpannerRpc {
         && options.getHost() != null
         && options.getHost().startsWith("http://localhost")
         && options.getHost().endsWith(emulatorHost);
+  }
+
+  public static boolean isEnableAFEServerTiming() {
+    // Enable AFE metrics as default unless explicitly
+    // disabled via env.
+    return !Boolean.parseBoolean(System.getenv("SPANNER_DISABLE_AFE_SERVER_TIMING"));
+  }
+
+  public static boolean isEnableDirectPathXdsEnv() {
+    return Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS"));
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
@@ -1654,7 +1653,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException {
-    // By default sessions are not multiplexed
+    // By default, sessions are not multiplexed
     return createSession(databaseName, databaseRole, labels, options, false);
   }
 
@@ -1979,8 +1978,25 @@ public class GapicSpannerRpc implements SpannerRpc {
       future.cancel(true);
       throw SpannerExceptionFactory.propagateInterrupt(e);
     } catch (Exception e) {
-      throw newSpannerException(context, e);
+      throw newSpannerException(context, e, null);
     }
+  }
+
+  private GrpcCallContext createBaseCallContext() {
+    GrpcCallContext context = GrpcCallContext.createDefault();
+    if (compressorName != null) {
+      // This sets the compressor for Client -> Server.
+      context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
+    }
+    if (endToEndTracingEnabled) {
+      context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
+    }
+    if (isEnableAFEServerTiming()) {
+      context = context.withExtraHeaders(metadataProvider.newAfeServerTimingHeader());
+    }
+    return context
+        .withStreamWaitTimeoutDuration(waitTimeout)
+        .withStreamIdleTimeoutDuration(idleTimeout);
   }
 
   // Before removing this method, please verify with a code owner that it is not used
@@ -2007,12 +2023,13 @@ public class GapicSpannerRpc implements SpannerRpc {
       ReqT request,
       MethodDescriptor<ReqT, RespT> method,
       boolean routeToLeader) {
-    GrpcCallContext context = GrpcCallContext.createDefault();
-    if (options != null) {
+    GrpcCallContext context = this.baseGrpcCallContext;
+    Long affinity = options == null ? null : Option.CHANNEL_HINT.getLong(options);
+    if (affinity != null) {
       if (this.isGrpcGcpExtensionEnabled) {
         // Set channel affinity in gRPC-GCP.
         // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
-        int boundedChannelHint = Option.CHANNEL_HINT.getLong(options).intValue() % this.numChannels;
+        int boundedChannelHint = affinity.intValue() % this.numChannels;
         context =
             context.withCallOptions(
                 context
@@ -2021,19 +2038,15 @@ public class GapicSpannerRpc implements SpannerRpc {
                         GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
       } else {
         // Set channel affinity in GAX.
-        context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+        context = context.withChannelAffinity(affinity.intValue());
       }
     }
-    if (compressorName != null) {
-      // This sets the compressor for Client -> Server.
-      context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
+    if (options != null) {
+      context = withRequestId(context, options);
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
-    }
-    if (endToEndTracingEnabled) {
-      context = context.withExtraHeaders(metadataProvider.newEndToEndTracingHeader());
     }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
@@ -2042,16 +2055,25 @@ public class GapicSpannerRpc implements SpannerRpc {
             context.withCallOptions(context.getCallOptions().withCallCredentials(callCredentials));
       }
     }
-    context =
-        context
-            .withStreamWaitTimeoutDuration(waitTimeout)
-            .withStreamIdleTimeoutDuration(idleTimeout);
     CallContextConfigurator configurator = SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY.get();
     ApiCallContext apiCallContextFromContext = null;
     if (configurator != null) {
       apiCallContextFromContext = configurator.configure(context, request, method);
     }
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
+  }
+
+  GrpcCallContext withRequestId(GrpcCallContext context, Map<SpannerRpc.Option, ?> options) {
+    XGoogSpannerRequestId reqId = (XGoogSpannerRequestId) options.get(Option.REQUEST_ID);
+    if (reqId == null) {
+      return context;
+    }
+
+    Map<String, List<String>> withReqId =
+        ImmutableMap.of(
+            XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(),
+            Collections.singletonList(reqId.toString()));
+    return context.withExtraHeaders(withReqId);
   }
 
   void registerResponseObserver(SpannerResponseObserver responseObserver) {

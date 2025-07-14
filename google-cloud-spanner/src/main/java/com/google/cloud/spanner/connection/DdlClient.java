@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Convenience class for executing Data Definition Language statements on transactions that support
@@ -41,12 +43,14 @@ import java.util.function.Consumer;
  */
 class DdlClient {
   private final DatabaseAdminClient dbAdminClient;
+  private final Supplier<Dialect> dialectSupplier;
   private final String projectId;
   private final String instanceId;
   private final String databaseName;
 
   static class Builder {
     private DatabaseAdminClient dbAdminClient;
+    private Supplier<Dialect> dialectSupplier;
     private String projectId;
     private String instanceId;
     private String databaseName;
@@ -56,6 +60,11 @@ class DdlClient {
     Builder setDatabaseAdminClient(DatabaseAdminClient client) {
       Preconditions.checkNotNull(client);
       this.dbAdminClient = client;
+      return this;
+    }
+
+    Builder setDialectSupplier(Supplier<Dialect> dialectSupplier) {
+      this.dialectSupplier = Preconditions.checkNotNull(dialectSupplier);
       return this;
     }
 
@@ -82,6 +91,7 @@ class DdlClient {
 
     DdlClient build() {
       Preconditions.checkState(dbAdminClient != null, "No DatabaseAdminClient specified");
+      Preconditions.checkState(dialectSupplier != null, "No dialect supplier specified");
       Preconditions.checkState(!Strings.isNullOrEmpty(projectId), "No ProjectId specified");
       Preconditions.checkState(!Strings.isNullOrEmpty(instanceId), "No InstanceId specified");
       Preconditions.checkArgument(
@@ -96,6 +106,7 @@ class DdlClient {
 
   private DdlClient(Builder builder) {
     this.dbAdminClient = builder.dbAdminClient;
+    this.dialectSupplier = builder.dialectSupplier;
     this.projectId = builder.projectId;
     this.instanceId = builder.instanceId;
     this.databaseName = builder.databaseName;
@@ -103,7 +114,7 @@ class DdlClient {
 
   OperationFuture<Database, CreateDatabaseMetadata> executeCreateDatabase(
       String createStatement, Dialect dialect) {
-    Preconditions.checkArgument(isCreateDatabaseStatement(createStatement));
+    Preconditions.checkArgument(isCreateDatabaseStatement(dialect, createStatement));
     return dbAdminClient.createDatabase(
         instanceId, createStatement, dialect, Collections.emptyList());
   }
@@ -116,7 +127,8 @@ class DdlClient {
   /** Execute a list of DDL statements as one operation. */
   OperationFuture<Void, UpdateDatabaseDdlMetadata> executeDdl(
       List<String> statements, byte[] protoDescriptors) {
-    if (statements.stream().anyMatch(DdlClient::isCreateDatabaseStatement)) {
+    if (statements.stream()
+        .anyMatch(sql -> isCreateDatabaseStatement(this.dialectSupplier.get(), sql))) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT, "CREATE DATABASE is not supported in a DDL batch");
     }
@@ -126,15 +138,27 @@ class DdlClient {
       dbBuilder.setProtoDescriptors(protoDescriptors);
     }
     Database db = dbBuilder.build();
-    return dbAdminClient.updateDatabaseDdl(db, statements, null);
+    return dbAdminClient.updateDatabaseDdl(
+        db,
+        statements.stream().map(DdlClient::stripTrailingSemicolon).collect(Collectors.toList()),
+        null);
+  }
+
+  static String stripTrailingSemicolon(String input) {
+    if (!input.contains(";")) {
+      return input;
+    }
+    String trimmed = input.trim();
+    if (trimmed.endsWith(";")) {
+      return trimmed.substring(0, trimmed.length() - 1);
+    }
+    return input;
   }
 
   /** Returns true if the statement is a `CREATE DATABASE ...` statement. */
-  static boolean isCreateDatabaseStatement(String statement) {
-    String[] tokens = statement.split("\\s+", 3);
-    return tokens.length >= 2
-        && tokens[0].equalsIgnoreCase("CREATE")
-        && tokens[1].equalsIgnoreCase("DATABASE");
+  static boolean isCreateDatabaseStatement(Dialect dialect, String statement) {
+    SimpleParser parser = new SimpleParser(dialect, statement);
+    return parser.eatKeyword("create", "database");
   }
 
   void runWithRetryForMissingDefaultSequenceKind(

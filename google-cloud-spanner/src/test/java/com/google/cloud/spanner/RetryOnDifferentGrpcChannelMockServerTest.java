@@ -135,7 +135,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
 
     try (Spanner spanner = builder.build().getService()) {
       assumeFalse(
-          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed sessions",
+          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed"
+              + " sessions",
           isMultiplexedSessionsEnabledForRW(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       client
@@ -173,7 +174,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
 
     try (Spanner spanner = builder.build().getService()) {
       assumeFalse(
-          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed sessions",
+          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed"
+              + " sessions",
           isMultiplexedSessionsEnabledForRW(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       SpannerException exception =
@@ -219,7 +221,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
 
     try (Spanner spanner = builder.build().getService()) {
       assumeFalse(
-          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed sessions",
+          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed"
+              + " sessions",
           isMultiplexedSessionsEnabledForRW(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
 
@@ -281,6 +284,7 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
 
   @Test
   public void testSingleUseQuery_retriesOnNewChannel() {
+    assumeFalse(TestHelper.isMultiplexSessionDisabled());
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
         SessionPoolOptions.newBuilder().setUseMultiplexedSession(true).build());
@@ -309,6 +313,7 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
 
   @Test
   public void testSingleUseQuery_stopsRetrying() {
+    assumeFalse(TestHelper.isMultiplexSessionDisabled());
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
         SessionPoolOptions.newBuilder().setUseMultiplexedSession(true).build());
@@ -350,7 +355,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
 
     try (Spanner spanner = builder.build().getService()) {
       assumeFalse(
-          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed sessions",
+          "RetryOnDifferentGrpcChannel handler is not implemented for read-write with multiplexed"
+              + " sessions",
           isMultiplexedSessionsEnabledForRW(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       ScheduledExecutorService service = Executors.newScheduledThreadPool(1);

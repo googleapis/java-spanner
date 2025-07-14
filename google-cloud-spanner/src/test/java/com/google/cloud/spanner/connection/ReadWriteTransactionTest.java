@@ -59,6 +59,7 @@ import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
@@ -94,6 +95,11 @@ public class ReadWriteTransactionTest {
     public TransactionContext begin() {
       state = TransactionState.STARTED;
       return txContext;
+    }
+
+    @Override
+    public TransactionContext begin(AbortedException exception) {
+      return begin();
     }
 
     @Override
@@ -174,6 +180,7 @@ public class ReadWriteTransactionTest {
     return ReadWriteTransaction.newBuilder()
         .setDatabaseClient(client)
         .setRetryAbortsInternally(withRetry)
+        .setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED)
         .setSavepointSupport(SavepointSupport.FAIL_AFTER_ROLLBACK)
         .setTransactionRetryListeners(Collections.emptyList())
         .withStatementExecutor(new StatementExecutor())
@@ -473,6 +480,7 @@ public class ReadWriteTransactionTest {
       ReadWriteTransaction subject =
           ReadWriteTransaction.newBuilder()
               .setRetryAbortsInternally(true)
+              .setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED)
               .setSavepointSupport(SavepointSupport.FAIL_AFTER_ROLLBACK)
               .setTransactionRetryListeners(Collections.emptyList())
               .setDatabaseClient(client)
@@ -502,6 +510,7 @@ public class ReadWriteTransactionTest {
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
             .setRetryAbortsInternally(true)
+            .setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED)
             .setSavepointSupport(SavepointSupport.FAIL_AFTER_ROLLBACK)
             .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
@@ -737,6 +746,7 @@ public class ReadWriteTransactionTest {
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
             .setRetryAbortsInternally(true)
+            .setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED)
             .setSavepointSupport(SavepointSupport.FAIL_AFTER_ROLLBACK)
             .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)

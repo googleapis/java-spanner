@@ -27,6 +27,7 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
@@ -66,6 +67,8 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import io.grpc.CallCredentials;
 import io.grpc.CompressorRegistry;
 import io.grpc.Context;
@@ -98,7 +101,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -117,10 +119,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
-  private static final String CLOUD_SPANNER_HOST_FORMAT = ".*\\.googleapis\\.com.*";
-
-  @VisibleForTesting
-  static final Pattern CLOUD_SPANNER_HOST_PATTERN = Pattern.compile(CLOUD_SPANNER_HOST_FORMAT);
+  private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
 
   private static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
@@ -155,12 +154,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
   private final BuiltInMetricsProvider builtInMetricsProvider = BuiltInMetricsProvider.INSTANCE;
+
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
   private final Map<DatabaseId, QueryOptions> defaultQueryOptions;
+
   /** These are the default {@link QueryOptions} defined in environment variables on this system. */
   private final QueryOptions envQueryOptions;
+
   /**
    * These are the merged query options of the {@link QueryOptions} set on this {@link
    * SpannerOptions} and the {@link QueryOptions} in the environment variables. Options specified in
@@ -173,7 +175,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
-  private final boolean attemptDirectPath;
+  private final boolean enableDirectAccess;
   private final DirectedReadOptions directedReadOptions;
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
@@ -182,6 +184,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
+  private final TransactionOptions defaultTransactionOptions;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -710,7 +713,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT,
           String.format(
-              "The %s system property must be a valid integer. The value %s could not be parsed as an integer.",
+              "The %s system property must be a valid integer. The value %s could not be parsed as"
+                  + " an integer.",
               propertyName, propertyValue));
     }
   }
@@ -802,7 +806,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
-    attemptDirectPath = builder.attemptDirectPath;
+    enableDirectAccess = builder.enableDirectAccess;
     directedReadOptions = builder.directedReadOptions;
     useVirtualThreads = builder.useVirtualThreads;
     openTelemetry = builder.openTelemetry;
@@ -811,6 +815,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableBuiltInMetrics = builder.enableBuiltInMetrics;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
+    defaultTransactionOptions = builder.defaultTransactionOptions;
   }
 
   /**
@@ -844,8 +849,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
+    default boolean isEnableDirectAccess() {
+      return false;
+    }
+
     default boolean isEnableBuiltInMetrics() {
       return true;
+    }
+
+    default boolean isEnableGRPCBuiltInMetrics() {
+      return false;
     }
 
     default boolean isEnableEndToEndTracing() {
@@ -856,13 +869,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return null;
     }
 
-    default GoogleCredentials getDefaultExternalHostCredentials() {
+    default GoogleCredentials getDefaultExperimentalHostCredentials() {
       return null;
     }
   }
 
-  static final String DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS =
-      "SPANNER_EXTERNAL_HOST_AUTH_TOKEN";
+  static final String DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS =
+      "SPANNER_EXPERIMENTAL_HOST_AUTH_TOKEN";
 
   /**
    * Default implementation of {@link SpannerEnvironment}. Reads all configuration from environment
@@ -875,9 +888,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
+    private static final String GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS =
+        "GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS";
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
+    private static final String SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS =
+        "SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS";
     private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
 
     private SpannerEnvironmentImpl() {}
@@ -906,8 +923,21 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
+    public boolean isEnableDirectAccess() {
+      return Boolean.parseBoolean(System.getenv(GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS));
+    }
+
+    @Override
     public boolean isEnableBuiltInMetrics() {
       return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_BUILTIN_METRICS));
+    }
+
+    @Override
+    public boolean isEnableGRPCBuiltInMetrics() {
+      // Enable gRPC built-in metrics as default unless explicitly
+      // disabled via env.
+      return !Boolean.parseBoolean(
+          System.getenv(SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS));
     }
 
     @Override
@@ -921,8 +951,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
-    public GoogleCredentials getDefaultExternalHostCredentials() {
-      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
+    public GoogleCredentials getDefaultExperimentalHostCredentials() {
+      return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
     }
   }
 
@@ -981,7 +1011,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
-    private boolean attemptDirectPath = true;
+    private boolean enableDirectAccess = SpannerOptions.environment.isEnableDirectAccess();
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
     private OpenTelemetry openTelemetry;
@@ -991,7 +1021,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
-    private boolean isExternalHost = false;
+    private boolean isExperimentalHost = false;
+    private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1052,7 +1083,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
-      this.attemptDirectPath = options.attemptDirectPath;
+      this.enableDirectAccess = options.enableDirectAccess;
       this.directedReadOptions = options.directedReadOptions;
       this.useVirtualThreads = options.useVirtualThreads;
       this.enableApiTracing = options.enableApiTracing;
@@ -1060,6 +1091,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
+      this.defaultTransactionOptions = options.defaultTransactionOptions;
     }
 
     @Override
@@ -1189,8 +1221,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public Builder setRetrySettings(RetrySettings retrySettings) {
       throw new UnsupportedOperationException(
-          "SpannerOptions does not support setting global retry settings. "
-              + "Call spannerStubSettingsBuilder().<method-name>Settings().setRetrySettings(RetrySettings) instead.");
+          "SpannerOptions does not support setting global retry settings. Call"
+              + " spannerStubSettingsBuilder().<method-name>Settings().setRetrySettings(RetrySettings)"
+              + " instead.");
     }
 
     /**
@@ -1484,11 +1517,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public Builder setHost(String host) {
       super.setHost(host);
-      if (!CLOUD_SPANNER_HOST_PATTERN.matcher(host).matches()) {
-        this.isExternalHost = true;
-      }
       // Setting a host should override any SPANNER_EMULATOR_HOST setting.
       setEmulatorHost(null);
+      return this;
+    }
+
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
+    public Builder setExperimentalHost(String host) {
+      super.setHost(host);
+      super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
+      setSessionPoolOption(SessionPoolOptions.newBuilder().setExperimentalHost().build());
+      this.isExperimentalHost = true;
       return this;
     }
 
@@ -1530,7 +1569,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Configures mTLS authentication using the provided client certificate and key files. mTLS is
-     * only supported for external spanner hosts.
+     * only supported for experimental spanner hosts.
      *
      * @param clientCertificate Path to the client certificate file.
      * @param clientCertificateKey Path to the client private key file.
@@ -1577,8 +1616,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @BetaApi
+    public Builder setEnableDirectAccess(boolean enableDirectAccess) {
+      this.enableDirectAccess = enableDirectAccess;
+      return this;
+    }
+
+    @ObsoleteApi("Use setEnableDirectAccess(false) instead")
+    @Deprecated
     public Builder disableDirectPath() {
-      this.attemptDirectPath = false;
+      this.enableDirectAccess = false;
       return this;
     }
 
@@ -1643,6 +1689,55 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Provides the default read-write transaction options for all databases. These defaults are
+     * overridden by any explicit {@link com.google.cloud.spanner.Options.TransactionOption}
+     * provided through {@link DatabaseClient}.
+     *
+     * <p>Example Usage:
+     *
+     * <pre>{@code
+     * DefaultReadWriteTransactionOptions options = DefaultReadWriteTransactionOptions.newBuilder()
+     * .setIsolationLevel(IsolationLevel.SERIALIZABLE)
+     * .build();
+     * }</pre>
+     */
+    public static class DefaultReadWriteTransactionOptions {
+      private final TransactionOptions defaultTransactionOptions;
+
+      private DefaultReadWriteTransactionOptions(TransactionOptions defaultTransactionOptions) {
+        this.defaultTransactionOptions = defaultTransactionOptions;
+      }
+
+      public static DefaultReadWriteTransactionOptionsBuilder newBuilder() {
+        return new DefaultReadWriteTransactionOptionsBuilder();
+      }
+
+      public static class DefaultReadWriteTransactionOptionsBuilder {
+        private final TransactionOptions.Builder transactionOptionsBuilder =
+            TransactionOptions.newBuilder();
+
+        public DefaultReadWriteTransactionOptionsBuilder setIsolationLevel(
+            IsolationLevel isolationLevel) {
+          transactionOptionsBuilder.setIsolationLevel(isolationLevel);
+          return this;
+        }
+
+        public DefaultReadWriteTransactionOptions build() {
+          return new DefaultReadWriteTransactionOptions(transactionOptionsBuilder.build());
+        }
+      }
+    }
+
+    /** Sets the {@link DefaultReadWriteTransactionOptions} for read-write transactions. */
+    public Builder setDefaultTransactionOptions(
+        DefaultReadWriteTransactionOptions defaultReadWriteTransactionOptions) {
+      Preconditions.checkNotNull(
+          defaultReadWriteTransactionOptions, "DefaultReadWriteTransactionOptions cannot be null");
+      this.defaultTransactionOptions = defaultReadWriteTransactionOptions.defaultTransactionOptions;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1657,8 +1752,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-      } else if (isExternalHost && credentials == null) {
-        credentials = environment.getDefaultExternalHostCredentials();
+      } else if (isExperimentalHost && credentials == null) {
+        credentials = environment.getDefaultExperimentalHostCredentials();
       }
       if (this.numChannels == null) {
         this.numChannels =
@@ -1700,8 +1795,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   @InternalApi
-  public static GoogleCredentials getDefaultExternalHostCredentialsFromSysEnv() {
-    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXTERNAL_HOST_CREDENTIALS));
+  public static GoogleCredentials getDefaultExperimentalCredentialsFromSysEnv() {
+    return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
   }
 
   private static @Nullable GoogleCredentials getOAuthTokenFromFile(@Nullable String file) {
@@ -1726,7 +1821,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       if (activeTracingFramework != null
           && activeTracingFramework != TracingFramework.OPEN_TELEMETRY) {
         throw new IllegalStateException(
-            "ActiveTracingFramework is set to OpenCensus and cannot be reset after SpannerOptions object is created.");
+            "ActiveTracingFramework is set to OpenCensus and cannot be reset after SpannerOptions"
+                + " object is created.");
       }
       activeTracingFramework = TracingFramework.OPEN_TELEMETRY;
     }
@@ -1734,13 +1830,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   /** Enables OpenCensus traces. Enabling OpenCensus traces will disable OpenTelemetry traces. */
   @ObsoleteApi(
-      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to"
+          + " OpenTelemetry traces")
   public static void enableOpenCensusTraces() {
     synchronized (lock) {
       if (activeTracingFramework != null
           && activeTracingFramework != TracingFramework.OPEN_CENSUS) {
         throw new IllegalStateException(
-            "ActiveTracingFramework is set to OpenTelemetry and cannot be reset after SpannerOptions object is created.");
+            "ActiveTracingFramework is set to OpenTelemetry and cannot be reset after"
+                + " SpannerOptions object is created.");
       }
       activeTracingFramework = TracingFramework.OPEN_CENSUS;
     }
@@ -1751,7 +1849,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * not a valid production scenario
    */
   @ObsoleteApi(
-      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to"
+          + " OpenTelemetry traces")
   @VisibleForTesting
   static void resetActiveTracingFramework() {
     activeTracingFramework = null;
@@ -1893,8 +1992,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   @BetaApi
+  public Boolean isEnableDirectAccess() {
+    return enableDirectAccess;
+  }
+
+  @ObsoleteApi("Use isEnableDirectAccess() instead")
+  @Deprecated
   public boolean isAttemptDirectPath() {
-    return attemptDirectPath;
+    return enableDirectAccess;
   }
 
   /**
@@ -1912,6 +2017,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @Override
   public ApiTracerFactory getApiTracerFactory() {
     return createApiTracerFactory(false, false);
+  }
+
+  public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
+    if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
+      this.builtInMetricsProvider.enableGrpcMetrics(
+          channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+    }
   }
 
   public ApiTracerFactory getApiTracerFactory(boolean isAdminClient, boolean isEmulatorEnabled) {
@@ -1961,8 +2073,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return openTelemetry != null
         ? new BuiltInMetricsTracerFactory(
             new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            builtInMetricsProvider.createClientAttributes(
-                this.getProjectId(), "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
+            new HashMap<>())
         : null;
   }
 
@@ -1986,6 +2097,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   /** Returns the override metrics Host. */
   String getMonitoringHost() {
     return monitoringHost;
+  }
+
+  public TransactionOptions getDefaultTransactionOptions() {
+    return defaultTransactionOptions;
   }
 
   @BetaApi

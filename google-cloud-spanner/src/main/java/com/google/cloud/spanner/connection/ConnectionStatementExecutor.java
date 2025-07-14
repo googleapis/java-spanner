@@ -16,11 +16,13 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.TransactionOptions;
 import java.time.Duration;
 
 /**
@@ -35,6 +37,7 @@ import java.time.Duration;
  * <p>The client side statements are defined in the ClientSideStatements.json file.
  */
 interface ConnectionStatementExecutor {
+  Dialect getDialect();
 
   StatementResult statementSetAutocommit(Boolean autocommit);
 
@@ -107,7 +110,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowExcludeTxnFromChangeStreams();
 
-  StatementResult statementBeginTransaction();
+  StatementResult statementBeginTransaction(TransactionOptions.IsolationLevel isolationLevel);
 
   StatementResult statementBeginPgTransaction(PgTransactionMode transactionMode);
 

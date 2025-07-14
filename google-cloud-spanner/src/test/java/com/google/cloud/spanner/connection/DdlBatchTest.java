@@ -135,6 +135,7 @@ public class DdlBatchTest {
   }
 
   private DdlBatch createSubject(DdlClient ddlClient, DatabaseClient dbClient) {
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     return DdlBatch.newBuilder()
         .setDdlClient(ddlClient)
         .setDatabaseClient(dbClient)
@@ -273,7 +274,7 @@ public class DdlBatchTest {
     assertThat(batch.isActive(), is(true));
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getStatement()).thenReturn(Statement.of("CREATE TABLE FOO"));
-    when(statement.getSqlWithoutComments()).thenReturn("CREATE TABLE FOO");
+    when(statement.getSql()).thenReturn("CREATE TABLE FOO");
     when(statement.getType()).thenReturn(StatementType.DDL);
     batch.executeDdlAsync(CallType.SYNC, statement);
     try {
@@ -319,7 +320,7 @@ public class DdlBatchTest {
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getType()).thenReturn(StatementType.DDL);
     when(statement.getStatement()).thenReturn(Statement.of("CREATE TABLE FOO"));
-    when(statement.getSqlWithoutComments()).thenReturn("CREATE TABLE FOO");
+    when(statement.getSql()).thenReturn("CREATE TABLE FOO");
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
@@ -382,10 +383,12 @@ public class DdlBatchTest {
 
     // verify when protoDescriptors is null
     client = createDefaultMockDdlClient();
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     batch =
         DdlBatch.newBuilder()
             .setDdlClient(client)
-            .setDatabaseClient(mock(DatabaseClient.class))
+            .setDatabaseClient(dbClient)
             .withStatementExecutor(new StatementExecutor())
             .setSpan(Span.getInvalid())
             .setProtoDescriptors(null)
@@ -412,7 +415,7 @@ public class DdlBatchTest {
     batch =
         DdlBatch.newBuilder()
             .setDdlClient(client)
-            .setDatabaseClient(mock(DatabaseClient.class))
+            .setDatabaseClient(dbClient)
             .withStatementExecutor(new StatementExecutor())
             .setSpan(Span.getInvalid())
             .setProtoDescriptors(protoDescriptors)
@@ -442,11 +445,13 @@ public class DdlBatchTest {
     when(operationFuture.getMetadata()).thenReturn(metadataFuture);
     when(client.executeDdl(argThat(isListOfStringsWithSize(2)), isNull()))
         .thenReturn(operationFuture);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     DdlBatch batch =
         DdlBatch.newBuilder()
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
-            .setDatabaseClient(mock(DatabaseClient.class))
+            .setDatabaseClient(dbClient)
             .setSpan(Span.getInvalid())
             .setConnectionState(new ConnectionState(new HashMap<>()))
             .build();
@@ -486,11 +491,13 @@ public class DdlBatchTest {
         .runWithRetryForMissingDefaultSequenceKind(any(), any(), any(), any());
     when(client.executeDdl(argThat(isListOfStringsWithSize(2)), isNull()))
         .thenReturn(operationFuture);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     DdlBatch batch =
         DdlBatch.newBuilder()
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
-            .setDatabaseClient(mock(DatabaseClient.class))
+            .setDatabaseClient(dbClient)
             .setSpan(Span.getInvalid())
             .setConnectionState(new ConnectionState(new HashMap<>()))
             .build();
@@ -534,11 +541,13 @@ public class DdlBatchTest {
     when(operationFuture.getMetadata()).thenReturn(metadataFuture);
     when(client.executeDdl(argThat(isListOfStringsWithSize(2)), isNull()))
         .thenReturn(operationFuture);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     DdlBatch batch =
         DdlBatch.newBuilder()
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
-            .setDatabaseClient(mock(DatabaseClient.class))
+            .setDatabaseClient(dbClient)
             .setSpan(Span.getInvalid())
             .setConnectionState(new ConnectionState(new HashMap<>()))
             .build();
@@ -572,7 +581,7 @@ public class DdlBatchTest {
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getType()).thenReturn(StatementType.DDL);
     when(statement.getStatement()).thenReturn(Statement.of("CREATE TABLE FOO"));
-    when(statement.getSqlWithoutComments()).thenReturn("CREATE TABLE FOO");
+    when(statement.getSql()).thenReturn("CREATE TABLE FOO");
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
@@ -611,7 +620,7 @@ public class DdlBatchTest {
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getType()).thenReturn(StatementType.DDL);
     when(statement.getStatement()).thenReturn(Statement.of("CREATE TABLE FOO"));
-    when(statement.getSqlWithoutComments()).thenReturn("CREATE TABLE FOO");
+    when(statement.getSql()).thenReturn("CREATE TABLE FOO");
 
     DdlClient client = createDefaultMockDdlClient(10000L);
     final DdlBatch batch = createSubject(client);

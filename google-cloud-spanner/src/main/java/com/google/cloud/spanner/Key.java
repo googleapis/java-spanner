@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 /**
@@ -70,6 +71,7 @@ public final class Key implements Serializable {
    *   <li>{@link ByteArray} for the {@code BYTES} Cloud Spanner type
    *   <li>{@link Timestamp} for the {@code TIMESTAMP} Cloud Spanner type
    *   <li>{@link Date} for the {@code DATE} Cloud Spanner type
+   *   <li>{@link java.util.UUID} for the {@code UUID} Cloud Spanner type
    * </ul>
    *
    * @throws IllegalArgumentException if any member of {@code values} is not a supported type
@@ -117,41 +119,49 @@ public final class Key implements Serializable {
       buffer.add(value);
       return this;
     }
+
     /** Appends an {@code INT64} value to the key. */
     public Builder append(long value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends an {@code INT64} value to the key. */
     public Builder append(@Nullable Long value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code FLOAT64} value to the key. */
     public Builder append(double value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code FLOAT64} value to the key. */
     public Builder append(@Nullable Double value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code NUMERIC} value to the key. */
     public Builder append(@Nullable BigDecimal value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code ENUM} value to the key. */
     public Builder append(@Nullable ProtocolMessageEnum value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code STRING} value to the key. */
     public Builder append(@Nullable String value) {
       buffer.add(value);
       return this;
     }
+
     /** Appends a {@code BYTES} value to the key. */
     public Builder append(@Nullable ByteArray value) {
       buffer.add(value);
@@ -166,6 +176,12 @@ public final class Key implements Serializable {
 
     /** Appends a {@code DATE} value to the key */
     public Builder append(@Nullable Date value) {
+      buffer.add(value);
+      return this;
+    }
+
+    /** Appends a {@code UUID} value to the key */
+    public Builder append(@Nullable UUID value) {
       buffer.add(value);
       return this;
     }
@@ -198,6 +214,8 @@ public final class Key implements Serializable {
         append((Timestamp) value);
       } else if (value instanceof Date) {
         append((Date) value);
+      } else if (value instanceof UUID) {
+        append((UUID) value);
       } else if (value instanceof ProtocolMessageEnum) {
         append((ProtocolMessageEnum) value);
       } else {
@@ -307,6 +325,8 @@ public final class Key implements Serializable {
       } else if (part instanceof Timestamp) {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof Date) {
+        builder.addValuesBuilder().setStringValue(part.toString());
+      } else if (part instanceof UUID) {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof ProtocolMessageEnum) {
         builder

@@ -33,16 +33,23 @@ class SimpleParser {
    * if so, what the value was.
    */
   static class Result {
-    static final Result NOT_FOUND = new Result(null);
+    static final Result NOT_FOUND = new Result(null, false);
 
     static Result found(String value) {
-      return new Result(Preconditions.checkNotNull(value));
+      return new Result(Preconditions.checkNotNull(value), false);
+    }
+
+    static Result found(String value, boolean inParenthesis) {
+      return new Result(Preconditions.checkNotNull(value), inParenthesis);
     }
 
     private final String value;
 
-    private Result(String value) {
+    private final boolean inParenthesis;
+
+    private Result(String value, boolean inParenthesis) {
       this.value = value;
+      this.inParenthesis = inParenthesis;
     }
 
     @Override
@@ -55,7 +62,8 @@ class SimpleParser {
       if (!(o instanceof Result)) {
         return false;
       }
-      return Objects.equals(this.value, ((Result) o).value);
+      return Objects.equals(this.value, ((Result) o).value)
+          && Objects.equals(this.inParenthesis, ((Result) o).inParenthesis);
     }
 
     @Override
@@ -73,6 +81,10 @@ class SimpleParser {
     String getValue() {
       return this.value;
     }
+
+    boolean isInParenthesis() {
+      return this.inParenthesis;
+    }
   }
 
   // TODO: Replace this with a direct reference to the dialect, and move the isXYZSupported methods
@@ -81,13 +93,16 @@ class SimpleParser {
 
   private final String sql;
 
+  // TODO: Use this length field instead of repeatedly calling sql.length()
+  private final int length;
+
   private final boolean treatHintCommentsAsTokens;
 
   private int pos;
 
   /** Constructs a simple parser for the given SQL string and dialect. */
   SimpleParser(Dialect dialect, String sql) {
-    this(dialect, sql, 0, /* treatHintCommentsAsTokens = */ false);
+    this(dialect, sql, 0, /* treatHintCommentsAsTokens= */ false);
   }
 
   /**
@@ -100,6 +115,7 @@ class SimpleParser {
         !(treatHintCommentsAsTokens && dialect != Dialect.POSTGRESQL),
         "treatHintCommentsAsTokens can only be enabled for PostgreSQL");
     this.sql = sql;
+    this.length = sql.length();
     this.pos = pos;
     this.statementParser = AbstractStatementParser.getInstance(dialect);
     this.treatHintCommentsAsTokens = treatHintCommentsAsTokens;
@@ -117,10 +133,52 @@ class SimpleParser {
     return this.pos;
   }
 
+  void skipHint() {
+    // We don't need to do anything special for PostgreSQL, as hints in PostgreSQL are inside
+    // comments and comments are automatically skipped by all methods.
+    if (getDialect() == Dialect.GOOGLE_STANDARD_SQL && eatTokens('@', '{')) {
+      while (pos < length && !eatToken('}')) {
+        pos = statementParser.skip(sql, pos, /* result= */ null);
+      }
+    }
+  }
+
+  Result eatNextKeyword() {
+    skipHint();
+    boolean inParenthesis = false;
+    while (pos < length && eatToken('(')) {
+      inParenthesis = true;
+    }
+    return eatKeyword(inParenthesis);
+  }
+
   /** Returns true if this parser has more tokens. Advances the position to the first next token. */
   boolean hasMoreTokens() {
     skipWhitespaces();
     return pos < sql.length();
+  }
+
+  /** Eats and returns the keyword at the current position. */
+  Result eatKeyword() {
+    return eatKeyword(false);
+  }
+
+  /**
+   * Eats and returns the keyword at the current position and returns a result that indicates that
+   * the keyword is inside one or more parentheses.
+   */
+  Result eatKeyword(boolean inParenthesis) {
+    if (!hasMoreTokens()) {
+      return Result.NOT_FOUND;
+    }
+    if (!Character.isLetter(sql.charAt(pos))) {
+      return Result.NOT_FOUND;
+    }
+    int startPos = pos;
+    while (pos < length && Character.isLetter(sql.charAt(pos))) {
+      pos++;
+    }
+    return Result.found(sql.substring(startPos, pos), inParenthesis);
   }
 
   /**
@@ -164,7 +222,7 @@ class SimpleParser {
   }
 
   boolean peekTokens(char... tokens) {
-    return internalEatTokens(/* updatePos = */ false, tokens);
+    return internalEatTokens(/* updatePos= */ false, tokens);
   }
 
   /**
@@ -173,7 +231,7 @@ class SimpleParser {
    * are not equal to the list of tokens.
    */
   boolean eatTokens(char... tokens) {
-    return internalEatTokens(/* updatePos = */ true, tokens);
+    return internalEatTokens(/* updatePos= */ true, tokens);
   }
 
   /**
@@ -219,6 +277,55 @@ class SimpleParser {
     return false;
   }
 
+  boolean eatKeyword(String... keywords) {
+    return eat(true, true, keywords);
+  }
+
+  boolean eat(boolean skipWhitespaceBefore, boolean requireWhitespaceAfter, String... keywords) {
+    boolean result = true;
+    for (String keyword : keywords) {
+      result &= internalEat(keyword, skipWhitespaceBefore, requireWhitespaceAfter, true);
+    }
+    return result;
+  }
+
+  private boolean internalEat(
+      String keyword,
+      boolean skipWhitespaceBefore,
+      boolean requireWhitespaceAfter,
+      boolean updatePos) {
+    int originalPos = pos;
+    if (skipWhitespaceBefore) {
+      skipWhitespaces();
+    }
+    if (pos + keyword.length() > sql.length()) {
+      if (!updatePos) {
+        pos = originalPos;
+      }
+      return false;
+    }
+    if (sql.substring(pos, pos + keyword.length()).equalsIgnoreCase(keyword)
+        && (!requireWhitespaceAfter || isValidEndOfKeyword(pos + keyword.length()))) {
+      if (updatePos) {
+        pos = pos + keyword.length();
+      } else {
+        pos = originalPos;
+      }
+      return true;
+    }
+    if (!updatePos) {
+      pos = originalPos;
+    }
+    return false;
+  }
+
+  private boolean isValidEndOfKeyword(int index) {
+    if (sql.length() == index) {
+      return true;
+    }
+    return !isValidIdentifierChar(sql.charAt(index));
+  }
+
   /**
    * Returns true if the given character is valid as the first character of an identifier. That
    * means that it can be used as the first character of an unquoted identifier.
@@ -243,9 +350,9 @@ class SimpleParser {
   void skipWhitespaces() {
     while (pos < sql.length()) {
       if (sql.charAt(pos) == HYPHEN && sql.length() > (pos + 1) && sql.charAt(pos + 1) == HYPHEN) {
-        skipSingleLineComment(/* prefixLength = */ 2);
+        skipSingleLineComment(/* prefixLength= */ 2);
       } else if (statementParser.supportsHashSingleLineComments() && sql.charAt(pos) == DASH) {
-        skipSingleLineComment(/* prefixLength = */ 1);
+        skipSingleLineComment(/* prefixLength= */ 1);
       } else if (sql.charAt(pos) == SLASH
           && sql.length() > (pos + 1)
           && sql.charAt(pos + 1) == ASTERISK) {

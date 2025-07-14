@@ -24,7 +24,6 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Ticker;
@@ -40,6 +39,7 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -54,7 +54,7 @@ import javax.annotation.concurrent.GuardedBy;
  * opened and closed, and which {@link Spanner} objects could be closed.
  *
  * <p>Call the method {@link SpannerPool#closeSpannerPool()} at the end of your application to
- * gracefully shutdown all instances in the pool.
+ * gracefully shut down all instances in the pool.
  */
 public class SpannerPool {
   // TODO: create separate Client Lib Token for the Connection API.
@@ -163,6 +163,8 @@ public class SpannerPool {
     private final boolean enableEndToEndTracing;
     private final String clientCertificate;
     private final String clientCertificateKey;
+    private final boolean isExperimentalHost;
+    private final Boolean enableDirectAccess;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -196,6 +198,8 @@ public class SpannerPool {
       this.enableEndToEndTracing = options.isEndToEndTracingEnabled();
       this.clientCertificate = options.getClientCertificate();
       this.clientCertificateKey = options.getClientCertificateKey();
+      this.isExperimentalHost = options.isExperimentalHost();
+      this.enableDirectAccess = options.isEnableDirectAccess();
     }
 
     @Override
@@ -220,7 +224,9 @@ public class SpannerPool {
           && Objects.equals(this.enableApiTracing, other.enableApiTracing)
           && Objects.equals(this.enableEndToEndTracing, other.enableEndToEndTracing)
           && Objects.equals(this.clientCertificate, other.clientCertificate)
-          && Objects.equals(this.clientCertificateKey, other.clientCertificateKey);
+          && Objects.equals(this.clientCertificateKey, other.clientCertificateKey)
+          && Objects.equals(this.isExperimentalHost, other.isExperimentalHost)
+          && Objects.equals(this.enableDirectAccess, other.enableDirectAccess);
     }
 
     @Override
@@ -241,7 +247,9 @@ public class SpannerPool {
           this.enableApiTracing,
           this.enableEndToEndTracing,
           this.clientCertificate,
-          this.clientCertificateKey);
+          this.clientCertificateKey,
+          this.isExperimentalHost,
+          this.enableDirectAccess);
     }
   }
 
@@ -250,6 +258,7 @@ public class SpannerPool {
    * threads to be created when the connection API is not used.
    */
   private boolean initialized = false;
+
   /**
    * Thread that will be run as a shutdown hook on closing the application. This thread will close
    * any Spanner instances opened by the Connection API that are still open.
@@ -404,6 +413,12 @@ public class SpannerPool {
     if (key.clientCertificate != null && key.clientCertificateKey != null) {
       builder.useClientCert(key.clientCertificate, key.clientCertificateKey);
     }
+    if (key.isExperimentalHost) {
+      builder.setExperimentalHost(key.host);
+    }
+    if (key.enableDirectAccess != null) {
+      builder.setEnableDirectAccess(key.enableDirectAccess);
+    }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);
     }
@@ -492,7 +507,8 @@ public class SpannerPool {
               ErrorCode.FAILED_PRECONDITION,
               "There is/are "
                   + keysStillInUse.size()
-                  + " connection(s) still open. Close all connections before calling closeSpanner()");
+                  + " connection(s) still open. Close all connections before calling"
+                  + " closeSpanner()");
         }
       } finally {
         if (closerService != null) {

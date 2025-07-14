@@ -18,6 +18,7 @@ package com.google.cloud.spanner.benchmark;
 
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.benchmark.BenchmarkRunner.Environment;
 import com.google.cloud.spanner.benchmark.BenchmarkRunner.TransactionType;
 import com.google.common.annotations.VisibleForTesting;
 import java.time.Duration;
@@ -48,7 +49,11 @@ public class LatencyBenchmark {
           String.format("projects/%s/instances/%s/databases/%s", project, instance, database);
     } else {
       throw new IllegalArgumentException(
-          "You must either set all the environment variables SPANNER_CLIENT_BENCHMARK_GOOGLE_CLOUD_PROJECT, SPANNER_CLIENT_BENCHMARK_SPANNER_INSTANCE and SPANNER_CLIENT_BENCHMARK_SPANNER_DATABASE, or specify a value for the command line argument --database");
+          "You must either set all the environment variables"
+              + " SPANNER_CLIENT_BENCHMARK_GOOGLE_CLOUD_PROJECT,"
+              + " SPANNER_CLIENT_BENCHMARK_SPANNER_INSTANCE and"
+              + " SPANNER_CLIENT_BENCHMARK_SPANNER_DATABASE, or specify a value for the command"
+              + " line argument --database");
     }
 
     LatencyBenchmark benchmark = new LatencyBenchmark(DatabaseId.of(fullyQualifiedDatabase));
@@ -61,23 +66,36 @@ public class LatencyBenchmark {
     options.addOption(
         "c", "clients", true, "The number of clients that will be executing queries in parallel.");
     options.addOption(
-        "o",
-        "operations",
+        "wu",
+        "warmupTime",
         true,
-        "The number of operations that each client will execute. Defaults to 1000.");
+        "Total warm up time before running actual benchmarking. Defaults to 7 minutes.");
+    options.addOption(
+        "et",
+        "executionTime",
+        true,
+        "Total execution time of the benchmarking. Defaults to 30 minutes.");
+    options.addOption(
+        "st", "staleness", true, "Total Staleness for Reads and Queries. Defaults to 15 seconds.");
     options.addOption(
         "w",
         "wait",
         true,
-        "The wait time in milliseconds between each query that is executed by each client. Defaults to 0. "
-            + "Set this to for example 1000 to have each client execute 1 query per second.");
+        "The wait time in milliseconds between each query that is executed by each client. Defaults"
+            + " to 0. Set this to for example 1000 to have each client execute 1 query per"
+            + " second.");
     options.addOption(
         "t",
-        "transaction",
+        "transactionType",
         true,
-        "The type of transaction to execute. Must be either READ_ONLY or READ_WRITE. Defaults to READ_ONLY.");
-    options.addOption("m", "multiplexed", true, "Use multiplexed sessions. Defaults to false.");
-    options.addOption("w", "wait", true, "Wait time in millis. Defaults to zero.");
+        "The type of transaction to execute. Must be either READ_ONLY or READ_WRITE. Defaults to"
+            + " READ_ONLY.");
+    options.addOption(
+        "e",
+        "environment",
+        true,
+        "Spanner Environment. Must be either PROD or CLOUD_DEVEL. Default to CLOUD_DEVEL");
+    options.addOption("m", "multiplexed", true, "Use multiplexed sessions. Defaults to true.");
     options.addOption("name", true, "Name of this test run");
     CommandLineParser parser = new DefaultParser();
     return parser.parse(options, args);
@@ -91,34 +109,54 @@ public class LatencyBenchmark {
 
   public void run(CommandLine commandLine) {
     int clients =
-        commandLine.hasOption('c') ? Integer.parseInt(commandLine.getOptionValue('c')) : 16;
-    int operations =
-        commandLine.hasOption('o') ? Integer.parseInt(commandLine.getOptionValue('o')) : 1000;
+        commandLine.hasOption('c') ? Integer.parseInt(commandLine.getOptionValue('c')) : 1;
+    int executionTime =
+        commandLine.hasOption("et") ? Integer.parseInt(commandLine.getOptionValue("et")) : 30;
+    int warmUpTime =
+        commandLine.hasOption("wu") ? Integer.parseInt(commandLine.getOptionValue("wu")) : 7;
     int waitMillis =
         commandLine.hasOption('w') ? Integer.parseInt(commandLine.getOptionValue('w')) : 0;
+    int staleness =
+        commandLine.hasOption("st") ? Integer.parseInt(commandLine.getOptionValue("st")) : 15;
     TransactionType transactionType =
         commandLine.hasOption('t')
             ? TransactionType.valueOf(commandLine.getOptionValue('t').toUpperCase(Locale.ENGLISH))
-            : TransactionType.READ_ONLY_SINGLE_USE;
+            : TransactionType.READ_ONLY_SINGLE_USE_QUERY;
     boolean useMultiplexedSession =
-        commandLine.hasOption('m') ? Boolean.parseBoolean(commandLine.getOptionValue('m')) : false;
+        !commandLine.hasOption('m') || Boolean.parseBoolean(commandLine.getOptionValue('m'));
+    Environment environment =
+        commandLine.hasOption('e')
+            ? Environment.valueOf(commandLine.getOptionValue('e').toUpperCase(Locale.ENGLISH))
+            : Environment.CLOUD_DEVEL;
+
+    BenchmarkingConfiguration configuration =
+        new BenchmarkingConfiguration()
+            .setDatabaseId(databaseId)
+            .setNumOfClients(clients)
+            .setExecutionTime(executionTime)
+            .setWarmupTime(warmUpTime)
+            .setStaleness(staleness)
+            .setTransactionType(transactionType)
+            .setUseMultiplexSession(useMultiplexedSession)
+            .setWaitBetweenRequests(waitMillis)
+            .setEnvironment(environment);
 
     System.out.println();
     System.out.println("Running benchmark with the following options");
-    System.out.printf("Database: %s\n", databaseId);
-    System.out.printf("Clients: %d\n", clients);
-    System.out.printf("Operations: %d\n", operations);
-    System.out.printf("Transaction type: %s\n", transactionType);
-    System.out.printf("Use Multiplexed Sessions: %s\n", useMultiplexedSession);
-    System.out.printf("Wait between queries: %dms\n", waitMillis);
+    System.out.printf("Database: %s\n", configuration.getDatabaseId());
+    System.out.printf("Clients: %d\n", configuration.getNumOfClients());
+    System.out.printf("Total Warm up Time: %d mins\n", configuration.getWarmupTime());
+    System.out.printf("Total Execution Time: %d mins\n", configuration.getExecutionTime());
+    System.out.printf("Staleness: %d secs\n", configuration.getStaleness());
+    System.out.printf("Transaction type: %s\n", configuration.getTransactionType());
+    System.out.printf("Use Multiplexed Sessions: %s\n", configuration.isUseMultiplexSession());
+    System.out.printf("Wait between requests: %dms\n", configuration.getWaitBetweenRequests());
 
     List<Duration> javaClientResults = null;
     System.out.println();
     System.out.println("Running benchmark for Java Client Library");
-    JavaClientRunner javaClientRunner = new JavaClientRunner(databaseId);
-    javaClientResults =
-        javaClientRunner.execute(
-            transactionType, clients, operations, waitMillis, useMultiplexedSession);
+    JavaClientRunner javaClientRunner = new JavaClientRunner(configuration.getDatabaseId());
+    javaClientResults = javaClientRunner.execute(configuration);
 
     printResults("Java Client Library", javaClientResults);
   }

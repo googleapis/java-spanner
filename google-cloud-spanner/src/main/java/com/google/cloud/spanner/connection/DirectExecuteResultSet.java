@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Interval;
 import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -32,6 +33,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -289,6 +291,30 @@ class DirectExecuteResultSet implements ProtobufResultSet {
   }
 
   @Override
+  public UUID getUuid(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getUuid(columnIndex);
+  }
+
+  @Override
+  public UUID getUuid(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getUuid(columnName);
+  }
+
+  @Override
+  public Interval getInterval(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getInterval(columnIndex);
+  }
+
+  @Override
+  public Interval getInterval(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getInterval(columnName);
+  }
+
+  @Override
   public Value getValue(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getValue(columnIndex);
@@ -478,6 +504,30 @@ class DirectExecuteResultSet implements ProtobufResultSet {
   public List<Date> getDateList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDateList(columnName);
+  }
+
+  @Override
+  public List<UUID> getUuidList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getUuidList(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUuidList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getUuidList(columnName);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getIntervalList(columnIndex);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getIntervalList(columnName);
   }
 
   @Override

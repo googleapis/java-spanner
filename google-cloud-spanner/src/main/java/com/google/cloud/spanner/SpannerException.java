@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ErrorDetails;
 import com.google.cloud.grpc.BaseGrpcServiceException;
@@ -40,8 +41,9 @@ public class SpannerException extends BaseGrpcServiceException {
         @Nullable String message,
         ResourceInfo resourceInfo,
         @Nullable Throwable cause,
-        @Nullable ApiException apiException) {
-      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause, apiException);
+        @Nullable ApiException apiException,
+        @Nullable XGoogSpannerRequestId reqId) {
+      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause, apiException, reqId);
       this.resourceInfo = resourceInfo;
     }
 
@@ -56,6 +58,7 @@ public class SpannerException extends BaseGrpcServiceException {
 
   private final ErrorCode code;
   private final ApiException apiException;
+  private XGoogSpannerRequestId requestId;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   SpannerException(
@@ -75,17 +78,37 @@ public class SpannerException extends BaseGrpcServiceException {
       @Nullable String message,
       @Nullable Throwable cause,
       @Nullable ApiException apiException) {
+    this(token, code, retryable, message, cause, apiException, null);
+  }
+
+  /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
+  SpannerException(
+      DoNotConstructDirectly token,
+      ErrorCode code,
+      boolean retryable,
+      @Nullable String message,
+      @Nullable Throwable cause,
+      @Nullable ApiException apiException,
+      @Nullable XGoogSpannerRequestId requestId) {
     super(message, cause, code.getCode(), retryable);
     if (token != DoNotConstructDirectly.ALLOWED) {
       throw new AssertionError("Do not construct directly: use SpannerExceptionFactory");
     }
     this.code = Preconditions.checkNotNull(code);
     this.apiException = apiException;
+    this.requestId = requestId;
   }
 
   /** Returns the error code associated with this exception. */
   public ErrorCode getErrorCode() {
     return code;
+  }
+
+  public String getRequestId() {
+    if (requestId == null) {
+      return "";
+    }
+    return requestId.toString();
   }
 
   enum DoNotConstructDirectly {
@@ -174,5 +197,11 @@ public class SpannerException extends BaseGrpcServiceException {
       return this.apiException.getErrorDetails();
     }
     return null;
+  }
+
+  /** Sets the requestId. */
+  @InternalApi
+  public void setRequestId(XGoogSpannerRequestId reqId) {
+    this.requestId = reqId;
   }
 }

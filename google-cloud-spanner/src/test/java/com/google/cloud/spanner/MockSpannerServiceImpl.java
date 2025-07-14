@@ -354,7 +354,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       Preconditions.checkNotNull(columns);
       Preconditions.checkArgument(
           isValidKeySet(keySet),
-          "Currently only KeySet.all() and KeySet.singleKey(Key.of()) are supported for read statements");
+          "Currently only KeySet.all() and KeySet.singleKey(Key.of()) are supported for read"
+              + " statements");
       StringBuilder builder = new StringBuilder("SELECT ");
       boolean first = true;
       for (String col : columns) {
@@ -578,6 +579,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   private final Random random = new Random();
   private double abortProbability = 0.0010D;
+
   /**
    * Flip this switch to true if you want the {@link SessionPool#DETERMINE_DIALECT_STATEMENT}
    * statement to be included in the recorded requests on the mock server. It is ignored by default
@@ -607,7 +609,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<ByteString, Boolean> commitRetryTransactions = new ConcurrentHashMap<>();
   private final AtomicBoolean abortNextTransaction = new AtomicBoolean();
   private final AtomicBoolean abortNextStatement = new AtomicBoolean();
-  private final AtomicBoolean ignoreNextInlineBeginRequest = new AtomicBoolean();
+  private final AtomicBoolean ignoreInlineBeginRequest = new AtomicBoolean();
   private ConcurrentMap<String, AtomicLong> transactionCounters = new ConcurrentHashMap<>();
   private ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
@@ -728,7 +730,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           .withDescription(
               String.format(
                   "There is no result registered for the statement: %s\n"
-                      + "Call TestSpannerImpl#addStatementResult(StatementResult) before executing the statement.",
+                      + "Call TestSpannerImpl#addStatementResult(StatementResult) before executing"
+                      + " the statement.",
                   statement.toString()))
           .asRuntimeException();
     }
@@ -790,8 +793,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
-  public void ignoreNextInlineBeginRequest() {
-    ignoreNextInlineBeginRequest.set(true);
+  public void setIgnoreInlineBeginRequest(boolean ignore) {
+    ignoreInlineBeginRequest.set(ignore);
   }
 
   public void freeze() {
@@ -1063,7 +1066,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                     .setMetadata(
                         ResultSetMetadata.newBuilder()
                             .setTransaction(
-                                ignoreNextInlineBeginRequest.getAndSet(false)
+                                ignoreInlineBeginRequest.get()
                                     ? Transaction.getDefaultInstance()
                                     : Transaction.newBuilder().setId(transactionId).build())
                             .build());
@@ -1093,10 +1096,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     ResultSetMetadata metadata = resultSet.getMetadata();
     if (transactionId != null) {
       metadata =
-          metadata
-              .toBuilder()
+          metadata.toBuilder()
               .setTransaction(
-                  ignoreNextInlineBeginRequest.getAndSet(false)
+                  ignoreInlineBeginRequest.get()
                       ? Transaction.getDefaultInstance()
                       : Transaction.newBuilder().setId(transactionId).build())
               .build();
@@ -1132,7 +1134,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       if (isPartitionedDmlTransaction(transactionId)) {
         throw Status.FAILED_PRECONDITION
             .withDescription(
-                "This transaction is a partitioned DML transaction and cannot be used for batch DML updates.")
+                "This transaction is a partitioned DML transaction and cannot be used for batch DML"
+                    + " updates.")
             .asRuntimeException();
       }
       simulateAbort(session, transactionId);
@@ -1197,7 +1200,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
                         .setTransaction(
-                            ignoreNextInlineBeginRequest.getAndSet(false)
+                            ignoreInlineBeginRequest.get()
                                 ? Transaction.getDefaultInstance()
                                 : Transaction.newBuilder().setId(transactionId).build())
                         .build())
@@ -1328,6 +1331,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case DATE:
                 builder.bind(fieldName).toDateArray(null);
                 break;
+              case UUID:
+                builder.bind(fieldName).toUuidArray(null);
+                break;
+              case INTERVAL:
+                builder.bind(fieldName).toIntervalArray(null);
+                break;
               case FLOAT32:
                 builder.bind(fieldName).toFloat32Array((Iterable<Float>) null);
                 break;
@@ -1373,6 +1382,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case DATE:
             builder.bind(fieldName).to((Date) null);
+            break;
+          case UUID:
+            builder.bind(fieldName).to((UUID) null);
+            break;
+          case INTERVAL:
+            builder.bind(fieldName).to((Interval) null);
             break;
           case FLOAT32:
             builder.bind(fieldName).to((Float) null);
@@ -1441,6 +1456,22 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                         (Iterable<Date>)
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.date(), value.getListValue()));
+                break;
+              case UUID:
+                builder
+                    .bind(fieldName)
+                    .toUuidArray(
+                        (Iterable<UUID>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.uuid(), value.getListValue()));
+                break;
+              case INTERVAL:
+                builder
+                    .bind(fieldName)
+                    .toIntervalArray(
+                        (Iterable<Interval>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.interval(), value.getListValue()));
                 break;
               case FLOAT32:
                 builder
@@ -1532,6 +1563,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case DATE:
             builder.bind(fieldName).to(Date.parseDate(value.getStringValue()));
+            break;
+          case UUID:
+            builder.bind(fieldName).to(UUID.fromString(value.getStringValue()));
+            break;
+          case INTERVAL:
+            builder.bind(fieldName).to(Interval.parseFromString(value.getStringValue()));
             break;
           case FLOAT32:
             builder.bind(fieldName).to((float) value.getNumberValue());
@@ -1727,10 +1764,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       metadata = metadata.toBuilder().setTransaction(transaction).build();
     } else {
       metadata =
-          metadata
-              .toBuilder()
+          metadata.toBuilder()
               .setTransaction(
-                  ignoreNextInlineBeginRequest.getAndSet(false)
+                  ignoreInlineBeginRequest.get()
                       ? Transaction.getDefaultInstance()
                       : Transaction.newBuilder().setId(transactionId).build())
               .build();
@@ -1785,7 +1821,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                   ResultSetMetadata.newBuilder()
                       .setRowType(StructType.newBuilder().addFields(field).build())
                       .setTransaction(
-                          ignoreNextInlineBeginRequest.getAndSet(false)
+                          ignoreInlineBeginRequest.get()
                               ? Transaction.getDefaultInstance()
                               : Transaction.newBuilder().setId(transaction.getId()).build())
                       .build())
@@ -1798,7 +1834,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                   ResultSetMetadata.newBuilder()
                       .setRowType(StructType.newBuilder().addFields(field).build())
                       .setTransaction(
-                          ignoreNextInlineBeginRequest.getAndSet(false)
+                          ignoreInlineBeginRequest.get()
                               ? Transaction.getDefaultInstance()
                               : Transaction.newBuilder().setId(transaction.getId()).build())
                       .build())
@@ -2003,7 +2039,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           throw Status.FAILED_PRECONDITION
               .withDescription(
                   String.format(
-                      "This transaction has been invalidated by a later transaction in the same session.\nTransaction id: "
+                      "This transaction has been invalidated by a later transaction in the same"
+                          + " session.\n"
+                          + "Transaction id: "
                           + id
                           + "\nExpected: "
                           + counter.get(),
@@ -2302,6 +2340,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       throws InterruptedException, TimeoutException {
     Stopwatch watch = Stopwatch.createStarted();
     while (countRequestsOfType(type) == 0) {
+      //noinspection BusyWait
       Thread.sleep(1L);
       if (watch.elapsed(TimeUnit.MILLISECONDS) > timeoutMillis) {
         throw new TimeoutException(

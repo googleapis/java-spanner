@@ -114,7 +114,8 @@ public class BatchClientImpl implements BatchClient {
                 sessionClient.getSpanner().getOptions().getDirectedReadOptions())
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
-        checkNotNull(bound));
+        checkNotNull(bound),
+        sessionClient);
   }
 
   @Override
@@ -137,7 +138,8 @@ public class BatchClientImpl implements BatchClient {
                 sessionClient.getSpanner().getOptions().getDirectedReadOptions())
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
-        batchTransactionId);
+        batchTransactionId,
+        sessionClient);
   }
 
   private boolean canUseMultiplexedSession() {
@@ -160,20 +162,28 @@ public class BatchClientImpl implements BatchClient {
 
   private static class BatchReadOnlyTransactionImpl extends MultiUseReadOnlyTransaction
       implements BatchReadOnlyTransaction {
-    private final String sessionName;
+    private String sessionName;
     private final Map<SpannerRpc.Option, ?> options;
+    private final SessionClient sessionClient;
+    private final AtomicBoolean fallbackInitiated = new AtomicBoolean(false);
 
     BatchReadOnlyTransactionImpl(
-        MultiUseReadOnlyTransaction.Builder builder, TimestampBound bound) {
+        MultiUseReadOnlyTransaction.Builder builder,
+        TimestampBound bound,
+        SessionClient sessionClient) {
       super(builder.setTimestampBound(bound));
+      this.sessionClient = sessionClient;
       this.sessionName = session.getName();
       this.options = session.getOptions();
       initTransaction();
     }
 
     BatchReadOnlyTransactionImpl(
-        MultiUseReadOnlyTransaction.Builder builder, BatchTransactionId batchTransactionId) {
+        MultiUseReadOnlyTransaction.Builder builder,
+        BatchTransactionId batchTransactionId,
+        SessionClient sessionClient) {
       super(builder.setTransactionId(batchTransactionId.getTransactionId()));
+      this.sessionClient = sessionClient;
       this.sessionName = session.getName();
       this.options = session.getOptions();
     }
@@ -204,6 +214,18 @@ public class BatchClientImpl implements BatchClient {
         Iterable<String> columns,
         ReadOption... option)
         throws SpannerException {
+      return partitionReadUsingIndex(partitionOptions, table, index, keys, columns, false, option);
+    }
+
+    private List<Partition> partitionReadUsingIndex(
+        PartitionOptions partitionOptions,
+        String table,
+        String index,
+        KeySet keys,
+        Iterable<String> columns,
+        boolean isFallback,
+        ReadOption... option)
+        throws SpannerException {
       Options readOptions = Options.fromReadOptions(option);
       Preconditions.checkArgument(
           !readOptions.hasLimit(),
@@ -228,9 +250,11 @@ public class BatchClientImpl implements BatchClient {
       }
       builder.setPartitionOptions(pbuilder.build());
 
+      XGoogSpannerRequestId reqId =
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       final PartitionReadRequest request = builder.build();
       try {
-        PartitionResponse response = rpc.partitionRead(request, options);
+        PartitionResponse response = rpc.partitionRead(request, reqId.withOptions(options));
         ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
         for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
           Partition partition =
@@ -246,7 +270,11 @@ public class BatchClientImpl implements BatchClient {
         }
         return partitions.build();
       } catch (SpannerException e) {
-        maybeMarkUnimplementedForPartitionedOps(e);
+        if (!isFallback && maybeMarkUnimplementedForPartitionedOps(e)) {
+          return partitionReadUsingIndex(
+              partitionOptions, table, index, keys, columns, true, option);
+        }
+        e.setRequestId(reqId);
         throw e;
       }
     }
@@ -254,6 +282,15 @@ public class BatchClientImpl implements BatchClient {
     @Override
     public List<Partition> partitionQuery(
         PartitionOptions partitionOptions, Statement statement, QueryOption... option)
+        throws SpannerException {
+      return partitionQuery(partitionOptions, statement, false, option);
+    }
+
+    private List<Partition> partitionQuery(
+        PartitionOptions partitionOptions,
+        Statement statement,
+        boolean isFallback,
+        QueryOption... option)
         throws SpannerException {
       Options queryOptions = Options.fromQueryOptions(option);
       final PartitionQueryRequest.Builder builder =
@@ -279,9 +316,11 @@ public class BatchClientImpl implements BatchClient {
       }
       builder.setPartitionOptions(pbuilder.build());
 
+      XGoogSpannerRequestId reqId =
+          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       final PartitionQueryRequest request = builder.build();
       try {
-        PartitionResponse response = rpc.partitionQuery(request, options);
+        PartitionResponse response = rpc.partitionQuery(request, reqId.withOptions(options));
         ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
         for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
           Partition partition =
@@ -291,16 +330,30 @@ public class BatchClientImpl implements BatchClient {
         }
         return partitions.build();
       } catch (SpannerException e) {
-        maybeMarkUnimplementedForPartitionedOps(e);
+        if (!isFallback && maybeMarkUnimplementedForPartitionedOps(e)) {
+          return partitionQuery(partitionOptions, statement, true, option);
+        }
+        e.setRequestId(reqId);
         throw e;
       }
     }
 
-    void maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
+    boolean maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
       if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
           spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
-        unimplementedForPartitionedOps.set(true);
+        synchronized (fallbackInitiated) {
+          if (!fallbackInitiated.get()) {
+            session.setFallbackSessionReference(
+                sessionClient.createSession().getSessionReference());
+            sessionName = session.getName();
+            initFallbackTransaction();
+            unimplementedForPartitionedOps.set(true);
+            fallbackInitiated.set(true);
+          }
+          return true;
+        }
       }
+      return false;
     }
 
     @Override

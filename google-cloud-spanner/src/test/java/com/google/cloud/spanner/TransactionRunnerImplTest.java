@@ -58,6 +58,7 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.TransactionOptions;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -120,6 +121,8 @@ public class TransactionRunnerImplTest {
     when(session.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
     when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     when(session.getTracer()).thenReturn(tracer);
+    when(session.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation -> {
@@ -160,6 +163,8 @@ public class TransactionRunnerImplTest {
   public void usesPreparedTransaction() {
     SpannerOptions options = mock(SpannerOptions.class);
     when(options.getNumChannels()).thenReturn(4);
+    when(options.getDefaultTransactionOptions())
+        .thenReturn(TransactionOptions.getDefaultInstance());
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(new TestExecutorFactory());
     when(options.getTransportOptions()).thenReturn(transportOptions);
@@ -190,7 +195,7 @@ public class TransactionRunnerImplTest {
             Mockito.anyString(),
             Mockito.anyString(),
             Mockito.anyMap(),
-            Mockito.eq(null),
+            Mockito.anyMap(),
             Mockito.eq(true)))
         .thenAnswer(
             invocation ->
@@ -316,7 +321,8 @@ public class TransactionRunnerImplTest {
   public void inlineBegin() {
     SpannerImpl spanner = mock(SpannerImpl.class);
     SpannerOptions options = mock(SpannerOptions.class);
-
+    when(options.getDefaultTransactionOptions())
+        .thenReturn(TransactionOptions.getDefaultInstance());
     when(spanner.getRpc()).thenReturn(rpc);
     when(spanner.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());
@@ -330,6 +336,7 @@ public class TransactionRunnerImplTest {
             spanner,
             new SessionReference(
                 "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP)) {};
+    session.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(span);

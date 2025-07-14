@@ -104,6 +104,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -899,6 +900,13 @@ class SessionPool {
       return internalBegin();
     }
 
+    @Override
+    public TransactionContext begin(AbortedException exception) {
+      // For regular sessions, the input exception is ignored and the behavior is equivalent to
+      // calling {@link #begin()}.
+      return begin();
+    }
+
     private TransactionContext internalBegin() {
       TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
       session.get().markUsed();
@@ -1004,7 +1012,7 @@ class SessionPool {
    * {@link TransactionRunner} that automatically handles {@link SessionNotFoundException}s by
    * replacing the underlying session and then restarts the transaction.
    */
-  private static final class SessionPoolTransactionRunner<I extends SessionFuture>
+  static final class SessionPoolTransactionRunner<I extends SessionFuture>
       implements TransactionRunner {
 
     private I session;
@@ -1012,7 +1020,7 @@ class SessionPool {
     private final TransactionOption[] options;
     private TransactionRunner runner;
 
-    private SessionPoolTransactionRunner(
+    SessionPoolTransactionRunner(
         I session,
         SessionReplacementHandler<I> sessionReplacementHandler,
         TransactionOption... options) {
@@ -1306,6 +1314,7 @@ class SessionPool {
   class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
       implements SessionFuture {
 
+    private boolean closed;
     private volatile LeakedSessionException leakedException;
     private final AtomicBoolean inUse = new AtomicBoolean();
     private final CountDownLatch initialized = new CountDownLatch(1);
@@ -1323,6 +1332,7 @@ class SessionPool {
     }
 
     private void markCheckedOut() {
+
       if (options.isTrackStackTraceOfSessionCheckout()) {
         this.leakedException = new LeakedSessionException();
         synchronized (SessionPool.this.lock) {
@@ -1512,6 +1522,13 @@ class SessionPool {
 
     @Override
     public ApiFuture<Empty> asyncClose() {
+      synchronized (this) {
+        // Don't add the session twice to the pool if a resource is being closed multiple times.
+        if (closed) {
+          return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+        }
+        closed = true;
+      }
       try {
         PooledSession delegate = getOrNull();
         if (delegate != null) {
@@ -1567,6 +1584,10 @@ class SessionPool {
       } catch (InterruptedException e) {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       }
+    }
+
+    public int getChannel() {
+      return get().getChannel();
     }
   }
 
@@ -1937,8 +1958,9 @@ class SessionPool {
                       ErrorCode.RESOURCE_EXHAUSTED,
                       "Timed out after waiting "
                           + acquireSessionTimeout.toMillis()
-                          + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
-                          + " or increase the number of sessions in the session pool.\n"
+                          + "ms for acquiring session. To mitigate error"
+                          + " SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher"
+                          + " timeout or increase the number of sessions in the session pool.\n"
                           + createCheckedOutSessionsStackTraces());
               if (waiter.setException(exception)) {
                 // Only throw the exception if setting it on the waiter was successful. The
@@ -2212,9 +2234,10 @@ class SessionPool {
                   logger.log(
                       Level.WARNING,
                       String.format(
-                          "Detected long-running session => %s. To automatically remove "
-                              + "long-running sessions, set SessionOption ActionOnInactiveTransaction "
-                              + "to WARN_AND_CLOSE by invoking setWarnAndCloseIfInactiveTransactions() method.",
+                          "Detected long-running session => %s. To automatically remove"
+                              + " long-running sessions, set SessionOption"
+                              + " ActionOnInactiveTransaction to WARN_AND_CLOSE by invoking"
+                              + " setWarnAndCloseIfInactiveTransactions() method.",
                           session.getName()),
                       sessionFuture.leakedException);
                   session.isLeakedExceptionLogged = true;
@@ -2256,13 +2279,9 @@ class SessionPool {
   @VisibleForTesting
   static final Statement DETERMINE_DIALECT_STATEMENT =
       Statement.newBuilder(
-              "SELECT 'POSTGRESQL' AS DIALECT\n"
-                  + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
-                  + "WHERE SCHEMA_NAME='information_schema'\n"
-                  + "UNION ALL\n"
-                  + "SELECT 'GOOGLE_STANDARD_SQL' AS DIALECT\n"
-                  + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
-                  + "WHERE SCHEMA_NAME='INFORMATION_SCHEMA' AND CATALOG_NAME=''")
+              "select option_value "
+                  + "from information_schema.database_options "
+                  + "where option_name='database_dialect'")
           .build();
 
   private final SessionPoolOptions options;
@@ -2275,6 +2294,7 @@ class SessionPool {
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
+
   /**
    * initialReleasePosition determines where in the pool sessions are added when they are released
    * into the pool the first time. This is always RANDOM in production, but some tests use FIRST to
@@ -2552,6 +2572,10 @@ class SessionPool {
     }
   }
 
+  Future<Dialect> getDialectAsync() {
+    return executor.submit(this::getDialect);
+  }
+
   PooledSessionReplacementHandler getPooledSessionReplacementHandler() {
     return pooledSessionReplacementHandler;
   }
@@ -2698,7 +2722,9 @@ class SessionPool {
     return null;
   }
 
-  /** @return true if this {@link SessionPool} is still valid. */
+  /**
+   * @return true if this {@link SessionPool} is still valid.
+   */
   boolean isValid() {
     synchronized (lock) {
       return closureFuture == null && resourceNotFoundException == null;
@@ -2743,7 +2769,8 @@ class SessionPool {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.NOT_FOUND,
             String.format(
-                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                "The session pool has been invalidated because a previous RPC returned 'Database"
+                    + " not found': %s",
                 resourceNotFoundException.getMessage()),
             resourceNotFoundException);
       }
@@ -2826,8 +2853,8 @@ class SessionPool {
     span.addAnnotation("Pool exhausted. Failing");
 
     String message =
-        "No session available in the pool. Maximum number of sessions in the pool can be"
-            + " overridden by invoking SessionPoolOptions#Builder#setMaxSessions. Client can be made to block"
+        "No session available in the pool. Maximum number of sessions in the pool can be overridden"
+            + " by invoking SessionPoolOptions#Builder#setMaxSessions. Client can be made to block"
             + " rather than fail by setting SessionPoolOptions#Builder#setBlockIfPoolExhausted.\n"
             + createCheckedOutSessionsStackTraces();
     throw newSpannerException(ErrorCode.RESOURCE_EXHAUSTED, message);
@@ -3089,9 +3116,9 @@ class SessionPool {
           }
         } else {
           String message =
-              "Leaked session. "
-                  + "Call SessionOptions.Builder#setTrackStackTraceOfSessionCheckout(true) to start "
-                  + "tracking the call stack trace of the thread that checked out the session.";
+              "Leaked session. Call"
+                  + " SessionOptions.Builder#setTrackStackTraceOfSessionCheckout(true) to start"
+                  + " tracking the call stack trace of the thread that checked out the session.";
           if (options.isFailOnSessionLeak()) {
             throw new LeakedSessionException(message);
           } else {
@@ -3125,6 +3152,13 @@ class SessionPool {
   int totalSessions() {
     synchronized (lock) {
       return allSessions.size();
+    }
+  }
+
+  @VisibleForTesting
+  int numSessionsInPool() {
+    synchronized (lock) {
+      return sessions.size();
     }
   }
 
@@ -3211,7 +3245,9 @@ class SessionPool {
           if (allSessions.size() >= minSessions) {
             waitOnMinSessionsLatch.countDown();
           }
-          if (options.isAutoDetectDialect() && !detectDialectStarted) {
+          if (options.isAutoDetectDialect()
+              && !detectDialectStarted
+              && !options.getUseMultiplexedSession()) {
             // Get the dialect of the underlying database if that has not yet been done. Note that
             // this method will release the session into the pool once it is done.
             detectDialectStarted = true;

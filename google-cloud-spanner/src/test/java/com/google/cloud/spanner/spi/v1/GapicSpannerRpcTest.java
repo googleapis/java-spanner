@@ -172,7 +172,8 @@ public class GapicSpannerRpcTest {
     SpannerOptions.enableOpenTelemetryTraces();
 
     assumeTrue(
-        "Skip tests when emulator is enabled as this test interferes with the check whether the emulator is running",
+        "Skip tests when emulator is enabled as this test interferes with the check whether the"
+            + " emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
 
     defaultUserAgent = "spanner-java/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
@@ -646,8 +647,7 @@ public class GapicSpannerRpcTest {
             .build();
 
     final SpannerOptions options =
-        createSpannerOptions()
-            .toBuilder()
+        createSpannerOptions().toBuilder()
             .setOpenTelemetry(openTelemetry)
             .setEnableEndToEndTracing(true)
             .build();
@@ -672,8 +672,7 @@ public class GapicSpannerRpcTest {
             .build();
 
     final SpannerOptions options =
-        createSpannerOptions()
-            .toBuilder()
+        createSpannerOptions().toBuilder()
             .setOpenTelemetry(openTelemetry)
             .setEnableEndToEndTracing(false)
             .build();
@@ -880,7 +879,7 @@ public class GapicSpannerRpcTest {
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
         .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
-        .disableDirectPath()
+        .setEnableDirectAccess(false)
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)

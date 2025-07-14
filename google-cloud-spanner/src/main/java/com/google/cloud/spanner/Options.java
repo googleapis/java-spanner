@@ -21,6 +21,7 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.Objects;
@@ -160,6 +161,13 @@ public final class Options implements Serializable {
   }
 
   /**
+   * Specifying this instructs the transaction to request {@link IsolationLevel} from the backend.
+   */
+  public static TransactionOption isolationLevel(IsolationLevel isolationLevel) {
+    return new IsolationLevelOption(isolationLevel);
+  }
+
+  /**
    * Specifying this instructs the transaction to be excluded from being recorded in change streams
    * with the DDL option `allow_txn_exclusion=true`. This does not exclude the transaction from
    * being recorded in the change streams with the DDL option `allow_txn_exclusion` being false or
@@ -167,6 +175,10 @@ public final class Options implements Serializable {
    */
   public static UpdateTransactionOption excludeTxnFromChangeStreams() {
     return EXCLUDE_TXN_FROM_CHANGE_STREAMS_OPTION;
+  }
+
+  public static RequestIdOption requestId(XGoogSpannerRequestId reqId) {
+    return new RequestIdOption(reqId);
   }
 
   /**
@@ -490,6 +502,20 @@ public final class Options implements Serializable {
     }
   }
 
+  /** Option to set isolation level for read/write transactions. */
+  static final class IsolationLevelOption extends InternalOption implements TransactionOption {
+    private final IsolationLevel isolationLevel;
+
+    public IsolationLevelOption(IsolationLevel isolationLevel) {
+      this.isolationLevel = isolationLevel;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.isolationLevel = isolationLevel;
+    }
+  }
+
   private boolean withCommitStats;
 
   private Duration maxCommitDelay;
@@ -512,6 +538,8 @@ public final class Options implements Serializable {
   private RpcOrderBy orderBy;
   private RpcLockHint lockHint;
   private Boolean lastStatement;
+  private IsolationLevel isolationLevel;
+  private XGoogSpannerRequestId reqId;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -574,6 +602,14 @@ public final class Options implements Serializable {
 
   String filter() {
     return filter;
+  }
+
+  boolean hasReqId() {
+    return reqId != null;
+  }
+
+  XGoogSpannerRequestId reqId() {
+    return reqId;
   }
 
   boolean hasPriority() {
@@ -664,6 +700,10 @@ public final class Options implements Serializable {
     return lockHint == null ? null : lockHint.proto;
   }
 
+  IsolationLevel isolationLevel() {
+    return isolationLevel;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -726,6 +766,12 @@ public final class Options implements Serializable {
     if (lockHint != null) {
       b.append("lockHint: ").append(lockHint).append(' ');
     }
+    if (isolationLevel != null) {
+      b.append("isolationLevel: ").append(isolationLevel).append(' ');
+    }
+    if (reqId != null) {
+      b.append("requestId: ").append(reqId.toString());
+    }
     return b.toString();
   }
 
@@ -767,7 +813,9 @@ public final class Options implements Serializable {
         && Objects.equals(directedReadOptions(), that.directedReadOptions())
         && Objects.equals(orderBy(), that.orderBy())
         && Objects.equals(isLastStatement(), that.isLastStatement())
-        && Objects.equals(lockHint(), that.lockHint());
+        && Objects.equals(lockHint(), that.lockHint())
+        && Objects.equals(isolationLevel(), that.isolationLevel())
+        && Objects.equals(reqId(), that.reqId());
   }
 
   @Override
@@ -832,6 +880,12 @@ public final class Options implements Serializable {
     }
     if (lockHint != null) {
       result = 31 * result + lockHint.hashCode();
+    }
+    if (isolationLevel != null) {
+      result = 31 * result + isolationLevel.hashCode();
+    }
+    if (reqId != null) {
+      result = 31 * result + reqId.hashCode();
     }
     return result;
   }
@@ -1016,6 +1070,38 @@ public final class Options implements Serializable {
     @Override
     public boolean equals(Object o) {
       return o instanceof LastStatementUpdateOption;
+    }
+  }
+
+  static final class RequestIdOption extends InternalOption
+      implements ReadOption, TransactionOption, UpdateOption {
+    private final XGoogSpannerRequestId reqId;
+
+    RequestIdOption(XGoogSpannerRequestId reqId) {
+      this.reqId = reqId;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.reqId = this.reqId;
+    }
+
+    @Override
+    public int hashCode() {
+      return this.reqId.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      // instanceof for a null object returns false.
+      if (!(o instanceof RequestIdOption)) {
+        return false;
+      }
+      RequestIdOption other = (RequestIdOption) o;
+      if (this.reqId == null || other.reqId == null) {
+        return this.reqId == null && other.reqId == null;
+      }
+      return Objects.equals(this.reqId, other.reqId);
     }
   }
 }

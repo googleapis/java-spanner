@@ -566,6 +566,80 @@
     <method>java.util.List getFloat32Array()</method>
   </difference>
 
+  <!-- UUID -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.UUID getUuid(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.UUID getUuid(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getUuidList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getUuidList(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.UUID getUuid()</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.List getUuidArray()</method>
+  </difference>
+
+  <!-- INTERVAL -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.cloud.spanner.Interval getInterval(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.cloud.spanner.Interval getInterval(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.cloud.spanner.Interval[] getIntervalArray(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.cloud.spanner.Interval[] getIntervalArray(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getIntervalList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getIntervalList(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>com.google.cloud.spanner.Interval getInterval()</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.List getIntervalArray()</method>
+  </difference>
+
   <!-- (Internal change, use stream timeout) -->
   <difference>
     <differenceType>7012</differenceType>
@@ -709,6 +783,20 @@
     <method>boolean isEnableBuiltInMetrics()</method>
   </difference>
 
+  <!-- Added Built In GRPC Metrics option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableGRPCBuiltInMetrics()</method>
+  </difference>
+
+  <!-- Added AFE Server Timing option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableAFEServerTiming()</method>
+  </difference>
+
   <!-- Added Monitoring host option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -765,7 +853,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isKeepTransactionAlive()</method>
   </difference>
-  
+
   <!-- Automatic DML batching -->
   <difference>
     <differenceType>7012</differenceType>
@@ -797,7 +885,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isAutoBatchDmlUpdateCountVerification()</method>
   </difference>
-  
+
   <!-- Retry DML as Partitioned DML -->
   <difference>
     <differenceType>7012</differenceType>
@@ -821,12 +909,22 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.Object runTransaction(com.google.cloud.spanner.connection.Connection$TransactionCallable)</method>
   </difference>
-  
-  <!-- Added external host option -->
+
+  <!-- Added experimental host option -->
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>com.google.auth.oauth2.GoogleCredentials getDefaultExperimentalHostCredentials()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
     <method>com.google.auth.oauth2.GoogleCredentials getDefaultExternalHostCredentials()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions</className>
+    <method>com.google.auth.oauth2.GoogleCredentials getDefaultExternalHostCredentialsFromSysEnv()</method>
   </difference>
 
   <!-- Default sequence kind -->
@@ -839,5 +937,100 @@
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.String getDefaultSequenceKind()</method>
+  </difference>
+
+  <!-- Default isolation level -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDefaultIsolationLevel(com.google.spanner.v1.TransactionOptions$IsolationLevel)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.spanner.v1.TransactionOptions$IsolationLevel getDefaultIsolationLevel()</method>
+  </difference>
+
+  <!-- Isolation level per transaction -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void beginTransaction(com.google.spanner.v1.TransactionOptions$IsolationLevel)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture beginTransactionAsync(com.google.spanner.v1.TransactionOptions$IsolationLevel)</method>
+  </difference>
+
+  <!-- Removed ConnectionOptions$ConnectionProperty in favor of the more generic ConnectionProperty class. -->
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/cloud/spanner/connection/ConnectionOptions$ConnectionProperty</className>
+  </difference>
+  <difference>
+    <differenceType>6001</differenceType>
+    <className>com/google/cloud/spanner/connection/ConnectionOptions</className>
+    <field>VALID_PROPERTIES</field>
+  </difference>
+
+  <!-- Remove supportsExplain() from the parser -->
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/AbstractStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/PostgreSQLStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/SpannerStatementParser</className>
+    <method>boolean supportsExplain()</method>
+  </difference>
+
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.Statement$StatementFactory getStatementFactory()</method>
+  </difference>
+
+  <!-- Add method begin() with AbortedException in TransactionManager and AsyncTransactionManager -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
+    <method>com.google.cloud.spanner.AsyncTransactionManager$TransactionContextFuture beginAsync(com.google.cloud.spanner.AbortedException)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionManager</className>
+    <method>com.google.cloud.spanner.TransactionContext begin(com.google.cloud.spanner.AbortedException)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.Object getOrNull(int, java.util.function.BiFunction)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.Object getOrNull(java.lang.String, java.util.function.BiFunction)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.Object getOrDefault(int, java.util.function.BiFunction, java.lang.Object)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.Object getOrDefault(java.lang.String, java.util.function.BiFunction, java.lang.Object)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableDirectAccess()</method>
   </difference>
 </differences>

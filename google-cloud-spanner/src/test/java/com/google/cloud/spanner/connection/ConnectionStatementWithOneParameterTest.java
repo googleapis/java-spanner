@@ -64,6 +64,7 @@ public class ConnectionStatementWithOneParameterTest {
     ParsedStatement subject = parser.parse(Statement.of("set autocommit = true"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getDialect()).thenReturn(dialect);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetAutocommit(any(Boolean.class))).thenCallRealMethod();
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
@@ -80,6 +81,7 @@ public class ConnectionStatementWithOneParameterTest {
         parser.parse(Statement.of(String.format("set %sreadonly = true", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getDialect()).thenReturn(dialect);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetReadOnly(any(Boolean.class))).thenCallRealMethod();
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
@@ -98,6 +100,7 @@ public class ConnectionStatementWithOneParameterTest {
         parser.parse(Statement.of(String.format("set %sreadonly to true", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getDialect()).thenReturn(dialect);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetReadOnly(any(Boolean.class))).thenCallRealMethod();
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
@@ -116,6 +119,7 @@ public class ConnectionStatementWithOneParameterTest {
             Statement.of(String.format("set %sautocommit_dml_mode='foo'", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getDialect()).thenReturn(dialect);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetAutocommitDmlMode(any(AutocommitDmlMode.class))).thenCallRealMethod();
     for (AutocommitDmlMode mode : AutocommitDmlMode.values()) {
@@ -135,6 +139,7 @@ public class ConnectionStatementWithOneParameterTest {
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
     when(executor.statementSetStatementTimeout(any(Duration.class))).thenCallRealMethod();
     ConnectionImpl connection = mock(ConnectionImpl.class);
+    when(executor.getDialect()).thenReturn(dialect);
     when(executor.getConnection()).thenReturn(connection);
     for (TimeUnit unit : ReadOnlyStalenessUtil.SUPPORTED_UNITS) {
       for (Long val : new Long[] {1L, 100L, 999L}) {
@@ -173,6 +178,7 @@ public class ConnectionStatementWithOneParameterTest {
             Statement.of(String.format("set %sread_only_staleness='foo'", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getDialect()).thenReturn(dialect);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetReadOnlyStaleness(any(TimestampBound.class))).thenCallRealMethod();
     for (TimestampBound val :
@@ -219,6 +225,7 @@ public class ConnectionStatementWithOneParameterTest {
             Statement.of(String.format("set %soptimizer_version='foo'", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getDialect()).thenReturn(dialect);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetOptimizerVersion(any(String.class))).thenCallRealMethod();
     for (String version : new String[] {"1", "200", "", "LATEST"}) {
@@ -239,6 +246,7 @@ public class ConnectionStatementWithOneParameterTest {
                 String.format("set %soptimizer_statistics_package='foo'", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getDialect()).thenReturn(dialect);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetOptimizerStatisticsPackage(any(String.class))).thenCallRealMethod();
     for (String statisticsPackage : new String[] {"custom-package", ""}) {
@@ -259,6 +267,7 @@ public class ConnectionStatementWithOneParameterTest {
     ParsedStatement subject = parser.parse(Statement.of("set transaction read_only"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+    when(executor.getDialect()).thenReturn(dialect);
     for (TransactionMode mode : TransactionMode.values()) {
       subject
           .getClientSideStatement()

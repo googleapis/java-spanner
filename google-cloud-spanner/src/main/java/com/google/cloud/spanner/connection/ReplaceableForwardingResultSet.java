@@ -20,6 +20,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Interval;
 import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -34,6 +35,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -292,9 +294,33 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   }
 
   @Override
+  public UUID getUuid(int columnIndex) {
+    checkClosed();
+    return delegate.getUuid(columnIndex);
+  }
+
+  @Override
   public Date getDate(String columnName) {
     checkClosed();
     return delegate.getDate(columnName);
+  }
+
+  @Override
+  public UUID getUuid(String columnName) {
+    checkClosed();
+    return delegate.getUuid(columnName);
+  }
+
+  @Override
+  public Interval getInterval(int columnIndex) {
+    checkClosed();
+    return delegate.getInterval(columnIndex);
+  }
+
+  @Override
+  public Interval getInterval(String columnName) {
+    checkClosed();
+    return delegate.getInterval(columnName);
   }
 
   @Override
@@ -487,6 +513,30 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   public List<Date> getDateList(String columnName) {
     checkClosed();
     return delegate.getDateList(columnName);
+  }
+
+  @Override
+  public List<UUID> getUuidList(int columnIndex) {
+    checkClosed();
+    return delegate.getUuidList(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUuidList(String columnName) {
+    checkClosed();
+    return delegate.getUuidList(columnName);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(int columnIndex) {
+    checkClosed();
+    return delegate.getIntervalList(columnIndex);
+  }
+
+  @Override
+  public List<Interval> getIntervalList(String columnName) {
+    checkClosed();
+    return delegate.getIntervalList(columnName);
   }
 
   @Override

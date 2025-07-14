@@ -124,9 +124,11 @@ public final class ITDmlReturningTest {
 
   private String getInsertDmlReturningTemplate() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      return "INSERT INTO T (\"K\", \"V\") VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4) RETURNING *";
+      return "INSERT INTO T (\"K\", \"V\") VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3),"
+          + " ('%d-boo4', 4) RETURNING *";
     }
-    return "INSERT INTO T (K, V) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4) THEN RETURN *";
+    return "INSERT INTO T (K, V) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4',"
+        + " 4) THEN RETURN *";
   }
 
   private String getUpdateDmlReturningTemplate() {
@@ -272,6 +274,8 @@ public final class ITDmlReturningTest {
     List<Struct> rows = new ArrayList<>();
     final TransactionCallable<Void> callable =
         transaction -> {
+          // Make sure we start with an empty list if the transaction is aborted and retried.
+          rows.clear();
           ResultSet resultSet = transaction.executeQuery(Statement.of(stmt));
           // resultSet.next() returns false, when no more row exists.
           // So, number of times resultSet.next() returns true, is the number of rows
@@ -335,6 +339,7 @@ public final class ITDmlReturningTest {
     List<Struct> rows = new ArrayList<>();
     final TransactionCallable<Void> callable =
         transaction -> {
+          rows.clear();
           AsyncResultSet rs = transaction.executeQueryAsync(Statement.of(stmt));
           rs.setCallback(
               Executors.newSingleThreadExecutor(),

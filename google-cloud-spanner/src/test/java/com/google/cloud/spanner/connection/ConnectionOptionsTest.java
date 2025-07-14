@@ -593,7 +593,8 @@ public class ConnectionOptionsTest {
         exception
             .getMessage()
             .contains(
-                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and"
+                    + " OAuth token"));
 
     // Now try to use only an OAuth token.
     builder =
@@ -638,7 +639,8 @@ public class ConnectionOptionsTest {
         exception
             .getMessage()
             .contains(
-                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and"
+                    + " OAuth token"));
   }
 
   @Test
@@ -943,7 +945,8 @@ public class ConnectionOptionsTest {
           assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
           assertThat(e.getMessage())
               .contains(
-                  "The encoded credentials do not contain a valid Google Cloud credentials JSON string.");
+                  "The encoded credentials do not contain a valid Google Cloud credentials JSON"
+                      + " string.");
         });
   }
 
@@ -1000,7 +1003,8 @@ public class ConnectionOptionsTest {
               e.getMessage(),
               e.getMessage()
                   .contains(
-                      "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+                      "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider"
+                          + " and OAuth token"));
         });
   }
 
@@ -1052,8 +1056,9 @@ public class ConnectionOptionsTest {
             SpannerException.class, () -> ConnectionOptions.newBuilder().setUri(uri).build());
     assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
     assertEquals(
-        "FAILED_PRECONDITION: credentialsProvider can only be used if the system property ENABLE_CREDENTIALS_PROVIDER has been set to true. "
-            + "Start the application with the JVM command line option -DENABLE_CREDENTIALS_PROVIDER=true",
+        "FAILED_PRECONDITION: credentialsProvider can only be used if the system property"
+            + " ENABLE_CREDENTIALS_PROVIDER has been set to true. Start the application with the"
+            + " JVM command line option -DENABLE_CREDENTIALS_PROVIDER=true",
         exception.getMessage());
   }
 
@@ -1075,7 +1080,8 @@ public class ConnectionOptionsTest {
               e.getMessage(),
               e.getMessage()
                   .contains(
-                      "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+                      "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider"
+                          + " and OAuth token"));
         });
   }
 
@@ -1269,5 +1275,58 @@ public class ConnectionOptionsTest {
         .isEqualTo(new CredentialsService().createCredentials(FILE_TEST_PATH));
     assertThat(options.isAutocommit()).isEqualTo(false);
     assertThat(options.isReadOnly()).isEqualTo(true);
+  }
+
+  @Test
+  public void testExperimentalHost() {
+    ConnectionOptions.Builder builderWithoutExperimentalHostParam = ConnectionOptions.newBuilder();
+    builderWithoutExperimentalHostParam.setUri(
+        "spanner://localhost:15000/instances/default/databases/singers-db;usePlainText=true");
+    ConnectionOptions optionsWithoutExperimentalHostParam =
+        builderWithoutExperimentalHostParam.build();
+    assertFalse(optionsWithoutExperimentalHostParam.isExperimentalHost());
+    assertEquals(0, optionsWithoutExperimentalHostParam.getSessionPoolOptions().getMinSessions());
+    assertTrue(
+        optionsWithoutExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSession());
+    assertTrue(
+        optionsWithoutExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionForRW());
+    assertTrue(
+        optionsWithoutExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionPartitionedOps());
+
+    ConnectionOptions.Builder builderWithExperimentalHostParam = ConnectionOptions.newBuilder();
+    builderWithExperimentalHostParam.setUri(
+        "spanner://localhost:15000/projects/default/instances/default/databases/singers-db;usePlainText=true;isExperimentalHost=true");
+    ConnectionOptions optionsWithExperimentalHostParam = builderWithExperimentalHostParam.build();
+    assertTrue(optionsWithExperimentalHostParam.isExperimentalHost());
+    assertEquals(0, optionsWithExperimentalHostParam.getSessionPoolOptions().getMinSessions());
+    assertTrue(optionsWithExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSession());
+    assertTrue(
+        optionsWithExperimentalHostParam.getSessionPoolOptions().getUseMultiplexedSessionForRW());
+    assertTrue(
+        optionsWithExperimentalHostParam
+            .getSessionPoolOptions()
+            .getUseMultiplexedSessionPartitionedOps());
+  }
+
+  @Test
+  public void testEnableDirectAccess() {
+    ConnectionOptions.Builder builderWithoutDirectPathParam = ConnectionOptions.newBuilder();
+    builderWithoutDirectPathParam.setUri(
+        "spanner://localhost:15000/instances/default/databases/singers-db;usePlainText=true");
+    assertNull(builderWithoutDirectPathParam.build().isEnableDirectAccess());
+
+    ConnectionOptions.Builder builderWithDirectPathParamFalse = ConnectionOptions.newBuilder();
+    builderWithDirectPathParamFalse.setUri(
+        "spanner://localhost:15000/instances/default/databases/singers-db;usePlainText=true;enableDirectAccess=false");
+    assertFalse(builderWithDirectPathParamFalse.build().isEnableDirectAccess());
+
+    ConnectionOptions.Builder builderWithDirectPathParam = ConnectionOptions.newBuilder();
+    builderWithDirectPathParam.setUri(
+        "spanner://localhost:15000/projects/default/instances/default/databases/singers-db;usePlainText=true;enableDirectAccess=true");
+    assertTrue(builderWithDirectPathParam.build().isEnableDirectAccess());
   }
 }

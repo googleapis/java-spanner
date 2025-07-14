@@ -21,7 +21,9 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.Statement.StatementFactory;
 import com.google.spanner.v1.BatchWriteResponse;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
@@ -414,6 +416,7 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the transaction
    * </ul>
    */
   TransactionRunner readWriteTransaction(TransactionOption... options);
@@ -454,6 +457,7 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the transaction
    * </ul>
    */
   TransactionManager transactionManager(TransactionOption... options);
@@ -494,6 +498,7 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the transaction
    * </ul>
    */
   AsyncRunner runAsync(TransactionOption... options);
@@ -548,6 +553,7 @@ public interface DatabaseClient {
    *       applied to any other requests on the transaction.
    *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
    *       {@link CommitResponse}.
+   *   <li>{@link Options#isolationLevel(IsolationLevel)}: The isolation level for the transaction
    * </ul>
    */
   AsyncTransactionManager transactionManagerAsync(TransactionOption... options);
@@ -601,4 +607,24 @@ public interface DatabaseClient {
    * idempotent, such as deleting old rows from a very large table.
    */
   long executePartitionedUpdate(Statement stmt, UpdateOption... options);
+
+  /**
+   * Returns a {@link StatementFactory} for the given dialect.
+   *
+   * <p>A {@link StatementFactory} can be used to create statements with unnamed parameters. This is
+   * primarily intended for framework developers who want to integrate the Spanner client with
+   * frameworks that use unnamed parameters. Developers who just want to use the Spanner client in
+   * their application, should use named parameters.
+   *
+   * <p>Examples using {@link StatementFactory}
+   *
+   * <pre>{@code
+   * Statement statement = databaseClient
+   *     .getStatementFactory()
+   *     .withUnnamedParameters("SELECT NAME FROM TABLE WHERE ID = ?", 10);
+   * }</pre>
+   */
+  default StatementFactory getStatementFactory() {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 }

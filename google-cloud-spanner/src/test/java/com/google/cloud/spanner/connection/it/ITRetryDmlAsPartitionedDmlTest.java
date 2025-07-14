@@ -63,7 +63,8 @@ public class ITRetryDmlAsPartitionedDmlTest extends ITAbstractSpannerTest {
     database =
         env.getTestHelper()
             .createTestDatabase(
-                "CREATE TABLE TEST (ID INT64 NOT NULL, NAME STRING(100) NOT NULL) PRIMARY KEY (ID)");
+                "CREATE TABLE TEST (ID INT64 NOT NULL, NAME STRING(100) NOT NULL) PRIMARY KEY"
+                    + " (ID)");
     DatabaseClient client = env.getTestHelper().getClient().getDatabaseClient(database.getId());
     int rowsCreated = 0;
     int batchSize = 5000;
