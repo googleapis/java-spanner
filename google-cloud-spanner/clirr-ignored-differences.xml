@@ -1028,4 +1028,9 @@
     <className>com/google/cloud/spanner/StructReader</className>
     <method>java.lang.Object getOrDefault(java.lang.String, java.util.function.BiFunction, java.lang.Object)</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableDirectAccess()</method>
+  </difference>
 </differences>

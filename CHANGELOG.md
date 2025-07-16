@@ -1,5 +1,58 @@
 # Changelog
 
+## [6.97.1](https://github.com/googleapis/java-spanner/compare/v6.97.0...v6.97.1) (2025-07-15)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.50.1 ([#3992](https://github.com/googleapis/java-spanner/issues/3992)) ([69ffd72](https://github.com/googleapis/java-spanner/commit/69ffd7282220b8b12c6b9b64d8856ff88068ffa2))
+* Update googleapis/sdk-platform-java action to v2.60.1 ([#3926](https://github.com/googleapis/java-spanner/issues/3926)) ([7001b7f](https://github.com/googleapis/java-spanner/commit/7001b7faaff581e26ec81c4db2c99a1e8726d5eb))
+
+## [6.97.0](https://github.com/googleapis/java-spanner/compare/v6.96.1...v6.97.0) (2025-07-10)
+
+
+### Features
+
+* Next release from main branch is 6.97.0 ([#3984](https://github.com/googleapis/java-spanner/issues/3984)) ([5651f61](https://github.com/googleapis/java-spanner/commit/5651f6160e1e655f118aa2e7f0203a47cd6914c0))
+
+
+### Bug Fixes
+
+* Drop max message size ([#3987](https://github.com/googleapis/java-spanner/issues/3987)) ([3eee899](https://github.com/googleapis/java-spanner/commit/3eee89965547dfa49b4282b470f625d43c92f4fd))
+* Return non-empty metadata for DataBoost queries ([#3936](https://github.com/googleapis/java-spanner/issues/3936)) ([79c0684](https://github.com/googleapis/java-spanner/commit/79c06848c0ac4eff8410dd3bd63db8675c202d94))
+
+## [6.96.1](https://github.com/googleapis/java-spanner/compare/v6.96.0...v6.96.1) (2025-06-30)
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.59.0 ([2836042](https://github.com/googleapis/java-spanner/commit/2836042217fe29bb967fe892bd6b492391ded95c))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.50.0 ([#3925](https://github.com/googleapis/java-spanner/issues/3925)) ([1372bbd](https://github.com/googleapis/java-spanner/commit/1372bbd82b7828629cbc407b78878469bc477977))
+
+## [6.96.0](https://github.com/googleapis/java-spanner/compare/v6.95.1...v6.96.0) (2025-06-27)
+
+
+### Features
+
+* Allow JDBC to configure directpath for connection ([#3929](https://github.com/googleapis/java-spanner/issues/3929)) ([d754f1f](https://github.com/googleapis/java-spanner/commit/d754f1f99294d86ec881583f217fa09f291a3d7a))
+* Support getOrNull and getOrDefault in Struct ([#3914](https://github.com/googleapis/java-spanner/issues/3914)) ([1dc5a3e](https://github.com/googleapis/java-spanner/commit/1dc5a3ec0ca9ea530e8691df5c2734c0a1ece559))
+* Use multiplexed sessions for read-only transactions ([#3917](https://github.com/googleapis/java-spanner/issues/3917)) ([37fdc27](https://github.com/googleapis/java-spanner/commit/37fdc27aab4e71ac141c2a2c979f864e97395a97))
+
+
+### Bug Fixes
+
+* Allow zero durations to be set for connections ([#3916](https://github.com/googleapis/java-spanner/issues/3916)) ([43ea4fa](https://github.com/googleapis/java-spanner/commit/43ea4fa68eac00801beb8e58c1eb09e9f32e5ce5))
+
+
+### Documentation
+
+* Add snippet for Repeatable Read configuration at client and transaction ([#3908](https://github.com/googleapis/java-spanner/issues/3908)) ([ff3d212](https://github.com/googleapis/java-spanner/commit/ff3d212c98276c4084f44619916d0444c9652803))
+* Update SpannerSample.java to align with best practices ([#3625](https://github.com/googleapis/java-spanner/issues/3625)) ([7bfc62d](https://github.com/googleapis/java-spanner/commit/7bfc62d3d9e57242e0dfddea090208f8c65f0f8e))
+
 ## [6.95.1](https://github.com/googleapis/java-spanner/compare/v6.95.0...v6.95.1) (2025-06-06)
 
 
