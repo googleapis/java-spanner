@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ErrorDetails;
 import com.google.cloud.grpc.BaseGrpcServiceException;
@@ -198,7 +199,8 @@ public class SpannerException extends BaseGrpcServiceException {
     return null;
   }
 
-  /** Sets the requestId. This method is meant to be used internally and not by customers. */
+  /** Sets the requestId. */
+  @InternalApi
   public void setRequestId(XGoogSpannerRequestId reqId) {
     this.requestId = reqId;
   }
