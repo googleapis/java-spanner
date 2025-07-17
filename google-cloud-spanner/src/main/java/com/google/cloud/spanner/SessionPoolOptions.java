@@ -619,13 +619,13 @@ public class SessionPoolOptions {
     // client.
     // Set useMultiplexedSessionForRW to true to make multiplexed session for RW operations the
     // default.
-    private boolean useMultiplexedSessionForRW = false;
+    private boolean useMultiplexedSessionForRW = true;
 
     // This field controls the default behavior of session management for Partitioned operations in
     // Java client.
     // Set useMultiplexedSessionPartitionedOps to true to make multiplexed session for Partitioned
     // operations the default.
-    private boolean useMultiplexedSessionPartitionedOps = false;
+    private boolean useMultiplexedSessionPartitionedOps = true;
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
