@@ -128,6 +128,7 @@ class HeaderInterceptor implements ClientInterceptor {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
+                  addRequestIdAttribute(compositeTracer, "test");
                   processHeader(
                       metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
                   super.onHeaders(metadata);
@@ -305,6 +306,14 @@ class HeaderInterceptor implements ClientInterceptor {
     if (compositeTracer != null) {
       compositeTracer.addAttributes(
           BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
+    }
+  }
+
+  private void addRequestIdAttribute(
+      CompositeTracer compositeTracer, String requestId) {
+    if (compositeTracer != null) {
+      compositeTracer.addAttributes(
+          BuiltInMetricsConstant.REQUEST_ID_KEY.getKey(), requestId);
     }
   }
 

@@ -39,8 +39,11 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   private final Map<String, String> attributes = new HashMap<>();
   private Float gfeLatency = null;
   private Float afeLatency = null;
+
+  private TraceWrapper traceWrapper;
   private long gfeHeaderMissingCount = 0;
   private long afeHeaderMissingCount = 0;
+  private ISpan currentSpan;
 
   BuiltInMetricsTracer(
       MethodName methodName, BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
@@ -49,16 +52,35 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     this.attributes.put(METHOD_ATTRIBUTE, methodName.toString());
   }
 
+  BuiltInMetricsTracer(
+      MethodName methodName,
+      BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder,
+      TraceWrapper traceWrapper,
+      ISpan currentSpan) {
+    super(methodName, builtInOpenTelemetryMetricsRecorder);
+    this.builtInOpenTelemetryMetricsRecorder = builtInOpenTelemetryMetricsRecorder;
+    this.attributes.put(METHOD_ATTRIBUTE, methodName.toString());
+    // Metrics attributes which are filtered from metrics views are sent to exemplars as
+    // filtered_attributes.
+    // Below testmetric attribute will be available in exemplar as we have added a attributefilter
+    // for our metric views.
+    // this.attributes.put("request_id", "test");
+    this.traceWrapper = traceWrapper;
+    this.currentSpan = currentSpan;
+  }
+
   /**
    * Adds an annotation that the attempt succeeded. Successful attempt add "OK" value to the status
    * attribute key.
    */
   @Override
   public void attemptSucceeded() {
-    super.attemptSucceeded();
-    attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
-    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    try (IScope s = this.traceWrapper.withSpan(this.currentSpan)) {
+      super.attemptSucceeded();
+      attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    }
   }
 
   /**
@@ -140,7 +162,6 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     super.addAttributes(attributes);
     this.attributes.putAll(attributes);
   }
-  ;
 
   @Override
   public void addAttributes(String key, String value) {
