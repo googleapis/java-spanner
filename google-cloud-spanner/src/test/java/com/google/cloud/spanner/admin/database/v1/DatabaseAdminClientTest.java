@@ -76,6 +76,8 @@ import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.InstanceName;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
 import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
@@ -2735,6 +2737,88 @@ public class DatabaseAdminClientTest {
     try {
       String parent = "parent-995424086";
       client.listBackupSchedules(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void internalUpdateGraphOperationTest() throws Exception {
+    InternalUpdateGraphOperationResponse expectedResponse =
+        InternalUpdateGraphOperationResponse.newBuilder().build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    String operationId = "operationId129704162";
+
+    InternalUpdateGraphOperationResponse actualResponse =
+        client.internalUpdateGraphOperation(database, operationId);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    InternalUpdateGraphOperationRequest actualRequest =
+        ((InternalUpdateGraphOperationRequest) actualRequests.get(0));
+
+    Assert.assertEquals(database.toString(), actualRequest.getDatabase());
+    Assert.assertEquals(operationId, actualRequest.getOperationId());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void internalUpdateGraphOperationExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      String operationId = "operationId129704162";
+      client.internalUpdateGraphOperation(database, operationId);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void internalUpdateGraphOperationTest2() throws Exception {
+    InternalUpdateGraphOperationResponse expectedResponse =
+        InternalUpdateGraphOperationResponse.newBuilder().build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    String database = "database1789464955";
+    String operationId = "operationId129704162";
+
+    InternalUpdateGraphOperationResponse actualResponse =
+        client.internalUpdateGraphOperation(database, operationId);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    InternalUpdateGraphOperationRequest actualRequest =
+        ((InternalUpdateGraphOperationRequest) actualRequests.get(0));
+
+    Assert.assertEquals(database, actualRequest.getDatabase());
+    Assert.assertEquals(operationId, actualRequest.getOperationId());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void internalUpdateGraphOperationExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String database = "database1789464955";
+      String operationId = "operationId129704162";
+      client.internalUpdateGraphOperation(database, operationId);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.
