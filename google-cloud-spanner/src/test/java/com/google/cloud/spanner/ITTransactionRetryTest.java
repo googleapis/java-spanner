@@ -36,6 +36,10 @@ public class ITTransactionRetryTest {
   @Test
   public void TestRetryInfo() {
     assumeFalse("emulator does not support parallel transaction", isUsingEmulator());
+    // TODO(sakthivelmani) - Re-enable once b/422916293 is resolved
+    assumeFalse(
+        "Skipping the test due to a known bug b/422916293",
+        env.getTestHelper().getOptions().isEnableDirectAccess());
 
     // Creating a database with the table which contains INT64 columns
     Database db =
