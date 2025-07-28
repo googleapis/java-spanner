@@ -1022,6 +1022,7 @@ public class SpannerClientTest {
         CommitResponse.newBuilder()
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .setSnapshotTimestamp(Timestamp.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -1067,6 +1068,7 @@ public class SpannerClientTest {
         CommitResponse.newBuilder()
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .setSnapshotTimestamp(Timestamp.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -1112,6 +1114,7 @@ public class SpannerClientTest {
         CommitResponse.newBuilder()
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .setSnapshotTimestamp(Timestamp.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -1157,6 +1160,7 @@ public class SpannerClientTest {
         CommitResponse.newBuilder()
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .setSnapshotTimestamp(Timestamp.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 

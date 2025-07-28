@@ -100,15 +100,13 @@ public interface TransactionOrBuilder
    *
    *
    * <pre>
-   * A precommit token will be included in the response of a BeginTransaction
+   * A precommit token is included in the response of a BeginTransaction
    * request if the read-write transaction is on a multiplexed session and
    * a mutation_key was specified in the
    * [BeginTransaction][google.spanner.v1.BeginTransactionRequest].
    * The precommit token with the highest sequence number from this transaction
    * attempt should be passed to the [Commit][google.spanner.v1.Spanner.Commit]
    * request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 3;</code>
@@ -121,15 +119,13 @@ public interface TransactionOrBuilder
    *
    *
    * <pre>
-   * A precommit token will be included in the response of a BeginTransaction
+   * A precommit token is included in the response of a BeginTransaction
    * request if the read-write transaction is on a multiplexed session and
    * a mutation_key was specified in the
    * [BeginTransaction][google.spanner.v1.BeginTransactionRequest].
    * The precommit token with the highest sequence number from this transaction
    * attempt should be passed to the [Commit][google.spanner.v1.Spanner.Commit]
    * request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 3;</code>
@@ -142,15 +138,13 @@ public interface TransactionOrBuilder
    *
    *
    * <pre>
-   * A precommit token will be included in the response of a BeginTransaction
+   * A precommit token is included in the response of a BeginTransaction
    * request if the read-write transaction is on a multiplexed session and
    * a mutation_key was specified in the
    * [BeginTransaction][google.spanner.v1.BeginTransactionRequest].
    * The precommit token with the highest sequence number from this transaction
    * attempt should be passed to the [Commit][google.spanner.v1.Spanner.Commit]
    * request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 3;</code>
