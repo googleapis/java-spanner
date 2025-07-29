@@ -64,6 +64,8 @@ import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
 import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
@@ -346,6 +348,13 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
           ListBackupSchedulesRequest, ListBackupSchedulesResponse, ListBackupSchedulesPagedResponse>
       listBackupSchedulesSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).listBackupSchedulesSettings();
+  }
+
+  /** Returns the object with the settings used for calls to internalUpdateGraph. */
+  public UnaryCallSettings<
+          InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+      internalUpdateGraphOperationSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).internalUpdateGraphOperationSettings();
   }
 
   public static final DatabaseAdminSettings create(DatabaseAdminStubSettings stub)
@@ -650,6 +659,13 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
             ListBackupSchedulesPagedResponse>
         listBackupSchedulesSettings() {
       return getStubSettingsBuilder().listBackupSchedulesSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to internalUpdateGraph. */
+    public UnaryCallSettings.Builder<
+            InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+        internalUpdateGraphOperationSettings() {
+      return getStubSettingsBuilder().internalUpdateGraphOperationSettings();
     }
 
     @Override

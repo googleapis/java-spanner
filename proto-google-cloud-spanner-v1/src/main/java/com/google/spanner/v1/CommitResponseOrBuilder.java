@@ -65,7 +65,7 @@ public interface CommitResponseOrBuilder
    *
    *
    * <pre>
-   * The statistics about this Commit. Not returned by default.
+   * The statistics about this `Commit`. Not returned by default.
    * For more information, see
    * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
    * </pre>
@@ -80,7 +80,7 @@ public interface CommitResponseOrBuilder
    *
    *
    * <pre>
-   * The statistics about this Commit. Not returned by default.
+   * The statistics about this `Commit`. Not returned by default.
    * For more information, see
    * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
    * </pre>
@@ -95,7 +95,7 @@ public interface CommitResponseOrBuilder
    *
    *
    * <pre>
-   * The statistics about this Commit. Not returned by default.
+   * The statistics about this `Commit`. Not returned by default.
    * For more information, see
    * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
    * </pre>
@@ -109,7 +109,7 @@ public interface CommitResponseOrBuilder
    *
    * <pre>
    * If specified, transaction has not committed yet.
-   * Clients must retry the commit with the new precommit token.
+   * You must retry the commit with the new precommit token.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -123,7 +123,7 @@ public interface CommitResponseOrBuilder
    *
    * <pre>
    * If specified, transaction has not committed yet.
-   * Clients must retry the commit with the new precommit token.
+   * You must retry the commit with the new precommit token.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -137,12 +137,58 @@ public interface CommitResponseOrBuilder
    *
    * <pre>
    * If specified, transaction has not committed yet.
-   * Clients must retry the commit with the new precommit token.
+   * You must retry the commit with the new precommit token.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
    */
   com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder getPrecommitTokenOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * If `TransactionOptions.isolation_level` is set to
+   * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+   * timestamp at which all reads in the transaction ran. This timestamp is
+   * never returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+   *
+   * @return Whether the snapshotTimestamp field is set.
+   */
+  boolean hasSnapshotTimestamp();
+
+  /**
+   *
+   *
+   * <pre>
+   * If `TransactionOptions.isolation_level` is set to
+   * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+   * timestamp at which all reads in the transaction ran. This timestamp is
+   * never returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+   *
+   * @return The snapshotTimestamp.
+   */
+  com.google.protobuf.Timestamp getSnapshotTimestamp();
+
+  /**
+   *
+   *
+   * <pre>
+   * If `TransactionOptions.isolation_level` is set to
+   * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+   * timestamp at which all reads in the transaction ran. This timestamp is
+   * never returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+   */
+  com.google.protobuf.TimestampOrBuilder getSnapshotTimestampOrBuilder();
 
   com.google.spanner.v1.CommitResponse.MultiplexedSessionRetryCase getMultiplexedSessionRetryCase();
 }
