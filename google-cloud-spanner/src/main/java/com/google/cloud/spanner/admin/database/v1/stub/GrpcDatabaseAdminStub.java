@@ -59,6 +59,8 @@ import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
 import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
@@ -353,6 +355,21 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListBackupSchedulesResponse.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<
+          InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+      internalUpdateGraphOperationMethodDescriptor =
+          MethodDescriptor
+              .<InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+                  newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/InternalUpdateGraphOperation")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(InternalUpdateGraphOperationRequest.getDefaultInstance()))
+              .setResponseMarshaller(
+                  ProtoUtils.marshaller(InternalUpdateGraphOperationResponse.getDefaultInstance()))
+              .build();
+
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable;
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
       listDatabasesPagedCallable;
@@ -410,6 +427,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
       listBackupSchedulesCallable;
   private final UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesPagedResponse>
       listBackupSchedulesPagedCallable;
+  private final UnaryCallable<
+          InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+      internalUpdateGraphOperationCallable;
 
   private final BackgroundResource backgroundResources;
   private final GrpcOperationsStub operationsStub;
@@ -725,6 +745,13 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                       return builder.build();
                     })
                 .build();
+    GrpcCallSettings<InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+        internalUpdateGraphOperationTransportSettings =
+            GrpcCallSettings
+                .<InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+                    newBuilder()
+                .setMethodDescriptor(internalUpdateGraphOperationMethodDescriptor)
+                .build();
 
     this.listDatabasesCallable =
         callableFactory.createUnaryCallable(
@@ -885,6 +912,11 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
         callableFactory.createPagedCallable(
             listBackupSchedulesTransportSettings,
             settings.listBackupSchedulesSettings(),
+            clientContext);
+    this.internalUpdateGraphOperationCallable =
+        callableFactory.createUnaryCallable(
+            internalUpdateGraphOperationTransportSettings,
+            settings.internalUpdateGraphOperationSettings(),
             clientContext);
 
     this.backgroundResources =
@@ -1099,6 +1131,12 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
   public UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesPagedResponse>
       listBackupSchedulesPagedCallable() {
     return listBackupSchedulesPagedCallable;
+  }
+
+  @Override
+  public UnaryCallable<InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+      internalUpdateGraphOperationCallable() {
+    return internalUpdateGraphOperationCallable;
   }
 
   @Override

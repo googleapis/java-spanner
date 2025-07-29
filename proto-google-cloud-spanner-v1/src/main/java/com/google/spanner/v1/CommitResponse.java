@@ -746,7 +746,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The statistics about this Commit. Not returned by default.
+   * The statistics about this `Commit`. Not returned by default.
    * For more information, see
    * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
    * </pre>
@@ -764,7 +764,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The statistics about this Commit. Not returned by default.
+   * The statistics about this `Commit`. Not returned by default.
    * For more information, see
    * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
    * </pre>
@@ -784,7 +784,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The statistics about this Commit. Not returned by default.
+   * The statistics about this `Commit`. Not returned by default.
    * For more information, see
    * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
    * </pre>
@@ -805,7 +805,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * If specified, transaction has not committed yet.
-   * Clients must retry the commit with the new precommit token.
+   * You must retry the commit with the new precommit token.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -822,7 +822,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * If specified, transaction has not committed yet.
-   * Clients must retry the commit with the new precommit token.
+   * You must retry the commit with the new precommit token.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -842,7 +842,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * If specified, transaction has not committed yet.
-   * Clients must retry the commit with the new precommit token.
+   * You must retry the commit with the new precommit token.
    * </pre>
    *
    * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -854,6 +854,68 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       return (com.google.spanner.v1.MultiplexedSessionPrecommitToken) multiplexedSessionRetry_;
     }
     return com.google.spanner.v1.MultiplexedSessionPrecommitToken.getDefaultInstance();
+  }
+
+  public static final int SNAPSHOT_TIMESTAMP_FIELD_NUMBER = 5;
+  private com.google.protobuf.Timestamp snapshotTimestamp_;
+
+  /**
+   *
+   *
+   * <pre>
+   * If `TransactionOptions.isolation_level` is set to
+   * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+   * timestamp at which all reads in the transaction ran. This timestamp is
+   * never returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+   *
+   * @return Whether the snapshotTimestamp field is set.
+   */
+  @java.lang.Override
+  public boolean hasSnapshotTimestamp() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * If `TransactionOptions.isolation_level` is set to
+   * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+   * timestamp at which all reads in the transaction ran. This timestamp is
+   * never returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+   *
+   * @return The snapshotTimestamp.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getSnapshotTimestamp() {
+    return snapshotTimestamp_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : snapshotTimestamp_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * If `TransactionOptions.isolation_level` is set to
+   * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+   * timestamp at which all reads in the transaction ran. This timestamp is
+   * never returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getSnapshotTimestampOrBuilder() {
+    return snapshotTimestamp_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : snapshotTimestamp_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -880,6 +942,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       output.writeMessage(
           4, (com.google.spanner.v1.MultiplexedSessionPrecommitToken) multiplexedSessionRetry_);
     }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      output.writeMessage(5, getSnapshotTimestamp());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -899,6 +964,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       size +=
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               4, (com.google.spanner.v1.MultiplexedSessionPrecommitToken) multiplexedSessionRetry_);
+    }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, getSnapshotTimestamp());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -922,6 +990,10 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     if (hasCommitStats() != other.hasCommitStats()) return false;
     if (hasCommitStats()) {
       if (!getCommitStats().equals(other.getCommitStats())) return false;
+    }
+    if (hasSnapshotTimestamp() != other.hasSnapshotTimestamp()) return false;
+    if (hasSnapshotTimestamp()) {
+      if (!getSnapshotTimestamp().equals(other.getSnapshotTimestamp())) return false;
     }
     if (!getMultiplexedSessionRetryCase().equals(other.getMultiplexedSessionRetryCase()))
       return false;
@@ -950,6 +1022,10 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     if (hasCommitStats()) {
       hash = (37 * hash) + COMMIT_STATS_FIELD_NUMBER;
       hash = (53 * hash) + getCommitStats().hashCode();
+    }
+    if (hasSnapshotTimestamp()) {
+      hash = (37 * hash) + SNAPSHOT_TIMESTAMP_FIELD_NUMBER;
+      hash = (53 * hash) + getSnapshotTimestamp().hashCode();
     }
     switch (multiplexedSessionRetryCase_) {
       case 4:
@@ -1101,6 +1177,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
         getCommitTimestampFieldBuilder();
         getCommitStatsFieldBuilder();
+        getSnapshotTimestampFieldBuilder();
       }
     }
 
@@ -1120,6 +1197,11 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       }
       if (precommitTokenBuilder_ != null) {
         precommitTokenBuilder_.clear();
+      }
+      snapshotTimestamp_ = null;
+      if (snapshotTimestampBuilder_ != null) {
+        snapshotTimestampBuilder_.dispose();
+        snapshotTimestampBuilder_ = null;
       }
       multiplexedSessionRetryCase_ = 0;
       multiplexedSessionRetry_ = null;
@@ -1169,6 +1251,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         result.commitStats_ =
             commitStatsBuilder_ == null ? commitStats_ : commitStatsBuilder_.build();
         to_bitField0_ |= 0x00000002;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.snapshotTimestamp_ =
+            snapshotTimestampBuilder_ == null
+                ? snapshotTimestamp_
+                : snapshotTimestampBuilder_.build();
+        to_bitField0_ |= 0x00000004;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1232,6 +1321,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       if (other.hasCommitStats()) {
         mergeCommitStats(other.getCommitStats());
       }
+      if (other.hasSnapshotTimestamp()) {
+        mergeSnapshotTimestamp(other.getSnapshotTimestamp());
+      }
       switch (other.getMultiplexedSessionRetryCase()) {
         case PRECOMMIT_TOKEN:
           {
@@ -1287,6 +1379,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
                 multiplexedSessionRetryCase_ = 4;
                 break;
               } // case 34
+            case 42:
+              {
+                input.readMessage(
+                    getSnapshotTimestampFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 42
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1525,7 +1624,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1542,7 +1641,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1565,7 +1664,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1590,7 +1689,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1613,7 +1712,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1644,7 +1743,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1666,7 +1765,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1683,7 +1782,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1704,7 +1803,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The statistics about this Commit. Not returned by default.
+     * The statistics about this `Commit`. Not returned by default.
      * For more information, see
      * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
      * </pre>
@@ -1739,7 +1838,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1756,7 +1855,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1783,7 +1882,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1807,7 +1906,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1829,7 +1928,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1866,7 +1965,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1893,7 +1992,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1908,7 +2007,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1931,7 +2030,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If specified, transaction has not committed yet.
-     * Clients must retry the commit with the new precommit token.
+     * You must retry the commit with the new precommit token.
      * </pre>
      *
      * <code>.google.spanner.v1.MultiplexedSessionPrecommitToken precommit_token = 4;</code>
@@ -1959,6 +2058,227 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       multiplexedSessionRetryCase_ = 4;
       onChanged();
       return precommitTokenBuilder_;
+    }
+
+    private com.google.protobuf.Timestamp snapshotTimestamp_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        snapshotTimestampBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     *
+     * @return Whether the snapshotTimestamp field is set.
+     */
+    public boolean hasSnapshotTimestamp() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     *
+     * @return The snapshotTimestamp.
+     */
+    public com.google.protobuf.Timestamp getSnapshotTimestamp() {
+      if (snapshotTimestampBuilder_ == null) {
+        return snapshotTimestamp_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : snapshotTimestamp_;
+      } else {
+        return snapshotTimestampBuilder_.getMessage();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     */
+    public Builder setSnapshotTimestamp(com.google.protobuf.Timestamp value) {
+      if (snapshotTimestampBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        snapshotTimestamp_ = value;
+      } else {
+        snapshotTimestampBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     */
+    public Builder setSnapshotTimestamp(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (snapshotTimestampBuilder_ == null) {
+        snapshotTimestamp_ = builderForValue.build();
+      } else {
+        snapshotTimestampBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     */
+    public Builder mergeSnapshotTimestamp(com.google.protobuf.Timestamp value) {
+      if (snapshotTimestampBuilder_ == null) {
+        if (((bitField0_ & 0x00000008) != 0)
+            && snapshotTimestamp_ != null
+            && snapshotTimestamp_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getSnapshotTimestampBuilder().mergeFrom(value);
+        } else {
+          snapshotTimestamp_ = value;
+        }
+      } else {
+        snapshotTimestampBuilder_.mergeFrom(value);
+      }
+      if (snapshotTimestamp_ != null) {
+        bitField0_ |= 0x00000008;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     */
+    public Builder clearSnapshotTimestamp() {
+      bitField0_ = (bitField0_ & ~0x00000008);
+      snapshotTimestamp_ = null;
+      if (snapshotTimestampBuilder_ != null) {
+        snapshotTimestampBuilder_.dispose();
+        snapshotTimestampBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     */
+    public com.google.protobuf.Timestamp.Builder getSnapshotTimestampBuilder() {
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return getSnapshotTimestampFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getSnapshotTimestampOrBuilder() {
+      if (snapshotTimestampBuilder_ != null) {
+        return snapshotTimestampBuilder_.getMessageOrBuilder();
+      } else {
+        return snapshotTimestamp_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : snapshotTimestamp_;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If `TransactionOptions.isolation_level` is set to
+     * `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
+     * timestamp at which all reads in the transaction ran. This timestamp is
+     * never returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp snapshot_timestamp = 5;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getSnapshotTimestampFieldBuilder() {
+      if (snapshotTimestampBuilder_ == null) {
+        snapshotTimestampBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getSnapshotTimestamp(), getParentForChildren(), isClean());
+        snapshotTimestamp_ = null;
+      }
+      return snapshotTimestampBuilder_;
     }
 
     @java.lang.Override
