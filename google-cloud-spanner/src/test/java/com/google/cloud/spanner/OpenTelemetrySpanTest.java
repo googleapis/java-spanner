@@ -748,6 +748,13 @@ public class OpenTelemetrySpanTest {
         beginTransactionSpan.toString(),
         beginTransactionSpan.getEvents().stream()
             .anyMatch(event -> event.getName().equals("Starting RPC retry 1")));
+    verifyAtLeast1SpanHasXGoogSpannerRequestIdAttribute(finishedSpans);
+  }
+
+  private void verifyAtLeast1SpanHasXGoogSpannerRequestIdAttribute(List<SpanData> finishedSpans) {
+    AttributeKey<String> attributeKey = AttributeKey.stringKey("x_goog_spanner_request_id");
+    assertTrue(
+        finishedSpans.stream().anyMatch(span -> !span.getAttributes().get(attributeKey).isEmpty()));
   }
 
   @Test
@@ -798,6 +805,7 @@ public class OpenTelemetrySpanTest {
         executeStreamingQuery.toString(),
         executeStreamingQuery.getEvents().stream()
             .anyMatch(event -> event.getName().contains("Stream broken. Safe to retry")));
+    verifyAtLeast1SpanHasXGoogSpannerRequestIdAttribute(finishedSpans);
   }
 
   @Test
@@ -845,6 +853,7 @@ public class OpenTelemetrySpanTest {
         executeSqlSpan.toString(),
         executeSqlSpan.getEvents().stream()
             .anyMatch(event -> event.getName().equals("Starting RPC retry 1")));
+    verifyAtLeast1SpanHasXGoogSpannerRequestIdAttribute(finishedSpans);
   }
 
   @Test
@@ -866,12 +875,14 @@ public class OpenTelemetrySpanTest {
               }
               return null;
             });
+    List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
     SpanData spanData =
-        spanExporter.getFinishedSpanItems().stream()
+        finishedSpans.stream()
             .filter(x -> x.getName().equals("CloudSpannerOperation.ExecuteStreamingRead"))
             .findFirst()
             .get();
     verifyTableAttributes(spanData);
+    verifyAtLeast1SpanHasXGoogSpannerRequestIdAttribute(finishedSpans);
   }
 
   private void waitForFinishedSpans(int numExpectedSpans) {
