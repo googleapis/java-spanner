@@ -51,13 +51,16 @@ public class ITBuiltInMetricsTest {
 
   private static MetricServiceClient metricClient;
 
-  private static java.util.List<String> METRICS = new java.util.ArrayList<String>() {{
-    add("operation_latencies");
-    add("attempt_latencies");
-    add("operation_count");
-    add("attempt_count");
-    add("afe_latencies");
-  }};
+  private static java.util.List<String> METRICS =
+      new java.util.ArrayList<String>() {
+        {
+          add("operation_latencies");
+          add("attempt_latencies");
+          add("operation_count");
+          add("attempt_count");
+          add("afe_latencies");
+        }
+      };
 
   @BeforeClass
   public static void setUp() throws IOException {
@@ -66,7 +69,7 @@ public class ITBuiltInMetricsTest {
     // Enable BuiltinMetrics when the metrics are GA'ed
     db = env.getTestHelper().createTestDatabase();
     client = env.getTestHelper().getDatabaseClient(db);
-    if(!env.getTestHelper().getOptions().isEnableDirectAccess()) {
+    if (!env.getTestHelper().getOptions().isEnableDirectAccess()) {
       METRICS.add("gfe_latencies");
     }
   }
