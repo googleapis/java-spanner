@@ -1417,8 +1417,7 @@ public class DatabaseClientImplTest {
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(2, commitRequests.size());
-    // TODO(@odeke-em): Enable in later PR.
-    // xGoogReqIdInterceptor.assertIntegrity();
+    xGoogReqIdInterceptor.assertIntegrity();
   }
 
   @Test
@@ -2920,9 +2919,7 @@ public class DatabaseClientImplTest {
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
       };
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
 
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
@@ -2935,9 +2932,7 @@ public class DatabaseClientImplTest {
             "google.spanner.v1.Spanner/ExecuteSql",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
       };
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
     }
   }
 
@@ -3034,9 +3029,7 @@ public class DatabaseClientImplTest {
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 6, 1)),
       };
 
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedStreamingXGoogRequestIds(wantStreamingValues);
 
       XGoogSpannerRequestIdTest.MethodAndRequestId[] wantUnaryValues = {
         XGoogSpannerRequestIdTest.ofMethodAndRequestId(
@@ -3049,9 +3042,7 @@ public class DatabaseClientImplTest {
             "google.spanner.v1.Spanner/ExecuteSql",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, channelId, 8, 1)),
       };
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
     }
   }
 
@@ -5304,8 +5295,7 @@ public class DatabaseClientImplTest {
       assertEquals(1L, resultSet.getLong(0));
       assertFalse(resultSet.next());
     } finally {
-      // TODO(@odeke-em): Enable in later PR.
-      // xGoogReqIdInterceptor.assertIntegrity();
+      xGoogReqIdInterceptor.assertIntegrity();
     }
   }
 
@@ -5394,9 +5384,7 @@ public class DatabaseClientImplTest {
             "google.spanner.v1.Spanner/CreateSession",
             new XGoogSpannerRequestId(NON_DETERMINISTIC, 0, 1, 1)),
       };
-      if (false) { // TODO(@odeke-em): enable in next PRs.
-        xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
-      }
+      xGoogReqIdInterceptor.checkExpectedUnaryXGoogRequestIdsAsSuffixes(wantUnaryValues);
     }
   }
 
