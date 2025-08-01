@@ -150,7 +150,9 @@ public class ITDatabaseTest {
         }
       }
     }
-    assertThat(notFoundException).isNotNull();
+    if (!isUsingEmulator()) {
+      assertThat(notFoundException).isNotNull();
+    }
 
     // Now get a new DatabaseClient for the database. This should now result in a valid
     // DatabaseClient.
