@@ -78,6 +78,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
@@ -2073,7 +2074,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return openTelemetry != null
         ? new BuiltInMetricsTracerFactory(
             new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            new HashMap<>())
+            new HashMap<>(),
+            new TraceWrapper(
+                Tracing.getTracer(),
+                // Using the OpenTelemetry object set in Spanner Options, will be NoOp if not set
+                this.getOpenTelemetry()
+                    .getTracer(
+                        MetricRegistryConstants.INSTRUMENTATION_SCOPE,
+                        GaxProperties.getLibraryVersion(getClass())),
+                true))
         : null;
   }
 

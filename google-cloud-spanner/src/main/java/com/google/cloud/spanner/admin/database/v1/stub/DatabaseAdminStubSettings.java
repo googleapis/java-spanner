@@ -85,6 +85,8 @@ import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
 import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
@@ -254,6 +256,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
   private final PagedCallSettings<
           ListBackupSchedulesRequest, ListBackupSchedulesResponse, ListBackupSchedulesPagedResponse>
       listBackupSchedulesSettings;
+  private final UnaryCallSettings<
+          InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+      internalUpdateGraphOperationSettings;
 
   private static final PagedListDescriptor<ListDatabasesRequest, ListDatabasesResponse, Database>
       LIST_DATABASES_PAGE_STR_DESC =
@@ -783,6 +788,13 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     return listBackupSchedulesSettings;
   }
 
+  /** Returns the object with the settings used for calls to internalUpdateGraph. */
+  public UnaryCallSettings<
+          InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+      internalUpdateGraphOperationSettings() {
+    return internalUpdateGraphOperationSettings;
+  }
+
   public DatabaseAdminStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()
@@ -927,6 +939,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     updateBackupScheduleSettings = settingsBuilder.updateBackupScheduleSettings().build();
     deleteBackupScheduleSettings = settingsBuilder.deleteBackupScheduleSettings().build();
     listBackupSchedulesSettings = settingsBuilder.listBackupSchedulesSettings().build();
+    internalUpdateGraphOperationSettings =
+        settingsBuilder.internalUpdateGraphOperationSettings().build();
   }
 
   /** Builder for DatabaseAdminStubSettings. */
@@ -1003,6 +1017,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             ListBackupSchedulesResponse,
             ListBackupSchedulesPagedResponse>
         listBackupSchedulesSettings;
+    private final UnaryCallSettings.Builder<
+            InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+        internalUpdateGraphOperationSettings;
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -1023,6 +1040,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
           ImmutableSet.copyOf(
               Lists.<StatusCode.Code>newArrayList(
                   StatusCode.Code.UNAVAILABLE, StatusCode.Code.DEADLINE_EXCEEDED)));
+      definitions.put("no_retry_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       RETRYABLE_CODE_DEFINITIONS = definitions.build();
     }
 
@@ -1069,6 +1087,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               .setTotalTimeoutDuration(Duration.ofMillis(30000L))
               .build();
       definitions.put("retry_policy_1_params", settings);
+      settings = RetrySettings.newBuilder().setRpcTimeoutMultiplier(1.0).build();
+      definitions.put("no_retry_params", settings);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
 
@@ -1114,6 +1134,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       deleteBackupScheduleSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       listBackupSchedulesSettings =
           PagedCallSettings.newBuilder(LIST_BACKUP_SCHEDULES_PAGE_STR_FACT);
+      internalUpdateGraphOperationSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -1142,7 +1163,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               getBackupScheduleSettings,
               updateBackupScheduleSettings,
               deleteBackupScheduleSettings,
-              listBackupSchedulesSettings);
+              listBackupSchedulesSettings,
+              internalUpdateGraphOperationSettings);
       initDefaults(this);
     }
 
@@ -1181,6 +1203,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       updateBackupScheduleSettings = settings.updateBackupScheduleSettings.toBuilder();
       deleteBackupScheduleSettings = settings.deleteBackupScheduleSettings.toBuilder();
       listBackupSchedulesSettings = settings.listBackupSchedulesSettings.toBuilder();
+      internalUpdateGraphOperationSettings =
+          settings.internalUpdateGraphOperationSettings.toBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -1209,7 +1233,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               getBackupScheduleSettings,
               updateBackupScheduleSettings,
               deleteBackupScheduleSettings,
-              listBackupSchedulesSettings);
+              listBackupSchedulesSettings,
+              internalUpdateGraphOperationSettings);
     }
 
     private static Builder createDefault() {
@@ -1366,6 +1391,11 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
           .listBackupSchedulesSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .internalUpdateGraphOperationSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
 
       builder
           .createDatabaseOperationSettings()
@@ -1719,6 +1749,13 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             ListBackupSchedulesPagedResponse>
         listBackupSchedulesSettings() {
       return listBackupSchedulesSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to internalUpdateGraph. */
+    public UnaryCallSettings.Builder<
+            InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+        internalUpdateGraphOperationSettings() {
+      return internalUpdateGraphOperationSettings;
     }
 
     @Override

@@ -49,6 +49,9 @@
             "GetIamPolicy": {
               "methods": ["getIamPolicy", "getIamPolicy", "getIamPolicy", "getIamPolicyCallable"]
             },
+            "InternalUpdateGraphOperation": {
+              "methods": ["internalUpdateGraphOperation", "internalUpdateGraphOperation", "internalUpdateGraphOperation", "internalUpdateGraphOperationCallable"]
+            },
             "ListBackupOperations": {
               "methods": ["listBackupOperations", "listBackupOperations", "listBackupOperations", "listBackupOperationsPagedCallable", "listBackupOperationsCallable"]
             },

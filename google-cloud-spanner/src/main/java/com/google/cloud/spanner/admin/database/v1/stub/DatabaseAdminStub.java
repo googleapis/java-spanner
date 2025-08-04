@@ -54,6 +54,8 @@ import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
 import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
@@ -261,6 +263,12 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
   public UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
       listBackupSchedulesCallable() {
     throw new UnsupportedOperationException("Not implemented: listBackupSchedulesCallable()");
+  }
+
+  public UnaryCallable<InternalUpdateGraphOperationRequest, InternalUpdateGraphOperationResponse>
+      internalUpdateGraphOperationCallable() {
+    throw new UnsupportedOperationException(
+        "Not implemented: internalUpdateGraphOperationCallable()");
   }
 
   @Override

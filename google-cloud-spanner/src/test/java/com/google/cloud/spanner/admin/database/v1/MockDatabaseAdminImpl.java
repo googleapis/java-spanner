@@ -43,6 +43,8 @@ import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+import com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
 import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
@@ -643,6 +645,29 @@ public class MockDatabaseAdminImpl extends DatabaseAdminImplBase {
                   "Unrecognized response type %s for method ListBackupSchedules, expected %s or %s",
                   response == null ? "null" : response.getClass().getName(),
                   ListBackupSchedulesResponse.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void internalUpdateGraphOperation(
+      InternalUpdateGraphOperationRequest request,
+      StreamObserver<InternalUpdateGraphOperationResponse> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof InternalUpdateGraphOperationResponse) {
+      requests.add(request);
+      responseObserver.onNext(((InternalUpdateGraphOperationResponse) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method InternalUpdateGraphOperation, expected"
+                      + " %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  InternalUpdateGraphOperationResponse.class.getName(),
                   Exception.class.getName())));
     }
   }

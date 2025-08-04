@@ -3021,4 +3021,10 @@ public class DatabaseAdminClientHttpJsonTest {
       // Expected exception.
     }
   }
+
+  @Test
+  public void internalUpdateGraphOperationUnsupportedMethodTest() throws Exception {
+    // The internalUpdateGraphOperation() method is not supported in REST transport.
+    // This empty test is generated for technical reasons.
+  }
 }

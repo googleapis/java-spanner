@@ -927,6 +927,7 @@ public class SpannerClientHttpJsonTest {
         CommitResponse.newBuilder()
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .setSnapshotTimestamp(Timestamp.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -976,6 +977,7 @@ public class SpannerClientHttpJsonTest {
         CommitResponse.newBuilder()
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .setSnapshotTimestamp(Timestamp.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -1025,6 +1027,7 @@ public class SpannerClientHttpJsonTest {
         CommitResponse.newBuilder()
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .setSnapshotTimestamp(Timestamp.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -1076,6 +1079,7 @@ public class SpannerClientHttpJsonTest {
         CommitResponse.newBuilder()
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .setSnapshotTimestamp(Timestamp.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 

@@ -38,24 +38,31 @@ class BuiltInMetricsTracerFactory extends MetricsTracerFactory {
 
   protected BuiltInMetricsRecorder builtInMetricsRecorder;
   private final Map<String, String> attributes;
+  private final TraceWrapper traceWrapper;
 
   /**
    * Pass in a Map of client level attributes which will be added to every single MetricsTracer
    * created from the ApiTracerFactory.
    */
   public BuiltInMetricsTracerFactory(
-      BuiltInMetricsRecorder builtInMetricsRecorder, Map<String, String> attributes) {
+      BuiltInMetricsRecorder builtInMetricsRecorder,
+      Map<String, String> attributes,
+      TraceWrapper traceWrapper) {
     super(builtInMetricsRecorder, attributes);
     this.builtInMetricsRecorder = builtInMetricsRecorder;
     this.attributes = ImmutableMap.copyOf(attributes);
+    this.traceWrapper = traceWrapper;
   }
 
   @Override
   public ApiTracer newTracer(ApiTracer parent, SpanName spanName, OperationType operationType) {
+    ISpan currentSpan = this.traceWrapper.getCurrentSpan();
     BuiltInMetricsTracer metricsTracer =
         new BuiltInMetricsTracer(
             MethodName.of(spanName.getClientName(), spanName.getMethodName()),
-            builtInMetricsRecorder);
+            builtInMetricsRecorder,
+            this.traceWrapper,
+            currentSpan);
     metricsTracer.addAttributes(attributes);
     return metricsTracer;
   }

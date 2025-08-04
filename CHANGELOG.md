@@ -1,5 +1,46 @@
 # Changelog
 
+## [6.98.0](https://github.com/googleapis/java-spanner/compare/v6.97.1...v6.98.0) (2025-07-31)
+
+
+### Features
+
+* Proto changes for an internal api ([675e90b](https://github.com/googleapis/java-spanner/commit/675e90b4582b4fc968118121e6c23ec98ee178e9))
+* **spanner:** A new field `snapshot_timestamp` is added to message `.google.spanner.v1.CommitResponse` ([675e90b](https://github.com/googleapis/java-spanner/commit/675e90b4582b4fc968118121e6c23ec98ee178e9))
+* Support Exemplar ([#3997](https://github.com/googleapis/java-spanner/issues/3997)) ([fcf0a01](https://github.com/googleapis/java-spanner/commit/fcf0a0182a33f229e865e4593635efaed34d6dac))
+* Use multiplex sessions for RW and Partition Ops ([#3996](https://github.com/googleapis/java-spanner/issues/3996)) ([a882204](https://github.com/googleapis/java-spanner/commit/a882204e07a2084b228c14fb37ac53e4e33d0f59))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.60.2 ([675e90b](https://github.com/googleapis/java-spanner/commit/675e90b4582b4fc968118121e6c23ec98ee178e9))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.50.2 ([#4004](https://github.com/googleapis/java-spanner/issues/4004)) ([986c0e0](https://github.com/googleapis/java-spanner/commit/986c0e07fddecd51cd310a9759ce1d41c1f5c657))
+
+## [6.97.1](https://github.com/googleapis/java-spanner/compare/v6.97.0...v6.97.1) (2025-07-15)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.50.1 ([#3992](https://github.com/googleapis/java-spanner/issues/3992)) ([69ffd72](https://github.com/googleapis/java-spanner/commit/69ffd7282220b8b12c6b9b64d8856ff88068ffa2))
+* Update googleapis/sdk-platform-java action to v2.60.1 ([#3926](https://github.com/googleapis/java-spanner/issues/3926)) ([7001b7f](https://github.com/googleapis/java-spanner/commit/7001b7faaff581e26ec81c4db2c99a1e8726d5eb))
+
+## [6.97.0](https://github.com/googleapis/java-spanner/compare/v6.96.1...v6.97.0) (2025-07-10)
+
+
+### Features
+
+* Next release from main branch is 6.97.0 ([#3984](https://github.com/googleapis/java-spanner/issues/3984)) ([5651f61](https://github.com/googleapis/java-spanner/commit/5651f6160e1e655f118aa2e7f0203a47cd6914c0))
+
+
+### Bug Fixes
+
+* Drop max message size ([#3987](https://github.com/googleapis/java-spanner/issues/3987)) ([3eee899](https://github.com/googleapis/java-spanner/commit/3eee89965547dfa49b4282b470f625d43c92f4fd))
+* Return non-empty metadata for DataBoost queries ([#3936](https://github.com/googleapis/java-spanner/issues/3936)) ([79c0684](https://github.com/googleapis/java-spanner/commit/79c06848c0ac4eff8410dd3bd63db8675c202d94))
+
 ## [6.96.1](https://github.com/googleapis/java-spanner/compare/v6.96.0...v6.96.1) (2025-06-30)
 
 

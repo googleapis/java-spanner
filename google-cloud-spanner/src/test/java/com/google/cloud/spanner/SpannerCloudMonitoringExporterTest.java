@@ -45,6 +45,7 @@ import com.google.monitoring.v3.CreateTimeSeriesRequest;
 import com.google.monitoring.v3.DroppedLabels;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.protobuf.Empty;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -64,10 +65,8 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -369,7 +368,10 @@ public class SpannerCloudMonitoringExporterTest {
 
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
-            Attributes.builder().put("request_id", "test").build(),
+            Attributes.builder()
+                .put(XGoogSpannerRequestId.REQUEST_ID, "test")
+                .put("lang", "java")
+                .build(),
             recordTimeEpoch,
             SpanContext.create(
                 "0123456789abcdef0123456789abcdef",
@@ -428,9 +430,25 @@ public class SpannerCloudMonitoringExporterTest {
     assertThat(hasSpanAttachment).isTrue();
 
     // Assert attachments: DroppedLabels (filtered attributes)
-    boolean hasFilteredAttrs =
-        exportedExemplar.getAttachmentsList().stream().anyMatch(any -> any.is(DroppedLabels.class));
-    assertThat(hasFilteredAttrs).isTrue();
+    List<DroppedLabels> filterAttributes =
+        exportedExemplar.getAttachmentsList().stream()
+            .filter(any -> any.is(DroppedLabels.class))
+            .map(
+                any -> {
+                  try {
+                    return any.unpack(DroppedLabels.class);
+                  } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException("Failed to unpack SpanContext", e);
+                  }
+                })
+            .collect(Collectors.toList());
+
+    // Assert only 1 attachment is there with 1 label for request_id.
+    assertThat(filterAttributes.size()).isEqualTo(1);
+    assertThat(filterAttributes.get(0).getLabelCount()).isEqualTo(1);
+    assertThat(filterAttributes.get(0).containsLabel(XGoogSpannerRequestId.REQUEST_ID)).isTrue();
+    assertThat(filterAttributes.get(0).getLabelOrThrow(XGoogSpannerRequestId.REQUEST_ID))
+        .isEqualTo("test");
   }
 
   @Test
