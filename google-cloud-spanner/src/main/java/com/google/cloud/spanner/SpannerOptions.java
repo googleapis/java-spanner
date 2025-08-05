@@ -69,6 +69,8 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import io.grpc.CallCredentials;
 import io.grpc.CompressorRegistry;
 import io.grpc.Context;
@@ -1700,6 +1702,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * <pre>{@code
      * DefaultReadWriteTransactionOptions options = DefaultReadWriteTransactionOptions.newBuilder()
      * .setIsolationLevel(IsolationLevel.SERIALIZABLE)
+     * .setReadLockMode(ReadLockMode.OPTIMISTIC)
      * .build();
      * }</pre>
      */
@@ -1721,6 +1724,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         public DefaultReadWriteTransactionOptionsBuilder setIsolationLevel(
             IsolationLevel isolationLevel) {
           transactionOptionsBuilder.setIsolationLevel(isolationLevel);
+          return this;
+        }
+
+        public DefaultReadWriteTransactionOptionsBuilder setReadLockMode(
+            ReadLockMode readLockMode) {
+          transactionOptionsBuilder.setReadWrite(
+              ReadWrite.newBuilder().setReadLockMode(readLockMode));
           return this;
         }
 

@@ -37,6 +37,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -60,6 +61,10 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
       Options.isolationLevel(IsolationLevel.SERIALIZABLE);
   private static final TransactionOption RR_ISOLATION_OPTION =
       Options.isolationLevel(IsolationLevel.REPEATABLE_READ);
+  private static final TransactionOption OPTIMISTIC_READ_LOCK_OPTION =
+      Options.readLockMode(ReadLockMode.OPTIMISTIC);
+  private static final TransactionOption PESSIMISTIC_READ_LOCK_OPTION =
+      Options.readLockMode(ReadLockMode.PESSIMISTIC);
   private static final DatabaseId DATABASE_ID =
       DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
   private static MockSpannerServiceImpl mockSpanner;
@@ -68,10 +73,14 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   private static LocalChannelProvider channelProvider;
   private Spanner spanner;
   private Spanner spannerWithRR;
+  private Spanner spannerWithRRPessimistic;
   private Spanner spannerWithSerializable;
+  private Spanner spannerWithSerOptimistic;
   private DatabaseClient client;
   private DatabaseClient clientWithRepeatableReadOption;
+  private DatabaseClient clientWithRRPessimisticOption;
   private DatabaseClient clientWithSerializableOption;
+  private DatabaseClient clientWithSerOptimisticOption;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -109,56 +118,97 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   public void setUp() {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
+    spanner = getSpannerOptionsBuilder().build().getService();
+    spannerWithRR = getSpannerOptionsBuilder(IsolationLevel.REPEATABLE_READ).build().getService();
+    spannerWithRRPessimistic =
+        getSpannerOptionsBuilder(IsolationLevel.REPEATABLE_READ, ReadLockMode.PESSIMISTIC)
+            .build()
+            .getService();
+    spannerWithSerializable =
+        getSpannerOptionsBuilder(IsolationLevel.SERIALIZABLE).build().getService();
+    spannerWithSerOptimistic =
+        getSpannerOptionsBuilder(IsolationLevel.SERIALIZABLE, ReadLockMode.OPTIMISTIC)
+            .build()
+            .getService();
+    client = spanner.getDatabaseClient(DATABASE_ID);
+    clientWithRepeatableReadOption = spannerWithRR.getDatabaseClient(DATABASE_ID);
+    clientWithRRPessimisticOption = spannerWithRRPessimistic.getDatabaseClient(DATABASE_ID);
+    clientWithSerializableOption = spannerWithSerializable.getDatabaseClient(DATABASE_ID);
+    clientWithSerOptimisticOption = spannerWithSerOptimistic.getDatabaseClient(DATABASE_ID);
+  }
+
+  private static SpannerOptions.Builder getSpannerOptionsBuilder() {
+    return getSpannerOptionsBuilder(
+        IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED, ReadLockMode.READ_LOCK_MODE_UNSPECIFIED);
+  }
+
+  private static SpannerOptions.Builder getSpannerOptionsBuilder(IsolationLevel isolationLevel) {
+    return getSpannerOptionsBuilder(isolationLevel, ReadLockMode.READ_LOCK_MODE_UNSPECIFIED);
+  }
+
+  private static SpannerOptions.Builder getSpannerOptionsBuilder(
+      IsolationLevel isolationLevel, ReadLockMode readLockMode) {
     SpannerOptions.Builder spannerOptionsBuilder =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
-    spanner = spannerOptionsBuilder.build().getService();
-    spannerWithRR =
-        spannerOptionsBuilder
-            .setDefaultTransactionOptions(
-                DefaultReadWriteTransactionOptions.newBuilder()
-                    .setIsolationLevel(IsolationLevel.REPEATABLE_READ)
-                    .build())
-            .build()
-            .getService();
-    spannerWithSerializable =
-        spannerOptionsBuilder
-            .setDefaultTransactionOptions(
-                DefaultReadWriteTransactionOptions.newBuilder()
-                    .setIsolationLevel(IsolationLevel.SERIALIZABLE)
-                    .build())
-            .build()
-            .getService();
-    client = spanner.getDatabaseClient(DATABASE_ID);
-    clientWithRepeatableReadOption = spannerWithRR.getDatabaseClient(DATABASE_ID);
-    clientWithSerializableOption = spannerWithSerializable.getDatabaseClient(DATABASE_ID);
+    return spannerOptionsBuilder.setDefaultTransactionOptions(
+        DefaultReadWriteTransactionOptions.newBuilder()
+            .setIsolationLevel(isolationLevel)
+            .setReadLockMode(readLockMode)
+            .build());
   }
 
   private void executeTest(
       Consumer<DatabaseClient> testAction, IsolationLevel expectedIsolationLevel) {
     testAction.accept(client);
-    validateIsolationLevel(expectedIsolationLevel);
+    validateIsolationLevel(expectedIsolationLevel, ReadLockMode.READ_LOCK_MODE_UNSPECIFIED);
+  }
+
+  private void executeTest(
+      Consumer<DatabaseClient> testAction,
+      IsolationLevel expectedIsolationLevel,
+      ReadLockMode readLockMode) {
+    testAction.accept(client);
+    validateIsolationLevel(expectedIsolationLevel, readLockMode);
   }
 
   private void executeTestWithRR(
       Consumer<DatabaseClient> testAction, IsolationLevel expectedIsolationLevel) {
     testAction.accept(clientWithRepeatableReadOption);
-    validateIsolationLevel(expectedIsolationLevel);
+    validateIsolationLevel(expectedIsolationLevel, ReadLockMode.READ_LOCK_MODE_UNSPECIFIED);
+  }
+
+  private void executeTestWithRRPessimistic(
+      Consumer<DatabaseClient> testAction,
+      IsolationLevel expectedIsolationLevel,
+      ReadLockMode expectedReadLockMode) {
+    testAction.accept(clientWithRRPessimisticOption);
+    validateIsolationLevel(expectedIsolationLevel, expectedReadLockMode);
   }
 
   private void executeTestWithSerializable(
       Consumer<DatabaseClient> testAction, IsolationLevel expectedIsolationLevel) {
     testAction.accept(clientWithSerializableOption);
-    validateIsolationLevel(expectedIsolationLevel);
+    validateIsolationLevel(expectedIsolationLevel, ReadLockMode.READ_LOCK_MODE_UNSPECIFIED);
+  }
+
+  private void executeTestWithSerializableOptimistic(
+      Consumer<DatabaseClient> testAction,
+      IsolationLevel expectedIsolationLevel,
+      ReadLockMode expectedReadLockMode) {
+    testAction.accept(clientWithSerOptimisticOption);
+    validateIsolationLevel(expectedIsolationLevel, expectedReadLockMode);
   }
 
   @After
   public void tearDown() {
     spanner.close();
     spannerWithRR.close();
+    spannerWithRRPessimistic.close();
     spannerWithSerializable.close();
+    spannerWithSerOptimistic.close();
   }
 
   @Test
@@ -182,11 +232,31 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   }
 
   @Test
+  public void testWriteWithOptions_WithRRPessimisticSpannerOptions() {
+    executeTestWithRRPessimistic(
+        c ->
+            MockSpannerTestActions.writeInsertMutationWithOptions(
+                c, Options.priority(RpcPriority.HIGH)),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.PESSIMISTIC);
+  }
+
+  @Test
   public void testWriteWithOptions_WithSerializableTxnOption() {
     executeTestWithRR(
         c ->
             MockSpannerTestActions.writeInsertMutationWithOptions(c, SERIALIZABLE_ISOLATION_OPTION),
         IsolationLevel.SERIALIZABLE);
+  }
+
+  @Test
+  public void testWriteWithOptions_WithSerializableOptimisticTxnOption() {
+    executeTestWithRRPessimistic(
+        c ->
+            MockSpannerTestActions.writeInsertMutationWithOptions(
+                c, SERIALIZABLE_ISOLATION_OPTION, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.OPTIMISTIC);
   }
 
   @Test
@@ -205,6 +275,26 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   }
 
   @Test
+  public void testWriteAtLeastOnceWithOptions_WithRRPessimisticTxnOption() {
+    executeTestWithSerializableOptimistic(
+        c ->
+            MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+                c, RR_ISOLATION_OPTION, PESSIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.PESSIMISTIC);
+  }
+
+  @Test
+  public void testWriteAtLeastOnceWithOptions_WithPessimisticTxnOption() {
+    executeTestWithRRPessimistic(
+        c ->
+            MockSpannerTestActions.writeAtLeastOnceWithOptionsInsertMutation(
+                c, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.OPTIMISTIC);
+  }
+
+  @Test
   public void testReadWriteTxn_WithRRSpannerOption_batchUpdate() {
     executeTestWithRR(
         MockSpannerTestActions::executeBatchUpdateTransaction, IsolationLevel.REPEATABLE_READ);
@@ -215,6 +305,16 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
     executeTestWithRR(
         c -> MockSpannerTestActions.executeBatchUpdateTransaction(c, SERIALIZABLE_ISOLATION_OPTION),
         IsolationLevel.SERIALIZABLE);
+  }
+
+  @Test
+  public void testReadWriteTxn_WithSerOptimisticTxnOption_batchUpdate() {
+    executeTestWithRRPessimistic(
+        c ->
+            MockSpannerTestActions.executeBatchUpdateTransaction(
+                c, SERIALIZABLE_ISOLATION_OPTION, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.OPTIMISTIC);
   }
 
   @Test
@@ -232,6 +332,26 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   }
 
   @Test
+  public void testCommit_WithSerializablePessimisticTxnOption() {
+    executeTest(
+        c ->
+            MockSpannerTestActions.commitDeleteTransaction(
+                c, SERIALIZABLE_ISOLATION_OPTION, PESSIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.PESSIMISTIC);
+  }
+
+  @Test
+  public void testCommit_WithSerializableOptimisticTxnOption() {
+    executeTest(
+        c ->
+            MockSpannerTestActions.commitDeleteTransaction(
+                c, SERIALIZABLE_ISOLATION_OPTION, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.OPTIMISTIC);
+  }
+
+  @Test
   public void testTransactionManagerCommit_WithRRTxnOption() {
     executeTestWithSerializable(
         c -> MockSpannerTestActions.transactionManagerCommit(c, RR_ISOLATION_OPTION),
@@ -239,9 +359,25 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   }
 
   @Test
+  public void testTransactionManagerCommit_WithRRTxnOptionAndSerOptimisticSpannerOptions() {
+    executeTestWithSerializableOptimistic(
+        c -> MockSpannerTestActions.transactionManagerCommit(c, RR_ISOLATION_OPTION),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.OPTIMISTIC);
+  }
+
+  @Test
   public void testAsyncRunnerCommit_WithRRSpannerOption() {
     executeTestWithRR(
         c -> MockSpannerTestActions.asyncRunnerCommit(c, executor), IsolationLevel.REPEATABLE_READ);
+  }
+
+  @Test
+  public void testAsyncRunnerCommit_WithSerOptimisticSpannerOption() {
+    executeTestWithSerializableOptimistic(
+        c -> MockSpannerTestActions.asyncRunnerCommit(c, executor),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.OPTIMISTIC);
   }
 
   @Test
@@ -254,6 +390,24 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   }
 
   @Test
+  public void testAsyncTransactionManagerCommit_WithRRPessimisticSpannerOptions() {
+    executeTestWithRRPessimistic(
+        c -> MockSpannerTestActions.transactionManagerAsyncCommit(c, executor),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.PESSIMISTIC);
+  }
+
+  @Test
+  public void testAsyncTransactionManagerCommit_WithSerOptimisticTxnOption() {
+    executeTestWithRRPessimistic(
+        c ->
+            MockSpannerTestActions.transactionManagerAsyncCommit(
+                c, executor, SERIALIZABLE_ISOLATION_OPTION, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.OPTIMISTIC);
+  }
+
+  @Test
   public void testReadWriteTxn_WithNoOptions() {
     executeTest(MockSpannerTestActions::executeSelect1, IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED);
   }
@@ -263,6 +417,26 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
     executeTest(
         c -> MockSpannerTestActions.executeSelect1(c, RR_ISOLATION_OPTION),
         IsolationLevel.REPEATABLE_READ);
+  }
+
+  @Test
+  public void executeSqlWithRWTransactionOptions_RRPessimistic() {
+    executeTest(
+        c ->
+            MockSpannerTestActions.executeSelect1(
+                c, RR_ISOLATION_OPTION, PESSIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.PESSIMISTIC);
+  }
+
+  @Test
+  public void executeSqlWithRWTransactionOptions_RROptimistic() {
+    executeTest(
+        c ->
+            MockSpannerTestActions.executeSelect1(
+                c, RR_ISOLATION_OPTION, PESSIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.PESSIMISTIC);
   }
 
   @Test
@@ -294,10 +468,50 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   }
 
   @Test
+  public void executeSqlWithRWTransactionOptions_SerializablePessimistic() {
+    executeTest(
+        c ->
+            MockSpannerTestActions.executeSelect1(
+                c, SERIALIZABLE_ISOLATION_OPTION, PESSIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.PESSIMISTIC);
+  }
+
+  @Test
+  public void executeSqlWithRWTransactionOptions_SerializableOptimistic() {
+    executeTest(
+        c ->
+            MockSpannerTestActions.executeSelect1(
+                c, SERIALIZABLE_ISOLATION_OPTION, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.OPTIMISTIC);
+  }
+
+  @Test
   public void readWithRWTransactionOptions_RepeatableRead() {
     executeTest(
         c -> MockSpannerTestActions.executeReadFoo(c, RR_ISOLATION_OPTION),
         IsolationLevel.REPEATABLE_READ);
+  }
+
+  @Test
+  public void readWithRWTransactionOptions_RepeatableReadPessimistic() {
+    executeTest(
+        c ->
+            MockSpannerTestActions.executeReadFoo(
+                c, RR_ISOLATION_OPTION, PESSIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.PESSIMISTIC);
+  }
+
+  @Test
+  public void readWithRWTransactionOptions_RepeatableReadOptimistic() {
+    executeTest(
+        c ->
+            MockSpannerTestActions.executeReadFoo(
+                c, RR_ISOLATION_OPTION, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.OPTIMISTIC);
   }
 
   @Test
@@ -321,33 +535,82 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
         IsolationLevel.SERIALIZABLE);
   }
 
-  private void validateIsolationLevel(IsolationLevel isolationLevel) {
+  @Test
+  public void beginTransactionWithRWTransactionOptions_RROptimistic() {
+    executeTestWithRRPessimistic(
+        c -> MockSpannerTestActions.executeInvalidAndValidSql(c, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.REPEATABLE_READ,
+        ReadLockMode.OPTIMISTIC);
+  }
+
+  @Test
+  public void beginTransactionWithRWTransactionOptions_SerPessimistic() {
+    executeTestWithRRPessimistic(
+        c -> MockSpannerTestActions.executeInvalidAndValidSql(c, SERIALIZABLE_ISOLATION_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.PESSIMISTIC);
+  }
+
+  @Test
+  public void beginTransactionWithRWTransactionOptions_SerOptimistic() {
+    executeTestWithRRPessimistic(
+        c ->
+            MockSpannerTestActions.executeInvalidAndValidSql(
+                c, SERIALIZABLE_ISOLATION_OPTION, OPTIMISTIC_READ_LOCK_OPTION),
+        IsolationLevel.SERIALIZABLE,
+        ReadLockMode.OPTIMISTIC);
+  }
+
+  private void validateIsolationLevel(IsolationLevel isolationLevel, ReadLockMode readLockMode) {
     boolean foundMatchingRequest = false;
     for (AbstractMessage request : mockSpanner.getRequests()) {
       if (request instanceof ExecuteSqlRequest) {
         foundMatchingRequest = true;
         assertEquals(
-            ((ExecuteSqlRequest) request).getTransaction().getBegin().getIsolationLevel(),
-            isolationLevel);
+            isolationLevel,
+            ((ExecuteSqlRequest) request).getTransaction().getBegin().getIsolationLevel());
+        assertEquals(
+            readLockMode,
+            ((ExecuteSqlRequest) request)
+                .getTransaction()
+                .getBegin()
+                .getReadWrite()
+                .getReadLockMode());
       } else if (request instanceof BeginTransactionRequest) {
         foundMatchingRequest = true;
         assertEquals(
-            ((BeginTransactionRequest) request).getOptions().getIsolationLevel(), isolationLevel);
+            isolationLevel, ((BeginTransactionRequest) request).getOptions().getIsolationLevel());
+        assertEquals(
+            readLockMode,
+            ((BeginTransactionRequest) request).getOptions().getReadWrite().getReadLockMode());
       } else if (request instanceof ReadRequest) {
         foundMatchingRequest = true;
         assertEquals(
-            ((ReadRequest) request).getTransaction().getBegin().getIsolationLevel(),
-            isolationLevel);
+            isolationLevel,
+            ((ReadRequest) request).getTransaction().getBegin().getIsolationLevel());
+        assertEquals(
+            readLockMode,
+            ((ReadRequest) request).getTransaction().getBegin().getReadWrite().getReadLockMode());
       } else if (request instanceof CommitRequest) {
         foundMatchingRequest = true;
         assertEquals(
-            ((CommitRequest) request).getSingleUseTransaction().getIsolationLevel(),
-            isolationLevel);
+            isolationLevel,
+            ((CommitRequest) request).getSingleUseTransaction().getIsolationLevel());
+        assertEquals(
+            readLockMode,
+            ((CommitRequest) request).getSingleUseTransaction().getReadWrite().getReadLockMode());
       } else if (request instanceof ExecuteBatchDmlRequest) {
         foundMatchingRequest = true;
         assertEquals(
-            ((ExecuteBatchDmlRequest) request).getTransaction().getBegin().getIsolationLevel(),
-            isolationLevel);
+            isolationLevel,
+            ((ExecuteBatchDmlRequest) request).getTransaction().getBegin().getIsolationLevel());
+        assertEquals(
+            readLockMode,
+            ((ExecuteBatchDmlRequest) request)
+                .getTransaction()
+                .getBegin()
+                .getReadWrite()
+                .getReadLockMode());
       }
       if (foundMatchingRequest) {
         break;
