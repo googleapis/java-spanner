@@ -736,6 +736,19 @@ public class OptionsTest {
   }
 
   @Test
+  public void readLockModeEquality() {
+    Options option1 = Options.fromTransactionOptions(Options.readLockMode(ReadLockMode.OPTIMISTIC));
+    Options option2 = Options.fromTransactionOptions(Options.readLockMode(ReadLockMode.OPTIMISTIC));
+    Options option3 =
+        Options.fromTransactionOptions(Options.readLockMode(ReadLockMode.PESSIMISTIC));
+    Options option4 = Options.fromReadOptions();
+
+    assertEquals(option1, option2);
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1, option4);
+  }
+
+  @Test
   public void optimisticLockHashCode() {
     Options option1 = Options.fromTransactionOptions(Options.optimisticLock());
     Options option2 = Options.fromTransactionOptions(Options.optimisticLock());
@@ -743,6 +756,19 @@ public class OptionsTest {
 
     assertEquals(option1.hashCode(), option2.hashCode());
     assertNotEquals(option1.hashCode(), option3.hashCode());
+  }
+
+  @Test
+  public void readLockModeHashCode() {
+    Options option1 = Options.fromTransactionOptions(Options.readLockMode(ReadLockMode.OPTIMISTIC));
+    Options option2 = Options.fromTransactionOptions(Options.readLockMode(ReadLockMode.OPTIMISTIC));
+    Options option3 =
+        Options.fromTransactionOptions(Options.readLockMode(ReadLockMode.PESSIMISTIC));
+    Options option4 = Options.fromReadOptions();
+
+    assertEquals(option1.hashCode(), option2.hashCode());
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+    assertNotEquals(option1.hashCode(), option4.hashCode());
   }
 
   @Test
