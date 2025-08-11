@@ -45,7 +45,6 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
-import com.google.spanner.v1.TransactionOptions.ReadWrite;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -285,8 +284,7 @@ class SessionImpl implements Session {
       transactionOptionsBuilder.setIsolationLevel(options.isolationLevel());
     }
     if (options.readLockMode() != null) {
-      transactionOptionsBuilder.setReadWrite(
-          ReadWrite.newBuilder().setReadLockMode(options.readLockMode()));
+      transactionOptionsBuilder.getReadWriteBuilder().setReadLockMode(options.readLockMode());
     }
     requestBuilder.setSingleUseTransaction(
         defaultTransactionOptions().toBuilder().mergeFrom(transactionOptionsBuilder.build()));
