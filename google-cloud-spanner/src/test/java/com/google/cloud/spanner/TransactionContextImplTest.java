@@ -67,6 +67,8 @@ public class TransactionContextImplTest {
                     .setCommitTimestamp(Timestamp.newBuilder().setSeconds(99L).setNanos(10).build())
                     .build()));
     when(session.getName()).thenReturn("test");
+    when(session.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     doNothing().when(span).setStatus(any(Throwable.class));
     doNothing().when(span).end();
     doNothing().when(span).addAnnotation("Starting Commit");
@@ -210,6 +212,8 @@ public class TransactionContextImplTest {
   private void batchDml(int status) {
     SessionImpl session = mock(SessionImpl.class);
     when(session.getName()).thenReturn("test");
+    when(session.getRequestIdCreator())
+        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
     SpannerRpc rpc = mock(SpannerRpc.class);
     ExecuteBatchDmlResponse response =
         ExecuteBatchDmlResponse.newBuilder()

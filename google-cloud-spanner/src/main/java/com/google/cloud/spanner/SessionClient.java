@@ -223,7 +223,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
   @Override
   public XGoogSpannerRequestId nextRequestId(long channelId, int attempt) {
     return XGoogSpannerRequestId.of(
-        this.nthId, this.nthRequest.incrementAndGet(), channelId, attempt);
+        this.nthId, channelId, this.nthRequest.incrementAndGet(), attempt);
   }
 
   /** Create a single session. */
@@ -423,7 +423,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     span.addAnnotation(String.format("Requesting %d sessions", sessionCount));
     try (IScope s = spanner.getTracer().withSpan(span)) {
       XGoogSpannerRequestId reqId =
-          XGoogSpannerRequestId.of(this.nthId, this.nthRequest.incrementAndGet(), channelHint, 1);
+          XGoogSpannerRequestId.of(this.nthId, channelHint, this.nthRequest.incrementAndGet(), 1);
       List<com.google.spanner.v1.Session> sessions =
           spanner
               .getRpc()

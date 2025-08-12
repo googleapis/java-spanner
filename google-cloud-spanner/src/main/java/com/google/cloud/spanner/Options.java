@@ -1098,10 +1098,7 @@ public final class Options implements Serializable {
         return false;
       }
       RequestIdOption other = (RequestIdOption) o;
-      if (this.reqId == null || other.reqId == null) {
-        return this.reqId == null && other.reqId == null;
-      }
-      return this.reqId.equals(other.reqId);
+      return Objects.equals(this.reqId, other.reqId);
     }
   }
 }

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ErrorDetails;
 import com.google.cloud.grpc.BaseGrpcServiceException;
@@ -57,7 +58,7 @@ public class SpannerException extends BaseGrpcServiceException {
 
   private final ErrorCode code;
   private final ApiException apiException;
-  private final XGoogSpannerRequestId requestId;
+  private XGoogSpannerRequestId requestId;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   SpannerException(
@@ -196,5 +197,11 @@ public class SpannerException extends BaseGrpcServiceException {
       return this.apiException.getErrorDetails();
     }
     return null;
+  }
+
+  /** Sets the requestId. */
+  @InternalApi
+  public void setRequestId(XGoogSpannerRequestId reqId) {
+    this.requestId = reqId;
   }
 }

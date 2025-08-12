@@ -39,14 +39,21 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   private final Map<String, String> attributes = new HashMap<>();
   private Float gfeLatency = null;
   private Float afeLatency = null;
+  private TraceWrapper traceWrapper;
   private long gfeHeaderMissingCount = 0;
   private long afeHeaderMissingCount = 0;
+  private final ISpan currentSpan;
 
   BuiltInMetricsTracer(
-      MethodName methodName, BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder) {
+      MethodName methodName,
+      BuiltInMetricsRecorder builtInOpenTelemetryMetricsRecorder,
+      TraceWrapper traceWrapper,
+      ISpan currentSpan) {
     super(methodName, builtInOpenTelemetryMetricsRecorder);
     this.builtInOpenTelemetryMetricsRecorder = builtInOpenTelemetryMetricsRecorder;
     this.attributes.put(METHOD_ATTRIBUTE, methodName.toString());
+    this.traceWrapper = traceWrapper;
+    this.currentSpan = currentSpan;
   }
 
   /**
@@ -55,10 +62,12 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
    */
   @Override
   public void attemptSucceeded() {
-    super.attemptSucceeded();
-    attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
-    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    try (IScope s = this.traceWrapper.withSpan(this.currentSpan)) {
+      super.attemptSucceeded();
+      attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    }
   }
 
   /**
@@ -67,10 +76,12 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
    */
   @Override
   public void attemptCancelled() {
-    super.attemptCancelled();
-    attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.CANCELLED.toString());
-    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    try (IScope s = this.traceWrapper.withSpan(this.currentSpan)) {
+      super.attemptCancelled();
+      attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.CANCELLED.toString());
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    }
   }
 
   /**
@@ -83,10 +94,12 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
    */
   @Override
   public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
-    super.attemptFailedDuration(error, delay);
-    attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    try (IScope s = this.traceWrapper.withSpan(this.currentSpan)) {
+      super.attemptFailedDuration(error, delay);
+      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    }
   }
 
   /**
@@ -98,10 +111,12 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
    */
   @Override
   public void attemptFailedRetriesExhausted(Throwable error) {
-    super.attemptFailedRetriesExhausted(error);
-    attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    try (IScope s = this.traceWrapper.withSpan(this.currentSpan)) {
+      super.attemptFailedRetriesExhausted(error);
+      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    }
   }
 
   /**
@@ -113,10 +128,12 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
    */
   @Override
   public void attemptPermanentFailure(Throwable error) {
-    super.attemptPermanentFailure(error);
-    attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
-    builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-        gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    try (IScope s = this.traceWrapper.withSpan(this.currentSpan)) {
+      super.attemptPermanentFailure(error);
+      attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
+      builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
+          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+    }
   }
 
   void recordGFELatency(Float gfeLatency) {
@@ -140,7 +157,6 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
     super.addAttributes(attributes);
     this.attributes.putAll(attributes);
   }
-  ;
 
   @Override
   public void addAttributes(String key, String value) {

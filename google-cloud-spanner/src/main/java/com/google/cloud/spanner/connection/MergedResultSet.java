@@ -25,6 +25,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Type.Code;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -82,9 +83,11 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
             break;
           }
         }
-        if (first) {
-          // Special case: The result set did not return any rows. Push the metadata to the merged
-          // result set.
+        if (first
+            && resultSet.getType().getCode() == Code.STRUCT
+            && !resultSet.getType().getStructFields().isEmpty()) {
+          // Special case: The result set did not return any rows, but did return metadata.
+          // Push the metadata to the merged result set.
           queue.put(
               PartitionExecutorResult.typeAndMetadata(
                   resultSet.getType(), resultSet.getMetadata()));
@@ -319,13 +322,17 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
       return currentRow;
     }
 
-    private PartitionExecutorResult getFirstResult() {
+    private PartitionExecutorResult getFirstResultWithMetadata() {
       try {
         metadataAvailableLatch.await();
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
       }
-      PartitionExecutorResult result = queue.peek();
+      PartitionExecutorResult result =
+          queue.stream()
+              .filter(rs -> rs.metadata != null || rs.exception != null)
+              .findFirst()
+              .orElse(null);
       if (result == null) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION, "Thread-unsafe access to ResultSet");
@@ -338,7 +345,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
 
     public ResultSetMetadata getMetadata() {
       if (metadata == null) {
-        return getFirstResult().metadata;
+        return getFirstResultWithMetadata().metadata;
       }
       return metadata;
     }
@@ -355,7 +362,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
 
     public Type getType() {
       if (type == null) {
-        return getFirstResult().type;
+        return getFirstResultWithMetadata().type;
       }
       return type;
     }

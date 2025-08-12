@@ -78,6 +78,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
@@ -175,7 +176,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
-  private final boolean attemptDirectPath;
+  private final boolean enableDirectAccess;
   private final DirectedReadOptions directedReadOptions;
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
@@ -806,7 +807,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
-    attemptDirectPath = builder.attemptDirectPath;
+    enableDirectAccess = builder.enableDirectAccess;
     directedReadOptions = builder.directedReadOptions;
     useVirtualThreads = builder.useVirtualThreads;
     openTelemetry = builder.openTelemetry;
@@ -849,6 +850,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
+    default boolean isEnableDirectAccess() {
+      return false;
+    }
+
     default boolean isEnableBuiltInMetrics() {
       return true;
     }
@@ -884,6 +889,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
+    private static final String GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS =
+        "GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS";
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
@@ -914,6 +921,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableApiTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_API_TRACING));
+    }
+
+    @Override
+    public boolean isEnableDirectAccess() {
+      return Boolean.parseBoolean(System.getenv(GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS));
     }
 
     @Override
@@ -1000,7 +1012,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
-    private boolean attemptDirectPath = true;
+    private boolean enableDirectAccess = SpannerOptions.environment.isEnableDirectAccess();
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
     private OpenTelemetry openTelemetry;
@@ -1072,7 +1084,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
-      this.attemptDirectPath = options.attemptDirectPath;
+      this.enableDirectAccess = options.enableDirectAccess;
       this.directedReadOptions = options.directedReadOptions;
       this.useVirtualThreads = options.useVirtualThreads;
       this.enableApiTracing = options.enableApiTracing;
@@ -1605,8 +1617,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @BetaApi
+    public Builder setEnableDirectAccess(boolean enableDirectAccess) {
+      this.enableDirectAccess = enableDirectAccess;
+      return this;
+    }
+
+    @ObsoleteApi("Use setEnableDirectAccess(false) instead")
+    @Deprecated
     public Builder disableDirectPath() {
-      this.attemptDirectPath = false;
+      this.enableDirectAccess = false;
       return this;
     }
 
@@ -1974,8 +1993,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   @BetaApi
+  public Boolean isEnableDirectAccess() {
+    return enableDirectAccess;
+  }
+
+  @ObsoleteApi("Use isEnableDirectAccess() instead")
+  @Deprecated
   public boolean isAttemptDirectPath() {
-    return attemptDirectPath;
+    return enableDirectAccess;
   }
 
   /**
@@ -2049,7 +2074,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return openTelemetry != null
         ? new BuiltInMetricsTracerFactory(
             new BuiltInMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            new HashMap<>())
+            new HashMap<>(),
+            new TraceWrapper(
+                Tracing.getTracer(),
+                // Using the OpenTelemetry object set in Spanner Options, will be NoOp if not set
+                this.getOpenTelemetry()
+                    .getTracer(
+                        MetricRegistryConstants.INSTRUMENTATION_SCOPE,
+                        GaxProperties.getLibraryVersion(getClass())),
+                true))
         : null;
   }
 
