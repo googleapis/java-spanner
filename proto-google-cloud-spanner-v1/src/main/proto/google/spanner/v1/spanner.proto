@@ -28,6 +28,7 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "google/rpc/status.proto";
 import "google/spanner/v1/keys.proto";
+import "google/spanner/v1/location.proto";
 import "google/spanner/v1/mutation.proto";
 import "google/spanner/v1/result_set.proto";
 import "google/spanner/v1/transaction.proto";
@@ -803,6 +804,9 @@ message ExecuteSqlRequest {
   // Given this, successful execution of a DML statement should not be assumed
   // until a subsequent Commit call completes successfully.
   bool last_statement = 17 [(google.api.field_behavior) = OPTIONAL];
+
+  // TODO(taylorc): pick tag number before moving this to public API.
+  RoutingHint routing_hint = 99;
 }
 
 // The request for [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml].
@@ -1237,6 +1241,9 @@ message ReadRequest {
   // Optional. Lock Hint for the request, it can only be used with read-write
   // transactions.
   LockHint lock_hint = 17 [(google.api.field_behavior) = OPTIONAL];
+
+  // TODO(taylorc): pick tag number before moving this to public API.
+  RoutingHint routing_hint = 99;
 }
 
 // The request for

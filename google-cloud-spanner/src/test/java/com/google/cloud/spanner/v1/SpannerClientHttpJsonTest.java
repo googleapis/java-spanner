@@ -56,6 +56,7 @@ import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.RoutingHint;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.Transaction;
@@ -608,6 +609,7 @@ public class SpannerClientHttpJsonTest {
             .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .setLastStatement(true)
+            .setRoutingHint(RoutingHint.newBuilder().build())
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -652,6 +654,7 @@ public class SpannerClientHttpJsonTest {
               .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .setLastStatement(true)
+              .setRoutingHint(RoutingHint.newBuilder().build())
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -761,6 +764,7 @@ public class SpannerClientHttpJsonTest {
             .setRequestOptions(RequestOptions.newBuilder().build())
             .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
+            .setRoutingHint(RoutingHint.newBuilder().build())
             .build();
 
     ResultSet actualResponse = client.read(request);
@@ -804,6 +808,7 @@ public class SpannerClientHttpJsonTest {
               .setRequestOptions(RequestOptions.newBuilder().build())
               .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
+              .setRoutingHint(RoutingHint.newBuilder().build())
               .build();
       client.read(request);
       Assert.fail("No exception raised");
