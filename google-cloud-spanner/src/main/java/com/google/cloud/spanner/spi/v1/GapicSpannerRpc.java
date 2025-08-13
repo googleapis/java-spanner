@@ -55,6 +55,7 @@ import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
+import com.google.auth.Credentials;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannel;
@@ -208,6 +209,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -281,6 +283,89 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final boolean isGrpcGcpExtensionEnabled;
 
   private final GrpcCallContext baseGrpcCallContext;
+
+  private static class KeyAwareTransportChannelProvider implements TransportChannelProvider {
+    private final InstantiatingGrpcChannelProvider.Builder delegateBuilder;
+    private final TransportChannelProvider delegate;
+
+    public KeyAwareTransportChannelProvider(
+        InstantiatingGrpcChannelProvider.Builder delegateBuilder) {
+      this.delegateBuilder = delegateBuilder;
+      this.delegate = delegateBuilder.build();
+    }
+
+    @Override
+    public GrpcTransportChannel getTransportChannel() throws IOException {
+      return GrpcTransportChannel.newBuilder()
+          .setManagedChannel(KeyAwareChannel.create(delegateBuilder))
+          .build();
+    }
+
+    @Override
+    public String getTransportName() {
+      return delegate.getTransportName();
+    }
+
+    @Override
+    public boolean needsEndpoint() {
+      return delegate.needsEndpoint();
+    }
+
+    @Override
+    public boolean needsCredentials() {
+      return delegate.needsCredentials();
+    }
+
+    @Override
+    public boolean needsExecutor() {
+      return delegate.needsExecutor();
+    }
+
+    @Override
+    public boolean needsHeaders() {
+      return delegate.needsHeaders();
+    }
+
+    @Override
+    public boolean shouldAutoClose() {
+      return delegate.shouldAutoClose();
+    }
+
+    @Override
+    public TransportChannelProvider withEndpoint(String endpoint) {
+      return delegate.withEndpoint(endpoint);
+    }
+
+    @Override
+    public TransportChannelProvider withCredentials(Credentials credentials) {
+      return delegate.withCredentials(credentials);
+    }
+
+    @Override
+    public TransportChannelProvider withHeaders(java.util.Map<String, String> headers) {
+      return delegate.withHeaders(headers);
+    }
+
+    @Override
+    public TransportChannelProvider withPoolSize(int poolSize) {
+      return delegate.withPoolSize(poolSize);
+    }
+
+    @Override
+    public TransportChannelProvider withExecutor(ScheduledExecutorService executor) {
+      return delegate.withExecutor(executor);
+    }
+
+    @Override
+    public TransportChannelProvider withExecutor(Executor executor) {
+      return delegate.withExecutor(executor);
+    }
+
+    @Override
+    public boolean acceptsPoolSize() {
+      return delegate.acceptsPoolSize();
+    }
+  }
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -387,9 +472,15 @@ public class GapicSpannerRpc implements SpannerRpc {
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
+      TransportChannelProvider channelProviderToUse;
+      if (options.isExperimentalHost()) {
+        channelProviderToUse = new KeyAwareTransportChannelProvider(defaultChannelProviderBuilder);
+        // channelProviderToUse = defaultChannelProviderBuilder.build();
+      } else {
+        channelProviderToUse = defaultChannelProviderBuilder.build();
+      }
       TransportChannelProvider channelProvider =
-          MoreObjects.firstNonNull(
-              options.getChannelProvider(), defaultChannelProviderBuilder.build());
+          MoreObjects.firstNonNull(options.getChannelProvider(), channelProviderToUse);
 
       CredentialsProvider credentialsProvider =
           GrpcTransportOptions.setUpCredentialsProvider(options);
@@ -412,7 +503,9 @@ public class GapicSpannerRpc implements SpannerRpc {
         // TODO: make our retry settings to inject and increment
         // XGoogSpannerRequestId whenever a retry occurs.
         SpannerStubSettings spannerStubSettings =
-            options.getSpannerStubSettings().toBuilder()
+            options
+                .getSpannerStubSettings()
+                .toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
@@ -438,7 +531,11 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.commitRetrySettings =
             options.getSpannerStubSettings().commitSettings().getRetrySettings();
         partitionedDmlRetrySettings =
-            options.getSpannerStubSettings().executeSqlSettings().getRetrySettings().toBuilder()
+            options
+                .getSpannerStubSettings()
+                .executeSqlSettings()
+                .getRetrySettings()
+                .toBuilder()
                 .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
                 .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
                 .setTotalTimeout(options.getPartitionedDmlTimeout())
@@ -473,7 +570,9 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.partitionedDmlStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(pdmlSettings.build());
         this.instanceAdminStubSettings =
-            options.getInstanceAdminStubSettings().toBuilder()
+            options
+                .getInstanceAdminStubSettings()
+                .toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
@@ -484,7 +583,9 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
         this.databaseAdminStubSettings =
-            options.getDatabaseAdminStubSettings().toBuilder()
+            options
+                .getDatabaseAdminStubSettings()
+                .toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
@@ -641,7 +742,9 @@ public class GapicSpannerRpc implements SpannerRpc {
       // Do a quick check to see if the emulator is actually running.
       try {
         InstanceAdminStubSettings.Builder testEmulatorSettings =
-            options.getInstanceAdminStubSettings().toBuilder()
+            options
+                .getInstanceAdminStubSettings()
+                .toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider);
         testEmulatorSettings
