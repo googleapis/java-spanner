@@ -288,6 +288,9 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
         SessionPoolOptions.newBuilder().setUseMultiplexedSession(true).build());
+    // Ensure retry happens on a different underlying channel by disabling grpc-gcp and limiting
+    // number of channels to 2 for this test.
+    builder.disableGrpcGcpExtension().setNumChannels(2);
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
 
@@ -317,6 +320,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
     builder.setSessionPoolOption(
         SessionPoolOptions.newBuilder().setUseMultiplexedSession(true).build());
+    // Ensure a deterministic number of channels for this assertion.
+    builder.disableGrpcGcpExtension().setNumChannels(8);
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStickyException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
 
