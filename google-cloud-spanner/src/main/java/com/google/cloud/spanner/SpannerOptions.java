@@ -1622,50 +1622,46 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     // Granular DCP configuration setters with validation bounds
     public Builder setDynamicPoolMaxRpc(int maxRpcPerChannel) {
-      Preconditions.checkArgument(maxRpcPerChannel >= 1 && maxRpcPerChannel <= 100,
-          "maxRpcPerChannel must be in [1, 100]");
+      Preconditions.checkArgument(
+          maxRpcPerChannel >= 1 && maxRpcPerChannel <= 100, "maxRpcPerChannel must be in [1, 100]");
       this.dcpMaxRpcPerChannel = maxRpcPerChannel;
       return this;
     }
 
     public Builder setDynamicPoolMinRpc(int minRpcPerChannel) {
-      Preconditions.checkArgument(minRpcPerChannel >= 1,
-          "minRpcPerChannel must be >= 1");
+      Preconditions.checkArgument(minRpcPerChannel >= 1, "minRpcPerChannel must be >= 1");
       this.dcpMinRpcPerChannel = minRpcPerChannel;
       return this;
     }
 
     public Builder setDynamicPoolScaleDownInterval(Duration interval) {
       Preconditions.checkNotNull(interval, "interval cannot be null");
-      Preconditions.checkArgument(!interval.isNegative() && !interval.isZero(),
-          "interval must be > 0");
       Preconditions.checkArgument(
-          interval.compareTo(Duration.ofSeconds(30)) >= 0,
-          "interval must be >= 30 seconds");
+          !interval.isNegative() && !interval.isZero(), "interval must be > 0");
       Preconditions.checkArgument(
-          interval.compareTo(Duration.ofMinutes(60)) <= 0,
-          "interval must be <= 60 minutes");
+          interval.compareTo(Duration.ofSeconds(30)) >= 0, "interval must be >= 30 seconds");
+      Preconditions.checkArgument(
+          interval.compareTo(Duration.ofMinutes(60)) <= 0, "interval must be <= 60 minutes");
       this.dcpScaleDownInterval = interval;
       return this;
     }
 
     public Builder setDynamicPoolInitialSize(int initialSize) {
-      Preconditions.checkArgument(initialSize >= 1 && initialSize <= 256,
-          "initialSize must be in [1, 256]");
+      Preconditions.checkArgument(
+          initialSize >= 1 && initialSize <= 256, "initialSize must be in [1, 256]");
       this.dcpInitialSize = initialSize;
       return this;
     }
 
     public Builder setDynamicPoolMaxChannels(int maxChannels) {
-      Preconditions.checkArgument(maxChannels >= 1 && maxChannels <= 256,
-          "maxChannels must be in [1, 256]");
+      Preconditions.checkArgument(
+          maxChannels >= 1 && maxChannels <= 256, "maxChannels must be in [1, 256]");
       this.dcpMaxChannels = maxChannels;
       return this;
     }
 
     public Builder setDynamicPoolMinChannels(int minChannels) {
-      Preconditions.checkArgument(minChannels >= 1,
-          "minChannels must be >= 1");
+      Preconditions.checkArgument(minChannels >= 1, "minChannels must be >= 1");
       this.dcpMinChannels = minChannels;
       return this;
     }
@@ -2097,12 +2093,29 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   // Dynamic Channel Pool getters used by channel setup
-  public Integer getDcpMaxRpcPerChannel() { return dcpMaxRpcPerChannel; }
-  public Integer getDcpMinRpcPerChannel() { return dcpMinRpcPerChannel; }
-  public Duration getDcpScaleDownInterval() { return dcpScaleDownInterval; }
-  public Integer getDcpInitialSize() { return dcpInitialSize; }
-  public Integer getDcpMaxChannels() { return dcpMaxChannels; }
-  public Integer getDcpMinChannels() { return dcpMinChannels; }
+  public Integer getDcpMaxRpcPerChannel() {
+    return dcpMaxRpcPerChannel;
+  }
+
+  public Integer getDcpMinRpcPerChannel() {
+    return dcpMinRpcPerChannel;
+  }
+
+  public Duration getDcpScaleDownInterval() {
+    return dcpScaleDownInterval;
+  }
+
+  public Integer getDcpInitialSize() {
+    return dcpInitialSize;
+  }
+
+  public Integer getDcpMaxChannels() {
+    return dcpMaxChannels;
+  }
+
+  public Integer getDcpMinChannels() {
+    return dcpMinChannels;
+  }
 
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
