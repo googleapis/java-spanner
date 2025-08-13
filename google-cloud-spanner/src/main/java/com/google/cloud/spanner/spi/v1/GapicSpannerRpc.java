@@ -580,8 +580,34 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (metricsOptions.getNamePrefix().equals("")) {
       metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
     }
+
+    // Build channel pool options from SpannerOptions DCP settings
+    GcpManagedChannelOptions.GcpChannelPoolOptions.Builder poolBuilder =
+        GcpManagedChannelOptions.GcpChannelPoolOptions.newBuilder(
+            grpcGcpOptions.getChannelPoolOptions());
+    Integer maxChannels = options.getDcpMaxChannels();
+    Integer minChannels = options.getDcpMinChannels();
+    Integer initSize = options.getDcpInitialSize();
+    Integer minRpc = options.getDcpMinRpcPerChannel();
+    Integer maxRpc = options.getDcpMaxRpcPerChannel();
+    java.time.Duration scaleDown = options.getDcpScaleDownInterval();
+
+    if (maxChannels != null) {
+      poolBuilder.setMaxSize(maxChannels);
+    }
+    if (minChannels != null) {
+      poolBuilder.setMinSize(minChannels);
+    }
+    if (initSize != null) {
+      poolBuilder.setInitSize(initSize);
+    }
+    if (minRpc != null && maxRpc != null && scaleDown != null) {
+      poolBuilder.setDynamicScaling(minRpc, maxRpc, scaleDown);
+    }
+
     return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
         .withMetricsOptions(metricsOptionsBuilder.build())
+        .withChannelPoolOptions(poolBuilder.build())
         .build();
   }
 

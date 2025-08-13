@@ -153,6 +153,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final Duration partitionedDmlTimeout;
   private final boolean grpcGcpExtensionEnabled;
   private final GcpManagedChannelOptions grpcGcpOptions;
+  // Whether dynamic channel pooling is enabled (via automatic gRPC-GCP enablement) by default.
+  // This is derived from the builder flag at build time.
+  private final boolean dynamicChannelPoolEnabled;
+  // Dynamic Channel Pool parameters
+  private final Integer dcpMaxRpcPerChannel;
+  private final Integer dcpMinRpcPerChannel;
+  private final Duration dcpScaleDownInterval;
+  private final Integer dcpInitialSize;
+  private final Integer dcpMaxChannels;
+  private final Integer dcpMinChannels;
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
@@ -800,6 +810,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
     grpcGcpExtensionEnabled = builder.grpcGcpExtensionEnabled;
     grpcGcpOptions = builder.grpcGcpOptions;
+    dynamicChannelPoolEnabled = builder.dynamicChannelPoolEnabled;
+    dcpMaxRpcPerChannel = builder.dcpMaxRpcPerChannel;
+    dcpMinRpcPerChannel = builder.dcpMinRpcPerChannel;
+    dcpScaleDownInterval = builder.dcpScaleDownInterval;
+    dcpInitialSize = builder.dcpInitialSize;
+    dcpMaxChannels = builder.dcpMaxChannels;
+    dcpMinChannels = builder.dcpMinChannels;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
@@ -1027,6 +1044,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
     private boolean grpcGcpExtensionEnabled = false;
     private GcpManagedChannelOptions grpcGcpOptions;
+    // Tracks whether enable/disableGrpcGcpExtension has been explicitly called by the user.
+    private boolean grpcGcpExtensionExplicitlySet = false;
+    // Dynamic Channel Pool (DCP) toggle. Default: enabled.
+    private boolean dynamicChannelPoolEnabled = true;
     private RetrySettings retryAdministrativeRequestsSettings =
         DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
@@ -1049,6 +1070,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private SslContext mTLSContext = null;
     private boolean isExperimentalHost = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
+
+    // Dynamic Channel Pool configuration (defaults per dynamic_cahnnel_pooling.md)
+    private Integer dcpMaxRpcPerChannel = 25;
+    private Integer dcpMinRpcPerChannel = 15;
+    private Duration dcpScaleDownInterval = Duration.ofMinutes(3);
+    private Integer dcpInitialSize = 4;
+    private Integer dcpMaxChannels = 10;
+    private Integer dcpMinChannels = 2;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1557,30 +1586,87 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /**
-     * Enables gRPC-GCP extension with the default settings. Do not set
-     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
-     * Multiplexed sessions are not supported for gRPC-GCP.
-     */
+    /** Enables gRPC-GCP extension with the default settings. */
     public Builder enableGrpcGcpExtension() {
       return this.enableGrpcGcpExtension(null);
     }
 
     /**
      * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
-     * and default Spanner metric labels will be added automatically. Do not set
-     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
-     * Multiplexed sessions are not supported for gRPC-GCP.
+     * and default Spanner metric labels will be added automatically.
      */
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
       this.grpcGcpOptions = options;
+      this.grpcGcpExtensionExplicitlySet = true;
       return this;
     }
 
     /** Disables gRPC-GCP extension. */
     public Builder disableGrpcGcpExtension() {
       this.grpcGcpExtensionEnabled = false;
+      this.grpcGcpExtensionExplicitlySet = true;
+      return this;
+    }
+
+    /**
+     * Enables or disables dynamic channel pooling. When enabled and no explicit number of channels
+     * has been configured and no custom {@link TransportChannelProvider} has been set, the client
+     * will automatically enable the gRPC-GCP channel pool. If multiplexed sessions are enabled,
+     * dynamic channel pooling will not be enabled.
+     */
+    public Builder setDynamicChannelPoolEnabled(boolean enabled) {
+      this.dynamicChannelPoolEnabled = enabled;
+      return this;
+    }
+
+    // Granular DCP configuration setters with validation bounds
+    public Builder setDynamicPoolMaxRpc(int maxRpcPerChannel) {
+      Preconditions.checkArgument(maxRpcPerChannel >= 1 && maxRpcPerChannel <= 100,
+          "maxRpcPerChannel must be in [1, 100]");
+      this.dcpMaxRpcPerChannel = maxRpcPerChannel;
+      return this;
+    }
+
+    public Builder setDynamicPoolMinRpc(int minRpcPerChannel) {
+      Preconditions.checkArgument(minRpcPerChannel >= 1,
+          "minRpcPerChannel must be >= 1");
+      this.dcpMinRpcPerChannel = minRpcPerChannel;
+      return this;
+    }
+
+    public Builder setDynamicPoolScaleDownInterval(Duration interval) {
+      Preconditions.checkNotNull(interval, "interval cannot be null");
+      Preconditions.checkArgument(!interval.isNegative() && !interval.isZero(),
+          "interval must be > 0");
+      Preconditions.checkArgument(
+          interval.compareTo(Duration.ofSeconds(30)) >= 0,
+          "interval must be >= 30 seconds");
+      Preconditions.checkArgument(
+          interval.compareTo(Duration.ofMinutes(60)) <= 0,
+          "interval must be <= 60 minutes");
+      this.dcpScaleDownInterval = interval;
+      return this;
+    }
+
+    public Builder setDynamicPoolInitialSize(int initialSize) {
+      Preconditions.checkArgument(initialSize >= 1 && initialSize <= 256,
+          "initialSize must be in [1, 256]");
+      this.dcpInitialSize = initialSize;
+      return this;
+    }
+
+    public Builder setDynamicPoolMaxChannels(int maxChannels) {
+      Preconditions.checkArgument(maxChannels >= 1 && maxChannels <= 256,
+          "maxChannels must be in [1, 256]");
+      this.dcpMaxChannels = maxChannels;
+      return this;
+    }
+
+    public Builder setDynamicPoolMinChannels(int minChannels) {
+      Preconditions.checkArgument(minChannels >= 1,
+          "minChannels must be >= 1");
+      this.dcpMinChannels = minChannels;
       return this;
     }
 
@@ -1792,6 +1878,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       } else if (isExperimentalHost && credentials == null) {
         credentials = environment.getDefaultExperimentalHostCredentials();
       }
+      // Auto-enable gRPC-GCP (dynamic channel pool) if allowed and not explicitly overridden.
+      if (!grpcGcpExtensionExplicitlySet && dynamicChannelPoolEnabled) {
+        boolean hasCustomChannelProvider = this.channelProvider != null;
+        boolean hasStaticNumChannels = this.numChannels != null;
+        if (!hasCustomChannelProvider && !hasStaticNumChannels) {
+          this.grpcGcpExtensionEnabled = true;
+        }
+      }
+
       if (this.numChannels == null) {
         this.numChannels =
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
@@ -1995,6 +2090,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   public GcpManagedChannelOptions getGrpcGcpOptions() {
     return grpcGcpOptions;
   }
+
+  /** Returns whether dynamic channel pooling is enabled by default. */
+  public boolean isDynamicChannelPoolEnabled() {
+    return dynamicChannelPoolEnabled;
+  }
+
+  // Dynamic Channel Pool getters used by channel setup
+  public Integer getDcpMaxRpcPerChannel() { return dcpMaxRpcPerChannel; }
+  public Integer getDcpMinRpcPerChannel() { return dcpMinRpcPerChannel; }
+  public Duration getDcpScaleDownInterval() { return dcpScaleDownInterval; }
+  public Integer getDcpInitialSize() { return dcpInitialSize; }
+  public Integer getDcpMaxChannels() { return dcpMaxChannels; }
+  public Integer getDcpMinChannels() { return dcpMinChannels; }
 
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
