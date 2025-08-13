@@ -22,6 +22,7 @@ import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.Objects;
@@ -155,9 +156,50 @@ public final class Options implements Serializable {
    * process in the commit phase (when any needed locks are acquired). The validation process
    * succeeds only if there are no conflicting committed transactions (that committed mutations to
    * the read data at a commit timestamp after the read timestamp).
+   *
+   * @deprecated Use {@link Options#readLockMode(ReadLockMode)} instead.
    */
+  @Deprecated
   public static TransactionOption optimisticLock() {
-    return OPTIMISTIC_LOCK_OPTION;
+    return Options.readLockMode(ReadLockMode.OPTIMISTIC);
+  }
+
+  /**
+   * Returns a {@link TransactionOption} to set the desired {@link ReadLockMode} for a read-write
+   * transaction.
+   *
+   * <p>This option controls the locking behavior for read operations and queries within a
+   * read-write transaction. It works in conjunction with the transaction's {@link IsolationLevel}.
+   *
+   * <ul>
+   *   <li>{@link ReadLockMode#PESSIMISTIC}: Read locks are acquired immediately on read. This mode
+   *       only applies to {@code SERIALIZABLE} isolation. This mode prevents concurrent
+   *       modifications by locking data throughout the transaction. This reduces commit-time aborts
+   *       due to conflicts but can increase how long transactions wait for locks and the overall
+   *       contention.
+   *   <li>{@link ReadLockMode#OPTIMISTIC}: Locks for reads within the transaction are not acquired
+   *       on read. Instead the locks are acquired on commit to validate that read/queried data has
+   *       not changed since the transaction started. If a conflict is detected, the transaction
+   *       will fail. This mode only applies to {@code SERIALIZABLE} isolation. This mode defers
+   *       locking until commit, which can reduce contention and improve throughput. However, be
+   *       aware that this increases the risk of transaction aborts if there's significant write
+   *       competition on the same data.
+   *   <li>{@link ReadLockMode#READ_LOCK_MODE_UNSPECIFIED}: This is the default if no mode is set.
+   *       The locking behavior depends on the isolation level:
+   *       <ul>
+   *         <li>For {@code REPEATABLE_READ} isolation: Locking semantics default to {@code
+   *             OPTIMISTIC}. However, validation checks at commit are only performed for queries
+   *             using {@code SELECT FOR UPDATE}, statements with {@code LOCK_SCANNED_RANGES} hints,
+   *             and DML statements. <br>
+   *             Note: It is an error to explicitly set {@code ReadLockMode} when the isolation
+   *             level is {@code REPEATABLE_READ}.
+   *         <li>For all other isolation levels: If the read lock mode is not set, it defaults to
+   *             {@code PESSIMISTIC} locking.
+   *       </ul>
+   * </ul>
+   */
+  public static TransactionOption readLockMode(ReadLockMode readLockMode) {
+    return new ReadLockModeOption(readLockMode);
   }
 
   /**
@@ -367,16 +409,6 @@ public final class Options implements Serializable {
     }
   }
 
-  /** Option to request Optimistic Concurrency Control for read/write transactions. */
-  static final class OptimisticLockOption extends InternalOption implements TransactionOption {
-    @Override
-    void appendToOptions(Options options) {
-      options.withOptimisticLock = true;
-    }
-  }
-
-  static final OptimisticLockOption OPTIMISTIC_LOCK_OPTION = new OptimisticLockOption();
-
   /** Option to request the transaction to be excluded from change streams. */
   static final class ExcludeTxnFromChangeStreamsOption extends InternalOption
       implements UpdateTransactionOption {
@@ -516,6 +548,20 @@ public final class Options implements Serializable {
     }
   }
 
+  /** Option to set read lock mode for read/write transactions. */
+  static final class ReadLockModeOption extends InternalOption implements TransactionOption {
+    private final ReadLockMode readLockMode;
+
+    public ReadLockModeOption(ReadLockMode readLockMode) {
+      this.readLockMode = readLockMode;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.readLockMode = readLockMode;
+    }
+  }
+
   private boolean withCommitStats;
 
   private Duration maxCommitDelay;
@@ -530,7 +576,6 @@ public final class Options implements Serializable {
   private String tag;
   private String etag;
   private Boolean validateOnly;
-  private Boolean withOptimisticLock;
   private Boolean withExcludeTxnFromChangeStreams;
   private Boolean dataBoostEnabled;
   private DirectedReadOptions directedReadOptions;
@@ -540,6 +585,7 @@ public final class Options implements Serializable {
   private Boolean lastStatement;
   private IsolationLevel isolationLevel;
   private XGoogSpannerRequestId reqId;
+  private ReadLockMode readLockMode;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -644,10 +690,6 @@ public final class Options implements Serializable {
     return validateOnly;
   }
 
-  Boolean withOptimisticLock() {
-    return withOptimisticLock;
-  }
-
   Boolean withExcludeTxnFromChangeStreams() {
     return withExcludeTxnFromChangeStreams;
   }
@@ -704,6 +746,10 @@ public final class Options implements Serializable {
     return isolationLevel;
   }
 
+  ReadLockMode readLockMode() {
+    return readLockMode;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -740,9 +786,6 @@ public final class Options implements Serializable {
     if (validateOnly != null) {
       b.append("validateOnly: ").append(validateOnly).append(' ');
     }
-    if (withOptimisticLock != null) {
-      b.append("withOptimisticLock: ").append(withOptimisticLock).append(' ');
-    }
     if (withExcludeTxnFromChangeStreams != null) {
       b.append("withExcludeTxnFromChangeStreams: ")
           .append(withExcludeTxnFromChangeStreams)
@@ -771,6 +814,9 @@ public final class Options implements Serializable {
     }
     if (reqId != null) {
       b.append("requestId: ").append(reqId.toString());
+    }
+    if (readLockMode != null) {
+      b.append("readLockMode: ").append(readLockMode).append(' ');
     }
     return b.toString();
   }
@@ -807,7 +853,6 @@ public final class Options implements Serializable {
         && Objects.equals(tag(), that.tag())
         && Objects.equals(etag(), that.etag())
         && Objects.equals(validateOnly(), that.validateOnly())
-        && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
         && Objects.equals(withExcludeTxnFromChangeStreams(), that.withExcludeTxnFromChangeStreams())
         && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
         && Objects.equals(directedReadOptions(), that.directedReadOptions())
@@ -815,7 +860,8 @@ public final class Options implements Serializable {
         && Objects.equals(isLastStatement(), that.isLastStatement())
         && Objects.equals(lockHint(), that.lockHint())
         && Objects.equals(isolationLevel(), that.isolationLevel())
-        && Objects.equals(reqId(), that.reqId());
+        && Objects.equals(reqId(), that.reqId())
+        && Objects.equals(readLockMode(), that.readLockMode());
   }
 
   @Override
@@ -857,9 +903,6 @@ public final class Options implements Serializable {
     if (validateOnly != null) {
       result = 31 * result + validateOnly.hashCode();
     }
-    if (withOptimisticLock != null) {
-      result = 31 * result + withOptimisticLock.hashCode();
-    }
     if (withExcludeTxnFromChangeStreams != null) {
       result = 31 * result + withExcludeTxnFromChangeStreams.hashCode();
     }
@@ -886,6 +929,9 @@ public final class Options implements Serializable {
     }
     if (reqId != null) {
       result = 31 * result + reqId.hashCode();
+    }
+    if (readLockMode != null) {
+      result = 31 * result + readLockMode.hashCode();
     }
     return result;
   }
