@@ -165,7 +165,7 @@ integration-cloud-devel-directpath-enabled)
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
       -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
-      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-java-client-directpath \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/cloud-spanner-java-directpath \
       -Dspanner.gce.config.project_id=span-cloud-testing \
       -fae \
       verify

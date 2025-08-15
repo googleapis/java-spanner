@@ -22,6 +22,7 @@ import static com.google.api.MetricDescriptor.MetricKind.UNRECOGNIZED;
 import static com.google.api.MetricDescriptor.ValueType.DISTRIBUTION;
 import static com.google.api.MetricDescriptor.ValueType.DOUBLE;
 import static com.google.api.MetricDescriptor.ValueType.INT64;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.ALLOWED_EXEMPLARS_ATTRIBUTES;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.GAX_METER_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.GRPC_METER_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
@@ -293,7 +294,13 @@ class SpannerCloudMonitoringExporterUtils {
 
   private static DroppedLabels mapFilteredAttributes(Attributes attributes) {
     DroppedLabels.Builder labels = DroppedLabels.newBuilder();
-    attributes.forEach((k, v) -> labels.putLabel(cleanAttributeKey(k.getKey()), v.toString()));
+    attributes.forEach(
+        (k, v) -> {
+          String key = cleanAttributeKey(k.getKey());
+          if (ALLOWED_EXEMPLARS_ATTRIBUTES.contains(key)) {
+            labels.putLabel(key, v.toString());
+          }
+        });
     return labels.build();
   }
 

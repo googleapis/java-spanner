@@ -24,10 +24,7 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
 import com.google.api.gax.tracing.ApiTracer;
-import com.google.cloud.spanner.BuiltInMetricsConstant;
-import com.google.cloud.spanner.CompositeTracer;
-import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerRpcMetrics;
+import com.google.cloud.spanner.*;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.spanner.admin.database.v1.DatabaseName;
@@ -120,6 +117,8 @@ class HeaderInterceptor implements ClientInterceptor {
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
           Map<String, String> builtInMetricsAttributes =
               getBuiltInMetricAttributes(key, databaseName);
+          builtInMetricsAttributes.put(
+              BuiltInMetricsConstant.REQUEST_ID_KEY.getKey(), extractRequestId(headers));
           addBuiltInMetricAttributes(compositeTracer, builtInMetricsAttributes);
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
@@ -128,6 +127,7 @@ class HeaderInterceptor implements ClientInterceptor {
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
+
                   processHeader(
                       metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
                   super.onHeaders(metadata);
@@ -246,6 +246,10 @@ class HeaderInterceptor implements ClientInterceptor {
           });
     }
     return UNDEFINED_DATABASE_NAME;
+  }
+
+  private String extractRequestId(Metadata headers) throws ExecutionException {
+    return headers.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
   }
 
   private TagContext getTagContext(String key, String method, DatabaseName databaseName)

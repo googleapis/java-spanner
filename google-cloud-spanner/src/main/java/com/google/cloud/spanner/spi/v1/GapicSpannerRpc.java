@@ -2042,6 +2042,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       }
     }
     if (options != null) {
+      // TODO(@odeke-em): Infer the affinity if it doesn't match up with in the request-id.
       context = withRequestId(context, options);
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));

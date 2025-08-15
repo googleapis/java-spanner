@@ -20,11 +20,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.monitoring.v3.MetricServiceClient;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Stopwatch;
 import com.google.monitoring.v3.ListTimeSeriesRequest;
@@ -55,9 +51,16 @@ public class ITBuiltInMetricsTest {
 
   private static MetricServiceClient metricClient;
 
-  private static String[] METRICS = {
-    "operation_latencies", "attempt_latencies", "operation_count", "attempt_count",
-  };
+  private static java.util.List<String> METRICS =
+      new java.util.ArrayList<String>() {
+        {
+          add("operation_latencies");
+          add("attempt_latencies");
+          add("operation_count");
+          add("attempt_count");
+          add("afe_latencies");
+        }
+      };
 
   @BeforeClass
   public static void setUp() throws IOException {
@@ -66,6 +69,9 @@ public class ITBuiltInMetricsTest {
     // Enable BuiltinMetrics when the metrics are GA'ed
     db = env.getTestHelper().createTestDatabase();
     client = env.getTestHelper().getDatabaseClient(db);
+    if (!env.getTestHelper().getOptions().isEnableDirectAccess()) {
+      METRICS.add("gfe_latencies");
+    }
   }
 
   @After
@@ -120,7 +126,7 @@ public class ITBuiltInMetricsTest {
         response = metricClient.listTimeSeriesCallable().call(request);
       }
 
-      assertWithMessage("Metric" + metric + "didn't return any data.")
+      assertWithMessage("Metric " + metric + " didn't return any data.")
           .that(response.getTimeSeriesCount())
           .isGreaterThan(0);
     }

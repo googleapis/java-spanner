@@ -1232,6 +1232,59 @@ public final class DatabaseAdminGrpc {
     return getListBackupSchedulesMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest,
+          com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>
+      getInternalUpdateGraphOperationMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "InternalUpdateGraphOperation",
+      requestType = com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest.class,
+      responseType =
+          com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest,
+          com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>
+      getInternalUpdateGraphOperationMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest,
+            com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>
+        getInternalUpdateGraphOperationMethod;
+    if ((getInternalUpdateGraphOperationMethod =
+            DatabaseAdminGrpc.getInternalUpdateGraphOperationMethod)
+        == null) {
+      synchronized (DatabaseAdminGrpc.class) {
+        if ((getInternalUpdateGraphOperationMethod =
+                DatabaseAdminGrpc.getInternalUpdateGraphOperationMethod)
+            == null) {
+          DatabaseAdminGrpc.getInternalUpdateGraphOperationMethod =
+              getInternalUpdateGraphOperationMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest,
+                          com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "InternalUpdateGraphOperation"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.database.v1
+                                  .InternalUpdateGraphOperationRequest.getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.database.v1
+                                  .InternalUpdateGraphOperationResponse.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new DatabaseAdminMethodDescriptorSupplier("InternalUpdateGraphOperation"))
+                      .build();
+        }
+      }
+    }
+    return getInternalUpdateGraphOperationMethod;
+  }
+
   /** Creates a new async stub that supports all call types for the service */
   public static DatabaseAdminStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<DatabaseAdminStub> factory =
@@ -1805,6 +1858,23 @@ public final class DatabaseAdminGrpc {
             responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
           getListBackupSchedulesMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * This is an internal API called by Spanner Graph jobs. You should never need
+     * to call this API directly.
+     * </pre>
+     */
+    default void internalUpdateGraphOperation(
+        com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest request,
+        io.grpc.stub.StreamObserver<
+                com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>
+            responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getInternalUpdateGraphOperationMethod(), responseObserver);
     }
   }
 
@@ -2408,6 +2478,25 @@ public final class DatabaseAdminGrpc {
           request,
           responseObserver);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * This is an internal API called by Spanner Graph jobs. You should never need
+     * to call this API directly.
+     * </pre>
+     */
+    public void internalUpdateGraphOperation(
+        com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest request,
+        io.grpc.stub.StreamObserver<
+                com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>
+            responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getInternalUpdateGraphOperationMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
   }
 
   /**
@@ -2899,6 +2988,21 @@ public final class DatabaseAdminGrpc {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getListBackupSchedulesMethod(), getCallOptions(), request);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * This is an internal API called by Spanner Graph jobs. You should never need
+     * to call this API directly.
+     * </pre>
+     */
+    public com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse
+        internalUpdateGraphOperation(
+            com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getInternalUpdateGraphOperationMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -3389,6 +3493,21 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.ListBackupSchedulesRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getListBackupSchedulesMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * This is an internal API called by Spanner Graph jobs. You should never need
+     * to call this API directly.
+     * </pre>
+     */
+    public com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse
+        internalUpdateGraphOperation(
+            com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getInternalUpdateGraphOperationMethod(), getCallOptions(), request);
     }
   }
 
@@ -3903,6 +4022,22 @@ public final class DatabaseAdminGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListBackupSchedulesMethod(), getCallOptions()), request);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * This is an internal API called by Spanner Graph jobs. You should never need
+     * to call this API directly.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<
+            com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>
+        internalUpdateGraphOperation(
+            com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getInternalUpdateGraphOperationMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_LIST_DATABASES = 0;
@@ -3931,6 +4066,7 @@ public final class DatabaseAdminGrpc {
   private static final int METHODID_UPDATE_BACKUP_SCHEDULE = 23;
   private static final int METHODID_DELETE_BACKUP_SCHEDULE = 24;
   private static final int METHODID_LIST_BACKUP_SCHEDULES = 25;
+  private static final int METHODID_INTERNAL_UPDATE_GRAPH_OPERATION = 26;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -4100,6 +4236,13 @@ public final class DatabaseAdminGrpc {
               (com.google.spanner.admin.database.v1.ListBackupSchedulesRequest) request,
               (io.grpc.stub.StreamObserver<
                       com.google.spanner.admin.database.v1.ListBackupSchedulesResponse>)
+                  responseObserver);
+          break;
+        case METHODID_INTERNAL_UPDATE_GRAPH_OPERATION:
+          serviceImpl.internalUpdateGraphOperation(
+              (com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest) request,
+              (io.grpc.stub.StreamObserver<
+                      com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>)
                   responseObserver);
           break;
         default:
@@ -4286,6 +4429,13 @@ public final class DatabaseAdminGrpc {
                     com.google.spanner.admin.database.v1.ListBackupSchedulesRequest,
                     com.google.spanner.admin.database.v1.ListBackupSchedulesResponse>(
                     service, METHODID_LIST_BACKUP_SCHEDULES)))
+        .addMethod(
+            getInternalUpdateGraphOperationMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest,
+                    com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>(
+                    service, METHODID_INTERNAL_UPDATE_GRAPH_OPERATION)))
         .build();
   }
 
@@ -4363,6 +4513,7 @@ public final class DatabaseAdminGrpc {
                       .addMethod(getUpdateBackupScheduleMethod())
                       .addMethod(getDeleteBackupScheduleMethod())
                       .addMethod(getListBackupSchedulesMethod())
+                      .addMethod(getInternalUpdateGraphOperationMethod())
                       .build();
         }
       }

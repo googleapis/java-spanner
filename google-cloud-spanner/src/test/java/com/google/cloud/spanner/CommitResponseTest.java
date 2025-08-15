@@ -101,4 +101,22 @@ public class CommitResponseTest {
     CommitResponse responseWithCommitStats = new CommitResponse(protoWithCommitStats);
     assertTrue(responseWithCommitStats.hasCommitStats());
   }
+
+  @Test
+  public void testGetSnapshotTimestamp() {
+    com.google.spanner.v1.CommitResponse protoWithoutSnapshotTimestamp =
+        com.google.spanner.v1.CommitResponse.getDefaultInstance();
+    CommitResponse responseWithoutSnapshotTimestamp =
+        new CommitResponse(protoWithoutSnapshotTimestamp);
+    assertEquals(null, responseWithoutSnapshotTimestamp.getSnapshotTimestamp());
+
+    com.google.protobuf.Timestamp timestamp =
+        com.google.protobuf.Timestamp.newBuilder().setSeconds(123L).setNanos(456).build();
+    com.google.spanner.v1.CommitResponse protoWithSnapshotTimestamp =
+        com.google.spanner.v1.CommitResponse.newBuilder().setSnapshotTimestamp(timestamp).build();
+    CommitResponse responseWithSnapshotTimestamp = new CommitResponse(protoWithSnapshotTimestamp);
+    assertEquals(
+        Timestamp.ofTimeSecondsAndNanos(123L, 456),
+        responseWithSnapshotTimestamp.getSnapshotTimestamp());
+  }
 }
