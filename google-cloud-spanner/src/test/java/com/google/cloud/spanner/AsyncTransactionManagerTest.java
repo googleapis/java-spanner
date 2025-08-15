@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -198,6 +199,39 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           return false;
         },
         0L);
+  }
+
+  @Test
+  public void testAsyncTransactionManager_commitResponseReturnsErrorAfterRollback()
+      throws Exception {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
+      ApiFuture<CommitResponse> commitResponse = manager.getCommitResponse();
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, ?> next =
+              transactionContextFuture.then(
+                  (transactionContext, ignored) ->
+                      transactionContext.bufferAsync(
+                          Collections.singleton(Mutation.delete("FOO", Key.of("foo")))),
+                  executor);
+          assertFalse(commitResponse.isDone());
+          manager.rollbackAsync().get();
+          assertTrue(commitResponse.isDone());
+          ExecutionException executionException =
+              assertThrows(ExecutionException.class, commitResponse::get);
+          assertEquals(SpannerException.class, executionException.getCause().getClass());
+          SpannerException spannerException = (SpannerException) executionException.getCause();
+          assertEquals(ErrorCode.FAILED_PRECONDITION, spannerException.getErrorCode());
+          assertEquals(
+              "FAILED_PRECONDITION: The transaction has been rolled back",
+              spannerException.getMessage());
+          break;
+        } catch (AbortedException e) {
+          transactionContextFuture = manager.resetForRetryAsync();
+        }
+      }
+    }
   }
 
   @Test
