@@ -191,6 +191,11 @@ final class AsyncTransactionManagerImpl
     Preconditions.checkState(
         txnState == TransactionState.STARTED,
         "rollback can only be called if the transaction is in progress");
+    if (!commitResponse.isDone()) {
+      commitResponse.setException(
+          SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION, "The transaction has been rolled back"));
+    }
     try {
       return ApiFutures.transformAsync(
           txn.rollbackAsync(),
