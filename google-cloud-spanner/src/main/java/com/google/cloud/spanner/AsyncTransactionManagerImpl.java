@@ -165,12 +165,19 @@ final class AsyncTransactionManagerImpl
               txnState = TransactionState.ABORTED;
             } else {
               txnState = TransactionState.COMMIT_FAILED;
+              if (span != null) {
+                span.setStatus(t);
+                span.end();
+              }
               commitResponse.setException(t);
             }
           }
 
           @Override
           public void onSuccess(CommitResponse result) {
+            if (span != null) {
+              span.end();
+            }
             commitResponse.set(result);
           }
         },
@@ -190,6 +197,10 @@ final class AsyncTransactionManagerImpl
           ignored -> ApiFutures.immediateFuture(null),
           MoreExecutors.directExecutor());
     } finally {
+      if (span != null) {
+        span.addAnnotation("Transaction rolled back");
+        span.end();
+      }
       txnState = TransactionState.ROLLED_BACK;
     }
   }

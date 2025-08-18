@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -133,8 +132,10 @@ public class ITJsonWriteReadTest {
                               .to(Value.json(jsonStr))
                               .build())));
 
-      if (env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()
-          && !isUsingEmulator()) {
+      if (env.getTestHelper()
+          .getOptions()
+          .getSessionPoolOptions()
+          .getUseMultiplexedSessionForRW()) {
         assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
       } else {
         assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
