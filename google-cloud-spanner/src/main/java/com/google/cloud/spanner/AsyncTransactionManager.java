@@ -203,7 +203,10 @@ public interface AsyncTransactionManager extends AutoCloseable {
   /** Returns the state of the transaction. */
   TransactionState getState();
 
-  /** Returns the {@link CommitResponse} of this transaction. */
+  /**
+   * Returns the {@link CommitResponse} of this transaction. This method may only be called after
+   * committing the transaction.
+   */
   ApiFuture<CommitResponse> getCommitResponse();
 
   /**
