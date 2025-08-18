@@ -76,15 +76,15 @@ class SessionImpl implements Session {
       transactionOptions.setExcludeTxnFromChangeStreams(true);
     }
     TransactionOptions.ReadWrite.Builder readWrite = TransactionOptions.ReadWrite.newBuilder();
-    if (options.withOptimisticLock() == Boolean.TRUE) {
-      readWrite.setReadLockMode(TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
-    }
     if (previousTransactionId != null
         && previousTransactionId != com.google.protobuf.ByteString.EMPTY) {
       readWrite.setMultiplexedSessionPreviousTransactionId(previousTransactionId);
     }
     if (options.isolationLevel() != null) {
       transactionOptions.setIsolationLevel(options.isolationLevel());
+    }
+    if (options.readLockMode() != null) {
+      readWrite.setReadLockMode(options.readLockMode());
     }
     transactionOptions.setReadWrite(readWrite);
     return transactionOptions.build();
@@ -282,6 +282,9 @@ class SessionImpl implements Session {
     }
     if (options.isolationLevel() != null) {
       transactionOptionsBuilder.setIsolationLevel(options.isolationLevel());
+    }
+    if (options.readLockMode() != null) {
+      transactionOptionsBuilder.getReadWriteBuilder().setReadLockMode(options.readLockMode());
     }
     requestBuilder.setSingleUseTransaction(
         defaultTransactionOptions().toBuilder().mergeFrom(transactionOptionsBuilder.build()));
