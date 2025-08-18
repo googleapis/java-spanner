@@ -37,6 +37,7 @@ import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -45,6 +46,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
@@ -538,5 +540,13 @@ public class ITReadTest {
 
   private void checkRangeWithLimit(Source source, long limit, KeyRange range, int... expectedRows) {
     checkReadRange(source, KeySet.range(range), limit, expectedRows);
+  }
+
+  @Test
+  public void testWriteEmptyMutationsDemultiplexed() {
+    KeySet keySet = KeySet.newBuilder().build();
+    Mutation emptyMutation = Mutation.delete("TestTable", keySet);
+
+    postgreSQLClient.write(ImmutableList.of(emptyMutation));
   }
 }
