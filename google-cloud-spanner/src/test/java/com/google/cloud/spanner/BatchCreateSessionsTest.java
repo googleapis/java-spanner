@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -77,8 +78,12 @@ public class BatchCreateSessionsTest {
   private static Server server;
   private static LocalChannelProvider channelProvider;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void startStaticServer() throws IOException {
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
@@ -97,6 +102,7 @@ public class BatchCreateSessionsTest {
   public static void stopServer() throws InterruptedException {
     server.shutdown();
     server.awaitTermination();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Before

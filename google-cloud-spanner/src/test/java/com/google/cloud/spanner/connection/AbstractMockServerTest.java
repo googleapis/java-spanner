@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
@@ -155,12 +156,16 @@ public abstract class AbstractMockServerTest {
   private static boolean nettyServerParentHandlers;
   private static boolean clientStreamParentHandlers;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void startStaticServer() throws IOException {
     startStaticServer(createServerInterceptor());
   }
 
   public static void startStaticServer(ServerInterceptor interceptor) throws IOException {
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockInstanceAdmin = new MockInstanceAdminImpl();
@@ -244,6 +249,7 @@ public abstract class AbstractMockServerTest {
           .setUseParentHandlers(clientStreamParentHandlers);
     }
     server.shutdown();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Before

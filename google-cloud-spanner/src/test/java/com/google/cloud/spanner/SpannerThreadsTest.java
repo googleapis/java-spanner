@@ -21,6 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
@@ -87,6 +88,8 @@ public class SpannerThreadsTest {
   private static Server server;
   private static InetSocketAddress address;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void startServer() throws IOException {
     assumeTrue(
@@ -94,6 +97,8 @@ public class SpannerThreadsTest {
             + " emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
 
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
@@ -116,6 +121,7 @@ public class SpannerThreadsTest {
       server.shutdown();
       server.awaitTermination();
     }
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @After

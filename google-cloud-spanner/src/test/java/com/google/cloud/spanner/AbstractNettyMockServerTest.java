@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.NoCredentials;
 import io.grpc.ForwardingServerCall;
 import io.grpc.ManagedChannelBuilder;
@@ -51,8 +52,12 @@ abstract class AbstractNettyMockServerTest {
 
   protected Spanner spanner;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void startMockServer() throws IOException {
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
 
@@ -93,6 +98,7 @@ abstract class AbstractNettyMockServerTest {
     server.shutdown();
     server.awaitTermination();
     executor.shutdown();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Before
