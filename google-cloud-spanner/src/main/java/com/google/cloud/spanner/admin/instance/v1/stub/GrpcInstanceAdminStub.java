@@ -96,6 +96,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   ProtoUtils.marshaller(ListInstanceConfigsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListInstanceConfigsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<GetInstanceConfigRequest, InstanceConfig>
@@ -106,6 +107,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(GetInstanceConfigRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(InstanceConfig.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<CreateInstanceConfigRequest, Operation>
@@ -117,6 +119,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(CreateInstanceConfigRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<UpdateInstanceConfigRequest, Operation>
@@ -128,6 +131,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(UpdateInstanceConfigRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<DeleteInstanceConfigRequest, Empty>
@@ -139,6 +143,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(DeleteInstanceConfigRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<
@@ -154,6 +159,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   ProtoUtils.marshaller(ListInstanceConfigOperationsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListInstanceConfigOperationsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<ListInstancesRequest, ListInstancesResponse>
@@ -165,6 +171,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   ProtoUtils.marshaller(ListInstancesRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListInstancesResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<
@@ -179,6 +186,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   ProtoUtils.marshaller(ListInstancePartitionsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListInstancePartitionsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<GetInstanceRequest, Instance> getInstanceMethodDescriptor =
@@ -187,6 +195,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
           .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/GetInstance")
           .setRequestMarshaller(ProtoUtils.marshaller(GetInstanceRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Instance.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<CreateInstanceRequest, Operation>
@@ -197,6 +206,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(CreateInstanceRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<UpdateInstanceRequest, Operation>
@@ -207,6 +217,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(UpdateInstanceRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<DeleteInstanceRequest, Empty>
@@ -217,6 +228,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(DeleteInstanceRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<SetIamPolicyRequest, Policy> setIamPolicyMethodDescriptor =
@@ -225,6 +237,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
           .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/SetIamPolicy")
           .setRequestMarshaller(ProtoUtils.marshaller(SetIamPolicyRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Policy.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<GetIamPolicyRequest, Policy> getIamPolicyMethodDescriptor =
@@ -233,6 +246,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
           .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/GetIamPolicy")
           .setRequestMarshaller(ProtoUtils.marshaller(GetIamPolicyRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Policy.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<TestIamPermissionsRequest, TestIamPermissionsResponse>
@@ -245,6 +259,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   ProtoUtils.marshaller(TestIamPermissionsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(TestIamPermissionsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<GetInstancePartitionRequest, InstancePartition>
@@ -256,6 +271,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(GetInstancePartitionRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(InstancePartition.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<CreateInstancePartitionRequest, Operation>
@@ -267,6 +283,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(CreateInstancePartitionRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<DeleteInstancePartitionRequest, Empty>
@@ -278,6 +295,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(DeleteInstancePartitionRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<UpdateInstancePartitionRequest, Operation>
@@ -289,6 +307,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(UpdateInstancePartitionRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<
@@ -306,6 +325,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(
                       ListInstancePartitionOperationsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<MoveInstanceRequest, Operation>
@@ -315,6 +335,7 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
               .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/MoveInstance")
               .setRequestMarshaller(ProtoUtils.marshaller(MoveInstanceRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>

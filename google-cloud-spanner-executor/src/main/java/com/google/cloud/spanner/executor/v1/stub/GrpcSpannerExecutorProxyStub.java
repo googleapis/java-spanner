@@ -49,6 +49,7 @@ public class GrpcSpannerExecutorProxyStub extends SpannerExecutorProxyStub {
                   ProtoUtils.marshaller(SpannerAsyncActionRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(SpannerAsyncActionResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private final BidiStreamingCallable<SpannerAsyncActionRequest, SpannerAsyncActionResponse>

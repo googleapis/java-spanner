@@ -74,6 +74,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(CreateSessionRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Session.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
@@ -85,6 +86,7 @@ public class GrpcSpannerStub extends SpannerStub {
                   ProtoUtils.marshaller(BatchCreateSessionsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(BatchCreateSessionsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<GetSessionRequest, Session> getSessionMethodDescriptor =
@@ -93,6 +95,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setFullMethodName("google.spanner.v1.Spanner/GetSession")
           .setRequestMarshaller(ProtoUtils.marshaller(GetSessionRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Session.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<ListSessionsRequest, ListSessionsResponse>
@@ -103,6 +106,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setRequestMarshaller(ProtoUtils.marshaller(ListSessionsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListSessionsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<DeleteSessionRequest, Empty> deleteSessionMethodDescriptor =
@@ -111,6 +115,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setFullMethodName("google.spanner.v1.Spanner/DeleteSession")
           .setRequestMarshaller(ProtoUtils.marshaller(DeleteSessionRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<ExecuteSqlRequest, ResultSet> executeSqlMethodDescriptor =
@@ -119,6 +124,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setFullMethodName("google.spanner.v1.Spanner/ExecuteSql")
           .setRequestMarshaller(ProtoUtils.marshaller(ExecuteSqlRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(ResultSet.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<ExecuteSqlRequest, PartialResultSet>
@@ -128,6 +134,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setFullMethodName("google.spanner.v1.Spanner/ExecuteStreamingSql")
               .setRequestMarshaller(ProtoUtils.marshaller(ExecuteSqlRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(PartialResultSet.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>
@@ -139,6 +146,7 @@ public class GrpcSpannerStub extends SpannerStub {
                   ProtoUtils.marshaller(ExecuteBatchDmlRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ExecuteBatchDmlResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<ReadRequest, ResultSet> readMethodDescriptor =
@@ -147,6 +155,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setFullMethodName("google.spanner.v1.Spanner/Read")
           .setRequestMarshaller(ProtoUtils.marshaller(ReadRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(ResultSet.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<ReadRequest, PartialResultSet>
@@ -156,6 +165,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setFullMethodName("google.spanner.v1.Spanner/StreamingRead")
               .setRequestMarshaller(ProtoUtils.marshaller(ReadRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(PartialResultSet.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<BeginTransactionRequest, Transaction>
@@ -166,6 +176,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(BeginTransactionRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Transaction.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<CommitRequest, CommitResponse> commitMethodDescriptor =
@@ -174,6 +185,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setFullMethodName("google.spanner.v1.Spanner/Commit")
           .setRequestMarshaller(ProtoUtils.marshaller(CommitRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(CommitResponse.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<RollbackRequest, Empty> rollbackMethodDescriptor =
@@ -182,6 +194,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setFullMethodName("google.spanner.v1.Spanner/Rollback")
           .setRequestMarshaller(ProtoUtils.marshaller(RollbackRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<PartitionQueryRequest, PartitionResponse>
@@ -192,6 +205,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(PartitionQueryRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(PartitionResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<PartitionReadRequest, PartitionResponse>
@@ -202,6 +216,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(PartitionReadRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(PartitionResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<BatchWriteRequest, BatchWriteResponse>
@@ -211,6 +226,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setFullMethodName("google.spanner.v1.Spanner/BatchWrite")
               .setRequestMarshaller(ProtoUtils.marshaller(BatchWriteRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(BatchWriteResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private final UnaryCallable<CreateSessionRequest, Session> createSessionCallable;
