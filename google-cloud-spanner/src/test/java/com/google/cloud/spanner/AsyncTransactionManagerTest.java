@@ -201,6 +201,14 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   }
 
   @Test
+  public void testAsyncTransactionManager_getCommitResponseReturnsErrorBeforeCommit() {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
+      assertThrows(IllegalStateException.class, manager::getCommitResponse);
+    }
+  }
+
+  @Test
   public void testAsyncTransactionManager_returnsCommitStats() throws Exception {
     try (AsyncTransactionManager manager =
         client().transactionManagerAsync(Options.commitStats())) {
