@@ -221,6 +221,9 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public ApiFuture<CommitResponse> getCommitResponse() {
+    Preconditions.checkState(
+        txnState == TransactionState.COMMITTED,
+        "getCommitResponse can only be invoked if the transaction was successfully committed");
     return commitResponse;
   }
 

@@ -104,6 +104,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListDatabasesRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListDatabasesResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<CreateDatabaseRequest, Operation>
@@ -114,6 +115,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(CreateDatabaseRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<GetDatabaseRequest, Database> getDatabaseMethodDescriptor =
@@ -122,6 +124,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/GetDatabase")
           .setRequestMarshaller(ProtoUtils.marshaller(GetDatabaseRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Database.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<UpdateDatabaseRequest, Operation>
@@ -132,6 +135,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(UpdateDatabaseRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<UpdateDatabaseDdlRequest, Operation>
@@ -142,6 +146,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(UpdateDatabaseDdlRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<DropDatabaseRequest, Empty> dropDatabaseMethodDescriptor =
@@ -150,6 +155,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/DropDatabase")
           .setRequestMarshaller(ProtoUtils.marshaller(DropDatabaseRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<GetDatabaseDdlRequest, GetDatabaseDdlResponse>
@@ -161,6 +167,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(GetDatabaseDdlRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(GetDatabaseDdlResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<SetIamPolicyRequest, Policy> setIamPolicyMethodDescriptor =
@@ -169,6 +176,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/SetIamPolicy")
           .setRequestMarshaller(ProtoUtils.marshaller(SetIamPolicyRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Policy.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<GetIamPolicyRequest, Policy> getIamPolicyMethodDescriptor =
@@ -177,6 +185,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/GetIamPolicy")
           .setRequestMarshaller(ProtoUtils.marshaller(GetIamPolicyRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Policy.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<TestIamPermissionsRequest, TestIamPermissionsResponse>
@@ -189,6 +198,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(TestIamPermissionsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(TestIamPermissionsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<CreateBackupRequest, Operation>
@@ -198,6 +208,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/CreateBackup")
               .setRequestMarshaller(ProtoUtils.marshaller(CreateBackupRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<CopyBackupRequest, Operation> copyBackupMethodDescriptor =
@@ -206,6 +217,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/CopyBackup")
           .setRequestMarshaller(ProtoUtils.marshaller(CopyBackupRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<GetBackupRequest, Backup> getBackupMethodDescriptor =
@@ -214,6 +226,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/GetBackup")
           .setRequestMarshaller(ProtoUtils.marshaller(GetBackupRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Backup.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<UpdateBackupRequest, Backup> updateBackupMethodDescriptor =
@@ -222,6 +235,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/UpdateBackup")
           .setRequestMarshaller(ProtoUtils.marshaller(UpdateBackupRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Backup.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<DeleteBackupRequest, Empty> deleteBackupMethodDescriptor =
@@ -230,6 +244,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/DeleteBackup")
           .setRequestMarshaller(ProtoUtils.marshaller(DeleteBackupRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+          .setSampledToLocalTracing(true)
           .build();
 
   private static final MethodDescriptor<ListBackupsRequest, ListBackupsResponse>
@@ -240,6 +255,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(ProtoUtils.marshaller(ListBackupsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListBackupsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<RestoreDatabaseRequest, Operation>
@@ -250,6 +266,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(RestoreDatabaseRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<
@@ -264,6 +281,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListDatabaseOperationsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListDatabaseOperationsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<ListBackupOperationsRequest, ListBackupOperationsResponse>
@@ -276,6 +294,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListBackupOperationsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListBackupOperationsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
@@ -287,6 +306,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListDatabaseRolesRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListDatabaseRolesResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<AddSplitPointsRequest, AddSplitPointsResponse>
@@ -298,6 +318,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(AddSplitPointsRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(AddSplitPointsResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<CreateBackupScheduleRequest, BackupSchedule>
@@ -309,6 +330,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(CreateBackupScheduleRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(BackupSchedule.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<GetBackupScheduleRequest, BackupSchedule>
@@ -319,6 +341,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(GetBackupScheduleRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(BackupSchedule.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<UpdateBackupScheduleRequest, BackupSchedule>
@@ -330,6 +353,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(UpdateBackupScheduleRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(BackupSchedule.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<DeleteBackupScheduleRequest, Empty>
@@ -341,6 +365,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setRequestMarshaller(
                   ProtoUtils.marshaller(DeleteBackupScheduleRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
@@ -353,6 +378,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListBackupSchedulesRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListBackupSchedulesResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private static final MethodDescriptor<
@@ -368,6 +394,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(InternalUpdateGraphOperationRequest.getDefaultInstance()))
               .setResponseMarshaller(
                   ProtoUtils.marshaller(InternalUpdateGraphOperationResponse.getDefaultInstance()))
+              .setSampledToLocalTracing(true)
               .build();
 
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable;
