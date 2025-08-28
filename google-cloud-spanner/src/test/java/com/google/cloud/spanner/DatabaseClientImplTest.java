@@ -3601,9 +3601,16 @@ public class DatabaseClientImplTest {
       // statistics package and directed read options.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assert requests.size() >= 2 : "required to have at least 2 requests";
-      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
-      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ExecuteSqlRequest.class);
-      ExecuteSqlRequest executeSqlRequest = (ExecuteSqlRequest) requests.get(requests.size() - 2);
+      if (isMultiplexedSessionsEnabled()) {
+        assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
+      } else {
+        assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+        assertThat(requests.get(requests.size() - 2)).isInstanceOf(ExecuteSqlRequest.class);
+      }
+      ExecuteSqlRequest executeSqlRequest =
+          (ExecuteSqlRequest)
+              requests.get(
+                  isMultiplexedSessionsEnabled() ? requests.size() - 1 : requests.size() - 2);
       assertThat(executeSqlRequest.getQueryOptions()).isNotNull();
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerStatisticsPackage())
@@ -3651,9 +3658,16 @@ public class DatabaseClientImplTest {
       // statistics package and directed read options.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assert requests.size() >= 2 : "required to have at least 2 requests";
-      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
-      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ExecuteSqlRequest.class);
-      ExecuteSqlRequest executeSqlRequest = (ExecuteSqlRequest) requests.get(requests.size() - 2);
+      if (isMultiplexedSessionsEnabled()) {
+        assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
+      } else {
+        assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+        assertThat(requests.get(requests.size() - 2)).isInstanceOf(ExecuteSqlRequest.class);
+      }
+      ExecuteSqlRequest executeSqlRequest =
+          (ExecuteSqlRequest)
+              requests.get(
+                  isMultiplexedSessionsEnabled() ? requests.size() - 1 : requests.size() - 2);
       assertThat(executeSqlRequest.getQueryOptions()).isNotNull();
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerStatisticsPackage())
@@ -3697,9 +3711,16 @@ public class DatabaseClientImplTest {
       // statistics package and directed read options.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assert requests.size() >= 2 : "required to have at least 2 requests";
-      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
-      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ReadRequest.class);
-      ReadRequest readRequest = (ReadRequest) requests.get(requests.size() - 2);
+      if (isMultiplexedSessionsEnabled()) {
+        assertThat(requests.get(requests.size() - 1)).isInstanceOf(ReadRequest.class);
+      } else {
+        assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+        assertThat(requests.get(requests.size() - 2)).isInstanceOf(ReadRequest.class);
+      }
+      ReadRequest readRequest =
+          (ReadRequest)
+              requests.get(
+                  isMultiplexedSessionsEnabled() ? requests.size() - 1 : requests.size() - 2);
       assertThat(readRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS1);
     }
   }
@@ -3740,9 +3761,16 @@ public class DatabaseClientImplTest {
       // statistics package and directed read options.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assert requests.size() >= 2 : "required to have at least 2 requests";
-      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
-      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ReadRequest.class);
-      ReadRequest readRequest = (ReadRequest) requests.get(requests.size() - 2);
+      if (isMultiplexedSessionsEnabled()) {
+        assertThat(requests.get(requests.size() - 1)).isInstanceOf(ReadRequest.class);
+      } else {
+        assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+        assertThat(requests.get(requests.size() - 2)).isInstanceOf(ReadRequest.class);
+      }
+      ReadRequest readRequest =
+          (ReadRequest)
+              requests.get(
+                  isMultiplexedSessionsEnabled() ? requests.size() - 1 : requests.size() - 2);
       assertThat(readRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS2);
     }
   }
