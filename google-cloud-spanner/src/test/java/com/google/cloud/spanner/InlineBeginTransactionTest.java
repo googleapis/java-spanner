@@ -28,6 +28,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
@@ -139,8 +140,12 @@ public class InlineBeginTransactionTest {
 
   protected Spanner spanner;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void startStaticServer() throws IOException {
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
@@ -177,6 +182,7 @@ public class InlineBeginTransactionTest {
   public static void stopServer() throws InterruptedException {
     server.shutdown();
     server.awaitTermination();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Before

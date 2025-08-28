@@ -19,6 +19,7 @@ package com.google.cloud.spanner.spi.v1;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.spanner.DatabaseClient;
@@ -131,11 +132,15 @@ public class GfeLatencyTest {
   private static final Statement UPDATE_FOO_STATEMENT =
       Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void startServer() throws IOException {
     //noinspection deprecation
     SpannerRpcViews.registerGfeLatencyAndHeaderMissingCountViews();
 
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(
@@ -202,6 +207,7 @@ public class GfeLatencyTest {
       serverNoHeader.shutdown();
       serverNoHeader.awaitTermination();
     }
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @After

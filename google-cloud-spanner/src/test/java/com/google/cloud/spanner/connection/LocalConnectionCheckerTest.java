@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_RESULTSET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -37,8 +38,12 @@ public class LocalConnectionCheckerTest {
   private static Server server;
   private LocalConnectionChecker connectionChecker;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void beforeClass() throws Exception {
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
 
@@ -51,6 +56,7 @@ public class LocalConnectionCheckerTest {
   public static void afterClass() throws Exception {
     server.shutdown();
     server.awaitTermination();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Before

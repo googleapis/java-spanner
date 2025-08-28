@@ -30,6 +30,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEM
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import io.grpc.ManagedChannelBuilder;
@@ -54,8 +55,12 @@ public abstract class AbstractAsyncTransactionTest {
   Spanner spanner;
   Spanner spannerWithEmptySessionPool;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void setup() throws Exception {
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D);
     mockSpanner.putStatementResult(
@@ -85,6 +90,7 @@ public abstract class AbstractAsyncTransactionTest {
     server.shutdown();
     server.awaitTermination();
     executor.shutdown();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Before
