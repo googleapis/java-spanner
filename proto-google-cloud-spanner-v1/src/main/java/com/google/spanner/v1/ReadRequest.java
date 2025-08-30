@@ -88,7 +88,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Default value.
      *
-     * ORDER_BY_UNSPECIFIED is equivalent to ORDER_BY_PRIMARY_KEY.
+     * `ORDER_BY_UNSPECIFIED` is equivalent to `ORDER_BY_PRIMARY_KEY`.
      * </pre>
      *
      * <code>ORDER_BY_UNSPECIFIED = 0;</code>
@@ -101,7 +101,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * Read rows are returned in primary key order.
      *
      * In the event that this option is used in conjunction with the
-     * `partition_token` field, the API will return an `INVALID_ARGUMENT` error.
+     * `partition_token` field, the API returns an `INVALID_ARGUMENT` error.
      * </pre>
      *
      * <code>ORDER_BY_PRIMARY_KEY = 1;</code>
@@ -126,7 +126,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Default value.
      *
-     * ORDER_BY_UNSPECIFIED is equivalent to ORDER_BY_PRIMARY_KEY.
+     * `ORDER_BY_UNSPECIFIED` is equivalent to `ORDER_BY_PRIMARY_KEY`.
      * </pre>
      *
      * <code>ORDER_BY_UNSPECIFIED = 0;</code>
@@ -140,7 +140,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * Read rows are returned in primary key order.
      *
      * In the event that this option is used in conjunction with the
-     * `partition_token` field, the API will return an `INVALID_ARGUMENT` error.
+     * `partition_token` field, the API returns an `INVALID_ARGUMENT` error.
      * </pre>
      *
      * <code>ORDER_BY_PRIMARY_KEY = 1;</code>
@@ -257,7 +257,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Default value.
      *
-     * LOCK_HINT_UNSPECIFIED is equivalent to LOCK_HINT_SHARED.
+     * `LOCK_HINT_UNSPECIFIED` is equivalent to `LOCK_HINT_SHARED`.
      * </pre>
      *
      * <code>LOCK_HINT_UNSPECIFIED = 0;</code>
@@ -302,8 +302,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * serialized. Each transaction waits its turn to acquire the lock and
      * avoids getting into deadlock situations.
      *
-     * Because the exclusive lock hint is just a hint, it should not be
-     * considered equivalent to a mutex. In other words, you should not use
+     * Because the exclusive lock hint is just a hint, it shouldn't be
+     * considered equivalent to a mutex. In other words, you shouldn't use
      * Spanner exclusive locks as a mutual exclusion mechanism for the execution
      * of code outside of Spanner.
      *
@@ -326,7 +326,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Default value.
      *
-     * LOCK_HINT_UNSPECIFIED is equivalent to LOCK_HINT_SHARED.
+     * `LOCK_HINT_UNSPECIFIED` is equivalent to `LOCK_HINT_SHARED`.
      * </pre>
      *
      * <code>LOCK_HINT_UNSPECIFIED = 0;</code>
@@ -373,8 +373,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * serialized. Each transaction waits its turn to acquire the lock and
      * avoids getting into deadlock situations.
      *
-     * Because the exclusive lock hint is just a hint, it should not be
-     * considered equivalent to a mutex. In other words, you should not use
+     * Because the exclusive lock hint is just a hint, it shouldn't be
+     * considered equivalent to a mutex. In other words, you shouldn't use
      * Spanner exclusive locks as a mutual exclusion mechanism for the execution
      * of code outside of Spanner.
      *
@@ -791,11 +791,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
    * field is empty, rows are yielded in table primary key order (if
    * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-   * not empty, rows will be yielded in an unspecified order.
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+   * isn't empty, rows are yielded in an unspecified order.
    *
-   * It is not an error for the `key_set` to name rows that do not
+   * It isn't an error for the `key_set` to name rows that don't
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
    *
@@ -822,11 +822,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
    * field is empty, rows are yielded in table primary key order (if
    * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-   * not empty, rows will be yielded in an unspecified order.
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+   * isn't empty, rows are yielded in an unspecified order.
    *
-   * It is not an error for the `key_set` to name rows that do not
+   * It isn't an error for the `key_set` to name rows that don't
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
    *
@@ -853,11 +853,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
    * field is empty, rows are yielded in table primary key order (if
    * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-   * not empty, rows will be yielded in an unspecified order.
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+   * isn't empty, rows are yielded in an unspecified order.
    *
-   * It is not an error for the `key_set` to name rows that do not
+   * It isn't an error for the `key_set` to name rows that don't
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
    *
@@ -876,7 +876,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * If greater than zero, only the first `limit` rows are yielded. If `limit`
-   * is zero, the default is no limit. A limit cannot be specified if
+   * is zero, the default is no limit. A limit can't be specified if
    * `partition_token` is set.
    * </pre>
    *
@@ -920,8 +920,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * If present, results will be restricted to the specified partition
-   * previously created using PartitionRead().    There must be an exact
+   * If present, results are restricted to the specified partition
+   * previously created using `PartitionRead`. There must be an exact
    * match for the values of fields common to this message and the
    * PartitionReadRequest message used to create this partition_token.
    * </pre>
@@ -1051,7 +1051,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    * If this is for a partitioned read and this field is set to `true`, the
    * request is executed with Spanner Data Boost independent compute resources.
    *
-   * If the field is set to `true` but the request does not set
+   * If the field is set to `true` but the request doesn't set
    * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
    * </pre>
    *
@@ -1073,11 +1073,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Optional. Order for the returned rows.
    *
-   * By default, Spanner will return result rows in primary key order except for
-   * PartitionRead requests. For applications that do not require rows to be
+   * By default, Spanner returns result rows in primary key order except for
+   * PartitionRead requests. For applications that don't require rows to be
    * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
    * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-   * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * resulting in lower latencies in certain cases (for example, bulk point
+   * lookups).
    * </pre>
    *
    * <code>
@@ -1097,11 +1098,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Optional. Order for the returned rows.
    *
-   * By default, Spanner will return result rows in primary key order except for
-   * PartitionRead requests. For applications that do not require rows to be
+   * By default, Spanner returns result rows in primary key order except for
+   * PartitionRead requests. For applications that don't require rows to be
    * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
    * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-   * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * resulting in lower latencies in certain cases (for example, bulk point
+   * lookups).
    * </pre>
    *
    * <code>
@@ -2652,11 +2654,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2682,11 +2684,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2716,11 +2718,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2754,11 +2756,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2789,11 +2791,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2832,11 +2834,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2867,11 +2869,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2897,11 +2899,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2929,11 +2931,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
      * field is empty, rows are yielded in table primary key order (if
      * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-     * not empty, rows will be yielded in an unspecified order.
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+     * isn't empty, rows are yielded in an unspecified order.
      *
-     * It is not an error for the `key_set` to name rows that do not
+     * It isn't an error for the `key_set` to name rows that don't
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
      *
@@ -2963,7 +2965,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If greater than zero, only the first `limit` rows are yielded. If `limit`
-     * is zero, the default is no limit. A limit cannot be specified if
+     * is zero, the default is no limit. A limit can't be specified if
      * `partition_token` is set.
      * </pre>
      *
@@ -2981,7 +2983,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If greater than zero, only the first `limit` rows are yielded. If `limit`
-     * is zero, the default is no limit. A limit cannot be specified if
+     * is zero, the default is no limit. A limit can't be specified if
      * `partition_token` is set.
      * </pre>
      *
@@ -3003,7 +3005,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If greater than zero, only the first `limit` rows are yielded. If `limit`
-     * is zero, the default is no limit. A limit cannot be specified if
+     * is zero, the default is no limit. A limit can't be specified if
      * `partition_token` is set.
      * </pre>
      *
@@ -3097,8 +3099,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If present, results will be restricted to the specified partition
-     * previously created using PartitionRead().    There must be an exact
+     * If present, results are restricted to the specified partition
+     * previously created using `PartitionRead`. There must be an exact
      * match for the values of fields common to this message and the
      * PartitionReadRequest message used to create this partition_token.
      * </pre>
@@ -3116,8 +3118,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If present, results will be restricted to the specified partition
-     * previously created using PartitionRead().    There must be an exact
+     * If present, results are restricted to the specified partition
+     * previously created using `PartitionRead`. There must be an exact
      * match for the values of fields common to this message and the
      * PartitionReadRequest message used to create this partition_token.
      * </pre>
@@ -3141,8 +3143,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If present, results will be restricted to the specified partition
-     * previously created using PartitionRead().    There must be an exact
+     * If present, results are restricted to the specified partition
+     * previously created using `PartitionRead`. There must be an exact
      * match for the values of fields common to this message and the
      * PartitionReadRequest message used to create this partition_token.
      * </pre>
@@ -3557,7 +3559,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If this is for a partitioned read and this field is set to `true`, the
      * request is executed with Spanner Data Boost independent compute resources.
      *
-     * If the field is set to `true` but the request does not set
+     * If the field is set to `true` but the request doesn't set
      * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
      * </pre>
      *
@@ -3577,7 +3579,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If this is for a partitioned read and this field is set to `true`, the
      * request is executed with Spanner Data Boost independent compute resources.
      *
-     * If the field is set to `true` but the request does not set
+     * If the field is set to `true` but the request doesn't set
      * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
      * </pre>
      *
@@ -3601,7 +3603,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * If this is for a partitioned read and this field is set to `true`, the
      * request is executed with Spanner Data Boost independent compute resources.
      *
-     * If the field is set to `true` but the request does not set
+     * If the field is set to `true` but the request doesn't set
      * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
      * </pre>
      *
@@ -3624,11 +3626,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Optional. Order for the returned rows.
      *
-     * By default, Spanner will return result rows in primary key order except for
-     * PartitionRead requests. For applications that do not require rows to be
+     * By default, Spanner returns result rows in primary key order except for
+     * PartitionRead requests. For applications that don't require rows to be
      * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
      * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * resulting in lower latencies in certain cases (for example, bulk point
+     * lookups).
      * </pre>
      *
      * <code>
@@ -3648,11 +3651,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Optional. Order for the returned rows.
      *
-     * By default, Spanner will return result rows in primary key order except for
-     * PartitionRead requests. For applications that do not require rows to be
+     * By default, Spanner returns result rows in primary key order except for
+     * PartitionRead requests. For applications that don't require rows to be
      * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
      * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * resulting in lower latencies in certain cases (for example, bulk point
+     * lookups).
      * </pre>
      *
      * <code>
@@ -3675,11 +3679,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Optional. Order for the returned rows.
      *
-     * By default, Spanner will return result rows in primary key order except for
-     * PartitionRead requests. For applications that do not require rows to be
+     * By default, Spanner returns result rows in primary key order except for
+     * PartitionRead requests. For applications that don't require rows to be
      * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
      * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * resulting in lower latencies in certain cases (for example, bulk point
+     * lookups).
      * </pre>
      *
      * <code>
@@ -3701,11 +3706,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Optional. Order for the returned rows.
      *
-     * By default, Spanner will return result rows in primary key order except for
-     * PartitionRead requests. For applications that do not require rows to be
+     * By default, Spanner returns result rows in primary key order except for
+     * PartitionRead requests. For applications that don't require rows to be
      * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
      * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * resulting in lower latencies in certain cases (for example, bulk point
+     * lookups).
      * </pre>
      *
      * <code>
@@ -3731,11 +3737,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Optional. Order for the returned rows.
      *
-     * By default, Spanner will return result rows in primary key order except for
-     * PartitionRead requests. For applications that do not require rows to be
+     * By default, Spanner returns result rows in primary key order except for
+     * PartitionRead requests. For applications that don't require rows to be
      * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
      * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * resulting in lower latencies in certain cases (for example, bulk point
+     * lookups).
      * </pre>
      *
      * <code>

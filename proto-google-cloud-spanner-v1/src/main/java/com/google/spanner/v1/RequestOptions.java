@@ -70,22 +70,22 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The relative priority for requests. Note that priority is not applicable
+   * The relative priority for requests. Note that priority isn't applicable
    * for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
    *
-   * The priority acts as a hint to the Cloud Spanner scheduler and does not
+   * The priority acts as a hint to the Cloud Spanner scheduler and doesn't
    * guarantee priority or order of execution. For example:
    *
    * * Some parts of a write operation always execute at `PRIORITY_HIGH`,
-   *   regardless of the specified priority. This may cause you to see an
+   *   regardless of the specified priority. This can cause you to see an
    *   increase in high priority workload even when executing a low priority
    *   request. This can also potentially cause a priority inversion where a
-   *   lower priority request will be fulfilled ahead of a higher priority
+   *   lower priority request is fulfilled ahead of a higher priority
    *   request.
    * * If a transaction contains multiple operations with different priorities,
-   *   Cloud Spanner does not guarantee to process the higher priority
-   *   operations first. There may be other constraints to satisfy, such as
-   *   order of operations.
+   *   Cloud Spanner doesn't guarantee to process the higher priority
+   *   operations first. There might be other constraints to satisfy, such as
+   *   the order of operations.
    * </pre>
    *
    * Protobuf enum {@code google.spanner.v1.RequestOptions.Priority}
@@ -311,14 +311,14 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * A per-request tag which can be applied to queries or reads, used for
    * statistics collection.
-   * Both request_tag and transaction_tag can be specified for a read or query
-   * that belongs to a transaction.
-   * This field is ignored for requests where it's not applicable (e.g.
-   * CommitRequest).
+   * Both `request_tag` and `transaction_tag` can be specified for a read or
+   * query that belongs to a transaction.
+   * This field is ignored for requests where it's not applicable (for example,
+   * `CommitRequest`).
    * Legal characters for `request_tag` values are all printable characters
    * (ASCII 32 - 126) and the length of a request_tag is limited to 50
    * characters. Values that exceed this limit are truncated.
-   * Any leading underscore (_) characters will be removed from the string.
+   * Any leading underscore (_) characters are removed from the string.
    * </pre>
    *
    * <code>string request_tag = 2;</code>
@@ -344,14 +344,14 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * A per-request tag which can be applied to queries or reads, used for
    * statistics collection.
-   * Both request_tag and transaction_tag can be specified for a read or query
-   * that belongs to a transaction.
-   * This field is ignored for requests where it's not applicable (e.g.
-   * CommitRequest).
+   * Both `request_tag` and `transaction_tag` can be specified for a read or
+   * query that belongs to a transaction.
+   * This field is ignored for requests where it's not applicable (for example,
+   * `CommitRequest`).
    * Legal characters for `request_tag` values are all printable characters
    * (ASCII 32 - 126) and the length of a request_tag is limited to 50
    * characters. Values that exceed this limit are truncated.
-   * Any leading underscore (_) characters will be removed from the string.
+   * Any leading underscore (_) characters are removed from the string.
    * </pre>
    *
    * <code>string request_tag = 2;</code>
@@ -381,16 +381,16 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * A tag used for statistics collection about this transaction.
-   * Both request_tag and transaction_tag can be specified for a read or query
-   * that belongs to a transaction.
+   * Both `request_tag` and `transaction_tag` can be specified for a read or
+   * query that belongs to a transaction.
    * The value of transaction_tag should be the same for all requests belonging
    * to the same transaction.
-   * If this request doesn't belong to any transaction, transaction_tag will be
+   * If this request doesn't belong to any transaction, `transaction_tag` is
    * ignored.
    * Legal characters for `transaction_tag` values are all printable characters
-   * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+   * (ASCII 32 - 126) and the length of a `transaction_tag` is limited to 50
    * characters. Values that exceed this limit are truncated.
-   * Any leading underscore (_) characters will be removed from the string.
+   * Any leading underscore (_) characters are removed from the string.
    * </pre>
    *
    * <code>string transaction_tag = 3;</code>
@@ -415,16 +415,16 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * A tag used for statistics collection about this transaction.
-   * Both request_tag and transaction_tag can be specified for a read or query
-   * that belongs to a transaction.
+   * Both `request_tag` and `transaction_tag` can be specified for a read or
+   * query that belongs to a transaction.
    * The value of transaction_tag should be the same for all requests belonging
    * to the same transaction.
-   * If this request doesn't belong to any transaction, transaction_tag will be
+   * If this request doesn't belong to any transaction, `transaction_tag` is
    * ignored.
    * Legal characters for `transaction_tag` values are all printable characters
-   * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+   * (ASCII 32 - 126) and the length of a `transaction_tag` is limited to 50
    * characters. Values that exceed this limit are truncated.
-   * Any leading underscore (_) characters will be removed from the string.
+   * Any leading underscore (_) characters are removed from the string.
    * </pre>
    *
    * <code>string transaction_tag = 3;</code>
@@ -934,14 +934,14 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A per-request tag which can be applied to queries or reads, used for
      * statistics collection.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
-     * This field is ignored for requests where it's not applicable (e.g.
-     * CommitRequest).
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (for example,
+     * `CommitRequest`).
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -966,14 +966,14 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A per-request tag which can be applied to queries or reads, used for
      * statistics collection.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
-     * This field is ignored for requests where it's not applicable (e.g.
-     * CommitRequest).
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (for example,
+     * `CommitRequest`).
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -998,14 +998,14 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A per-request tag which can be applied to queries or reads, used for
      * statistics collection.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
-     * This field is ignored for requests where it's not applicable (e.g.
-     * CommitRequest).
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (for example,
+     * `CommitRequest`).
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1029,14 +1029,14 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A per-request tag which can be applied to queries or reads, used for
      * statistics collection.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
-     * This field is ignored for requests where it's not applicable (e.g.
-     * CommitRequest).
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (for example,
+     * `CommitRequest`).
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1056,14 +1056,14 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A per-request tag which can be applied to queries or reads, used for
      * statistics collection.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
-     * This field is ignored for requests where it's not applicable (e.g.
-     * CommitRequest).
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (for example,
+     * `CommitRequest`).
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1089,16 +1089,16 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * A tag used for statistics collection about this transaction.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn't belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
-     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * (ASCII 32 - 126) and the length of a `transaction_tag` is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1122,16 +1122,16 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * A tag used for statistics collection about this transaction.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn't belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
-     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * (ASCII 32 - 126) and the length of a `transaction_tag` is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1155,16 +1155,16 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * A tag used for statistics collection about this transaction.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn't belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
-     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * (ASCII 32 - 126) and the length of a `transaction_tag` is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1187,16 +1187,16 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * A tag used for statistics collection about this transaction.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn't belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
-     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * (ASCII 32 - 126) and the length of a `transaction_tag` is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1215,16 +1215,16 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * A tag used for statistics collection about this transaction.
-     * Both request_tag and transaction_tag can be specified for a read or query
-     * that belongs to a transaction.
+     * Both `request_tag` and `transaction_tag` can be specified for a read or
+     * query that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn't belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
-     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * (ASCII 32 - 126) and the length of a `transaction_tag` is limited to 50
      * characters. Values that exceed this limit are truncated.
-     * Any leading underscore (_) characters will be removed from the string.
+     * Any leading underscore (_) characters are removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>

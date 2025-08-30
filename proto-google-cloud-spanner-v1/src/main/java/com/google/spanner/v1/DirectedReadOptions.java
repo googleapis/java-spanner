@@ -23,11 +23,11 @@ package com.google.spanner.v1;
  *
  *
  * <pre>
- * The DirectedReadOptions can be used to indicate which replicas or regions
+ * The `DirectedReadOptions` can be used to indicate which replicas or regions
  * should be used for non-transactional reads or queries.
  *
- * DirectedReadOptions may only be specified for a read-only transaction,
- * otherwise the API will return an `INVALID_ARGUMENT` error.
+ * `DirectedReadOptions` can only be specified for a read-only transaction,
+ * otherwise the API returns an `INVALID_ARGUMENT` error.
  * </pre>
  *
  * Protobuf type {@code google.spanner.v1.DirectedReadOptions}
@@ -75,7 +75,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * The location or region of the serving requests, e.g. "us-east1".
+     * The location or region of the serving requests, for example, "us-east1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -88,7 +88,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * The location or region of the serving requests, e.g. "us-east1".
+     * The location or region of the serving requests, for example, "us-east1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -139,12 +139,12 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    * Some examples of using replica_selectors are:
    *
    *   * `location:us-east1` --&gt; The "us-east1" replica(s) of any available type
-   *                             will be used to process the request.
-   *   * `type:READ_ONLY`    --&gt; The "READ_ONLY" type replica(s) in nearest
-   *                             available location will be used to process the
+   *                             is used to process the request.
+   *   * `type:READ_ONLY`    --&gt; The "READ_ONLY" type replica(s) in the nearest
+   *                             available location are used to process the
    *                             request.
    *   * `location:us-east1 type:READ_ONLY` --&gt; The "READ_ONLY" type replica(s)
-   *                          in location "us-east1" will be used to process
+   *                          in location "us-east1" is used to process
    *                          the request.
    * </pre>
    *
@@ -357,7 +357,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * The location or region of the serving requests, e.g. "us-east1".
+     * The location or region of the serving requests, for example, "us-east1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -381,7 +381,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * The location or region of the serving requests, e.g. "us-east1".
+     * The location or region of the serving requests, for example, "us-east1".
      * </pre>
      *
      * <code>string location = 1;</code>
@@ -630,12 +630,12 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      * Some examples of using replica_selectors are:
      *
      *   * `location:us-east1` --&gt; The "us-east1" replica(s) of any available type
-     *                             will be used to process the request.
-     *   * `type:READ_ONLY`    --&gt; The "READ_ONLY" type replica(s) in nearest
-     *                             available location will be used to process the
+     *                             is used to process the request.
+     *   * `type:READ_ONLY`    --&gt; The "READ_ONLY" type replica(s) in the nearest
+     *                             available location are used to process the
      *                             request.
      *   * `location:us-east1 type:READ_ONLY` --&gt; The "READ_ONLY" type replica(s)
-     *                          in location "us-east1" will be used to process
+     *                          in location "us-east1" is used to process
      *                          the request.
      * </pre>
      *
@@ -840,7 +840,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        *
        *
        * <pre>
-       * The location or region of the serving requests, e.g. "us-east1".
+       * The location or region of the serving requests, for example, "us-east1".
        * </pre>
        *
        * <code>string location = 1;</code>
@@ -863,7 +863,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        *
        *
        * <pre>
-       * The location or region of the serving requests, e.g. "us-east1".
+       * The location or region of the serving requests, for example, "us-east1".
        * </pre>
        *
        * <code>string location = 1;</code>
@@ -886,7 +886,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        *
        *
        * <pre>
-       * The location or region of the serving requests, e.g. "us-east1".
+       * The location or region of the serving requests, for example, "us-east1".
        * </pre>
        *
        * <code>string location = 1;</code>
@@ -908,7 +908,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        *
        *
        * <pre>
-       * The location or region of the serving requests, e.g. "us-east1".
+       * The location or region of the serving requests, for example, "us-east1".
        * </pre>
        *
        * <code>string location = 1;</code>
@@ -926,7 +926,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        *
        *
        * <pre>
-       * The location or region of the serving requests, e.g. "us-east1".
+       * The location or region of the serving requests, for example, "us-east1".
        * </pre>
        *
        * <code>string location = 1;</code>
@@ -1185,9 +1185,9 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * If true, Spanner will not route requests to a replica outside the
-     * include_replicas list when all of the specified replicas are unavailable
-     * or unhealthy. Default value is `false`.
+     * If `true`, Spanner doesn't route requests to a replica outside the
+     * &lt;`include_replicas` list when all of the specified replicas are
+     * unavailable or unhealthy. Default value is `false`.
      * </pre>
      *
      * <code>bool auto_failover_disabled = 2;</code>
@@ -1201,7 +1201,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * An IncludeReplicas contains a repeated set of ReplicaSelection which
+   * An `IncludeReplicas` contains a repeated set of `ReplicaSelection` which
    * indicates the order in which replicas should be considered.
    * </pre>
    *
@@ -1341,9 +1341,9 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * If true, Spanner will not route requests to a replica outside the
-     * include_replicas list when all of the specified replicas are unavailable
-     * or unhealthy. Default value is `false`.
+     * If `true`, Spanner doesn't route requests to a replica outside the
+     * &lt;`include_replicas` list when all of the specified replicas are
+     * unavailable or unhealthy. Default value is `false`.
      * </pre>
      *
      * <code>bool auto_failover_disabled = 2;</code>
@@ -1533,7 +1533,7 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * An IncludeReplicas contains a repeated set of ReplicaSelection which
+     * An `IncludeReplicas` contains a repeated set of `ReplicaSelection` which
      * indicates the order in which replicas should be considered.
      * </pre>
      *
@@ -2206,9 +2206,9 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        *
        *
        * <pre>
-       * If true, Spanner will not route requests to a replica outside the
-       * include_replicas list when all of the specified replicas are unavailable
-       * or unhealthy. Default value is `false`.
+       * If `true`, Spanner doesn't route requests to a replica outside the
+       * &lt;`include_replicas` list when all of the specified replicas are
+       * unavailable or unhealthy. Default value is `false`.
        * </pre>
        *
        * <code>bool auto_failover_disabled = 2;</code>
@@ -2224,9 +2224,9 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        *
        *
        * <pre>
-       * If true, Spanner will not route requests to a replica outside the
-       * include_replicas list when all of the specified replicas are unavailable
-       * or unhealthy. Default value is `false`.
+       * If `true`, Spanner doesn't route requests to a replica outside the
+       * &lt;`include_replicas` list when all of the specified replicas are
+       * unavailable or unhealthy. Default value is `false`.
        * </pre>
        *
        * <code>bool auto_failover_disabled = 2;</code>
@@ -2246,9 +2246,9 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
        *
        *
        * <pre>
-       * If true, Spanner will not route requests to a replica outside the
-       * include_replicas list when all of the specified replicas are unavailable
-       * or unhealthy. Default value is `false`.
+       * If `true`, Spanner doesn't route requests to a replica outside the
+       * &lt;`include_replicas` list when all of the specified replicas are
+       * unavailable or unhealthy. Default value is `false`.
        * </pre>
        *
        * <code>bool auto_failover_disabled = 2;</code>
@@ -3480,11 +3480,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Include_replicas indicates the order of replicas (as they appear in
-   * this list) to process the request. If auto_failover_disabled is set to
-   * true and all replicas are exhausted without finding a healthy replica,
-   * Spanner will wait for a replica in the list to become available, requests
-   * may fail due to `DEADLINE_EXCEEDED` errors.
+   * `Include_replicas` indicates the order of replicas (as they appear in
+   * this list) to process the request. If `auto_failover_disabled` is set to
+   * `true` and all replicas are exhausted without finding a healthy replica,
+   * Spanner waits for a replica in the list to become available, requests
+   * might fail due to `DEADLINE_EXCEEDED` errors.
    * </pre>
    *
    * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -3500,11 +3500,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Include_replicas indicates the order of replicas (as they appear in
-   * this list) to process the request. If auto_failover_disabled is set to
-   * true and all replicas are exhausted without finding a healthy replica,
-   * Spanner will wait for a replica in the list to become available, requests
-   * may fail due to `DEADLINE_EXCEEDED` errors.
+   * `Include_replicas` indicates the order of replicas (as they appear in
+   * this list) to process the request. If `auto_failover_disabled` is set to
+   * `true` and all replicas are exhausted without finding a healthy replica,
+   * Spanner waits for a replica in the list to become available, requests
+   * might fail due to `DEADLINE_EXCEEDED` errors.
    * </pre>
    *
    * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -3523,11 +3523,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Include_replicas indicates the order of replicas (as they appear in
-   * this list) to process the request. If auto_failover_disabled is set to
-   * true and all replicas are exhausted without finding a healthy replica,
-   * Spanner will wait for a replica in the list to become available, requests
-   * may fail due to `DEADLINE_EXCEEDED` errors.
+   * `Include_replicas` indicates the order of replicas (as they appear in
+   * this list) to process the request. If `auto_failover_disabled` is set to
+   * `true` and all replicas are exhausted without finding a healthy replica,
+   * Spanner waits for a replica in the list to become available, requests
+   * might fail due to `DEADLINE_EXCEEDED` errors.
    * </pre>
    *
    * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -3547,8 +3547,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Exclude_replicas indicates that specified replicas should be excluded
-   * from serving requests. Spanner will not route requests to the replicas
+   * `Exclude_replicas` indicates that specified replicas should be excluded
+   * from serving requests. Spanner doesn't route requests to the replicas
    * in this list.
    * </pre>
    *
@@ -3565,8 +3565,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Exclude_replicas indicates that specified replicas should be excluded
-   * from serving requests. Spanner will not route requests to the replicas
+   * `Exclude_replicas` indicates that specified replicas should be excluded
+   * from serving requests. Spanner doesn't route requests to the replicas
    * in this list.
    * </pre>
    *
@@ -3586,8 +3586,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Exclude_replicas indicates that specified replicas should be excluded
-   * from serving requests. Spanner will not route requests to the replicas
+   * `Exclude_replicas` indicates that specified replicas should be excluded
+   * from serving requests. Spanner doesn't route requests to the replicas
    * in this list.
    * </pre>
    *
@@ -3796,11 +3796,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * The DirectedReadOptions can be used to indicate which replicas or regions
+   * The `DirectedReadOptions` can be used to indicate which replicas or regions
    * should be used for non-transactional reads or queries.
    *
-   * DirectedReadOptions may only be specified for a read-only transaction,
-   * otherwise the API will return an `INVALID_ARGUMENT` error.
+   * `DirectedReadOptions` can only be specified for a read-only transaction,
+   * otherwise the API returns an `INVALID_ARGUMENT` error.
    * </pre>
    *
    * Protobuf type {@code google.spanner.v1.DirectedReadOptions}
@@ -4035,11 +4035,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4055,11 +4055,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4085,11 +4085,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4113,11 +4113,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4138,11 +4138,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4177,11 +4177,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4207,11 +4207,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4225,11 +4225,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4251,11 +4251,11 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Include_replicas indicates the order of replicas (as they appear in
-     * this list) to process the request. If auto_failover_disabled is set to
-     * true and all replicas are exhausted without finding a healthy replica,
-     * Spanner will wait for a replica in the list to become available, requests
-     * may fail due to `DEADLINE_EXCEEDED` errors.
+     * `Include_replicas` indicates the order of replicas (as they appear in
+     * this list) to process the request. If `auto_failover_disabled` is set to
+     * `true` and all replicas are exhausted without finding a healthy replica,
+     * Spanner waits for a replica in the list to become available, requests
+     * might fail due to `DEADLINE_EXCEEDED` errors.
      * </pre>
      *
      * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -4295,8 +4295,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *
@@ -4313,8 +4313,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *
@@ -4341,8 +4341,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *
@@ -4367,8 +4367,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *
@@ -4390,8 +4390,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *
@@ -4427,8 +4427,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *
@@ -4455,8 +4455,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *
@@ -4471,8 +4471,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *
@@ -4495,8 +4495,8 @@ public final class DirectedReadOptions extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Exclude_replicas indicates that specified replicas should be excluded
-     * from serving requests. Spanner will not route requests to the replicas
+     * `Exclude_replicas` indicates that specified replicas should be excluded
+     * from serving requests. Spanner doesn't route requests to the replicas
      * in this list.
      * </pre>
      *

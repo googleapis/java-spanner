@@ -270,13 +270,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * Optional. A precommit token will be included if the read-write transaction
-   * is on a multiplexed session.
-   * The precommit token with the highest sequence number from this transaction
-   * attempt should be passed to the
+   * Optional. A precommit token is included if the read-write transaction
+   * is on a multiplexed session. Pass the precommit token with the highest
+   * sequence number from this transaction attempt should be passed to the
    * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>
@@ -294,13 +291,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * Optional. A precommit token will be included if the read-write transaction
-   * is on a multiplexed session.
-   * The precommit token with the highest sequence number from this transaction
-   * attempt should be passed to the
+   * Optional. A precommit token is included if the read-write transaction
+   * is on a multiplexed session. Pass the precommit token with the highest
+   * sequence number from this transaction attempt should be passed to the
    * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>
@@ -320,13 +314,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * Optional. A precommit token will be included if the read-write transaction
-   * is on a multiplexed session.
-   * The precommit token with the highest sequence number from this transaction
-   * attempt should be passed to the
+   * Optional. A precommit token is included if the read-write transaction
+   * is on a multiplexed session. Pass the precommit token with the highest
+   * sequence number from this transaction attempt should be passed to the
    * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
    * </pre>
    *
    * <code>
@@ -1551,13 +1542,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
@@ -1574,13 +1562,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
@@ -1603,13 +1588,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
@@ -1634,13 +1616,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
@@ -1663,13 +1642,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
@@ -1701,13 +1677,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
@@ -1729,13 +1702,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
@@ -1753,13 +1723,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
@@ -1781,13 +1748,10 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Optional. A precommit token will be included if the read-write transaction
-     * is on a multiplexed session.
-     * The precommit token with the highest sequence number from this transaction
-     * attempt should be passed to the
+     * Optional. A precommit token is included if the read-write transaction
+     * is on a multiplexed session. Pass the precommit token with the highest
+     * sequence number from this transaction attempt should be passed to the
      * [Commit][google.spanner.v1.Spanner.Commit] request for this transaction.
-     * This feature is not yet supported and will result in an UNIMPLEMENTED
-     * error.
      * </pre>
      *
      * <code>
