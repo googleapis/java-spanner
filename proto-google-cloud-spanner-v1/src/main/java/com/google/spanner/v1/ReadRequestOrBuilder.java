@@ -228,11 +228,11 @@ public interface ReadRequestOrBuilder
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
    * field is empty, rows are yielded in table primary key order (if
    * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-   * not empty, rows will be yielded in an unspecified order.
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+   * isn't empty, rows are yielded in an unspecified order.
    *
-   * It is not an error for the `key_set` to name rows that do not
+   * It isn't an error for the `key_set` to name rows that don't
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
    *
@@ -256,11 +256,11 @@ public interface ReadRequestOrBuilder
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
    * field is empty, rows are yielded in table primary key order (if
    * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-   * not empty, rows will be yielded in an unspecified order.
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+   * isn't empty, rows are yielded in an unspecified order.
    *
-   * It is not an error for the `key_set` to name rows that do not
+   * It isn't an error for the `key_set` to name rows that don't
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
    *
@@ -284,11 +284,11 @@ public interface ReadRequestOrBuilder
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
    * field is empty, rows are yielded in table primary key order (if
    * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
-   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
-   * not empty, rows will be yielded in an unspecified order.
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty). If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field
+   * isn't empty, rows are yielded in an unspecified order.
    *
-   * It is not an error for the `key_set` to name rows that do not
+   * It isn't an error for the `key_set` to name rows that don't
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
    *
@@ -301,7 +301,7 @@ public interface ReadRequestOrBuilder
    *
    * <pre>
    * If greater than zero, only the first `limit` rows are yielded. If `limit`
-   * is zero, the default is no limit. A limit cannot be specified if
+   * is zero, the default is no limit. A limit can't be specified if
    * `partition_token` is set.
    * </pre>
    *
@@ -333,8 +333,8 @@ public interface ReadRequestOrBuilder
    *
    *
    * <pre>
-   * If present, results will be restricted to the specified partition
-   * previously created using PartitionRead().    There must be an exact
+   * If present, results are restricted to the specified partition
+   * previously created using `PartitionRead`. There must be an exact
    * match for the values of fields common to this message and the
    * PartitionReadRequest message used to create this partition_token.
    * </pre>
@@ -426,7 +426,7 @@ public interface ReadRequestOrBuilder
    * If this is for a partitioned read and this field is set to `true`, the
    * request is executed with Spanner Data Boost independent compute resources.
    *
-   * If the field is set to `true` but the request does not set
+   * If the field is set to `true` but the request doesn't set
    * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
    * </pre>
    *
@@ -442,11 +442,12 @@ public interface ReadRequestOrBuilder
    * <pre>
    * Optional. Order for the returned rows.
    *
-   * By default, Spanner will return result rows in primary key order except for
-   * PartitionRead requests. For applications that do not require rows to be
+   * By default, Spanner returns result rows in primary key order except for
+   * PartitionRead requests. For applications that don't require rows to be
    * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
    * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-   * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * resulting in lower latencies in certain cases (for example, bulk point
+   * lookups).
    * </pre>
    *
    * <code>
@@ -463,11 +464,12 @@ public interface ReadRequestOrBuilder
    * <pre>
    * Optional. Order for the returned rows.
    *
-   * By default, Spanner will return result rows in primary key order except for
-   * PartitionRead requests. For applications that do not require rows to be
+   * By default, Spanner returns result rows in primary key order except for
+   * PartitionRead requests. For applications that don't require rows to be
    * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
    * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
-   * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * resulting in lower latencies in certain cases (for example, bulk point
+   * lookups).
    * </pre>
    *
    * <code>
