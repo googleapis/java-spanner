@@ -229,7 +229,9 @@ public class ITCommitTimestampTest {
 
   @Test
   public void invalidColumnType() throws Exception {
-    assumeFalse("Validation not available in experimental host mode", isExperimentalHost());
+    assumeFalse(
+        "Validation currently not available in experimental host mode - tracked via b/442339325",
+        isExperimentalHost());
     // error_catalog error OptionErrorList
     String statement = "ALTER TABLE T ADD COLUMN T4 INT64 OPTIONS (allow_commit_timestamp=true)";
     try {
