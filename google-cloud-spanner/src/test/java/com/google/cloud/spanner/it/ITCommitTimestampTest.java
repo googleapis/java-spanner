@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
@@ -227,6 +229,7 @@ public class ITCommitTimestampTest {
 
   @Test
   public void invalidColumnType() throws Exception {
+    assumeFalse("Validation not available in experimental host mode", isExperimentalHost());
     // error_catalog error OptionErrorList
     String statement = "ALTER TABLE T ADD COLUMN T4 INT64 OPTIONS (allow_commit_timestamp=true)";
     try {
