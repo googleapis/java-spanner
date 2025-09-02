@@ -17,8 +17,8 @@
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-    <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
-    <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
+    <spanner.testenv.instance>projects/span-cloud-testing/instances/java-client-integration-test</spanner.testenv.instance>
+    <spanner.gce.config.project_id>span-cloud-testing</spanner.gce.config.project_id>
     <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
   </properties>
 
