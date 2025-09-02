@@ -20,7 +20,9 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
 import com.google.cloud.spanner.spi.v1.SpannerInterceptorProvider;
+import io.grpc.CallCredentials;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -31,11 +33,14 @@ import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.grpc.auth.MoreCallCredentials;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.file.Files;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -83,6 +88,15 @@ public class GceTestEnvConfig implements TestEnvConfig {
         throw new RuntimeException(e);
       }
     }
+    builder.setEnableDirectAccess(true);
+    builder.setCallCredentialsProvider(() -> {
+      try {
+        return MoreCallCredentials.from(GoogleCredentials.fromStream(Files.newInputStream(new File(
+            "/Users/sakthivelmani/.config/gcloud/application_default_credentials_1.json").toPath())));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
     SpannerInterceptorProvider interceptorProvider =
         SpannerInterceptorProvider.createDefault().with(new GrpcErrorInjector(errorProbability));
     if (enableDirectAccess) {
