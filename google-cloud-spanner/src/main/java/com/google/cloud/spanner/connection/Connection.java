@@ -43,6 +43,7 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.Set;
@@ -231,6 +232,12 @@ public interface Connection extends AutoCloseable {
 
   /** Returns the default isolation level for read/write transactions for this connection. */
   IsolationLevel getDefaultIsolationLevel();
+
+  /** Sets the read lock mode for read/write transactions for this connection. */
+  void setReadLockMode(ReadLockMode readLockMode);
+
+  /** Returns the read lock mode for read/write transactions for this connection. */
+  ReadLockMode getReadLockMode();
 
   /**
    * Sets the duration the connection should wait before automatically aborting the execution of a

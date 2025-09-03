@@ -115,6 +115,7 @@ import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.Du
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.IsolationLevelConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.LongConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.NonNegativeIntegerConverter;
+import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ReadLockModeConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ReadOnlyStalenessConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.RpcPriorityConverter;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.SavepointSupportConverter;
@@ -125,8 +126,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /** Utility class that defines all known connection properties. */
 public class ConnectionProperties {
@@ -450,6 +453,30 @@ public class ConnectionProperties {
             IsolationLevel.REPEATABLE_READ
           },
           IsolationLevelConverter.INSTANCE,
+          Context.USER);
+  static final ConnectionProperty<ReadLockMode> READ_LOCK_MODE =
+      create(
+          "read_lock_mode",
+          "This option controls the locking behavior for read operations and queries within a read/write transaction. "
+              + "It works in conjunction with the transaction's isolation level.\n\n"
+              + "PESSIMISTIC: Read locks are acquired immediately on read. This mode only applies to SERIALIZABLE isolation. "
+              + "This mode prevents concurrent modifications by locking data throughout the transaction. This reduces commit-time "
+              + "aborts due to conflicts, but can increase how long transactions wait for locks and the overall contention.\n\n"
+              + "OPTIMISTIC: Locks for reads within the transaction are not acquired on read. Instead, the locks are acquired on "
+              + "commit to validate that read/queried data has not changed since the transaction started. If a conflict is "
+              + "detected, the transaction will fail. This mode only applies to SERIALIZABLE isolation. This mode defers locking "
+              + "until commit, which can reduce contention and improve throughput. However, be aware that this increases the "
+              + "risk of transaction aborts if there's significant write competition on the same data.\n\n"
+              + "READ_LOCK_MODE_UNSPECIFIED: This is the default if no mode is set. The locking behavior depends on the isolation level:\n\n"
+              + "REPEATABLE_READ: Locking semantics default to OPTIMISTIC. However, validation checks at commit are only "
+              + "performed for queries using SELECT FOR UPDATE, statements with {@code LOCK_SCANNED_RANGES} hints, and DML statements.\n\n"
+              + "For all other isolation levels: If the read lock mode is not set, it defaults to PESSIMISTIC locking.",
+          ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
+          Arrays.stream(ReadLockMode.values())
+              .filter(mode -> !mode.equals(ReadLockMode.UNRECOGNIZED))
+              .collect(Collectors.toList())
+              .toArray(new ReadLockMode[0]),
+          ReadLockModeConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<AutocommitDmlMode> AUTOCOMMIT_DML_MODE =
       create(
