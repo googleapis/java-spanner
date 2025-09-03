@@ -457,20 +457,28 @@ public class ConnectionProperties {
   static final ConnectionProperty<ReadLockMode> READ_LOCK_MODE =
       create(
           "read_lock_mode",
-          "This option controls the locking behavior for read operations and queries within a read/write transaction. "
-              + "It works in conjunction with the transaction's isolation level.\n\n"
-              + "PESSIMISTIC: Read locks are acquired immediately on read. This mode only applies to SERIALIZABLE isolation. "
-              + "This mode prevents concurrent modifications by locking data throughout the transaction. This reduces commit-time "
-              + "aborts due to conflicts, but can increase how long transactions wait for locks and the overall contention.\n\n"
-              + "OPTIMISTIC: Locks for reads within the transaction are not acquired on read. Instead, the locks are acquired on "
-              + "commit to validate that read/queried data has not changed since the transaction started. If a conflict is "
-              + "detected, the transaction will fail. This mode only applies to SERIALIZABLE isolation. This mode defers locking "
-              + "until commit, which can reduce contention and improve throughput. However, be aware that this increases the "
-              + "risk of transaction aborts if there's significant write competition on the same data.\n\n"
-              + "READ_LOCK_MODE_UNSPECIFIED: This is the default if no mode is set. The locking behavior depends on the isolation level:\n\n"
-              + "REPEATABLE_READ: Locking semantics default to OPTIMISTIC. However, validation checks at commit are only "
-              + "performed for queries using SELECT FOR UPDATE, statements with {@code LOCK_SCANNED_RANGES} hints, and DML statements.\n\n"
-              + "For all other isolation levels: If the read lock mode is not set, it defaults to PESSIMISTIC locking.",
+          "This option controls the locking behavior for read operations and queries within a"
+              + " read/write transaction. It works in conjunction with the transaction's isolation"
+              + " level.\n\n"
+              + "PESSIMISTIC: Read locks are acquired immediately on read. This mode only applies"
+              + " to SERIALIZABLE isolation. This mode prevents concurrent modifications by locking"
+              + " data throughout the transaction. This reduces commit-time aborts due to"
+              + " conflicts, but can increase how long transactions wait for locks and the overall"
+              + " contention.\n\n"
+              + "OPTIMISTIC: Locks for reads within the transaction are not acquired on read."
+              + " Instead, the locks are acquired on commit to validate that read/queried data has"
+              + " not changed since the transaction started. If a conflict is detected, the"
+              + " transaction will fail. This mode only applies to SERIALIZABLE isolation. This"
+              + " mode defers locking until commit, which can reduce contention and improve"
+              + " throughput. However, be aware that this increases the risk of transaction aborts"
+              + " if there's significant write competition on the same data.\n\n"
+              + "READ_LOCK_MODE_UNSPECIFIED: This is the default if no mode is set. The locking"
+              + " behavior depends on the isolation level:\n\n"
+              + "REPEATABLE_READ: Locking semantics default to OPTIMISTIC. However, validation"
+              + " checks at commit are only performed for queries using SELECT FOR UPDATE,"
+              + " statements with {@code LOCK_SCANNED_RANGES} hints, and DML statements.\n\n"
+              + "For all other isolation levels: If the read lock mode is not set, it defaults to"
+              + " PESSIMISTIC locking.",
           ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           Arrays.stream(ReadLockMode.values())
               .filter(mode -> !mode.equals(ReadLockMode.UNRECOGNIZED))
