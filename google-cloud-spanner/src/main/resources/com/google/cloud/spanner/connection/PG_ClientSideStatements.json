@@ -177,6 +177,15 @@
       "exampleStatements": ["show spanner.savepoint_support","show variable spanner.savepoint_support"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.READ_LOCK_MODE",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_READ_LOCK_MODE",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.read_lock_mode\\s*\\z",
+      "method": "statementShowReadLockMode",
+      "exampleStatements": ["show spanner.read_lock_mode","show variable spanner.read_lock_mode"]
+    },
+    {
       "name": "SHOW [VARIABLE] SPANNER.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -832,6 +841,28 @@
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'(ENABLED|FAIL_AFTER_ROLLBACK|DISABLED)'",
         "converterName": "ClientSideStatementValueConverters$SavepointSupportConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.READ_LOCK_MODE =|TO 'OPTIMISTIC'|'PESSIMISTIC'|'UNSPECIFIED'",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_READ_LOCK_MODE",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.read_lock_mode(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetReadLockMode",
+      "exampleStatements": [
+        "set spanner.read_lock_mode='OPTIMISTIC'",
+        "set spanner.read_lock_mode='PESSIMISTIC'",
+        "set spanner.read_lock_mode='UNSPECIFIED'",
+        "set spanner.read_lock_mode to 'OPTIMISTIC'",
+        "set spanner.read_lock_mode to 'PESSIMISTIC'",
+        "set spanner.read_lock_mode to 'UNSPECIFIED'"
+      ],
+      "setStatement": {
+        "propertyName": "SPANNER.READ_LOCK_MODE",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "'(OPTIMISTIC|PESSIMISTIC|UNSPECIFIED|READ_LOCK_MODE_UNSPECIFIED)'",
+        "converterName": "ClientSideStatementValueConverters$ReadLockModeConverter"
       }
     },
     {

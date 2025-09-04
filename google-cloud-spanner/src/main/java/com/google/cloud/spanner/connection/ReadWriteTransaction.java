@@ -61,6 +61,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Scope;
 import java.time.Duration;
@@ -155,6 +156,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final ReentrantLock keepAliveLock;
   private final SavepointSupport savepointSupport;
   @Nonnull private final IsolationLevel isolationLevel;
+  private final ReadLockMode readLockMode;
   private int transactionRetryAttempts;
   private int successfulRetries;
   private volatile ApiFuture<TransactionContext> txContextFuture;
@@ -207,6 +209,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private Duration maxCommitDelay;
     private SavepointSupport savepointSupport;
     private IsolationLevel isolationLevel;
+    private ReadLockMode readLockMode = ReadLockMode.READ_LOCK_MODE_UNSPECIFIED;
 
     private Builder() {}
 
@@ -261,6 +264,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       return this;
     }
 
+    Builder setReadLockMode(ReadLockMode readLockMode) {
+      this.readLockMode = Preconditions.checkNotNull(readLockMode);
+      return this;
+    }
+
     @Override
     ReadWriteTransaction build() {
       Preconditions.checkState(dbClient != null, "No DatabaseClient client specified");
@@ -305,6 +313,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.savepointSupport = builder.savepointSupport;
     this.isolationLevel = Preconditions.checkNotNull(builder.isolationLevel);
+    this.readLockMode = Preconditions.checkNotNull(builder.readLockMode);
     this.transactionOptions = extractOptions(builder);
   }
 
@@ -328,6 +337,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (this.isolationLevel != IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED) {
       numOptions++;
     }
+    if (this.readLockMode != ReadLockMode.READ_LOCK_MODE_UNSPECIFIED) {
+      numOptions++;
+    }
     TransactionOption[] options = new TransactionOption[numOptions];
     int index = 0;
     if (builder.returnCommitStats) {
@@ -347,6 +359,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
     if (this.isolationLevel != IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED) {
       options[index++] = Options.isolationLevel(this.isolationLevel);
+    }
+    if (this.readLockMode != ReadLockMode.READ_LOCK_MODE_UNSPECIFIED) {
+      options[index++] = Options.readLockMode(this.readLockMode);
     }
     return options;
   }

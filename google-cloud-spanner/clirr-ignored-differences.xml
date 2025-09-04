@@ -1033,4 +1033,14 @@
     <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
     <method>boolean isEnableDirectAccess()</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setReadLockMode(com.google.spanner.v1.TransactionOptions$ReadWrite$ReadLockMode)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.spanner.v1.TransactionOptions$ReadWrite$ReadLockMode getReadLockMode()</method>
+  </difference>
 </differences>
