@@ -594,7 +594,8 @@ public class ITTransactionTest {
     for (int j = 0; j < 7; j++) {
       byte[] data = new byte[bytesPerColumn];
       random.nextBytes(data);
-      builder.set("col" + j)
+      builder
+          .set("col" + j)
           .to(com.google.cloud.spanner.Value.bytes(com.google.cloud.ByteArray.copyFrom(data)));
     }
     mutations.add(builder.build());
