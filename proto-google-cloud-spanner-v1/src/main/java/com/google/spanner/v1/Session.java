@@ -327,7 +327,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The approximate timestamp when the session is last used. It is
+   * Output only. The approximate timestamp when the session is last used. It's
    * typically earlier than the actual last use time.
    * </pre>
    *
@@ -346,7 +346,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The approximate timestamp when the session is last used. It is
+   * Output only. The approximate timestamp when the session is last used. It's
    * typically earlier than the actual last use time.
    * </pre>
    *
@@ -367,7 +367,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The approximate timestamp when the session is last used. It is
+   * Output only. The approximate timestamp when the session is last used. It's
    * typically earlier than the actual last use time.
    * </pre>
    *
@@ -442,13 +442,14 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Optional. If true, specifies a multiplexed session. A multiplexed session
-   * may be used for multiple, concurrent read-only operations but can not be
-   * used for read-write transactions, partitioned reads, or partitioned
-   * queries. Multiplexed sessions can be created via
-   * [CreateSession][google.spanner.v1.Spanner.CreateSession] but not via
-   * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
-   * Multiplexed sessions may not be deleted nor listed.
+   * Optional. If `true`, specifies a multiplexed session. Use a multiplexed
+   * session for multiple, concurrent read-only operations. Don't use them for
+   * read-write transactions, partitioned reads, or partitioned queries. Use
+   * [`sessions.create`][google.spanner.v1.Spanner.CreateSession] to create
+   * multiplexed sessions. Don't use
+   * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions] to
+   * create a multiplexed session. You can't delete or list multiplexed
+   * sessions.
    * </pre>
    *
    * <code>bool multiplexed = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
@@ -1545,7 +1546,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1563,7 +1564,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1587,7 +1588,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1613,7 +1614,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1637,7 +1638,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1668,7 +1669,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1691,7 +1692,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1709,7 +1710,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1731,7 +1732,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The approximate timestamp when the session is last used. It is
+     * Output only. The approximate timestamp when the session is last used. It's
      * typically earlier than the actual last use time.
      * </pre>
      *
@@ -1873,13 +1874,14 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Optional. If true, specifies a multiplexed session. A multiplexed session
-     * may be used for multiple, concurrent read-only operations but can not be
-     * used for read-write transactions, partitioned reads, or partitioned
-     * queries. Multiplexed sessions can be created via
-     * [CreateSession][google.spanner.v1.Spanner.CreateSession] but not via
-     * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
-     * Multiplexed sessions may not be deleted nor listed.
+     * Optional. If `true`, specifies a multiplexed session. Use a multiplexed
+     * session for multiple, concurrent read-only operations. Don't use them for
+     * read-write transactions, partitioned reads, or partitioned queries. Use
+     * [`sessions.create`][google.spanner.v1.Spanner.CreateSession] to create
+     * multiplexed sessions. Don't use
+     * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions] to
+     * create a multiplexed session. You can't delete or list multiplexed
+     * sessions.
      * </pre>
      *
      * <code>bool multiplexed = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
@@ -1895,13 +1897,14 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Optional. If true, specifies a multiplexed session. A multiplexed session
-     * may be used for multiple, concurrent read-only operations but can not be
-     * used for read-write transactions, partitioned reads, or partitioned
-     * queries. Multiplexed sessions can be created via
-     * [CreateSession][google.spanner.v1.Spanner.CreateSession] but not via
-     * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
-     * Multiplexed sessions may not be deleted nor listed.
+     * Optional. If `true`, specifies a multiplexed session. Use a multiplexed
+     * session for multiple, concurrent read-only operations. Don't use them for
+     * read-write transactions, partitioned reads, or partitioned queries. Use
+     * [`sessions.create`][google.spanner.v1.Spanner.CreateSession] to create
+     * multiplexed sessions. Don't use
+     * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions] to
+     * create a multiplexed session. You can't delete or list multiplexed
+     * sessions.
      * </pre>
      *
      * <code>bool multiplexed = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
@@ -1921,13 +1924,14 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Optional. If true, specifies a multiplexed session. A multiplexed session
-     * may be used for multiple, concurrent read-only operations but can not be
-     * used for read-write transactions, partitioned reads, or partitioned
-     * queries. Multiplexed sessions can be created via
-     * [CreateSession][google.spanner.v1.Spanner.CreateSession] but not via
-     * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
-     * Multiplexed sessions may not be deleted nor listed.
+     * Optional. If `true`, specifies a multiplexed session. Use a multiplexed
+     * session for multiple, concurrent read-only operations. Don't use them for
+     * read-write transactions, partitioned reads, or partitioned queries. Use
+     * [`sessions.create`][google.spanner.v1.Spanner.CreateSession] to create
+     * multiplexed sessions. Don't use
+     * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions] to
+     * create a multiplexed session. You can't delete or list multiplexed
+     * sessions.
      * </pre>
      *
      * <code>bool multiplexed = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
