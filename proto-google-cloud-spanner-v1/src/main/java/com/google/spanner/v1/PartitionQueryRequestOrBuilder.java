@@ -58,8 +58,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * Read only snapshot transactions are supported, read/write and single use
-   * transactions are not.
+   * Read-only snapshot transactions are supported, read and write and
+   * single-use transactions are not.
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
@@ -72,8 +72,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * Read only snapshot transactions are supported, read/write and single use
-   * transactions are not.
+   * Read-only snapshot transactions are supported, read and write and
+   * single-use transactions are not.
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
@@ -86,8 +86,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * Read only snapshot transactions are supported, read/write and single use
-   * transactions are not.
+   * Read-only snapshot transactions are supported, read and write and
+   * single-use transactions are not.
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
@@ -98,18 +98,19 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The query request to generate partitions for. The request will
-   * fail if the query is not root partitionable. For a query to be root
+   * Required. The query request to generate partitions for. The request fails
+   * if the query isn't root partitionable. For a query to be root
    * partitionable, it needs to satisfy a few conditions. For example, if the
    * query execution plan contains a distributed union operator, then it must be
    * the first operator in the plan. For more information about other
    * conditions, see [Read data in
    * parallel](https://cloud.google.com/spanner/docs/reads#read_data_in_parallel).
    *
-   * The query request must not contain DML commands, such as INSERT, UPDATE, or
-   * DELETE. Use
-   * [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] with a
-   * PartitionedDml transaction for large, partition-friendly DML operations.
+   * The query request must not contain DML commands, such as `INSERT`,
+   * `UPDATE`, or `DELETE`. Use
+   * [`ExecuteStreamingSql`][google.spanner.v1.Spanner.ExecuteStreamingSql] with
+   * a `PartitionedDml` transaction for large, partition-friendly DML
+   * operations.
    * </pre>
    *
    * <code>string sql = 3 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -122,18 +123,19 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The query request to generate partitions for. The request will
-   * fail if the query is not root partitionable. For a query to be root
+   * Required. The query request to generate partitions for. The request fails
+   * if the query isn't root partitionable. For a query to be root
    * partitionable, it needs to satisfy a few conditions. For example, if the
    * query execution plan contains a distributed union operator, then it must be
    * the first operator in the plan. For more information about other
    * conditions, see [Read data in
    * parallel](https://cloud.google.com/spanner/docs/reads#read_data_in_parallel).
    *
-   * The query request must not contain DML commands, such as INSERT, UPDATE, or
-   * DELETE. Use
-   * [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] with a
-   * PartitionedDml transaction for large, partition-friendly DML operations.
+   * The query request must not contain DML commands, such as `INSERT`,
+   * `UPDATE`, or `DELETE`. Use
+   * [`ExecuteStreamingSql`][google.spanner.v1.Spanner.ExecuteStreamingSql] with
+   * a `PartitionedDml` transaction for large, partition-friendly DML
+   * operations.
    * </pre>
    *
    * <code>string sql = 3 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -152,12 +154,12 @@ public interface PartitionQueryRequestOrBuilder
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
    * letters, numbers, and underscores.
    *
-   * Parameters can appear anywhere that a literal value is expected.  The same
+   * Parameters can appear anywhere that a literal value is expected. The same
    * parameter name can be used more than once, for example:
    *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
    *
-   * It is an error to execute a SQL statement with unbound parameters.
+   * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -176,12 +178,12 @@ public interface PartitionQueryRequestOrBuilder
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
    * letters, numbers, and underscores.
    *
-   * Parameters can appear anywhere that a literal value is expected.  The same
+   * Parameters can appear anywhere that a literal value is expected. The same
    * parameter name can be used more than once, for example:
    *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
    *
-   * It is an error to execute a SQL statement with unbound parameters.
+   * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -200,12 +202,12 @@ public interface PartitionQueryRequestOrBuilder
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
    * letters, numbers, and underscores.
    *
-   * Parameters can appear anywhere that a literal value is expected.  The same
+   * Parameters can appear anywhere that a literal value is expected. The same
    * parameter name can be used more than once, for example:
    *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
    *
-   * It is an error to execute a SQL statement with unbound parameters.
+   * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -216,8 +218,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It is not always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value.  For example, values of type `BYTES` and values
+   * It isn't always possible for Cloud Spanner to infer the right SQL type
+   * from a JSON value. For example, values of type `BYTES` and values
    * of type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
@@ -235,8 +237,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It is not always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value.  For example, values of type `BYTES` and values
+   * It isn't always possible for Cloud Spanner to infer the right SQL type
+   * from a JSON value. For example, values of type `BYTES` and values
    * of type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
@@ -258,8 +260,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It is not always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value.  For example, values of type `BYTES` and values
+   * It isn't always possible for Cloud Spanner to infer the right SQL type
+   * from a JSON value. For example, values of type `BYTES` and values
    * of type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
@@ -277,8 +279,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It is not always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value.  For example, values of type `BYTES` and values
+   * It isn't always possible for Cloud Spanner to infer the right SQL type
+   * from a JSON value. For example, values of type `BYTES` and values
    * of type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
@@ -300,8 +302,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It is not always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value.  For example, values of type `BYTES` and values
+   * It isn't always possible for Cloud Spanner to infer the right SQL type
+   * from a JSON value. For example, values of type `BYTES` and values
    * of type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
