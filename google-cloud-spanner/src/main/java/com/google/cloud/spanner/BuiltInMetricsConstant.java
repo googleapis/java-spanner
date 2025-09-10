@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.XGoogSpannerRequestId.REQUEST_ID;
 
 import com.google.api.core.InternalApi;
+import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -75,6 +76,10 @@ public class BuiltInMetricsConstant {
           "grpc.xds_client.server_failure",
           "grpc.xds_client.resource_updates_invalid",
           "grpc.xds_client.resource_updates_valid");
+
+  static final Collection<String> CONNECTIVITY_ERROR_STATUSES =
+      ImmutableList.of(
+          StatusCode.Code.DEADLINE_EXCEEDED.toString(), StatusCode.Code.CANCELLED.toString());
 
   public static final String SPANNER_RESOURCE_TYPE = "spanner_instance_client";
 

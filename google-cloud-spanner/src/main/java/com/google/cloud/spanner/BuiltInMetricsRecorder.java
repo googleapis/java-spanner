@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.gax.core.GaxProperties;
+import com.google.api.gax.tracing.MetricsTracer;
 import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.common.base.Preconditions;
 import io.opentelemetry.api.OpenTelemetry;
@@ -106,13 +107,18 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
     if (gfeLatency != null) {
       gfeLatencyRecorder.record(gfeLatency, otelAttributes);
     }
-    if (gfeHeaderMissingCount > 0) {
+
+    boolean isConnectivityErrorStatus =
+        BuiltInMetricsConstant.CONNECTIVITY_ERROR_STATUSES.contains(
+            attributes.get(MetricsTracer.STATUS_ATTRIBUTE));
+
+    if (gfeHeaderMissingCount > 0 && isConnectivityErrorStatus) {
       gfeHeaderMissingCountRecorder.add(gfeHeaderMissingCount, otelAttributes);
     }
     if (afeLatency != null) {
       afeLatencyRecorder.record(afeLatency, otelAttributes);
     }
-    if (afeHeaderMissingCount > 0) {
+    if (afeHeaderMissingCount > 0 && isConnectivityErrorStatus) {
       afeHeaderMissingCountRecorder.add(afeHeaderMissingCount, otelAttributes);
     }
   }
