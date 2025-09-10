@@ -206,12 +206,12 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * <pre>
    * Required. A per-transaction sequence number used to identify this request.
    * This field makes each request idempotent such that if the request is
-   * received multiple times, at most one will succeed.
+   * received multiple times, at most one succeeds.
    *
    * The sequence number must be monotonically increasing within the
    * transaction. If a request arrives for the first time with an out-of-order
-   * sequence number, the transaction may be aborted. Replays of previously
-   * handled requests will yield the same response as the first execution.
+   * sequence number, the transaction might be aborted. Replays of previously
+   * handled requests yield the same response as the first execution.
    * </pre>
    *
    * <code>int64 seqno = 4 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -261,15 +261,15 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. If set to true, this request marks the end of the transaction.
-   * The transaction should be committed or aborted after these statements
-   * execute, and attempts to execute any other requests against this
-   * transaction (including reads and queries) will be rejected.
+   * Optional. If set to `true`, this request marks the end of the transaction.
+   * After these statements execute, you must commit or abort the transaction.
+   * Attempts to execute any other requests against this transaction
+   * (including reads and queries) are rejected.
    *
-   * Setting this option may cause some error reporting to be deferred until
-   * commit time (e.g. validation of unique constraints). Given this, successful
-   * execution of statements should not be assumed until a subsequent Commit
-   * call completes successfully.
+   * Setting this option might cause some error reporting to be deferred until
+   * commit time (for example, validation of unique constraints). Given this,
+   * successful execution of statements shouldn't be assumed until a subsequent
+   * `Commit` call completes successfully.
    * </pre>
    *
    * <code>bool last_statements = 6 [(.google.api.field_behavior) = OPTIONAL];</code>

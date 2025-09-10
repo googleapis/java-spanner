@@ -130,7 +130,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    *
    * <pre>
-   * Parameters to be applied to each created session.
+   * Parameters to apply to each created session.
    * </pre>
    *
    * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -146,7 +146,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    *
    * <pre>
-   * Parameters to be applied to each created session.
+   * Parameters to apply to each created session.
    * </pre>
    *
    * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -164,7 +164,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    *
    * <pre>
-   * Parameters to be applied to each created session.
+   * Parameters to apply to each created session.
    * </pre>
    *
    * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -184,9 +184,9 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    * <pre>
    * Required. The number of sessions to be created in this batch call.
-   * The API may return fewer than the requested number of sessions. If a
+   * The API can return fewer than the requested number of sessions. If a
    * specific number of sessions are desired, the client can make additional
-   * calls to BatchCreateSessions (adjusting
+   * calls to `BatchCreateSessions` (adjusting
    * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
    * as necessary).
    * </pre>
@@ -742,7 +742,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -757,7 +757,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -778,7 +778,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -801,7 +801,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -821,7 +821,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -849,7 +849,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -869,7 +869,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -884,7 +884,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -903,7 +903,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      *
      * <pre>
-     * Parameters to be applied to each created session.
+     * Parameters to apply to each created session.
      * </pre>
      *
      * <code>.google.spanner.v1.Session session_template = 2;</code>
@@ -932,9 +932,9 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      * <pre>
      * Required. The number of sessions to be created in this batch call.
-     * The API may return fewer than the requested number of sessions. If a
+     * The API can return fewer than the requested number of sessions. If a
      * specific number of sessions are desired, the client can make additional
-     * calls to BatchCreateSessions (adjusting
+     * calls to `BatchCreateSessions` (adjusting
      * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
      * as necessary).
      * </pre>
@@ -953,9 +953,9 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      * <pre>
      * Required. The number of sessions to be created in this batch call.
-     * The API may return fewer than the requested number of sessions. If a
+     * The API can return fewer than the requested number of sessions. If a
      * specific number of sessions are desired, the client can make additional
-     * calls to BatchCreateSessions (adjusting
+     * calls to `BatchCreateSessions` (adjusting
      * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
      * as necessary).
      * </pre>
@@ -978,9 +978,9 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      * <pre>
      * Required. The number of sessions to be created in this batch call.
-     * The API may return fewer than the requested number of sessions. If a
+     * The API can return fewer than the requested number of sessions. If a
      * specific number of sessions are desired, the client can make additional
-     * calls to BatchCreateSessions (adjusting
+     * calls to `BatchCreateSessions` (adjusting
      * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
      * as necessary).
      * </pre>

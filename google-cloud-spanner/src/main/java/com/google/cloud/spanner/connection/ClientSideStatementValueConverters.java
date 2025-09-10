@@ -34,6 +34,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
@@ -420,6 +421,36 @@ class ClientSideStatementValueConverters {
         // This ensures that 'repeatable read' is translated to 'repeatable_read'. The text between
         // 'repeatable' and 'read' can be any number of valid whitespace characters.
         value = value.trim().replaceFirst("\\s+", "_");
+      }
+      return values.get(value);
+    }
+  }
+
+  /**
+   * Converter for converting strings to {@link
+   * com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode} values.
+   */
+  static class ReadLockModeConverter implements ClientSideStatementValueConverter<ReadLockMode> {
+    static final ReadLockModeConverter INSTANCE = new ReadLockModeConverter();
+
+    private final CaseInsensitiveEnumMap<ReadLockMode> values =
+        new CaseInsensitiveEnumMap<>(ReadLockMode.class);
+
+    ReadLockModeConverter() {}
+
+    /** Constructor needed for reflection. */
+    public ReadLockModeConverter(String allowedValues) {}
+
+    @Override
+    public Class<ReadLockMode> getParameterClass() {
+      return ReadLockMode.class;
+    }
+
+    @Override
+    public ReadLockMode convert(String value) {
+      if (value != null && value.equalsIgnoreCase("unspecified")) {
+        // Allow 'unspecified' to be used in addition to 'read_lock_mode_unspecified'.
+        value = ReadLockMode.READ_LOCK_MODE_UNSPECIFIED.name();
       }
       return values.get(value);
     }

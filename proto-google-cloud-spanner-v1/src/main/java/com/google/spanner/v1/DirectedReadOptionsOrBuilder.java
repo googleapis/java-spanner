@@ -28,11 +28,11 @@ public interface DirectedReadOptionsOrBuilder
    *
    *
    * <pre>
-   * Include_replicas indicates the order of replicas (as they appear in
-   * this list) to process the request. If auto_failover_disabled is set to
-   * true and all replicas are exhausted without finding a healthy replica,
-   * Spanner will wait for a replica in the list to become available, requests
-   * may fail due to `DEADLINE_EXCEEDED` errors.
+   * `Include_replicas` indicates the order of replicas (as they appear in
+   * this list) to process the request. If `auto_failover_disabled` is set to
+   * `true` and all replicas are exhausted without finding a healthy replica,
+   * Spanner waits for a replica in the list to become available, requests
+   * might fail due to `DEADLINE_EXCEEDED` errors.
    * </pre>
    *
    * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -45,11 +45,11 @@ public interface DirectedReadOptionsOrBuilder
    *
    *
    * <pre>
-   * Include_replicas indicates the order of replicas (as they appear in
-   * this list) to process the request. If auto_failover_disabled is set to
-   * true and all replicas are exhausted without finding a healthy replica,
-   * Spanner will wait for a replica in the list to become available, requests
-   * may fail due to `DEADLINE_EXCEEDED` errors.
+   * `Include_replicas` indicates the order of replicas (as they appear in
+   * this list) to process the request. If `auto_failover_disabled` is set to
+   * `true` and all replicas are exhausted without finding a healthy replica,
+   * Spanner waits for a replica in the list to become available, requests
+   * might fail due to `DEADLINE_EXCEEDED` errors.
    * </pre>
    *
    * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -62,11 +62,11 @@ public interface DirectedReadOptionsOrBuilder
    *
    *
    * <pre>
-   * Include_replicas indicates the order of replicas (as they appear in
-   * this list) to process the request. If auto_failover_disabled is set to
-   * true and all replicas are exhausted without finding a healthy replica,
-   * Spanner will wait for a replica in the list to become available, requests
-   * may fail due to `DEADLINE_EXCEEDED` errors.
+   * `Include_replicas` indicates the order of replicas (as they appear in
+   * this list) to process the request. If `auto_failover_disabled` is set to
+   * `true` and all replicas are exhausted without finding a healthy replica,
+   * Spanner waits for a replica in the list to become available, requests
+   * might fail due to `DEADLINE_EXCEEDED` errors.
    * </pre>
    *
    * <code>.google.spanner.v1.DirectedReadOptions.IncludeReplicas include_replicas = 1;</code>
@@ -77,8 +77,8 @@ public interface DirectedReadOptionsOrBuilder
    *
    *
    * <pre>
-   * Exclude_replicas indicates that specified replicas should be excluded
-   * from serving requests. Spanner will not route requests to the replicas
+   * `Exclude_replicas` indicates that specified replicas should be excluded
+   * from serving requests. Spanner doesn't route requests to the replicas
    * in this list.
    * </pre>
    *
@@ -92,8 +92,8 @@ public interface DirectedReadOptionsOrBuilder
    *
    *
    * <pre>
-   * Exclude_replicas indicates that specified replicas should be excluded
-   * from serving requests. Spanner will not route requests to the replicas
+   * `Exclude_replicas` indicates that specified replicas should be excluded
+   * from serving requests. Spanner doesn't route requests to the replicas
    * in this list.
    * </pre>
    *
@@ -107,8 +107,8 @@ public interface DirectedReadOptionsOrBuilder
    *
    *
    * <pre>
-   * Exclude_replicas indicates that specified replicas should be excluded
-   * from serving requests. Spanner will not route requests to the replicas
+   * `Exclude_replicas` indicates that specified replicas should be excluded
+   * from serving requests. Spanner doesn't route requests to the replicas
    * in this list.
    * </pre>
    *
