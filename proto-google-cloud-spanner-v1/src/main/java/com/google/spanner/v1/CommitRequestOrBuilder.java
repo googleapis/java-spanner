@@ -89,7 +89,7 @@ public interface CommitRequestOrBuilder
    * temporary transaction is non-idempotent. That is, if the
    * `CommitRequest` is sent to Cloud Spanner more than once (for
    * instance, due to retries in the application, or in the
-   * transport library), it is possible that the mutations are
+   * transport library), it's possible that the mutations are
    * executed more than once. If this is undesirable, use
    * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction] and
    * [Commit][google.spanner.v1.Spanner.Commit] instead.
@@ -110,7 +110,7 @@ public interface CommitRequestOrBuilder
    * temporary transaction is non-idempotent. That is, if the
    * `CommitRequest` is sent to Cloud Spanner more than once (for
    * instance, due to retries in the application, or in the
-   * transport library), it is possible that the mutations are
+   * transport library), it's possible that the mutations are
    * executed more than once. If this is undesirable, use
    * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction] and
    * [Commit][google.spanner.v1.Spanner.Commit] instead.
@@ -131,7 +131,7 @@ public interface CommitRequestOrBuilder
    * temporary transaction is non-idempotent. That is, if the
    * `CommitRequest` is sent to Cloud Spanner more than once (for
    * instance, due to retries in the application, or in the
-   * transport library), it is possible that the mutations are
+   * transport library), it's possible that the mutations are
    * executed more than once. If this is undesirable, use
    * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction] and
    * [Commit][google.spanner.v1.Spanner.Commit] instead.
@@ -210,7 +210,7 @@ public interface CommitRequestOrBuilder
    *
    *
    * <pre>
-   * If `true`, then statistics related to the transaction will be included in
+   * If `true`, then statistics related to the transaction is included in
    * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats].
    * Default value is `false`.
    * </pre>
@@ -225,11 +225,11 @@ public interface CommitRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. The amount of latency this request is willing to incur in order
-   * to improve throughput. If this field is not set, Spanner assumes requests
-   * are relatively latency sensitive and automatically determines an
-   * appropriate delay time. You can specify a batching delay value between 0
-   * and 500 ms.
+   * Optional. The amount of latency this request is configured to incur in
+   * order to improve throughput. If this field isn't set, Spanner assumes
+   * requests are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a commit delay value between 0 and
+   * 500 ms.
    * </pre>
    *
    * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
@@ -243,11 +243,11 @@ public interface CommitRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. The amount of latency this request is willing to incur in order
-   * to improve throughput. If this field is not set, Spanner assumes requests
-   * are relatively latency sensitive and automatically determines an
-   * appropriate delay time. You can specify a batching delay value between 0
-   * and 500 ms.
+   * Optional. The amount of latency this request is configured to incur in
+   * order to improve throughput. If this field isn't set, Spanner assumes
+   * requests are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a commit delay value between 0 and
+   * 500 ms.
    * </pre>
    *
    * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
@@ -261,11 +261,11 @@ public interface CommitRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. The amount of latency this request is willing to incur in order
-   * to improve throughput. If this field is not set, Spanner assumes requests
-   * are relatively latency sensitive and automatically determines an
-   * appropriate delay time. You can specify a batching delay value between 0
-   * and 500 ms.
+   * Optional. The amount of latency this request is configured to incur in
+   * order to improve throughput. If this field isn't set, Spanner assumes
+   * requests are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a commit delay value between 0 and
+   * 500 ms.
    * </pre>
    *
    * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
@@ -315,11 +315,9 @@ public interface CommitRequestOrBuilder
    *
    * <pre>
    * Optional. If the read-write transaction was executed on a multiplexed
-   * session, the precommit token with the highest sequence number received in
-   * this transaction attempt, should be included here. Failing to do so will
-   * result in a FailedPrecondition error.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
+   * session, then you must include the precommit token with the highest
+   * sequence number received in this transaction attempt. Failing to do so
+   * results in a `FailedPrecondition` error.
    * </pre>
    *
    * <code>
@@ -335,11 +333,9 @@ public interface CommitRequestOrBuilder
    *
    * <pre>
    * Optional. If the read-write transaction was executed on a multiplexed
-   * session, the precommit token with the highest sequence number received in
-   * this transaction attempt, should be included here. Failing to do so will
-   * result in a FailedPrecondition error.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
+   * session, then you must include the precommit token with the highest
+   * sequence number received in this transaction attempt. Failing to do so
+   * results in a `FailedPrecondition` error.
    * </pre>
    *
    * <code>
@@ -355,11 +351,9 @@ public interface CommitRequestOrBuilder
    *
    * <pre>
    * Optional. If the read-write transaction was executed on a multiplexed
-   * session, the precommit token with the highest sequence number received in
-   * this transaction attempt, should be included here. Failing to do so will
-   * result in a FailedPrecondition error.
-   * This feature is not yet supported and will result in an UNIMPLEMENTED
-   * error.
+   * session, then you must include the precommit token with the highest
+   * sequence number received in this transaction attempt. Failing to do so
+   * results in a `FailedPrecondition` error.
    * </pre>
    *
    * <code>

@@ -468,12 +468,18 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
+    if (getIsMultiplexed()) {
+      return com.google.api.core.ApiFutures.immediateFuture(Empty.getDefaultInstance());
+    }
     XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);
     return spanner.getRpc().asyncDeleteSession(getName(), reqId.withOptions(getOptions()));
   }
 
   @Override
   public void close() {
+    if (getIsMultiplexed()) {
+      return;
+    }
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
       XGoogSpannerRequestId reqId = this.getRequestIdCreator().nextRequestId(this.getChannel(), 1);

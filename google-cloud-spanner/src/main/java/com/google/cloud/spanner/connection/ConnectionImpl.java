@@ -38,6 +38,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_PARTI
 import static com.google.cloud.spanner.connection.ConnectionProperties.OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.ConnectionProperties.READONLY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.READ_LOCK_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.RETURN_COMMIT_STATS;
@@ -92,6 +93,7 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -486,6 +488,7 @@ class ConnectionImpl implements Connection {
     this.connectionState.resetValue(AUTOCOMMIT, context, inTransaction);
     this.connectionState.resetValue(READONLY, context, inTransaction);
     this.connectionState.resetValue(DEFAULT_ISOLATION_LEVEL, context, inTransaction);
+    this.connectionState.resetValue(READ_LOCK_MODE, context, inTransaction);
     this.connectionState.resetValue(READ_ONLY_STALENESS, context, inTransaction);
     this.connectionState.resetValue(OPTIMIZER_VERSION, context, inTransaction);
     this.connectionState.resetValue(OPTIMIZER_STATISTICS_PACKAGE, context, inTransaction);
@@ -666,6 +669,18 @@ class ConnectionImpl implements Connection {
   private void clearLastTransactionAndSetDefaultTransactionOptions(IsolationLevel isolationLevel) {
     setDefaultTransactionOptions(isolationLevel);
     this.currentUnitOfWork = null;
+  }
+
+  @Override
+  public void setReadLockMode(ReadLockMode readLockMode) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    setConnectionPropertyValue(READ_LOCK_MODE, readLockMode);
+  }
+
+  @Override
+  public ReadLockMode getReadLockMode() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return getConnectionPropertyValue(READ_LOCK_MODE);
   }
 
   @Override
@@ -2255,6 +2270,7 @@ class ConnectionImpl implements Connection {
               .setUseAutoSavepointsForEmulator(options.useAutoSavepointsForEmulator())
               .setDatabaseClient(dbClient)
               .setIsolationLevel(transactionIsolationLevel)
+              .setReadLockMode(getConnectionPropertyValue(READ_LOCK_MODE))
               .setDelayTransactionStartUntilFirstWrite(
                   getConnectionPropertyValue(DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE))
               .setKeepTransactionAlive(getConnectionPropertyValue(KEEP_TRANSACTION_ALIVE))

@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.99.0](https://github.com/googleapis/java-spanner/compare/v6.98.1...v6.99.0) (2025-08-26)
+
+
+### Features
+
+* Support read lock mode for R/W transactions ([#4010](https://github.com/googleapis/java-spanner/issues/4010)) ([7d752d6](https://github.com/googleapis/java-spanner/commit/7d752d686e638b6266aab3a5188c01641d2f9adc))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.62.0 ([52c68db](https://github.com/googleapis/java-spanner/commit/52c68db5c75f24a066c2e828ed79917c824f699b))
+* GetCommitResponse() should return error if tx has not committed ([#4021](https://github.com/googleapis/java-spanner/issues/4021)) ([a2c179f](https://github.com/googleapis/java-spanner/commit/a2c179f2e7c19d295bdbf9cf1bbd1c5562dd9e21))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.52.0 ([#4024](https://github.com/googleapis/java-spanner/issues/4024)) ([7e3294f](https://github.com/googleapis/java-spanner/commit/7e3294f6d42bddb4cfff67334118f615c90c3bb7))
+
 ## [6.98.1](https://github.com/googleapis/java-spanner/compare/v6.98.0...v6.98.1) (2025-08-11)
 
 

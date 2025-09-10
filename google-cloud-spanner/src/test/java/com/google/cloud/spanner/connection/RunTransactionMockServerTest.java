@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
+import static com.google.cloud.spanner.connection.ConnectionProperties.READ_LOCK_MODE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -26,11 +27,13 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import io.grpc.Status;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
@@ -43,46 +46,62 @@ public class RunTransactionMockServerTest extends AbstractMockServerTest {
   @Test
   public void testRunTransaction() {
     for (IsolationLevel isolationLevel : DEFAULT_ISOLATION_LEVEL.getValidValues()) {
-      try (Connection connection = createConnection()) {
-        connection.setDefaultIsolationLevel(isolationLevel);
-        connection.runTransaction(
-            transaction -> {
-              assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-              assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-              return null;
-            });
-      }
-      assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-      assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
-      TransactionOptions transactionOptions =
-          mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0).getTransaction().getBegin();
-      assertEquals(isolationLevel, transactionOptions.getIsolationLevel());
+      for (ReadLockMode readLockMode : READ_LOCK_MODE.getValidValues()) {
+        try (Connection connection = createConnection()) {
+          connection.setDefaultIsolationLevel(isolationLevel);
+          connection.setReadLockMode(readLockMode);
+          connection.runTransaction(
+              transaction -> {
+                assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+                assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+                return null;
+              });
+        }
+        assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+        assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+        TransactionOptions transactionOptions =
+            mockSpanner
+                .getRequestsOfType(ExecuteSqlRequest.class)
+                .get(0)
+                .getTransaction()
+                .getBegin();
+        assertEquals(isolationLevel, transactionOptions.getIsolationLevel());
+        assertEquals(readLockMode, transactionOptions.getReadWrite().getReadLockMode());
 
-      mockSpanner.clearRequests();
+        mockSpanner.clearRequests();
+      }
     }
   }
 
   @Test
   public void testRunTransactionInAutoCommit() {
     for (IsolationLevel isolationLevel : DEFAULT_ISOLATION_LEVEL.getValidValues()) {
-      try (Connection connection = createConnection()) {
-        connection.setAutocommit(true);
-        connection.setDefaultIsolationLevel(isolationLevel);
+      for (ReadLockMode readLockMode : READ_LOCK_MODE.getValidValues()) {
+        try (Connection connection = createConnection()) {
+          connection.setAutocommit(true);
+          connection.setDefaultIsolationLevel(isolationLevel);
+          connection.setReadLockMode(readLockMode);
 
-        connection.runTransaction(
-            transaction -> {
-              assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-              assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-              return null;
-            });
+          connection.runTransaction(
+              transaction -> {
+                assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+                assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+                return null;
+              });
+        }
+        assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+        assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+        TransactionOptions transactionOptions =
+            mockSpanner
+                .getRequestsOfType(ExecuteSqlRequest.class)
+                .get(0)
+                .getTransaction()
+                .getBegin();
+        assertEquals(isolationLevel, transactionOptions.getIsolationLevel());
+        assertEquals(readLockMode, transactionOptions.getReadWrite().getReadLockMode());
+
+        mockSpanner.clearRequests();
       }
-      assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-      assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
-      TransactionOptions transactionOptions =
-          mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0).getTransaction().getBegin();
-      assertEquals(isolationLevel, transactionOptions.getIsolationLevel());
-
-      mockSpanner.clearRequests();
     }
   }
 
@@ -141,21 +160,39 @@ public class RunTransactionMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testRunTransactionCommitAborted() {
-    final AtomicInteger attempts = new AtomicInteger();
-    try (Connection connection = createConnection()) {
-      connection.runTransaction(
-          transaction -> {
-            assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-            assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
-            if (attempts.incrementAndGet() == 1) {
-              mockSpanner.abortNextStatement();
-            }
-            return null;
-          });
+    for (IsolationLevel isolationLevel : DEFAULT_ISOLATION_LEVEL.getValidValues()) {
+      for (ReadLockMode readLockMode : READ_LOCK_MODE.getValidValues()) {
+        final AtomicInteger attempts = new AtomicInteger();
+        try (Connection connection = createConnection()) {
+          connection.setDefaultIsolationLevel(isolationLevel);
+          connection.setReadLockMode(readLockMode);
+          connection.runTransaction(
+              transaction -> {
+                assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+                assertEquals(1L, transaction.executeUpdate(INSERT_STATEMENT));
+                if (attempts.incrementAndGet() == 1) {
+                  mockSpanner.abortNextStatement();
+                }
+                return null;
+              });
+        }
+        assertEquals(2, attempts.get());
+        assertEquals(4, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+        assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+        assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+
+        for (int i : new int[] {0, 2}) {
+          ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(i);
+          assertTrue(request.hasTransaction());
+          assertTrue(request.getTransaction().hasBegin());
+          assertEquals(isolationLevel, request.getTransaction().getBegin().getIsolationLevel());
+          assertEquals(
+              readLockMode, request.getTransaction().getBegin().getReadWrite().getReadLockMode());
+        }
+
+        mockSpanner.clearRequests();
+      }
     }
-    assertEquals(2, attempts.get());
-    assertEquals(4, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test

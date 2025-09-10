@@ -43,6 +43,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS_FILE_PATH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_LOCK_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETURN_COMMIT_STATS;
@@ -73,6 +74,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS_FILE_PATH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_LOCK_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_TIMESTAMP;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETRY_ABORTS_INTERNALLY;
@@ -113,6 +115,7 @@ import com.google.spanner.v1.PlanNode;
 import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -605,6 +608,20 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%SAVEPOINT_SUPPORT", getNamespace(connection.getDialect())),
         getConnection().getSavepointSupport(),
         SHOW_SAVEPOINT_SUPPORT);
+  }
+
+  @Override
+  public StatementResult statementSetReadLockMode(ReadLockMode readLockMode) {
+    getConnection().setReadLockMode(readLockMode);
+    return noResult(SET_READ_LOCK_MODE);
+  }
+
+  @Override
+  public StatementResult statementShowReadLockMode() {
+    return resultSet(
+        String.format("%sREAD_LOCK_MODE", getNamespace(connection.getDialect())),
+        getConnection().getReadLockMode(),
+        SHOW_READ_LOCK_MODE);
   }
 
   @Override

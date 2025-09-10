@@ -28,9 +28,9 @@ public interface PartitionOrBuilder
    *
    *
    * <pre>
-   * This token can be passed to Read, StreamingRead, ExecuteSql, or
-   * ExecuteStreamingSql requests to restrict the results to those identified by
-   * this partition token.
+   * This token can be passed to `Read`, `StreamingRead`, `ExecuteSql`, or
+   * `ExecuteStreamingSql` requests to restrict the results to those identified
+   * by this partition token.
    * </pre>
    *
    * <code>bytes partition_token = 1;</code>

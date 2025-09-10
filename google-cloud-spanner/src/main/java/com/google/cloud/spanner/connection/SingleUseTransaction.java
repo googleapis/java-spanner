@@ -23,6 +23,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_I
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.READONLY;
+import static com.google.cloud.spanner.connection.ConnectionProperties.READ_LOCK_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.DdlClient.isCreateDatabaseStatement;
@@ -62,6 +63,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import io.opentelemetry.context.Scope;
 import java.util.Arrays;
 import java.util.UUID;
@@ -514,6 +516,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         != IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED) {
       numOptions++;
     }
+    if (connectionState.getValue(READ_LOCK_MODE).getValue()
+        != ReadLockMode.READ_LOCK_MODE_UNSPECIFIED) {
+      numOptions++;
+    }
     if (numOptions == 0) {
       return dbClient.readWriteTransaction();
     }
@@ -536,6 +542,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         != IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED) {
       options[index++] =
           Options.isolationLevel(connectionState.getValue(DEFAULT_ISOLATION_LEVEL).getValue());
+    }
+    if (connectionState.getValue(READ_LOCK_MODE).getValue()
+        != ReadLockMode.READ_LOCK_MODE_UNSPECIFIED) {
+      options[index++] = Options.readLockMode(connectionState.getValue(READ_LOCK_MODE).getValue());
     }
     return dbClient.readWriteTransaction(options);
   }

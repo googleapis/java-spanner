@@ -28,7 +28,8 @@ public interface PlanNodeOrBuilder
    *
    *
    * <pre>
-   * The `PlanNode`'s index in [node list][google.spanner.v1.QueryPlan.plan_nodes].
+   * The `PlanNode`'s index in [node
+   * list][google.spanner.v1.QueryPlan.plan_nodes].
    * </pre>
    *
    * <code>int32 index = 1;</code>
@@ -43,9 +44,9 @@ public interface PlanNodeOrBuilder
    * <pre>
    * Used to determine the type of node. May be needed for visualizing
    * different kinds of nodes differently. For example, If the node is a
-   * [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] node, it will have a condensed representation
-   * which can be used to directly embed a description of the node in its
-   * parent.
+   * [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] node, it will have a
+   * condensed representation which can be used to directly embed a description
+   * of the node in its parent.
    * </pre>
    *
    * <code>.google.spanner.v1.PlanNode.Kind kind = 2;</code>
@@ -60,9 +61,9 @@ public interface PlanNodeOrBuilder
    * <pre>
    * Used to determine the type of node. May be needed for visualizing
    * different kinds of nodes differently. For example, If the node is a
-   * [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] node, it will have a condensed representation
-   * which can be used to directly embed a description of the node in its
-   * parent.
+   * [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] node, it will have a
+   * condensed representation which can be used to directly embed a description
+   * of the node in its parent.
    * </pre>
    *
    * <code>.google.spanner.v1.PlanNode.Kind kind = 2;</code>
@@ -157,7 +158,8 @@ public interface PlanNodeOrBuilder
    *
    *
    * <pre>
-   * Condensed representation for [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] nodes.
+   * Condensed representation for
+   * [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] nodes.
    * </pre>
    *
    * <code>.google.spanner.v1.PlanNode.ShortRepresentation short_representation = 5;</code>
@@ -170,7 +172,8 @@ public interface PlanNodeOrBuilder
    *
    *
    * <pre>
-   * Condensed representation for [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] nodes.
+   * Condensed representation for
+   * [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] nodes.
    * </pre>
    *
    * <code>.google.spanner.v1.PlanNode.ShortRepresentation short_representation = 5;</code>
@@ -183,7 +186,8 @@ public interface PlanNodeOrBuilder
    *
    *
    * <pre>
-   * Condensed representation for [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] nodes.
+   * Condensed representation for
+   * [SCALAR][google.spanner.v1.PlanNode.Kind.SCALAR] nodes.
    * </pre>
    *
    * <code>.google.spanner.v1.PlanNode.ShortRepresentation short_representation = 5;</code>

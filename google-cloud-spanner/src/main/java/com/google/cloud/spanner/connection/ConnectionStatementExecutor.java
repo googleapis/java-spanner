@@ -23,6 +23,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import java.time.Duration;
 
 /**
@@ -190,4 +191,8 @@ interface ConnectionStatementExecutor {
   StatementResult statementSetAutoBatchDmlUpdateCountVerification(Boolean verification);
 
   StatementResult statementShowAutoBatchDmlUpdateCountVerification();
+
+  StatementResult statementSetReadLockMode(ReadLockMode readLockMode);
+
+  StatementResult statementShowReadLockMode();
 }
