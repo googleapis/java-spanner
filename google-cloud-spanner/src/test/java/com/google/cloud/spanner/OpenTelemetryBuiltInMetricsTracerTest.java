@@ -350,7 +350,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   }
 
   @Test
-  public void testNoServerTimingHeader() throws IOException, InterruptedException {
+  public void testNoServerTimingHeaderWithSuccessRPC() throws IOException, InterruptedException {
     // Create Spanner Object without headers
     InetSocketAddress addressNoHeader = new InetSocketAddress("localhost", 0);
     Server serverNoHeader =
@@ -381,18 +381,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
         .readWriteTransaction()
         .run(transaction -> transaction.executeUpdate(UPDATE_RANDOM));
 
-    Attributes expectedAttributes =
-        expectedCommonBaseAttributes.toBuilder()
-            .putAll(expectedCommonRequestAttributes)
-            .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
-            .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteSql")
-            .build();
-
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME));
-    MetricData afeConnectivityMetricData =
-        getMetricData(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME);
-    assertThat(getAggregatedValue(afeConnectivityMetricData, expectedAttributes)).isEqualTo(1);
+    assertFalse(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
+    assertFalse(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
 
     spannerNoHeader.close();
     serverNoHeader.shutdown();
