@@ -24,7 +24,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.99.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.99.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -97,7 +97,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.93.0</version>
+      <version>6.99.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.auto.value</groupId>
