@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeFalse;
 
@@ -52,6 +53,9 @@ public class ITInstanceAdminTest {
 
   @BeforeClass
   public static void setUp() {
+    assumeFalse(
+        "instance / instanceConfig operations are not supported on experimental host",
+        isExperimentalHost());
     instanceClient = env.getTestHelper().getClient().getInstanceAdminClient();
   }
 

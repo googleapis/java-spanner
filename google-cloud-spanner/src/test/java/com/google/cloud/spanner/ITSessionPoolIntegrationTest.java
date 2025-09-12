@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
@@ -53,6 +55,7 @@ public class ITSessionPoolIntegrationTest {
 
   @BeforeClass
   public static void setUpDatabase() {
+    assumeFalse("Only Multiplexed Sessions are supported on this host", isExperimentalHost());
     db =
         env.getTestHelper()
             .createTestDatabase(

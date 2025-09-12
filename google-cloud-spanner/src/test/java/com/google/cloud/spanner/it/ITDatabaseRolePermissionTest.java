@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
@@ -73,6 +74,7 @@ public class ITDatabaseRolePermissionTest {
 
   @BeforeClass
   public static void setUp() {
+    assumeFalse("Experimental Host does not support database roles", isExperimentalHost());
     assumeFalse("Emulator does not support database roles", isUsingEmulator());
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();

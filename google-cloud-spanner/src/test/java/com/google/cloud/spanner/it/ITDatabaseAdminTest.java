@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -194,6 +195,7 @@ public class ITDatabaseAdminTest {
 
   @Test
   public void createAndListDatabaseRoles() throws Exception {
+    assumeFalse("Experimental Host does not support database roles", isExperimentalHost());
     assumeFalse("Emulator does not support create & list database roles", isUsingEmulator());
     List<String> dbRoles =
         ImmutableList.of(
@@ -274,6 +276,7 @@ public class ITDatabaseAdminTest {
 
   @Test
   public void dropDatabaseWithProtectionEnabled() throws Exception {
+    assumeFalse("Tracking the failure via b/441255724", isExperimentalHost());
     assumeFalse("Emulator does not drop database protection", isUsingEmulator());
     String instanceId = testHelper.getInstanceId().getInstance();
     Database database = testHelper.createTestDatabase();

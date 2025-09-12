@@ -19,9 +19,11 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.extractConnectionUrl;
 import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.getKeyFile;
 import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.hasValidKeyFile;
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
@@ -247,6 +249,7 @@ public class ITBatchReadTest {
 
   @Test
   public void dataBoostRead() {
+    assumeFalse("data boost is not supported on experimental host yet", isExperimentalHost());
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
@@ -299,6 +302,7 @@ public class ITBatchReadTest {
 
   @Test
   public void dataBoostQuery() {
+    assumeFalse("data boost is not supported on experimental host yet", isExperimentalHost());
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();

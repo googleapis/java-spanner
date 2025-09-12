@@ -17,9 +17,11 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -166,6 +168,8 @@ public class ITDatabaseTest {
 
   @Test
   public void instanceNotFound() {
+    assumeFalse(
+        "experimental hosts only support pre-created default instance", isExperimentalHost());
     InstanceId testId = env.getTestHelper().getInstanceId();
     InstanceId nonExistingInstanceId =
         InstanceId.of(testId.getProject(), testId.getInstance() + "-na");
