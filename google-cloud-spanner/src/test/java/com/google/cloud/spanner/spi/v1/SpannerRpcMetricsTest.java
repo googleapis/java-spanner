@@ -18,6 +18,7 @@ package com.google.cloud.spanner.spi.v1;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -110,8 +111,12 @@ public class SpannerRpcMetricsTest {
 
   private static InMemoryMetricReader inMemoryMetricReaderInjected;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void startServer() throws IOException {
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     SpannerOptions.enableOpenTelemetryMetrics();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
@@ -198,6 +203,7 @@ public class SpannerRpcMetricsTest {
       serverNoHeader.shutdown();
       serverNoHeader.awaitTermination();
     }
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @After

@@ -46,6 +46,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
@@ -208,8 +209,12 @@ public class DatabaseClientImplTest {
   private Spanner spannerWithEmptySessionPool;
   private static ExecutorService executor;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void startStaticServer() throws IOException {
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
@@ -262,6 +267,7 @@ public class DatabaseClientImplTest {
     server.shutdown();
     server.awaitTermination();
     executor.shutdown();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Before
