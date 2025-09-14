@@ -1716,7 +1716,10 @@ public abstract class Value implements Serializable {
        * while calculating valueHash of Float32 type. Note that this is not applicable for composite
        * types containing FLOAT32.
        */
-      if (type.getCode() == Type.Code.FLOAT32 && !isNull && Float.isNaN(getFloat32())) {
+      if (type != null
+          && type.getCode() == Type.Code.FLOAT32
+          && !isNull
+          && Float.isNaN(getFloat32())) {
         typeToHash = Type.float64();
       }
 
