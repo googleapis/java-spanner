@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assume.assumeFalse;
 
@@ -64,6 +65,7 @@ public class ITBuiltInMetricsTest {
 
   @BeforeClass
   public static void setUp() throws IOException {
+    assumeFalse("not applicable for experimental host", isExperimentalHost());
     assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
     metricClient = MetricServiceClient.create();
     // Enable BuiltinMetrics when the metrics are GA'ed
