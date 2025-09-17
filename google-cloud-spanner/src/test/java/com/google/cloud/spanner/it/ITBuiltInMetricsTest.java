@@ -128,9 +128,18 @@ public class ITBuiltInMetricsTest {
         response = metricClient.listTimeSeriesCallable().call(request);
       }
 
-      assertWithMessage("Metric " + metric + " didn't return any data.")
-          .that(response.getTimeSeriesCount())
-          .isGreaterThan(0);
+      // afe_latencies metric currently does not return data as afe server-timing header is
+      // disabled.
+      // Keeping this check to enable this check in the future.
+      if (metric.equals("afe_latencies")) {
+        assertWithMessage("Metric " + metric + " returned data.")
+            .that(response.getTimeSeriesCount())
+            .isEqualTo(0);
+      } else {
+        assertWithMessage("Metric " + metric + " didn't return any data.")
+            .that(response.getTimeSeriesCount())
+            .isGreaterThan(0);
+      }
     }
   }
 }
