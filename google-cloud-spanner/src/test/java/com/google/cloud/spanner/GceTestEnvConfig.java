@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.setExperimentalHostSpannerOptions;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
@@ -100,6 +102,10 @@ public class GceTestEnvConfig implements TestEnvConfig {
           .setAttemptDirectPathXds()
           .setInterceptorProvider(interceptorProvider);
       builder.setChannelProvider(customChannelProviderBuilder.build());
+    }
+
+    if (isExperimentalHost()) {
+      setExperimentalHostSpannerOptions(builder);
     }
     options = builder.build();
   }

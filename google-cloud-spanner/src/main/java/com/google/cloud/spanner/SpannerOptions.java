@@ -814,7 +814,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     openTelemetry = builder.openTelemetry;
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
-    enableBuiltInMetrics = builder.enableBuiltInMetrics;
+    if (builder.isExperimentalHost) {
+      enableBuiltInMetrics = false;
+    } else {
+      enableBuiltInMetrics = builder.enableBuiltInMetrics;
+    }
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
