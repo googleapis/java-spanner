@@ -184,8 +184,11 @@ integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     ;;
 graalvm)
     # Run Unit and Integration Tests with Native Image
-    curl -s "https://get.sdkman.io" | bash
-    sdk install java 25-graalce
+    set -ex
+    microdnf install zip
+    curl -s "https://get.sdkman.io" | bash -e
+    source "/root/.sdkman/bin/sdkman-init.sh"
+    sdk install java 25-graalce -Y
     java -version
 
     mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests
