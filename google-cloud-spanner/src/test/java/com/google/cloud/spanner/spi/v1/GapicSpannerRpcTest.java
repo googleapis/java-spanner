@@ -31,6 +31,7 @@ import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.ServiceOptions;
@@ -158,6 +159,8 @@ public class GapicSpannerRpcTest {
   private static boolean isEndToEndTracing;
   private static boolean isTraceContextPresent;
 
+  private static boolean originalSkipMtls;
+
   @Parameter public Dialect dialect;
 
   @Parameters(name = "dialect = {0}")
@@ -176,6 +179,8 @@ public class GapicSpannerRpcTest {
             + " emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
 
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
     defaultUserAgent = "spanner-java/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
@@ -250,6 +255,7 @@ public class GapicSpannerRpcTest {
     isRouteToLeader = false;
     isEndToEndTracing = false;
     isTraceContextPresent = false;
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Test

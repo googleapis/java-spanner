@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
+import com.google.auth.mtls.DefaultMtlsProviderFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.base.Stopwatch;
@@ -166,6 +167,8 @@ public class OpenTelemetrySpanTest {
 
   private int expectedReadWriteTransactionErrorWithBeginTransactionEventsCount = 11;
 
+  private static boolean originalSkipMtls;
+
   @BeforeClass
   public static void setupOpenTelemetry() {
     SpannerOptions.resetActiveTracingFramework();
@@ -192,6 +195,9 @@ public class OpenTelemetrySpanTest {
     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
     field.set(null, failOnOverkillTraceComponent);
 
+    originalSkipMtls = DefaultMtlsProviderFactory.SKIP_MTLS.get();
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(true);
+
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
@@ -217,6 +223,7 @@ public class OpenTelemetrySpanTest {
       server.shutdown();
       server.awaitTermination();
     }
+    DefaultMtlsProviderFactory.SKIP_MTLS.set(originalSkipMtls);
   }
 
   @Before
