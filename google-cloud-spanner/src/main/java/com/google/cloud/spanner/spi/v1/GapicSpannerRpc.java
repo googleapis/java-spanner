@@ -474,6 +474,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             GrpcSpannerStubWithStubSettingsAndClientContext.create(pdmlSettings.build());
         this.instanceAdminStubSettings =
             options.getInstanceAdminStubSettings().toBuilder()
+                .setUniverseDomain(options.getUniverseDomain())
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
@@ -485,6 +486,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
         this.databaseAdminStubSettings =
             options.getDatabaseAdminStubSettings().toBuilder()
+                .setUniverseDomain(options.getUniverseDomain())
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)

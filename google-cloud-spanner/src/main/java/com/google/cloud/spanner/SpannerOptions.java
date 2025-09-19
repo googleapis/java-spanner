@@ -780,9 +780,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     databaseRole = builder.databaseRole;
     sessionLabels = builder.sessionLabels;
     try {
-      spannerStubSettings = builder.spannerStubSettingsBuilder.build();
-      instanceAdminStubSettings = builder.instanceAdminStubSettingsBuilder.build();
-      databaseAdminStubSettings = builder.databaseAdminStubSettingsBuilder.build();
+      spannerStubSettings = builder.spannerStubSettingsBuilder.setUniverseDomain(getResolvedUniverseDomain()).build();
+      instanceAdminStubSettings = builder.instanceAdminStubSettingsBuilder.setUniverseDomain(getResolvedUniverseDomain()).build();
+      databaseAdminStubSettings = builder.databaseAdminStubSettingsBuilder.setUniverseDomain(getResolvedUniverseDomain()).build();
     } catch (IOException e) {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
@@ -818,6 +818,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
+  }
+
+  private String getResolvedUniverseDomain() {
+    String universeDomain = getUniverseDomain();
+    return universeDomain == null || universeDomain.isEmpty() ? "googleapis.com" : universeDomain;
   }
 
   /**
@@ -2031,7 +2036,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
     if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
       this.builtInMetricsProvider.enableGrpcMetrics(
-          channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+          channelProviderBuilder, this.getProjectId(), getCredentials(), getMonitoringHost());
     }
   }
 
@@ -2077,7 +2082,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
         this.builtInMetricsProvider.getOrCreateOpenTelemetry(
-            this.getProjectId(), getCredentials(), this.monitoringHost);
+            this.getProjectId(), getCredentials(), getMonitoringHost());
 
     return openTelemetry != null
         ? new BuiltInMetricsTracerFactory(
@@ -2113,7 +2118,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   /** Returns the override metrics Host. */
   String getMonitoringHost() {
-    return monitoringHost;
+    if (this.monitoringHost == null) {
+      String universeDomain = getUniverseDomain();
+      if (universeDomain != null && !universeDomain.isEmpty()) {
+        return "monitoring." + universeDomain + ":443";
+      }
+    }
+    return this.monitoringHost;
   }
 
   public TransactionOptions getDefaultTransactionOptions() {
@@ -2177,7 +2188,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   @Override
   protected String getDefaultHost() {
-    return DEFAULT_HOST;
+    String universeDomain = getUniverseDomain();
+    if (universeDomain == null || universeDomain.isEmpty()) {
+      return DEFAULT_HOST;
+    } else {
+      return "https://spanner." + universeDomain;
+    }
   }
 
   private static class SpannerDefaults implements ServiceDefaults<Spanner, SpannerOptions> {

@@ -73,9 +73,10 @@ public class GceTestEnvConfig implements TestEnvConfig {
     if (!projectId.isEmpty()) {
       builder.setProjectId(projectId);
     }
-    if (!serverUrl.isEmpty()) {
-      builder.setHost(serverUrl);
-    }
+    builder.setUniverseDomain("apis-tpczero.goog");
+    // if (!serverUrl.isEmpty()) {
+    //   builder.setHost(serverUrl);
+    // }
     if (!credentialsFile.isEmpty()) {
       try {
         builder.setCredentials(GoogleCredentials.fromStream(new FileInputStream(credentialsFile)));
@@ -102,6 +103,7 @@ public class GceTestEnvConfig implements TestEnvConfig {
       builder.setChannelProvider(customChannelProviderBuilder.build());
     }
     options = builder.build();
+    System.out.println(options);
   }
 
   @Override
