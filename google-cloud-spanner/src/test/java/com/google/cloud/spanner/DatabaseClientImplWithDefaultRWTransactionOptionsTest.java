@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.cloud.spanner.MockSpannerTestUtil.INVALID_SELECT_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_RESULTSET;
@@ -41,7 +42,6 @@ import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -83,7 +83,8 @@ public class DatabaseClientImplWithDefaultRWTransactionOptionsTest {
   private DatabaseClient clientWithSerOptimisticOption;
 
   @BeforeClass
-  public static void startStaticServer() throws IOException {
+  public static void startStaticServer() throws Exception {
+    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_COLUMN_NAMES;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RESULTSET;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
@@ -113,7 +114,6 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -209,7 +209,8 @@ public class DatabaseClientImplTest {
   private static ExecutorService executor;
 
   @BeforeClass
-  public static void startStaticServer() throws IOException {
+  public static void startStaticServer() throws Exception {
+    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));

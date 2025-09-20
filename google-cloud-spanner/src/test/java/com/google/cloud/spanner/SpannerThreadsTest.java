@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -36,7 +37,6 @@ import com.google.spanner.v1.*;
 import com.google.spanner.v1.StructType.Field;
 import io.grpc.*;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -88,12 +88,13 @@ public class SpannerThreadsTest {
   private static InetSocketAddress address;
 
   @BeforeClass
-  public static void startServer() throws IOException {
+  public static void startServer() throws Exception {
     assumeTrue(
         "Skip tests when emulator is enabled as this test interferes with the check whether the"
             + " emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
 
+    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));

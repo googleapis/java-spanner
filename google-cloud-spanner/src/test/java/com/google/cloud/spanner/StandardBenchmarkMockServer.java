@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
+
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
@@ -31,7 +33,6 @@ import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.io.IOException;
 
 /** Standard mock server used for benchmarking. */
 class StandardBenchmarkMockServer {
@@ -83,7 +84,8 @@ class StandardBenchmarkMockServer {
   private Server server;
   private LocalChannelProvider channelProvider;
 
-  TransportChannelProvider start() throws IOException {
+  TransportChannelProvider start() throws Exception {
+    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
@@ -32,7 +33,6 @@ import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -89,7 +89,8 @@ public class BackendExhaustedTest {
   private DatabaseClientImpl client;
 
   @BeforeClass
-  public static void startStaticServer() throws IOException {
+  public static void startStaticServer() throws Exception {
+    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));

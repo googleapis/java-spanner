@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -121,6 +122,7 @@ public class SpanTest {
         "This test is only supported on JDK11 and lower",
         JavaVersionUtil.getJavaMajorVersion() < 12);
 
+    disableDefaultMtlsProvider();
     // Use a little reflection to set the test tracer.
     // This is not possible in Java 12 and later.
     java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");
