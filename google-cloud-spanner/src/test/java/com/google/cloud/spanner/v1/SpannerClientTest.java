@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.v1;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.cloud.spanner.v1.SpannerClient.ListSessionsPagedResponse;
 
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -99,7 +100,8 @@ public class SpannerClientTest {
   private SpannerClient client;
 
   @BeforeClass
-  public static void startStaticServer() {
+  public static void startStaticServer() throws Exception {
+    disableDefaultMtlsProvider();
     mockSpanner = new MockSpanner();
     mockServiceHelper =
         new MockServiceHelper(

@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
+
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
@@ -156,7 +158,8 @@ public abstract class AbstractMockServerTest {
   private static boolean clientStreamParentHandlers;
 
   @BeforeClass
-  public static void startStaticServer() throws IOException {
+  public static void startStaticServer() throws Exception {
+    disableDefaultMtlsProvider();
     startStaticServer(createServerInterceptor());
   }
 
