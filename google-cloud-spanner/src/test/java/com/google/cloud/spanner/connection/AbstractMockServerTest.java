@@ -249,6 +249,7 @@ public abstract class AbstractMockServerTest {
   @Before
   public void setupResults() {
     mockSpanner.clearRequests();
+    mockSpanner.removeAllExecutionTimes();
     mockDatabaseAdmin.getRequests().clear();
     mockInstanceAdmin.getRequests().clear();
   }
