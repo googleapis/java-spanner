@@ -1555,7 +1555,7 @@ public class SpannerSample {
   }
   // [END spanner_query_with_query_options]
 
-  // [START spanner_isolation_level_settings]
+  // [START spanner_isolation_level]
   static void isolationLevelSetting(DatabaseId db) {
     // The isolation level specified at the client-level will be applied to all
     // RW transactions.
@@ -1594,7 +1594,7 @@ public class SpannerSample {
           return null;
         });
   }
-  // [END spanner_isolation_level_settings]
+  // [END spanner_isolation_level]
 
   // [START spanner_create_backup]
   static void createBackup(DatabaseAdminClient dbAdminClient, String projectId, String instanceId,
