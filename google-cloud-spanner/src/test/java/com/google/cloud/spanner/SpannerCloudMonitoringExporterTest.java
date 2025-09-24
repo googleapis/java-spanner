@@ -454,7 +454,7 @@ public class SpannerCloudMonitoringExporterTest {
   @Test
   public void getAggregationTemporality() throws IOException {
     SpannerCloudMonitoringExporter actualExporter =
-        SpannerCloudMonitoringExporter.create(projectId, null, null);
+        SpannerCloudMonitoringExporter.create(projectId, null, null, null);
     assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
   }

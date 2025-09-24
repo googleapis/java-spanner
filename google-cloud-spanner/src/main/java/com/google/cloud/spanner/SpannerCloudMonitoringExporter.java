@@ -27,6 +27,7 @@ import com.google.auth.Credentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.monitoring.v3.CreateTimeSeriesRequest;
@@ -71,7 +72,10 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   private final String spannerProjectId;
 
   static SpannerCloudMonitoringExporter create(
-      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost)
+      String projectId,
+      @Nullable Credentials credentials,
+      @Nullable String monitoringHost,
+      String universeDomain)
       throws IOException {
     MetricServiceSettings.Builder settingsBuilder = MetricServiceSettings.newBuilder();
     CredentialsProvider credentialsProvider;
@@ -83,6 +87,9 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     settingsBuilder.setCredentialsProvider(credentialsProvider);
     if (monitoringHost != null) {
       settingsBuilder.setEndpoint(monitoringHost);
+    }
+    if (Strings.isNullOrEmpty(universeDomain)) {
+      settingsBuilder.setUniverseDomain(universeDomain);
     }
 
     Duration timeout = Duration.ofMinutes(1);

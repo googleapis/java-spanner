@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -36,6 +37,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableMap;
@@ -47,6 +49,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
@@ -1328,5 +1331,84 @@ public class ConnectionOptionsTest {
     builderWithDirectPathParam.setUri(
         "spanner://localhost:15000/projects/default/instances/default/databases/singers-db;usePlainText=true;enableDirectAccess=true");
     assertTrue(builderWithDirectPathParam.build().isEnableDirectAccess());
+  }
+
+  @Test
+  public void testUniverseDomain() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+
+    // No universeDomain
+    AtomicBoolean executedConfigurator = new AtomicBoolean(false);
+    ConnectionOptions optionsWithNoUniverseDomainParam =
+        ConnectionOptions.newBuilder()
+            .setUri("cloudspanner:/projects/default/instances/default/databases/singers-db")
+            .setConfigurator(
+                optionsBuilder -> {
+                  executedConfigurator.set(true);
+                  SpannerOptions spannerOptions = optionsBuilder.build();
+                  assertEquals("googleapis.com", spannerOptions.getUniverseDomain());
+                  assertEquals("https://spanner.googleapis.com", spannerOptions.getHost());
+                })
+            .build();
+    Spanner spanner = SpannerPool.INSTANCE.getSpanner(optionsWithNoUniverseDomainParam, connection);
+    spanner.close();
+    assertTrue(executedConfigurator.get());
+
+    // only configuring universal domain
+    executedConfigurator.set(false);
+    ConnectionOptions optionsWithUniverseDomainParam =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/default/instances/default/databases/singers-db;universeDomain=abc.goog")
+            .setConfigurator(
+                optionsBuilder -> {
+                  executedConfigurator.set(true);
+                  SpannerOptions spannerOptions = optionsBuilder.build();
+                  assertEquals("abc.goog", spannerOptions.getUniverseDomain());
+                  assertEquals("https://spanner.abc.goog", spannerOptions.getHost());
+                })
+            .build();
+    spanner = SpannerPool.INSTANCE.getSpanner(optionsWithUniverseDomainParam, connection);
+    spanner.close();
+    assertTrue(executedConfigurator.get());
+
+    // configuring both universal domain and host
+    executedConfigurator.set(false);
+    ConnectionOptions optionsWithHostAndUniverseDomainParam =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner://spanner.abc.goog/projects/default/instances/default/databases/singers-db;universeDomain=abc.goog")
+            .setConfigurator(
+                optionsBuilder -> {
+                  executedConfigurator.set(true);
+                  SpannerOptions spannerOptions = optionsBuilder.build();
+                  assertEquals("abc.goog", spannerOptions.getUniverseDomain());
+                  assertEquals("https://spanner.abc.goog", spannerOptions.getHost());
+                })
+            .build();
+    spanner = SpannerPool.INSTANCE.getSpanner(optionsWithHostAndUniverseDomainParam, connection);
+    spanner.close();
+    assertTrue(executedConfigurator.get());
+
+    // configuring both universal domain and host(localhost)
+    executedConfigurator.set(false);
+    ConnectionOptions optionsWithLocalHostAndUniverseDomainParam =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner://localhost:15000/projects/default/instances/default/databases/singers-db;usePlainText=true;universeDomain=abc.goog")
+            .setConfigurator(
+                optionsBuilder -> {
+                  executedConfigurator.set(true);
+                  SpannerOptions spannerOptions = optionsBuilder.build();
+                  assertEquals("abc.goog", spannerOptions.getUniverseDomain());
+                  assertEquals("http://localhost:15000", spannerOptions.getHost());
+                })
+            .build();
+    spanner =
+        SpannerPool.INSTANCE.getSpanner(optionsWithLocalHostAndUniverseDomainParam, connection);
+    spanner.close();
+    assertTrue(executedConfigurator.get());
+
+    connection.close();
   }
 }

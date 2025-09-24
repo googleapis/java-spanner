@@ -49,6 +49,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.ROUTE_TO_
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACING_PREFIX;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_CONNECTION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_SESSION_LEAKS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.UNIVERSE_DOMAIN;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USER_AGENT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_AUTO_SAVEPOINTS_FOR_EMULATOR;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_PLAIN_TEXT;
@@ -769,7 +770,7 @@ public class ConnectionOptions {
       boolean autoConfigEmulator,
       boolean usePlainText,
       Map<String, String> environment) {
-    String host;
+    String host = null;
     if (Objects.equals(endpoint, DEFAULT_ENDPOINT) && matcher.group(Builder.HOST_GROUP) == null) {
       if (autoConfigEmulator) {
         if (Strings.isNullOrEmpty(environment.get(SPANNER_EMULATOR_HOST_ENV_VAR))) {
@@ -777,8 +778,6 @@ public class ConnectionOptions {
         } else {
           return PLAIN_TEXT_PROTOCOL + "//" + environment.get(SPANNER_EMULATOR_HOST_ENV_VAR);
         }
-      } else {
-        return DEFAULT_HOST;
       }
     } else if (!Objects.equals(endpoint, DEFAULT_ENDPOINT)) {
       // Add '//' at the start of the endpoint to conform to the standard URL specification.
@@ -791,6 +790,9 @@ public class ConnectionOptions {
           && !host.matches(".*:\\d+$")) {
         host = String.format("%s:15000", host);
       }
+    }
+    if (host == null) {
+      return null;
     }
     if (usePlainText) {
       return PLAIN_TEXT_PROTOCOL + host;
@@ -1084,6 +1086,10 @@ public class ConnectionOptions {
 
   Boolean isEnableDirectAccess() {
     return getInitialConnectionPropertyValue(ENABLE_DIRECT_ACCESS);
+  }
+
+  String getUniverseDomain() {
+    return getInitialConnectionPropertyValue(UNIVERSE_DOMAIN);
   }
 
   String getClientCertificate() {
