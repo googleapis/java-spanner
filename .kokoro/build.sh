@@ -92,7 +92,7 @@ javadoc)
 integration)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
-      -Dprotobuf.version=4.32.0 \
+      -Dprotobuf.version=4.32.1 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -108,7 +108,7 @@ integration)
 integration-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
-      -Dprotobuf.version=4.32.0 \
+      -Dprotobuf.version=4.32.1 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -124,7 +124,7 @@ integration-directpath-enabled)
 integration-multiplexed-sessions-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
-      -Dprotobuf.version=4.32.0 \
+      -Dprotobuf.version=4.32.1 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -140,7 +140,7 @@ integration-multiplexed-sessions-enabled)
 integration-cloud-devel)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
-      -Dprotobuf.version=4.32.0 \
+      -Dprotobuf.version=4.32.1 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -157,7 +157,7 @@ integration-cloud-devel)
 integration-cloud-devel-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
-      -Dprotobuf.version=4.32.0 \
+      -Dprotobuf.version=4.32.1 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -174,7 +174,7 @@ integration-cloud-devel-directpath-enabled)
 integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
-      -Dprotobuf.version=4.32.0 \
+      -Dprotobuf.version=4.32.1 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -191,13 +191,13 @@ integration-cloud-staging|integration-cloud-staging-directpath-enabled)
 graalvm)
     # Run Unit and Integration Tests with Native Image
     mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests \
-      -Dprotobuf.version=4.32.0
+      -Dprotobuf.version=4.32.1
     RETURN_CODE=$?
     ;;
 graalvm17)
     # Run Unit and Integration Tests with Native Image
     mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests \
-      -Dprotobuf.version=4.32.0
+      -Dprotobuf.version=4.32.1
     RETURN_CODE=$?
     ;;
 slowtests)
