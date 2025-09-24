@@ -77,6 +77,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
@@ -970,7 +971,7 @@ public class ConnectionOptions {
       return null;
     }
     try {
-      URL url = new URL(host);
+      URL url = new URL(MoreObjects.firstNonNull(host, DEFAULT_HOST));
       ExternalChannelProvider provider =
           ExternalChannelProvider.class.cast(Class.forName(channelProvider).newInstance());
       return provider.getChannelProvider(url.getHost(), url.getPort());

@@ -30,6 +30,7 @@ import static com.google.cloud.spanner.BuiltInMetricsConstant.OPERATION_COUNT_NA
 import static com.google.cloud.spanner.BuiltInMetricsConstant.OPERATION_LATENCIES_NAME;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -39,6 +40,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.rpc.UnaryCallable;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
+import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
 import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.CreateTimeSeriesRequest;
@@ -457,6 +459,25 @@ public class SpannerCloudMonitoringExporterTest {
         SpannerCloudMonitoringExporter.create(projectId, null, null, null);
     assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
+  }
+
+  @Test
+  public void testUniverseDomain() throws IOException {
+    SpannerCloudMonitoringExporter actualExporter =
+        SpannerCloudMonitoringExporter.create(projectId, null, null, "abc.goog");
+    MetricServiceSettings metricServiceSettings =
+        actualExporter.getMetricServiceClient().getSettings();
+
+    assertEquals("abc.goog", metricServiceSettings.getUniverseDomain());
+    assertEquals("monitoring.abc.goog:443", metricServiceSettings.getEndpoint());
+
+    actualExporter =
+        SpannerCloudMonitoringExporter.create(
+            projectId, null, "monitoringa.abc.goog:443", "abc.goog");
+    metricServiceSettings = actualExporter.getMetricServiceClient().getSettings();
+
+    assertEquals("abc.goog", metricServiceSettings.getUniverseDomain());
+    assertEquals("monitoringa.abc.goog:443", metricServiceSettings.getEndpoint());
   }
 
   private static class FakeMetricServiceClient extends MetricServiceClient {

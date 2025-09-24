@@ -60,7 +60,7 @@ import org.junit.runners.JUnit4;
 public class ConnectionOptionsTest {
   private static final String FILE_TEST_PATH =
       Objects.requireNonNull(ConnectionOptionsTest.class.getResource("test-key.json")).getFile();
-  private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String DEFAULT_HOST = null;
   private static final String TEST_PROJECT = "test-project-123";
   private static final String TEST_INSTANCE = "test-instance-123";
   private static final String TEST_DATABASE = "test-database-123";
@@ -1341,7 +1341,8 @@ public class ConnectionOptionsTest {
     AtomicBoolean executedConfigurator = new AtomicBoolean(false);
     ConnectionOptions optionsWithNoUniverseDomainParam =
         ConnectionOptions.newBuilder()
-            .setUri("cloudspanner:/projects/default/instances/default/databases/singers-db")
+            .setUri(
+                "cloudspanner:/projects/default/instances/default/databases/singers-db?usePlainText=true")
             .setConfigurator(
                 optionsBuilder -> {
                   executedConfigurator.set(true);
@@ -1352,6 +1353,7 @@ public class ConnectionOptionsTest {
             .build();
     Spanner spanner = SpannerPool.INSTANCE.getSpanner(optionsWithNoUniverseDomainParam, connection);
     spanner.close();
+    SpannerPool.INSTANCE.removeConnection(optionsWithNoUniverseDomainParam, connection);
     assertTrue(executedConfigurator.get());
 
     // only configuring universal domain
@@ -1359,7 +1361,7 @@ public class ConnectionOptionsTest {
     ConnectionOptions optionsWithUniverseDomainParam =
         ConnectionOptions.newBuilder()
             .setUri(
-                "cloudspanner:/projects/default/instances/default/databases/singers-db;universeDomain=abc.goog")
+                "cloudspanner:/projects/default/instances/default/databases/singers-db;universeDomain=abc.goog;usePlainText=true")
             .setConfigurator(
                 optionsBuilder -> {
                   executedConfigurator.set(true);
@@ -1370,6 +1372,7 @@ public class ConnectionOptionsTest {
             .build();
     spanner = SpannerPool.INSTANCE.getSpanner(optionsWithUniverseDomainParam, connection);
     spanner.close();
+    SpannerPool.INSTANCE.removeConnection(optionsWithUniverseDomainParam, connection);
     assertTrue(executedConfigurator.get());
 
     // configuring both universal domain and host
@@ -1377,17 +1380,18 @@ public class ConnectionOptionsTest {
     ConnectionOptions optionsWithHostAndUniverseDomainParam =
         ConnectionOptions.newBuilder()
             .setUri(
-                "cloudspanner://spanner.abc.goog/projects/default/instances/default/databases/singers-db;universeDomain=abc.goog")
+                "cloudspanner://spanner.abc.goog/projects/default/instances/default/databases/singers-db;universeDomain=abc.goog;usePlainText=true")
             .setConfigurator(
                 optionsBuilder -> {
                   executedConfigurator.set(true);
                   SpannerOptions spannerOptions = optionsBuilder.build();
                   assertEquals("abc.goog", spannerOptions.getUniverseDomain());
-                  assertEquals("https://spanner.abc.goog", spannerOptions.getHost());
+                  assertEquals("http://spanner.abc.goog", spannerOptions.getHost());
                 })
             .build();
     spanner = SpannerPool.INSTANCE.getSpanner(optionsWithHostAndUniverseDomainParam, connection);
     spanner.close();
+    SpannerPool.INSTANCE.removeConnection(optionsWithHostAndUniverseDomainParam, connection);
     assertTrue(executedConfigurator.get());
 
     // configuring both universal domain and host(localhost)
@@ -1407,6 +1411,7 @@ public class ConnectionOptionsTest {
     spanner =
         SpannerPool.INSTANCE.getSpanner(optionsWithLocalHostAndUniverseDomainParam, connection);
     spanner.close();
+    SpannerPool.INSTANCE.removeConnection(optionsWithLocalHostAndUniverseDomainParam, connection);
     assertTrue(executedConfigurator.get());
 
     connection.close();

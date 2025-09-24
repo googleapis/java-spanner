@@ -88,7 +88,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     if (monitoringHost != null) {
       settingsBuilder.setEndpoint(monitoringHost);
     }
-    if (Strings.isNullOrEmpty(universeDomain)) {
+    if (!Strings.isNullOrEmpty(universeDomain)) {
       settingsBuilder.setUniverseDomain(universeDomain);
     }
 
@@ -115,6 +115,11 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     }
 
     return exportSpannerClientMetrics(collection);
+  }
+
+  @VisibleForTesting
+  MetricServiceClient getMetricServiceClient() {
+    return client;
   }
 
   /** Export client built in metrics */

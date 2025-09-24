@@ -887,7 +887,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Deprecated
-    @ObsoleteApi("This will be removed in upcoming version without breaking change release. You should use universalDomain to configure the built-in metrics endpoint for a partner universe.")
+    @ObsoleteApi(
+        "This will be removed in an upcoming version without a major version bump. You should use"
+            + " universalDomain to configure the built-in metrics endpoint for a partner universe.")
     default String getMonitoringHost() {
       return null;
     }
@@ -1683,7 +1685,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /** Sets the monitoring host to be used for Built-in client side metrics */
     @Deprecated
-    @ObsoleteApi("This will be removed in upcoming version without breaking change release. You should use universalDomain to configure the built-in metrics endpoint for a partner universe.")
+    @ObsoleteApi(
+        "This will be removed in an upcoming version without a major version bump. You should use"
+            + " universalDomain to configure the built-in metrics endpoint for a partner universe.")
     public Builder setMonitoringHost(String monitoringHost) {
       this.monitoringHost = monitoringHost;
       return this;
