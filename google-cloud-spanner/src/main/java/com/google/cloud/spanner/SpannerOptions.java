@@ -781,17 +781,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     databaseRole = builder.databaseRole;
     sessionLabels = builder.sessionLabels;
     try {
+      String resolvedUniversalDomain = getResolvedUniverseDomain();
       spannerStubSettings =
-          builder.spannerStubSettingsBuilder.setUniverseDomain(getResolvedUniverseDomain()).build();
+          builder.spannerStubSettingsBuilder.setUniverseDomain(resolvedUniversalDomain).build();
       instanceAdminStubSettings =
           builder
               .instanceAdminStubSettingsBuilder
-              .setUniverseDomain(getResolvedUniverseDomain())
+              .setUniverseDomain(resolvedUniversalDomain)
               .build();
       databaseAdminStubSettings =
           builder
               .databaseAdminStubSettingsBuilder
-              .setUniverseDomain(getResolvedUniverseDomain())
+              .setUniverseDomain(resolvedUniversalDomain)
               .build();
     } catch (IOException e) {
       throw SpannerExceptionFactory.newSpannerException(e);
