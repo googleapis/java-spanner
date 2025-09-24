@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.spi.v1;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -83,7 +84,6 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.HashMap;
@@ -166,7 +166,8 @@ public class GapicSpannerRpcTest {
   }
 
   @Before
-  public void startServer() throws IOException {
+  public void startServer() throws Exception {
+    disableDefaultMtlsProvider();
     // Enable OpenTelemetry tracing.
     SpannerOptionsHelper.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();

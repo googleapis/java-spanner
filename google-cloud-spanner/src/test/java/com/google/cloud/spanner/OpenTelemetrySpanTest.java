@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -174,6 +175,7 @@ public class OpenTelemetrySpanTest {
 
   @BeforeClass
   public static void startStaticServer() throws Exception {
+    disableDefaultMtlsProvider();
     // Incorporating OpenCensus tracer to ensure that OpenTraces traces are utilized if enabled,
     // regardless of the presence of OpenCensus tracer.
     java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");

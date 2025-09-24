@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.spi.v1;
 
+import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -48,7 +49,6 @@ import io.opencensus.stats.View;
 import io.opencensus.stats.ViewData;
 import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +132,8 @@ public class GfeLatencyTest {
       Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
 
   @BeforeClass
-  public static void startServer() throws IOException {
+  public static void startServer() throws Exception {
+    disableDefaultMtlsProvider();
     //noinspection deprecation
     SpannerRpcViews.registerGfeLatencyAndHeaderMissingCountViews();
 
