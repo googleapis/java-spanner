@@ -61,7 +61,7 @@ import org.openjdk.jmh.runner.options.WarmupMode;
 
 @BenchmarkMode(Mode.SampleTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Threads(10)
+@Threads(Threads.MAX)
 @Fork(1)
 public class ReadBenchmark {
 
