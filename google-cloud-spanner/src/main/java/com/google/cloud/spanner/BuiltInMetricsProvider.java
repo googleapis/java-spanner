@@ -68,12 +68,16 @@ final class BuiltInMetricsProvider {
   private BuiltInMetricsProvider() {}
 
   OpenTelemetry getOrCreateOpenTelemetry(
-      String projectId, @Nullable Credentials credentials, @Nullable String monitoringHost) {
+      String projectId,
+      @Nullable Credentials credentials,
+      @Nullable String monitoringHost,
+      String universeDomain) {
     try {
       if (this.openTelemetry == null) {
         SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
         BuiltInMetricsView.registerBuiltinMetrics(
-            SpannerCloudMonitoringExporter.create(projectId, credentials, monitoringHost),
+            SpannerCloudMonitoringExporter.create(
+                projectId, credentials, monitoringHost, universeDomain),
             sdkMeterProviderBuilder);
         sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
@@ -95,10 +99,13 @@ final class BuiltInMetricsProvider {
       InstantiatingGrpcChannelProvider.Builder channelProviderBuilder,
       String projectId,
       @Nullable Credentials credentials,
-      @Nullable String monitoringHost) {
+      @Nullable String monitoringHost,
+      String universeDomain) {
     GrpcOpenTelemetry grpcOpenTelemetry =
         GrpcOpenTelemetry.newBuilder()
-            .sdk(this.getOrCreateOpenTelemetry(projectId, credentials, monitoringHost))
+            .sdk(
+                this.getOrCreateOpenTelemetry(
+                    projectId, credentials, monitoringHost, universeDomain))
             .enableMetrics(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE)
             // Disable gRPCs default metrics as they are not needed for Spanner.
             .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT)

@@ -200,6 +200,14 @@ public class ConnectionProperties {
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
+  static final ConnectionProperty<String> UNIVERSE_DOMAIN =
+      create(
+          "universeDomain",
+          "Configure the connection to try to connect to Spanner using "
+              + "a different partner Google Universe than GDU (googleapis.com).",
+          "googleapis.com",
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_AUTO_SAVEPOINTS_FOR_EMULATOR =
       create(
           "useAutoSavepointsForEmulator",

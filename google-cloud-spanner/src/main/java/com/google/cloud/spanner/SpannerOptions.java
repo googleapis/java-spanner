@@ -120,7 +120,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final String PG_ADAPTER_CLIENT_LIB_TOKEN = "pg-adapter";
 
   private static final String API_SHORT_NAME = "Spanner";
-  private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String SPANNER_SERVICE_NAME = "spanner";
+  private static final String GOOGLE_DEFAULT_UNIVERSE = "googleapis.com";
   private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
 
   private static final ImmutableSet<String> SCOPES =
@@ -780,9 +781,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     databaseRole = builder.databaseRole;
     sessionLabels = builder.sessionLabels;
     try {
-      spannerStubSettings = builder.spannerStubSettingsBuilder.build();
-      instanceAdminStubSettings = builder.instanceAdminStubSettingsBuilder.build();
-      databaseAdminStubSettings = builder.databaseAdminStubSettingsBuilder.build();
+      String resolvedUniversalDomain = getResolvedUniverseDomain();
+      spannerStubSettings =
+          builder.spannerStubSettingsBuilder.setUniverseDomain(resolvedUniversalDomain).build();
+      instanceAdminStubSettings =
+          builder
+              .instanceAdminStubSettingsBuilder
+              .setUniverseDomain(resolvedUniversalDomain)
+              .build();
+      databaseAdminStubSettings =
+          builder
+              .databaseAdminStubSettingsBuilder
+              .setUniverseDomain(resolvedUniversalDomain)
+              .build();
     } catch (IOException e) {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
@@ -822,6 +833,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
+  }
+
+  private String getResolvedUniverseDomain() {
+    String universeDomain = getUniverseDomain();
+    return Strings.isNullOrEmpty(universeDomain) ? GOOGLE_DEFAULT_UNIVERSE : universeDomain;
   }
 
   /**
@@ -871,6 +887,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
+    @Deprecated
+    @ObsoleteApi(
+        "This will be removed in an upcoming version without a major version bump. You should use"
+            + " universalDomain to configure the built-in metrics endpoint for a partner universe.")
     default String getMonitoringHost() {
       return null;
     }
@@ -1665,6 +1685,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /** Sets the monitoring host to be used for Built-in client side metrics */
+    @Deprecated
+    @ObsoleteApi(
+        "This will be removed in an upcoming version without a major version bump. You should use"
+            + " universalDomain to configure the built-in metrics endpoint for a partner universe.")
     public Builder setMonitoringHost(String monitoringHost) {
       this.monitoringHost = monitoringHost;
       return this;
@@ -2035,7 +2059,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   public void enablegRPCMetrics(InstantiatingGrpcChannelProvider.Builder channelProviderBuilder) {
     if (SpannerOptions.environment.isEnableGRPCBuiltInMetrics()) {
       this.builtInMetricsProvider.enableGrpcMetrics(
-          channelProviderBuilder, this.getProjectId(), getCredentials(), this.monitoringHost);
+          channelProviderBuilder,
+          this.getProjectId(),
+          getCredentials(),
+          this.monitoringHost,
+          getUniverseDomain());
     }
   }
 
@@ -2081,7 +2109,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
         this.builtInMetricsProvider.getOrCreateOpenTelemetry(
-            this.getProjectId(), getCredentials(), this.monitoringHost);
+            this.getProjectId(), getCredentials(), this.monitoringHost, getUniverseDomain());
 
     return openTelemetry != null
         ? new BuiltInMetricsTracerFactory(
@@ -2181,7 +2209,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   @Override
   protected String getDefaultHost() {
-    return DEFAULT_HOST;
+    String universeDomain = getUniverseDomain();
+    if (Strings.isNullOrEmpty(universeDomain)) {
+      universeDomain = GOOGLE_DEFAULT_UNIVERSE;
+    }
+    return String.format("https://%s.%s", SPANNER_SERVICE_NAME, universeDomain);
   }
 
   private static class SpannerDefaults implements ServiceDefaults<Spanner, SpannerOptions> {
