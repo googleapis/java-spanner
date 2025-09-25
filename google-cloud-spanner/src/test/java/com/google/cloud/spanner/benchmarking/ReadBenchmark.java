@@ -76,7 +76,6 @@ public class ReadBenchmark {
     @Setup(Level.Trial)
     public void setup() throws IOException {
       mockSpanner = new MockSpannerServiceImpl();
-
       mockSpanner.setAbortProbability(0.0D);
 
       String serverName = InProcessServerBuilder.generateName();
