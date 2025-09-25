@@ -1043,4 +1043,14 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.spanner.v1.TransactionOptions$ReadWrite$ReadLockMode getReadLockMode()</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setTransactionTimeout(java.time.Duration)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.time.Duration getTransactionTimeout()</method>
+  </difference>
 </differences>

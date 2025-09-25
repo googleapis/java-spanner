@@ -1130,6 +1130,205 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-statement_timeout;
 NEW_CONNECTION;
+show variable transaction_timeout;
+NEW_CONNECTION;
+SHOW VARIABLE TRANSACTION_TIMEOUT;
+NEW_CONNECTION;
+show variable transaction_timeout;
+NEW_CONNECTION;
+   show variable transaction_timeout;
+NEW_CONNECTION;
+			show variable transaction_timeout;
+NEW_CONNECTION;
+
+
+
+show variable transaction_timeout;
+NEW_CONNECTION;
+show variable transaction_timeout  ;
+NEW_CONNECTION;
+show variable transaction_timeout		;
+NEW_CONNECTION;
+show variable transaction_timeout
+
+;
+NEW_CONNECTION;
+show   variable   transaction_timeout;
+NEW_CONNECTION;
+show	variable	transaction_timeout;
+NEW_CONNECTION;
+show
+variable
+transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable transaction_timeout;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction_timeout/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-transaction_timeout;
+NEW_CONNECTION;
 set readonly = true;
 SELECT 1 AS TEST;
 show variable read_timestamp;
@@ -14561,6 +14760,1797 @@ set statement_timeout='9223372036854775807ns'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-statement_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+set transaction_timeout=null;
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT=NULL;
+NEW_CONNECTION;
+set transaction_timeout=null;
+NEW_CONNECTION;
+   set transaction_timeout=null;
+NEW_CONNECTION;
+			set transaction_timeout=null;
+NEW_CONNECTION;
+
+
+
+set transaction_timeout=null;
+NEW_CONNECTION;
+set transaction_timeout=null  ;
+NEW_CONNECTION;
+set transaction_timeout=null		;
+NEW_CONNECTION;
+set transaction_timeout=null
+
+;
+NEW_CONNECTION;
+set   transaction_timeout=null;
+NEW_CONNECTION;
+set	transaction_timeout=null;
+NEW_CONNECTION;
+set
+transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=null/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-transaction_timeout=null;
+NEW_CONNECTION;
+set transaction_timeout = null ;
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT = NULL ;
+NEW_CONNECTION;
+set transaction_timeout = null ;
+NEW_CONNECTION;
+   set transaction_timeout = null ;
+NEW_CONNECTION;
+			set transaction_timeout = null ;
+NEW_CONNECTION;
+
+
+
+set transaction_timeout = null ;
+NEW_CONNECTION;
+set transaction_timeout = null   ;
+NEW_CONNECTION;
+set transaction_timeout = null 		;
+NEW_CONNECTION;
+set transaction_timeout = null 
+
+;
+NEW_CONNECTION;
+set   transaction_timeout   =   null   ;
+NEW_CONNECTION;
+set	transaction_timeout	=	null	;
+NEW_CONNECTION;
+set
+transaction_timeout
+=
+null
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout = null ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = null/-;
+NEW_CONNECTION;
+set transaction_timeout='1s';
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT='1S';
+NEW_CONNECTION;
+set transaction_timeout='1s';
+NEW_CONNECTION;
+   set transaction_timeout='1s';
+NEW_CONNECTION;
+			set transaction_timeout='1s';
+NEW_CONNECTION;
+
+
+
+set transaction_timeout='1s';
+NEW_CONNECTION;
+set transaction_timeout='1s'  ;
+NEW_CONNECTION;
+set transaction_timeout='1s'		;
+NEW_CONNECTION;
+set transaction_timeout='1s'
+
+;
+NEW_CONNECTION;
+set   transaction_timeout='1s';
+NEW_CONNECTION;
+set	transaction_timeout='1s';
+NEW_CONNECTION;
+set
+transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='1s'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-transaction_timeout='1s';
+NEW_CONNECTION;
+set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT = '1S' ;
+NEW_CONNECTION;
+set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+   set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+			set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+
+
+
+set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+set transaction_timeout = '1s'   ;
+NEW_CONNECTION;
+set transaction_timeout = '1s' 		;
+NEW_CONNECTION;
+set transaction_timeout = '1s' 
+
+;
+NEW_CONNECTION;
+set   transaction_timeout   =   '1s'   ;
+NEW_CONNECTION;
+set	transaction_timeout	=	'1s'	;
+NEW_CONNECTION;
+set
+transaction_timeout
+=
+'1s'
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout = '1s' ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s' /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = '1s'/-;
+NEW_CONNECTION;
+set transaction_timeout=100;
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT=100;
+NEW_CONNECTION;
+set transaction_timeout=100;
+NEW_CONNECTION;
+   set transaction_timeout=100;
+NEW_CONNECTION;
+			set transaction_timeout=100;
+NEW_CONNECTION;
+
+
+
+set transaction_timeout=100;
+NEW_CONNECTION;
+set transaction_timeout=100  ;
+NEW_CONNECTION;
+set transaction_timeout=100		;
+NEW_CONNECTION;
+set transaction_timeout=100
+
+;
+NEW_CONNECTION;
+set   transaction_timeout=100;
+NEW_CONNECTION;
+set	transaction_timeout=100;
+NEW_CONNECTION;
+set
+transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout=100;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout=100/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-transaction_timeout=100;
+NEW_CONNECTION;
+set transaction_timeout = 100 ;
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT = 100 ;
+NEW_CONNECTION;
+set transaction_timeout = 100 ;
+NEW_CONNECTION;
+   set transaction_timeout = 100 ;
+NEW_CONNECTION;
+			set transaction_timeout = 100 ;
+NEW_CONNECTION;
+
+
+
+set transaction_timeout = 100 ;
+NEW_CONNECTION;
+set transaction_timeout = 100   ;
+NEW_CONNECTION;
+set transaction_timeout = 100 		;
+NEW_CONNECTION;
+set transaction_timeout = 100 
+
+;
+NEW_CONNECTION;
+set   transaction_timeout   =   100   ;
+NEW_CONNECTION;
+set	transaction_timeout	=	100	;
+NEW_CONNECTION;
+set
+transaction_timeout
+=
+100
+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100  bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 %;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 _;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 &;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 $;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 @;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 !;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 *;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 (;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 );
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 -;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 +;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 -#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 /;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 \;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 ?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 -/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 /#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout = 100 ;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100 /-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout = 100/-;
+NEW_CONNECTION;
+set transaction_timeout='100ms';
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT='100MS';
+NEW_CONNECTION;
+set transaction_timeout='100ms';
+NEW_CONNECTION;
+   set transaction_timeout='100ms';
+NEW_CONNECTION;
+			set transaction_timeout='100ms';
+NEW_CONNECTION;
+
+
+
+set transaction_timeout='100ms';
+NEW_CONNECTION;
+set transaction_timeout='100ms'  ;
+NEW_CONNECTION;
+set transaction_timeout='100ms'		;
+NEW_CONNECTION;
+set transaction_timeout='100ms'
+
+;
+NEW_CONNECTION;
+set   transaction_timeout='100ms';
+NEW_CONNECTION;
+set	transaction_timeout='100ms';
+NEW_CONNECTION;
+set
+transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='100ms'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-transaction_timeout='100ms';
+NEW_CONNECTION;
+set transaction_timeout='10000us';
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT='10000US';
+NEW_CONNECTION;
+set transaction_timeout='10000us';
+NEW_CONNECTION;
+   set transaction_timeout='10000us';
+NEW_CONNECTION;
+			set transaction_timeout='10000us';
+NEW_CONNECTION;
+
+
+
+set transaction_timeout='10000us';
+NEW_CONNECTION;
+set transaction_timeout='10000us'  ;
+NEW_CONNECTION;
+set transaction_timeout='10000us'		;
+NEW_CONNECTION;
+set transaction_timeout='10000us'
+
+;
+NEW_CONNECTION;
+set   transaction_timeout='10000us';
+NEW_CONNECTION;
+set	transaction_timeout='10000us';
+NEW_CONNECTION;
+set
+transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout='10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='10000us'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-transaction_timeout='10000us';
+NEW_CONNECTION;
+set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+SET TRANSACTION_TIMEOUT='9223372036854775807NS';
+NEW_CONNECTION;
+set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+   set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+			set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+
+
+
+set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+set transaction_timeout='9223372036854775807ns'  ;
+NEW_CONNECTION;
+set transaction_timeout='9223372036854775807ns'		;
+NEW_CONNECTION;
+set transaction_timeout='9223372036854775807ns'
+
+;
+NEW_CONNECTION;
+set   transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+set	transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+set
+transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_timeout='9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_timeout='9223372036854775807ns'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-transaction_timeout='9223372036854775807ns';
 NEW_CONNECTION;
 set autocommit = false;
 set transaction read only;

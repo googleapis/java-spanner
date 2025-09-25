@@ -358,10 +358,14 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
           statement, StatementExecutionStep.EXECUTE_STATEMENT, this);
     }
     Context context = Context.current();
-    if (statementTimeout.hasTimeout() && !applyStatementTimeoutToMethods.isEmpty()) {
-      Deadline deadline =
-          Deadline.after(
-              statementTimeout.getTimeoutValue(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS);
+    Deadline transactionDeadline = getTransactionDeadline();
+    Deadline statementDeadline =
+        statementTimeout.hasTimeout()
+            ? Deadline.after(
+                statementTimeout.getTimeoutValue(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
+            : null;
+    Deadline effectiveDeadline = min(transactionDeadline, statementDeadline);
+    if (effectiveDeadline != null && !applyStatementTimeoutToMethods.isEmpty()) {
       context =
           context.withValue(
               SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY,
@@ -369,11 +373,10 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
                 @Override
                 public <ReqT, RespT> ApiCallContext configure(
                     ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
-                  if (statementTimeout.hasTimeout()
-                      && applyStatementTimeoutToMethods.contains(method)) {
+                  if (applyStatementTimeoutToMethods.contains(method)) {
                     // Calculate the remaining timeout. This method could be called multiple times
                     // if the transaction is retried.
-                    long remainingTimeout = deadline.timeRemaining(TimeUnit.NANOSECONDS);
+                    long remainingTimeout = effectiveDeadline.timeRemaining(TimeUnit.NANOSECONDS);
                     if (remainingTimeout <= 0) {
                       remainingTimeout = 1;
                     }
@@ -426,5 +429,24 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
           MoreExecutors.directExecutor());
       return future;
     }
+  }
+
+  @Nullable
+  static Deadline min(@Nullable Deadline a, @Nullable Deadline b) {
+    if (a == null && b == null) {
+      return null;
+    }
+    if (a == null) {
+      return b;
+    }
+    if (b == null) {
+      return a;
+    }
+    return a.minimum(b);
+  }
+
+  @Nullable
+  Deadline getTransactionDeadline() {
+    return null;
   }
 }
