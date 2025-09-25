@@ -522,7 +522,11 @@
                       <argument>-classpath</argument>
                       <classpath/>
                       <argument>org.openjdk.jmh.Main</argument>
-                      <argument>${benchmark.name}</argument>
+                        <argument>${benchmark.name}</argument>
+                      <argument>-rf</argument>
+                      <argument>JSON</argument>
+                      <argument>-rff</argument>
+                      <argument>jmh-results.json</argument>
                   </arguments>
                 </configuration>
               </execution>
