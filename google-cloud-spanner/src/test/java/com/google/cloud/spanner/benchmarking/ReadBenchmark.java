@@ -78,6 +78,7 @@ public class ReadBenchmark {
       mockSpanner = new MockSpannerServiceImpl();
       mockSpanner.setAbortProbability(0.0D);
 
+
       String serverName = InProcessServerBuilder.generateName();
       gRPCServer = InProcessServerBuilder.forName(serverName)
           .addService(mockSpanner)
