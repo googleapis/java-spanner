@@ -16,6 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.appendExperimentalHost;
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
+
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.ErrorCode;
@@ -235,6 +238,9 @@ public abstract class ITAbstractSpannerTest {
     url.append("/").append(database.getId().getName());
     if (options.getCredentials() == NoCredentials.getInstance()) {
       url.append(";usePlainText=true");
+    }
+    if (isExperimentalHost()) {
+      appendExperimentalHost(url);
     }
     return url;
   }
