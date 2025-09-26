@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.101.1](https://github.com/googleapis/java-spanner/compare/v6.101.0...v6.101.1) (2025-09-26)
+
+
+### Bug Fixes
+
+* Potential NullPointerException in LocalConnectionChecker ([#4092](https://github.com/googleapis/java-spanner/issues/4092)) ([3b9f597](https://github.com/googleapis/java-spanner/commit/3b9f597ba60199a16556824568b24908ce938a69))
+
 ## [6.101.0](https://github.com/googleapis/java-spanner/compare/v6.100.0...v6.101.0) (2025-09-26)
 
 
