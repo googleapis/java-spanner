@@ -63,7 +63,7 @@ import org.openjdk.jmh.runner.options.WarmupMode;
 
 @BenchmarkMode(Mode.SampleTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Threads(10)
+@Threads(5)
 @Fork(1)
 public class ReadBenchmark {
 
@@ -81,7 +81,7 @@ public class ReadBenchmark {
       mockSpanner = new MockSpannerServiceImpl();
       mockSpanner.setAbortProbability(0.0D);
 
-      executor = Executors.newFixedThreadPool(11);
+      executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
       String serverName = InProcessServerBuilder.generateName();
       gRPCServer = InProcessServerBuilder.forName(serverName)
