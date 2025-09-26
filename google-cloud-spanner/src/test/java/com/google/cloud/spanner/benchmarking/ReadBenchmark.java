@@ -37,6 +37,8 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -61,7 +63,7 @@ import org.openjdk.jmh.runner.options.WarmupMode;
 
 @BenchmarkMode(Mode.SampleTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Threads(1)
+@Threads(10)
 @Fork(1)
 public class ReadBenchmark {
 
@@ -72,15 +74,19 @@ public class ReadBenchmark {
     DatabaseClient databaseClient;
     MockSpannerServiceImpl mockSpanner;
     Server gRPCServer;
+    ExecutorService executor;
 
     @Setup(Level.Trial)
     public void setup() throws IOException {
       mockSpanner = new MockSpannerServiceImpl();
       mockSpanner.setAbortProbability(0.0D);
 
+      executor = Executors.newFixedThreadPool(11);
+
       String serverName = InProcessServerBuilder.generateName();
       gRPCServer = InProcessServerBuilder.forName(serverName)
           .addService(mockSpanner)
+          .executor(executor)
           .build()
           .start();
 
@@ -135,6 +141,7 @@ public class ReadBenchmark {
     public void tearDown() {
       spanner.close();
       gRPCServer.shutdown();
+      executor.shutdown();
     }
   }
 
