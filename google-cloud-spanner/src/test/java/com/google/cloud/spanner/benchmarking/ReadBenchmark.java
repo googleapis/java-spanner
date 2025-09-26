@@ -16,7 +16,11 @@
 
 package com.google.cloud.spanner.benchmarking;
 
+import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
+import com.google.api.gax.rpc.TransportChannel;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Key;
@@ -32,13 +36,18 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
+import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -74,27 +83,106 @@ public class ReadBenchmark {
     DatabaseClient databaseClient;
     MockSpannerServiceImpl mockSpanner;
     Server gRPCServer;
-    ExecutorService executor;
+    ExecutorService clientExecutors;
+    ExecutorService serverExecutors;
 
     @Setup(Level.Trial)
     public void setup() throws IOException {
       mockSpanner = new MockSpannerServiceImpl();
       mockSpanner.setAbortProbability(0.0D);
 
-      executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+      serverExecutors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+      clientExecutors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
       String serverName = InProcessServerBuilder.generateName();
       gRPCServer = InProcessServerBuilder.forName(serverName)
           .addService(mockSpanner)
-          .executor(executor)
+          .executor(serverExecutors)
           .build()
           .start();
 
       registerAllMocks(mockSpanner);
 
+      ManagedChannelBuilder channelBuilder = InProcessChannelBuilder.forName(serverName).usePlaintext()
+          .executor(clientExecutors);
+      GrpcTransportChannel grpcTransportChannel = GrpcTransportChannel.newBuilder()
+          .setManagedChannel(channelBuilder.build())
+          .build();
+
       spanner = SpannerOptions.newBuilder()
           .setProjectId("span-cloud-testing")
-          .setChannelProvider(LocalChannelProvider.create(serverName))
+          .setChannelProvider(new TransportChannelProvider() {
+            @Override
+            public boolean shouldAutoClose() {
+              return false;
+            }
+
+            @Override
+            public boolean needsExecutor() {
+              return false;
+            }
+
+            @Override
+            public TransportChannelProvider withExecutor(Executor executor) {
+              return null;
+            }
+
+            @Override
+            public TransportChannelProvider withExecutor(
+                ScheduledExecutorService scheduledExecutorService) {
+              return null;
+            }
+
+            @Override
+            public boolean needsHeaders() {
+              return false;
+            }
+
+            @Override
+            public TransportChannelProvider withHeaders(Map<String, String> map) {
+              return null;
+            }
+
+            @Override
+            public boolean needsEndpoint() {
+              return false;
+            }
+
+            @Override
+            public TransportChannelProvider withEndpoint(String s) {
+              return null;
+            }
+
+            @Override
+            public boolean acceptsPoolSize() {
+              return false;
+            }
+
+            @Override
+            public TransportChannelProvider withPoolSize(int i) {
+              return null;
+            }
+
+            @Override
+            public boolean needsCredentials() {
+              return false;
+            }
+
+            @Override
+            public TransportChannelProvider withCredentials(Credentials credentials) {
+              return null;
+            }
+
+            @Override
+            public TransportChannel getTransportChannel() throws IOException {
+              return grpcTransportChannel;
+            }
+
+            @Override
+            public String getTransportName() {
+              return "";
+            }
+          })
           .build().getService();
       databaseClient = spanner.getDatabaseClient(
           DatabaseId.of("span-cloud-testing", "sakthi-spanner-testing", "benchmarking"));
@@ -141,7 +229,8 @@ public class ReadBenchmark {
     public void tearDown() {
       spanner.close();
       gRPCServer.shutdown();
-      executor.shutdown();
+      clientExecutors.shutdown();
+      serverExecutors.shutdown();
     }
   }
 
