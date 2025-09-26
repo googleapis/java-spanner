@@ -60,6 +60,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowStatementTimeout();
 
+  StatementResult statementSetTransactionTimeout(Duration duration);
+
+  StatementResult statementShowTransactionTimeout();
+
   StatementResult statementShowReadTimestamp();
 
   StatementResult statementShowCommitTimestamp();

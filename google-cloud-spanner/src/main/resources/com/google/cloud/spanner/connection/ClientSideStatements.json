@@ -48,6 +48,15 @@
 	  "exampleStatements": ["show variable statement_timeout"]
 	},
 	{
+		"name": "SHOW VARIABLE TRANSACTION_TIMEOUT",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_TRANSACTION_TIMEOUT",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+transaction_timeout\\s*\\z",
+		"method": "statementShowTransactionTimeout",
+		"exampleStatements": ["show variable transaction_timeout"]
+	},
+	{
 	  "name": "SHOW VARIABLE READ_TIMESTAMP",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "RESULT_SET",
@@ -427,6 +436,31 @@
 	    "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)",
 	    "converterName": "ClientSideStatementValueConverters$DurationConverter"
 	  }
+	},
+	{
+		"name": "SET TRANSACTION_TIMEOUT = '<duration>'|NULL",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_TRANSACTION_TIMEOUT",
+		"regex": "(?is)\\A\\s*set\\s+transaction_timeout\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetTransactionTimeout",
+		"exampleStatements": [
+			"set transaction_timeout=null",
+			"set transaction_timeout = null ",
+			"set transaction_timeout='1s'",
+			"set transaction_timeout = '1s' ",
+			"set transaction_timeout=100",
+			"set transaction_timeout = 100 ",
+			"set transaction_timeout='100ms'",
+			"set transaction_timeout='10000us'",
+			"set transaction_timeout='9223372036854775807ns'"
+		],
+		"setStatement": {
+			"propertyName": "TRANSACTION_TIMEOUT",
+			"separator": "=",
+			"allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)",
+			"converterName": "ClientSideStatementValueConverters$DurationConverter"
+		}
 	},
 	{
 	  "name": "SET TRANSACTION READ ONLY|READ WRITE",

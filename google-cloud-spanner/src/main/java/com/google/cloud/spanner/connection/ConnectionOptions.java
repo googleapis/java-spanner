@@ -82,6 +82,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import io.grpc.Deadline;
+import io.grpc.Deadline.Ticker;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.net.URL;
@@ -388,6 +390,7 @@ public class ConnectionOptions {
         Collections.emptyList();
     private SpannerOptionsConfigurator configurator;
     private OpenTelemetry openTelemetry;
+    private Ticker ticker = Deadline.getSystemTicker();
 
     private Builder() {}
 
@@ -559,6 +562,12 @@ public class ConnectionOptions {
       return this;
     }
 
+    @VisibleForTesting
+    Builder setTicker(Ticker ticker) {
+      this.ticker = Preconditions.checkNotNull(ticker);
+      return this;
+    }
+
     /**
      * Sets the executor type to use for connections. See {@link StatementExecutorType} for more
      * information on what the different options mean.
@@ -613,6 +622,7 @@ public class ConnectionOptions {
   private final OpenTelemetry openTelemetry;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
+  private final Ticker ticker;
 
   private ConnectionOptions(Builder builder) {
     Matcher matcher;
@@ -641,6 +651,7 @@ public class ConnectionOptions {
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
+    this.ticker = builder.ticker;
 
     // Create the initial connection state from the parsed properties in the connection URL.
     this.initialConnectionState = new ConnectionState(connectionPropertyValues);
@@ -811,6 +822,10 @@ public class ConnectionOptions {
 
   SpannerOptionsConfigurator getConfigurator() {
     return configurator;
+  }
+
+  Ticker getTicker() {
+    return ticker;
   }
 
   @VisibleForTesting

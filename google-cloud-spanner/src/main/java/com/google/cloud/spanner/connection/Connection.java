@@ -239,6 +239,12 @@ public interface Connection extends AutoCloseable {
   /** Returns the read lock mode for read/write transactions for this connection. */
   ReadLockMode getReadLockMode();
 
+  /** Sets the timeout for read/write transactions. */
+  void setTransactionTimeout(Duration timeout);
+
+  /** Returns the timeout for read/write transactions. */
+  Duration getTransactionTimeout();
+
   /**
    * Sets the duration the connection should wait before automatically aborting the execution of a
    * statement. The default is no timeout. Statement timeouts are applied all types of statements,
