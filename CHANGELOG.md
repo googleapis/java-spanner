@@ -1,5 +1,25 @@
 # Changelog
 
+## [6.101.0](https://github.com/googleapis/java-spanner/compare/v6.100.0...v6.101.0) (2025-09-26)
+
+
+### Features
+
+* Add transaction_timeout connection property ([#4056](https://github.com/googleapis/java-spanner/issues/4056)) ([cdc52d4](https://github.com/googleapis/java-spanner/commit/cdc52d49b39c57e7255f4e09fb33a41f4810397d))
+* TPC support ([#4055](https://github.com/googleapis/java-spanner/issues/4055)) ([7625cce](https://github.com/googleapis/java-spanner/commit/7625cce9ad48b14a1cff9c2ede86a066ea292bef))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.62.2 ([8d6cbf6](https://github.com/googleapis/java-spanner/commit/8d6cbf6bea9cbd823b8f0070516e34b4d8428e87))
+* Potential NullPointerException in Value#hashCode ([#4046](https://github.com/googleapis/java-spanner/issues/4046)) ([74abb34](https://github.com/googleapis/java-spanner/commit/74abb341e2ea42bbf0a2de4ec3e3555335b5fd9f))
+* Recalculate remaining statement timeout after retry ([#4053](https://github.com/googleapis/java-spanner/issues/4053)) ([5e26596](https://github.com/googleapis/java-spanner/commit/5e26596f4f9c924260da0908920854d8ddfc626b))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.52.2 ([#4057](https://github.com/googleapis/java-spanner/issues/4057)) ([d782aff](https://github.com/googleapis/java-spanner/commit/d782aff63ff81e1b760690d4dee3e566028d522e))
+
 ## [6.100.0](https://github.com/googleapis/java-spanner/compare/v6.99.0...v6.100.0) (2025-09-11)
 
 
