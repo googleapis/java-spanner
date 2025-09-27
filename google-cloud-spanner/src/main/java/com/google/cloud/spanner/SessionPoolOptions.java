@@ -21,7 +21,6 @@ import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
 
 import com.google.api.core.InternalApi;
 import com.google.api.core.ObsoleteApi;
-import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.time.Duration;
@@ -29,7 +28,14 @@ import java.util.Locale;
 import java.util.Objects;
 
 /** Options for the session pool used by {@code DatabaseClient}. */
+@Deprecated
 public class SessionPoolOptions {
+  enum Position {
+    FIRST,
+    LAST,
+    RANDOM
+  }
+
   // Default number of channels * 100.
   private static final int DEFAULT_MAX_SESSIONS = 400;
   private static final int DEFAULT_MIN_SESSIONS = 100;
@@ -583,10 +589,10 @@ public class SessionPoolOptions {
 
     /**
      * Capture the call stack of the thread that checked out a session of the pool. This will
-     * pre-create a {@link com.google.cloud.spanner.SessionPool.LeakedSessionException} already when
-     * a session is checked out. This can be disabled by users, for example if their monitoring
-     * systems log the pre-created exception. If disabled, the {@link
-     * com.google.cloud.spanner.SessionPool.LeakedSessionException} will only be created when an
+     * pre-create a com.google.cloud.spanner.SessionPool.LeakedSessionException already when a
+     * session is checked out. This can be disabled by users, for example if their monitoring
+     * systems log the pre-created exception. If disabled, the
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException will only be created when an
      * actual session leak is detected. The stack trace of the exception will in that case not
      * contain the call stack of when the session was checked out.
      */
@@ -945,8 +951,8 @@ public class SessionPoolOptions {
     }
 
     /**
-     * If a session has been invalidated by the server, the {@link SessionPool} will by default
-     * retry the session. Set this option to throw an exception instead of retrying.
+     * If a session has been invalidated by the server, the SessionPool will by default retry the
+     * session. Set this option to throw an exception instead of retrying.
      */
     @VisibleForTesting
     Builder setFailIfSessionNotFound() {
@@ -962,8 +968,8 @@ public class SessionPoolOptions {
 
     /**
      * Sets whether the session pool should capture the call stack trace when a session is checked
-     * out of the pool. This will internally prepare a {@link
-     * com.google.cloud.spanner.SessionPool.LeakedSessionException} that will only be thrown if the
+     * out of the pool. This will internally prepare a
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException that will only be thrown if the
      * session is actually leaked. This makes it easier to debug session leaks, as the stack trace
      * of the thread that checked out the session will be available in the exception.
      *
@@ -1015,8 +1021,8 @@ public class SessionPoolOptions {
     }
 
     /**
-     * If greater than zero, we wait for said duration when no sessions are available in the {@link
-     * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
+     * If greater than zero, we wait for said duration when no sessions are available in the
+     * SessionPool. The default is a 60s timeout. Set the value to null to disable the timeout.
      */
     public Builder setAcquireSessionTimeoutDuration(Duration acquireSessionTimeout) {
       try {

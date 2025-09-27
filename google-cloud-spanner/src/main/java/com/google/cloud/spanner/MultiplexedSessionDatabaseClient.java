@@ -17,7 +17,6 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
-import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -27,15 +26,10 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
-import com.google.cloud.spanner.SessionPool.SessionPoolTransactionRunner;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.BatchWriteResponse;
-import com.google.spanner.v1.BeginTransactionRequest;
-import com.google.spanner.v1.RequestOptions;
-import com.google.spanner.v1.Transaction;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -49,99 +43,22 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-
-/**
- * {@link TransactionRunner} that automatically handles "UNIMPLEMENTED" errors with the message
- * "Transaction type read_write not supported with multiplexed sessions" by switching from a
- * multiplexed session to a regular session and then restarts the transaction.
- */
-class MultiplexedSessionTransactionRunner implements TransactionRunner {
-  private final SessionPool sessionPool;
-  private final TransactionRunnerImpl transactionRunnerForMultiplexedSession;
-  private SessionPoolTransactionRunner transactionRunnerForRegularSession;
-  private final TransactionOption[] options;
-  private boolean isUsingMultiplexedSession = true;
-
-  public MultiplexedSessionTransactionRunner(
-      SessionImpl multiplexedSession, SessionPool sessionPool, TransactionOption... options) {
-    this.sessionPool = sessionPool;
-    this.transactionRunnerForMultiplexedSession =
-        new TransactionRunnerImpl(
-            multiplexedSession, options); // Uses multiplexed session initially
-    multiplexedSession.setActive(this.transactionRunnerForMultiplexedSession);
-    this.options = options;
-  }
-
-  private TransactionRunner getRunner() {
-    if (this.isUsingMultiplexedSession) {
-      return this.transactionRunnerForMultiplexedSession;
-    } else {
-      if (this.transactionRunnerForRegularSession == null) {
-        this.transactionRunnerForRegularSession =
-            new SessionPoolTransactionRunner<>(
-                sessionPool.getSession(),
-                sessionPool.getPooledSessionReplacementHandler(),
-                options);
-      }
-      return this.transactionRunnerForRegularSession;
-    }
-  }
-
-  @Override
-  public <T> T run(TransactionCallable<T> callable) {
-    while (true) {
-      try {
-        return getRunner().run(callable);
-      } catch (SpannerException e) {
-        if (e.getErrorCode() == ErrorCode.UNIMPLEMENTED
-            && verifyUnimplementedErrorMessageForRWMux(e)) {
-          this.isUsingMultiplexedSession = false; // Fallback to regular session
-        } else {
-          throw e; // Other errors propagate
-        }
-      }
-    }
-  }
-
-  @Override
-  public Timestamp getCommitTimestamp() {
-    return getRunner().getCommitTimestamp();
-  }
-
-  @Override
-  public CommitResponse getCommitResponse() {
-    return getRunner().getCommitResponse();
-  }
-
-  @Override
-  public TransactionRunner allowNestedTransaction() {
-    getRunner().allowNestedTransaction();
-    return this;
-  }
-
-  private boolean verifyUnimplementedErrorMessageForRWMux(SpannerException spannerException) {
-    if (spannerException.getCause() == null) {
-      return false;
-    }
-    if (spannerException.getCause().getMessage() == null) {
-      return false;
-    }
-    return spannerException
-        .getCause()
-        .getMessage()
-        .contains("Transaction type read_write not supported with multiplexed sessions");
-  }
-}
 
 /**
  * {@link DatabaseClient} implementation that uses a single multiplexed session to execute
  * transactions.
  */
 final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionDatabaseClient {
+  @VisibleForTesting
+  static final Statement DETERMINE_DIALECT_STATEMENT =
+      Statement.newBuilder(
+              "select option_value "
+                  + "from information_schema.database_options "
+                  + "where option_name='database_dialect'")
+          .build();
 
   /**
    * Represents a single transaction on a multiplexed session. This can be both a single-use or
@@ -160,7 +77,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     private final int singleUseChannelHint;
 
     private boolean done;
-    private final SessionPool pool;
 
     MultiplexedSessionTransaction(
         MultiplexedSessionDatabaseClient client,
@@ -168,22 +84,11 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         SessionReference sessionReference,
         int singleUseChannelHint,
         boolean singleUse) {
-      this(client, span, sessionReference, singleUseChannelHint, singleUse, null);
-    }
-
-    MultiplexedSessionTransaction(
-        MultiplexedSessionDatabaseClient client,
-        ISpan span,
-        SessionReference sessionReference,
-        int singleUseChannelHint,
-        boolean singleUse,
-        SessionPool pool) {
       super(client.sessionClient.getSpanner(), sessionReference, singleUseChannelHint);
       this.client = client;
       this.singleUse = singleUse;
       this.singleUseChannelHint = singleUseChannelHint;
       this.client.numSessionsAcquired.incrementAndGet();
-      this.pool = pool;
       setCurrentSpan(span);
     }
 
@@ -197,15 +102,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         // synchronizing, as it does not really matter exactly which error is set.
         this.client.resourceNotFoundException.set((ResourceNotFoundException) spannerException);
       }
-      // Mark multiplexed sessions for RW as unimplemented and fall back to regular sessions if
-      // UNIMPLEMENTED with error message "Transaction type read_write not supported with
-      // multiplexed sessions" is returned.
-      this.client.maybeMarkUnimplementedForRW(spannerException);
-      // Mark multiplexed sessions for Partitioned Ops as unimplemented and fall back to regular
-      // sessions if
-      // UNIMPLEMENTED with error message "Partitioned operations are not supported with multiplexed
-      // sessions".
-      this.client.maybeMarkUnimplementedForPartitionedOps(spannerException);
     }
 
     @Override
@@ -229,11 +125,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       CommitResponse response = super.writeAtLeastOnceWithOptions(mutations, options);
       onTransactionDone();
       return response;
-    }
-
-    @Override
-    public TransactionRunner readWriteTransaction(TransactionOption... options) {
-      return new MultiplexedSessionTransactionRunner(this, pool, options);
     }
 
     @Override
@@ -283,12 +174,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   /** The current multiplexed session that is used by this client. */
   private final AtomicReference<ApiFuture<SessionReference>> multiplexedSessionReference;
 
-  /**
-   * The Transaction response returned by the BeginTransaction request with read-write when a
-   * multiplexed session is created during client initialization.
-   */
-  private final SettableApiFuture<Transaction> readWriteBeginTransactionReferenceFuture;
-
   /** The expiration date/time of the current multiplexed session. */
   private final AtomicReference<Instant> expirationDate;
 
@@ -308,26 +193,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   private final AtomicLong numSessionsAcquired = new AtomicLong();
 
   private final AtomicLong numSessionsReleased = new AtomicLong();
-
-  /**
-   * This flag is set to true if the server return UNIMPLEMENTED when we try to create a multiplexed
-   * session. TODO: Remove once this is guaranteed to be available.
-   */
-  private final AtomicBoolean unimplemented = new AtomicBoolean(false);
-
-  /**
-   * This flag is set to true if the server return UNIMPLEMENTED when a read-write transaction is
-   * executed on a multiplexed session. TODO: Remove once this is guaranteed to be available.
-   */
-  @VisibleForTesting final AtomicBoolean unimplementedForRW = new AtomicBoolean(false);
-
-  /**
-   * This flag is set to true if the server return UNIMPLEMENTED when partitioned transaction is
-   * executed on a multiplexed session. TODO: Remove once this is guaranteed to be available.
-   */
-  @VisibleForTesting final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
-
-  private SessionPool pool;
 
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
     this(sessionClient, Clock.systemUTC());
@@ -356,7 +221,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     this.tracer = sessionClient.getSpanner().getTracer();
     final SettableApiFuture<SessionReference> initialSessionReferenceFuture =
         SettableApiFuture.create();
-    this.readWriteBeginTransactionReferenceFuture = SettableApiFuture.create();
     this.multiplexedSessionReference = new AtomicReference<>(initialSessionReferenceFuture);
     this.sessionClient.asyncCreateMultiplexedSession(
         new SessionConsumer() {
@@ -366,21 +230,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
             // only start the maintainer if we actually managed to create a session in the first
             // place.
             maintainer.start();
-
-            // initiate a begin transaction request to verify if read-write transactions are
-            // supported using multiplexed sessions.
-            if (sessionClient
-                    .getSpanner()
-                    .getOptions()
-                    .getSessionPoolOptions()
-                    .getUseMultiplexedSessionForRW()
-                && !sessionClient
-                    .getSpanner()
-                    .getOptions()
-                    .getSessionPoolOptions()
-                    .getSkipVerifyBeginTransactionForMuxRW()) {
-              verifyBeginTransactionWithRWOnMultiplexedSessionAsync(session.getName());
-            }
             if (sessionClient
                 .getSpanner()
                 .getOptions()
@@ -392,19 +241,23 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
           @Override
           public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
-            // Mark multiplexes sessions as unimplemented and fall back to regular sessions if
-            // UNIMPLEMENTED is returned.
-            maybeMarkUnimplemented(t);
+            SpannerException spannerException = SpannerExceptionFactory.asSpannerException(t);
+            if (MultiplexedSessionDatabaseClient.this.resourceNotFoundException.get() == null
+                && (spannerException instanceof DatabaseNotFoundException
+                    || spannerException instanceof InstanceNotFoundException
+                    || spannerException instanceof SessionNotFoundException)) {
+              // This could in theory set this field more than once, but we don't want to bother
+              // with
+              // synchronizing, as it does not really matter exactly which error is set.
+              MultiplexedSessionDatabaseClient.this.resourceNotFoundException.set(
+                  (ResourceNotFoundException) spannerException);
+            }
             initialSessionReferenceFuture.setException(t);
           }
         });
     maybeWaitForSessionCreation(
         sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
         initialSessionReferenceFuture);
-  }
-
-  void setPool(SessionPool pool) {
-    this.pool = pool;
   }
 
   private static void maybeWaitForSessionCreation(
@@ -426,88 +279,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
-  private void maybeMarkUnimplemented(Throwable t) {
-    SpannerException spannerException = SpannerExceptionFactory.asSpannerException(t);
-    if (spannerException.getErrorCode() == ErrorCode.UNIMPLEMENTED) {
-      unimplemented.set(true);
-    }
-  }
-
-  private void maybeMarkUnimplementedForRW(SpannerException spannerException) {
-    if (spannerException.getErrorCode() == ErrorCode.UNIMPLEMENTED
-        && verifyErrorMessage(
-            spannerException,
-            "Transaction type read_write not supported with multiplexed sessions")) {
-      unimplementedForRW.set(true);
-    }
-  }
-
-  boolean maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
-    if (spannerException.getErrorCode() == ErrorCode.UNIMPLEMENTED
-        && verifyErrorMessage(
-            spannerException,
-            "Transaction type partitioned_dml not supported with multiplexed sessions")) {
-      unimplementedForPartitionedOps.set(true);
-      return true;
-    }
-    return false;
-  }
-
-  static boolean verifyErrorMessage(SpannerException spannerException, String message) {
-    if (spannerException.getCause() == null) {
-      return false;
-    }
-    if (spannerException.getCause().getMessage() == null) {
-      return false;
-    }
-    return spannerException.getCause().getMessage().contains(message);
-  }
-
-  private void verifyBeginTransactionWithRWOnMultiplexedSessionAsync(String sessionName) {
-    // TODO: Remove once this is guaranteed to be available.
-    // annotate the explict BeginTransactionRequest with a transaction tag
-    // "multiplexed-rw-background-begin-txn" to avoid storing this request on mock spanner.
-    // this is to safeguard other mock spanner tests whose BeginTransaction request count will
-    // otherwise increase by 1. Modifying the unit tests do not seem valid since this code is
-    // temporary and will be removed once the read-write on multiplexed session looks stable at
-    // backend.
-    BeginTransactionRequest.Builder requestBuilder =
-        BeginTransactionRequest.newBuilder()
-            .setSession(sessionName)
-            .setOptions(
-                SessionImpl.createReadWriteTransactionOptions(
-                    Options.fromTransactionOptions(), /* previousTransactionId= */ null))
-            .setRequestOptions(
-                RequestOptions.newBuilder()
-                    .setTransactionTag("multiplexed-rw-background-begin-txn")
-                    .build());
-    final BeginTransactionRequest request = requestBuilder.build();
-    final ApiFuture<Transaction> requestFuture;
-    requestFuture =
-        sessionClient
-            .getSpanner()
-            .getRpc()
-            .beginTransactionAsync(request, /* options= */ null, /* routeToLeader= */ true);
-    requestFuture.addListener(
-        () -> {
-          try {
-            Transaction txn = requestFuture.get();
-            if (txn.getId().isEmpty()) {
-              throw newSpannerException(
-                  ErrorCode.INTERNAL, "Missing id in transaction\n" + sessionName);
-            }
-            readWriteBeginTransactionReferenceFuture.set(txn);
-          } catch (Exception e) {
-            SpannerException spannerException = SpannerExceptionFactory.newSpannerException(e);
-            // Mark multiplexed sessions for RW as unimplemented and fall back to regular sessions
-            // if UNIMPLEMENTED is returned.
-            maybeMarkUnimplementedForRW(spannerException);
-            readWriteBeginTransactionReferenceFuture.setException(e);
-          }
-        },
-        MoreExecutors.directExecutor());
-  }
-
   boolean isValid() {
     return resourceNotFoundException.get() == null;
   }
@@ -518,18 +289,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   AtomicLong getNumSessionsReleased() {
     return this.numSessionsReleased;
-  }
-
-  boolean isMultiplexedSessionsSupported() {
-    return !this.unimplemented.get();
-  }
-
-  boolean isMultiplexedSessionsForRWSupported() {
-    return !this.unimplementedForRW.get();
-  }
-
-  boolean isMultiplexedSessionsForPartitionedOpsSupported() {
-    return !this.unimplementedForPartitionedOps.get();
   }
 
   void close() {
@@ -550,17 +309,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   SessionReference getCurrentSessionReference() {
     try {
       return this.multiplexedSessionReference.get().get();
-    } catch (ExecutionException executionException) {
-      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
-    } catch (InterruptedException interruptedException) {
-      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-    }
-  }
-
-  @VisibleForTesting
-  Transaction getReadWriteBeginTransactionReference() {
-    try {
-      return this.readWriteBeginTransactionReferenceFuture.get();
     } catch (ExecutionException executionException) {
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
     } catch (InterruptedException interruptedException) {
@@ -597,8 +345,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
           // any special handling of such errors.
           multiplexedSessionReference.get().get(),
           singleUse ? getSingleUseChannelHint() : NO_CHANNEL_HINT,
-          singleUse,
-          this.pool);
+          singleUse);
     } catch (ExecutionException executionException) {
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
     } catch (InterruptedException interruptedException) {
@@ -608,7 +355,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private DelayedMultiplexedSessionTransaction createDelayedMultiplexSessionTransaction() {
     return new DelayedMultiplexedSessionTransaction(
-        this, tracer.getCurrentSpan(), multiplexedSessionReference.get(), this.pool);
+        this, tracer.getCurrentSpan(), multiplexedSessionReference.get());
   }
 
   private int getSingleUseChannelHint() {
@@ -633,8 +380,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       new AbstractLazyInitializer<Dialect>() {
         @Override
         protected Dialect initialize() {
-          try (ResultSet dialectResultSet =
-              singleUse().executeQuery(SessionPool.DETERMINE_DIALECT_STATEMENT)) {
+          try (ResultSet dialectResultSet = singleUse().executeQuery(DETERMINE_DIALECT_STATEMENT)) {
             if (dialectResultSet.next()) {
               return Dialect.fromName(dialectResultSet.getString(0));
             }
@@ -659,6 +405,11 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     } catch (Exception exception) {
       throw SpannerExceptionFactory.asSpannerException(exception);
     }
+  }
+
+  @Override
+  public String getDatabaseRole() {
+    return this.sessionClient.getSpanner().getOptions().getDatabaseRole();
   }
 
   @Override
@@ -811,9 +562,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
                 // ignore any errors during re-creation of the multiplexed session. This means that
                 // we continue to use the session that has passed its expiration date for now, and
                 // that a new attempt at creating a new session will be done in 10 minutes from now.
-                // The only exception to this rule is if the server returns UNIMPLEMENTED. In that
-                // case we invalidate the client and fall back to regular sessions.
-                maybeMarkUnimplemented(t);
               }
             });
       }
