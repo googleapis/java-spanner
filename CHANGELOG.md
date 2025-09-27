@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.101.2](https://github.com/googleapis/java-spanner/compare/v6.101.1...v6.101.2) (2025-09-27)
+
+
+### Dependencies
+
+* Update actions/setup-java action to v5 ([#4071](https://github.com/googleapis/java-spanner/issues/4071)) ([e23134a](https://github.com/googleapis/java-spanner/commit/e23134a2f864e8abd2890ac3a81ff6b668afbe63))
+
 ## [6.101.1](https://github.com/googleapis/java-spanner/compare/v6.101.0...v6.101.1) (2025-09-26)
 
 
