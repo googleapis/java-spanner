@@ -1,5 +1,56 @@
 # Changelog
 
+## [6.101.1](https://github.com/googleapis/java-spanner/compare/v6.101.0...v6.101.1) (2025-09-26)
+
+
+### Bug Fixes
+
+* Potential NullPointerException in LocalConnectionChecker ([#4092](https://github.com/googleapis/java-spanner/issues/4092)) ([3b9f597](https://github.com/googleapis/java-spanner/commit/3b9f597ba60199a16556824568b24908ce938a69))
+
+## [6.101.0](https://github.com/googleapis/java-spanner/compare/v6.100.0...v6.101.0) (2025-09-26)
+
+
+### Features
+
+* Add transaction_timeout connection property ([#4056](https://github.com/googleapis/java-spanner/issues/4056)) ([cdc52d4](https://github.com/googleapis/java-spanner/commit/cdc52d49b39c57e7255f4e09fb33a41f4810397d))
+* TPC support ([#4055](https://github.com/googleapis/java-spanner/issues/4055)) ([7625cce](https://github.com/googleapis/java-spanner/commit/7625cce9ad48b14a1cff9c2ede86a066ea292bef))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.62.2 ([8d6cbf6](https://github.com/googleapis/java-spanner/commit/8d6cbf6bea9cbd823b8f0070516e34b4d8428e87))
+* Potential NullPointerException in Value#hashCode ([#4046](https://github.com/googleapis/java-spanner/issues/4046)) ([74abb34](https://github.com/googleapis/java-spanner/commit/74abb341e2ea42bbf0a2de4ec3e3555335b5fd9f))
+* Recalculate remaining statement timeout after retry ([#4053](https://github.com/googleapis/java-spanner/issues/4053)) ([5e26596](https://github.com/googleapis/java-spanner/commit/5e26596f4f9c924260da0908920854d8ddfc626b))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.52.2 ([#4057](https://github.com/googleapis/java-spanner/issues/4057)) ([d782aff](https://github.com/googleapis/java-spanner/commit/d782aff63ff81e1b760690d4dee3e566028d522e))
+
+## [6.100.0](https://github.com/googleapis/java-spanner/compare/v6.99.0...v6.100.0) (2025-09-11)
+
+
+### Features
+
+* Read_lock_mode support for connections ([#4031](https://github.com/googleapis/java-spanner/issues/4031)) ([261abb4](https://github.com/googleapis/java-spanner/commit/261abb4b9c5ff00fac2d816a31926b23264657c4))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.62.1 ([e9773a7](https://github.com/googleapis/java-spanner/commit/e9773a7aa27a414d56093b4e09e0f197a07b5980))
+* Disable afe_connectivity_error_count metric ([#4041](https://github.com/googleapis/java-spanner/issues/4041)) ([f89c1c0](https://github.com/googleapis/java-spanner/commit/f89c1c0517ba6b895f405b0085b8df41aac952be))
+* Skip session delete in case of multiplexed sessions ([#4029](https://github.com/googleapis/java-spanner/issues/4029)) ([8bcb09d](https://github.com/googleapis/java-spanner/commit/8bcb09d141fe986c92ccacbaa9a45302c5c8e79d))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.52.1 ([#4034](https://github.com/googleapis/java-spanner/issues/4034)) ([13bfa7c](https://github.com/googleapis/java-spanner/commit/13bfa7c68c7ea887e679fb5504dceb85cbb43cb9))
+
+
+### Documentation
+
+* A comment for field `ranges` in message `.google.spanner.v1.KeySet` is changed ([e9773a7](https://github.com/googleapis/java-spanner/commit/e9773a7aa27a414d56093b4e09e0f197a07b5980))
+
 ## [6.99.0](https://github.com/googleapis/java-spanner/compare/v6.98.1...v6.99.0) (2025-08-26)
 
 

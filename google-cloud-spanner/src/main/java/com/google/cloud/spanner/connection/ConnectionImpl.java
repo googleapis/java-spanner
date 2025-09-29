@@ -45,6 +45,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.RETURN_CO
 import static com.google.cloud.spanner.connection.ConnectionProperties.RPC_PRIORITY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.SAVEPOINT_SUPPORT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACING_PREFIX;
+import static com.google.cloud.spanner.connection.ConnectionProperties.TRANSACTION_TIMEOUT;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -94,6 +95,8 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
+import io.grpc.Deadline;
+import io.grpc.Deadline.Ticker;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -254,6 +257,7 @@ class ConnectionImpl implements Connection {
     }
   }
 
+  private final Ticker ticker;
   private StatementExecutor.StatementTimeout statementTimeout =
       new StatementExecutor.StatementTimeout();
   private boolean closed = false;
@@ -311,6 +315,7 @@ class ConnectionImpl implements Connection {
               ? StatementExecutorType.VIRTUAL_THREAD
               : StatementExecutorType.PLATFORM_THREAD;
     }
+    this.ticker = options.getTicker();
     this.statementExecutor =
         new StatementExecutor(statementExecutorType, options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
@@ -361,6 +366,7 @@ class ConnectionImpl implements Connection {
                 ? StatementExecutorType.VIRTUAL_THREAD
                 : StatementExecutorType.PLATFORM_THREAD,
             Collections.emptyList());
+    this.ticker = options.getTicker();
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
     this.spanner = spannerPool.getSpanner(options, this);
@@ -489,6 +495,7 @@ class ConnectionImpl implements Connection {
     this.connectionState.resetValue(READONLY, context, inTransaction);
     this.connectionState.resetValue(DEFAULT_ISOLATION_LEVEL, context, inTransaction);
     this.connectionState.resetValue(READ_LOCK_MODE, context, inTransaction);
+    this.connectionState.resetValue(TRANSACTION_TIMEOUT, context, inTransaction);
     this.connectionState.resetValue(READ_ONLY_STALENESS, context, inTransaction);
     this.connectionState.resetValue(OPTIMIZER_VERSION, context, inTransaction);
     this.connectionState.resetValue(OPTIMIZER_STATISTICS_PACKAGE, context, inTransaction);
@@ -681,6 +688,26 @@ class ConnectionImpl implements Connection {
   public ReadLockMode getReadLockMode() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return getConnectionPropertyValue(READ_LOCK_MODE);
+  }
+
+  @Override
+  public void setTransactionTimeout(Duration timeout) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    setConnectionPropertyValue(TRANSACTION_TIMEOUT, timeout);
+  }
+
+  @Override
+  public Duration getTransactionTimeout() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return getConnectionPropertyValue(TRANSACTION_TIMEOUT);
+  }
+
+  @Nullable
+  Deadline getTransactionDeadline() {
+    Duration timeout = getTransactionTimeout();
+    return timeout == null
+        ? null
+        : Deadline.after(timeout.toNanos(), TimeUnit.NANOSECONDS, this.ticker);
   }
 
   @Override
@@ -2271,6 +2298,7 @@ class ConnectionImpl implements Connection {
               .setDatabaseClient(dbClient)
               .setIsolationLevel(transactionIsolationLevel)
               .setReadLockMode(getConnectionPropertyValue(READ_LOCK_MODE))
+              .setDeadline(getTransactionDeadline())
               .setDelayTransactionStartUntilFirstWrite(
                   getConnectionPropertyValue(DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE))
               .setKeepTransactionAlive(getConnectionPropertyValue(KEEP_TRANSACTION_ALIVE))

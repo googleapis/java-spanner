@@ -53,6 +53,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_TAG;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_BATCH_DML;
@@ -85,6 +86,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_TRANSACTION_ISOLATION_LEVEL;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_TRANSACTION_TAG;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_TRANSACTION_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.START_BATCH_DDL;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.START_BATCH_DML;
 import static com.google.cloud.spanner.connection.StatementResultImpl.noResult;
@@ -246,6 +248,24 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
             ? ReadOnlyStalenessUtil.durationToString(new StatementTimeoutGetter(getConnection()))
             : connection.getDialect() == Dialect.POSTGRESQL ? "0" : null,
         SHOW_STATEMENT_TIMEOUT);
+  }
+
+  @Override
+  public StatementResult statementSetTransactionTimeout(Duration duration) {
+    if (duration == null || duration.isZero()) {
+      getConnection().setTransactionTimeout(null);
+    } else {
+      getConnection().setTransactionTimeout(duration);
+    }
+    return noResult(SET_TRANSACTION_TIMEOUT);
+  }
+
+  @Override
+  public StatementResult statementShowTransactionTimeout() {
+    return resultSet(
+        String.format("%sTRANSACTION_TIMEOUT", getNamespace(connection.getDialect())),
+        String.valueOf(getConnection().getTransactionTimeout()),
+        SHOW_TRANSACTION_TIMEOUT);
   }
 
   @Override

@@ -23,6 +23,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
+import com.google.common.base.Strings;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import java.time.Duration;
 
@@ -42,6 +43,10 @@ class LocalConnectionChecker {
   void checkLocalConnection(ConnectionOptions options) {
     final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     String host = options.getHost() == null ? emulatorHost : options.getHost();
+    if (Strings.isNullOrEmpty(host)) {
+      return;
+    }
+
     if (host.startsWith("https://")) {
       host = host.substring(8);
     }
@@ -49,7 +54,7 @@ class LocalConnectionChecker {
       host = host.substring(7);
     }
     // Only do the check if the host has been set to localhost.
-    if (host != null && host.startsWith("localhost") && options.isUsePlainText()) {
+    if (host.startsWith("localhost") && options.isUsePlainText()) {
       // Do a quick check to see if anything is actually running on the host.
       try {
         InstanceAdminStubSettings.Builder testEmulatorSettings =

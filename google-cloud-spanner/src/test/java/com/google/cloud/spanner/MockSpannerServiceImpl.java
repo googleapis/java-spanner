@@ -1245,7 +1245,13 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             throw firstRes.getException();
           case UPDATE_COUNT:
             returnPartialResultSet(
-                session, 0L, !isPartitioned, responseObserver, request.getTransaction(), false);
+                session,
+                0L,
+                !isPartitioned,
+                responseObserver,
+                request.getTransaction(),
+                transactionId,
+                false);
             break;
           case RESULT_SET:
           default:
@@ -1290,7 +1296,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               res.getUpdateCount(),
               !isPartitioned,
               responseObserver,
-              request.getTransaction());
+              request.getTransaction(),
+              transactionId);
           break;
         default:
           throw new IllegalStateException("Unknown result type: " + res.getType());
@@ -1798,8 +1805,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       Long updateCount,
       boolean exact,
       StreamObserver<PartialResultSet> responseObserver,
-      TransactionSelector transaction) {
-    returnPartialResultSet(session, updateCount, exact, responseObserver, transaction, true);
+      TransactionSelector transactionSelector,
+      ByteString transactionId) {
+    returnPartialResultSet(
+        session, updateCount, exact, responseObserver, transactionSelector, transactionId, true);
   }
 
   private void returnPartialResultSet(
@@ -1807,23 +1816,19 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       Long updateCount,
       boolean exact,
       StreamObserver<PartialResultSet> responseObserver,
-      TransactionSelector transaction,
+      TransactionSelector transactionSelector,
+      ByteString transactionId,
       boolean complete) {
-    Field field =
-        Field.newBuilder()
-            .setName("UPDATE_COUNT")
-            .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
-            .build();
     if (exact) {
       responseObserver.onNext(
           PartialResultSet.newBuilder()
               .setMetadata(
                   ResultSetMetadata.newBuilder()
-                      .setRowType(StructType.newBuilder().addFields(field).build())
+                      .setRowType(StructType.newBuilder().build())
                       .setTransaction(
-                          ignoreInlineBeginRequest.get()
+                          ignoreInlineBeginRequest.get() || !transactionSelector.hasBegin()
                               ? Transaction.getDefaultInstance()
-                              : Transaction.newBuilder().setId(transaction.getId()).build())
+                              : Transaction.newBuilder().setId(transactionId).build())
                       .build())
               .setStats(ResultSetStats.newBuilder().setRowCountExact(updateCount).build())
               .build());
@@ -1832,11 +1837,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           PartialResultSet.newBuilder()
               .setMetadata(
                   ResultSetMetadata.newBuilder()
-                      .setRowType(StructType.newBuilder().addFields(field).build())
+                      .setRowType(StructType.newBuilder().build())
                       .setTransaction(
-                          ignoreInlineBeginRequest.get()
+                          ignoreInlineBeginRequest.get() || !transactionSelector.hasBegin()
                               ? Transaction.getDefaultInstance()
-                              : Transaction.newBuilder().setId(transaction.getId()).build())
+                              : Transaction.newBuilder().setId(transactionId).build())
                       .build())
               .setStats(ResultSetStats.newBuilder().setRowCountLowerBound(updateCount).build())
               .build());

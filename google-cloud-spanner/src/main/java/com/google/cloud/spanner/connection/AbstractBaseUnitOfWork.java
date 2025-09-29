@@ -39,17 +39,18 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.ReadWriteTransaction.Builder;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.Context;
+import io.grpc.Deadline;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -357,7 +358,14 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
           statement, StatementExecutionStep.EXECUTE_STATEMENT, this);
     }
     Context context = Context.current();
-    if (statementTimeout.hasTimeout() && !applyStatementTimeoutToMethods.isEmpty()) {
+    Deadline transactionDeadline = getTransactionDeadline();
+    Deadline statementDeadline =
+        statementTimeout.hasTimeout()
+            ? Deadline.after(
+                statementTimeout.getTimeoutValue(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
+            : null;
+    Deadline effectiveDeadline = min(transactionDeadline, statementDeadline);
+    if (effectiveDeadline != null && !applyStatementTimeoutToMethods.isEmpty()) {
       context =
           context.withValue(
               SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY,
@@ -365,10 +373,15 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
                 @Override
                 public <ReqT, RespT> ApiCallContext configure(
                     ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
-                  if (statementTimeout.hasTimeout()
-                      && applyStatementTimeoutToMethods.contains(method)) {
+                  if (applyStatementTimeoutToMethods.contains(method)) {
+                    // Calculate the remaining timeout. This method could be called multiple times
+                    // if the transaction is retried.
+                    long remainingTimeout = effectiveDeadline.timeRemaining(TimeUnit.NANOSECONDS);
+                    if (remainingTimeout <= 0) {
+                      remainingTimeout = 1;
+                    }
                     return GrpcCallContext.createDefault()
-                        .withTimeoutDuration(statementTimeout.asDuration());
+                        .withTimeoutDuration(Duration.ofNanos(remainingTimeout));
                   }
                   return null;
                 }
@@ -416,5 +429,24 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
           MoreExecutors.directExecutor());
       return future;
     }
+  }
+
+  @Nullable
+  static Deadline min(@Nullable Deadline a, @Nullable Deadline b) {
+    if (a == null && b == null) {
+      return null;
+    }
+    if (a == null) {
+      return b;
+    }
+    if (b == null) {
+      return a;
+    }
+    return a.minimum(b);
+  }
+
+  @Nullable
+  Deadline getTransactionDeadline() {
+    return null;
   }
 }

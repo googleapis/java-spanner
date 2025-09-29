@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assume.assumeFalse;
 
@@ -64,6 +65,7 @@ public class ITBuiltInMetricsTest {
 
   @BeforeClass
   public static void setUp() throws IOException {
+    assumeFalse("not applicable for experimental host", isExperimentalHost());
     assumeFalse("This test requires credentials", EmulatorSpannerHelper.isUsingEmulator());
     metricClient = MetricServiceClient.create();
     // Enable BuiltinMetrics when the metrics are GA'ed
@@ -126,9 +128,18 @@ public class ITBuiltInMetricsTest {
         response = metricClient.listTimeSeriesCallable().call(request);
       }
 
-      assertWithMessage("Metric " + metric + " didn't return any data.")
-          .that(response.getTimeSeriesCount())
-          .isGreaterThan(0);
+      // afe_latencies metric currently does not return data as afe server-timing header is
+      // disabled.
+      // Keeping this check to enable this check in the future.
+      if (metric.equals("afe_latencies")) {
+        assertWithMessage("Metric " + metric + " returned data.")
+            .that(response.getTimeSeriesCount())
+            .isEqualTo(0);
+      } else {
+        assertWithMessage("Metric " + metric + " didn't return any data.")
+            .that(response.getTimeSeriesCount())
+            .isGreaterThan(0);
+      }
     }
   }
 }

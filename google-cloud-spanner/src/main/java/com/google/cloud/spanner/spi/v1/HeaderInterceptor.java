@@ -189,7 +189,9 @@ class HeaderInterceptor implements ClientInterceptor {
           float afeLatency = serverTimingMetrics.get(AFE_TIMING_HEADER);
           compositeTracer.recordAFELatency(afeLatency);
         } else {
-          compositeTracer.recordAfeHeaderMissingCount(1L);
+          // Disable afe_connectivity_error_count metric as AFE header is disabled in backend
+          // currently.
+          // compositeTracer.recordAfeHeaderMissingCount(1L);
         }
       }
     } catch (NumberFormatException e) {

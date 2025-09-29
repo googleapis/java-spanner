@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.ExperimentalHostHelper.isExperimentalHost;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
@@ -54,6 +55,7 @@ public class ITRetryDmlAsPartitionedDmlTest extends ITAbstractSpannerTest {
   public static void setup() {
     // This shadows the setup() method in the super class and prevents it from being executed.
     // That allows us to have a custom setup method in this class.
+    assumeFalse("Skipping the test due to a known bug b/422916293", isExperimentalHost());
   }
 
   @BeforeClass

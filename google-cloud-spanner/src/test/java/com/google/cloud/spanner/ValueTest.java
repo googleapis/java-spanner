@@ -94,6 +94,8 @@ public class ValueTest {
     assertNull(v.getType());
     assertFalse(v.isNull());
     assertSame(proto, v.toProto());
+    assertNotEquals(0, v.hashCode());
+    assertEquals(v, Value.untyped(proto));
 
     assertEquals(
         v, Value.untyped(com.google.protobuf.Value.newBuilder().setStringValue("test").build()));

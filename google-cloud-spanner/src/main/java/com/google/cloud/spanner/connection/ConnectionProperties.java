@@ -200,6 +200,14 @@ public class ConnectionProperties {
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.STARTUP);
+  static final ConnectionProperty<String> UNIVERSE_DOMAIN =
+      create(
+          "universeDomain",
+          "Configure the connection to try to connect to Spanner using "
+              + "a different partner Google Universe than GDU (googleapis.com).",
+          "googleapis.com",
+          StringValueConverter.INSTANCE,
+          Context.STARTUP);
   static final ConnectionProperty<Boolean> USE_AUTO_SAVEPOINTS_FOR_EMULATOR =
       create(
           "useAutoSavepointsForEmulator",
@@ -485,6 +493,14 @@ public class ConnectionProperties {
               .collect(Collectors.toList())
               .toArray(new ReadLockMode[0]),
           ReadLockModeConverter.INSTANCE,
+          Context.USER);
+  static final ConnectionProperty<Duration> TRANSACTION_TIMEOUT =
+      create(
+          "transaction_timeout",
+          "Timeout for read/write transactions.",
+          null,
+          null,
+          DurationConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<AutocommitDmlMode> AUTOCOMMIT_DML_MODE =
       create(
