@@ -19,6 +19,7 @@ package com.google.cloud.spanner.benchmarking;
 import com.google.monitoring.v3.CreateTimeSeriesRequest;
 import com.google.monitoring.v3.MetricServiceGrpc.MetricServiceImplBase;
 import com.google.protobuf.Empty;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
 class MonitoringServiceImpl extends MetricServiceImplBase {
@@ -31,7 +32,8 @@ class MonitoringServiceImpl extends MetricServiceImplBase {
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (InterruptedException e) {
-      responseObserver.onError(e);
+      responseObserver.onError(
+          Status.CANCELLED.withCause(e).withDescription(e.getMessage()).asException());
     }
   }
 }

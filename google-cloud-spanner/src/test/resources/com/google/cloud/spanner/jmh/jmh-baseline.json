@@ -1,10 +1,10 @@
 {
-  "baselineConfigurations": {
+  "benchmarkResultMap": {
     "com.google.cloud.spanner.benchmarking.ReadBenchmark.queryBenchmark": {
       "scorePercentiles": [
         {
           "percentile": "50.0",
-          "baseline": "120",
+          "baseline": "450",
           "difference": "15"
         }
       ]
@@ -13,7 +13,7 @@
       "scorePercentiles": [
         {
           "percentile": "50.0",
-          "baseline": "120",
+          "baseline": "450",
           "difference": "15"
         }
       ]

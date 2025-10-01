@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.benchmarking;
 
+import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Key;
@@ -32,9 +33,9 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.ServerBuilder;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -88,6 +89,9 @@ public class ReadBenchmark {
 
     @Setup(Level.Trial)
     public void setup() throws IOException {
+      // Enable JMH system property
+      System.setProperty("jmh.enabled", "true");
+
       // Initializing mock spanner service
       MockSpannerServiceImpl mockSpannerService = new MockSpannerServiceImpl();
       mockSpannerService.setAbortProbability(0.0D);
@@ -99,9 +103,8 @@ public class ReadBenchmark {
       gRPCServerExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
       // Creating Spanner Inprocess gRPC server
-      String serverName = InProcessServerBuilder.generateName();
       gRPCServer =
-          InProcessServerBuilder.forName(serverName)
+          ServerBuilder.forPort(0)
               .addService(mockSpannerService)
               .executor(gRPCServerExecutor)
               .build()
@@ -110,21 +113,21 @@ public class ReadBenchmark {
       registerMocks(mockSpannerService);
 
       // Creating Monitoring Inprocess gRPC server
-      String monitoringServerName = InProcessServerBuilder.generateName();
       gRPCMonitoringServer =
-          InProcessServerBuilder.forName(monitoringServerName)
-              .addService(mockMonitoringService)
-              .build()
-              .start();
+          ServerBuilder.forPort(0).addService(mockMonitoringService).build().start();
 
-      // Set the monitoring host for exporter to forward requests to inprocess gRPC server
-      System.setProperty("jmh.monitoring-server", monitoringServerName);
+      // Set the monitoring host port for exporter to forward requests to local netty gRPC server
+      System.setProperty(
+          "jmh.monitoring-server-port", String.valueOf(gRPCMonitoringServer.getPort()));
 
       spanner =
           SpannerOptions.newBuilder()
               .setProjectId("[PROJECT]")
+              .setCredentials(NoCredentials.getInstance())
               .setChannelConfigurator(
-                  managedChannelBuilder -> InProcessChannelBuilder.forName(serverName))
+                  managedChannelBuilder ->
+                      ManagedChannelBuilder.forAddress("0.0.0.0", gRPCServer.getPort())
+                          .usePlaintext())
               .build()
               .getService();
       databaseClient =
@@ -172,10 +175,14 @@ public class ReadBenchmark {
     }
 
     @TearDown(Level.Trial)
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
       spanner.close();
       gRPCServer.shutdown();
       gRPCServerExecutor.shutdown();
+
+      // awaiting termination for servers and executors
+      gRPCServer.awaitTermination(10, TimeUnit.SECONDS);
+      gRPCServerExecutor.awaitTermination(10, TimeUnit.SECONDS);
     }
   }
 

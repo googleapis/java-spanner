@@ -55,8 +55,7 @@ public class BenchmarkValidator {
       }
       Map<String, Double> actualPercentilesMap = actualResult.primaryMetric.scorePercentiles;
       // We will only be comparing the percentiles(p50, p90, p90) which are configured in the
-      // expected
-      // percentiles. This allows some checks to be disabled if required.
+      // expected percentiles. This allows some checks to be disabled if required.
       for (Percentile expectedPercentile : expectResult.scorePercentiles) {
         String percentile = expectedPercentile.percentile;
         double difference =
@@ -135,19 +134,23 @@ public class BenchmarkValidator {
     }
   }
 
-  private static String parseCommandLineArg(String arg) {
-    if (arg == null || arg.isEmpty()) {
+  private static String parseCommandLineArgs(String[] args, String key) {
+    if (args == null) {
       return "";
     }
-    String[] args = arg.split("=");
-    if (args.length != 2) {
-      return "";
+    for (String arg : args) {
+      if (arg.startsWith("--" + key)) {
+        String[] splits = arg.split("=");
+        if (splits.length == 2) {
+          return splits[1].trim();
+        }
+      }
     }
-    return args[1];
+    return "";
   }
 
   public static void main(String[] args) {
-    String actualFile = parseCommandLineArg(args[0]);
+    String actualFile = parseCommandLineArgs(args, "file");
     new BenchmarkValidator("com/google/cloud/spanner/jmh/jmh-baseline.json", actualFile).validate();
   }
 }
