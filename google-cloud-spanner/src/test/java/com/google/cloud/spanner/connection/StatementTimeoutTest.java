@@ -108,10 +108,12 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
   @Parameter
   public StatementExecutorType statementExecutorType;
 
-  protected ITConnection createConnection() {
+  protected ITConnection createConnection(String additionalUrlOptions) {
+    String urlSuffix =
+        ";trackSessionLeaks=false" + (additionalUrlOptions == null ? "" : additionalUrlOptions);
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
-            .setUri(getBaseUrl() + ";trackSessionLeaks=false")
+            .setUri(getBaseUrl() + urlSuffix)
             .setStatementExecutorType(statementExecutorType)
             .setConfigurator(
                 optionsConfigurator -> {
@@ -133,6 +135,10 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
                 })
             .build();
     return createITConnection(options);
+  }
+
+  protected ITConnection createConnection() {
+    return createConnection("");
   }
 
   @Before
@@ -162,6 +168,22 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       connection.setAutocommit(true);
       connection.setReadOnly(true);
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
+      SpannerException e =
+          assertThrows(
+              SpannerException.class, () -> connection.executeQuery(SELECT_RANDOM_STATEMENT));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testUrlTimeoutExceptionReadOnlyAutocommit() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
+
+    try (Connection connection =
+        createConnection(";statement_timeout='" + TIMEOUT_FOR_SLOW_STATEMENTS + "ms'")) {
+      connection.setAutocommit(true);
+      connection.setReadOnly(true);
       SpannerException e =
           assertThrows(
               SpannerException.class, () -> connection.executeQuery(SELECT_RANDOM_STATEMENT));
@@ -269,6 +291,30 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
         assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
       }
       // try to do a new query that is fast.
+      mockSpanner.removeAllExecutionTimes();
+      connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
+      try (ResultSet rs = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
+        assertNotNull(rs);
+      }
+    }
+  }
+
+  @Test
+  public void testUrlStatementTimeoutOverrideToSucceed() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
+
+    try (Connection connection =
+        createConnection(";statement_timeout='" + TIMEOUT_FOR_SLOW_STATEMENTS + "ms'")) {
+      connection.setAutocommit(true);
+      for (int i = 0; i < 2; i++) {
+        SpannerException e =
+            assertThrows(
+                SpannerException.class, () -> connection.executeQuery(SELECT_RANDOM_STATEMENT));
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+      }
+
+      // Remove slow behavior and verify a fast query succeeds after overriding the timeout.
       mockSpanner.removeAllExecutionTimes();
       connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
       try (ResultSet rs = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
