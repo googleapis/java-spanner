@@ -22,8 +22,10 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.rpc.PermissionDeniedException;
 import com.google.auth.Credentials;
+import com.google.cloud.NoCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.common.annotations.VisibleForTesting;
@@ -34,6 +36,7 @@ import com.google.monitoring.v3.CreateTimeSeriesRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.protobuf.Empty;
+import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -79,7 +82,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
       throws IOException {
     MetricServiceSettings.Builder settingsBuilder = MetricServiceSettings.newBuilder();
     CredentialsProvider credentialsProvider;
-    if (credentials == null) {
+    if (credentials == null || credentials instanceof NoCredentials) {
       credentialsProvider = NoCredentialsProvider.create();
     } else {
       credentialsProvider = FixedCredentialsProvider.create(credentials);
@@ -90,6 +93,19 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
     }
     if (!Strings.isNullOrEmpty(universeDomain)) {
       settingsBuilder.setUniverseDomain(universeDomain);
+    }
+
+    if (System.getProperty("jmh.monitoring-server-port") != null) {
+      settingsBuilder.setTransportChannelProvider(
+          InstantiatingGrpcChannelProvider.newBuilder()
+              .setCredentials(NoCredentials.getInstance())
+              .setChannelConfigurator(
+                  managedChannelBuilder ->
+                      ManagedChannelBuilder.forAddress(
+                              "0.0.0.0",
+                              Integer.parseInt(System.getProperty("jmh.monitoring-server-port")))
+                          .usePlaintext())
+              .build());
     }
 
     Duration timeout = Duration.ofMinutes(1);
