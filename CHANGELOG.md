@@ -1,5 +1,25 @@
 # Changelog
 
+## [6.102.0](https://github.com/googleapis/java-spanner/compare/v6.101.1...v6.102.0) (2025-10-04)
+
+
+### Features
+
+* Support statement_timeout in connection url ([#4103](https://github.com/googleapis/java-spanner/issues/4103)) ([542c6aa](https://github.com/googleapis/java-spanner/commit/542c6aa63bfdd526070f14cb76921dd34527c1f9))
+
+
+### Bug Fixes
+
+* Automatically set default_sequence_kind for CREATE SEQUENCE ([#4105](https://github.com/googleapis/java-spanner/issues/4105)) ([3beea6a](https://github.com/googleapis/java-spanner/commit/3beea6ac4eb53b70db34e0a2d2e33e56f450c88b))
+
+
+### Dependencies
+
+* Update actions/checkout action to v5 ([#4069](https://github.com/googleapis/java-spanner/issues/4069)) ([4c88eb9](https://github.com/googleapis/java-spanner/commit/4c88eb91a321aa718f957296012f9e7501c7caec))
+* Update actions/setup-java action to v5 ([#4071](https://github.com/googleapis/java-spanner/issues/4071)) ([e23134a](https://github.com/googleapis/java-spanner/commit/e23134a2f864e8abd2890ac3a81ff6b668afbe63))
+* Update all dependencies ([#4099](https://github.com/googleapis/java-spanner/issues/4099)) ([b262edc](https://github.com/googleapis/java-spanner/commit/b262edcfc4713bb64986bc4acd3f02b69d3367f8))
+* Update dependency org.json:json to v20250517 ([#3881](https://github.com/googleapis/java-spanner/issues/3881)) ([5658c83](https://github.com/googleapis/java-spanner/commit/5658c8378aa2e8028d4ef7dfaf94b647f33cd812))
+
 ## [6.101.1](https://github.com/googleapis/java-spanner/compare/v6.101.0...v6.101.1) (2025-09-26)
 
 
