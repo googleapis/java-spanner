@@ -2013,6 +2013,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private boolean usesNoCredentials() {
+    // When JMH is enabled, we need to enable built-in metrics
+    if (System.getProperty("jmh.enabled") != null
+        && System.getProperty("jmh.enabled").equals("true")) {
+      return false;
+    }
     return Objects.equals(getCredentials(), NoCredentials.getInstance());
   }
 

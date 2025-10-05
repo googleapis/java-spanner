@@ -277,6 +277,12 @@
       <version>3.76.0</version>
     </dependency>
     <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>grpc-google-cloud-monitoring-v3</artifactId>
+      <version>3.63.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.auth</groupId>
       <artifactId>google-auth-library-oauth2-http</artifactId>
     </dependency>
@@ -522,7 +528,11 @@
                       <argument>-classpath</argument>
                       <classpath/>
                       <argument>org.openjdk.jmh.Main</argument>
-                      <argument>${benchmark.name}</argument>
+                        <argument>${benchmark.name}</argument>
+                      <argument>-rf</argument>
+                      <argument>JSON</argument>
+                      <argument>-rff</argument>
+                      <argument>jmh-results.json</argument>
                   </arguments>
                 </configuration>
               </execution>
@@ -539,6 +549,21 @@
                   <version>1.37</version>
                 </path>
               </annotationProcessorPaths>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>validate-benchmark</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <configuration>
+              <mainClass>com.google.cloud.spanner.benchmarking.BenchmarkValidator</mainClass>
+              <classpathScope>test</classpathScope>
             </configuration>
           </plugin>
         </plugins>
