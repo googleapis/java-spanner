@@ -49,6 +49,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.ROUTE_TO_
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACING_PREFIX;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_CONNECTION_LEAKS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACK_SESSION_LEAKS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.UNIVERSE_DOMAIN;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USER_AGENT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_AUTO_SAVEPOINTS_FOR_EMULATOR;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_PLAIN_TEXT;
@@ -76,10 +77,13 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import io.grpc.Deadline;
+import io.grpc.Deadline.Ticker;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.net.URL;
@@ -386,6 +390,7 @@ public class ConnectionOptions {
         Collections.emptyList();
     private SpannerOptionsConfigurator configurator;
     private OpenTelemetry openTelemetry;
+    private Ticker ticker = Deadline.getSystemTicker();
 
     private Builder() {}
 
@@ -557,6 +562,12 @@ public class ConnectionOptions {
       return this;
     }
 
+    @VisibleForTesting
+    Builder setTicker(Ticker ticker) {
+      this.ticker = Preconditions.checkNotNull(ticker);
+      return this;
+    }
+
     /**
      * Sets the executor type to use for connections. See {@link StatementExecutorType} for more
      * information on what the different options mean.
@@ -611,6 +622,7 @@ public class ConnectionOptions {
   private final OpenTelemetry openTelemetry;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
+  private final Ticker ticker;
 
   private ConnectionOptions(Builder builder) {
     Matcher matcher;
@@ -639,6 +651,7 @@ public class ConnectionOptions {
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
+    this.ticker = builder.ticker;
 
     // Create the initial connection state from the parsed properties in the connection URL.
     this.initialConnectionState = new ConnectionState(connectionPropertyValues);
@@ -769,7 +782,7 @@ public class ConnectionOptions {
       boolean autoConfigEmulator,
       boolean usePlainText,
       Map<String, String> environment) {
-    String host;
+    String host = null;
     if (Objects.equals(endpoint, DEFAULT_ENDPOINT) && matcher.group(Builder.HOST_GROUP) == null) {
       if (autoConfigEmulator) {
         if (Strings.isNullOrEmpty(environment.get(SPANNER_EMULATOR_HOST_ENV_VAR))) {
@@ -777,8 +790,6 @@ public class ConnectionOptions {
         } else {
           return PLAIN_TEXT_PROTOCOL + "//" + environment.get(SPANNER_EMULATOR_HOST_ENV_VAR);
         }
-      } else {
-        return DEFAULT_HOST;
       }
     } else if (!Objects.equals(endpoint, DEFAULT_ENDPOINT)) {
       // Add '//' at the start of the endpoint to conform to the standard URL specification.
@@ -791,6 +802,9 @@ public class ConnectionOptions {
           && !host.matches(".*:\\d+$")) {
         host = String.format("%s:15000", host);
       }
+    }
+    if (host == null) {
+      return null;
     }
     if (usePlainText) {
       return PLAIN_TEXT_PROTOCOL + host;
@@ -808,6 +822,10 @@ public class ConnectionOptions {
 
   SpannerOptionsConfigurator getConfigurator() {
     return configurator;
+  }
+
+  Ticker getTicker() {
+    return ticker;
   }
 
   @VisibleForTesting
@@ -968,7 +986,7 @@ public class ConnectionOptions {
       return null;
     }
     try {
-      URL url = new URL(host);
+      URL url = new URL(MoreObjects.firstNonNull(host, DEFAULT_HOST));
       ExternalChannelProvider provider =
           ExternalChannelProvider.class.cast(Class.forName(channelProvider).newInstance());
       return provider.getChannelProvider(url.getHost(), url.getPort());
@@ -1084,6 +1102,10 @@ public class ConnectionOptions {
 
   Boolean isEnableDirectAccess() {
     return getInitialConnectionPropertyValue(ENABLE_DIRECT_ACCESS);
+  }
+
+  String getUniverseDomain() {
+    return getInitialConnectionPropertyValue(UNIVERSE_DOMAIN);
   }
 
   String getClientCertificate() {

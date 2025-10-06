@@ -20,11 +20,14 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_I
 import static com.google.cloud.spanner.connection.ConnectionProperties.READ_LOCK_MODE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.spanner.v1.CommitRequest;
@@ -32,10 +35,14 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
+import io.grpc.Deadline.Ticker;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -241,4 +248,63 @@ public class TransactionMockServerTest extends AbstractMockServerTest {
     }
     SpannerPool.closeSpannerPool();
   }
+
+  @Test
+  public void testTransactionTimeout() {
+    // Use a fake ticker to be able to advance the clock without having to sleep for X ms.
+    AtomicLong nanos = new AtomicLong();
+    Ticker ticker =
+        new Ticker() {
+          @Override
+          public long nanoTime() {
+            return nanos.get();
+          }
+        };
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder().setUri(getBaseUrl()).setTicker(ticker).build();
+
+    try (Connection connection = options.getConnection()) {
+      // Set the transaction timeout to 500 milliseconds.
+      connection.setTransactionTimeout(Duration.ofMillis(500));
+
+      //noinspection EmptyTryBlock
+      try (ResultSet ignore = connection.executeQuery(SELECT1_STATEMENT)) {}
+      // Advance the time by 100ms.
+      nanos.addAndGet(TimeUnit.MILLISECONDS.toNanos(100));
+      // Execute another statement. This should still succeed.
+      connection.execute(INSERT_STATEMENT);
+
+      // Advance the time by 401ms. The deadline has now been exceeded and the commit should fail.
+      nanos.addAndGet(TimeUnit.MILLISECONDS.toNanos(401));
+      SpannerException exception = assertThrows(SpannerException.class, connection::commit);
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+    }
+    // Verify that a transaction timeout does not apply to statements in auto-commit.
+    // Create a connection without a fake ticker.
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      // Set the transaction timeout so low that it will always be exceeded.
+      connection.setTransactionTimeout(Duration.ofNanos(1));
+
+      // This statement should succeed, as it does not use a transaction.
+      //noinspection EmptyTryBlock
+      try (ResultSet ignore = connection.executeQuery(SELECT1_STATEMENT)) {}
+
+      // This statement also succeeds, because it uses a read-only transaction.
+      connection.setAutocommit(false);
+      connection.setReadOnly(true);
+      //noinspection EmptyTryBlock
+      try (ResultSet ignore = connection.executeQuery(SELECT1_STATEMENT)) {}
+      connection.commit();
+
+      // This statement fails, because it uses a read/write transaction.
+      connection.setReadOnly(false);
+      SpannerException exception =
+          assertThrows(SpannerException.class, () -> connection.executeQuery(SELECT1_STATEMENT));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testTransactionTimeoutInAutoCommit() {}
 }

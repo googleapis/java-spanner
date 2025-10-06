@@ -62,6 +62,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
+import io.grpc.Deadline;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Scope;
 import java.time.Duration;
@@ -81,6 +82,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Transaction that is used when a {@link Connection} is normal read/write mode (i.e. not autocommit
@@ -157,6 +159,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final SavepointSupport savepointSupport;
   @Nonnull private final IsolationLevel isolationLevel;
   private final ReadLockMode readLockMode;
+  private final Deadline deadline;
   private int transactionRetryAttempts;
   private int successfulRetries;
   private volatile ApiFuture<TransactionContext> txContextFuture;
@@ -210,6 +213,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private SavepointSupport savepointSupport;
     private IsolationLevel isolationLevel;
     private ReadLockMode readLockMode = ReadLockMode.READ_LOCK_MODE_UNSPECIFIED;
+    private Deadline deadline;
 
     private Builder() {}
 
@@ -269,6 +273,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       return this;
     }
 
+    Builder setDeadline(Deadline deadline) {
+      this.deadline = deadline;
+      return this;
+    }
+
     @Override
     ReadWriteTransaction build() {
       Preconditions.checkState(dbClient != null, "No DatabaseClient client specified");
@@ -314,6 +323,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.savepointSupport = builder.savepointSupport;
     this.isolationLevel = Preconditions.checkNotNull(builder.isolationLevel);
     this.readLockMode = Preconditions.checkNotNull(builder.readLockMode);
+    this.deadline = builder.deadline;
     this.transactionOptions = extractOptions(builder);
   }
 
@@ -1305,6 +1315,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   @Override
   String getUnitOfWorkName() {
     return "read/write transaction";
+  }
+
+  @Nullable
+  @Override
+  Deadline getTransactionDeadline() {
+    return this.deadline;
   }
 
   static class ReadWriteSavepoint extends Savepoint {
