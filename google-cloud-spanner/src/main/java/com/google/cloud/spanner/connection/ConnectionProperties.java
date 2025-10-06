@@ -494,6 +494,23 @@ public class ConnectionProperties {
               .toArray(new ReadLockMode[0]),
           ReadLockModeConverter.INSTANCE,
           Context.USER);
+  static final ConnectionProperty<Duration> STATEMENT_TIMEOUT =
+      create(
+          "statement_timeout",
+          "Adds a timeout to all statements executed on this connection. "
+              + "This property is only used when a statement timeout is specified.",
+          null,
+          null,
+          DurationConverter.INSTANCE,
+          Context.USER);
+  static final ConnectionProperty<Duration> TRANSACTION_TIMEOUT =
+      create(
+          "transaction_timeout",
+          "Timeout for read/write transactions.",
+          null,
+          null,
+          DurationConverter.INSTANCE,
+          Context.USER);
   static final ConnectionProperty<AutocommitDmlMode> AUTOCOMMIT_DML_MODE =
       create(
           "autocommit_dml_mode",

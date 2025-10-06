@@ -48,6 +48,15 @@
       "exampleStatements": ["show statement_timeout","show variable statement_timeout"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.TRANSACTION_TIMEOUT",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_TRANSACTION_TIMEOUT",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.transaction_timeout\\s*\\z",
+      "method": "statementShowTransactionTimeout",
+      "exampleStatements": ["show spanner.transaction_timeout","show variable spanner.transaction_timeout"]
+    },
+    {
       "name": "SHOW [VARIABLE] SPANNER.READ_TIMESTAMP",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -494,6 +503,38 @@
       ],
       "setStatement": {
         "propertyName": "STATEMENT_TIMEOUT",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|DEFAULT)",
+        "converterName": "ClientSideStatementValueConverters$PgDurationConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.TRANSACTION_TIMEOUT =|TO '<duration>'|INT8|DEFAULT",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_TRANSACTION_TIMEOUT",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.transaction_timeout(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetTransactionTimeout",
+      "exampleStatements": [
+        "set spanner.transaction_timeout=default",
+        "set spanner.transaction_timeout = default ",
+        "set spanner.transaction_timeout = DEFAULT ",
+        "set spanner.transaction_timeout='1s'",
+        "set spanner.transaction_timeout = '1s' ",
+        "set spanner.transaction_timeout='100ms'",
+        "set spanner.transaction_timeout=100",
+        "set spanner.transaction_timeout = 100 ",
+        "set spanner.transaction_timeout='10000us'",
+        "set spanner.transaction_timeout='9223372036854775807ns'",
+        "set spanner.transaction_timeout to default",
+        "set spanner.transaction_timeout to '1s'",
+        "set spanner.transaction_timeout to '100ms'",
+        "set spanner.transaction_timeout to 100",
+        "set spanner.transaction_timeout to '10000us'",
+        "set spanner.transaction_timeout to '9223372036854775807ns'"
+      ],
+      "setStatement": {
+        "propertyName": "SPANNER.TRANSACTION_TIMEOUT",
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|DEFAULT)",
         "converterName": "ClientSideStatementValueConverters$PgDurationConverter"

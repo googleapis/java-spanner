@@ -436,6 +436,8 @@ public class ConnectionOptionsTest {
         "cloudspanner://spanner.googleapis.com/projects/test-project-123/instances/test-instance?autocommit=true;readonly=false");
     builder.setUri(
         "cloudspanner://spanner.googleapis.com/projects/test-project-123?autocommit=true;readonly=false");
+    builder.setUri(
+        "cloudspanner://spanner.googleapis.com/projects/test-project-123?statement_timeout='10s';transaction_timeout='60s'");
 
     // set invalid uri's
     setInvalidUri(
