@@ -184,6 +184,8 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementRunPartitionedQuery(Statement statement);
 
+  StatementResult statementSetDmlBatchUpdateCount(Long updateCount, Boolean local);
+
   StatementResult statementSetAutoBatchDml(Boolean autoBatchDml);
 
   StatementResult statementShowAutoBatchDml();
