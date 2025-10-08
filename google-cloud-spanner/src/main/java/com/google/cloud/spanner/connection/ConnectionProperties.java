@@ -75,6 +75,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DIALECT_PROP
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_API_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_END_TO_END_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_EXTENDED_TRACING_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_GRPC_INTERCEPTOR_PROVIDER_SYSTEM_PROPERTY;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENCODED_CREDENTIALS_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENDPOINT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.IS_EXPERIMENTAL_HOST_PROPERTY_NAME;
@@ -101,6 +102,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.USE_VIRTUAL_
 import static com.google.cloud.spanner.connection.ConnectionProperty.castProperty;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.DmlBatchUpdateCountVerificationFailedException;
 import com.google.cloud.spanner.Options.RpcPriority;
@@ -285,6 +287,20 @@ public class ConnectionProperties {
               + " should be used to obtain credentials for connections.",
           null,
           CredentialsProviderConverter.INSTANCE,
+          Context.STARTUP);
+  static final ConnectionProperty<String> GRPC_INTERCEPTOR_PROVIDER =
+      create(
+          "grpc_interceptor_provider",
+          "The class name of a "
+              + GrpcInterceptorProvider.class.getName()
+              + " implementation that should be used to provide interceptors for the underlying Spanner client. "
+              + "This is a guarded property that can only be set if the Java System Property "
+              + ENABLE_GRPC_INTERCEPTOR_PROVIDER_SYSTEM_PROPERTY
+              + " has been set to true. This property should only be set to true on systems where an untrusted user cannot modify the connection URL, "
+              + "as using this property will dynamically invoke the constructor of the class specified. This means that any user that can modify "
+              + "the connection URL, can also dynamically invoke code on the host where the application is running.",
+          null,
+          StringValueConverter.INSTANCE,
           Context.STARTUP);
 
   static final ConnectionProperty<String> USER_AGENT =
