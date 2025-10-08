@@ -184,6 +184,19 @@ integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     ;;
 graalvm)
     # Run Unit and Integration Tests with Native Image
+    echo "Install GraalVM 25"
+    echo "$JAVA_HOME"
+    pwd
+    mkdir -p ~/tools/jdk
+    cd ~/tools/jdk
+    wget https://download.oracle.com/graalvm/25/latest/graalvm-jdk-25_linux-x64_bin.tar.gz
+    tar -xf graalvm-jdk-25_linux-x64_bin.tar.gz
+    export JAVA_HOME=~/tools/jdk/graalvm-jdk-25+37.1
+    export PATH=$JAVA_HOME/bin:$PATH
+    java -version
+    echo "Running native image tests..."
+    cd "${scriptDir}/.."
+
     mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests
     RETURN_CODE=$?
     ;;
