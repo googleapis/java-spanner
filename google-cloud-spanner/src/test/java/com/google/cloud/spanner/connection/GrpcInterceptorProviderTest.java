@@ -108,8 +108,10 @@ public class GrpcInterceptorProviderTest extends AbstractMockServerTest {
         exception
             .getMessage()
             .contains(
-                "grpc_interceptor_provider can only be used if the system property ENABLE_GRPC_INTERCEPTOR_PROVIDER has been set to true. "
-                    + "Start the application with the JVM command line option -DENABLE_GRPC_INTERCEPTOR_PROVIDER=true"));
+                "grpc_interceptor_provider can only be used if the system property"
+                    + " ENABLE_GRPC_INTERCEPTOR_PROVIDER has been set to true. Start the"
+                    + " application with the JVM command line option"
+                    + " -DENABLE_GRPC_INTERCEPTOR_PROVIDER=true"));
     assertFalse(INTERCEPTOR_CALLED.get());
   }
 }

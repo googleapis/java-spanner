@@ -293,12 +293,15 @@ public class ConnectionProperties {
           "grpc_interceptor_provider",
           "The class name of a "
               + GrpcInterceptorProvider.class.getName()
-              + " implementation that should be used to provide interceptors for the underlying Spanner client. "
-              + "This is a guarded property that can only be set if the Java System Property "
+              + " implementation that should be used to provide interceptors for the underlying"
+              + " Spanner client. This is a guarded property that can only be set if the Java"
+              + " System Property "
               + ENABLE_GRPC_INTERCEPTOR_PROVIDER_SYSTEM_PROPERTY
-              + " has been set to true. This property should only be set to true on systems where an untrusted user cannot modify the connection URL, "
-              + "as using this property will dynamically invoke the constructor of the class specified. This means that any user that can modify "
-              + "the connection URL, can also dynamically invoke code on the host where the application is running.",
+              + " has been set to true. This property should only be set to true on systems where"
+              + " an untrusted user cannot modify the connection URL, as using this property will"
+              + " dynamically invoke the constructor of the class specified. This means that any"
+              + " user that can modify the connection URL, can also dynamically invoke code on the"
+              + " host where the application is running.",
           null,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
