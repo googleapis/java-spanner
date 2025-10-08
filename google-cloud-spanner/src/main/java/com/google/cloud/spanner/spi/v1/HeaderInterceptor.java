@@ -112,14 +112,17 @@ class HeaderInterceptor implements ClientInterceptor {
           Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = extractKey(databaseName, method.getFullMethodName());
+          String requestId = extractRequestId(headers);
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
           Map<String, String> builtInMetricsAttributes =
               getBuiltInMetricAttributes(key, databaseName);
-          builtInMetricsAttributes.put(
-              BuiltInMetricsConstant.REQUEST_ID_KEY.getKey(), extractRequestId(headers));
+          builtInMetricsAttributes.put(BuiltInMetricsConstant.REQUEST_ID_KEY.getKey(), requestId);
           addBuiltInMetricAttributes(compositeTracer, builtInMetricsAttributes);
+          if (span != null) {
+            span.setAttribute(XGoogSpannerRequestId.REQUEST_ID, requestId);
+          }
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override

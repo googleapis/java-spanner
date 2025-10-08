@@ -140,7 +140,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
       List<SessionImpl> sessions;
       int remainingSessionsToCreate = sessionCount;
       ISpan span =
-          spanner.getTracer().spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS, commonAttributes);
+          spanner.getTracer().spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS, databaseAttributes);
       try (IScope s = spanner.getTracer().withSpan(span)) {
         spanner
             .getTracer()
@@ -185,7 +185,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
   private final ScheduledExecutorService executor;
   private final DatabaseId db;
-  private final Attributes commonAttributes;
+  private final Attributes databaseAttributes;
 
   // SessionClient is created long before a DatabaseClientImpl is created,
   // as batch sessions are firstly created then later attached to each Client.
@@ -204,7 +204,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     this.db = db;
     this.executorFactory = executorFactory;
     this.executor = executorFactory.get();
-    this.commonAttributes = spanner.getTracer().createCommonAttributes(db);
+    this.databaseAttributes = spanner.getTracer().createDatabaseAttributes(db);
   }
 
   @Override
@@ -236,7 +236,8 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
       sessionChannelCounter++;
     }
     XGoogSpannerRequestId reqId = nextRequestId(channelId, 1);
-    ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION, this.commonAttributes);
+    ISpan span =
+        spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION, this.databaseAttributes);
     try (IScope s = spanner.getTracer().withSpan(span)) {
       com.google.spanner.v1.Session session =
           spanner
@@ -289,7 +290,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     ISpan span =
         spanner
             .getTracer()
-            .spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION, this.commonAttributes);
+            .spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION, this.databaseAttributes);
     // MultiplexedSession doesn't use a channelId hence this hard-coded value.
     int channelId = 0;
     XGoogSpannerRequestId reqId = nextRequestId(channelId, 1);

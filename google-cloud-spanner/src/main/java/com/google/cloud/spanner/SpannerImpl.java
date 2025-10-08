@@ -316,7 +316,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 multiplexedSessionDatabaseClient,
                 getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps(),
                 useMultiplexedSessionForRW,
-                this.tracer.createCommonAttributes(db));
+                this.tracer.createDatabaseAttributes(db));
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -331,7 +331,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient,
       boolean useMultiplexedSessionPartitionedOps,
       boolean useMultiplexedSessionForRW,
-      Attributes commonAttributes) {
+      Attributes databaseAttributes) {
     if (multiplexedSessionClient != null) {
       // Set the session pool in the multiplexed session client.
       // This is required to handle fallback to regular sessions for in-progress transactions that
@@ -346,7 +346,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         useMultiplexedSessionPartitionedOps,
         tracer,
         useMultiplexedSessionForRW,
-        commonAttributes);
+        databaseAttributes);
   }
 
   @Override
