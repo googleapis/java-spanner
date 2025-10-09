@@ -976,6 +976,7 @@
       "exampleStatements": [
         "set local spanner.dml_batch_update_count = 0",
         "set local spanner.dml_batch_update_count = 100",
+        "set local spanner.dml_batch_update_count to 1",
         "set local spanner.dml_batch_update_count to 1"
       ],
       "setStatement": {

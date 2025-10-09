@@ -84,6 +84,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
     }
 
     Builder setDmlBatchUpdateCountSupplier(Supplier<Long> dmlbatchUpdateCountSupplier) {
+      Preconditions.checkNotNull(dmlbatchUpdateCountSupplier);
       this.dmlbatchUpdateCountSupplier = dmlbatchUpdateCountSupplier;
       return this;
     }

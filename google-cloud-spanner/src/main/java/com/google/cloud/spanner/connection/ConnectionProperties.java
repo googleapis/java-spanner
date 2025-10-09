@@ -752,9 +752,8 @@ public class ConnectionProperties {
   static final ConnectionProperty<Long> DML_BATCH_UPDATE_COUNT =
       create(
           DML_BATCH_UPDATE_COUNT_PROPERTY_NAME,
-          "DML statements that are executed in batch when "
-              + " 'start batch dml' statement is executed. This property determines"
-              + " the update count that is returned for these DML statements. The default is "
+          "The update count that is returned for DML statements that are executed in an "
+              + "explicit DML batch. The default is "
               + DEFAULT_DML_BATCH_UPDATE_COUNT,
           DEFAULT_DML_BATCH_UPDATE_COUNT,
           LongConverter.INSTANCE,
