@@ -24,7 +24,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.101.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.102.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -59,7 +59,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-monitoring</artifactId>
-      <version>3.76.0</version>
+      <version>3.77.0</version>
     </dependency>
     <!-- OpenTelemetry test dependencies -->
     <dependency>
@@ -126,7 +126,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.6.1</version>
         <configuration>
           <mainClass>com.google.cloud.spanner.benchmark.LatencyBenchmark</mainClass>
           <cleanupDaemonThreads>false</cleanupDaemonThreads>
