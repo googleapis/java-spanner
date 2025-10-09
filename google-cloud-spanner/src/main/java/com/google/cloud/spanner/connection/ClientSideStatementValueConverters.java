@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.parseTim
 import static com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.toChronoUnit;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
@@ -818,6 +819,54 @@ class ClientSideStatementValueConverters {
               ErrorCode.INVALID_ARGUMENT,
               "Failed to create an instance of "
                   + credentialsProviderName
+                  + ": "
+                  + exception.getMessage(),
+              exception);
+        }
+      }
+      return null;
+    }
+  }
+
+  static class GrpcInterceptorProviderConverter
+      implements ClientSideStatementValueConverter<GrpcInterceptorProvider> {
+    static final GrpcInterceptorProviderConverter INSTANCE = new GrpcInterceptorProviderConverter();
+
+    private GrpcInterceptorProviderConverter() {}
+
+    @Override
+    public Class<GrpcInterceptorProvider> getParameterClass() {
+      return GrpcInterceptorProvider.class;
+    }
+
+    @Override
+    public GrpcInterceptorProvider convert(String interceptorProviderName) {
+      if (!Strings.isNullOrEmpty(interceptorProviderName)) {
+        try {
+          Class<? extends GrpcInterceptorProvider> clazz =
+              (Class<? extends GrpcInterceptorProvider>) Class.forName(interceptorProviderName);
+          Constructor<? extends GrpcInterceptorProvider> constructor =
+              clazz.getDeclaredConstructor();
+          return constructor.newInstance();
+        } catch (ClassNotFoundException classNotFoundException) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Unknown or invalid GrpcInterceptorProvider class name: " + interceptorProviderName,
+              classNotFoundException);
+        } catch (NoSuchMethodException noSuchMethodException) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "GrpcInterceptorProvider "
+                  + interceptorProviderName
+                  + " does not have a public no-arg constructor.",
+              noSuchMethodException);
+        } catch (InvocationTargetException
+            | InstantiationException
+            | IllegalAccessException exception) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Failed to create an instance of "
+                  + interceptorProviderName
                   + ": "
                   + exception.getMessage(),
               exception);
