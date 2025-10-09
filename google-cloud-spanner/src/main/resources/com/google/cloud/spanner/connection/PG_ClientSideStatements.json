@@ -967,7 +967,7 @@
       }
     },
     {
-      "name": "SET LOCAL SPANNER.DML_BATCH_UPDATE_COUNT =|TO <bigint>",
+      "name": "SET [LOCAL] SPANNER.DML_BATCH_UPDATE_COUNT =|TO <bigint>",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
       "statementType": "SET_DML_BATCH_UPDATE_COUNT",
@@ -977,8 +977,10 @@
         "set local spanner.dml_batch_update_count = 0",
         "set local spanner.dml_batch_update_count = 100",
         "set local spanner.dml_batch_update_count to 1",
-        "set local spanner.dml_batch_update_count to 1"
+        "set spanner.dml_batch_update_count to 1",
+        "set spanner.dml_batch_update_count = 1"
       ],
+      "examplePrerequisiteStatements": ["set spanner.readonly = false", "set autocommit = false"],
       "setStatement": {
         "propertyName": "SPANNER.DML_BATCH_UPDATE_COUNT",
         "separator": "(?:=|\\s+TO\\s+)",

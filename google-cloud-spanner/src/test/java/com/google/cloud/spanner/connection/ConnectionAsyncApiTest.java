@@ -341,29 +341,38 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
 
   @Test
   public void testDmlBatchUpdateCount() {
-    SpannerPool.closeSpannerPool();
-    try {
-      try (Connection connection = createConnection()) {
-        connection.execute(Statement.of("set local spanner.dml_batch_update_count = 1"));
-        connection.execute(Statement.of("START BATCH DML"));
-        List<Statement> statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
-        long[] updateCounts = connection.executeBatchUpdate(statements);
-        assertThat(updateCounts).asList().containsExactly(1L, 1L);
-        connection.execute(Statement.of("RUN BATCH"));
-        connection.commit();
+    Arrays.asList(Dialect.POSTGRESQL, Dialect.GOOGLE_STANDARD_SQL)
+        .forEach(
+            dialect -> {
+              String prefix = dialect == Dialect.POSTGRESQL ? "spanner." : "";
+              mockSpanner.putStatementResult(
+                  MockSpannerServiceImpl.StatementResult.detectDialectResult(dialect));
+              SpannerPool.closeSpannerPool();
+              try {
+                try (Connection connection = createConnection()) {
+                  connection.execute(
+                      Statement.of("set local " + prefix + "dml_batch_update_count = 1"));
+                  connection.execute(Statement.of("START BATCH DML"));
+                  List<Statement> statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
+                  long[] updateCounts = connection.executeBatchUpdate(statements);
+                  assertThat(updateCounts).asList().containsExactly(1L, 1L);
+                  connection.execute(Statement.of("RUN BATCH"));
+                  connection.commit();
 
-        connection.execute(Statement.of("START BATCH DML"));
-        statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
-        updateCounts = connection.executeBatchUpdate(statements);
-        assertThat(updateCounts).asList().containsExactly(-1L, -1L);
-        connection.execute(Statement.of("RUN BATCH"));
-        connection.commit();
-      }
-    } finally {
-      SpannerPool.closeSpannerPool();
-      mockSpanner.putStatementResult(
-          MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
-    }
+                  connection.execute(Statement.of("START BATCH DML"));
+                  statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
+                  updateCounts = connection.executeBatchUpdate(statements);
+                  assertThat(updateCounts).asList().containsExactly(-1L, -1L);
+                  connection.execute(Statement.of("RUN BATCH"));
+                  connection.commit();
+                }
+              } finally {
+                SpannerPool.closeSpannerPool();
+                mockSpanner.putStatementResult(
+                    MockSpannerServiceImpl.StatementResult.detectDialectResult(
+                        Dialect.GOOGLE_STANDARD_SQL));
+              }
+            });
   }
 
   @Test

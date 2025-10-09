@@ -30067,407 +30067,1351 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set auto_batch_dml_update_count_verification =/-false;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 SET LOCAL DML_BATCH_UPDATE_COUNT = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
    set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 			set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 
 
 
 set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 0  ;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 0		;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 0
 
 ;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set   local   dml_batch_update_count   =   0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set	local	dml_batch_update_count	=	0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set
 local
 dml_batch_update_count
 =
 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 foo set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0 bar;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 %set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0%;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =%0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 _set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0_;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =_0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 &set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0&;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =&0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 $set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0$;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =$0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 @set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0@;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =@0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 !set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0!;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =!0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 *set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0*;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =*0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 (set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0(;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =(0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 )set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0);
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =)0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 -set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0-;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =-0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 +set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0+;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =+0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 -#set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0-#;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =-#0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 /set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0/;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =/0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 \set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0\;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =\0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 ?set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0?;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =?0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 -/set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0-/;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =-/0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 /#set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0/#;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =/#0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 /-set local dml_batch_update_count = 0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 0/-;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =/-0;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 SET LOCAL DML_BATCH_UPDATE_COUNT = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
    set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 			set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 
 
 
 set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 100  ;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 100		;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set local dml_batch_update_count = 100
 
 ;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set   local   dml_batch_update_count   =   100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set	local	dml_batch_update_count	=	100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 set
 local
 dml_batch_update_count
 =
 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 foo set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100 bar;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 %set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100%;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =%100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 _set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100_;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =_100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 &set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100&;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =&100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 $set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100$;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =$100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 @set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100@;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =@100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 !set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100!;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =!100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 *set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100*;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =*100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 (set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100(;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =(100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 )set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100);
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =)100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 -set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100-;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =-100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 +set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100+;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =+100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 -#set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100-#;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =-#100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 /set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100/;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =/100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 \set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100\;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =\100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 ?set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100?;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =?100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 -/set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100-/;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =-/100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 /#set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100/#;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =/#100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 /-set local dml_batch_update_count = 100;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count = 100/-;
 NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set local dml_batch_update_count =/-100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+SET DML_BATCH_UPDATE_COUNT = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+   set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+			set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+
+
+
+set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 1  ;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 1		;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 1
+
+;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set   dml_batch_update_count   =   1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set	dml_batch_update_count	=	1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set
+dml_batch_update_count
+=
+1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1 bar;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1%;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =%1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1_;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =_1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1&;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =&1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1$;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =$1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1@;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =@1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1!;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =!1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1*;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =*1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1(;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =(1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1);
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =)1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1-;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =-1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1+;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =+1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1-#;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =-#1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1/;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =/1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1\;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =\1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1?;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =?1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1-/;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =-/1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1/#;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =/#1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set dml_batch_update_count = 1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 1/-;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =/-1;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+SET DML_BATCH_UPDATE_COUNT = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+   set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+			set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+
+
+
+set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 100  ;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 100		;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set dml_batch_update_count = 100
+
+;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set   dml_batch_update_count   =   100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set	dml_batch_update_count	=	100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+set
+dml_batch_update_count
+=
+100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100 bar;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100%;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =%100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100_;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =_100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100&;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =&100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100$;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =$100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100@;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =@100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100!;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =!100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100*;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =*100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100(;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =(100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100);
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =)100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100-;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =-100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100+;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =+100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100-#;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =-#100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100/;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =/100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100\;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =\100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100?;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =?100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100-/;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =-/100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100/#;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =/#100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set dml_batch_update_count = 100;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count = 100/-;
+NEW_CONNECTION;
+set readonly = false;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set dml_batch_update_count =/-100;
 NEW_CONNECTION;
 show variable read_lock_mode;
 NEW_CONNECTION;
