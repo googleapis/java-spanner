@@ -753,6 +753,24 @@
 	    "converterName": "ClientSideStatementValueConverters$BooleanConverter"
 	  }
 	},
+  {
+    "name": "SET LOCAL DML_BATCH_UPDATE_COUNT = <INT64>",
+    "executorName": "ClientSideStatementSetExecutor",
+    "resultType": "NO_RESULT",
+    "statementType": "SET_DML_BATCH_UPDATE_COUNT",
+    "regex": "(?is)\\A\\s*set\\s+((?:session|local)\\s+)dml_batch_update_count\\s*(?:=)\\s*(.*)\\z",
+    "method": "statementSetDmlBatchUpdateCount",
+    "exampleStatements": [
+      "set local dml_batch_update_count = 0",
+      "set local dml_batch_update_count = 100"
+    ],
+    "setStatement": {
+      "propertyName": "DML_BATCH_UPDATE_COUNT",
+      "separator": "(?:=|\\s+TO\\s+)",
+      "allowedValues": "(\\d{1,19})",
+      "converterName": "ClientSideStatementValueConverters$LongConverter"
+    }
+  },
 	{
 		"name": "SHOW VARIABLE READ_LOCK_MODE",
 		"executorName": "ClientSideStatementNoParamExecutor",

@@ -366,6 +366,30 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   }
 
   @Test
+  public void testDmlBatchUpdateCountGoogleSql() {
+    SpannerPool.closeSpannerPool();
+    try {
+      try (Connection connection = createConnection()) {
+        connection.execute(Statement.of("set local dml_batch_update_count = 1"));
+        connection.execute(Statement.of("START BATCH DML"));
+        List<Statement> statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
+        long[] updateCounts = connection.executeBatchUpdate(statements);
+        assertThat(updateCounts).asList().containsExactly(1L, 1L);
+      }
+      try (Connection connection = createConnection()) {
+        connection.execute(Statement.of("START BATCH DML"));
+        List<Statement> statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
+        long[] updateCounts = connection.executeBatchUpdate(statements);
+        assertThat(updateCounts).asList().containsExactly(-1L, -1L);
+      }
+    } finally {
+      SpannerPool.closeSpannerPool();
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+    }
+  }
+
+  @Test
   public void testAutocommitRunBatchAsync() {
     try (Connection connection = createConnection()) {
       connection.executeAsync(Statement.of("SET AUTOCOMMIT = TRUE"));
