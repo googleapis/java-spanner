@@ -141,8 +141,7 @@ public class IntegrationTestEnv extends ExternalResource {
         .anyMatch(testEnvOption -> TestEnvOptions.USE_END_TO_END_TRACING.equals(testEnvOption))) {
       // OpenTelemetry set up for enabling End to End tracing for all integration test env.
       // The gRPC stub and connections are created during test env set up using SpannerOptions and
-      // are
-      // reused for executing statements.
+      // are reused for executing statements.
       options = spannerOptionsWithEndToEndTracing(options);
     }
     String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
@@ -293,7 +292,7 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void cleanUpOldDatabases(InstanceId instanceId) {
-    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(6L, TimeUnit.HOURS);
+    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(2L, TimeUnit.HOURS);
     Timestamp currentTimestamp = Timestamp.now();
     int numDropped = 0;
     String TEST_DB_REGEX = "(testdb_(.*)_(.*))|(mysample-(.*))";
