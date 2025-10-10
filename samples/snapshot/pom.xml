@@ -24,7 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
     <trace.version>2.76.0</trace.version>
-    <cloudmonitoring.version>3.76.0</cloudmonitoring.version>
+    <cloudmonitoring.version>3.77.0</cloudmonitoring.version>
   </properties>
 
   <dependencies>
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.101.2-SNAPSHOT</version>
+      <version>6.102.0</version>
     </dependency>
     <!-- {x-version-update-end} -->
     
