@@ -96591,1686 +96591,1686 @@ set spanner.auto_batch_dml_update_count to/-1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 0;
+set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-SET LOCAL SPANNER.DML_BATCH_UPDATE_COUNT = 0;
+SET LOCAL SPANNER.BATCH_DML_UPDATE_COUNT = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 0;
+set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-   set local spanner.dml_batch_update_count = 0;
+   set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-			set local spanner.dml_batch_update_count = 0;
+			set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 
 
 
-set local spanner.dml_batch_update_count = 0;
+set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 0  ;
+set local spanner.batch_dml_update_count = 0  ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 0		;
+set local spanner.batch_dml_update_count = 0		;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 0
+set local spanner.batch_dml_update_count = 0
 
 ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set   local   spanner.dml_batch_update_count   =   0;
+set   local   spanner.batch_dml_update_count   =   0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set	local	spanner.dml_batch_update_count	=	0;
+set	local	spanner.batch_dml_update_count	=	0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 set
 local
-spanner.dml_batch_update_count
+spanner.batch_dml_update_count
 =
 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-foo set local spanner.dml_batch_update_count = 0;
+foo set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0 bar;
+set local spanner.batch_dml_update_count = 0 bar;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-%set local spanner.dml_batch_update_count = 0;
+%set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0%;
+set local spanner.batch_dml_update_count = 0%;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =%0;
+set local spanner.batch_dml_update_count =%0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-_set local spanner.dml_batch_update_count = 0;
+_set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0_;
+set local spanner.batch_dml_update_count = 0_;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =_0;
+set local spanner.batch_dml_update_count =_0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-&set local spanner.dml_batch_update_count = 0;
+&set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0&;
+set local spanner.batch_dml_update_count = 0&;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =&0;
+set local spanner.batch_dml_update_count =&0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-$set local spanner.dml_batch_update_count = 0;
+$set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0$;
+set local spanner.batch_dml_update_count = 0$;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =$0;
+set local spanner.batch_dml_update_count =$0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-@set local spanner.dml_batch_update_count = 0;
+@set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0@;
+set local spanner.batch_dml_update_count = 0@;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =@0;
+set local spanner.batch_dml_update_count =@0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-!set local spanner.dml_batch_update_count = 0;
+!set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0!;
+set local spanner.batch_dml_update_count = 0!;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =!0;
+set local spanner.batch_dml_update_count =!0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-*set local spanner.dml_batch_update_count = 0;
+*set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0*;
+set local spanner.batch_dml_update_count = 0*;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =*0;
+set local spanner.batch_dml_update_count =*0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-(set local spanner.dml_batch_update_count = 0;
+(set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0(;
+set local spanner.batch_dml_update_count = 0(;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =(0;
+set local spanner.batch_dml_update_count =(0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-)set local spanner.dml_batch_update_count = 0;
+)set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0);
+set local spanner.batch_dml_update_count = 0);
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =)0;
+set local spanner.batch_dml_update_count =)0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--set local spanner.dml_batch_update_count = 0;
+-set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0-;
+set local spanner.batch_dml_update_count = 0-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =-0;
+set local spanner.batch_dml_update_count =-0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-+set local spanner.dml_batch_update_count = 0;
++set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0+;
+set local spanner.batch_dml_update_count = 0+;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =+0;
+set local spanner.batch_dml_update_count =+0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--#set local spanner.dml_batch_update_count = 0;
+-#set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0-#;
+set local spanner.batch_dml_update_count = 0-#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =-#0;
+set local spanner.batch_dml_update_count =-#0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/set local spanner.dml_batch_update_count = 0;
+/set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0/;
+set local spanner.batch_dml_update_count = 0/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =/0;
+set local spanner.batch_dml_update_count =/0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-\set local spanner.dml_batch_update_count = 0;
+\set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0\;
+set local spanner.batch_dml_update_count = 0\;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =\0;
+set local spanner.batch_dml_update_count =\0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-?set local spanner.dml_batch_update_count = 0;
+?set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0?;
+set local spanner.batch_dml_update_count = 0?;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =?0;
+set local spanner.batch_dml_update_count =?0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--/set local spanner.dml_batch_update_count = 0;
+-/set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0-/;
+set local spanner.batch_dml_update_count = 0-/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =-/0;
+set local spanner.batch_dml_update_count =-/0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/#set local spanner.dml_batch_update_count = 0;
+/#set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0/#;
+set local spanner.batch_dml_update_count = 0/#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =/#0;
+set local spanner.batch_dml_update_count =/#0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/-set local spanner.dml_batch_update_count = 0;
+/-set local spanner.batch_dml_update_count = 0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 0/-;
+set local spanner.batch_dml_update_count = 0/-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =/-0;
+set local spanner.batch_dml_update_count =/-0;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 100;
+set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-SET LOCAL SPANNER.DML_BATCH_UPDATE_COUNT = 100;
+SET LOCAL SPANNER.BATCH_DML_UPDATE_COUNT = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 100;
+set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-   set local spanner.dml_batch_update_count = 100;
+   set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-			set local spanner.dml_batch_update_count = 100;
+			set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 
 
 
-set local spanner.dml_batch_update_count = 100;
+set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 100  ;
+set local spanner.batch_dml_update_count = 100  ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 100		;
+set local spanner.batch_dml_update_count = 100		;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count = 100
+set local spanner.batch_dml_update_count = 100
 
 ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set   local   spanner.dml_batch_update_count   =   100;
+set   local   spanner.batch_dml_update_count   =   100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set	local	spanner.dml_batch_update_count	=	100;
+set	local	spanner.batch_dml_update_count	=	100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 set
 local
-spanner.dml_batch_update_count
+spanner.batch_dml_update_count
 =
 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-foo set local spanner.dml_batch_update_count = 100;
+foo set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100 bar;
+set local spanner.batch_dml_update_count = 100 bar;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-%set local spanner.dml_batch_update_count = 100;
+%set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100%;
+set local spanner.batch_dml_update_count = 100%;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =%100;
+set local spanner.batch_dml_update_count =%100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-_set local spanner.dml_batch_update_count = 100;
+_set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100_;
+set local spanner.batch_dml_update_count = 100_;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =_100;
+set local spanner.batch_dml_update_count =_100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-&set local spanner.dml_batch_update_count = 100;
+&set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100&;
+set local spanner.batch_dml_update_count = 100&;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =&100;
+set local spanner.batch_dml_update_count =&100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-$set local spanner.dml_batch_update_count = 100;
+$set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100$;
+set local spanner.batch_dml_update_count = 100$;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =$100;
+set local spanner.batch_dml_update_count =$100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-@set local spanner.dml_batch_update_count = 100;
+@set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100@;
+set local spanner.batch_dml_update_count = 100@;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =@100;
+set local spanner.batch_dml_update_count =@100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-!set local spanner.dml_batch_update_count = 100;
+!set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100!;
+set local spanner.batch_dml_update_count = 100!;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =!100;
+set local spanner.batch_dml_update_count =!100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-*set local spanner.dml_batch_update_count = 100;
+*set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100*;
+set local spanner.batch_dml_update_count = 100*;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =*100;
+set local spanner.batch_dml_update_count =*100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-(set local spanner.dml_batch_update_count = 100;
+(set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100(;
+set local spanner.batch_dml_update_count = 100(;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =(100;
+set local spanner.batch_dml_update_count =(100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-)set local spanner.dml_batch_update_count = 100;
+)set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100);
+set local spanner.batch_dml_update_count = 100);
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =)100;
+set local spanner.batch_dml_update_count =)100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--set local spanner.dml_batch_update_count = 100;
+-set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100-;
+set local spanner.batch_dml_update_count = 100-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =-100;
+set local spanner.batch_dml_update_count =-100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-+set local spanner.dml_batch_update_count = 100;
++set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100+;
+set local spanner.batch_dml_update_count = 100+;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =+100;
+set local spanner.batch_dml_update_count =+100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--#set local spanner.dml_batch_update_count = 100;
+-#set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100-#;
+set local spanner.batch_dml_update_count = 100-#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =-#100;
+set local spanner.batch_dml_update_count =-#100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/set local spanner.dml_batch_update_count = 100;
+/set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100/;
+set local spanner.batch_dml_update_count = 100/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =/100;
+set local spanner.batch_dml_update_count =/100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-\set local spanner.dml_batch_update_count = 100;
+\set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100\;
+set local spanner.batch_dml_update_count = 100\;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =\100;
+set local spanner.batch_dml_update_count =\100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-?set local spanner.dml_batch_update_count = 100;
+?set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100?;
+set local spanner.batch_dml_update_count = 100?;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =?100;
+set local spanner.batch_dml_update_count =?100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--/set local spanner.dml_batch_update_count = 100;
+-/set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100-/;
+set local spanner.batch_dml_update_count = 100-/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =-/100;
+set local spanner.batch_dml_update_count =-/100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/#set local spanner.dml_batch_update_count = 100;
+/#set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100/#;
+set local spanner.batch_dml_update_count = 100/#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =/#100;
+set local spanner.batch_dml_update_count =/#100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/-set local spanner.dml_batch_update_count = 100;
+/-set local spanner.batch_dml_update_count = 100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count = 100/-;
+set local spanner.batch_dml_update_count = 100/-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count =/-100;
+set local spanner.batch_dml_update_count =/-100;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count to 1;
+set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-SET LOCAL SPANNER.DML_BATCH_UPDATE_COUNT TO 1;
+SET LOCAL SPANNER.BATCH_DML_UPDATE_COUNT TO 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count to 1;
+set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-   set local spanner.dml_batch_update_count to 1;
+   set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-			set local spanner.dml_batch_update_count to 1;
+			set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 
 
 
-set local spanner.dml_batch_update_count to 1;
+set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count to 1  ;
+set local spanner.batch_dml_update_count to 1  ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count to 1		;
+set local spanner.batch_dml_update_count to 1		;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set local spanner.dml_batch_update_count to 1
+set local spanner.batch_dml_update_count to 1
 
 ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set   local   spanner.dml_batch_update_count   to   1;
+set   local   spanner.batch_dml_update_count   to   1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set	local	spanner.dml_batch_update_count	to	1;
+set	local	spanner.batch_dml_update_count	to	1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 set
 local
-spanner.dml_batch_update_count
+spanner.batch_dml_update_count
 to
 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-foo set local spanner.dml_batch_update_count to 1;
+foo set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1 bar;
+set local spanner.batch_dml_update_count to 1 bar;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-%set local spanner.dml_batch_update_count to 1;
+%set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1%;
+set local spanner.batch_dml_update_count to 1%;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to%1;
+set local spanner.batch_dml_update_count to%1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-_set local spanner.dml_batch_update_count to 1;
+_set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1_;
+set local spanner.batch_dml_update_count to 1_;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to_1;
+set local spanner.batch_dml_update_count to_1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-&set local spanner.dml_batch_update_count to 1;
+&set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1&;
+set local spanner.batch_dml_update_count to 1&;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to&1;
+set local spanner.batch_dml_update_count to&1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-$set local spanner.dml_batch_update_count to 1;
+$set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1$;
+set local spanner.batch_dml_update_count to 1$;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to$1;
+set local spanner.batch_dml_update_count to$1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-@set local spanner.dml_batch_update_count to 1;
+@set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1@;
+set local spanner.batch_dml_update_count to 1@;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to@1;
+set local spanner.batch_dml_update_count to@1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-!set local spanner.dml_batch_update_count to 1;
+!set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1!;
+set local spanner.batch_dml_update_count to 1!;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to!1;
+set local spanner.batch_dml_update_count to!1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-*set local spanner.dml_batch_update_count to 1;
+*set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1*;
+set local spanner.batch_dml_update_count to 1*;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to*1;
+set local spanner.batch_dml_update_count to*1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-(set local spanner.dml_batch_update_count to 1;
+(set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1(;
+set local spanner.batch_dml_update_count to 1(;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to(1;
+set local spanner.batch_dml_update_count to(1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-)set local spanner.dml_batch_update_count to 1;
+)set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1);
+set local spanner.batch_dml_update_count to 1);
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to)1;
+set local spanner.batch_dml_update_count to)1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--set local spanner.dml_batch_update_count to 1;
+-set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1-;
+set local spanner.batch_dml_update_count to 1-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to-1;
+set local spanner.batch_dml_update_count to-1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-+set local spanner.dml_batch_update_count to 1;
++set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1+;
+set local spanner.batch_dml_update_count to 1+;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to+1;
+set local spanner.batch_dml_update_count to+1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--#set local spanner.dml_batch_update_count to 1;
+-#set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1-#;
+set local spanner.batch_dml_update_count to 1-#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to-#1;
+set local spanner.batch_dml_update_count to-#1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/set local spanner.dml_batch_update_count to 1;
+/set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1/;
+set local spanner.batch_dml_update_count to 1/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to/1;
+set local spanner.batch_dml_update_count to/1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-\set local spanner.dml_batch_update_count to 1;
+\set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1\;
+set local spanner.batch_dml_update_count to 1\;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to\1;
+set local spanner.batch_dml_update_count to\1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-?set local spanner.dml_batch_update_count to 1;
+?set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1?;
+set local spanner.batch_dml_update_count to 1?;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to?1;
+set local spanner.batch_dml_update_count to?1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--/set local spanner.dml_batch_update_count to 1;
+-/set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1-/;
+set local spanner.batch_dml_update_count to 1-/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to-/1;
+set local spanner.batch_dml_update_count to-/1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/#set local spanner.dml_batch_update_count to 1;
+/#set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1/#;
+set local spanner.batch_dml_update_count to 1/#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to/#1;
+set local spanner.batch_dml_update_count to/#1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/-set local spanner.dml_batch_update_count to 1;
+/-set local spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to 1/-;
+set local spanner.batch_dml_update_count to 1/-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set local spanner.dml_batch_update_count to/-1;
+set local spanner.batch_dml_update_count to/-1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count to 1;
+set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-SET SPANNER.DML_BATCH_UPDATE_COUNT TO 1;
+SET SPANNER.BATCH_DML_UPDATE_COUNT TO 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count to 1;
+set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-   set spanner.dml_batch_update_count to 1;
+   set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-			set spanner.dml_batch_update_count to 1;
+			set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 
 
 
-set spanner.dml_batch_update_count to 1;
+set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count to 1  ;
+set spanner.batch_dml_update_count to 1  ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count to 1		;
+set spanner.batch_dml_update_count to 1		;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count to 1
+set spanner.batch_dml_update_count to 1
 
 ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set   spanner.dml_batch_update_count   to   1;
+set   spanner.batch_dml_update_count   to   1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set	spanner.dml_batch_update_count	to	1;
+set	spanner.batch_dml_update_count	to	1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 set
-spanner.dml_batch_update_count
+spanner.batch_dml_update_count
 to
 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-foo set spanner.dml_batch_update_count to 1;
+foo set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1 bar;
+set spanner.batch_dml_update_count to 1 bar;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-%set spanner.dml_batch_update_count to 1;
+%set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1%;
+set spanner.batch_dml_update_count to 1%;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to%1;
+set spanner.batch_dml_update_count to%1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-_set spanner.dml_batch_update_count to 1;
+_set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1_;
+set spanner.batch_dml_update_count to 1_;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to_1;
+set spanner.batch_dml_update_count to_1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-&set spanner.dml_batch_update_count to 1;
+&set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1&;
+set spanner.batch_dml_update_count to 1&;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to&1;
+set spanner.batch_dml_update_count to&1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-$set spanner.dml_batch_update_count to 1;
+$set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1$;
+set spanner.batch_dml_update_count to 1$;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to$1;
+set spanner.batch_dml_update_count to$1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-@set spanner.dml_batch_update_count to 1;
+@set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1@;
+set spanner.batch_dml_update_count to 1@;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to@1;
+set spanner.batch_dml_update_count to@1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-!set spanner.dml_batch_update_count to 1;
+!set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1!;
+set spanner.batch_dml_update_count to 1!;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to!1;
+set spanner.batch_dml_update_count to!1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-*set spanner.dml_batch_update_count to 1;
+*set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1*;
+set spanner.batch_dml_update_count to 1*;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to*1;
+set spanner.batch_dml_update_count to*1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-(set spanner.dml_batch_update_count to 1;
+(set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1(;
+set spanner.batch_dml_update_count to 1(;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to(1;
+set spanner.batch_dml_update_count to(1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-)set spanner.dml_batch_update_count to 1;
+)set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1);
+set spanner.batch_dml_update_count to 1);
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to)1;
+set spanner.batch_dml_update_count to)1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--set spanner.dml_batch_update_count to 1;
+-set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1-;
+set spanner.batch_dml_update_count to 1-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to-1;
+set spanner.batch_dml_update_count to-1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-+set spanner.dml_batch_update_count to 1;
++set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1+;
+set spanner.batch_dml_update_count to 1+;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to+1;
+set spanner.batch_dml_update_count to+1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--#set spanner.dml_batch_update_count to 1;
+-#set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1-#;
+set spanner.batch_dml_update_count to 1-#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to-#1;
+set spanner.batch_dml_update_count to-#1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/set spanner.dml_batch_update_count to 1;
+/set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1/;
+set spanner.batch_dml_update_count to 1/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to/1;
+set spanner.batch_dml_update_count to/1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-\set spanner.dml_batch_update_count to 1;
+\set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1\;
+set spanner.batch_dml_update_count to 1\;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to\1;
+set spanner.batch_dml_update_count to\1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-?set spanner.dml_batch_update_count to 1;
+?set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1?;
+set spanner.batch_dml_update_count to 1?;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to?1;
+set spanner.batch_dml_update_count to?1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--/set spanner.dml_batch_update_count to 1;
+-/set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1-/;
+set spanner.batch_dml_update_count to 1-/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to-/1;
+set spanner.batch_dml_update_count to-/1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/#set spanner.dml_batch_update_count to 1;
+/#set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1/#;
+set spanner.batch_dml_update_count to 1/#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to/#1;
+set spanner.batch_dml_update_count to/#1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/-set spanner.dml_batch_update_count to 1;
+/-set spanner.batch_dml_update_count to 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to 1/-;
+set spanner.batch_dml_update_count to 1/-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count to/-1;
+set spanner.batch_dml_update_count to/-1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count = 1;
+set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-SET SPANNER.DML_BATCH_UPDATE_COUNT = 1;
+SET SPANNER.BATCH_DML_UPDATE_COUNT = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count = 1;
+set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-   set spanner.dml_batch_update_count = 1;
+   set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-			set spanner.dml_batch_update_count = 1;
+			set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 
 
 
-set spanner.dml_batch_update_count = 1;
+set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count = 1  ;
+set spanner.batch_dml_update_count = 1  ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count = 1		;
+set spanner.batch_dml_update_count = 1		;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set spanner.dml_batch_update_count = 1
+set spanner.batch_dml_update_count = 1
 
 ;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set   spanner.dml_batch_update_count   =   1;
+set   spanner.batch_dml_update_count   =   1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
-set	spanner.dml_batch_update_count	=	1;
+set	spanner.batch_dml_update_count	=	1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 set
-spanner.dml_batch_update_count
+spanner.batch_dml_update_count
 =
 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-foo set spanner.dml_batch_update_count = 1;
+foo set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1 bar;
+set spanner.batch_dml_update_count = 1 bar;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-%set spanner.dml_batch_update_count = 1;
+%set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1%;
+set spanner.batch_dml_update_count = 1%;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =%1;
+set spanner.batch_dml_update_count =%1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-_set spanner.dml_batch_update_count = 1;
+_set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1_;
+set spanner.batch_dml_update_count = 1_;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =_1;
+set spanner.batch_dml_update_count =_1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-&set spanner.dml_batch_update_count = 1;
+&set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1&;
+set spanner.batch_dml_update_count = 1&;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =&1;
+set spanner.batch_dml_update_count =&1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-$set spanner.dml_batch_update_count = 1;
+$set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1$;
+set spanner.batch_dml_update_count = 1$;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =$1;
+set spanner.batch_dml_update_count =$1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-@set spanner.dml_batch_update_count = 1;
+@set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1@;
+set spanner.batch_dml_update_count = 1@;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =@1;
+set spanner.batch_dml_update_count =@1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-!set spanner.dml_batch_update_count = 1;
+!set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1!;
+set spanner.batch_dml_update_count = 1!;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =!1;
+set spanner.batch_dml_update_count =!1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-*set spanner.dml_batch_update_count = 1;
+*set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1*;
+set spanner.batch_dml_update_count = 1*;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =*1;
+set spanner.batch_dml_update_count =*1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-(set spanner.dml_batch_update_count = 1;
+(set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1(;
+set spanner.batch_dml_update_count = 1(;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =(1;
+set spanner.batch_dml_update_count =(1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-)set spanner.dml_batch_update_count = 1;
+)set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1);
+set spanner.batch_dml_update_count = 1);
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =)1;
+set spanner.batch_dml_update_count =)1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--set spanner.dml_batch_update_count = 1;
+-set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1-;
+set spanner.batch_dml_update_count = 1-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =-1;
+set spanner.batch_dml_update_count =-1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-+set spanner.dml_batch_update_count = 1;
++set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1+;
+set spanner.batch_dml_update_count = 1+;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =+1;
+set spanner.batch_dml_update_count =+1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--#set spanner.dml_batch_update_count = 1;
+-#set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1-#;
+set spanner.batch_dml_update_count = 1-#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =-#1;
+set spanner.batch_dml_update_count =-#1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/set spanner.dml_batch_update_count = 1;
+/set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1/;
+set spanner.batch_dml_update_count = 1/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =/1;
+set spanner.batch_dml_update_count =/1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-\set spanner.dml_batch_update_count = 1;
+\set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1\;
+set spanner.batch_dml_update_count = 1\;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =\1;
+set spanner.batch_dml_update_count =\1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-?set spanner.dml_batch_update_count = 1;
+?set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1?;
+set spanner.batch_dml_update_count = 1?;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =?1;
+set spanner.batch_dml_update_count =?1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
--/set spanner.dml_batch_update_count = 1;
+-/set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1-/;
+set spanner.batch_dml_update_count = 1-/;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =-/1;
+set spanner.batch_dml_update_count =-/1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/#set spanner.dml_batch_update_count = 1;
+/#set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1/#;
+set spanner.batch_dml_update_count = 1/#;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =/#1;
+set spanner.batch_dml_update_count =/#1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-/-set spanner.dml_batch_update_count = 1;
+/-set spanner.batch_dml_update_count = 1;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count = 1/-;
+set spanner.batch_dml_update_count = 1/-;
 NEW_CONNECTION;
 set spanner.readonly = false;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
-set spanner.dml_batch_update_count =/-1;
+set spanner.batch_dml_update_count =/-1;
 NEW_CONNECTION;
 set spanner.auto_batch_dml_update_count_verification = true;
 NEW_CONNECTION;

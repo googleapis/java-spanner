@@ -25,13 +25,13 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATC
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIRECTED_READ;
-import static com.google.cloud.spanner.connection.ConnectionProperties.DML_BATCH_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_PARTITIONED_PARALLELISM;
@@ -1609,7 +1609,7 @@ class ConnectionImpl implements Connection {
   }
 
   long getDmlBatchUpdateCount() {
-    return getConnectionPropertyValue(DML_BATCH_UPDATE_COUNT);
+    return getConnectionPropertyValue(BATCH_DML_UPDATE_COUNT);
   }
 
   @Override
@@ -1622,8 +1622,8 @@ class ConnectionImpl implements Connection {
     return getConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
   }
 
-  void setDmlBatchUpdateCount(long updateCount, boolean local) {
-    setConnectionPropertyValue(DML_BATCH_UPDATE_COUNT, updateCount, local);
+  void setBatchDmlUpdateCount(long updateCount, boolean local) {
+    setConnectionPropertyValue(BATCH_DML_UPDATE_COUNT, updateCount, local);
   }
 
   @Override

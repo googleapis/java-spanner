@@ -181,7 +181,7 @@ public class ConnectionOptions {
   static final boolean DEFAULT_ENABLE_END_TO_END_TRACING = false;
   static final boolean DEFAULT_AUTO_BATCH_DML = false;
   static final long DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT = 1L;
-  static final long DEFAULT_DML_BATCH_UPDATE_COUNT = -1L;
+  static final long DEFAULT_BATCH_DML_UPDATE_COUNT = -1L;
   static final boolean DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION = true;
   private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
   private static final String DEFAULT_EXPERIMENTAL_HOST_INSTANCE_ID = "default";
@@ -315,7 +315,7 @@ public class ConnectionOptions {
       "auto_batch_dml_update_count";
   public static final String AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME =
       "auto_batch_dml_update_count_verification";
-  public static final String DML_BATCH_UPDATE_COUNT_PROPERTY_NAME = "dml_batch_update_count";
+  public static final String BATCH_DML_UPDATE_COUNT_PROPERTY_NAME = "batch_dml_update_count";
 
   private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
       "%s can only be used if the system property %s has been set to true. "

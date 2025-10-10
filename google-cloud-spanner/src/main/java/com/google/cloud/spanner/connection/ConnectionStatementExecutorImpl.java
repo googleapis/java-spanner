@@ -29,11 +29,11 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DIRECTED_READ;
-import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DML_BATCH_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_COMMIT_DELAY;
@@ -728,9 +728,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementSetDmlBatchUpdateCount(Long updateCount, Boolean local) {
-    getConnection().setDmlBatchUpdateCount(updateCount, local);
-    return noResult(SET_DML_BATCH_UPDATE_COUNT);
+  public StatementResult statementSetBatchDmlUpdateCount(Long updateCount, Boolean local) {
+    getConnection().setBatchDmlUpdateCount(updateCount, local);
+    return noResult(SET_BATCH_DML_UPDATE_COUNT);
   }
 
   @Override

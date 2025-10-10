@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_D
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_PARTITION_MODE_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.BATCH_DML_UPDATE_COUNT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CHANNEL_PROVIDER_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_CERTIFICATE_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_KEY_PROPERTY_NAME;
@@ -34,6 +35,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CHANNEL_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_CERTIFICATE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_KEY;
@@ -43,7 +45,6 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DATA
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DDL_IN_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DEFAULT_SEQUENCE_KIND;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
-import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_DML_BATCH_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_API_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_END_TO_END_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENABLE_EXTENDED_TRACING;
@@ -73,7 +74,6 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_USE_
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_USE_VIRTUAL_THREADS;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DIALECT_PROPERTY_NAME;
-import static com.google.cloud.spanner.connection.ConnectionOptions.DML_BATCH_UPDATE_COUNT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_API_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_END_TO_END_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_EXTENDED_TRACING_PROPERTY_NAME;
@@ -749,13 +749,13 @@ public class ConnectionProperties {
           BOOLEANS,
           BooleanConverter.INSTANCE,
           Context.USER);
-  static final ConnectionProperty<Long> DML_BATCH_UPDATE_COUNT =
+  static final ConnectionProperty<Long> BATCH_DML_UPDATE_COUNT =
       create(
-          DML_BATCH_UPDATE_COUNT_PROPERTY_NAME,
+          BATCH_DML_UPDATE_COUNT_PROPERTY_NAME,
           "The update count that is returned for DML statements that are executed in an "
               + "explicit DML batch. The default is "
-              + DEFAULT_DML_BATCH_UPDATE_COUNT,
-          DEFAULT_DML_BATCH_UPDATE_COUNT,
+              + DEFAULT_BATCH_DML_UPDATE_COUNT,
+          DEFAULT_BATCH_DML_UPDATE_COUNT,
           LongConverter.INSTANCE,
           Context.USER);
 

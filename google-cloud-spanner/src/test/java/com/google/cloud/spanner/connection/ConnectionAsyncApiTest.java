@@ -351,7 +351,7 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
               try {
                 try (Connection connection = createConnection()) {
                   connection.execute(
-                      Statement.of("set local " + prefix + "dml_batch_update_count = 1"));
+                      Statement.of("set local " + prefix + "batch_dml_update_count = 1"));
                   connection.execute(Statement.of("START BATCH DML"));
                   List<Statement> statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
                   long[] updateCounts = connection.executeBatchUpdate(statements);
