@@ -25,8 +25,9 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -36,7 +37,7 @@ import org.junit.runners.JUnit4;
 public class CredentialsServiceTest {
   private static final String FILE_TEST_PATH =
       CredentialsServiceTest.class.getResource("test-key.json").getFile();
-  private static final String APP_DEFAULT_FILE_TEST_PATH =
+  private static final String SA_APP_DEFAULT_FILE_TEST_PATH =
       CredentialsServiceTest.class.getResource("test-key-app-default.json").getFile();
 
   private static final String TEST_PROJECT_ID = "test-project";
@@ -49,7 +50,8 @@ public class CredentialsServiceTest {
         GoogleCredentials internalGetApplicationDefault() throws IOException {
           // Read application default credentials directly from a specific file instead of actually
           // fetching the default from the environment.
-          return GoogleCredentials.fromStream(new FileInputStream(APP_DEFAULT_FILE_TEST_PATH));
+          return ServiceAccountCredentials.fromStream(
+              Files.newInputStream(Paths.get(SA_APP_DEFAULT_FILE_TEST_PATH)));
         }
       };
 
