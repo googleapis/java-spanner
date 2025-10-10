@@ -132,7 +132,22 @@ integration-multiplexed-sessions-enabled)
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
       -Dspanner.gce.config.project_id=gcloud-devel \
-      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-multiplexed-sessions \
+      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-regular-sessions \
+      -fae \
+      verify
+    RETURN_CODE=$?
+    ;;
+integration-directpath-enabled)
+    mvn -B ${INTEGRATION_TEST_ARGS} \
+      -ntp \
+      -Penable-integration-tests \
+      -Djava.net.preferIPv4Stack=true \
+      -DtrimStackTrace=false \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
+      -Dspanner.gce.config.project_id=gcloud-devel \
+      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-directpath \
       -fae \
       verify
     RETURN_CODE=$?
