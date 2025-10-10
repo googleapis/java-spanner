@@ -32,6 +32,7 @@ import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
+import com.google.common.base.Strings;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.grpc.ManagedChannelBuilder;
@@ -43,11 +44,17 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -79,7 +86,9 @@ final class BuiltInMetricsProvider {
             SpannerCloudMonitoringExporter.create(
                 projectId, credentials, monitoringHost, universeDomain),
             sdkMeterProviderBuilder);
-        sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
+        String location = quickCheckIsRunningOnGcp() ? null : "global";
+        sdkMeterProviderBuilder.setResource(
+            Resource.create(createResourceAttributes(projectId, location)));
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
         this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
         Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
@@ -93,6 +102,36 @@ final class BuiltInMetricsProvider {
           ex);
       return null;
     }
+  }
+
+  // TODO: Remove when
+  // https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/421
+  //       has been fixed.
+  static boolean quickCheckIsRunningOnGcp() {
+    int timeout = 500;
+    try {
+      timeout =
+          Integer.parseInt(System.getProperty("spanner.check_is_running_on_gcp_timeout", "500"));
+    } catch (NumberFormatException ignore) {
+      // ignore
+    }
+    try {
+      URL url = new URL("http://metadata.google.internal/computeMetadata/v1/project/project-id");
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setConnectTimeout(timeout);
+      connection.setRequestProperty("Metadata-Flavor", "Google");
+      if (connection.getResponseCode() == 200
+          && ("Google").equals(connection.getHeaderField("Metadata-Flavor"))) {
+        InputStream input = connection.getInputStream();
+        try (BufferedReader reader =
+            new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+          return !Strings.isNullOrEmpty(reader.readLine());
+        }
+      }
+    } catch (IOException ignore) {
+      // ignore
+    }
+    return false;
   }
 
   void enableGrpcMetrics(
@@ -122,14 +161,14 @@ final class BuiltInMetricsProvider {
         });
   }
 
-  Attributes createResourceAttributes(String projectId) {
+  Attributes createResourceAttributes(String projectId, String location) {
     AttributesBuilder attributesBuilder =
         Attributes.builder()
             .put(PROJECT_ID_KEY.getKey(), projectId)
             .put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown")
             .put(CLIENT_HASH_KEY.getKey(), generateClientHash(getDefaultTaskValue()))
             .put(INSTANCE_ID_KEY.getKey(), "unknown")
-            .put(LOCATION_ID_KEY.getKey(), detectClientLocation());
+            .put(LOCATION_ID_KEY.getKey(), location == null ? detectClientLocation() : location);
 
     return attributesBuilder.build();
   }
