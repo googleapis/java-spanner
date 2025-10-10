@@ -44,6 +44,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
@@ -211,7 +212,8 @@ public class SpannerPoolTest {
       currentLogger = currentLogger.getParent();
     }
     if (handlers.length == 0) {
-      throw new IllegalStateException("no handlers found for logger");
+      handlers = new Handler[1];
+      handlers[0] = new ConsoleHandler();
     }
     customLogHandler = new StreamHandler(logCapturingStream, handlers[0].getFormatter());
     useParentHandlers = log.getUseParentHandlers();
@@ -267,6 +269,7 @@ public class SpannerPoolTest {
 
   @Test
   public void testCloseSpanner() {
+    attachLogCapturer();
     SpannerPool pool = createSubjectAndMocks();
     Spanner spanner = pool.getSpanner(options1, connection1);
     // verify that closing is not possible until all connections have been removed

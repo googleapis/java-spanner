@@ -141,8 +141,7 @@ public class IntegrationTestEnv extends ExternalResource {
         .anyMatch(testEnvOption -> TestEnvOptions.USE_END_TO_END_TRACING.equals(testEnvOption))) {
       // OpenTelemetry set up for enabling End to End tracing for all integration test env.
       // The gRPC stub and connections are created during test env set up using SpannerOptions and
-      // are
-      // reused for executing statements.
+      // are reused for executing statements.
       options = spannerOptionsWithEndToEndTracing(options);
     }
     String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
@@ -293,31 +292,50 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void cleanUpOldDatabases(InstanceId instanceId) {
-    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(6L, TimeUnit.HOURS);
+    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(2L, TimeUnit.HOURS);
     Timestamp currentTimestamp = Timestamp.now();
     int numDropped = 0;
     String TEST_DB_REGEX = "(testdb_(.*)_(.*))|(mysample-(.*))";
 
     logger.log(Level.INFO, "Dropping old test databases from {0}", instanceId.getName());
-    for (Database db : databaseAdminClient.listDatabases(instanceId.getInstance()).iterateAll()) {
+    while (true) {
       try {
-        long timeDiff = currentTimestamp.getSeconds() - db.getCreateTime().getSeconds();
-        // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds old.
-        if ((db.getId().getDatabase().matches(TEST_DB_REGEX))
-            && (timeDiff > OLD_DB_THRESHOLD_SECS)) {
-          logger.log(Level.INFO, "Dropping test database {0}", db.getId());
-          if (db.isDropProtectionEnabled()) {
-            Database updatedDatabase =
-                databaseAdminClient.newDatabaseBuilder(db.getId()).disableDropProtection().build();
-            databaseAdminClient
-                .updateDatabase(updatedDatabase, DatabaseField.DROP_PROTECTION)
-                .get();
+        for (Database db :
+            databaseAdminClient.listDatabases(instanceId.getInstance()).iterateAll()) {
+          try {
+            long timeDiff = currentTimestamp.getSeconds() - db.getCreateTime().getSeconds();
+            // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds old.
+            if ((db.getId().getDatabase().matches(TEST_DB_REGEX))
+                && (timeDiff > OLD_DB_THRESHOLD_SECS)) {
+              logger.log(Level.INFO, "Dropping test database {0}", db.getId());
+              if (db.isDropProtectionEnabled()) {
+                Database updatedDatabase =
+                    databaseAdminClient
+                        .newDatabaseBuilder(db.getId())
+                        .disableDropProtection()
+                        .build();
+                databaseAdminClient
+                    .updateDatabase(updatedDatabase, DatabaseField.DROP_PROTECTION)
+                    .get();
+              }
+              db.drop();
+              ++numDropped;
+            }
+          } catch (SpannerException | ExecutionException | InterruptedException e) {
+            logger.log(Level.SEVERE, "Failed to drop test database " + db.getId(), e);
           }
-          db.drop();
-          ++numDropped;
         }
-      } catch (SpannerException | ExecutionException | InterruptedException e) {
-        logger.log(Level.SEVERE, "Failed to drop test database " + db.getId(), e);
+        break;
+      } catch (SpannerException exception) {
+        if (exception.getErrorCode() != ErrorCode.RESOURCE_EXHAUSTED) {
+          throw exception;
+        }
+        // Wait a little and try again.
+        try {
+          Thread.sleep(10_000);
+        } catch (InterruptedException interruptedException) {
+          throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+        }
       }
     }
     logger.log(Level.INFO, "Dropped {0} test database(s)", numDropped);

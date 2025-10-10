@@ -64,6 +64,7 @@
                 <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
                 <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
                 <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
+                <java.util.logging.config.file>logging.properties</java.util.logging.config.file>
               </systemPropertyVariables>
 
             </configuration>
@@ -88,6 +89,7 @@
             <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
             <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
             <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
+            <java.util.logging.config.file>logging.properties</java.util.logging.config.file>
           </systemPropertyVariables>
           <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
         </configuration>
@@ -124,6 +126,7 @@
             <buildArg>-Dspanner.testenv.instance=${spanner.testenv.instance}</buildArg>
             <buildArg>-Dspanner.gce.config.project_id=${spanner.gce.config.project_id}</buildArg>
             <buildArg>-Dspanner.testenv.kms_key.name=${spanner.testenv.kms_key.name}</buildArg>
+            <buildArg>-Djava.util.logging.config.file=logging.properties</buildArg>
           </buildArgs>
         </configuration>
       </plugin>
@@ -379,13 +382,13 @@
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
-      <version>1.17.7</version>
+      <version>1.17.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy-agent</artifactId>
-      <version>1.17.7</version>
+      <version>1.17.8</version>
       <scope>test</scope>
     </dependency>
 
