@@ -28,8 +28,10 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
@@ -48,6 +50,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -334,6 +337,42 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
         assertThat(rs.next()).isFalse();
       }
     }
+  }
+
+  @Test
+  public void testDmlBatchUpdateCount() {
+    Arrays.asList(Dialect.POSTGRESQL, Dialect.GOOGLE_STANDARD_SQL)
+        .forEach(
+            dialect -> {
+              String prefix = dialect == Dialect.POSTGRESQL ? "spanner." : "";
+              mockSpanner.putStatementResult(
+                  MockSpannerServiceImpl.StatementResult.detectDialectResult(dialect));
+              SpannerPool.closeSpannerPool();
+              try {
+                try (Connection connection = createConnection()) {
+                  connection.execute(
+                      Statement.of("set local " + prefix + "batch_dml_update_count = 1"));
+                  connection.execute(Statement.of("START BATCH DML"));
+                  List<Statement> statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
+                  long[] updateCounts = connection.executeBatchUpdate(statements);
+                  assertThat(updateCounts).asList().containsExactly(1L, 1L);
+                  connection.execute(Statement.of("RUN BATCH"));
+                  connection.commit();
+
+                  connection.execute(Statement.of("START BATCH DML"));
+                  statements = Arrays.asList(INSERT_STATEMENT, INSERT_STATEMENT);
+                  updateCounts = connection.executeBatchUpdate(statements);
+                  assertThat(updateCounts).asList().containsExactly(-1L, -1L);
+                  connection.execute(Statement.of("RUN BATCH"));
+                  connection.commit();
+                }
+              } finally {
+                SpannerPool.closeSpannerPool();
+                mockSpanner.putStatementResult(
+                    MockSpannerServiceImpl.StatementResult.detectDialectResult(
+                        Dialect.GOOGLE_STANDARD_SQL));
+              }
+            });
   }
 
   @Test

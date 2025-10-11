@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATC
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
@@ -1607,6 +1608,10 @@ class ConnectionImpl implements Connection {
     return getConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT);
   }
 
+  long getDmlBatchUpdateCount() {
+    return getConnectionPropertyValue(BATCH_DML_UPDATE_COUNT);
+  }
+
   @Override
   public void setAutoBatchDmlUpdateCountVerification(boolean verification) {
     setConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION, verification);
@@ -1615,6 +1620,10 @@ class ConnectionImpl implements Connection {
   @Override
   public boolean isAutoBatchDmlUpdateCountVerification() {
     return getConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
+  }
+
+  void setBatchDmlUpdateCount(long updateCount, boolean local) {
+    setConnectionPropertyValue(BATCH_DML_UPDATE_COUNT, updateCount, local);
   }
 
   @Override
@@ -2340,6 +2349,7 @@ class ConnectionImpl implements Connection {
               .setAutoBatchUpdateCountSupplier(this::getAutoBatchDmlUpdateCount)
               .setAutoBatchUpdateCountVerificationSupplier(
                   this::isAutoBatchDmlUpdateCountVerification)
+              .setDmlBatchUpdateCountSupplier(this::getDmlBatchUpdateCount)
               .setTransaction(currentUnitOfWork)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
