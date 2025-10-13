@@ -110,7 +110,7 @@ final class BuiltInMetricsProvider {
   // https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/421
   //       has been fixed.
   static boolean quickCheckIsRunningOnGcp() {
-    int timeout = 500;
+    int timeout = 5000;
     try {
       timeout =
           Integer.parseInt(System.getProperty("spanner.check_is_running_on_gcp_timeout", "500"));
