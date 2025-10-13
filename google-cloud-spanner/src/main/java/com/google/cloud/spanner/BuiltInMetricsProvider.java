@@ -113,7 +113,7 @@ final class BuiltInMetricsProvider {
     int timeout = 5000;
     try {
       timeout =
-          Integer.parseInt(System.getProperty("spanner.check_is_running_on_gcp_timeout", "500"));
+          Integer.parseInt(System.getProperty("spanner.check_is_running_on_gcp_timeout", "5000"));
     } catch (NumberFormatException ignore) {
       // ignore
     }
