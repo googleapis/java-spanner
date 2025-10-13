@@ -51,6 +51,9 @@ public class CredentialsServiceTest {
           // Read application default credentials directly from a specific file instead of actually
           // fetching the default from the environment.
           return ServiceAccountCredentials.fromStream(
+              // Calling `getResource().getPath()` on Windows returns a string that might start with
+              // something like `/C:/...`. Paths.get() interprets the leading / as part of the path
+              // and would be invalid. Use `new File().toPath()` to read from these files.
               Files.newInputStream(new File(SA_APP_DEFAULT_FILE_TEST_PATH).toPath()));
         }
       };
