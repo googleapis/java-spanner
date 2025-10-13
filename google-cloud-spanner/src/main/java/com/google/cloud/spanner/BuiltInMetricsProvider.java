@@ -70,6 +70,10 @@ final class BuiltInMetricsProvider {
 
   private static String taskId;
 
+  private static String location;
+
+  private static final String default_location = "global";
+
   private OpenTelemetry openTelemetry;
 
   private BuiltInMetricsProvider() {}
@@ -86,9 +90,7 @@ final class BuiltInMetricsProvider {
             SpannerCloudMonitoringExporter.create(
                 projectId, credentials, monitoringHost, universeDomain),
             sdkMeterProviderBuilder);
-        String location = quickCheckIsRunningOnGcp() ? null : "global";
-        sdkMeterProviderBuilder.setResource(
-            Resource.create(createResourceAttributes(projectId, location)));
+        sdkMeterProviderBuilder.setResource(Resource.create(createResourceAttributes(projectId)));
         SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
         this.openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
         Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::close));
@@ -161,14 +163,14 @@ final class BuiltInMetricsProvider {
         });
   }
 
-  Attributes createResourceAttributes(String projectId, String location) {
+  Attributes createResourceAttributes(String projectId) {
     AttributesBuilder attributesBuilder =
         Attributes.builder()
             .put(PROJECT_ID_KEY.getKey(), projectId)
             .put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown")
             .put(CLIENT_HASH_KEY.getKey(), generateClientHash(getDefaultTaskValue()))
             .put(INSTANCE_ID_KEY.getKey(), "unknown")
-            .put(LOCATION_ID_KEY.getKey(), location == null ? detectClientLocation() : location);
+            .put(LOCATION_ID_KEY.getKey(), detectClientLocation());
 
     return attributesBuilder.build();
   }
@@ -210,14 +212,20 @@ final class BuiltInMetricsProvider {
   }
 
   static String detectClientLocation() {
-    GCPPlatformDetector detector = GCPPlatformDetector.DEFAULT_INSTANCE;
-    DetectedPlatform detectedPlatform = detector.detectPlatform();
-    // All platform except GKE uses "cloud_region" for region attribute.
-    String region = detectedPlatform.getAttributes().get("cloud_region");
-    if (detectedPlatform.getSupportedPlatform() == GOOGLE_KUBERNETES_ENGINE) {
-      region = detectedPlatform.getAttributes().get(AttributeKeys.GKE_CLUSTER_LOCATION);
+    if (location == null) {
+      location = default_location;
+      if (quickCheckIsRunningOnGcp()) {
+        GCPPlatformDetector detector = GCPPlatformDetector.DEFAULT_INSTANCE;
+        DetectedPlatform detectedPlatform = detector.detectPlatform();
+        // All platform except GKE uses "cloud_region" for region attribute.
+        String region = detectedPlatform.getAttributes().get("cloud_region");
+        if (detectedPlatform.getSupportedPlatform() == GOOGLE_KUBERNETES_ENGINE) {
+          region = detectedPlatform.getAttributes().get(AttributeKeys.GKE_CLUSTER_LOCATION);
+        }
+        location = region == null ? location : region;
+      }
     }
-    return region == null ? "global" : region;
+    return location;
   }
 
   /**
