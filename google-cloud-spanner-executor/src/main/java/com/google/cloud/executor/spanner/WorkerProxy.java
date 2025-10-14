@@ -19,7 +19,7 @@ package com.google.cloud.executor.spanner;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.auth.Credentials;
 import com.google.auth.http.HttpTransportFactory;
-import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.ErrorCode;
@@ -87,7 +87,7 @@ public class WorkerProxy {
     // Read credentials from the serviceKeyFile.
     HttpTransportFactory HTTP_TRANSPORT_FACTORY = NetHttpTransport::new;
     Credentials credentials =
-        GoogleCredentials.fromStream(
+        ServiceAccountCredentials.fromStream(
             new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(serviceKeyFile))),
             HTTP_TRANSPORT_FACTORY);
 
