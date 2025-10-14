@@ -32,6 +32,7 @@ import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
+import com.google.common.base.Strings;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.grpc.ManagedChannelBuilder;
@@ -43,11 +44,17 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -62,6 +69,10 @@ final class BuiltInMetricsProvider {
   private static final Logger logger = Logger.getLogger(BuiltInMetricsProvider.class.getName());
 
   private static String taskId;
+
+  private static String location;
+
+  private static final String default_location = "global";
 
   private OpenTelemetry openTelemetry;
 
@@ -93,6 +104,36 @@ final class BuiltInMetricsProvider {
           ex);
       return null;
     }
+  }
+
+  // TODO: Remove when
+  // https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/421
+  //       has been fixed.
+  static boolean quickCheckIsRunningOnGcp() {
+    int timeout = 5000;
+    try {
+      timeout =
+          Integer.parseInt(System.getProperty("spanner.check_is_running_on_gcp_timeout", "5000"));
+    } catch (NumberFormatException ignore) {
+      // ignore
+    }
+    try {
+      URL url = new URL("http://metadata.google.internal/computeMetadata/v1/project/project-id");
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setConnectTimeout(timeout);
+      connection.setRequestProperty("Metadata-Flavor", "Google");
+      if (connection.getResponseCode() == 200
+          && ("Google").equals(connection.getHeaderField("Metadata-Flavor"))) {
+        InputStream input = connection.getInputStream();
+        try (BufferedReader reader =
+            new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+          return !Strings.isNullOrEmpty(reader.readLine());
+        }
+      }
+    } catch (IOException ignore) {
+      // ignore
+    }
+    return false;
   }
 
   void enableGrpcMetrics(
@@ -171,14 +212,20 @@ final class BuiltInMetricsProvider {
   }
 
   static String detectClientLocation() {
-    GCPPlatformDetector detector = GCPPlatformDetector.DEFAULT_INSTANCE;
-    DetectedPlatform detectedPlatform = detector.detectPlatform();
-    // All platform except GKE uses "cloud_region" for region attribute.
-    String region = detectedPlatform.getAttributes().get("cloud_region");
-    if (detectedPlatform.getSupportedPlatform() == GOOGLE_KUBERNETES_ENGINE) {
-      region = detectedPlatform.getAttributes().get(AttributeKeys.GKE_CLUSTER_LOCATION);
+    if (location == null) {
+      location = default_location;
+      if (quickCheckIsRunningOnGcp()) {
+        GCPPlatformDetector detector = GCPPlatformDetector.DEFAULT_INSTANCE;
+        DetectedPlatform detectedPlatform = detector.detectPlatform();
+        // All platform except GKE uses "cloud_region" for region attribute.
+        String region = detectedPlatform.getAttributes().get("cloud_region");
+        if (detectedPlatform.getSupportedPlatform() == GOOGLE_KUBERNETES_ENGINE) {
+          region = detectedPlatform.getAttributes().get(AttributeKeys.GKE_CLUSTER_LOCATION);
+        }
+        location = region == null ? location : region;
+      }
     }
-    return region == null ? "global" : region;
+    return location;
   }
 
   /**
