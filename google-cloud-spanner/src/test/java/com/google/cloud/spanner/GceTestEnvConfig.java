@@ -21,7 +21,7 @@ import static com.google.cloud.spanner.testing.ExperimentalHostHelper.setExperim
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
-import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.spanner.spi.v1.SpannerInterceptorProvider;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -80,7 +80,8 @@ public class GceTestEnvConfig implements TestEnvConfig {
     }
     if (!credentialsFile.isEmpty()) {
       try {
-        builder.setCredentials(GoogleCredentials.fromStream(new FileInputStream(credentialsFile)));
+        builder.setCredentials(
+            ServiceAccountCredentials.fromStream(new FileInputStream(credentialsFile)));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
