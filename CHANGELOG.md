@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.102.1](https://github.com/googleapis/java-spanner/compare/v6.102.0...v6.102.1) (2025-10-17)
+
+
+### Bug Fixes
+
+* Do a quick check if the application runs on GCP ([#4163](https://github.com/googleapis/java-spanner/issues/4163)) ([b9d7daf](https://github.com/googleapis/java-spanner/commit/b9d7daf000c0fb8b67142c6161bb578cadf49b18))
+* Migrate away from GoogleCredentials.fromStream() usages ([#4151](https://github.com/googleapis/java-spanner/issues/4151)) ([94d0474](https://github.com/googleapis/java-spanner/commit/94d0474ace62ea1059e5b69243f0b6eef31ddd06))
+
+
+### Dependencies
+
+* Update actions/checkout action to v5 ([#4158](https://github.com/googleapis/java-spanner/issues/4158)) ([b32ebcf](https://github.com/googleapis/java-spanner/commit/b32ebcf96bbf696b1eb84204622463fac59be017))
+* Update actions/checkout action to v5 ([#4161](https://github.com/googleapis/java-spanner/issues/4161)) ([02a17c6](https://github.com/googleapis/java-spanner/commit/02a17c6e6253e026cb3c6360eb925a322143b518))
+* Update dependency net.bytebuddy:byte-buddy to v1.17.8 ([#4154](https://github.com/googleapis/java-spanner/issues/4154)) ([c911381](https://github.com/googleapis/java-spanner/commit/c911381c2ca9cd46fbeb831c659aaf55f21437f2))
+* Update dependency net.bytebuddy:byte-buddy-agent to v1.17.8 ([#4155](https://github.com/googleapis/java-spanner/issues/4155)) ([3075df7](https://github.com/googleapis/java-spanner/commit/3075df714b1787512174b3f18cbc802359d442dc))
+* Update googleapis/sdk-platform-java action to v2.63.0 ([#4179](https://github.com/googleapis/java-spanner/issues/4179)) ([5f48191](https://github.com/googleapis/java-spanner/commit/5f481913d60372fccf399c5c0e168b7d0c553ba0))
+
 ## [6.102.0](https://github.com/googleapis/java-spanner/compare/v6.101.1...v6.102.0) (2025-10-08)
 
 
