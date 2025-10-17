@@ -190,7 +190,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
   // SessionClient is created long before a DatabaseClientImpl is created,
   // as batch sessions are firstly created then later attached to each Client.
   private static final AtomicInteger NTH_ID = new AtomicInteger(0);
-  private final int nthId = NTH_ID.incrementAndGet();
+  private final int nthId;
   private final AtomicInteger nthRequest = new AtomicInteger(0);
 
   @GuardedBy("this")
@@ -205,6 +205,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     this.executorFactory = executorFactory;
     this.executor = executorFactory.get();
     this.commonAttributes = spanner.getTracer().createCommonAttributes(db);
+    this.nthId = NTH_ID.incrementAndGet();
   }
 
   @Override
