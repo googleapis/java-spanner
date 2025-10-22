@@ -522,7 +522,7 @@ public class TypeTest {
     assertThat(t.getStructFields().get(2).getType()).isEqualTo(Type.pgNumeric());
     assertThat(t.toString()).isEqualTo("STRUCT<f1 INT64, f2 STRING, f3 NUMERIC<PG_NUMERIC>>");
     assertThat(t.getFieldIndex("f1")).isEqualTo(0);
-    assertThat(t.getFieldIndex("f2")).isEqualTo(1);
+    assertThat(t.getFieldIndex("F2")).isEqualTo(1);
     assertThat(t.getFieldIndex("f3")).isEqualTo(2);
 
     assertProtoEquals(

@@ -472,9 +472,9 @@ public final class Type implements Serializable {
       Map<String, Integer> tmp = new TreeMap<>();
       for (int i = 0; i < getStructFields().size(); ++i) {
         Type.StructField field = getStructFields().get(i);
-        if (tmp.put(field.getName(), i) != null) {
+        if (tmp.put(field.getName().toLowerCase(), i) != null) {
           // Column name appears more than once: mark as ambiguous.
-          tmp.put(field.getName(), AMBIGUOUS_FIELD);
+          tmp.put(field.getName().toLowerCase(), AMBIGUOUS_FIELD);
         }
       }
       // Benign race: Java's final field semantics mean that if we see a non-null "fieldsByName",
@@ -485,7 +485,10 @@ public final class Type implements Serializable {
       fieldsByName = ImmutableMap.copyOf(tmp);
     }
 
-    Integer index = fieldsByName.get(fieldName);
+    if (fieldName == null) {
+      throw new IllegalArgumentException("Field name cannot be null");
+    }
+    Integer index = fieldsByName.get(fieldName.toLowerCase());
     if (index == null) {
       throw new IllegalArgumentException("Field not found: " + fieldName);
     }
