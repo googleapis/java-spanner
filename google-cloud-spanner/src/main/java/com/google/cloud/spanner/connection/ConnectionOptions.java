@@ -229,14 +229,6 @@ public class ConnectionOptions {
   /** Name of the 'encodedCredentials' connection property. */
   public static final String ENCODED_CREDENTIALS_PROPERTY_NAME = "encodedCredentials";
 
-  /** System property used to enable encoded credentials.
-   * WARNING: Enabling this property without proper validation can
-   * expose the application to security risks.
-   * It is intended for use with credentials from a trusted source only,
-   * as it could otherwise allow end-users to supply arbitrary credentials.
-   * For more information, see
-   * https://cloud.google.com/docs/authentication/client-libraries#external-credentials
-   */
   public static final String ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY =
       "ENABLE_ENCODED_CREDENTIALS";
 
