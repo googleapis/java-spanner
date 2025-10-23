@@ -65,6 +65,13 @@
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-trace</artifactId>
       <version>2.76.0</version>
+      <!-- Version will be managed by guava -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
@@ -138,6 +145,13 @@
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-trace-v1</artifactId>
       <version>2.76.0</version>
+      <!-- Version will be managed by guava -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
