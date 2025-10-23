@@ -26,7 +26,7 @@ import com.google.api.gax.rpc.DeadlineExceededException;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.auth.Credentials;
-import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.NoCredentials;
@@ -806,7 +806,7 @@ public class CloudClientExecutor extends CloudExecutor {
       credentials = NoCredentials.getInstance();
     } else {
       credentials =
-          GoogleCredentials.fromStream(
+          ServiceAccountCredentials.fromStream(
               new ByteArrayInputStream(
                   FileUtils.readFileToByteArray(new File(WorkerProxy.serviceKeyFile))),
               HTTP_TRANSPORT_FACTORY);
@@ -888,7 +888,7 @@ public class CloudClientExecutor extends CloudExecutor {
       credentials = NoCredentials.getInstance();
     } else {
       credentials =
-          GoogleCredentials.fromStream(
+          ServiceAccountCredentials.fromStream(
               new ByteArrayInputStream(
                   FileUtils.readFileToByteArray(new File(WorkerProxy.serviceKeyFile))),
               HTTP_TRANSPORT_FACTORY);

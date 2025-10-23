@@ -1053,4 +1053,8 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.time.Duration getTransactionTimeout()</method>
   </difference>
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/cloud/spanner/LatencyTest</className>
+  </difference>
 </differences>
