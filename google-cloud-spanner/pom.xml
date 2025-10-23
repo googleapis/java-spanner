@@ -273,17 +273,38 @@
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-monitoring</artifactId>
       <version>3.77.0</version>
+      <!-- Version will be managed by guava -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-monitoring-v3</artifactId>
       <version>3.77.0</version>
+      <!-- Version will be managed by guava -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>grpc-google-cloud-monitoring-v3</artifactId>
       <version>3.77.0</version>
       <scope>test</scope>
+      <!-- Version will be managed by guava -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
