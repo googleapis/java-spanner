@@ -1,5 +1,29 @@
 # Changelog
 
+## [6.102.1](https://github.com/googleapis/java-spanner/compare/v6.102.0...v6.102.1) (2025-10-23)
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.63.0 ([c1a8238](https://github.com/googleapis/java-spanner/commit/c1a8238af33a083411f63cf6276eb683ee67ac6a))
+* Do a quick check if the application runs on GCP ([#4163](https://github.com/googleapis/java-spanner/issues/4163)) ([b9d7daf](https://github.com/googleapis/java-spanner/commit/b9d7daf000c0fb8b67142c6161bb578cadf49b18))
+* Migrate away from GoogleCredentials.fromStream() usages ([#4151](https://github.com/googleapis/java-spanner/issues/4151)) ([94d0474](https://github.com/googleapis/java-spanner/commit/94d0474ace62ea1059e5b69243f0b6eef31ddd06))
+
+
+### Dependencies
+
+* Update actions/checkout action to v5 ([#4158](https://github.com/googleapis/java-spanner/issues/4158)) ([b32ebcf](https://github.com/googleapis/java-spanner/commit/b32ebcf96bbf696b1eb84204622463fac59be017))
+* Update actions/checkout action to v5 ([#4161](https://github.com/googleapis/java-spanner/issues/4161)) ([02a17c6](https://github.com/googleapis/java-spanner/commit/02a17c6e6253e026cb3c6360eb925a322143b518))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.53.0 ([#4178](https://github.com/googleapis/java-spanner/issues/4178)) ([24fe194](https://github.com/googleapis/java-spanner/commit/24fe194fa3595b2ab817b9fc4cd57840250fef1f))
+* Update dependency net.bytebuddy:byte-buddy to v1.17.8 ([#4154](https://github.com/googleapis/java-spanner/issues/4154)) ([c911381](https://github.com/googleapis/java-spanner/commit/c911381c2ca9cd46fbeb831c659aaf55f21437f2))
+* Update dependency net.bytebuddy:byte-buddy-agent to v1.17.8 ([#4155](https://github.com/googleapis/java-spanner/issues/4155)) ([3075df7](https://github.com/googleapis/java-spanner/commit/3075df714b1787512174b3f18cbc802359d442dc))
+* Update googleapis/sdk-platform-java action to v2.63.0 ([#4179](https://github.com/googleapis/java-spanner/issues/4179)) ([5f48191](https://github.com/googleapis/java-spanner/commit/5f481913d60372fccf399c5c0e168b7d0c553ba0))
+
+
+### Documentation
+
+* Add warning for encoded credential ([#4182](https://github.com/googleapis/java-spanner/issues/4182)) ([92620f9](https://github.com/googleapis/java-spanner/commit/92620f969908a8ba7fcf92d0b350a8c4d05398f8))
+
 ## [6.102.0](https://github.com/googleapis/java-spanner/compare/v6.101.1...v6.102.0) (2025-10-08)
 
 

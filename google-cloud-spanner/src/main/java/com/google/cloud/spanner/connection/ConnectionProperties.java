@@ -261,7 +261,11 @@ public class ConnectionProperties {
           CREDENTIALS_PROPERTY_NAME,
           "The location of the credentials file to use for this connection. If neither this"
               + " property or encoded credentials are set, the connection will use the default"
-              + " Google Cloud credentials for the runtime environment.",
+              + " Google Cloud credentials for the runtime environment. WARNING: Using this"
+              + " property without proper validation can expose the application to security risks."
+              + " It is intended for use with credentials from a trusted source only, as it could"
+              + " otherwise allow end-users to supply arbitrary credentials. For more information,"
+              + " seehttps://cloud.google.com/docs/authentication/client-libraries#external-credentials",
           DEFAULT_CREDENTIALS,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
@@ -270,7 +274,11 @@ public class ConnectionProperties {
           ENCODED_CREDENTIALS_PROPERTY_NAME,
           "Base64-encoded credentials to use for this connection. If neither this property or a"
               + " credentials location are set, the connection will use the default Google Cloud"
-              + " credentials for the runtime environment.",
+              + " credentials for the runtime environment. WARNING: Enabling this property without"
+              + " proper validation can expose the application to security risks. It is intended"
+              + " for use with credentials from a trusted source only, as it could otherwise allow"
+              + " end-users to supply arbitrary credentials. For more information, see"
+              + "https://cloud.google.com/docs/authentication/client-libraries#external-credentials",
           null,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
