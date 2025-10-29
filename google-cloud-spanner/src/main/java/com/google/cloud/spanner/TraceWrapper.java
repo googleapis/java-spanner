@@ -60,7 +60,7 @@ class TraceWrapper {
   private final Tracer openCensusTracer;
   private final io.opentelemetry.api.trace.Tracer openTelemetryTracer;
   private final boolean enableExtendedTracing;
-  private final AttributesBuilder commonAttributesBuilder;
+  private final Attributes commonAttributes;
 
   TraceWrapper(
       Tracer openCensusTracer,
@@ -69,7 +69,7 @@ class TraceWrapper {
     this.openTelemetryTracer = openTelemetryTracer;
     this.openCensusTracer = openCensusTracer;
     this.enableExtendedTracing = enableExtendedTracing;
-    this.commonAttributesBuilder = createCommonAttributes();
+    this.commonAttributes = createCommonAttributes();
   }
 
   ISpan spanBuilder(String spanName) {
@@ -85,7 +85,8 @@ class TraceWrapper {
       return new OpenTelemetrySpan(
           openTelemetryTracer
               .spanBuilder(spanName)
-              .setAllAttributes(this.commonAttributesBuilder.putAll(attributes).build())
+              .setAllAttributes(attributes)
+              .setAllAttributes(commonAttributes)
               .startSpan());
     } else {
       return new OpenCensusSpan(openCensusTracer.spanBuilder(spanName).startSpan());
@@ -221,13 +222,13 @@ class TraceWrapper {
     return builder.build();
   }
 
-  private AttributesBuilder createCommonAttributes() {
+  private Attributes createCommonAttributes() {
     AttributesBuilder builder = Attributes.builder();
     builder.put(GCP_CLIENT_SERVICE_KEY, "spanner");
     builder.put(GCP_CLIENT_REPO_KEY, "googleapis/java-spanner");
     builder.put(GCP_CLIENT_VERSION_KEY, GaxProperties.getLibraryVersion(TraceWrapper.class));
     builder.put(CLOUD_REGION_KEY, BuiltInMetricsProvider.detectClientLocation());
-    return builder;
+    return builder.build();
   }
 
   private static String getTraceThreadName() {
