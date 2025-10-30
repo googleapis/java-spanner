@@ -511,4 +511,41 @@ public interface ReadRequestOrBuilder
    * @return The lockHint.
    */
   com.google.spanner.v1.ReadRequest.LockHint getLockHint();
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+   *
+   * @return Whether the routingHint field is set.
+   */
+  boolean hasRoutingHint();
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+   *
+   * @return The routingHint.
+   */
+  com.google.spanner.v1.RoutingHint getRoutingHint();
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+   */
+  com.google.spanner.v1.RoutingHintOrBuilder getRoutingHintOrBuilder();
 }

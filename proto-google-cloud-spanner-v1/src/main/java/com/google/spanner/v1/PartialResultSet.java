@@ -780,6 +780,59 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     return last_;
   }
 
+  public static final int CACHE_UPDATE_FIELD_NUMBER = 99;
+  private com.google.spanner.v1.CacheUpdate cacheUpdate_;
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+   *
+   * @return Whether the cacheUpdate field is set.
+   */
+  @java.lang.Override
+  public boolean hasCacheUpdate() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+   *
+   * @return The cacheUpdate.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.CacheUpdate getCacheUpdate() {
+    return cacheUpdate_ == null
+        ? com.google.spanner.v1.CacheUpdate.getDefaultInstance()
+        : cacheUpdate_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.CacheUpdateOrBuilder getCacheUpdateOrBuilder() {
+    return cacheUpdate_ == null
+        ? com.google.spanner.v1.CacheUpdate.getDefaultInstance()
+        : cacheUpdate_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -815,6 +868,9 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     if (last_ != false) {
       output.writeBool(9, last_);
     }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      output.writeMessage(99, getCacheUpdate());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -844,6 +900,9 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     }
     if (last_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(9, last_);
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(99, getCacheUpdate());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -876,6 +935,10 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       if (!getPrecommitToken().equals(other.getPrecommitToken())) return false;
     }
     if (getLast() != other.getLast()) return false;
+    if (hasCacheUpdate() != other.hasCacheUpdate()) return false;
+    if (hasCacheUpdate()) {
+      if (!getCacheUpdate().equals(other.getCacheUpdate())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -909,6 +972,10 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     }
     hash = (37 * hash) + LAST_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getLast());
+    if (hasCacheUpdate()) {
+      hash = (37 * hash) + CACHE_UPDATE_FIELD_NUMBER;
+      hash = (53 * hash) + getCacheUpdate().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1056,6 +1123,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         getValuesFieldBuilder();
         getStatsFieldBuilder();
         getPrecommitTokenFieldBuilder();
+        getCacheUpdateFieldBuilder();
       }
     }
 
@@ -1088,6 +1156,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         precommitTokenBuilder_ = null;
       }
       last_ = false;
+      cacheUpdate_ = null;
+      if (cacheUpdateBuilder_ != null) {
+        cacheUpdateBuilder_.dispose();
+        cacheUpdateBuilder_ = null;
+      }
       return this;
     }
 
@@ -1159,6 +1232,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
       if (((from_bitField0_ & 0x00000040) != 0)) {
         result.last_ = last_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.cacheUpdate_ =
+            cacheUpdateBuilder_ == null ? cacheUpdate_ : cacheUpdateBuilder_.build();
+        to_bitField0_ |= 0x00000008;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1253,6 +1331,9 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       if (other.getLast() != false) {
         setLast(other.getLast());
       }
+      if (other.hasCacheUpdate()) {
+        mergeCacheUpdate(other.getCacheUpdate());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -1327,6 +1408,12 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
                 bitField0_ |= 0x00000040;
                 break;
               } // case 72
+            case 794:
+              {
+                input.readMessage(getCacheUpdateFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 794
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -3959,6 +4046,200 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       last_ = false;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.v1.CacheUpdate cacheUpdate_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.CacheUpdate,
+            com.google.spanner.v1.CacheUpdate.Builder,
+            com.google.spanner.v1.CacheUpdateOrBuilder>
+        cacheUpdateBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     *
+     * @return Whether the cacheUpdate field is set.
+     */
+    public boolean hasCacheUpdate() {
+      return ((bitField0_ & 0x00000080) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     *
+     * @return The cacheUpdate.
+     */
+    public com.google.spanner.v1.CacheUpdate getCacheUpdate() {
+      if (cacheUpdateBuilder_ == null) {
+        return cacheUpdate_ == null
+            ? com.google.spanner.v1.CacheUpdate.getDefaultInstance()
+            : cacheUpdate_;
+      } else {
+        return cacheUpdateBuilder_.getMessage();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     */
+    public Builder setCacheUpdate(com.google.spanner.v1.CacheUpdate value) {
+      if (cacheUpdateBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        cacheUpdate_ = value;
+      } else {
+        cacheUpdateBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     */
+    public Builder setCacheUpdate(com.google.spanner.v1.CacheUpdate.Builder builderForValue) {
+      if (cacheUpdateBuilder_ == null) {
+        cacheUpdate_ = builderForValue.build();
+      } else {
+        cacheUpdateBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     */
+    public Builder mergeCacheUpdate(com.google.spanner.v1.CacheUpdate value) {
+      if (cacheUpdateBuilder_ == null) {
+        if (((bitField0_ & 0x00000080) != 0)
+            && cacheUpdate_ != null
+            && cacheUpdate_ != com.google.spanner.v1.CacheUpdate.getDefaultInstance()) {
+          getCacheUpdateBuilder().mergeFrom(value);
+        } else {
+          cacheUpdate_ = value;
+        }
+      } else {
+        cacheUpdateBuilder_.mergeFrom(value);
+      }
+      if (cacheUpdate_ != null) {
+        bitField0_ |= 0x00000080;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     */
+    public Builder clearCacheUpdate() {
+      bitField0_ = (bitField0_ & ~0x00000080);
+      cacheUpdate_ = null;
+      if (cacheUpdateBuilder_ != null) {
+        cacheUpdateBuilder_.dispose();
+        cacheUpdateBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     */
+    public com.google.spanner.v1.CacheUpdate.Builder getCacheUpdateBuilder() {
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return getCacheUpdateFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     */
+    public com.google.spanner.v1.CacheUpdateOrBuilder getCacheUpdateOrBuilder() {
+      if (cacheUpdateBuilder_ != null) {
+        return cacheUpdateBuilder_.getMessageOrBuilder();
+      } else {
+        return cacheUpdate_ == null
+            ? com.google.spanner.v1.CacheUpdate.getDefaultInstance()
+            : cacheUpdate_;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.CacheUpdate,
+            com.google.spanner.v1.CacheUpdate.Builder,
+            com.google.spanner.v1.CacheUpdateOrBuilder>
+        getCacheUpdateFieldBuilder() {
+      if (cacheUpdateBuilder_ == null) {
+        cacheUpdateBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.CacheUpdate,
+                com.google.spanner.v1.CacheUpdate.Builder,
+                com.google.spanner.v1.CacheUpdateOrBuilder>(
+                getCacheUpdate(), getParentForChildren(), isClean());
+        cacheUpdate_ = null;
+      }
+      return cacheUpdateBuilder_;
     }
 
     @java.lang.Override

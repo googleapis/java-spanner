@@ -1216,6 +1216,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .setLastStatement(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
    * }
@@ -1269,6 +1270,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .setLastStatement(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
    *   // Do something.
@@ -1315,6 +1317,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .setLastStatement(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ServerStream<PartialResultSet> stream =
    *       spannerClient.executeStreamingSqlCallable().call(request);
@@ -1454,6 +1457,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ResultSet response = spannerClient.read(request);
    * }
@@ -1504,6 +1508,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.readCallable().futureCall(request);
    *   // Do something.
@@ -1546,6 +1551,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ServerStream<PartialResultSet> stream = spannerClient.streamingReadCallable().call(request);
    *   for (PartialResultSet response : stream) {

@@ -652,4 +652,41 @@ public interface PartialResultSetOrBuilder
    * @return The last.
    */
   boolean getLast();
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+   *
+   * @return Whether the cacheUpdate field is set.
+   */
+  boolean hasCacheUpdate();
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+   *
+   * @return The cacheUpdate.
+   */
+  com.google.spanner.v1.CacheUpdate getCacheUpdate();
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CacheUpdate cache_update = 99;</code>
+   */
+  com.google.spanner.v1.CacheUpdateOrBuilder getCacheUpdateOrBuilder();
 }

@@ -2315,6 +2315,59 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     return lastStatement_;
   }
 
+  public static final int ROUTING_HINT_FIELD_NUMBER = 99;
+  private com.google.spanner.v1.RoutingHint routingHint_;
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+   *
+   * @return Whether the routingHint field is set.
+   */
+  @java.lang.Override
+  public boolean hasRoutingHint() {
+    return ((bitField0_ & 0x00000020) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+   *
+   * @return The routingHint.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RoutingHint getRoutingHint() {
+    return routingHint_ == null
+        ? com.google.spanner.v1.RoutingHint.getDefaultInstance()
+        : routingHint_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * TODO(taylorc): pick tag number before moving this to public API.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RoutingHintOrBuilder getRoutingHintOrBuilder() {
+    return routingHint_ == null
+        ? com.google.spanner.v1.RoutingHint.getDefaultInstance()
+        : routingHint_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -2369,6 +2422,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     if (lastStatement_ != false) {
       output.writeBool(17, lastStatement_);
+    }
+    if (((bitField0_ & 0x00000020) != 0)) {
+      output.writeMessage(99, getRoutingHint());
     }
     getUnknownFields().writeTo(output);
   }
@@ -2429,6 +2485,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (lastStatement_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(17, lastStatement_);
     }
+    if (((bitField0_ & 0x00000020) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(99, getRoutingHint());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -2473,6 +2532,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     if (getDataBoostEnabled() != other.getDataBoostEnabled()) return false;
     if (getLastStatement() != other.getLastStatement()) return false;
+    if (hasRoutingHint() != other.hasRoutingHint()) return false;
+    if (hasRoutingHint()) {
+      if (!getRoutingHint().equals(other.getRoutingHint())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -2524,6 +2587,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getDataBoostEnabled());
     hash = (37 * hash) + LAST_STATEMENT_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getLastStatement());
+    if (hasRoutingHint()) {
+      hash = (37 * hash) + ROUTING_HINT_FIELD_NUMBER;
+      hash = (53 * hash) + getRoutingHint().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -2693,6 +2760,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         getQueryOptionsFieldBuilder();
         getRequestOptionsFieldBuilder();
         getDirectedReadOptionsFieldBuilder();
+        getRoutingHintFieldBuilder();
       }
     }
 
@@ -2734,6 +2802,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       dataBoostEnabled_ = false;
       lastStatement_ = false;
+      routingHint_ = null;
+      if (routingHintBuilder_ != null) {
+        routingHintBuilder_.dispose();
+        routingHintBuilder_ = null;
+      }
       return this;
     }
 
@@ -2824,6 +2897,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       if (((from_bitField0_ & 0x00002000) != 0)) {
         result.lastStatement_ = lastStatement_;
+      }
+      if (((from_bitField0_ & 0x00004000) != 0)) {
+        result.routingHint_ =
+            routingHintBuilder_ == null ? routingHint_ : routingHintBuilder_.build();
+        to_bitField0_ |= 0x00000020;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -2917,6 +2995,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       if (other.getLastStatement() != false) {
         setLastStatement(other.getLastStatement());
+      }
+      if (other.hasRoutingHint()) {
+        mergeRoutingHint(other.getRoutingHint());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -3036,6 +3117,12 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
                 bitField0_ |= 0x00002000;
                 break;
               } // case 136
+            case 794:
+              {
+                input.readMessage(getRoutingHintFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00004000;
+                break;
+              } // case 794
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -5240,6 +5327,200 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       lastStatement_ = false;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.v1.RoutingHint routingHint_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.RoutingHint,
+            com.google.spanner.v1.RoutingHint.Builder,
+            com.google.spanner.v1.RoutingHintOrBuilder>
+        routingHintBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     *
+     * @return Whether the routingHint field is set.
+     */
+    public boolean hasRoutingHint() {
+      return ((bitField0_ & 0x00004000) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     *
+     * @return The routingHint.
+     */
+    public com.google.spanner.v1.RoutingHint getRoutingHint() {
+      if (routingHintBuilder_ == null) {
+        return routingHint_ == null
+            ? com.google.spanner.v1.RoutingHint.getDefaultInstance()
+            : routingHint_;
+      } else {
+        return routingHintBuilder_.getMessage();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     */
+    public Builder setRoutingHint(com.google.spanner.v1.RoutingHint value) {
+      if (routingHintBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        routingHint_ = value;
+      } else {
+        routingHintBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     */
+    public Builder setRoutingHint(com.google.spanner.v1.RoutingHint.Builder builderForValue) {
+      if (routingHintBuilder_ == null) {
+        routingHint_ = builderForValue.build();
+      } else {
+        routingHintBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     */
+    public Builder mergeRoutingHint(com.google.spanner.v1.RoutingHint value) {
+      if (routingHintBuilder_ == null) {
+        if (((bitField0_ & 0x00004000) != 0)
+            && routingHint_ != null
+            && routingHint_ != com.google.spanner.v1.RoutingHint.getDefaultInstance()) {
+          getRoutingHintBuilder().mergeFrom(value);
+        } else {
+          routingHint_ = value;
+        }
+      } else {
+        routingHintBuilder_.mergeFrom(value);
+      }
+      if (routingHint_ != null) {
+        bitField0_ |= 0x00004000;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     */
+    public Builder clearRoutingHint() {
+      bitField0_ = (bitField0_ & ~0x00004000);
+      routingHint_ = null;
+      if (routingHintBuilder_ != null) {
+        routingHintBuilder_.dispose();
+        routingHintBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     */
+    public com.google.spanner.v1.RoutingHint.Builder getRoutingHintBuilder() {
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return getRoutingHintFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     */
+    public com.google.spanner.v1.RoutingHintOrBuilder getRoutingHintOrBuilder() {
+      if (routingHintBuilder_ != null) {
+        return routingHintBuilder_.getMessageOrBuilder();
+      } else {
+        return routingHint_ == null
+            ? com.google.spanner.v1.RoutingHint.getDefaultInstance()
+            : routingHint_;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * TODO(taylorc): pick tag number before moving this to public API.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RoutingHint routing_hint = 99;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.RoutingHint,
+            com.google.spanner.v1.RoutingHint.Builder,
+            com.google.spanner.v1.RoutingHintOrBuilder>
+        getRoutingHintFieldBuilder() {
+      if (routingHintBuilder_ == null) {
+        routingHintBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.RoutingHint,
+                com.google.spanner.v1.RoutingHint.Builder,
+                com.google.spanner.v1.RoutingHintOrBuilder>(
+                getRoutingHint(), getParentForChildren(), isClean());
+        routingHint_ = null;
+      }
+      return routingHintBuilder_;
     }
 
     @java.lang.Override
