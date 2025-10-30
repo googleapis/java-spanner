@@ -297,6 +297,39 @@ public class InstanceAdminClientImplTest {
   }
 
   @Test
+  public void createInstanceWithOrgNameInProjectId() throws Exception {
+    String projectIdWithOrg = "my-org:my-project";
+    String instanceNameWithOrg = "projects/my-org:my-project/instances/my-instance";
+    String configNameWithOrg = "projects/my-org:my-project/instanceConfigs/my-config";
+
+    InstanceAdminClient universeClient =
+        new InstanceAdminClientImpl(projectIdWithOrg, rpc, dbClient);
+    com.google.spanner.admin.instance.v1.Instance instance =
+        com.google.spanner.admin.instance.v1.Instance.newBuilder()
+            .setConfig(configNameWithOrg)
+            .setName(instanceNameWithOrg)
+            .setNodeCount(1)
+            .setProcessingUnits(0)
+            .setEdition(com.google.spanner.admin.instance.v1.Instance.Edition.ENTERPRISE_PLUS)
+            .build();
+    OperationFuture<com.google.spanner.admin.instance.v1.Instance, CreateInstanceMetadata>
+        rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                "createInstance", instance, CreateInstanceMetadata.getDefaultInstance());
+    when(rpc.createInstance("projects/" + projectIdWithOrg, INSTANCE_ID, instance))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<Instance, CreateInstanceMetadata> op =
+        universeClient.createInstance(
+            InstanceInfo.newBuilder(InstanceId.of(projectIdWithOrg, INSTANCE_ID))
+                .setInstanceConfigId(InstanceConfigId.of(projectIdWithOrg, CONFIG_ID))
+                .setEdition(com.google.spanner.admin.instance.v1.Instance.Edition.ENTERPRISE_PLUS)
+                .setNodeCount(1)
+                .build());
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(instanceNameWithOrg);
+  }
+
+  @Test
   public void testCreateInstanceWithProcessingUnits() throws Exception {
     OperationFuture<com.google.spanner.admin.instance.v1.Instance, CreateInstanceMetadata>
         rawOperationFuture =
