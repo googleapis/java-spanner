@@ -183,6 +183,10 @@ class GrpcValueIterator extends AbstractIterator<com.google.protobuf.Value> {
     return stream.isWithBeginTransaction();
   }
 
+  boolean isLastStatement() {
+    return stream.isLastStatement();
+  }
+
   /**
    * @param a is a mutable list and b will be concatenated into a.
    */
