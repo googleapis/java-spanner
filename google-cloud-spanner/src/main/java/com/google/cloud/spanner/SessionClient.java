@@ -249,6 +249,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
       SessionReference sessionReference =
           new SessionReference(
               session.getName(),
+              spanner.getOptions().getDatabaseRole(),
               session.getCreateTime(),
               session.getMultiplexed(),
               optionMap(SessionOption.channelHint(channelId)));
@@ -307,7 +308,11 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
           new SessionImpl(
               spanner,
               new SessionReference(
-                  session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
+                  session.getName(),
+                  spanner.getOptions().getDatabaseRole(),
+                  session.getCreateTime(),
+                  session.getMultiplexed(),
+                  null));
       sessionImpl.setRequestIdCreator(this);
       span.addAnnotation(
           String.format("Request for %d multiplexed session returned %d session", 1, 1));
@@ -444,6 +449,7 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
                 spanner,
                 new SessionReference(
                     session.getName(),
+                    spanner.getOptions().getDatabaseRole(),
                     session.getCreateTime(),
                     session.getMultiplexed(),
                     optionMap(SessionOption.channelHint(channelHint))));
@@ -464,7 +470,8 @@ class SessionClient implements AutoCloseable, XGoogSpannerRequestId.RequestIdCre
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    SessionImpl sessionImpl = new SessionImpl(spanner, new SessionReference(name, options));
+    SessionImpl sessionImpl =
+        new SessionImpl(spanner, new SessionReference(name, /* databaseRole= */ null, options));
     sessionImpl.setRequestIdCreator(this);
     return sessionImpl;
   }

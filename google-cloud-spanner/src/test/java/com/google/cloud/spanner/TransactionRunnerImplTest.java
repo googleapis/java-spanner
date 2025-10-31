@@ -335,7 +335,7 @@ public class TransactionRunnerImplTest {
         new SessionImpl(
             spanner,
             new SessionReference(
-                "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP)) {};
+                "projects/p/instances/i/databases/d/sessions/s", null, Collections.EMPTY_MAP)) {};
     session.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
