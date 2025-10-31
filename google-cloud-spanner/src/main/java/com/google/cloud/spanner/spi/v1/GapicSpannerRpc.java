@@ -368,10 +368,12 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean isEnableDirectAccess = options.isEnableDirectAccess();
       if (isEnableDirectAccess) {
         defaultChannelProviderBuilder.setAttemptDirectPath(true);
-        // This will let the credentials try to fetch a hard-bound access token if the runtime
-        // environment supports it.
-        defaultChannelProviderBuilder.setAllowHardBoundTokenTypes(
-            Collections.singletonList(InstantiatingGrpcChannelProvider.HardBoundTokenTypes.ALTS));
+        if (isEnableDirectPathBoundToken()) {
+          // This will let the credentials try to fetch a hard-bound access token if the runtime
+          // environment supports it.
+          defaultChannelProviderBuilder.setAllowHardBoundTokenTypes(
+              Collections.singletonList(InstantiatingGrpcChannelProvider.HardBoundTokenTypes.ALTS));
+        }
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
       }
 
@@ -685,6 +687,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   public static boolean isEnableDirectPathXdsEnv() {
     return Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS"));
+  }
+
+  public static boolean isEnableDirectPathBoundToken() {
+    return !Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_DISABLE_DIRECT_ACCESS_BOUND_TOKEN"));
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =

@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATC
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionProperties.BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DDL_IN_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DEFAULT_ISOLATION_LEVEL;
@@ -44,6 +45,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.RETRY_ABO
 import static com.google.cloud.spanner.connection.ConnectionProperties.RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.RPC_PRIORITY;
 import static com.google.cloud.spanner.connection.ConnectionProperties.SAVEPOINT_SUPPORT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRACING_PREFIX;
 import static com.google.cloud.spanner.connection.ConnectionProperties.TRANSACTION_TIMEOUT;
 
@@ -345,7 +347,7 @@ class ConnectionImpl implements Connection {
                             && getDialect() == Dialect.POSTGRESQL
                         ? Type.TRANSACTIONAL
                         : Type.NON_TRANSACTIONAL));
-
+    setInitialStatementTimeout(options.getInitialConnectionPropertyValue(STATEMENT_TIMEOUT));
     // (Re)set the state of the connection to the default.
     setDefaultTransactionOptions(getDefaultIsolationLevel());
   }
@@ -379,6 +381,7 @@ class ConnectionImpl implements Connection {
         new ConnectionState(
             options.getInitialConnectionPropertyValues(),
             Suppliers.ofInstance(Type.NON_TRANSACTIONAL));
+    setInitialStatementTimeout(options.getInitialConnectionPropertyValue(STATEMENT_TIMEOUT));
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
     setReturnCommitStats(options.isReturnCommitStats());
@@ -388,6 +391,21 @@ class ConnectionImpl implements Connection {
   @Override
   public Spanner getSpanner() {
     return this.spanner;
+  }
+
+  private void setInitialStatementTimeout(Duration duration) {
+    if (duration == null || duration.isZero()) {
+      return;
+    }
+    com.google.protobuf.Duration protoDuration =
+        com.google.protobuf.Duration.newBuilder()
+            .setSeconds(duration.getSeconds())
+            .setNanos(duration.getNano())
+            .build();
+    TimeUnit unit =
+        ReadOnlyStalenessUtil.getAppropriateTimeUnit(
+            new ReadOnlyStalenessUtil.DurationGetter(protoDuration));
+    setStatementTimeout(ReadOnlyStalenessUtil.durationToUnits(protoDuration, unit), unit);
   }
 
   private DdlClient createDdlClient() {
@@ -1590,6 +1608,10 @@ class ConnectionImpl implements Connection {
     return getConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT);
   }
 
+  long getDmlBatchUpdateCount() {
+    return getConnectionPropertyValue(BATCH_DML_UPDATE_COUNT);
+  }
+
   @Override
   public void setAutoBatchDmlUpdateCountVerification(boolean verification) {
     setConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION, verification);
@@ -1598,6 +1620,10 @@ class ConnectionImpl implements Connection {
   @Override
   public boolean isAutoBatchDmlUpdateCountVerification() {
     return getConnectionPropertyValue(AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION);
+  }
+
+  void setBatchDmlUpdateCount(long updateCount, boolean local) {
+    setConnectionPropertyValue(BATCH_DML_UPDATE_COUNT, updateCount, local);
   }
 
   @Override
@@ -2323,6 +2349,7 @@ class ConnectionImpl implements Connection {
               .setAutoBatchUpdateCountSupplier(this::getAutoBatchDmlUpdateCount)
               .setAutoBatchUpdateCountVerificationSupplier(
                   this::isAutoBatchDmlUpdateCountVerification)
+              .setDmlBatchUpdateCountSupplier(this::getDmlBatchUpdateCount)
               .setTransaction(currentUnitOfWork)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)

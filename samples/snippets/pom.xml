@@ -34,7 +34,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.68.0</version>
+        <version>26.70.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -111,7 +111,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.4.4</version>
+      <version>1.4.5</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -126,7 +126,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.5.3</version>
+            <version>3.5.4</version>
             <configuration>
               <forkCount>10</forkCount>
               <reuseForks>false</reuseForks>
@@ -155,7 +155,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.5.3</version>
+            <version>3.5.4</version>
             <configuration>
               <forkCount>10</forkCount>
               <reuseForks>false</reuseForks>

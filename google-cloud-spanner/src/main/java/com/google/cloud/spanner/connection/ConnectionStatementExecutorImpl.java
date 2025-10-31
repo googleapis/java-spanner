@@ -29,6 +29,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
@@ -724,6 +725,12 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     return StatementResultImpl.of(
         getConnection().runPartitionedQuery(statement, PartitionOptions.getDefaultInstance()),
         ClientSideStatementType.RUN_PARTITIONED_QUERY);
+  }
+
+  @Override
+  public StatementResult statementSetBatchDmlUpdateCount(Long updateCount, Boolean local) {
+    getConnection().setBatchDmlUpdateCount(updateCount, local);
+    return noResult(SET_BATCH_DML_UPDATE_COUNT);
   }
 
   @Override

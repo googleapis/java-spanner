@@ -48,7 +48,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.base.Strings;
 import com.google.longrunning.OperationsClient;
 import com.google.longrunning.OperationsSettings;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -352,9 +351,7 @@ public class ITVPCNegativeTest {
                 .setTransportChannelProvider(InstantiatingGrpcChannelProvider.newBuilder().build())
                 .setEndpoint("spanner.googleapis.com:443")
                 .setCredentialsProvider(
-                    FixedCredentialsProvider.create(
-                        GoogleCredentials.fromStream(
-                            new FileInputStream(System.getenv("GOOGLE_APPLICATION_CREDENTIALS")))))
+                    FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault()))
                 .build())) {
       client.listOperations(backupId.getName() + "/operations", "");
       fail("Expected PermissionDeniedException");

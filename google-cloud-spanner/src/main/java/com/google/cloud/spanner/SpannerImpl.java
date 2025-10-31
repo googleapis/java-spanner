@@ -149,10 +149,54 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
+    logSpannerOptions(options);
   }
 
   SpannerImpl(SpannerOptions options) {
     this(options.getSpannerRpcV1(), options);
+  }
+
+  private void logSpannerOptions(SpannerOptions options) {
+    logger.log(
+        Level.INFO,
+        "Spanner options: "
+            + "\nProject ID: "
+            + options.getProjectId()
+            + "\nHost: "
+            + options.getHost()
+            + "\nNum gRPC channels: "
+            + options.getNumChannels()
+            + "\nLeader aware routing enabled: "
+            + options.isLeaderAwareRoutingEnabled()
+            + "\nDirect access enabled: "
+            + options.isEnableDirectAccess()
+            + "\nActive Tracing Framework: "
+            + SpannerOptions.getActiveTracingFramework()
+            + "\nAPI tracing enabled: "
+            + options.isEnableApiTracing()
+            + "\nExtended tracing enabled: "
+            + options.isEnableExtendedTracing()
+            + "\nEnd to end tracing enabled: "
+            + options.isEndToEndTracingEnabled()
+            + "\nBuilt-in metrics enabled: "
+            + options.isEnableBuiltInMetrics());
+    if (options.getSessionPoolOptions() != null) {
+      logger.log(
+          Level.INFO,
+          "Session pool options: "
+              + "\nSession pool min sessions: "
+              + options.getSessionPoolOptions().getMinSessions()
+              + "\nSession pool max sessions: "
+              + options.getSessionPoolOptions().getMaxSessions()
+              + "\nMultiplexed sessions enabled: "
+              + options.getSessionPoolOptions().getUseMultiplexedSession()
+              + "\nMultiplexed sessions enabled for RW: "
+              + options.getSessionPoolOptions().getUseMultiplexedSessionForRW()
+              + "\nMultiplexed sessions enabled for blind write: "
+              + options.getSessionPoolOptions().getUseMultiplexedSessionBlindWrite()
+              + "\nMultiplexed sessions enabled for partitioned ops: "
+              + options.getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());
+    }
   }
 
   /** Returns the {@link SpannerRpc} of this {@link SpannerImpl} instance. */

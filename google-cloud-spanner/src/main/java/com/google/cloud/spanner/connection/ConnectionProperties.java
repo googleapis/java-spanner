@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_D
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.AUTO_PARTITION_MODE_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.BATCH_DML_UPDATE_COUNT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CHANNEL_PROVIDER_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_CERTIFICATE_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.CLIENT_KEY_PROPERTY_NAME;
@@ -34,6 +35,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_BATCH_DML_UPDATE_COUNT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CHANNEL_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_CERTIFICATE;
 import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_CLIENT_KEY;
@@ -75,6 +77,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.DIALECT_PROP
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_API_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_END_TO_END_TRACING_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_EXTENDED_TRACING_PROPERTY_NAME;
+import static com.google.cloud.spanner.connection.ConnectionOptions.ENABLE_GRPC_INTERCEPTOR_PROVIDER_SYSTEM_PROPERTY;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENCODED_CREDENTIALS_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.ENDPOINT_PROPERTY_NAME;
 import static com.google.cloud.spanner.connection.ConnectionOptions.IS_EXPERIMENTAL_HOST_PROPERTY_NAME;
@@ -101,6 +104,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.USE_VIRTUAL_
 import static com.google.cloud.spanner.connection.ConnectionProperty.castProperty;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.DmlBatchUpdateCountVerificationFailedException;
 import com.google.cloud.spanner.Options.RpcPriority;
@@ -257,7 +261,11 @@ public class ConnectionProperties {
           CREDENTIALS_PROPERTY_NAME,
           "The location of the credentials file to use for this connection. If neither this"
               + " property or encoded credentials are set, the connection will use the default"
-              + " Google Cloud credentials for the runtime environment.",
+              + " Google Cloud credentials for the runtime environment. WARNING: Using this"
+              + " property without proper validation can expose the application to security risks."
+              + " It is intended for use with credentials from a trusted source only, as it could"
+              + " otherwise allow end-users to supply arbitrary credentials. For more information,"
+              + " seehttps://cloud.google.com/docs/authentication/client-libraries#external-credentials",
           DEFAULT_CREDENTIALS,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
@@ -266,7 +274,11 @@ public class ConnectionProperties {
           ENCODED_CREDENTIALS_PROPERTY_NAME,
           "Base64-encoded credentials to use for this connection. If neither this property or a"
               + " credentials location are set, the connection will use the default Google Cloud"
-              + " credentials for the runtime environment.",
+              + " credentials for the runtime environment. WARNING: Enabling this property without"
+              + " proper validation can expose the application to security risks. It is intended"
+              + " for use with credentials from a trusted source only, as it could otherwise allow"
+              + " end-users to supply arbitrary credentials. For more information, see"
+              + "https://cloud.google.com/docs/authentication/client-libraries#external-credentials",
           null,
           StringValueConverter.INSTANCE,
           Context.STARTUP);
@@ -285,6 +297,23 @@ public class ConnectionProperties {
               + " should be used to obtain credentials for connections.",
           null,
           CredentialsProviderConverter.INSTANCE,
+          Context.STARTUP);
+  static final ConnectionProperty<String> GRPC_INTERCEPTOR_PROVIDER =
+      create(
+          "grpc_interceptor_provider",
+          "The class name of a "
+              + GrpcInterceptorProvider.class.getName()
+              + " implementation that should be used to provide interceptors for the underlying"
+              + " Spanner client. This is a guarded property that can only be set if the Java"
+              + " System Property "
+              + ENABLE_GRPC_INTERCEPTOR_PROVIDER_SYSTEM_PROPERTY
+              + " has been set to true. This property should only be set to true on systems where"
+              + " an untrusted user cannot modify the connection URL, as using this property will"
+              + " dynamically invoke the constructor of the class specified. This means that any"
+              + " user that can modify the connection URL, can also dynamically invoke code on the"
+              + " host where the application is running.",
+          null,
+          StringValueConverter.INSTANCE,
           Context.STARTUP);
 
   static final ConnectionProperty<String> USER_AGENT =
@@ -493,6 +522,15 @@ public class ConnectionProperties {
               .collect(Collectors.toList())
               .toArray(new ReadLockMode[0]),
           ReadLockModeConverter.INSTANCE,
+          Context.USER);
+  static final ConnectionProperty<Duration> STATEMENT_TIMEOUT =
+      create(
+          "statement_timeout",
+          "Adds a timeout to all statements executed on this connection. "
+              + "This property is only used when a statement timeout is specified.",
+          null,
+          null,
+          DurationConverter.INSTANCE,
           Context.USER);
   static final ConnectionProperty<Duration> TRANSACTION_TIMEOUT =
       create(
@@ -718,6 +756,15 @@ public class ConnectionProperties {
           DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION,
           BOOLEANS,
           BooleanConverter.INSTANCE,
+          Context.USER);
+  static final ConnectionProperty<Long> BATCH_DML_UPDATE_COUNT =
+      create(
+          BATCH_DML_UPDATE_COUNT_PROPERTY_NAME,
+          "The update count that is returned for DML statements that are executed in an "
+              + "explicit DML batch. The default is "
+              + DEFAULT_BATCH_DML_UPDATE_COUNT,
+          DEFAULT_BATCH_DML_UPDATE_COUNT,
+          LongConverter.INSTANCE,
           Context.USER);
 
   static final ImmutableMap<String, ConnectionProperty<?>> CONNECTION_PROPERTIES =

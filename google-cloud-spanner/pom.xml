@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.101.1</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.102.1</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.101.1</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.102.1</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
@@ -64,6 +64,7 @@
                 <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
                 <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
                 <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
+                <java.util.logging.config.file>logging.properties</java.util.logging.config.file>
               </systemPropertyVariables>
 
             </configuration>
@@ -88,6 +89,7 @@
             <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
             <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
             <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
+            <java.util.logging.config.file>logging.properties</java.util.logging.config.file>
           </systemPropertyVariables>
           <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
         </configuration>
@@ -124,6 +126,7 @@
             <buildArg>-Dspanner.testenv.instance=${spanner.testenv.instance}</buildArg>
             <buildArg>-Dspanner.gce.config.project_id=${spanner.gce.config.project_id}</buildArg>
             <buildArg>-Dspanner.testenv.kms_key.name=${spanner.testenv.kms_key.name}</buildArg>
+            <buildArg>-Djava.util.logging.config.file=logging.properties</buildArg>
           </buildArgs>
         </configuration>
       </plugin>
@@ -269,12 +272,39 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-monitoring</artifactId>
-      <version>3.63.0</version>
+      <version>3.77.0</version>
+      <!-- Version will be managed by guava -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-monitoring-v3</artifactId>
-      <version>3.63.0</version>
+      <version>3.77.0</version>
+      <!-- Version will be managed by guava -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>grpc-google-cloud-monitoring-v3</artifactId>
+      <version>3.77.0</version>
+      <scope>test</scope>
+      <!-- Version will be managed by guava -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
@@ -373,13 +403,13 @@
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
-      <version>1.17.7</version>
+      <version>1.17.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy-agent</artifactId>
-      <version>1.17.7</version>
+      <version>1.17.8</version>
       <scope>test</scope>
     </dependency>
 
@@ -428,7 +458,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20250107</version>
+      <version>20250517</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -475,13 +505,13 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-trace</artifactId>
-      <version>2.62.0</version>
+      <version>2.76.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-trace-v1</artifactId>
-      <version>2.62.0</version>
+      <version>2.76.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -522,7 +552,11 @@
                       <argument>-classpath</argument>
                       <classpath/>
                       <argument>org.openjdk.jmh.Main</argument>
-                      <argument>${benchmark.name}</argument>
+                        <argument>${benchmark.name}</argument>
+                      <argument>-rf</argument>
+                      <argument>JSON</argument>
+                      <argument>-rff</argument>
+                      <argument>jmh-results.json</argument>
                   </arguments>
                 </configuration>
               </execution>
@@ -539,6 +573,21 @@
                   <version>1.37</version>
                 </path>
               </annotationProcessorPaths>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>validate-benchmark</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <configuration>
+              <mainClass>com.google.cloud.spanner.benchmarking.BenchmarkValidator</mainClass>
+              <classpathScope>test</classpathScope>
             </configuration>
           </plugin>
         </plugins>

@@ -967,6 +967,28 @@
       }
     },
     {
+      "name": "SET [LOCAL] SPANNER.BATCH_DML_UPDATE_COUNT =|TO <bigint>",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_BATCH_DML_UPDATE_COUNT",
+      "regex": "(?is)\\A\\s*set\\s+((?:session|local)\\s+)?spanner\\.batch_dml_update_count(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetBatchDmlUpdateCount",
+      "exampleStatements": [
+        "set local spanner.batch_dml_update_count = 0",
+        "set local spanner.batch_dml_update_count = 100",
+        "set local spanner.batch_dml_update_count to 1",
+        "set spanner.batch_dml_update_count to 1",
+        "set spanner.batch_dml_update_count = 1"
+      ],
+      "examplePrerequisiteStatements": ["set spanner.readonly = false", "set autocommit = false"],
+      "setStatement": {
+        "propertyName": "SPANNER.BATCH_DML_UPDATE_COUNT",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(\\d{1,19})",
+        "converterName": "ClientSideStatementValueConverters$LongConverter"
+      }
+    },
+    {
       "name": "SET SPANNER.AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION = TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",

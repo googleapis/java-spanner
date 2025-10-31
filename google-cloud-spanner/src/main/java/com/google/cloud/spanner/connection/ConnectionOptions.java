@@ -33,6 +33,7 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EN
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENCODED_CREDENTIALS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENDPOINT;
+import static com.google.cloud.spanner.connection.ConnectionProperties.GRPC_INTERCEPTOR_PROVIDER;
 import static com.google.cloud.spanner.connection.ConnectionProperties.IS_EXPERIMENTAL_HOST;
 import static com.google.cloud.spanner.connection.ConnectionProperties.LENIENT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.MAX_COMMIT_DELAY;
@@ -59,6 +60,7 @@ import static com.google.cloud.spanner.connection.ConnectionPropertyValue.cast;
 
 import com.google.api.core.InternalApi;
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
@@ -75,6 +77,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.GrpcInterceptorProviderConverter;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -178,6 +181,7 @@ public class ConnectionOptions {
   static final boolean DEFAULT_ENABLE_END_TO_END_TRACING = false;
   static final boolean DEFAULT_AUTO_BATCH_DML = false;
   static final long DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT = 1L;
+  static final long DEFAULT_BATCH_DML_UPDATE_COUNT = -1L;
   static final boolean DEFAULT_AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION = true;
   private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
   private static final String DEFAULT_EXPERIMENTAL_HOST_INSTANCE_ID = "default";
@@ -256,6 +260,9 @@ public class ConnectionOptions {
 
   public static final String ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY = "ENABLE_CHANNEL_PROVIDER";
 
+  public static final String ENABLE_GRPC_INTERCEPTOR_PROVIDER_SYSTEM_PROPERTY =
+      "ENABLE_GRPC_INTERCEPTOR_PROVIDER";
+
   /** Custom user agent string is only for other Google libraries. */
   static final String USER_AGENT_PROPERTY_NAME = "userAgent";
 
@@ -308,6 +315,7 @@ public class ConnectionOptions {
       "auto_batch_dml_update_count";
   public static final String AUTO_BATCH_DML_UPDATE_COUNT_VERIFICATION_PROPERTY_NAME =
       "auto_batch_dml_update_count_verification";
+  public static final String BATCH_DML_UPDATE_COUNT_PROPERTY_NAME = "batch_dml_update_count";
 
   private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
       "%s can only be used if the system property %s has been set to true. "
@@ -656,19 +664,6 @@ public class ConnectionOptions {
     // Create the initial connection state from the parsed properties in the connection URL.
     this.initialConnectionState = new ConnectionState(connectionPropertyValues);
 
-    // Check that at most one of credentials location, encoded credentials, credentials provider and
-    // OUAuth token has been specified in the connection URI.
-    Preconditions.checkArgument(
-        Stream.of(
-                    getInitialConnectionPropertyValue(CREDENTIALS_URL),
-                    getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
-                    getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER),
-                    getInitialConnectionPropertyValue(OAUTH_TOKEN))
-                .filter(Objects::nonNull)
-                .count()
-            <= 1,
-        "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth"
-            + " token");
     checkGuardedProperty(
         getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
         ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY,
@@ -683,6 +678,23 @@ public class ConnectionOptions {
         getInitialConnectionPropertyValue(CHANNEL_PROVIDER),
         ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY,
         CHANNEL_PROVIDER_PROPERTY_NAME);
+    checkGuardedProperty(
+        getInitialConnectionPropertyValue(GRPC_INTERCEPTOR_PROVIDER),
+        ENABLE_GRPC_INTERCEPTOR_PROVIDER_SYSTEM_PROPERTY,
+        GRPC_INTERCEPTOR_PROVIDER.getName());
+    // Check that at most one of credentials location, encoded credentials, credentials provider and
+    // OUAuth token has been specified in the connection URI.
+    Preconditions.checkArgument(
+        Stream.of(
+                    getInitialConnectionPropertyValue(CREDENTIALS_URL),
+                    getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
+                    getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER),
+                    getInitialConnectionPropertyValue(OAUTH_TOKEN))
+                .filter(Objects::nonNull)
+                .count()
+            <= 1,
+        "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth"
+            + " token");
 
     boolean usePlainText =
         getInitialConnectionPropertyValue(AUTO_CONFIG_EMULATOR)
@@ -997,6 +1009,19 @@ public class ConnectionOptions {
               "%s : Failed to create channel with external provider: %s",
               e.toString(), channelProvider));
     }
+  }
+
+  String getGrpcInterceptorProviderName() {
+    return getInitialConnectionPropertyValue(GRPC_INTERCEPTOR_PROVIDER);
+  }
+
+  /** Returns the gRPC interceptor provider that has been configured. */
+  public GrpcInterceptorProvider getGrpcInterceptorProvider() {
+    String interceptorProvider = getInitialConnectionPropertyValue(GRPC_INTERCEPTOR_PROVIDER);
+    if (interceptorProvider == null) {
+      return null;
+    }
+    return GrpcInterceptorProviderConverter.INSTANCE.convert(interceptorProvider);
   }
 
   /**

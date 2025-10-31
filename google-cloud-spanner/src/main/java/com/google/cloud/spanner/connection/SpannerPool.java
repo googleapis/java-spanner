@@ -166,6 +166,7 @@ public class SpannerPool {
     private final boolean isExperimentalHost;
     private final Boolean enableDirectAccess;
     private final String universeDomain;
+    private final String grpcInterceptorProvider;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -202,6 +203,7 @@ public class SpannerPool {
       this.isExperimentalHost = options.isExperimentalHost();
       this.enableDirectAccess = options.isEnableDirectAccess();
       this.universeDomain = options.getUniverseDomain();
+      this.grpcInterceptorProvider = options.getGrpcInterceptorProviderName();
     }
 
     @Override
@@ -229,7 +231,8 @@ public class SpannerPool {
           && Objects.equals(this.clientCertificateKey, other.clientCertificateKey)
           && Objects.equals(this.isExperimentalHost, other.isExperimentalHost)
           && Objects.equals(this.enableDirectAccess, other.enableDirectAccess)
-          && Objects.equals(this.universeDomain, other.universeDomain);
+          && Objects.equals(this.universeDomain, other.universeDomain)
+          && Objects.equals(this.grpcInterceptorProvider, other.grpcInterceptorProvider);
     }
 
     @Override
@@ -253,7 +256,8 @@ public class SpannerPool {
           this.clientCertificateKey,
           this.isExperimentalHost,
           this.enableDirectAccess,
-          this.universeDomain);
+          this.universeDomain,
+          this.grpcInterceptorProvider);
     }
   }
 
@@ -425,6 +429,9 @@ public class SpannerPool {
     }
     if (key.universeDomain != null) {
       builder.setUniverseDomain(key.universeDomain);
+    }
+    if (key.grpcInterceptorProvider != null) {
+      builder.setInterceptorProvider(options.getGrpcInterceptorProvider());
     }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);

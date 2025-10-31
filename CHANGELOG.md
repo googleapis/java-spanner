@@ -1,5 +1,61 @@
 # Changelog
 
+## [6.102.1](https://github.com/googleapis/java-spanner/compare/v6.102.0...v6.102.1) (2025-10-23)
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.63.0 ([c1a8238](https://github.com/googleapis/java-spanner/commit/c1a8238af33a083411f63cf6276eb683ee67ac6a))
+* Do a quick check if the application runs on GCP ([#4163](https://github.com/googleapis/java-spanner/issues/4163)) ([b9d7daf](https://github.com/googleapis/java-spanner/commit/b9d7daf000c0fb8b67142c6161bb578cadf49b18))
+* Migrate away from GoogleCredentials.fromStream() usages ([#4151](https://github.com/googleapis/java-spanner/issues/4151)) ([94d0474](https://github.com/googleapis/java-spanner/commit/94d0474ace62ea1059e5b69243f0b6eef31ddd06))
+
+
+### Dependencies
+
+* Update actions/checkout action to v5 ([#4158](https://github.com/googleapis/java-spanner/issues/4158)) ([b32ebcf](https://github.com/googleapis/java-spanner/commit/b32ebcf96bbf696b1eb84204622463fac59be017))
+* Update actions/checkout action to v5 ([#4161](https://github.com/googleapis/java-spanner/issues/4161)) ([02a17c6](https://github.com/googleapis/java-spanner/commit/02a17c6e6253e026cb3c6360eb925a322143b518))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.53.0 ([#4178](https://github.com/googleapis/java-spanner/issues/4178)) ([24fe194](https://github.com/googleapis/java-spanner/commit/24fe194fa3595b2ab817b9fc4cd57840250fef1f))
+* Update dependency net.bytebuddy:byte-buddy to v1.17.8 ([#4154](https://github.com/googleapis/java-spanner/issues/4154)) ([c911381](https://github.com/googleapis/java-spanner/commit/c911381c2ca9cd46fbeb831c659aaf55f21437f2))
+* Update dependency net.bytebuddy:byte-buddy-agent to v1.17.8 ([#4155](https://github.com/googleapis/java-spanner/issues/4155)) ([3075df7](https://github.com/googleapis/java-spanner/commit/3075df714b1787512174b3f18cbc802359d442dc))
+* Update googleapis/sdk-platform-java action to v2.63.0 ([#4179](https://github.com/googleapis/java-spanner/issues/4179)) ([5f48191](https://github.com/googleapis/java-spanner/commit/5f481913d60372fccf399c5c0e168b7d0c553ba0))
+
+
+### Documentation
+
+* Add warning for encoded credential ([#4182](https://github.com/googleapis/java-spanner/issues/4182)) ([92620f9](https://github.com/googleapis/java-spanner/commit/92620f969908a8ba7fcf92d0b350a8c4d05398f8))
+
+## [6.102.0](https://github.com/googleapis/java-spanner/compare/v6.101.1...v6.102.0) (2025-10-08)
+
+
+### Features
+
+* Add connection property for gRPC interceptor provider ([#4149](https://github.com/googleapis/java-spanner/issues/4149)) ([deb8dff](https://github.com/googleapis/java-spanner/commit/deb8dff6c01c37a3158e8f4a28ef5e821d10092a))
+* Support statement_timeout in connection url ([#4103](https://github.com/googleapis/java-spanner/issues/4103)) ([542c6aa](https://github.com/googleapis/java-spanner/commit/542c6aa63bfdd526070f14cb76921dd34527c1f9))
+
+
+### Bug Fixes
+
+* Automatically set default_sequence_kind for CREATE SEQUENCE ([#4105](https://github.com/googleapis/java-spanner/issues/4105)) ([3beea6a](https://github.com/googleapis/java-spanner/commit/3beea6ac4eb53b70db34e0a2d2e33e56f450c88b))
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.62.3 ([7047a3a](https://github.com/googleapis/java-spanner/commit/7047a3ae31aae51e9e23758fe004b93855a0ee4b))
+
+
+### Dependencies
+
+* Update actions/checkout action to v5 ([#4069](https://github.com/googleapis/java-spanner/issues/4069)) ([4c88eb9](https://github.com/googleapis/java-spanner/commit/4c88eb91a321aa718f957296012f9e7501c7caec))
+* Update actions/checkout action to v5 ([#4106](https://github.com/googleapis/java-spanner/issues/4106)) ([14ebdb3](https://github.com/googleapis/java-spanner/commit/14ebdb35c33442c4e0f70d63dce3425edb730525))
+* Update actions/setup-java action to v5 ([#4071](https://github.com/googleapis/java-spanner/issues/4071)) ([e23134a](https://github.com/googleapis/java-spanner/commit/e23134a2f864e8abd2890ac3a81ff6b668afbe63))
+* Update all dependencies ([#4099](https://github.com/googleapis/java-spanner/issues/4099)) ([b262edc](https://github.com/googleapis/java-spanner/commit/b262edcfc4713bb64986bc4acd3f02b69d3367f8))
+* Update dependency com.google.api.grpc:grpc-google-cloud-monitoring-v3 to v3.77.0 ([#4117](https://github.com/googleapis/java-spanner/issues/4117)) ([2451ca2](https://github.com/googleapis/java-spanner/commit/2451ca2abe1dd2de3907b88e8d18beab1a15a634))
+* Update dependency com.google.api.grpc:proto-google-cloud-monitoring-v3 to v3.77.0 ([#4143](https://github.com/googleapis/java-spanner/issues/4143)) ([6c9dc26](https://github.com/googleapis/java-spanner/commit/6c9dc26330cf66f196adc2203323a482e08f0325))
+* Update dependency com.google.api.grpc:proto-google-cloud-trace-v1 to v2.76.0 ([#4144](https://github.com/googleapis/java-spanner/issues/4144)) ([d566a42](https://github.com/googleapis/java-spanner/commit/d566a4295be018070169ba082a018394a2e60b45))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.77.0 ([#4145](https://github.com/googleapis/java-spanner/issues/4145)) ([8917c05](https://github.com/googleapis/java-spanner/commit/8917c054410e4035d6d4e201e43599d5ddc1fadd))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.77.0 ([#4146](https://github.com/googleapis/java-spanner/issues/4146)) ([4ebea1a](https://github.com/googleapis/java-spanner/commit/4ebea1adf726069084087ce46900f3174658055c))
+* Update dependency com.google.cloud:google-cloud-trace to v2.76.0 ([#4147](https://github.com/googleapis/java-spanner/issues/4147)) ([4b1d4af](https://github.com/googleapis/java-spanner/commit/4b1d4af19336e493af38a1e58c95786da3892d34))
+* Update dependency com.google.cloud:google-cloud-trace to v2.76.0 ([#4148](https://github.com/googleapis/java-spanner/issues/4148)) ([8f91a89](https://github.com/googleapis/java-spanner/commit/8f91a894771653213b6fcded5795349ad7ea6724))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.52.3 ([#4107](https://github.com/googleapis/java-spanner/issues/4107)) ([8a8a042](https://github.com/googleapis/java-spanner/commit/8a8a042494b092b3dddd0c9606a63197d8a23555))
+* Update dependency org.json:json to v20250517 ([#3881](https://github.com/googleapis/java-spanner/issues/3881)) ([5658c83](https://github.com/googleapis/java-spanner/commit/5658c8378aa2e8028d4ef7dfaf94b647f33cd812))
+* Update googleapis/sdk-platform-java action to v2.62.3 ([#4108](https://github.com/googleapis/java-spanner/issues/4108)) ([65913ec](https://github.com/googleapis/java-spanner/commit/65913ec0638fec4ea536cf42f8fe25460133f68e))
+
 ## [6.101.1](https://github.com/googleapis/java-spanner/compare/v6.101.0...v6.101.1) (2025-09-26)
 
 
