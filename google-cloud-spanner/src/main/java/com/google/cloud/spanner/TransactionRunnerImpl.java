@@ -559,7 +559,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     span.addAnnotation("Commit Failed", resultException);
                     opSpan.setStatus(resultException);
                     opSpan.end();
-                    res.setException(onError(resultException, false));
+                    res.setException(
+                        onError(
+                            resultException,
+                            /* withBeginTransaction= */ false,
+                            /* lastStatement= */ true));
                   } catch (Throwable unexpectedError) {
                     // This is a safety precaution to make sure that a result is always returned.
                     res.setException(unexpectedError);
@@ -759,8 +763,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
-    public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
-      e = super.onError(e, withBeginTransaction);
+    public SpannerException onError(
+        SpannerException e, boolean withBeginTransaction, boolean lastStatement) {
+      e = super.onError(e, withBeginTransaction, lastStatement);
 
       // If the statement that caused an error was the statement that included a BeginTransaction
       // option, we simulate an aborted transaction to force a retry of the entire transaction. This
@@ -770,13 +775,17 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // statement are included in the transaction, even if the statement again causes an error
       // during the retry.
       if (withBeginTransaction) {
-        // Simulate an aborted transaction to force a retry with a new transaction.
-        this.transactionIdFuture.setException(
-            SpannerExceptionFactory.newSpannerException(
-                ErrorCode.ABORTED,
-                "Aborted due to failed initial statement",
-                SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
-                    "Aborted due to failed initial statement", e, 0, 1)));
+        if (lastStatement) {
+          this.transactionIdFuture.setException(e);
+        } else {
+          // Simulate an aborted transaction to force a retry with a new transaction.
+          this.transactionIdFuture.setException(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.ABORTED,
+                  "Aborted due to failed initial statement",
+                  SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
+                      "Aborted due to failed initial statement", e, 0, 1)));
+        }
       }
       SpannerException exceptionToThrow;
       if (withBeginTransaction
@@ -950,7 +959,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         return resultSet;
       } catch (Throwable t) {
         throw onError(
-            SpannerExceptionFactory.asSpannerException(t), builder.getTransaction().hasBegin());
+            SpannerExceptionFactory.asSpannerException(t),
+            builder.getTransaction().hasBegin(),
+            builder.getLastStatement());
       }
     }
 
@@ -1008,7 +1019,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 input -> {
                   SpannerException e = SpannerExceptionFactory.asSpannerException(input);
                   SpannerException exceptionToThrow =
-                      onError(e, builder.getTransaction().hasBegin());
+                      onError(e, builder.getTransaction().hasBegin(), builder.getLastStatement());
                   span.setStatus(exceptionToThrow);
                   throw exceptionToThrow;
                 },
@@ -1099,7 +1110,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           return results;
         } catch (Throwable e) {
           throw onError(
-              SpannerExceptionFactory.asSpannerException(e), builder.getTransaction().hasBegin());
+              SpannerExceptionFactory.asSpannerException(e),
+              builder.getTransaction().hasBegin(),
+              builder.getLastStatements());
         }
       } catch (Throwable throwable) {
         span.setStatus(throwable);
@@ -1178,7 +1191,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 input -> {
                   SpannerException e = SpannerExceptionFactory.asSpannerException(input);
                   SpannerException exceptionToThrow =
-                      onError(e, builder.getTransaction().hasBegin());
+                      onError(e, builder.getTransaction().hasBegin(), builder.getLastStatements());
                   span.setStatus(exceptionToThrow);
                   throw exceptionToThrow;
                 },

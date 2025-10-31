@@ -75,7 +75,8 @@ public class GrpcResultSetTest {
         throws SpannerException {}
 
     @Override
-    public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+    public SpannerException onError(
+        SpannerException e, boolean withBeginTransaction, boolean lastStatement) {
       return e;
     }
 
@@ -88,7 +89,9 @@ public class GrpcResultSetTest {
 
   @Before
   public void setUp() {
-    stream = new GrpcStreamIterator(10, /* cancelQueryWhenClientIsClosed= */ false);
+    stream =
+        new GrpcStreamIterator(
+            /* lastStatement= */ false, 10, /* cancelQueryWhenClientIsClosed= */ false);
     stream.setCall(
         new SpannerRpc.StreamingCall() {
           @Override
