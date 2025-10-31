@@ -73,11 +73,9 @@ public class XGoogSpannerRequestIdTest {
     private Set<String> checkMethods;
 
     ServerHeaderEnforcer(Set<String> checkMethods) {
-      this.gotValues = new CopyOnWriteArrayList<String>();
-      this.unaryResults =
-          new ConcurrentHashMap<String, CopyOnWriteArrayList<XGoogSpannerRequestId>>();
-      this.streamingResults =
-          new ConcurrentHashMap<String, CopyOnWriteArrayList<XGoogSpannerRequestId>>();
+      this.gotValues = new CopyOnWriteArrayList<>();
+      this.unaryResults = new ConcurrentHashMap<>();
+      this.streamingResults = new ConcurrentHashMap<>();
       this.checkMethods = checkMethods;
     }
 
@@ -139,6 +137,11 @@ public class XGoogSpannerRequestIdTest {
     }
 
     private void assertMonotonicityOfIds(String prefix, List<XGoogSpannerRequestId> reqIds) {
+      reqIds.sort(
+          (id1, id2) -> {
+            if (id1.equals(id2)) return 0;
+            return id1.isGreaterThan(id2) ? 1 : -1;
+          });
       int size = reqIds.size();
 
       List<String> violations = new ArrayList<>();
@@ -161,7 +164,7 @@ public class XGoogSpannerRequestIdTest {
     }
 
     public MethodAndRequestId[] accumulatedUnaryValues() {
-      List<MethodAndRequestId> accumulated = new ArrayList();
+      List<MethodAndRequestId> accumulated = new ArrayList<>();
       this.unaryResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
             for (int i = 0; i < values.size(); i++) {
@@ -172,7 +175,7 @@ public class XGoogSpannerRequestIdTest {
     }
 
     public MethodAndRequestId[] accumulatedStreamingValues() {
-      List<MethodAndRequestId> accumulated = new ArrayList();
+      List<MethodAndRequestId> accumulated = new ArrayList<>();
       this.streamingResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
             for (int i = 0; i < values.size(); i++) {
@@ -308,7 +311,13 @@ public class XGoogSpannerRequestIdTest {
           || mreq.method.compareTo("google.spanner.v1.Spanner/CreateSession") == 0
           || mreq.method.compareTo("google.spanner.v1.Spanner/Commit") == 0) {
         mreqs[i] =
-            new MethodAndRequestId(mreq.method, mreq.requestId.withNthClientId(NON_DETERMINISTIC));
+            new MethodAndRequestId(
+                mreq.method,
+                mreq.requestId
+                    .withNthClientId(NON_DETERMINISTIC)
+                    .withChannelId(NON_DETERMINISTIC)
+                    .withNthRequest(NON_DETERMINISTIC)
+                    .withAttempt(NON_DETERMINISTIC));
       }
     }
   }
