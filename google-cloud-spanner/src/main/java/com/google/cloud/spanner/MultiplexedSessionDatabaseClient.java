@@ -247,8 +247,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
                     || spannerException instanceof InstanceNotFoundException
                     || spannerException instanceof SessionNotFoundException)) {
               // This could in theory set this field more than once, but we don't want to bother
-              // with
-              // synchronizing, as it does not really matter exactly which error is set.
+              // with synchronizing, as it does not really matter exactly which error is set.
               MultiplexedSessionDatabaseClient.this.resourceNotFoundException.set(
                   (ResourceNotFoundException) spannerException);
             }
