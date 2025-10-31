@@ -2049,7 +2049,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
     if (options != null) {
       // TODO(@odeke-em): Infer the affinity if it doesn't match up with in the request-id.
-      context = withRequestId(context, options);
+      context = withRequestId(context, options, method);
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
@@ -2067,15 +2067,44 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (configurator != null) {
       apiCallContextFromContext = configurator.configure(context, request, method);
     }
+
+    // Debug the call headers before this.
+    Map<String, List<String>> hdrs = context.getExtraHeaders();
+    if (false
+        && method != null
+        && method.getFullMethodName().compareTo("google.spanner.v1.Spanner/DeleteSession") != 0) {
+      System.out.println(
+          "\033[32mextraHeaders going out for " + method.getFullMethodName() + "\033[00m");
+      for (Map.Entry<String, List<String>> entry : hdrs.entrySet()) {
+        System.out.println(
+            "\t\033[36mcall.Key: " + entry.getKey() + ":: " + entry.getValue() + "\033[00m");
+      }
+    }
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
   }
 
-  GrpcCallContext withRequestId(GrpcCallContext context, Map<SpannerRpc.Option, ?> options) {
+  <ReqT, RespT> GrpcCallContext withRequestId(
+      GrpcCallContext context,
+      Map<SpannerRpc.Option, ?> options,
+      MethodDescriptor<ReqT, RespT> method) {
     XGoogSpannerRequestId reqId = (XGoogSpannerRequestId) options.get(Option.REQUEST_ID);
     if (reqId == null) {
       return context;
     }
 
+    if (false
+        && method != null
+        && method.getFullMethodName().compareTo("google.spanner.v1.Spanner/ExecuteStreamingSql")
+            == 0) {
+      System.out.println(
+          "\033[36mGapiSpannerRpc.withRequestId: "
+              + reqId
+              + " for: "
+              + method.getFullMethodName()
+              + " "
+              + System.identityHashCode(context)
+              + "\033[00m");
+    }
     Map<String, List<String>> withReqId =
         ImmutableMap.of(
             XGoogSpannerRequestId.REQUEST_HEADER_KEY.name(),
