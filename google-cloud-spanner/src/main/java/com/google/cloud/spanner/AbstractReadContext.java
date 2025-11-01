@@ -818,7 +818,11 @@ abstract class AbstractReadContext
               @Nullable ByteString resumeToken,
               AsyncResultSet.StreamMessageListener streamListener) {
             GrpcStreamIterator stream =
-                new GrpcStreamIterator(statement, prefetchChunks, cancelQueryWhenClientIsClosed);
+                new GrpcStreamIterator(
+                    statement,
+                    request.getLastStatement(),
+                    prefetchChunks,
+                    cancelQueryWhenClientIsClosed);
             if (streamListener != null) {
               stream.registerListener(streamListener);
             }
@@ -935,7 +939,8 @@ abstract class AbstractReadContext
   public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {}
 
   @Override
-  public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+  public SpannerException onError(
+      SpannerException e, boolean withBeginTransaction, boolean lastStatement) {
     this.session.onError(e);
     return e;
   }
@@ -1009,6 +1014,8 @@ abstract class AbstractReadContext
     }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
+    final boolean lastStatement =
+        readOptions.hasLastStatement() ? readOptions.isLastStatement() : false;
     ResumableStreamIterator stream =
         new ResumableStreamIterator(
             MAX_BUFFERED_CHUNKS,
@@ -1025,7 +1032,8 @@ abstract class AbstractReadContext
               @Nullable ByteString resumeToken,
               AsyncResultSet.StreamMessageListener streamListener) {
             GrpcStreamIterator stream =
-                new GrpcStreamIterator(prefetchChunks, cancelQueryWhenClientIsClosed);
+                new GrpcStreamIterator(
+                    lastStatement, prefetchChunks, cancelQueryWhenClientIsClosed);
             if (streamListener != null) {
               stream.registerListener(streamListener);
             }

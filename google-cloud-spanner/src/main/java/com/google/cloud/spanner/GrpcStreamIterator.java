@@ -49,20 +49,26 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
 
   private SpannerRpc.StreamingCall call;
   private volatile boolean withBeginTransaction;
+  private final boolean lastStatement;
   private TimeUnit streamWaitTimeoutUnit;
   private long streamWaitTimeoutValue;
   private SpannerException error;
   private boolean done;
 
   @VisibleForTesting
-  GrpcStreamIterator(int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
-    this(null, prefetchChunks, cancelQueryWhenClientIsClosed);
+  GrpcStreamIterator(
+      boolean lastStatement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
+    this(null, lastStatement, prefetchChunks, cancelQueryWhenClientIsClosed);
   }
 
   @VisibleForTesting
   GrpcStreamIterator(
-      Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
+      Statement statement,
+      boolean lastStatement,
+      int prefetchChunks,
+      boolean cancelQueryWhenClientIsClosed) {
     this.statement = statement;
+    this.lastStatement = lastStatement;
     this.prefetchChunks = prefetchChunks;
     this.consumer = new ConsumerImpl(cancelQueryWhenClientIsClosed);
     // One extra to allow for END_OF_STREAM message.
@@ -116,6 +122,11 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   @Override
   public boolean isWithBeginTransaction() {
     return withBeginTransaction;
+  }
+
+  @Override
+  public boolean isLastStatement() {
+    return lastStatement;
   }
 
   @Override
