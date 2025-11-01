@@ -243,6 +243,11 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
   }
 
   @Override
+  public boolean isLastStatement() {
+    return stream != null && stream.isLastStatement();
+  }
+
+  @Override
   @InternalApi
   public boolean initiateStreaming(AsyncResultSet.StreamMessageListener streamMessageListener) {
     this.streamMessageListener = streamMessageListener;

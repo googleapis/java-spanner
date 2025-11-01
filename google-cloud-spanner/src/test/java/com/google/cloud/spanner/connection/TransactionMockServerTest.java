@@ -26,16 +26,19 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import io.grpc.Deadline.Ticker;
+import io.grpc.Status;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,6 +114,54 @@ public class TransactionMockServerTest extends AbstractMockServerTest {
         readLockMode, request.getTransaction().getBegin().getReadWrite().getReadLockMode());
     assertFalse(request.getLastStatement());
     assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testFailedFirstDml() {
+    Statement invalidInsert = Statement.of("insert into my_table (id, name) values (1, 'test')");
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.exception(
+            invalidInsert,
+            Status.ALREADY_EXISTS.withDescription("Row 1 already exists").asRuntimeException()));
+
+    try (Connection connection = createConnection()) {
+      SpannerException exception =
+          assertThrows(SpannerException.class, () -> connection.executeUpdate(invalidInsert));
+      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
+      connection.commit();
+    }
+    // The transaction should be internally retried with an explicit BeginTransaction request, as
+    // the first statement in the transaction failed.
+    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testFailedFirstAndLastDml() {
+    Statement invalidInsert =
+        Statement.of("insert into my_table (id, name) values (1, 'test') then return id");
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.exception(
+            invalidInsert,
+            Status.ALREADY_EXISTS.withDescription("Row 1 already exists").asRuntimeException()));
+
+    try (Connection connection = createConnection()) {
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.executeQuery(invalidInsert, Options.lastStatement()));
+      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
+
+      // The same error should be repeated for the commit.
+      exception = assertThrows(SpannerException.class, connection::commit);
+      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
+    }
+    // The transaction should be not be retried, as the last_statement flag was set.
+    assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    // There is no CommitRequest, because the statement never returned a transaction ID.
+    assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test
