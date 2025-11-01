@@ -49,6 +49,8 @@ public class SessionPoolUnbalancedTest {
 
   static PooledSessionFuture mockedCheckedOutSession(int channel) {
     PooledSession session = mockedSession(channel);
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("DoNotMock")
     PooledSessionFuture future = mock(PooledSessionFuture.class);
     when(future.get()).thenReturn(session);
     when(future.isDone()).thenReturn(true);
