@@ -140,6 +140,11 @@ public class ResumableStreamIteratorTest {
     public boolean isWithBeginTransaction() {
       return false;
     }
+
+    @Override
+    public boolean isLastStatement() {
+      return false;
+    }
   }
 
   Starter starter = Mockito.mock(Starter.class);

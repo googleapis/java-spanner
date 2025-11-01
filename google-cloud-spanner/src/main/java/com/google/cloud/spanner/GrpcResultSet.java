@@ -109,7 +109,8 @@ class GrpcResultSet extends AbstractResultSet<List<Object>>
     } catch (Throwable t) {
       throw yieldError(
           SpannerExceptionFactory.asSpannerException(t),
-          iterator.isWithBeginTransaction() && currRow == null);
+          iterator.isWithBeginTransaction() && currRow == null,
+          iterator.isLastStatement());
     }
   }
 
@@ -149,8 +150,9 @@ class GrpcResultSet extends AbstractResultSet<List<Object>>
     return currRow.getType();
   }
 
-  private SpannerException yieldError(SpannerException e, boolean beginTransaction) {
-    SpannerException toThrow = listener.onError(e, beginTransaction);
+  private SpannerException yieldError(
+      SpannerException e, boolean beginTransaction, boolean lastStatement) {
+    SpannerException toThrow = listener.onError(e, beginTransaction, lastStatement);
     close();
     throw toThrow;
   }
