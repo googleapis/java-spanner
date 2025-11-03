@@ -56,7 +56,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         throws SpannerException;
 
     /** Called when the read finishes with an error. Returns the error that should be thrown. */
-    SpannerException onError(SpannerException e, boolean withBeginTransaction);
+    SpannerException onError(
+        SpannerException e, boolean withBeginTransaction, boolean lastStatement);
 
     /** Called when the read finishes normally. */
     void onDone(boolean withBeginTransaction);
@@ -152,6 +153,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     void close(@Nullable String message);
 
     boolean isWithBeginTransaction();
+
+    boolean isLastStatement();
 
     /**
      * @param streamMessageListener A class object which implements StreamMessageListener

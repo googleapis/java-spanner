@@ -48,6 +48,11 @@ public class ResultSetsHelper {
           }
 
           @Override
+          public boolean isLastStatement() {
+            return false;
+          }
+
+          @Override
           public boolean hasNext() {
             return first || iterator.hasNext();
           }
@@ -77,7 +82,8 @@ public class ResultSetsHelper {
               throws SpannerException {}
 
           @Override
-          public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+          public SpannerException onError(
+              SpannerException e, boolean withBeginTransaction, boolean isLastStatement) {
             return e;
           }
 
