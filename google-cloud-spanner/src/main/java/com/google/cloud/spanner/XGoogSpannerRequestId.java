@@ -35,7 +35,7 @@ public class XGoogSpannerRequestId {
   @VisibleForTesting
   static final String RAND_PROCESS_ID = XGoogSpannerRequestId.generateRandProcessId();
 
-  static String REQUEST_ID = "x-goog-spanner-request-id";
+  public static String REQUEST_ID = "x-goog-spanner-request-id";
   public static final Metadata.Key<String> REQUEST_HEADER_KEY =
       Metadata.Key.of(REQUEST_ID, Metadata.ASCII_STRING_MARSHALLER);
 
