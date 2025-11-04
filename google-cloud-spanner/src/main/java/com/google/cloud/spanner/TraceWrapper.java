@@ -60,6 +60,7 @@ class TraceWrapper {
   private final Tracer openCensusTracer;
   private final io.opentelemetry.api.trace.Tracer openTelemetryTracer;
   private final boolean enableExtendedTracing;
+  private final Attributes commonAttributes;
 
   TraceWrapper(
       Tracer openCensusTracer,
@@ -68,20 +69,25 @@ class TraceWrapper {
     this.openTelemetryTracer = openTelemetryTracer;
     this.openCensusTracer = openCensusTracer;
     this.enableExtendedTracing = enableExtendedTracing;
+    this.commonAttributes = createCommonAttributes();
   }
 
   ISpan spanBuilder(String spanName) {
     return spanBuilder(spanName, Attributes.empty());
   }
 
-  ISpan spanBuilder(String spanName, Attributes commonAttributes, TransactionOption... options) {
-    return spanBuilder(spanName, createTransactionAttributes(commonAttributes, options));
+  ISpan spanBuilder(String spanName, Attributes attributes, TransactionOption... options) {
+    return spanBuilder(spanName, createTransactionAttributes(attributes, options));
   }
 
   ISpan spanBuilder(String spanName, Attributes attributes) {
     if (SpannerOptions.getActiveTracingFramework().equals(TracingFramework.OPEN_TELEMETRY)) {
       return new OpenTelemetrySpan(
-          openTelemetryTracer.spanBuilder(spanName).setAllAttributes(attributes).startSpan());
+          openTelemetryTracer
+              .spanBuilder(spanName)
+              .setAllAttributes(attributes)
+              .setAllAttributes(commonAttributes)
+              .startSpan());
     } else {
       return new OpenCensusSpan(openCensusTracer.spanBuilder(spanName).startSpan());
     }
@@ -209,10 +215,15 @@ class TraceWrapper {
     return builder.build();
   }
 
-  Attributes createCommonAttributes(DatabaseId db) {
+  Attributes createDatabaseAttributes(DatabaseId db) {
     AttributesBuilder builder = Attributes.builder();
     builder.put(DB_NAME_KEY, db.getDatabase());
     builder.put(INSTANCE_NAME_KEY, db.getInstanceId().getInstance());
+    return builder.build();
+  }
+
+  private Attributes createCommonAttributes() {
+    AttributesBuilder builder = Attributes.builder();
     builder.put(GCP_CLIENT_SERVICE_KEY, "spanner");
     builder.put(GCP_CLIENT_REPO_KEY, "googleapis/java-spanner");
     builder.put(GCP_CLIENT_VERSION_KEY, GaxProperties.getLibraryVersion(TraceWrapper.class));
