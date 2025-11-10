@@ -24,6 +24,8 @@ import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
+import com.google.common.truth.IntegerSubject;
 import com.google.monitoring.v3.ListTimeSeriesRequest;
 import com.google.monitoring.v3.ListTimeSeriesResponse;
 import com.google.monitoring.v3.ProjectName;
@@ -132,14 +134,26 @@ public class ITBuiltInMetricsTest {
       // disabled.
       // Keeping this check to enable this check in the future.
       if (metric.equals("afe_latencies")) {
-        assertWithMessage("Metric " + metric + " returned data.")
-            .that(response.getTimeSeriesCount())
-            .isEqualTo(0);
+        IntegerSubject subject =
+            assertWithMessage("Metric " + metric + " returned data.")
+                .that(response.getTimeSeriesCount());
+        if (isProduction()) {
+          subject.isEqualTo(0);
+        } else {
+          subject.isGreaterThan(0);
+        }
+
       } else {
         assertWithMessage("Metric " + metric + " didn't return any data.")
             .that(response.getTimeSeriesCount())
             .isGreaterThan(0);
       }
     }
+  }
+
+  private boolean isProduction() {
+    String jobType = System.getenv("JOB_TYPE");
+    return !Strings.isNullOrEmpty(jobType)
+        && !(jobType.contains("devel") || jobType.contains("staging"));
   }
 }
