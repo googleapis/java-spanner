@@ -153,7 +153,6 @@ public class ITBuiltInMetricsTest {
 
   private boolean isAfeMetricEnabled() {
     String jobType = System.getenv("JOB_TYPE");
-    return !Strings.isNullOrEmpty(jobType)
-        && jobType.contains("devel");
+    return !Strings.isNullOrEmpty(jobType) && jobType.contains("devel");
   }
 }
