@@ -137,10 +137,10 @@ public class ITBuiltInMetricsTest {
         IntegerSubject subject =
             assertWithMessage("Metric " + metric + " returned data.")
                 .that(response.getTimeSeriesCount());
-        if (isProduction()) {
-          subject.isEqualTo(0);
-        } else {
+        if (isAfeMetricEnabled()) {
           subject.isGreaterThan(0);
+        } else {
+          subject.isEqualTo(0);
         }
 
       } else {
@@ -151,9 +151,8 @@ public class ITBuiltInMetricsTest {
     }
   }
 
-  private boolean isProduction() {
+  private boolean isAfeMetricEnabled() {
     String jobType = System.getenv("JOB_TYPE");
-    return !Strings.isNullOrEmpty(jobType)
-        && !(jobType.contains("devel") || jobType.contains("staging"));
+    return !Strings.isNullOrEmpty(jobType) && jobType.contains("devel");
   }
 }
