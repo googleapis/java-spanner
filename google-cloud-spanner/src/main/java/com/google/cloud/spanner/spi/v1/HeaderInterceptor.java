@@ -125,7 +125,7 @@ class HeaderInterceptor implements ClientInterceptor {
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
-                  // If call contains ALTS information.
+                  // Check if the call uses DirectPath by inspecting the ALTS context.
                   boolean isDirectPathUsed = AltsContextUtil.check(call);
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
                   processHeader(
