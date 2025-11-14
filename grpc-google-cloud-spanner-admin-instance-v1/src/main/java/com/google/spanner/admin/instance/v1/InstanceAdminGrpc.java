@@ -41,9 +41,6 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * databases in that instance, and their performance may suffer.
  * </pre>
  */
-@javax.annotation.Generated(
-    value = "by gRPC proto compiler",
-    comments = "Source: google/spanner/admin/instance/v1/spanner_instance_admin.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class InstanceAdminGrpc {
 
@@ -2462,8 +2459,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse listInstanceConfigs(
-        com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListInstanceConfigsMethod(), getCallOptions(), request);
     }
 
@@ -2475,8 +2473,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig(
-        com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetInstanceConfigMethod(), getCallOptions(), request);
     }
 
@@ -2520,8 +2519,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation createInstanceConfig(
-        com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getCreateInstanceConfigMethod(), getCallOptions(), request);
     }
 
@@ -2567,8 +2567,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation updateInstanceConfig(
-        com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getUpdateInstanceConfigMethod(), getCallOptions(), request);
     }
 
@@ -2585,8 +2586,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.protobuf.Empty deleteInstanceConfig(
-        com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getDeleteInstanceConfigMethod(), getCallOptions(), request);
     }
 
@@ -2609,8 +2611,9 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
         listInstanceConfigOperations(
-            com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+            com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest request)
+            throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListInstanceConfigOperationsMethod(), getCallOptions(), request);
     }
 
@@ -2622,8 +2625,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.instance.v1.ListInstancesResponse listInstances(
-        com.google.spanner.admin.instance.v1.ListInstancesRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.ListInstancesRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListInstancesMethod(), getCallOptions(), request);
     }
 
@@ -2636,8 +2640,9 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
         listInstancePartitions(
-            com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+            com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest request)
+            throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListInstancePartitionsMethod(), getCallOptions(), request);
     }
 
@@ -2649,8 +2654,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.instance.v1.Instance getInstance(
-        com.google.spanner.admin.instance.v1.GetInstanceRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.GetInstanceRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetInstanceMethod(), getCallOptions(), request);
     }
 
@@ -2688,8 +2694,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation createInstance(
-        com.google.spanner.admin.instance.v1.CreateInstanceRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.CreateInstanceRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getCreateInstanceMethod(), getCallOptions(), request);
     }
 
@@ -2731,8 +2738,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation updateInstance(
-        com.google.spanner.admin.instance.v1.UpdateInstanceRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.UpdateInstanceRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getUpdateInstanceMethod(), getCallOptions(), request);
     }
 
@@ -2750,8 +2758,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.protobuf.Empty deleteInstance(
-        com.google.spanner.admin.instance.v1.DeleteInstanceRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.DeleteInstanceRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getDeleteInstanceMethod(), getCallOptions(), request);
     }
 
@@ -2765,8 +2774,9 @@ public final class InstanceAdminGrpc {
      * [resource][google.iam.v1.SetIamPolicyRequest.resource].
      * </pre>
      */
-    public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+    public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
     }
 
@@ -2780,8 +2790,9 @@ public final class InstanceAdminGrpc {
      * [resource][google.iam.v1.GetIamPolicyRequest.resource].
      * </pre>
      */
-    public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+    public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
     }
 
@@ -2797,8 +2808,8 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.iam.v1.TestIamPermissionsResponse testIamPermissions(
-        com.google.iam.v1.TestIamPermissionsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.iam.v1.TestIamPermissionsRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getTestIamPermissionsMethod(), getCallOptions(), request);
     }
 
@@ -2810,8 +2821,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.instance.v1.InstancePartition getInstancePartition(
-        com.google.spanner.admin.instance.v1.GetInstancePartitionRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.GetInstancePartitionRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetInstancePartitionMethod(), getCallOptions(), request);
     }
 
@@ -2852,8 +2864,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation createInstancePartition(
-        com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getCreateInstancePartitionMethod(), getCallOptions(), request);
     }
 
@@ -2870,8 +2883,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.protobuf.Empty deleteInstancePartition(
-        com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getDeleteInstancePartitionMethod(), getCallOptions(), request);
     }
 
@@ -2917,8 +2931,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation updateInstancePartition(
-        com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getUpdateInstancePartitionMethod(), getCallOptions(), request);
     }
 
@@ -2943,8 +2958,9 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse
         listInstancePartitionOperations(
-            com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+            com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest request)
+            throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListInstancePartitionOperationsMethod(), getCallOptions(), request);
     }
 
@@ -3005,8 +3021,9 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation moveInstance(
-        com.google.spanner.admin.instance.v1.MoveInstanceRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.instance.v1.MoveInstanceRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getMoveInstanceMethod(), getCallOptions(), request);
     }
   }
