@@ -1057,4 +1057,9 @@
     <differenceType>8001</differenceType>
     <className>com/google/cloud/spanner/LatencyTest</className>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.lang.Object getConnectionPropertyValue(com.google.cloud.spanner.connection.ConnectionProperty)</method>
+  </difference>
 </differences>
