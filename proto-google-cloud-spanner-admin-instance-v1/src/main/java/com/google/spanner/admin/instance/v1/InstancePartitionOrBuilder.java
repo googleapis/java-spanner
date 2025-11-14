@@ -204,6 +204,58 @@ public interface InstancePartitionOrBuilder
    *
    *
    * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, fields in compute_capacity are
+   * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance partition.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the autoscalingConfig field is set.
+   */
+  boolean hasAutoscalingConfig();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, fields in compute_capacity are
+   * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance partition.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The autoscalingConfig.
+   */
+  com.google.spanner.admin.instance.v1.AutoscalingConfig getAutoscalingConfig();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, fields in compute_capacity are
+   * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance partition.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder getAutoscalingConfigOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
    * Output only. The current instance partition state.
    * </pre>
    *
@@ -399,7 +451,7 @@ public interface InstancePartitionOrBuilder
    * </code>
    *
    * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
    * @return A list containing the referencingBackups.
    */
   @java.lang.Deprecated
@@ -421,7 +473,7 @@ public interface InstancePartitionOrBuilder
    * </code>
    *
    * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
    * @return The count of referencingBackups.
    */
   @java.lang.Deprecated
@@ -443,7 +495,7 @@ public interface InstancePartitionOrBuilder
    * </code>
    *
    * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
    * @param index The index of the element to return.
    * @return The referencingBackups at the given index.
    */
@@ -466,7 +518,7 @@ public interface InstancePartitionOrBuilder
    * </code>
    *
    * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
    * @param index The index of the value to return.
    * @return The bytes of the referencingBackups at the given index.
    */

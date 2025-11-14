@@ -568,6 +568,75 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
     return 0;
   }
 
+  public static final int AUTOSCALING_CONFIG_FIELD_NUMBER = 13;
+  private com.google.spanner.admin.instance.v1.AutoscalingConfig autoscalingConfig_;
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, fields in compute_capacity are
+   * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance partition.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the autoscalingConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasAutoscalingConfig() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, fields in compute_capacity are
+   * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance partition.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The autoscalingConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.AutoscalingConfig getAutoscalingConfig() {
+    return autoscalingConfig_ == null
+        ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+        : autoscalingConfig_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, fields in compute_capacity are
+   * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance partition.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder
+      getAutoscalingConfigOrBuilder() {
+    return autoscalingConfig_ == null
+        ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+        : autoscalingConfig_;
+  }
+
   public static final int STATE_FIELD_NUMBER = 7;
   private int state_ = 0;
 
@@ -628,7 +697,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    */
   @java.lang.Override
   public boolean hasCreateTime() {
-    return ((bitField0_ & 0x00000001) != 0);
+    return ((bitField0_ & 0x00000002) != 0);
   }
 
   /**
@@ -681,7 +750,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    */
   @java.lang.Override
   public boolean hasUpdateTime() {
-    return ((bitField0_ & 0x00000002) != 0);
+    return ((bitField0_ & 0x00000004) != 0);
   }
 
   /**
@@ -824,7 +893,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    * </code>
    *
    * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
    * @return A list containing the referencingBackups.
    */
   @java.lang.Deprecated
@@ -848,7 +917,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    * </code>
    *
    * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
    * @return The count of referencingBackups.
    */
   @java.lang.Deprecated
@@ -872,7 +941,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    * </code>
    *
    * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
    * @param index The index of the element to return.
    * @return The referencingBackups at the given index.
    */
@@ -897,7 +966,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
    * </code>
    *
    * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+   *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
    * @param index The index of the value to return.
    * @return The bytes of the referencingBackups at the given index.
    */
@@ -1011,10 +1080,10 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
             .getNumber()) {
       output.writeEnum(7, state_);
     }
-    if (((bitField0_ & 0x00000001) != 0)) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(8, getCreateTime());
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       output.writeMessage(9, getUpdateTime());
     }
     for (int i = 0; i < referencingDatabases_.size(); i++) {
@@ -1026,6 +1095,9 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(etag_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 12, etag_);
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(13, getAutoscalingConfig());
     }
     getUnknownFields().writeTo(output);
   }
@@ -1060,10 +1132,10 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
             .getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(7, state_);
     }
-    if (((bitField0_ & 0x00000001) != 0)) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, getCreateTime());
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(9, getUpdateTime());
     }
     {
@@ -1085,6 +1157,9 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(etag_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, etag_);
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(13, getAutoscalingConfig());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1104,6 +1179,10 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
     if (!getName().equals(other.getName())) return false;
     if (!getConfig().equals(other.getConfig())) return false;
     if (!getDisplayName().equals(other.getDisplayName())) return false;
+    if (hasAutoscalingConfig() != other.hasAutoscalingConfig()) return false;
+    if (hasAutoscalingConfig()) {
+      if (!getAutoscalingConfig().equals(other.getAutoscalingConfig())) return false;
+    }
     if (state_ != other.state_) return false;
     if (hasCreateTime() != other.hasCreateTime()) return false;
     if (hasCreateTime()) {
@@ -1144,6 +1223,10 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
     hash = (53 * hash) + getConfig().hashCode();
     hash = (37 * hash) + DISPLAY_NAME_FIELD_NUMBER;
     hash = (53 * hash) + getDisplayName().hashCode();
+    if (hasAutoscalingConfig()) {
+      hash = (37 * hash) + AUTOSCALING_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getAutoscalingConfig().hashCode();
+    }
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
     if (hasCreateTime()) {
@@ -1319,6 +1402,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
 
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
+        getAutoscalingConfigFieldBuilder();
         getCreateTimeFieldBuilder();
         getUpdateTimeFieldBuilder();
       }
@@ -1331,6 +1415,11 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       name_ = "";
       config_ = "";
       displayName_ = "";
+      autoscalingConfig_ = null;
+      if (autoscalingConfigBuilder_ != null) {
+        autoscalingConfigBuilder_.dispose();
+        autoscalingConfigBuilder_ = null;
+      }
       state_ = 0;
       createTime_ = null;
       if (createTimeBuilder_ != null) {
@@ -1393,27 +1482,34 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.displayName_ = displayName_;
       }
-      if (((from_bitField0_ & 0x00000020) != 0)) {
-        result.state_ = state_;
-      }
       int to_bitField0_ = 0;
-      if (((from_bitField0_ & 0x00000040) != 0)) {
-        result.createTime_ = createTimeBuilder_ == null ? createTime_ : createTimeBuilder_.build();
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.autoscalingConfig_ =
+            autoscalingConfigBuilder_ == null
+                ? autoscalingConfig_
+                : autoscalingConfigBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.state_ = state_;
+      }
       if (((from_bitField0_ & 0x00000080) != 0)) {
-        result.updateTime_ = updateTimeBuilder_ == null ? updateTime_ : updateTimeBuilder_.build();
+        result.createTime_ = createTimeBuilder_ == null ? createTime_ : createTimeBuilder_.build();
         to_bitField0_ |= 0x00000002;
       }
       if (((from_bitField0_ & 0x00000100) != 0)) {
+        result.updateTime_ = updateTimeBuilder_ == null ? updateTime_ : updateTimeBuilder_.build();
+        to_bitField0_ |= 0x00000004;
+      }
+      if (((from_bitField0_ & 0x00000200) != 0)) {
         referencingDatabases_.makeImmutable();
         result.referencingDatabases_ = referencingDatabases_;
       }
-      if (((from_bitField0_ & 0x00000200) != 0)) {
+      if (((from_bitField0_ & 0x00000400) != 0)) {
         referencingBackups_.makeImmutable();
         result.referencingBackups_ = referencingBackups_;
       }
-      if (((from_bitField0_ & 0x00000400) != 0)) {
+      if (((from_bitField0_ & 0x00000800) != 0)) {
         result.etag_ = etag_;
       }
       result.bitField0_ |= to_bitField0_;
@@ -1485,6 +1581,9 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
         bitField0_ |= 0x00000004;
         onChanged();
       }
+      if (other.hasAutoscalingConfig()) {
+        mergeAutoscalingConfig(other.getAutoscalingConfig());
+      }
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
@@ -1497,7 +1596,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       if (!other.referencingDatabases_.isEmpty()) {
         if (referencingDatabases_.isEmpty()) {
           referencingDatabases_ = other.referencingDatabases_;
-          bitField0_ |= 0x00000100;
+          bitField0_ |= 0x00000200;
         } else {
           ensureReferencingDatabasesIsMutable();
           referencingDatabases_.addAll(other.referencingDatabases_);
@@ -1507,7 +1606,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       if (!other.referencingBackups_.isEmpty()) {
         if (referencingBackups_.isEmpty()) {
           referencingBackups_ = other.referencingBackups_;
-          bitField0_ |= 0x00000200;
+          bitField0_ |= 0x00000400;
         } else {
           ensureReferencingBackupsIsMutable();
           referencingBackups_.addAll(other.referencingBackups_);
@@ -1516,7 +1615,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       }
       if (!other.getEtag().isEmpty()) {
         etag_ = other.etag_;
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000800;
         onChanged();
       }
       switch (other.getComputeCapacityCase()) {
@@ -1594,19 +1693,19 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
             case 56:
               {
                 state_ = input.readEnum();
-                bitField0_ |= 0x00000020;
+                bitField0_ |= 0x00000040;
                 break;
               } // case 56
             case 66:
               {
                 input.readMessage(getCreateTimeFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000040;
+                bitField0_ |= 0x00000080;
                 break;
               } // case 66
             case 74:
               {
                 input.readMessage(getUpdateTimeFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000080;
+                bitField0_ |= 0x00000100;
                 break;
               } // case 74
             case 82:
@@ -1626,9 +1725,16 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
             case 98:
               {
                 etag_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000400;
+                bitField0_ |= 0x00000800;
                 break;
               } // case 98
+            case 106:
+              {
+                input.readMessage(
+                    getAutoscalingConfigFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 106
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -2244,6 +2350,251 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       return this;
     }
 
+    private com.google.spanner.admin.instance.v1.AutoscalingConfig autoscalingConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+            com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>
+        autoscalingConfigBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the autoscalingConfig field is set.
+     */
+    public boolean hasAutoscalingConfig() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The autoscalingConfig.
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig getAutoscalingConfig() {
+      if (autoscalingConfigBuilder_ == null) {
+        return autoscalingConfig_ == null
+            ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+            : autoscalingConfig_;
+      } else {
+        return autoscalingConfigBuilder_.getMessage();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig value) {
+      if (autoscalingConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        autoscalingConfig_ = value;
+      } else {
+        autoscalingConfigBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder builderForValue) {
+      if (autoscalingConfigBuilder_ == null) {
+        autoscalingConfig_ = builderForValue.build();
+      } else {
+        autoscalingConfigBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig value) {
+      if (autoscalingConfigBuilder_ == null) {
+        if (((bitField0_ & 0x00000020) != 0)
+            && autoscalingConfig_ != null
+            && autoscalingConfig_
+                != com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()) {
+          getAutoscalingConfigBuilder().mergeFrom(value);
+        } else {
+          autoscalingConfig_ = value;
+        }
+      } else {
+        autoscalingConfigBuilder_.mergeFrom(value);
+      }
+      if (autoscalingConfig_ != null) {
+        bitField0_ |= 0x00000020;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearAutoscalingConfig() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      autoscalingConfig_ = null;
+      if (autoscalingConfigBuilder_ != null) {
+        autoscalingConfigBuilder_.dispose();
+        autoscalingConfigBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder
+        getAutoscalingConfigBuilder() {
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return getAutoscalingConfigFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder
+        getAutoscalingConfigOrBuilder() {
+      if (autoscalingConfigBuilder_ != null) {
+        return autoscalingConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return autoscalingConfig_ == null
+            ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+            : autoscalingConfig_;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, fields in compute_capacity are
+     * treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance partition.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 13 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+            com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>
+        getAutoscalingConfigFieldBuilder() {
+      if (autoscalingConfigBuilder_ == null) {
+        autoscalingConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.instance.v1.AutoscalingConfig,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+                com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>(
+                getAutoscalingConfig(), getParentForChildren(), isClean());
+        autoscalingConfig_ = null;
+      }
+      return autoscalingConfigBuilder_;
+    }
+
     private int state_ = 0;
 
     /**
@@ -2280,7 +2631,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      */
     public Builder setStateValue(int value) {
       state_ = value;
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -2325,7 +2676,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       if (value == null) {
         throw new NullPointerException();
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       state_ = value.getNumber();
       onChanged();
       return this;
@@ -2345,7 +2696,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * @return This builder for chaining.
      */
     public Builder clearState() {
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000040);
       state_ = 0;
       onChanged();
       return this;
@@ -2372,7 +2723,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * @return Whether the createTime field is set.
      */
     public boolean hasCreateTime() {
-      return ((bitField0_ & 0x00000040) != 0);
+      return ((bitField0_ & 0x00000080) != 0);
     }
 
     /**
@@ -2418,7 +2769,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       } else {
         createTimeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2440,7 +2791,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       } else {
         createTimeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2458,7 +2809,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      */
     public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
       if (createTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00000040) != 0)
+        if (((bitField0_ & 0x00000080) != 0)
             && createTime_ != null
             && createTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           getCreateTimeBuilder().mergeFrom(value);
@@ -2469,7 +2820,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
         createTimeBuilder_.mergeFrom(value);
       }
       if (createTime_ != null) {
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000080;
         onChanged();
       }
       return this;
@@ -2487,7 +2838,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     public Builder clearCreateTime() {
-      bitField0_ = (bitField0_ & ~0x00000040);
+      bitField0_ = (bitField0_ & ~0x00000080);
       createTime_ = null;
       if (createTimeBuilder_ != null) {
         createTimeBuilder_.dispose();
@@ -2509,7 +2860,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       onChanged();
       return getCreateTimeFieldBuilder().getBuilder();
     }
@@ -2585,7 +2936,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * @return Whether the updateTime field is set.
      */
     public boolean hasUpdateTime() {
-      return ((bitField0_ & 0x00000080) != 0);
+      return ((bitField0_ & 0x00000100) != 0);
     }
 
     /**
@@ -2633,7 +2984,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       } else {
         updateTimeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2656,7 +3007,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       } else {
         updateTimeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2675,7 +3026,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      */
     public Builder mergeUpdateTime(com.google.protobuf.Timestamp value) {
       if (updateTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00000080) != 0)
+        if (((bitField0_ & 0x00000100) != 0)
             && updateTime_ != null
             && updateTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           getUpdateTimeBuilder().mergeFrom(value);
@@ -2686,7 +3037,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
         updateTimeBuilder_.mergeFrom(value);
       }
       if (updateTime_ != null) {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000100;
         onChanged();
       }
       return this;
@@ -2705,7 +3056,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     public Builder clearUpdateTime() {
-      bitField0_ = (bitField0_ & ~0x00000080);
+      bitField0_ = (bitField0_ & ~0x00000100);
       updateTime_ = null;
       if (updateTimeBuilder_ != null) {
         updateTimeBuilder_.dispose();
@@ -2728,7 +3079,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getUpdateTimeBuilder() {
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
       onChanged();
       return getUpdateTimeFieldBuilder().getBuilder();
     }
@@ -2791,7 +3142,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       if (!referencingDatabases_.isModifiable()) {
         referencingDatabases_ = new com.google.protobuf.LazyStringArrayList(referencingDatabases_);
       }
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
     }
 
     /**
@@ -2901,7 +3252,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       }
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.set(index, value);
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -2929,7 +3280,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       }
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.add(value);
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -2954,7 +3305,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
     public Builder addAllReferencingDatabases(java.lang.Iterable<java.lang.String> values) {
       ensureReferencingDatabasesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, referencingDatabases_);
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -2977,7 +3328,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      */
     public Builder clearReferencingDatabases() {
       referencingDatabases_ = com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000100);
+      bitField0_ = (bitField0_ & ~0x00000200);
       ;
       onChanged();
       return this;
@@ -3007,7 +3358,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       checkByteStringIsUtf8(value);
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.add(value);
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3019,7 +3370,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       if (!referencingBackups_.isModifiable()) {
         referencingBackups_ = new com.google.protobuf.LazyStringArrayList(referencingBackups_);
       }
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
     }
 
     /**
@@ -3038,7 +3389,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @return A list containing the referencingBackups.
      */
     @java.lang.Deprecated
@@ -3063,7 +3414,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @return The count of referencingBackups.
      */
     @java.lang.Deprecated
@@ -3087,7 +3438,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @param index The index of the element to return.
      * @return The referencingBackups at the given index.
      */
@@ -3112,7 +3463,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @param index The index of the value to return.
      * @return The bytes of the referencingBackups at the given index.
      */
@@ -3137,7 +3488,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @param index The index to set the value at.
      * @param value The referencingBackups to set.
      * @return This builder for chaining.
@@ -3149,7 +3500,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       }
       ensureReferencingBackupsIsMutable();
       referencingBackups_.set(index, value);
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3170,7 +3521,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @param value The referencingBackups to add.
      * @return This builder for chaining.
      */
@@ -3181,7 +3532,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       }
       ensureReferencingBackupsIsMutable();
       referencingBackups_.add(value);
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3202,7 +3553,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @param values The referencingBackups to add.
      * @return This builder for chaining.
      */
@@ -3210,7 +3561,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
     public Builder addAllReferencingBackups(java.lang.Iterable<java.lang.String> values) {
       ensureReferencingBackupsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, referencingBackups_);
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3231,13 +3582,13 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @return This builder for chaining.
      */
     @java.lang.Deprecated
     public Builder clearReferencingBackups() {
       referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000200);
+      bitField0_ = (bitField0_ & ~0x00000400);
       ;
       onChanged();
       return this;
@@ -3259,7 +3610,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      * </code>
      *
      * @deprecated google.spanner.admin.instance.v1.InstancePartition.referencing_backups is
-     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1781
+     *     deprecated. See google/spanner/admin/instance/v1/spanner_instance_admin.proto;l=1788
      * @param value The bytes of the referencingBackups to add.
      * @return This builder for chaining.
      */
@@ -3271,7 +3622,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       checkByteStringIsUtf8(value);
       ensureReferencingBackupsIsMutable();
       referencingBackups_.add(value);
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3368,7 +3719,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
         throw new NullPointerException();
       }
       etag_ = value;
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000800;
       onChanged();
       return this;
     }
@@ -3395,7 +3746,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
      */
     public Builder clearEtag() {
       etag_ = getDefaultInstance().getEtag();
-      bitField0_ = (bitField0_ & ~0x00000400);
+      bitField0_ = (bitField0_ & ~0x00000800);
       onChanged();
       return this;
     }
@@ -3427,7 +3778,7 @@ public final class InstancePartition extends com.google.protobuf.GeneratedMessag
       }
       checkByteStringIsUtf8(value);
       etag_ = value;
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000800;
       onChanged();
       return this;
     }
