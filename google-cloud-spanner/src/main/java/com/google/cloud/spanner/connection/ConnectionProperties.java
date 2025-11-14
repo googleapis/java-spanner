@@ -766,6 +766,18 @@ public class ConnectionProperties {
           DEFAULT_BATCH_DML_UPDATE_COUNT,
           LongConverter.INSTANCE,
           Context.USER);
+  public static final ConnectionProperty<Integer> UNKNOWN_LENGTH =
+      create(
+          "unknownLength",
+          "Spanner does not return the length of the selected columns in query results. "
+              + "When returning meta-data about these columns through functions like "
+              + "ResultSetMetaData.getColumnDisplaySize and ResultSetMetaData.getPrecision, we must "
+              + "provide a value. Various client tools and applications have different ideas about "
+              + "what they would like to see. This property specifies the length to return for types "
+              + "of unknown length.",
+          /* defaultValue= */ 50,
+          NonNegativeIntegerConverter.INSTANCE,
+          Context.USER);
 
   static final ImmutableMap<String, ConnectionProperty<?>> CONNECTION_PROPERTIES =
       CONNECTION_PROPERTIES_BUILDER.build();
