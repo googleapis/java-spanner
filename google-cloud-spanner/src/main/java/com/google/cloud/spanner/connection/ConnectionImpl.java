@@ -574,7 +574,8 @@ class ConnectionImpl implements Connection {
     return closed;
   }
 
-  private <T> T getConnectionPropertyValue(
+  @Override
+  public <T> T getConnectionPropertyValue(
       com.google.cloud.spanner.connection.ConnectionProperty<T> property) {
     return this.connectionState.getValue(property).getValue();
   }
