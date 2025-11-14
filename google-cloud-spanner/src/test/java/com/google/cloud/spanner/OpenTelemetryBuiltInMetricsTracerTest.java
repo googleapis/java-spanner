@@ -347,6 +347,10 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     // Attempt count should have a failed metric point for CreateSession.
     assertEquals(
         1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed), 0);
+
+    // Connectivity count will not increase as client did not attempt to send the request
+    assertFalse(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
   }
 
   @Test
@@ -390,6 +394,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME));
+    assertTrue(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
     // Metric is disabled currently
     assertFalse(
         checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));

@@ -28,14 +28,9 @@ import com.google.cloud.spanner.*;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.ClientInterceptor;
+import io.grpc.*;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
-import io.grpc.Metadata;
-import io.grpc.MethodDescriptor;
 import io.grpc.alts.AltsContextUtil;
 import io.opencensus.stats.MeasureMap;
 import io.opencensus.stats.Stats;
@@ -50,6 +45,7 @@ import io.opentelemetry.api.trace.Span;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -102,7 +98,11 @@ class HeaderInterceptor implements ClientInterceptor {
     ApiTracer tracer = callOptions.getOption(TRACER_KEY);
     CompositeTracer compositeTracer =
         tracer instanceof CompositeTracer ? (CompositeTracer) tracer : null;
-    return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
+    final AtomicBoolean headersReceived = new AtomicBoolean(false);
+    SpannerGrpcStreamTracer streamTracer = new SpannerGrpcStreamTracer();
+    CallOptions newOptions =
+        callOptions.withStreamTracerFactory(new SpannerGrpcStreamTracer.Factory(streamTracer));
+    return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, newOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
         try {
@@ -124,12 +124,32 @@ class HeaderInterceptor implements ClientInterceptor {
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
+                  headersReceived.set(true);
                   // Check if the call uses DirectPath by inspecting the ALTS context.
                   boolean isDirectPathUsed = AltsContextUtil.check(getAttributes());
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
                   processHeader(
                       metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
                   super.onHeaders(metadata);
+                }
+
+                @Override
+                public void onClose(Status status, Metadata trailers) {
+                  // Check if RPC was sent from gRPC client, but no response headers were received.
+                  // This can happen in
+                  // case of a timeout, for example.
+                  if (streamTracer.isOutBoundMessageSent() && !headersReceived.get()) {
+                    if (compositeTracer != null) {
+                      compositeTracer.recordGfeHeaderMissingCount(1L);
+                      // Disable afe_connectivity_error_count metric as AFE header is disabled in
+                      // backend
+                      // currently.
+                      // if (GapicSpannerRpc.isEnableAFEServerTiming()) {
+                      //   compositeTracer.recordAfeHeaderMissingCount(1L);
+                      // }
+                    }
+                  }
+                  super.onClose(status, trailers);
                 }
               },
               headers);

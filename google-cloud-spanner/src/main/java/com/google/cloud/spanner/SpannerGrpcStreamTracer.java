@@ -1,0 +1,53 @@
+/*
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.google.cloud.spanner;
+
+import io.grpc.ClientStreamTracer;
+import io.grpc.Metadata;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/** Captures the event when a request is sent from the gRPC client. */
+public class SpannerGrpcStreamTracer extends ClientStreamTracer {
+
+  private final AtomicBoolean outBoundMessageSent = new AtomicBoolean(false);
+
+  public SpannerGrpcStreamTracer() {}
+
+  public boolean isOutBoundMessageSent() {
+    return outBoundMessageSent.get();
+  }
+
+  /** An outbound message has been serialized and sent to the transport. */
+  @Override
+  public void outboundMessageSent(int seqNo, long optionalWireSize, long optionalUncompressedSize) {
+    outBoundMessageSent.set(true);
+  }
+
+  public static class Factory extends ClientStreamTracer.Factory {
+
+    SpannerGrpcStreamTracer spannerGrpcStreamTracer;
+
+    public Factory(SpannerGrpcStreamTracer spannerGrpcStreamTracer) {
+      this.spannerGrpcStreamTracer = spannerGrpcStreamTracer;
+    }
+
+    @Override
+    public ClientStreamTracer newClientStreamTracer(
+        ClientStreamTracer.StreamInfo info, Metadata headers) {
+      return spannerGrpcStreamTracer;
+    }
+  }
+}
