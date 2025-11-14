@@ -293,8 +293,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);
     when(parsedStatement.isUpdate()).thenReturn(true);
     when(parsedStatement.hasReturningClause()).thenReturn(true);
-    Statement statement =
-        Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'x') THEN RETURN *");
+    Statement statement = Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'x') THEN RETURN *");
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject(/* commitBehavior= */ CommitBehavior.SUCCEED);
