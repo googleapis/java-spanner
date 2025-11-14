@@ -32,6 +32,7 @@ import com.google.api.gax.grpc.GrpcStubCallableFactory;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.ResultRetryAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.retrying.TimedAttemptSettings;
@@ -485,15 +486,28 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .build();
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
-        this.databaseAdminStubSettings =
+        DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
             options.getDatabaseAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        /* isAdminClient= */ true, isEmulatorEnabled(options, emulatorHost)))
-                .build();
+                        /* isAdminClient= */ true, isEmulatorEnabled(options, emulatorHost)));
+        databaseAdminStubSettingsBuilder
+            .updateDatabaseDdlOperationSettings()
+            .setPollingAlgorithm(
+                OperationTimedPollAlgorithm.create(
+                    RetrySettings.newBuilder()
+                        .setInitialRetryDelayDuration(Duration.ofMillis(1500L))
+                        .setRetryDelayMultiplier(1.3)
+                        .setMaxRetryDelayDuration(Duration.ofMillis(30000L))
+                        .setInitialRpcTimeoutDuration(Duration.ZERO)
+                        .setRpcTimeoutMultiplier(1.0)
+                        .setMaxRpcTimeoutDuration(Duration.ZERO)
+                        .setTotalTimeoutDuration(Duration.ofMillis(86400000L))
+                        .build()));
+        this.databaseAdminStubSettings = databaseAdminStubSettingsBuilder.build();
 
         // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
         // administrative requests has been set. The GetOperation RPC is called repeatedly by gax
