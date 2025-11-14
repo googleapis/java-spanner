@@ -106,7 +106,6 @@ class HeaderInterceptor implements ClientInterceptor {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
         try {
-          ClientCall<ReqT, RespT> call = this;
           Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = extractKey(databaseName, method.getFullMethodName());
@@ -125,8 +124,8 @@ class HeaderInterceptor implements ClientInterceptor {
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
-                  // If call contains ALTS information.
-                  boolean isDirectPathUsed = AltsContextUtil.check(call);
+                  // Check if the call uses DirectPath by inspecting the ALTS context.
+                  boolean isDirectPathUsed = AltsContextUtil.check(getAttributes());
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
                   processHeader(
                       metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
