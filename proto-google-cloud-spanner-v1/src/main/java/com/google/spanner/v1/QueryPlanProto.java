@@ -45,6 +45,14 @@ public final class QueryPlanProto {
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_v1_PlanNode_ShortRepresentation_SubqueriesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_v1_QueryAdvisorResult_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_v1_QueryAdvisorResult_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_v1_QueryAdvisorResult_IndexAdvice_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_v1_QueryAdvisorResult_IndexAdvice_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
       internal_static_google_spanner_v1_QueryPlan_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_v1_QueryPlan_fieldAccessorTable;
@@ -59,14 +67,15 @@ public final class QueryPlanProto {
     java.lang.String[] descriptorData = {
       "\n"
           + "\"google/spanner/v1/query_plan.proto\022\021go"
-          + "ogle.spanner.v1\032\034google/protobuf/struct.proto\"\370\004\n"
+          + "ogle.spanner.v1\032\037google/api/field_behavi"
+          + "or.proto\032\034google/protobuf/struct.proto\"\370\004\n"
           + "\010PlanNode\022\r\n"
           + "\005index\030\001 \001(\005\022.\n"
           + "\004kind\030\002 \001(\0162 .google.spanner.v1.PlanNode.Kind\022\024\n"
           + "\014display_name\030\003 \001(\t\022:\n"
           + "\013child_links\030\004 \003(\0132%.google.spanner.v1.PlanNode.ChildLink\022M\n"
-          + "\024short_representation\030\005 \001(\0132/.goog"
-          + "le.spanner.v1.PlanNode.ShortRepresentation\022)\n"
+          + "\024short_representation\030\005"
+          + " \001(\0132/.google.spanner.v1.PlanNode.ShortRepresentation\022)\n"
           + "\010metadata\030\006 \001(\0132\027.google.protobuf.Struct\0220\n"
           + "\017execution_stats\030\007 \001(\0132\027.google.protobuf.Struct\032@\n"
           + "\tChildLink\022\023\n"
@@ -75,26 +84,35 @@ public final class QueryPlanProto {
           + "\010variable\030\003 \001(\t\032\262\001\n"
           + "\023ShortRepresentation\022\023\n"
           + "\013description\030\001 \001(\t\022S\n\n"
-          + "subqueries\030\002 \003(\0132?.google.span"
-          + "ner.v1.PlanNode.ShortRepresentation.SubqueriesEntry\0321\n"
+          + "subqueries\030\002 \003(\0132?.google.spanner.v1."
+          + "PlanNode.ShortRepresentation.SubqueriesEntry\0321\n"
           + "\017SubqueriesEntry\022\013\n"
           + "\003key\030\001 \001(\t\022\r\n"
           + "\005value\030\002 \001(\005:\0028\001\"8\n"
           + "\004Kind\022\024\n"
           + "\020KIND_UNSPECIFIED\020\000\022\016\n\n"
           + "RELATIONAL\020\001\022\n\n"
-          + "\006SCALAR\020\002\"<\n"
+          + "\006SCALAR\020\002\"\244\001\n"
+          + "\022QueryAdvisorResult\022L\n"
+          + "\014index_advice\030\001 \003(\01321"
+          + ".google.spanner.v1.QueryAdvisorResult.IndexAdviceB\003\340A\001\032@\n"
+          + "\013IndexAdvice\022\020\n"
+          + "\003ddl\030\001 \003(\tB\003\340A\001\022\037\n"
+          + "\022improvement_factor\030\002 \001(\001B\003\340A\001\"~\n"
           + "\tQueryPlan\022/\n\n"
-          + "plan_nodes\030\001 \003(\0132\033.google.spanner.v1.PlanNodeB\261\001\n"
-          + "\025com.google.spanner.v1B\016QueryPlanProtoP\001Z5cloud.google"
-          + ".com/go/spanner/apiv1/spannerpb;spannerp"
-          + "b\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\Clo"
-          + "ud\\Spanner\\V1\352\002\032Google::Cloud::Spanner::V1b\006proto3"
+          + "plan_nodes\030\001 \003(\0132\033.google.spanner.v1.PlanNode\022@\n"
+          + "\014query_advice\030\002"
+          + " \001(\0132%.google.spanner.v1.QueryAdvisorResultB\003\340A\001B\261\001\n"
+          + "\025com.google.spanner.v1B\016QueryPlanProtoP\001Z5cloud.google.com/go/spanne"
+          + "r/apiv1/spannerpb;spannerpb\252\002\027Google.Clo"
+          + "ud.Spanner.V1\312\002\027Google\\Cloud\\Spanner\\V1\352"
+          + "\002\032Google::Cloud::Spanner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
+              com.google.api.FieldBehaviorProto.getDescriptor(),
               com.google.protobuf.StructProto.getDescriptor(),
             });
     internal_static_google_spanner_v1_PlanNode_descriptor =
@@ -137,14 +155,36 @@ public final class QueryPlanProto {
             new java.lang.String[] {
               "Key", "Value",
             });
-    internal_static_google_spanner_v1_QueryPlan_descriptor =
+    internal_static_google_spanner_v1_QueryAdvisorResult_descriptor =
         getDescriptor().getMessageTypes().get(1);
+    internal_static_google_spanner_v1_QueryAdvisorResult_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_v1_QueryAdvisorResult_descriptor,
+            new java.lang.String[] {
+              "IndexAdvice",
+            });
+    internal_static_google_spanner_v1_QueryAdvisorResult_IndexAdvice_descriptor =
+        internal_static_google_spanner_v1_QueryAdvisorResult_descriptor.getNestedTypes().get(0);
+    internal_static_google_spanner_v1_QueryAdvisorResult_IndexAdvice_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_v1_QueryAdvisorResult_IndexAdvice_descriptor,
+            new java.lang.String[] {
+              "Ddl", "ImprovementFactor",
+            });
+    internal_static_google_spanner_v1_QueryPlan_descriptor =
+        getDescriptor().getMessageTypes().get(2);
     internal_static_google_spanner_v1_QueryPlan_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_QueryPlan_descriptor,
             new java.lang.String[] {
-              "PlanNodes",
+              "PlanNodes", "QueryAdvice",
             });
+    com.google.protobuf.ExtensionRegistry registry =
+        com.google.protobuf.ExtensionRegistry.newInstance();
+    registry.add(com.google.api.FieldBehaviorProto.fieldBehavior);
+    com.google.protobuf.Descriptors.FileDescriptor.internalUpdateFileDescriptor(
+        descriptor, registry);
+    com.google.api.FieldBehaviorProto.getDescriptor();
     com.google.protobuf.StructProto.getDescriptor();
   }
 

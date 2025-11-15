@@ -269,5 +269,79 @@ public interface MutationOrBuilder
    */
   com.google.spanner.v1.Mutation.DeleteOrBuilder getDeleteOrBuilder();
 
+  /**
+   *
+   *
+   * <pre>
+   * Send a message to a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+   *
+   * @return Whether the send field is set.
+   */
+  boolean hasSend();
+
+  /**
+   *
+   *
+   * <pre>
+   * Send a message to a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+   *
+   * @return The send.
+   */
+  com.google.spanner.v1.Mutation.Send getSend();
+
+  /**
+   *
+   *
+   * <pre>
+   * Send a message to a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+   */
+  com.google.spanner.v1.Mutation.SendOrBuilder getSendOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Ack a message from a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+   *
+   * @return Whether the ack field is set.
+   */
+  boolean hasAck();
+
+  /**
+   *
+   *
+   * <pre>
+   * Ack a message from a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+   *
+   * @return The ack.
+   */
+  com.google.spanner.v1.Mutation.Ack getAck();
+
+  /**
+   *
+   *
+   * <pre>
+   * Ack a message from a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+   */
+  com.google.spanner.v1.Mutation.AckOrBuilder getAckOrBuilder();
+
   com.google.spanner.v1.Mutation.OperationCase getOperationCase();
 }
