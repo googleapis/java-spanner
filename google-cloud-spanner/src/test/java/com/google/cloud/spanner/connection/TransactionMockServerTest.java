@@ -31,6 +31,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -357,5 +358,45 @@ public class TransactionMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testTransactionTimeoutInAutoCommit() {}
+  public void testCanUseAllMethodsWithInternalRetriesDisabled() {
+    // Verify that all query/update methods work as expected when internal retries have been
+    // disabled.
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+      connection.setRetryAbortsInternally(false);
+
+      try (ResultSet result = connection.executeQuery(SELECT1_STATEMENT)) {
+        assertTrue(result.next());
+        assertEquals(1L, result.getLong(0));
+        assertFalse(result.next());
+      }
+      assertEquals(1, connection.executeUpdate(INSERT_STATEMENT));
+      try (ResultSet result = connection.executeQuery(INSERT_RETURNING_STATEMENT)) {
+        assertTrue(result.next());
+        assertEquals(1L, result.getLong(0));
+        assertFalse(result.next());
+      }
+
+      StatementResult statementResult = connection.execute(SELECT1_STATEMENT);
+      assertEquals(ResultType.RESULT_SET, statementResult.getResultType());
+      try (ResultSet result = statementResult.getResultSet()) {
+        assertTrue(result.next());
+        assertEquals(1L, result.getLong(0));
+        assertFalse(result.next());
+      }
+
+      statementResult = connection.execute(INSERT_STATEMENT);
+      assertEquals(ResultType.UPDATE_COUNT, statementResult.getResultType());
+      assertEquals(1L, statementResult.getUpdateCount().longValue());
+
+      statementResult = connection.execute(INSERT_RETURNING_STATEMENT);
+      assertEquals(ResultType.RESULT_SET, statementResult.getResultType());
+      try (ResultSet result = statementResult.getResultSet()) {
+        assertTrue(result.next());
+        assertEquals(1L, result.getLong(0));
+        assertFalse(result.next());
+      }
+      connection.commit();
+    }
+  }
 }
