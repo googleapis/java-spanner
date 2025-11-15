@@ -97,6 +97,8 @@ public class AutoDmlBatchMockServerTest extends AbstractMockServerTest {
       // DML with a THEN RETURN clause cannot be batched. This therefore flushes the batch and
       // executes the INSERT ... THEN RETURN statement as a separate ExecuteSqlRequest.
       try (ResultSet resultSet = connection.executeQuery(INSERT_RETURNING_STATEMENT)) {
+        assertTrue(resultSet.next());
+        assertEquals(1L, resultSet.getLong(0));
         assertFalse(resultSet.next());
       }
 
@@ -123,6 +125,8 @@ public class AutoDmlBatchMockServerTest extends AbstractMockServerTest {
       StatementResult result = connection.execute(INSERT_RETURNING_STATEMENT);
       assertEquals(ResultType.RESULT_SET, result.getResultType());
       try (ResultSet resultSet = result.getResultSet()) {
+        assertTrue(resultSet.next());
+        assertEquals(1L, resultSet.getLong(0));
         assertFalse(resultSet.next());
       }
 

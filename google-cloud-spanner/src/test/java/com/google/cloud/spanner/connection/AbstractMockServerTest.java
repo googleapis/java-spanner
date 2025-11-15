@@ -110,7 +110,7 @@ public abstract class AbstractMockServerTest {
           .setMetadata(SINGLE_COL_INT64_RESULTSET_METADATA)
           .build();
   public static final com.google.spanner.v1.ResultSet UPDATE_RETURNING_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
+      ResultSet.newBuilder()
           .setStats(ResultSetStats.newBuilder().setRowCountExact(1))
           .setMetadata(
               ResultSetMetadata.newBuilder()
@@ -121,6 +121,10 @@ public abstract class AbstractMockServerTest {
                                   .setName("col")
                                   .setType(Type.newBuilder().setCodeValue(TypeCode.INT64_VALUE))
                                   .build())))
+          .addRows(
+              ListValue.newBuilder()
+                  .addValues(Value.newBuilder().setStringValue("1").build())
+                  .build())
           .build();
 
   protected static final ResultSet SELECT1_RESULTSET =

@@ -24,9 +24,6 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * Service that executes SpannerActions asynchronously.
  * </pre>
  */
-@javax.annotation.Generated(
-    value = "by gRPC proto compiler",
-    comments = "Source: google/spanner/executor/v1/cloud_executor.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class SpannerExecutorProxyGrpc {
 

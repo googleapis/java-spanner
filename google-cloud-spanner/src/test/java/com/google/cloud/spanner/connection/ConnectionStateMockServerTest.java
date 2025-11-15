@@ -291,4 +291,13 @@ public class ConnectionStateMockServerTest extends AbstractMockServerTest {
       assertTrue(connection.isRetryAbortsInternally());
     }
   }
+
+  @Test
+  public void testGetConnectionProperty() {
+    try (Connection connection = createConnection()) {
+      ConnectionProperty<Integer> unknownLength = ConnectionProperties.UNKNOWN_LENGTH;
+      assertEquals(
+          unknownLength.getDefaultValue(), connection.getConnectionPropertyValue(unknownLength));
+    }
+  }
 }

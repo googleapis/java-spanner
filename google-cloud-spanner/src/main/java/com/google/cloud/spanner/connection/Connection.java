@@ -189,6 +189,10 @@ public interface Connection extends AutoCloseable {
    */
   void reset();
 
+  /** Returns the current value of the given connection property. */
+  <T> T getConnectionPropertyValue(
+      com.google.cloud.spanner.connection.ConnectionProperty<T> property);
+
   /**
    * Sets autocommit on/off for this {@link Connection}. Connections in autocommit mode will apply
    * any changes to the database directly without waiting for an explicit commit. DDL- and DML
