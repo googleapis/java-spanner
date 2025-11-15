@@ -296,7 +296,7 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>grpc-google-cloud-monitoring-v3</artifactId>
-      <version>3.77.0</version>
+      <version>3.81.0</version>
       <scope>test</scope>
       <!-- Version will be managed by guava -->
       <exclusions>
