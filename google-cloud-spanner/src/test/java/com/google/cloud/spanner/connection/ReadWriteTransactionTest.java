@@ -288,6 +288,21 @@ public class ReadWriteTransactionTest {
   }
 
   @Test
+  public void testExecuteQueryWithDmlReturningWithoutRetry() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);
+    when(parsedStatement.isUpdate()).thenReturn(true);
+    when(parsedStatement.hasReturningClause()).thenReturn(true);
+    Statement statement = Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'x') THEN RETURN *");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject(/* commitBehavior= */ CommitBehavior.SUCCEED);
+    ResultSet rs =
+        get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.NONE));
+    assertThat(rs, is(notNullValue()));
+  }
+
+  @Test
   public void testGetCommitTimestampBeforeCommit() {
     ParsedStatement parsedStatement = mock(ParsedStatement.class);
     when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);

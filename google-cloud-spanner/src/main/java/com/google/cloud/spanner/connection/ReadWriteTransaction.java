@@ -689,7 +689,19 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 InterceptorsUsage.IGNORE_INTERCEPTORS,
                 ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
       } else {
-        res = super.executeQueryAsync(callType, statement, analyzeMode, options);
+        // Handle both SELECT queries and DML with THEN RETURN without delegating to the base class,
+        // which rejects non-SELECT statements.
+        res =
+            executeStatementAsync(
+                callType,
+                statement,
+                () -> {
+                  checkTimedOut();
+                  checkAborted();
+                  return DirectExecuteResultSet.ofResultSet(
+                      internalExecuteQuery(statement, analyzeMode, options));
+                },
+                SpannerGrpc.getExecuteStreamingSqlMethod());
       }
       ApiFutures.addCallback(res, new StatementResultCallback<>(), MoreExecutors.directExecutor());
       return res;
