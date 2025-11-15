@@ -28,15 +28,9 @@ import com.google.cloud.spanner.*;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.ClientInterceptor;
+import io.grpc.*;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
-import io.grpc.Grpc;
-import io.grpc.Metadata;
-import io.grpc.MethodDescriptor;
 import io.opencensus.stats.MeasureMap;
 import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
@@ -53,6 +47,7 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -103,9 +98,13 @@ class HeaderInterceptor implements ClientInterceptor {
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
       MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
     ApiTracer tracer = callOptions.getOption(TRACER_KEY);
+    SpannerGrpcStreamTracer streamTracer = new SpannerGrpcStreamTracer();
+    CallOptions newOptions =
+        callOptions.withStreamTracerFactory(new SpannerGrpcStreamTracer.Factory(streamTracer));
     CompositeTracer compositeTracer =
         tracer instanceof CompositeTracer ? (CompositeTracer) tracer : null;
-    return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
+    final AtomicBoolean headersReceived = new AtomicBoolean(false);
+    return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, newOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
         try {
@@ -127,6 +126,7 @@ class HeaderInterceptor implements ClientInterceptor {
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
+                  headersReceived.set(true);
                   Boolean isDirectPathUsed =
                       isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
@@ -134,6 +134,21 @@ class HeaderInterceptor implements ClientInterceptor {
                   processHeader(
                       metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
                   super.onHeaders(metadata);
+                }
+
+                @Override
+                public void onClose(Status status, Metadata trailers) {
+                  if (streamTracer.isOutBoundMessageSent() && !headersReceived.get()) {
+                    // RPC was sent, but no response headers were received. This can happen in
+                    // case of a timeout, for example.
+                    if (compositeTracer != null) {
+                      compositeTracer.recordGfeHeaderMissingCount(1L);
+                      if (GapicSpannerRpc.isEnableAFEServerTiming()) {
+                        // compositeTracer.recordAfeHeaderMissingCount(1L);
+                      }
+                    }
+                  }
+                  super.onClose(status, trailers);
                 }
               },
               headers);
