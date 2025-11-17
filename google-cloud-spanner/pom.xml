@@ -16,6 +16,7 @@
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
+    <google.cloud.monitoring.version>3.81.0</google.cloud.monitoring.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
     <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
     <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
@@ -28,7 +29,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.13</version>
+        <version>0.8.14</version>
         <executions>
           <execution>
             <goals>
@@ -272,7 +273,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-monitoring</artifactId>
-      <version>3.77.0</version>
+      <version>${google.cloud.monitoring.version}</version>
       <!-- Version will be managed by guava -->
       <exclusions>
         <exclusion>
@@ -284,7 +285,7 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-monitoring-v3</artifactId>
-      <version>3.77.0</version>
+      <version>${google.cloud.monitoring.version}</version>
       <!-- Version will be managed by guava -->
       <exclusions>
         <exclusion>
@@ -296,7 +297,7 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>grpc-google-cloud-monitoring-v3</artifactId>
-      <version>3.77.0</version>
+      <version>${google.cloud.monitoring.version}</version>
       <scope>test</scope>
       <!-- Version will be managed by guava -->
       <exclusions>
@@ -499,13 +500,13 @@
     <dependency>
       <groupId>com.google.cloud.opentelemetry</groupId>
       <artifactId>exporter-trace</artifactId>
-      <version>0.33.0</version>
+      <version>0.36.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-trace</artifactId>
-      <version>2.76.0</version>
+      <version>2.79.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
