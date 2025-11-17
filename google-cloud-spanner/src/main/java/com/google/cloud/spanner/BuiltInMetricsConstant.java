@@ -99,6 +99,8 @@ public class BuiltInMetricsConstant {
   public static final AttributeKey<String> DIRECT_PATH_USED_KEY =
       AttributeKey.stringKey("directpath_used");
   public static final AttributeKey<String> REQUEST_ID_KEY = AttributeKey.stringKey(REQUEST_ID);
+  public static final AttributeKey<String> GRPC_XDS_RESOURCE_TYPE_KEY =
+      AttributeKey.stringKey("grpc.xds.resource_type");
   public static Set<String> ALLOWED_EXEMPLARS_ATTRIBUTES = new HashSet<>(Arrays.asList(REQUEST_ID));
 
   // IP address prefixes allocated for DirectPath backends.
@@ -232,6 +234,7 @@ public class BuiltInMetricsConstant {
               .map(AttributeKey::getKey)
               .collect(Collectors.toSet());
       attributesFilter.addAll(BuiltInMetricsConstant.GRPC_LB_RLS_ATTRIBUTES);
+      attributesFilter.add(BuiltInMetricsConstant.GRPC_XDS_RESOURCE_TYPE_KEY.getKey());
 
       View view =
           View.builder()
