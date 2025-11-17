@@ -34,9 +34,9 @@ import io.grpc.ClientCall;
 import io.grpc.ClientInterceptor;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
-import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
+import io.grpc.alts.AltsContextUtil;
 import io.opencensus.stats.MeasureMap;
 import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
@@ -47,9 +47,6 @@ import io.opencensus.tags.Tags;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -127,10 +124,9 @@ class HeaderInterceptor implements ClientInterceptor {
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
-                  Boolean isDirectPathUsed =
-                      isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
+                  // Check if the call uses DirectPath by inspecting the ALTS context.
+                  boolean isDirectPathUsed = AltsContextUtil.check(getAttributes());
                   addDirectPathUsedAttribute(compositeTracer, isDirectPathUsed);
-
                   processHeader(
                       metadata, tagContext, attributes, span, compositeTracer, isDirectPathUsed);
                   super.onHeaders(metadata);
@@ -315,15 +311,5 @@ class HeaderInterceptor implements ClientInterceptor {
       compositeTracer.addAttributes(
           BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
     }
-  }
-
-  private Boolean isDirectPathUsed(SocketAddress remoteAddr) {
-    if (remoteAddr instanceof InetSocketAddress) {
-      InetAddress inetAddress = ((InetSocketAddress) remoteAddr).getAddress();
-      String addr = inetAddress.getHostAddress();
-      return addr.startsWith(BuiltInMetricsConstant.DP_IPV4_PREFIX)
-          || addr.startsWith(BuiltInMetricsConstant.DP_IPV6_PREFIX);
-    }
-    return false;
   }
 }
