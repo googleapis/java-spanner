@@ -63,6 +63,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.v1.QueryPlan.class, com.google.spanner.v1.QueryPlan.Builder.class);
   }
 
+  private int bitField0_;
   public static final int PLAN_NODES_FIELD_NUMBER = 1;
 
   @SuppressWarnings("serial")
@@ -149,6 +150,68 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     return planNodes_.get(index);
   }
 
+  public static final int QUERY_ADVICE_FIELD_NUMBER = 2;
+  private com.google.spanner.v1.QueryAdvisorResult queryAdvice_;
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The advise/recommendations for a query. Currently this field will
+   * be serving index recommendations for a query.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the queryAdvice field is set.
+   */
+  @java.lang.Override
+  public boolean hasQueryAdvice() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The advise/recommendations for a query. Currently this field will
+   * be serving index recommendations for a query.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The queryAdvice.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.QueryAdvisorResult getQueryAdvice() {
+    return queryAdvice_ == null
+        ? com.google.spanner.v1.QueryAdvisorResult.getDefaultInstance()
+        : queryAdvice_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The advise/recommendations for a query. Currently this field will
+   * be serving index recommendations for a query.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.QueryAdvisorResultOrBuilder getQueryAdviceOrBuilder() {
+    return queryAdvice_ == null
+        ? com.google.spanner.v1.QueryAdvisorResult.getDefaultInstance()
+        : queryAdvice_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -166,6 +229,9 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     for (int i = 0; i < planNodes_.size(); i++) {
       output.writeMessage(1, planNodes_.get(i));
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(2, getQueryAdvice());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -177,6 +243,9 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     size = 0;
     for (int i = 0; i < planNodes_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, planNodes_.get(i));
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getQueryAdvice());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -194,6 +263,10 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     com.google.spanner.v1.QueryPlan other = (com.google.spanner.v1.QueryPlan) obj;
 
     if (!getPlanNodesList().equals(other.getPlanNodesList())) return false;
+    if (hasQueryAdvice() != other.hasQueryAdvice()) return false;
+    if (hasQueryAdvice()) {
+      if (!getQueryAdvice().equals(other.getQueryAdvice())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -208,6 +281,10 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     if (getPlanNodesCount() > 0) {
       hash = (37 * hash) + PLAN_NODES_FIELD_NUMBER;
       hash = (53 * hash) + getPlanNodesList().hashCode();
+    }
+    if (hasQueryAdvice()) {
+      hash = (37 * hash) + QUERY_ADVICE_FIELD_NUMBER;
+      hash = (53 * hash) + getQueryAdvice().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -337,10 +414,20 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.QueryPlan.newBuilder()
-    private Builder() {}
+    private Builder() {
+      maybeForceBuilderInitialization();
+    }
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
+      maybeForceBuilderInitialization();
+    }
+
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
+        getPlanNodesFieldBuilder();
+        getQueryAdviceFieldBuilder();
+      }
     }
 
     @java.lang.Override
@@ -354,6 +441,11 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
         planNodesBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000001);
+      queryAdvice_ = null;
+      if (queryAdviceBuilder_ != null) {
+        queryAdviceBuilder_.dispose();
+        queryAdviceBuilder_ = null;
+      }
       return this;
     }
 
@@ -402,6 +494,13 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
 
     private void buildPartial0(com.google.spanner.v1.QueryPlan result) {
       int from_bitField0_ = bitField0_;
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.queryAdvice_ =
+            queryAdviceBuilder_ == null ? queryAdvice_ : queryAdviceBuilder_.build();
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ |= to_bitField0_;
     }
 
     @java.lang.Override
@@ -476,6 +575,9 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
           }
         }
       }
+      if (other.hasQueryAdvice()) {
+        mergeQueryAdvice(other.getQueryAdvice());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -514,6 +616,12 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
                 }
                 break;
               } // case 10
+            case 18:
+              {
+                input.readMessage(getQueryAdviceFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -930,6 +1038,228 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
         planNodes_ = null;
       }
       return planNodesBuilder_;
+    }
+
+    private com.google.spanner.v1.QueryAdvisorResult queryAdvice_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.QueryAdvisorResult,
+            com.google.spanner.v1.QueryAdvisorResult.Builder,
+            com.google.spanner.v1.QueryAdvisorResultOrBuilder>
+        queryAdviceBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the queryAdvice field is set.
+     */
+    public boolean hasQueryAdvice() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The queryAdvice.
+     */
+    public com.google.spanner.v1.QueryAdvisorResult getQueryAdvice() {
+      if (queryAdviceBuilder_ == null) {
+        return queryAdvice_ == null
+            ? com.google.spanner.v1.QueryAdvisorResult.getDefaultInstance()
+            : queryAdvice_;
+      } else {
+        return queryAdviceBuilder_.getMessage();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setQueryAdvice(com.google.spanner.v1.QueryAdvisorResult value) {
+      if (queryAdviceBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        queryAdvice_ = value;
+      } else {
+        queryAdviceBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setQueryAdvice(
+        com.google.spanner.v1.QueryAdvisorResult.Builder builderForValue) {
+      if (queryAdviceBuilder_ == null) {
+        queryAdvice_ = builderForValue.build();
+      } else {
+        queryAdviceBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeQueryAdvice(com.google.spanner.v1.QueryAdvisorResult value) {
+      if (queryAdviceBuilder_ == null) {
+        if (((bitField0_ & 0x00000002) != 0)
+            && queryAdvice_ != null
+            && queryAdvice_ != com.google.spanner.v1.QueryAdvisorResult.getDefaultInstance()) {
+          getQueryAdviceBuilder().mergeFrom(value);
+        } else {
+          queryAdvice_ = value;
+        }
+      } else {
+        queryAdviceBuilder_.mergeFrom(value);
+      }
+      if (queryAdvice_ != null) {
+        bitField0_ |= 0x00000002;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearQueryAdvice() {
+      bitField0_ = (bitField0_ & ~0x00000002);
+      queryAdvice_ = null;
+      if (queryAdviceBuilder_ != null) {
+        queryAdviceBuilder_.dispose();
+        queryAdviceBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.QueryAdvisorResult.Builder getQueryAdviceBuilder() {
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return getQueryAdviceFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.QueryAdvisorResultOrBuilder getQueryAdviceOrBuilder() {
+      if (queryAdviceBuilder_ != null) {
+        return queryAdviceBuilder_.getMessageOrBuilder();
+      } else {
+        return queryAdvice_ == null
+            ? com.google.spanner.v1.QueryAdvisorResult.getDefaultInstance()
+            : queryAdvice_;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The advise/recommendations for a query. Currently this field will
+     * be serving index recommendations for a query.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.QueryAdvisorResult,
+            com.google.spanner.v1.QueryAdvisorResult.Builder,
+            com.google.spanner.v1.QueryAdvisorResultOrBuilder>
+        getQueryAdviceFieldBuilder() {
+      if (queryAdviceBuilder_ == null) {
+        queryAdviceBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.QueryAdvisorResult,
+                com.google.spanner.v1.QueryAdvisorResult.Builder,
+                com.google.spanner.v1.QueryAdvisorResultOrBuilder>(
+                getQueryAdvice(), getParentForChildren(), isClean());
+        queryAdvice_ = null;
+      }
+      return queryAdviceBuilder_;
     }
 
     @java.lang.Override
