@@ -652,4 +652,62 @@ public interface PartialResultSetOrBuilder
    * @return The last.
    */
   boolean getLast();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A cache update expresses a set of changes the client should
+   * incorporate into its location cache. The client should discard the changes
+   * if they are older than the data it already has. This data can be obtained
+   * in response to requests that included a `RoutingHint` field, but may also
+   * be obtained by explicit location-fetching RPCs which may be added in the
+   * future.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.CacheUpdate cache_update = 10 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the cacheUpdate field is set.
+   */
+  boolean hasCacheUpdate();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A cache update expresses a set of changes the client should
+   * incorporate into its location cache. The client should discard the changes
+   * if they are older than the data it already has. This data can be obtained
+   * in response to requests that included a `RoutingHint` field, but may also
+   * be obtained by explicit location-fetching RPCs which may be added in the
+   * future.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.CacheUpdate cache_update = 10 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The cacheUpdate.
+   */
+  com.google.spanner.v1.CacheUpdate getCacheUpdate();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A cache update expresses a set of changes the client should
+   * incorporate into its location cache. The client should discard the changes
+   * if they are older than the data it already has. This data can be obtained
+   * in response to requests that included a `RoutingHint` field, but may also
+   * be obtained by explicit location-fetching RPCs which may be added in the
+   * future.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.CacheUpdate cache_update = 10 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.CacheUpdateOrBuilder getCacheUpdateOrBuilder();
 }

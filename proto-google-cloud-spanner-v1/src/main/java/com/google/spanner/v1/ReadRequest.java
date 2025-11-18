@@ -1162,6 +1162,80 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     return result == null ? com.google.spanner.v1.ReadRequest.LockHint.UNRECOGNIZED : result;
   }
 
+  public static final int ROUTING_HINT_FIELD_NUMBER = 18;
+  private com.google.spanner.v1.RoutingHint routingHint_;
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If present, it makes the Spanner requests location-aware.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the routingHint field is set.
+   */
+  @java.lang.Override
+  public boolean hasRoutingHint() {
+    return ((bitField0_ & 0x00000010) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If present, it makes the Spanner requests location-aware.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The routingHint.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RoutingHint getRoutingHint() {
+    return routingHint_ == null
+        ? com.google.spanner.v1.RoutingHint.getDefaultInstance()
+        : routingHint_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If present, it makes the Spanner requests location-aware.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RoutingHintOrBuilder getRoutingHintOrBuilder() {
+    return routingHint_ == null
+        ? com.google.spanner.v1.RoutingHint.getDefaultInstance()
+        : routingHint_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1217,6 +1291,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
     if (lockHint_ != com.google.spanner.v1.ReadRequest.LockHint.LOCK_HINT_UNSPECIFIED.getNumber()) {
       output.writeEnum(17, lockHint_);
+    }
+    if (((bitField0_ & 0x00000010) != 0)) {
+      output.writeMessage(18, getRoutingHint());
     }
     getUnknownFields().writeTo(output);
   }
@@ -1275,6 +1352,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (lockHint_ != com.google.spanner.v1.ReadRequest.LockHint.LOCK_HINT_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(17, lockHint_);
     }
+    if (((bitField0_ & 0x00000010) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(18, getRoutingHint());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1316,6 +1396,10 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (getDataBoostEnabled() != other.getDataBoostEnabled()) return false;
     if (orderBy_ != other.orderBy_) return false;
     if (lockHint_ != other.lockHint_) return false;
+    if (hasRoutingHint() != other.hasRoutingHint()) return false;
+    if (hasRoutingHint()) {
+      if (!getRoutingHint().equals(other.getRoutingHint())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -1365,6 +1449,10 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + orderBy_;
     hash = (37 * hash) + LOCK_HINT_FIELD_NUMBER;
     hash = (53 * hash) + lockHint_;
+    if (hasRoutingHint()) {
+      hash = (37 * hash) + ROUTING_HINT_FIELD_NUMBER;
+      hash = (53 * hash) + getRoutingHint().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1510,6 +1598,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         getKeySetFieldBuilder();
         getRequestOptionsFieldBuilder();
         getDirectedReadOptionsFieldBuilder();
+        getRoutingHintFieldBuilder();
       }
     }
 
@@ -1547,6 +1636,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       dataBoostEnabled_ = false;
       orderBy_ = 0;
       lockHint_ = 0;
+      routingHint_ = null;
+      if (routingHintBuilder_ != null) {
+        routingHintBuilder_.dispose();
+        routingHintBuilder_ = null;
+      }
       return this;
     }
 
@@ -1634,6 +1728,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       if (((from_bitField0_ & 0x00002000) != 0)) {
         result.lockHint_ = lockHint_;
+      }
+      if (((from_bitField0_ & 0x00004000) != 0)) {
+        result.routingHint_ =
+            routingHintBuilder_ == null ? routingHint_ : routingHintBuilder_.build();
+        to_bitField0_ |= 0x00000010;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1737,6 +1836,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.lockHint_ != 0) {
         setLockHintValue(other.getLockHintValue());
+      }
+      if (other.hasRoutingHint()) {
+        mergeRoutingHint(other.getRoutingHint());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -1850,6 +1952,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00002000;
                 break;
               } // case 136
+            case 146:
+              {
+                input.readMessage(getRoutingHintFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00004000;
+                break;
+              } // case 146
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -3866,6 +3974,263 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       lockHint_ = 0;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.v1.RoutingHint routingHint_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.RoutingHint,
+            com.google.spanner.v1.RoutingHint.Builder,
+            com.google.spanner.v1.RoutingHintOrBuilder>
+        routingHintBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the routingHint field is set.
+     */
+    public boolean hasRoutingHint() {
+      return ((bitField0_ & 0x00004000) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The routingHint.
+     */
+    public com.google.spanner.v1.RoutingHint getRoutingHint() {
+      if (routingHintBuilder_ == null) {
+        return routingHint_ == null
+            ? com.google.spanner.v1.RoutingHint.getDefaultInstance()
+            : routingHint_;
+      } else {
+        return routingHintBuilder_.getMessage();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setRoutingHint(com.google.spanner.v1.RoutingHint value) {
+      if (routingHintBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        routingHint_ = value;
+      } else {
+        routingHintBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setRoutingHint(com.google.spanner.v1.RoutingHint.Builder builderForValue) {
+      if (routingHintBuilder_ == null) {
+        routingHint_ = builderForValue.build();
+      } else {
+        routingHintBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeRoutingHint(com.google.spanner.v1.RoutingHint value) {
+      if (routingHintBuilder_ == null) {
+        if (((bitField0_ & 0x00004000) != 0)
+            && routingHint_ != null
+            && routingHint_ != com.google.spanner.v1.RoutingHint.getDefaultInstance()) {
+          getRoutingHintBuilder().mergeFrom(value);
+        } else {
+          routingHint_ = value;
+        }
+      } else {
+        routingHintBuilder_.mergeFrom(value);
+      }
+      if (routingHint_ != null) {
+        bitField0_ |= 0x00004000;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearRoutingHint() {
+      bitField0_ = (bitField0_ & ~0x00004000);
+      routingHint_ = null;
+      if (routingHintBuilder_ != null) {
+        routingHintBuilder_.dispose();
+        routingHintBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.RoutingHint.Builder getRoutingHintBuilder() {
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return getRoutingHintFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.RoutingHintOrBuilder getRoutingHintOrBuilder() {
+      if (routingHintBuilder_ != null) {
+        return routingHintBuilder_.getMessageOrBuilder();
+      } else {
+        return routingHint_ == null
+            ? com.google.spanner.v1.RoutingHint.getDefaultInstance()
+            : routingHint_;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. If present, it makes the Spanner requests location-aware.
+     *
+     * It gives the server hints that can be used to route the request
+     * to an appropriate server, potentially significantly decreasing latency and
+     * improving throughput. To achieve improved performance, most fields must be
+     * filled in with accurate values.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.RoutingHint,
+            com.google.spanner.v1.RoutingHint.Builder,
+            com.google.spanner.v1.RoutingHintOrBuilder>
+        getRoutingHintFieldBuilder() {
+      if (routingHintBuilder_ == null) {
+        routingHintBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.RoutingHint,
+                com.google.spanner.v1.RoutingHint.Builder,
+                com.google.spanner.v1.RoutingHintOrBuilder>(
+                getRoutingHint(), getParentForChildren(), isClean());
+        routingHint_ = null;
+      }
+      return routingHintBuilder_;
     }
 
     @java.lang.Override
