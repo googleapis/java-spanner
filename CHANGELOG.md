@@ -1,5 +1,36 @@
 # Changelog
 
+## [6.103.0](https://github.com/googleapis/java-spanner/compare/v6.102.1...v6.103.0) (2025-11-17)
+
+
+### Features
+
+* Add grpc.xds.resource_type label to xDS client metrics ([#4222](https://github.com/googleapis/java-spanner/issues/4222)) ([97bed3c](https://github.com/googleapis/java-spanner/commit/97bed3cf1a9df542acc4685c2ce4dbfa629b2cd3))
+* Exposing AutoscalingConfig in InstancePartition ([22edecf](https://github.com/googleapis/java-spanner/commit/22edecf8518844860c3cb47883544efd36cbc311))
+
+
+### Bug Fixes
+
+* Add env var to allow disabling directpath bound token ([#4189](https://github.com/googleapis/java-spanner/issues/4189)) ([0ca9541](https://github.com/googleapis/java-spanner/commit/0ca95412c778e3478cb66e4bea124396326c6056))
+* Allow DML THEN RETURN with retryAbortsInternally=false ([#4225](https://github.com/googleapis/java-spanner/issues/4225)) ([f49cc47](https://github.com/googleapis/java-spanner/commit/f49cc47e663836696ef151738510e68324e139dc))
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.64.1 ([22edecf](https://github.com/googleapis/java-spanner/commit/22edecf8518844860c3cb47883544efd36cbc311))
+* Remove URL encoding in project name ([#4188](https://github.com/googleapis/java-spanner/issues/4188)) ([abba0c1](https://github.com/googleapis/java-spanner/commit/abba0c1730ea792407bea073ea65da55128cd764))
+
+
+### Dependencies
+
+* Update actions/checkout action to v5 ([#4166](https://github.com/googleapis/java-spanner/issues/4166)) ([50a56f7](https://github.com/googleapis/java-spanner/commit/50a56f7d47541dd581f7b425df36a080ecc11a74))
+* Update all tracing and telemetry dependencies ([#4230](https://github.com/googleapis/java-spanner/issues/4230)) ([d60124c](https://github.com/googleapis/java-spanner/commit/d60124cbe317d4c2489ea35de81943cfd2b8f697))
+* Update dependency com.google.api.grpc:proto-google-cloud-trace-v1 to v2.79.0 ([#4172](https://github.com/googleapis/java-spanner/issues/4172)) ([3a329fd](https://github.com/googleapis/java-spanner/commit/3a329fdb2fc68ff9d19717b534dd667f931d51fd))
+* Update dependency com.google.auto.value:auto-value-annotations to v1.11.1 ([#4216](https://github.com/googleapis/java-spanner/issues/4216)) ([84150c7](https://github.com/googleapis/java-spanner/commit/84150c73bbed2a6d58408ae0b8bd59709fc751db))
+* Update dependency com.google.cloud:google-cloud-trace to v2.79.0 ([#4174](https://github.com/googleapis/java-spanner/issues/4174)) ([3e93ca0](https://github.com/googleapis/java-spanner/commit/3e93ca077b94ad06867e3c9fdfe19527855423a2))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.54.1 ([#4193](https://github.com/googleapis/java-spanner/issues/4193)) ([ad235cf](https://github.com/googleapis/java-spanner/commit/ad235cfc9041f52c2f7b76f67eeaa6c03c5840aa))
+* Update dependency commons-cli:commons-cli to v1.11.0 ([#4218](https://github.com/googleapis/java-spanner/issues/4218)) ([33449ba](https://github.com/googleapis/java-spanner/commit/33449baf64a3d5b78fff323737ffeb28c8a9461b))
+* Update dependency commons-io:commons-io to v2.21.0 ([#4198](https://github.com/googleapis/java-spanner/issues/4198)) ([1f31169](https://github.com/googleapis/java-spanner/commit/1f3116947069ac11c948b510e6a9a7a8a6aa6061))
+* Update dependency net.bytebuddy:byte-buddy to v1.18.1 ([#4214](https://github.com/googleapis/java-spanner/issues/4214)) ([0c1d843](https://github.com/googleapis/java-spanner/commit/0c1d843ad42f213d4d9ec2d98a12e21e991ac010))
+* Update dependency net.bytebuddy:byte-buddy-agent to v1.18.1 ([#4215](https://github.com/googleapis/java-spanner/issues/4215)) ([76ce01b](https://github.com/googleapis/java-spanner/commit/76ce01b99e5c1274e9103c27ebc6bbdf482bebcd))
+* Update opentelemetry.version to v1.56.0 ([#4167](https://github.com/googleapis/java-spanner/issues/4167)) ([a24f219](https://github.com/googleapis/java-spanner/commit/a24f21930978583a0b8d7d39130fa0fc3fec7b2d))
+
 ## [6.102.1](https://github.com/googleapis/java-spanner/compare/v6.102.0...v6.102.1) (2025-10-23)
 
 

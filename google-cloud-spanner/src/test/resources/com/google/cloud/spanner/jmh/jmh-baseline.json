@@ -5,7 +5,7 @@
         {
           "percentile": "50.0",
           "baseline": "450",
-          "difference": "15"
+          "difference": "20"
         }
       ]
     },
@@ -14,7 +14,7 @@
         {
           "percentile": "50.0",
           "baseline": "450",
-          "difference": "15"
+          "difference": "20"
         }
       ]
     }
