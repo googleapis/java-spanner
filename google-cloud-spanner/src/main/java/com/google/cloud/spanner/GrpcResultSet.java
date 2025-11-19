@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerExceptionFactory.asSpannerException;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -76,7 +77,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>>
   @Override
   public boolean next() throws SpannerException {
     if (error != null) {
-      throw newSpannerException(error);
+      throw asSpannerException(error);
     }
     try {
       if (currRow == null) {
@@ -108,7 +109,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>>
       return hasNext;
     } catch (Throwable t) {
       throw yieldError(
-          SpannerExceptionFactory.asSpannerException(t),
+          asSpannerException(t),
           iterator.isWithBeginTransaction() && currRow == null,
           iterator.isLastStatement());
     }

@@ -123,7 +123,7 @@ final class AsyncTransactionManagerImpl
           @Override
           public void onFailure(Throwable t) {
             onError(t);
-            res.setException(SpannerExceptionFactory.newSpannerException(t));
+            res.setException(SpannerExceptionFactory.asSpannerException(t));
           }
 
           @Override

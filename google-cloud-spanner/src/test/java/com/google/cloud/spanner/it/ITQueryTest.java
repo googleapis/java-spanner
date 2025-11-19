@@ -22,6 +22,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -131,16 +132,15 @@ public class ITQueryTest {
 
   @Test
   public void badQuery() {
-    try {
-      execute(Statement.of("SELECT Apples AND Oranges"), Type.int64());
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      if (dialect.dialect == Dialect.POSTGRESQL) {
-        assertThat(ex.getMessage()).contains("column \"apples\" does not exist");
-      } else {
-        assertThat(ex.getMessage()).contains("Unrecognized name: Apples");
-      }
+    SpannerException exception = assertThrows(SpannerException.class, () -> execute(Statement.of("SELECT Apples AND Oranges"), Type.int64()));
+    assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      assertTrue(exception.getMessage(), exception.getMessage().contains("column \"apples\" does not exist"));
+      // See https://www.postgresql.org/docs/current/errcodes-appendix.html
+      // '42703' == undefined_column
+      assertEquals("42703", exception.getPostgreSQLErrorCode());
+    } else {
+      assertTrue(exception.getMessage(), exception.getMessage().contains("Unrecognized name: Apples"));
     }
   }
 
