@@ -132,15 +132,21 @@ public class ITQueryTest {
 
   @Test
   public void badQuery() {
-    SpannerException exception = assertThrows(SpannerException.class, () -> execute(Statement.of("SELECT Apples AND Oranges"), Type.int64()));
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () -> execute(Statement.of("SELECT Apples AND Oranges"), Type.int64()));
     assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      assertTrue(exception.getMessage(), exception.getMessage().contains("column \"apples\" does not exist"));
+      assertTrue(
+          exception.getMessage(),
+          exception.getMessage().contains("column \"apples\" does not exist"));
       // See https://www.postgresql.org/docs/current/errcodes-appendix.html
       // '42703' == undefined_column
       assertEquals("42703", exception.getPostgreSQLErrorCode());
     } else {
-      assertTrue(exception.getMessage(), exception.getMessage().contains("Unrecognized name: Apples"));
+      assertTrue(
+          exception.getMessage(), exception.getMessage().contains("Unrecognized name: Apples"));
     }
   }
 

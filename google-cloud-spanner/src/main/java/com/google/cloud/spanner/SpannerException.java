@@ -114,7 +114,10 @@ public class SpannerException extends BaseGrpcServiceException {
     return code;
   }
 
-  /** Returns the PostgreSQL SQLState error code that is encoded in this exception, or null if this {@link SpannerException} does not include a PostgreSQL error code. */
+  /**
+   * Returns the PostgreSQL SQLState error code that is encoded in this exception, or null if this
+   * {@link SpannerException} does not include a PostgreSQL error code.
+   */
   public String getPostgreSQLErrorCode() {
     ErrorDetails details = getErrorDetails();
     if (details == null || details.getErrorInfo() == null) {
