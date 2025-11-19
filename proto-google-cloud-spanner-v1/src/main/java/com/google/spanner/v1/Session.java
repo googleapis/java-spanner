@@ -443,8 +443,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Optional. If `true`, specifies a multiplexed session. Use a multiplexed
-   * session for multiple, concurrent read-only operations. Don't use them for
-   * read-write transactions, partitioned reads, or partitioned queries. Use
+   * session for multiple, concurrent operations including any combination of
+   * read-only and read-write transactions. Use
    * [`sessions.create`][google.spanner.v1.Spanner.CreateSession] to create
    * multiplexed sessions. Don't use
    * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions] to
@@ -1875,8 +1875,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Optional. If `true`, specifies a multiplexed session. Use a multiplexed
-     * session for multiple, concurrent read-only operations. Don't use them for
-     * read-write transactions, partitioned reads, or partitioned queries. Use
+     * session for multiple, concurrent operations including any combination of
+     * read-only and read-write transactions. Use
      * [`sessions.create`][google.spanner.v1.Spanner.CreateSession] to create
      * multiplexed sessions. Don't use
      * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions] to
@@ -1898,8 +1898,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Optional. If `true`, specifies a multiplexed session. Use a multiplexed
-     * session for multiple, concurrent read-only operations. Don't use them for
-     * read-write transactions, partitioned reads, or partitioned queries. Use
+     * session for multiple, concurrent operations including any combination of
+     * read-only and read-write transactions. Use
      * [`sessions.create`][google.spanner.v1.Spanner.CreateSession] to create
      * multiplexed sessions. Don't use
      * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions] to
@@ -1925,8 +1925,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Optional. If `true`, specifies a multiplexed session. Use a multiplexed
-     * session for multiple, concurrent read-only operations. Don't use them for
-     * read-write transactions, partitioned reads, or partitioned queries. Use
+     * session for multiple, concurrent operations including any combination of
+     * read-only and read-write transactions. Use
      * [`sessions.create`][google.spanner.v1.Spanner.CreateSession] to create
      * multiplexed sessions. Don't use
      * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions] to

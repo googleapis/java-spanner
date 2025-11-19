@@ -68,7 +68,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * `IsolationLevel` is used when setting `isolation_level` for a transaction.
+   * `IsolationLevel` is used when setting the [isolation
+   * level](https://cloud.google.com/spanner/docs/isolation-levels) for a
+   * transaction.
    * </pre>
    *
    * Protobuf enum {@code google.spanner.v1.TransactionOptions.IsolationLevel}
@@ -115,7 +117,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * `SERIALIZABLE` transactions, only write-write conflicts are detected in
      * snapshot transactions.
      *
-     * This isolation level does not support Read-only and Partitioned DML
+     * This isolation level does not support read-only and partitioned DML
      * transactions.
      *
      * When `REPEATABLE_READ` is specified on a read-write transaction, the
@@ -171,7 +173,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * `SERIALIZABLE` transactions, only write-write conflicts are detected in
      * snapshot transactions.
      *
-     * This isolation level does not support Read-only and Partitioned DML
+     * This isolation level does not support read-only and partitioned DML
      * transactions.
      *
      * When `REPEATABLE_READ` is specified on a read-write transaction, the

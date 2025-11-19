@@ -661,9 +661,10 @@ public class SpannerClient implements BackgroundResource {
    * }</pre>
    *
    * @param database Required. The database in which the new sessions are created.
-   * @param sessionCount Required. The number of sessions to be created in this batch call. The API
-   *     can return fewer than the requested number of sessions. If a specific number of sessions
-   *     are desired, the client can make additional calls to `BatchCreateSessions` (adjusting
+   * @param sessionCount Required. The number of sessions to be created in this batch call. At least
+   *     one session is created. The API can return fewer than the requested number of sessions. If
+   *     a specific number of sessions are desired, the client can make additional calls to
+   *     `BatchCreateSessions` (adjusting
    *     [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count] as necessary).
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -701,9 +702,10 @@ public class SpannerClient implements BackgroundResource {
    * }</pre>
    *
    * @param database Required. The database in which the new sessions are created.
-   * @param sessionCount Required. The number of sessions to be created in this batch call. The API
-   *     can return fewer than the requested number of sessions. If a specific number of sessions
-   *     are desired, the client can make additional calls to `BatchCreateSessions` (adjusting
+   * @param sessionCount Required. The number of sessions to be created in this batch call. At least
+   *     one session is created. The API can return fewer than the requested number of sessions. If
+   *     a specific number of sessions are desired, the client can make additional calls to
+   *     `BatchCreateSessions` (adjusting
    *     [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count] as necessary).
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1216,6 +1218,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .setLastStatement(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
    * }
@@ -1269,6 +1272,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .setLastStatement(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
    *   // Do something.
@@ -1315,6 +1319,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .setLastStatement(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ServerStream<PartialResultSet> stream =
    *       spannerClient.executeStreamingSqlCallable().call(request);
@@ -1454,6 +1459,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ResultSet response = spannerClient.read(request);
    * }
@@ -1504,6 +1510,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.readCallable().futureCall(request);
    *   // Do something.
@@ -1546,6 +1553,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ServerStream<PartialResultSet> stream = spannerClient.streamingReadCallable().call(request);
    *   for (PartialResultSet response : stream) {

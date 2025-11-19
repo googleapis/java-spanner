@@ -3019,6 +3019,2744 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
   }
 
+  public interface SendOrBuilder
+      extends
+      // @@protoc_insertion_point(interface_extends:google.spanner.v1.Mutation.Send)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The queue to which the message will be sent.
+     * </pre>
+     *
+     * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The queue.
+     */
+    java.lang.String getQueue();
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The queue to which the message will be sent.
+     * </pre>
+     *
+     * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The bytes for queue.
+     */
+    com.google.protobuf.ByteString getQueueBytes();
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be sent.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return Whether the key field is set.
+     */
+    boolean hasKey();
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be sent.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The key.
+     */
+    com.google.protobuf.ListValue getKey();
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be sent.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     */
+    com.google.protobuf.ListValueOrBuilder getKeyOrBuilder();
+
+    /**
+     *
+     *
+     * <pre>
+     * The time at which Spanner will begin attempting to deliver the message.
+     * If `deliver_time` is not set, Spanner will deliver the message
+     * immediately. If `deliver_time` is in the past, Spanner will replace it
+     * with a value closer to the current time.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+     *
+     * @return Whether the deliverTime field is set.
+     */
+    boolean hasDeliverTime();
+
+    /**
+     *
+     *
+     * <pre>
+     * The time at which Spanner will begin attempting to deliver the message.
+     * If `deliver_time` is not set, Spanner will deliver the message
+     * immediately. If `deliver_time` is in the past, Spanner will replace it
+     * with a value closer to the current time.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+     *
+     * @return The deliverTime.
+     */
+    com.google.protobuf.Timestamp getDeliverTime();
+
+    /**
+     *
+     *
+     * <pre>
+     * The time at which Spanner will begin attempting to deliver the message.
+     * If `deliver_time` is not set, Spanner will deliver the message
+     * immediately. If `deliver_time` is in the past, Spanner will replace it
+     * with a value closer to the current time.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+     */
+    com.google.protobuf.TimestampOrBuilder getDeliverTimeOrBuilder();
+
+    /**
+     *
+     *
+     * <pre>
+     * The payload of the message.
+     * </pre>
+     *
+     * <code>.google.protobuf.Value payload = 4;</code>
+     *
+     * @return Whether the payload field is set.
+     */
+    boolean hasPayload();
+
+    /**
+     *
+     *
+     * <pre>
+     * The payload of the message.
+     * </pre>
+     *
+     * <code>.google.protobuf.Value payload = 4;</code>
+     *
+     * @return The payload.
+     */
+    com.google.protobuf.Value getPayload();
+
+    /**
+     *
+     *
+     * <pre>
+     * The payload of the message.
+     * </pre>
+     *
+     * <code>.google.protobuf.Value payload = 4;</code>
+     */
+    com.google.protobuf.ValueOrBuilder getPayloadOrBuilder();
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Arguments to [send][google.spanner.v1.Mutation.send] operations.
+   * </pre>
+   *
+   * Protobuf type {@code google.spanner.v1.Mutation.Send}
+   */
+  public static final class Send extends com.google.protobuf.GeneratedMessageV3
+      implements
+      // @@protoc_insertion_point(message_implements:google.spanner.v1.Mutation.Send)
+      SendOrBuilder {
+    private static final long serialVersionUID = 0L;
+
+    // Use Send.newBuilder() to construct.
+    private Send(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+
+    private Send() {
+      queue_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+      return new Send();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.google.spanner.v1.MutationProto
+          .internal_static_google_spanner_v1_Mutation_Send_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.MutationProto
+          .internal_static_google_spanner_v1_Mutation_Send_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.Mutation.Send.class,
+              com.google.spanner.v1.Mutation.Send.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int QUEUE_FIELD_NUMBER = 1;
+
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object queue_ = "";
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The queue to which the message will be sent.
+     * </pre>
+     *
+     * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The queue.
+     */
+    @java.lang.Override
+    public java.lang.String getQueue() {
+      java.lang.Object ref = queue_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        queue_ = s;
+        return s;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The queue to which the message will be sent.
+     * </pre>
+     *
+     * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The bytes for queue.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getQueueBytes() {
+      java.lang.Object ref = queue_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        queue_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int KEY_FIELD_NUMBER = 2;
+    private com.google.protobuf.ListValue key_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be sent.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return Whether the key field is set.
+     */
+    @java.lang.Override
+    public boolean hasKey() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be sent.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The key.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ListValue getKey() {
+      return key_ == null ? com.google.protobuf.ListValue.getDefaultInstance() : key_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be sent.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.ListValueOrBuilder getKeyOrBuilder() {
+      return key_ == null ? com.google.protobuf.ListValue.getDefaultInstance() : key_;
+    }
+
+    public static final int DELIVER_TIME_FIELD_NUMBER = 3;
+    private com.google.protobuf.Timestamp deliverTime_;
+
+    /**
+     *
+     *
+     * <pre>
+     * The time at which Spanner will begin attempting to deliver the message.
+     * If `deliver_time` is not set, Spanner will deliver the message
+     * immediately. If `deliver_time` is in the past, Spanner will replace it
+     * with a value closer to the current time.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+     *
+     * @return Whether the deliverTime field is set.
+     */
+    @java.lang.Override
+    public boolean hasDeliverTime() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * The time at which Spanner will begin attempting to deliver the message.
+     * If `deliver_time` is not set, Spanner will deliver the message
+     * immediately. If `deliver_time` is in the past, Spanner will replace it
+     * with a value closer to the current time.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+     *
+     * @return The deliverTime.
+     */
+    @java.lang.Override
+    public com.google.protobuf.Timestamp getDeliverTime() {
+      return deliverTime_ == null
+          ? com.google.protobuf.Timestamp.getDefaultInstance()
+          : deliverTime_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * The time at which Spanner will begin attempting to deliver the message.
+     * If `deliver_time` is not set, Spanner will deliver the message
+     * immediately. If `deliver_time` is in the past, Spanner will replace it
+     * with a value closer to the current time.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.TimestampOrBuilder getDeliverTimeOrBuilder() {
+      return deliverTime_ == null
+          ? com.google.protobuf.Timestamp.getDefaultInstance()
+          : deliverTime_;
+    }
+
+    public static final int PAYLOAD_FIELD_NUMBER = 4;
+    private com.google.protobuf.Value payload_;
+
+    /**
+     *
+     *
+     * <pre>
+     * The payload of the message.
+     * </pre>
+     *
+     * <code>.google.protobuf.Value payload = 4;</code>
+     *
+     * @return Whether the payload field is set.
+     */
+    @java.lang.Override
+    public boolean hasPayload() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * The payload of the message.
+     * </pre>
+     *
+     * <code>.google.protobuf.Value payload = 4;</code>
+     *
+     * @return The payload.
+     */
+    @java.lang.Override
+    public com.google.protobuf.Value getPayload() {
+      return payload_ == null ? com.google.protobuf.Value.getDefaultInstance() : payload_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * The payload of the message.
+     * </pre>
+     *
+     * <code>.google.protobuf.Value payload = 4;</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.ValueOrBuilder getPayloadOrBuilder() {
+      return payload_ == null ? com.google.protobuf.Value.getDefaultInstance() : payload_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(queue_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, queue_);
+      }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeMessage(2, getKey());
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeMessage(3, getDeliverTime());
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        output.writeMessage(4, getPayload());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(queue_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, queue_);
+      }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getKey());
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getDeliverTime());
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getPayload());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj instanceof com.google.spanner.v1.Mutation.Send)) {
+        return super.equals(obj);
+      }
+      com.google.spanner.v1.Mutation.Send other = (com.google.spanner.v1.Mutation.Send) obj;
+
+      if (!getQueue().equals(other.getQueue())) return false;
+      if (hasKey() != other.hasKey()) return false;
+      if (hasKey()) {
+        if (!getKey().equals(other.getKey())) return false;
+      }
+      if (hasDeliverTime() != other.hasDeliverTime()) return false;
+      if (hasDeliverTime()) {
+        if (!getDeliverTime().equals(other.getDeliverTime())) return false;
+      }
+      if (hasPayload() != other.hasPayload()) return false;
+      if (hasPayload()) {
+        if (!getPayload().equals(other.getPayload())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + QUEUE_FIELD_NUMBER;
+      hash = (53 * hash) + getQueue().hashCode();
+      if (hasKey()) {
+        hash = (37 * hash) + KEY_FIELD_NUMBER;
+        hash = (53 * hash) + getKey().hashCode();
+      }
+      if (hasDeliverTime()) {
+        hash = (37 * hash) + DELIVER_TIME_FIELD_NUMBER;
+        hash = (53 * hash) + getDeliverTime().hashCode();
+      }
+      if (hasPayload()) {
+        hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
+        hash = (53 * hash) + getPayload().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(
+        java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(
+        byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseDelimitedFrom(
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.Mutation.Send parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(com.google.spanner.v1.Mutation.Send prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Arguments to [send][google.spanner.v1.Mutation.send] operations.
+     * </pre>
+     *
+     * Protobuf type {@code google.spanner.v1.Mutation.Send}
+     */
+    public static final class Builder
+        extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+        implements
+        // @@protoc_insertion_point(builder_implements:google.spanner.v1.Mutation.Send)
+        com.google.spanner.v1.Mutation.SendOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.google.spanner.v1.MutationProto
+            .internal_static_google_spanner_v1_Mutation_Send_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.v1.MutationProto
+            .internal_static_google_spanner_v1_Mutation_Send_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.v1.Mutation.Send.class,
+                com.google.spanner.v1.Mutation.Send.Builder.class);
+      }
+
+      // Construct using com.google.spanner.v1.Mutation.Send.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
+          getKeyFieldBuilder();
+          getDeliverTimeFieldBuilder();
+          getPayloadFieldBuilder();
+        }
+      }
+
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        queue_ = "";
+        key_ = null;
+        if (keyBuilder_ != null) {
+          keyBuilder_.dispose();
+          keyBuilder_ = null;
+        }
+        deliverTime_ = null;
+        if (deliverTimeBuilder_ != null) {
+          deliverTimeBuilder_.dispose();
+          deliverTimeBuilder_ = null;
+        }
+        payload_ = null;
+        if (payloadBuilder_ != null) {
+          payloadBuilder_.dispose();
+          payloadBuilder_ = null;
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.google.spanner.v1.MutationProto
+            .internal_static_google_spanner_v1_Mutation_Send_descriptor;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.Mutation.Send getDefaultInstanceForType() {
+        return com.google.spanner.v1.Mutation.Send.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.Mutation.Send build() {
+        com.google.spanner.v1.Mutation.Send result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.Mutation.Send buildPartial() {
+        com.google.spanner.v1.Mutation.Send result = new com.google.spanner.v1.Mutation.Send(this);
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.Mutation.Send result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.queue_ = queue_;
+        }
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.key_ = keyBuilder_ == null ? key_ : keyBuilder_.build();
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.deliverTime_ =
+              deliverTimeBuilder_ == null ? deliverTime_ : deliverTimeBuilder_.build();
+          to_bitField0_ |= 0x00000002;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.payload_ = payloadBuilder_ == null ? payload_ : payloadBuilder_.build();
+          to_bitField0_ |= 0x00000004;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.setField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+
+      @java.lang.Override
+      public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.google.spanner.v1.Mutation.Send) {
+          return mergeFrom((com.google.spanner.v1.Mutation.Send) other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.google.spanner.v1.Mutation.Send other) {
+        if (other == com.google.spanner.v1.Mutation.Send.getDefaultInstance()) return this;
+        if (!other.getQueue().isEmpty()) {
+          queue_ = other.queue_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (other.hasKey()) {
+          mergeKey(other.getKey());
+        }
+        if (other.hasDeliverTime()) {
+          mergeDeliverTime(other.getDeliverTime());
+        }
+        if (other.hasPayload()) {
+          mergePayload(other.getPayload());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  queue_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+              case 18:
+                {
+                  input.readMessage(getKeyFieldBuilder().getBuilder(), extensionRegistry);
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+              case 26:
+                {
+                  input.readMessage(getDeliverTimeFieldBuilder().getBuilder(), extensionRegistry);
+                  bitField0_ |= 0x00000004;
+                  break;
+                } // case 26
+              case 34:
+                {
+                  input.readMessage(getPayloadFieldBuilder().getBuilder(), extensionRegistry);
+                  bitField0_ |= 0x00000008;
+                  break;
+                } // case 34
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+
+      private int bitField0_;
+
+      private java.lang.Object queue_ = "";
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue to which the message will be sent.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return The queue.
+       */
+      public java.lang.String getQueue() {
+        java.lang.Object ref = queue_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          queue_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue to which the message will be sent.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return The bytes for queue.
+       */
+      public com.google.protobuf.ByteString getQueueBytes() {
+        java.lang.Object ref = queue_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b =
+              com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          queue_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue to which the message will be sent.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @param value The queue to set.
+       * @return This builder for chaining.
+       */
+      public Builder setQueue(java.lang.String value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        queue_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue to which the message will be sent.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearQueue() {
+        queue_ = getDefaultInstance().getQueue();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue to which the message will be sent.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @param value The bytes for queue to set.
+       * @return This builder for chaining.
+       */
+      public Builder setQueueBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        checkByteStringIsUtf8(value);
+        queue_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ListValue key_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.ListValue,
+              com.google.protobuf.ListValue.Builder,
+              com.google.protobuf.ListValueOrBuilder>
+          keyBuilder_;
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return Whether the key field is set.
+       */
+      public boolean hasKey() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return The key.
+       */
+      public com.google.protobuf.ListValue getKey() {
+        if (keyBuilder_ == null) {
+          return key_ == null ? com.google.protobuf.ListValue.getDefaultInstance() : key_;
+        } else {
+          return keyBuilder_.getMessage();
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public Builder setKey(com.google.protobuf.ListValue value) {
+        if (keyBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          key_ = value;
+        } else {
+          keyBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public Builder setKey(com.google.protobuf.ListValue.Builder builderForValue) {
+        if (keyBuilder_ == null) {
+          key_ = builderForValue.build();
+        } else {
+          keyBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public Builder mergeKey(com.google.protobuf.ListValue value) {
+        if (keyBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) != 0)
+              && key_ != null
+              && key_ != com.google.protobuf.ListValue.getDefaultInstance()) {
+            getKeyBuilder().mergeFrom(value);
+          } else {
+            key_ = value;
+          }
+        } else {
+          keyBuilder_.mergeFrom(value);
+        }
+        if (key_ != null) {
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public Builder clearKey() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        key_ = null;
+        if (keyBuilder_ != null) {
+          keyBuilder_.dispose();
+          keyBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public com.google.protobuf.ListValue.Builder getKeyBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getKeyFieldBuilder().getBuilder();
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public com.google.protobuf.ListValueOrBuilder getKeyOrBuilder() {
+        if (keyBuilder_ != null) {
+          return keyBuilder_.getMessageOrBuilder();
+        } else {
+          return key_ == null ? com.google.protobuf.ListValue.getDefaultInstance() : key_;
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be sent.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.ListValue,
+              com.google.protobuf.ListValue.Builder,
+              com.google.protobuf.ListValueOrBuilder>
+          getKeyFieldBuilder() {
+        if (keyBuilder_ == null) {
+          keyBuilder_ =
+              new com.google.protobuf.SingleFieldBuilderV3<
+                  com.google.protobuf.ListValue,
+                  com.google.protobuf.ListValue.Builder,
+                  com.google.protobuf.ListValueOrBuilder>(
+                  getKey(), getParentForChildren(), isClean());
+          key_ = null;
+        }
+        return keyBuilder_;
+      }
+
+      private com.google.protobuf.Timestamp deliverTime_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Timestamp,
+              com.google.protobuf.Timestamp.Builder,
+              com.google.protobuf.TimestampOrBuilder>
+          deliverTimeBuilder_;
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       *
+       * @return Whether the deliverTime field is set.
+       */
+      public boolean hasDeliverTime() {
+        return ((bitField0_ & 0x00000004) != 0);
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       *
+       * @return The deliverTime.
+       */
+      public com.google.protobuf.Timestamp getDeliverTime() {
+        if (deliverTimeBuilder_ == null) {
+          return deliverTime_ == null
+              ? com.google.protobuf.Timestamp.getDefaultInstance()
+              : deliverTime_;
+        } else {
+          return deliverTimeBuilder_.getMessage();
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       */
+      public Builder setDeliverTime(com.google.protobuf.Timestamp value) {
+        if (deliverTimeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          deliverTime_ = value;
+        } else {
+          deliverTimeBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       */
+      public Builder setDeliverTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+        if (deliverTimeBuilder_ == null) {
+          deliverTime_ = builderForValue.build();
+        } else {
+          deliverTimeBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       */
+      public Builder mergeDeliverTime(com.google.protobuf.Timestamp value) {
+        if (deliverTimeBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) != 0)
+              && deliverTime_ != null
+              && deliverTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+            getDeliverTimeBuilder().mergeFrom(value);
+          } else {
+            deliverTime_ = value;
+          }
+        } else {
+          deliverTimeBuilder_.mergeFrom(value);
+        }
+        if (deliverTime_ != null) {
+          bitField0_ |= 0x00000004;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       */
+      public Builder clearDeliverTime() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        deliverTime_ = null;
+        if (deliverTimeBuilder_ != null) {
+          deliverTimeBuilder_.dispose();
+          deliverTimeBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       */
+      public com.google.protobuf.Timestamp.Builder getDeliverTimeBuilder() {
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return getDeliverTimeFieldBuilder().getBuilder();
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       */
+      public com.google.protobuf.TimestampOrBuilder getDeliverTimeOrBuilder() {
+        if (deliverTimeBuilder_ != null) {
+          return deliverTimeBuilder_.getMessageOrBuilder();
+        } else {
+          return deliverTime_ == null
+              ? com.google.protobuf.Timestamp.getDefaultInstance()
+              : deliverTime_;
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The time at which Spanner will begin attempting to deliver the message.
+       * If `deliver_time` is not set, Spanner will deliver the message
+       * immediately. If `deliver_time` is in the past, Spanner will replace it
+       * with a value closer to the current time.
+       * </pre>
+       *
+       * <code>.google.protobuf.Timestamp deliver_time = 3;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Timestamp,
+              com.google.protobuf.Timestamp.Builder,
+              com.google.protobuf.TimestampOrBuilder>
+          getDeliverTimeFieldBuilder() {
+        if (deliverTimeBuilder_ == null) {
+          deliverTimeBuilder_ =
+              new com.google.protobuf.SingleFieldBuilderV3<
+                  com.google.protobuf.Timestamp,
+                  com.google.protobuf.Timestamp.Builder,
+                  com.google.protobuf.TimestampOrBuilder>(
+                  getDeliverTime(), getParentForChildren(), isClean());
+          deliverTime_ = null;
+        }
+        return deliverTimeBuilder_;
+      }
+
+      private com.google.protobuf.Value payload_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Value,
+              com.google.protobuf.Value.Builder,
+              com.google.protobuf.ValueOrBuilder>
+          payloadBuilder_;
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       *
+       * @return Whether the payload field is set.
+       */
+      public boolean hasPayload() {
+        return ((bitField0_ & 0x00000008) != 0);
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       *
+       * @return The payload.
+       */
+      public com.google.protobuf.Value getPayload() {
+        if (payloadBuilder_ == null) {
+          return payload_ == null ? com.google.protobuf.Value.getDefaultInstance() : payload_;
+        } else {
+          return payloadBuilder_.getMessage();
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       */
+      public Builder setPayload(com.google.protobuf.Value value) {
+        if (payloadBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          payload_ = value;
+        } else {
+          payloadBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       */
+      public Builder setPayload(com.google.protobuf.Value.Builder builderForValue) {
+        if (payloadBuilder_ == null) {
+          payload_ = builderForValue.build();
+        } else {
+          payloadBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       */
+      public Builder mergePayload(com.google.protobuf.Value value) {
+        if (payloadBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) != 0)
+              && payload_ != null
+              && payload_ != com.google.protobuf.Value.getDefaultInstance()) {
+            getPayloadBuilder().mergeFrom(value);
+          } else {
+            payload_ = value;
+          }
+        } else {
+          payloadBuilder_.mergeFrom(value);
+        }
+        if (payload_ != null) {
+          bitField0_ |= 0x00000008;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       */
+      public Builder clearPayload() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        payload_ = null;
+        if (payloadBuilder_ != null) {
+          payloadBuilder_.dispose();
+          payloadBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       */
+      public com.google.protobuf.Value.Builder getPayloadBuilder() {
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return getPayloadFieldBuilder().getBuilder();
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       */
+      public com.google.protobuf.ValueOrBuilder getPayloadOrBuilder() {
+        if (payloadBuilder_ != null) {
+          return payloadBuilder_.getMessageOrBuilder();
+        } else {
+          return payload_ == null ? com.google.protobuf.Value.getDefaultInstance() : payload_;
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * The payload of the message.
+       * </pre>
+       *
+       * <code>.google.protobuf.Value payload = 4;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Value,
+              com.google.protobuf.Value.Builder,
+              com.google.protobuf.ValueOrBuilder>
+          getPayloadFieldBuilder() {
+        if (payloadBuilder_ == null) {
+          payloadBuilder_ =
+              new com.google.protobuf.SingleFieldBuilderV3<
+                  com.google.protobuf.Value,
+                  com.google.protobuf.Value.Builder,
+                  com.google.protobuf.ValueOrBuilder>(
+                  getPayload(), getParentForChildren(), isClean());
+          payload_ = null;
+        }
+        return payloadBuilder_;
+      }
+
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+      // @@protoc_insertion_point(builder_scope:google.spanner.v1.Mutation.Send)
+    }
+
+    // @@protoc_insertion_point(class_scope:google.spanner.v1.Mutation.Send)
+    private static final com.google.spanner.v1.Mutation.Send DEFAULT_INSTANCE;
+
+    static {
+      DEFAULT_INSTANCE = new com.google.spanner.v1.Mutation.Send();
+    }
+
+    public static com.google.spanner.v1.Mutation.Send getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<Send> PARSER =
+        new com.google.protobuf.AbstractParser<Send>() {
+          @java.lang.Override
+          public Send parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
+          }
+        };
+
+    public static com.google.protobuf.Parser<Send> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Send> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.spanner.v1.Mutation.Send getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+  }
+
+  public interface AckOrBuilder
+      extends
+      // @@protoc_insertion_point(interface_extends:google.spanner.v1.Mutation.Ack)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The queue where the message to be acked is stored.
+     * </pre>
+     *
+     * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The queue.
+     */
+    java.lang.String getQueue();
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The queue where the message to be acked is stored.
+     * </pre>
+     *
+     * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The bytes for queue.
+     */
+    com.google.protobuf.ByteString getQueueBytes();
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be acked.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return Whether the key field is set.
+     */
+    boolean hasKey();
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be acked.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The key.
+     */
+    com.google.protobuf.ListValue getKey();
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be acked.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     */
+    com.google.protobuf.ListValueOrBuilder getKeyOrBuilder();
+
+    /**
+     *
+     *
+     * <pre>
+     * By default, an attempt to ack a message that does not exist will fail
+     * with a `NOT_FOUND` error. With `ignore_not_found` set to true, the ack
+     * will succeed even if the message does not exist. This is useful for
+     * unconditionally acking a message, even if it is missing or has already
+     * been acked.
+     * </pre>
+     *
+     * <code>bool ignore_not_found = 3;</code>
+     *
+     * @return The ignoreNotFound.
+     */
+    boolean getIgnoreNotFound();
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Arguments to [ack][google.spanner.v1.Mutation.ack] operations.
+   * </pre>
+   *
+   * Protobuf type {@code google.spanner.v1.Mutation.Ack}
+   */
+  public static final class Ack extends com.google.protobuf.GeneratedMessageV3
+      implements
+      // @@protoc_insertion_point(message_implements:google.spanner.v1.Mutation.Ack)
+      AckOrBuilder {
+    private static final long serialVersionUID = 0L;
+
+    // Use Ack.newBuilder() to construct.
+    private Ack(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+
+    private Ack() {
+      queue_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+      return new Ack();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.google.spanner.v1.MutationProto
+          .internal_static_google_spanner_v1_Mutation_Ack_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.MutationProto
+          .internal_static_google_spanner_v1_Mutation_Ack_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.Mutation.Ack.class,
+              com.google.spanner.v1.Mutation.Ack.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int QUEUE_FIELD_NUMBER = 1;
+
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object queue_ = "";
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The queue where the message to be acked is stored.
+     * </pre>
+     *
+     * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The queue.
+     */
+    @java.lang.Override
+    public java.lang.String getQueue() {
+      java.lang.Object ref = queue_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        queue_ = s;
+        return s;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The queue where the message to be acked is stored.
+     * </pre>
+     *
+     * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The bytes for queue.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getQueueBytes() {
+      java.lang.Object ref = queue_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        queue_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int KEY_FIELD_NUMBER = 2;
+    private com.google.protobuf.ListValue key_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be acked.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return Whether the key field is set.
+     */
+    @java.lang.Override
+    public boolean hasKey() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be acked.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     *
+     * @return The key.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ListValue getKey() {
+      return key_ == null ? com.google.protobuf.ListValue.getDefaultInstance() : key_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Required. The primary key of the message to be acked.
+     * </pre>
+     *
+     * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.ListValueOrBuilder getKeyOrBuilder() {
+      return key_ == null ? com.google.protobuf.ListValue.getDefaultInstance() : key_;
+    }
+
+    public static final int IGNORE_NOT_FOUND_FIELD_NUMBER = 3;
+    private boolean ignoreNotFound_ = false;
+
+    /**
+     *
+     *
+     * <pre>
+     * By default, an attempt to ack a message that does not exist will fail
+     * with a `NOT_FOUND` error. With `ignore_not_found` set to true, the ack
+     * will succeed even if the message does not exist. This is useful for
+     * unconditionally acking a message, even if it is missing or has already
+     * been acked.
+     * </pre>
+     *
+     * <code>bool ignore_not_found = 3;</code>
+     *
+     * @return The ignoreNotFound.
+     */
+    @java.lang.Override
+    public boolean getIgnoreNotFound() {
+      return ignoreNotFound_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(queue_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, queue_);
+      }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeMessage(2, getKey());
+      }
+      if (ignoreNotFound_ != false) {
+        output.writeBool(3, ignoreNotFound_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(queue_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, queue_);
+      }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getKey());
+      }
+      if (ignoreNotFound_ != false) {
+        size += com.google.protobuf.CodedOutputStream.computeBoolSize(3, ignoreNotFound_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj instanceof com.google.spanner.v1.Mutation.Ack)) {
+        return super.equals(obj);
+      }
+      com.google.spanner.v1.Mutation.Ack other = (com.google.spanner.v1.Mutation.Ack) obj;
+
+      if (!getQueue().equals(other.getQueue())) return false;
+      if (hasKey() != other.hasKey()) return false;
+      if (hasKey()) {
+        if (!getKey().equals(other.getKey())) return false;
+      }
+      if (getIgnoreNotFound() != other.getIgnoreNotFound()) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + QUEUE_FIELD_NUMBER;
+      hash = (53 * hash) + getQueue().hashCode();
+      if (hasKey()) {
+        hash = (37 * hash) + KEY_FIELD_NUMBER;
+        hash = (53 * hash) + getKey().hashCode();
+      }
+      hash = (37 * hash) + IGNORE_NOT_FOUND_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getIgnoreNotFound());
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(
+        java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(
+        byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseDelimitedFrom(
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(com.google.spanner.v1.Mutation.Ack prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Arguments to [ack][google.spanner.v1.Mutation.ack] operations.
+     * </pre>
+     *
+     * Protobuf type {@code google.spanner.v1.Mutation.Ack}
+     */
+    public static final class Builder
+        extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+        implements
+        // @@protoc_insertion_point(builder_implements:google.spanner.v1.Mutation.Ack)
+        com.google.spanner.v1.Mutation.AckOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.google.spanner.v1.MutationProto
+            .internal_static_google_spanner_v1_Mutation_Ack_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.v1.MutationProto
+            .internal_static_google_spanner_v1_Mutation_Ack_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.v1.Mutation.Ack.class,
+                com.google.spanner.v1.Mutation.Ack.Builder.class);
+      }
+
+      // Construct using com.google.spanner.v1.Mutation.Ack.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
+          getKeyFieldBuilder();
+        }
+      }
+
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        queue_ = "";
+        key_ = null;
+        if (keyBuilder_ != null) {
+          keyBuilder_.dispose();
+          keyBuilder_ = null;
+        }
+        ignoreNotFound_ = false;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.google.spanner.v1.MutationProto
+            .internal_static_google_spanner_v1_Mutation_Ack_descriptor;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.Mutation.Ack getDefaultInstanceForType() {
+        return com.google.spanner.v1.Mutation.Ack.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.Mutation.Ack build() {
+        com.google.spanner.v1.Mutation.Ack result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.Mutation.Ack buildPartial() {
+        com.google.spanner.v1.Mutation.Ack result = new com.google.spanner.v1.Mutation.Ack(this);
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.Mutation.Ack result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.queue_ = queue_;
+        }
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.key_ = keyBuilder_ == null ? key_ : keyBuilder_.build();
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.ignoreNotFound_ = ignoreNotFound_;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.setField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+
+      @java.lang.Override
+      public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.google.spanner.v1.Mutation.Ack) {
+          return mergeFrom((com.google.spanner.v1.Mutation.Ack) other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.google.spanner.v1.Mutation.Ack other) {
+        if (other == com.google.spanner.v1.Mutation.Ack.getDefaultInstance()) return this;
+        if (!other.getQueue().isEmpty()) {
+          queue_ = other.queue_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (other.hasKey()) {
+          mergeKey(other.getKey());
+        }
+        if (other.getIgnoreNotFound() != false) {
+          setIgnoreNotFound(other.getIgnoreNotFound());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  queue_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+              case 18:
+                {
+                  input.readMessage(getKeyFieldBuilder().getBuilder(), extensionRegistry);
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+              case 24:
+                {
+                  ignoreNotFound_ = input.readBool();
+                  bitField0_ |= 0x00000004;
+                  break;
+                } // case 24
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+
+      private int bitField0_;
+
+      private java.lang.Object queue_ = "";
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue where the message to be acked is stored.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return The queue.
+       */
+      public java.lang.String getQueue() {
+        java.lang.Object ref = queue_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          queue_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue where the message to be acked is stored.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return The bytes for queue.
+       */
+      public com.google.protobuf.ByteString getQueueBytes() {
+        java.lang.Object ref = queue_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b =
+              com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          queue_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue where the message to be acked is stored.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @param value The queue to set.
+       * @return This builder for chaining.
+       */
+      public Builder setQueue(java.lang.String value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        queue_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue where the message to be acked is stored.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearQueue() {
+        queue_ = getDefaultInstance().getQueue();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The queue where the message to be acked is stored.
+       * </pre>
+       *
+       * <code>string queue = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @param value The bytes for queue to set.
+       * @return This builder for chaining.
+       */
+      public Builder setQueueBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        checkByteStringIsUtf8(value);
+        queue_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ListValue key_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.ListValue,
+              com.google.protobuf.ListValue.Builder,
+              com.google.protobuf.ListValueOrBuilder>
+          keyBuilder_;
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return Whether the key field is set.
+       */
+      public boolean hasKey() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       *
+       * @return The key.
+       */
+      public com.google.protobuf.ListValue getKey() {
+        if (keyBuilder_ == null) {
+          return key_ == null ? com.google.protobuf.ListValue.getDefaultInstance() : key_;
+        } else {
+          return keyBuilder_.getMessage();
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public Builder setKey(com.google.protobuf.ListValue value) {
+        if (keyBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          key_ = value;
+        } else {
+          keyBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public Builder setKey(com.google.protobuf.ListValue.Builder builderForValue) {
+        if (keyBuilder_ == null) {
+          key_ = builderForValue.build();
+        } else {
+          keyBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public Builder mergeKey(com.google.protobuf.ListValue value) {
+        if (keyBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) != 0)
+              && key_ != null
+              && key_ != com.google.protobuf.ListValue.getDefaultInstance()) {
+            getKeyBuilder().mergeFrom(value);
+          } else {
+            key_ = value;
+          }
+        } else {
+          keyBuilder_.mergeFrom(value);
+        }
+        if (key_ != null) {
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public Builder clearKey() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        key_ = null;
+        if (keyBuilder_ != null) {
+          keyBuilder_.dispose();
+          keyBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public com.google.protobuf.ListValue.Builder getKeyBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getKeyFieldBuilder().getBuilder();
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      public com.google.protobuf.ListValueOrBuilder getKeyOrBuilder() {
+        if (keyBuilder_ != null) {
+          return keyBuilder_.getMessageOrBuilder();
+        } else {
+          return key_ == null ? com.google.protobuf.ListValue.getDefaultInstance() : key_;
+        }
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Required. The primary key of the message to be acked.
+       * </pre>
+       *
+       * <code>.google.protobuf.ListValue key = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.ListValue,
+              com.google.protobuf.ListValue.Builder,
+              com.google.protobuf.ListValueOrBuilder>
+          getKeyFieldBuilder() {
+        if (keyBuilder_ == null) {
+          keyBuilder_ =
+              new com.google.protobuf.SingleFieldBuilderV3<
+                  com.google.protobuf.ListValue,
+                  com.google.protobuf.ListValue.Builder,
+                  com.google.protobuf.ListValueOrBuilder>(
+                  getKey(), getParentForChildren(), isClean());
+          key_ = null;
+        }
+        return keyBuilder_;
+      }
+
+      private boolean ignoreNotFound_;
+
+      /**
+       *
+       *
+       * <pre>
+       * By default, an attempt to ack a message that does not exist will fail
+       * with a `NOT_FOUND` error. With `ignore_not_found` set to true, the ack
+       * will succeed even if the message does not exist. This is useful for
+       * unconditionally acking a message, even if it is missing or has already
+       * been acked.
+       * </pre>
+       *
+       * <code>bool ignore_not_found = 3;</code>
+       *
+       * @return The ignoreNotFound.
+       */
+      @java.lang.Override
+      public boolean getIgnoreNotFound() {
+        return ignoreNotFound_;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * By default, an attempt to ack a message that does not exist will fail
+       * with a `NOT_FOUND` error. With `ignore_not_found` set to true, the ack
+       * will succeed even if the message does not exist. This is useful for
+       * unconditionally acking a message, even if it is missing or has already
+       * been acked.
+       * </pre>
+       *
+       * <code>bool ignore_not_found = 3;</code>
+       *
+       * @param value The ignoreNotFound to set.
+       * @return This builder for chaining.
+       */
+      public Builder setIgnoreNotFound(boolean value) {
+
+        ignoreNotFound_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * By default, an attempt to ack a message that does not exist will fail
+       * with a `NOT_FOUND` error. With `ignore_not_found` set to true, the ack
+       * will succeed even if the message does not exist. This is useful for
+       * unconditionally acking a message, even if it is missing or has already
+       * been acked.
+       * </pre>
+       *
+       * <code>bool ignore_not_found = 3;</code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearIgnoreNotFound() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        ignoreNotFound_ = false;
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+      // @@protoc_insertion_point(builder_scope:google.spanner.v1.Mutation.Ack)
+    }
+
+    // @@protoc_insertion_point(class_scope:google.spanner.v1.Mutation.Ack)
+    private static final com.google.spanner.v1.Mutation.Ack DEFAULT_INSTANCE;
+
+    static {
+      DEFAULT_INSTANCE = new com.google.spanner.v1.Mutation.Ack();
+    }
+
+    public static com.google.spanner.v1.Mutation.Ack getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<Ack> PARSER =
+        new com.google.protobuf.AbstractParser<Ack>() {
+          @java.lang.Override
+          public Ack parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
+          }
+        };
+
+    public static com.google.protobuf.Parser<Ack> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Ack> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.spanner.v1.Mutation.Ack getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+  }
+
   private int operationCase_ = 0;
 
   @SuppressWarnings("serial")
@@ -3033,6 +5771,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     INSERT_OR_UPDATE(3),
     REPLACE(4),
     DELETE(5),
+    SEND(6),
+    ACK(7),
     OPERATION_NOT_SET(0);
     private final int value;
 
@@ -3062,6 +5802,10 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           return REPLACE;
         case 5:
           return DELETE;
+        case 6:
+          return SEND;
+        case 7:
+          return ACK;
         case 0:
           return OPERATION_NOT_SET;
         default:
@@ -3408,6 +6152,114 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     return com.google.spanner.v1.Mutation.Delete.getDefaultInstance();
   }
 
+  public static final int SEND_FIELD_NUMBER = 6;
+
+  /**
+   *
+   *
+   * <pre>
+   * Send a message to a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+   *
+   * @return Whether the send field is set.
+   */
+  @java.lang.Override
+  public boolean hasSend() {
+    return operationCase_ == 6;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Send a message to a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+   *
+   * @return The send.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.Mutation.Send getSend() {
+    if (operationCase_ == 6) {
+      return (com.google.spanner.v1.Mutation.Send) operation_;
+    }
+    return com.google.spanner.v1.Mutation.Send.getDefaultInstance();
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Send a message to a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.Mutation.SendOrBuilder getSendOrBuilder() {
+    if (operationCase_ == 6) {
+      return (com.google.spanner.v1.Mutation.Send) operation_;
+    }
+    return com.google.spanner.v1.Mutation.Send.getDefaultInstance();
+  }
+
+  public static final int ACK_FIELD_NUMBER = 7;
+
+  /**
+   *
+   *
+   * <pre>
+   * Ack a message from a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+   *
+   * @return Whether the ack field is set.
+   */
+  @java.lang.Override
+  public boolean hasAck() {
+    return operationCase_ == 7;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Ack a message from a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+   *
+   * @return The ack.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.Mutation.Ack getAck() {
+    if (operationCase_ == 7) {
+      return (com.google.spanner.v1.Mutation.Ack) operation_;
+    }
+    return com.google.spanner.v1.Mutation.Ack.getDefaultInstance();
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Ack a message from a queue.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.Mutation.AckOrBuilder getAckOrBuilder() {
+    if (operationCase_ == 7) {
+      return (com.google.spanner.v1.Mutation.Ack) operation_;
+    }
+    return com.google.spanner.v1.Mutation.Ack.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -3436,6 +6288,12 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
     if (operationCase_ == 5) {
       output.writeMessage(5, (com.google.spanner.v1.Mutation.Delete) operation_);
+    }
+    if (operationCase_ == 6) {
+      output.writeMessage(6, (com.google.spanner.v1.Mutation.Send) operation_);
+    }
+    if (operationCase_ == 7) {
+      output.writeMessage(7, (com.google.spanner.v1.Mutation.Ack) operation_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -3471,6 +6329,16 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               5, (com.google.spanner.v1.Mutation.Delete) operation_);
     }
+    if (operationCase_ == 6) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              6, (com.google.spanner.v1.Mutation.Send) operation_);
+    }
+    if (operationCase_ == 7) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              7, (com.google.spanner.v1.Mutation.Ack) operation_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -3502,6 +6370,12 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         break;
       case 5:
         if (!getDelete().equals(other.getDelete())) return false;
+        break;
+      case 6:
+        if (!getSend().equals(other.getSend())) return false;
+        break;
+      case 7:
+        if (!getAck().equals(other.getAck())) return false;
         break;
       case 0:
       default:
@@ -3537,6 +6411,14 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       case 5:
         hash = (37 * hash) + DELETE_FIELD_NUMBER;
         hash = (53 * hash) + getDelete().hashCode();
+        break;
+      case 6:
+        hash = (37 * hash) + SEND_FIELD_NUMBER;
+        hash = (53 * hash) + getSend().hashCode();
+        break;
+      case 7:
+        hash = (37 * hash) + ACK_FIELD_NUMBER;
+        hash = (53 * hash) + getAck().hashCode();
         break;
       case 0:
       default:
@@ -3696,6 +6578,12 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (deleteBuilder_ != null) {
         deleteBuilder_.clear();
       }
+      if (sendBuilder_ != null) {
+        sendBuilder_.clear();
+      }
+      if (ackBuilder_ != null) {
+        ackBuilder_.clear();
+      }
       operationCase_ = 0;
       operation_ = null;
       return this;
@@ -3753,6 +6641,12 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       if (operationCase_ == 5 && deleteBuilder_ != null) {
         result.operation_ = deleteBuilder_.build();
+      }
+      if (operationCase_ == 6 && sendBuilder_ != null) {
+        result.operation_ = sendBuilder_.build();
+      }
+      if (operationCase_ == 7 && ackBuilder_ != null) {
+        result.operation_ = ackBuilder_.build();
       }
     }
 
@@ -3827,6 +6721,16 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             mergeDelete(other.getDelete());
             break;
           }
+        case SEND:
+          {
+            mergeSend(other.getSend());
+            break;
+          }
+        case ACK:
+          {
+            mergeAck(other.getAck());
+            break;
+          }
         case OPERATION_NOT_SET:
           {
             break;
@@ -3888,6 +6792,18 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
                 operationCase_ = 5;
                 break;
               } // case 42
+            case 50:
+              {
+                input.readMessage(getSendFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 6;
+                break;
+              } // case 50
+            case 58:
+              {
+                input.readMessage(getAckFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 7;
+                break;
+              } // case 58
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -5184,6 +8100,438 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       operationCase_ = 5;
       onChanged();
       return deleteBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.Mutation.Send,
+            com.google.spanner.v1.Mutation.Send.Builder,
+            com.google.spanner.v1.Mutation.SendOrBuilder>
+        sendBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     *
+     * @return Whether the send field is set.
+     */
+    @java.lang.Override
+    public boolean hasSend() {
+      return operationCase_ == 6;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     *
+     * @return The send.
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.Mutation.Send getSend() {
+      if (sendBuilder_ == null) {
+        if (operationCase_ == 6) {
+          return (com.google.spanner.v1.Mutation.Send) operation_;
+        }
+        return com.google.spanner.v1.Mutation.Send.getDefaultInstance();
+      } else {
+        if (operationCase_ == 6) {
+          return sendBuilder_.getMessage();
+        }
+        return com.google.spanner.v1.Mutation.Send.getDefaultInstance();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     */
+    public Builder setSend(com.google.spanner.v1.Mutation.Send value) {
+      if (sendBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        operation_ = value;
+        onChanged();
+      } else {
+        sendBuilder_.setMessage(value);
+      }
+      operationCase_ = 6;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     */
+    public Builder setSend(com.google.spanner.v1.Mutation.Send.Builder builderForValue) {
+      if (sendBuilder_ == null) {
+        operation_ = builderForValue.build();
+        onChanged();
+      } else {
+        sendBuilder_.setMessage(builderForValue.build());
+      }
+      operationCase_ = 6;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     */
+    public Builder mergeSend(com.google.spanner.v1.Mutation.Send value) {
+      if (sendBuilder_ == null) {
+        if (operationCase_ == 6
+            && operation_ != com.google.spanner.v1.Mutation.Send.getDefaultInstance()) {
+          operation_ =
+              com.google.spanner.v1.Mutation.Send.newBuilder(
+                      (com.google.spanner.v1.Mutation.Send) operation_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          operation_ = value;
+        }
+        onChanged();
+      } else {
+        if (operationCase_ == 6) {
+          sendBuilder_.mergeFrom(value);
+        } else {
+          sendBuilder_.setMessage(value);
+        }
+      }
+      operationCase_ = 6;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     */
+    public Builder clearSend() {
+      if (sendBuilder_ == null) {
+        if (operationCase_ == 6) {
+          operationCase_ = 0;
+          operation_ = null;
+          onChanged();
+        }
+      } else {
+        if (operationCase_ == 6) {
+          operationCase_ = 0;
+          operation_ = null;
+        }
+        sendBuilder_.clear();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     */
+    public com.google.spanner.v1.Mutation.Send.Builder getSendBuilder() {
+      return getSendFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.Mutation.SendOrBuilder getSendOrBuilder() {
+      if ((operationCase_ == 6) && (sendBuilder_ != null)) {
+        return sendBuilder_.getMessageOrBuilder();
+      } else {
+        if (operationCase_ == 6) {
+          return (com.google.spanner.v1.Mutation.Send) operation_;
+        }
+        return com.google.spanner.v1.Mutation.Send.getDefaultInstance();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Send a message to a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Send send = 6;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.Mutation.Send,
+            com.google.spanner.v1.Mutation.Send.Builder,
+            com.google.spanner.v1.Mutation.SendOrBuilder>
+        getSendFieldBuilder() {
+      if (sendBuilder_ == null) {
+        if (!(operationCase_ == 6)) {
+          operation_ = com.google.spanner.v1.Mutation.Send.getDefaultInstance();
+        }
+        sendBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.Mutation.Send,
+                com.google.spanner.v1.Mutation.Send.Builder,
+                com.google.spanner.v1.Mutation.SendOrBuilder>(
+                (com.google.spanner.v1.Mutation.Send) operation_,
+                getParentForChildren(),
+                isClean());
+        operation_ = null;
+      }
+      operationCase_ = 6;
+      onChanged();
+      return sendBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.Mutation.Ack,
+            com.google.spanner.v1.Mutation.Ack.Builder,
+            com.google.spanner.v1.Mutation.AckOrBuilder>
+        ackBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     *
+     * @return Whether the ack field is set.
+     */
+    @java.lang.Override
+    public boolean hasAck() {
+      return operationCase_ == 7;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     *
+     * @return The ack.
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.Mutation.Ack getAck() {
+      if (ackBuilder_ == null) {
+        if (operationCase_ == 7) {
+          return (com.google.spanner.v1.Mutation.Ack) operation_;
+        }
+        return com.google.spanner.v1.Mutation.Ack.getDefaultInstance();
+      } else {
+        if (operationCase_ == 7) {
+          return ackBuilder_.getMessage();
+        }
+        return com.google.spanner.v1.Mutation.Ack.getDefaultInstance();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     */
+    public Builder setAck(com.google.spanner.v1.Mutation.Ack value) {
+      if (ackBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        operation_ = value;
+        onChanged();
+      } else {
+        ackBuilder_.setMessage(value);
+      }
+      operationCase_ = 7;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     */
+    public Builder setAck(com.google.spanner.v1.Mutation.Ack.Builder builderForValue) {
+      if (ackBuilder_ == null) {
+        operation_ = builderForValue.build();
+        onChanged();
+      } else {
+        ackBuilder_.setMessage(builderForValue.build());
+      }
+      operationCase_ = 7;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     */
+    public Builder mergeAck(com.google.spanner.v1.Mutation.Ack value) {
+      if (ackBuilder_ == null) {
+        if (operationCase_ == 7
+            && operation_ != com.google.spanner.v1.Mutation.Ack.getDefaultInstance()) {
+          operation_ =
+              com.google.spanner.v1.Mutation.Ack.newBuilder(
+                      (com.google.spanner.v1.Mutation.Ack) operation_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          operation_ = value;
+        }
+        onChanged();
+      } else {
+        if (operationCase_ == 7) {
+          ackBuilder_.mergeFrom(value);
+        } else {
+          ackBuilder_.setMessage(value);
+        }
+      }
+      operationCase_ = 7;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     */
+    public Builder clearAck() {
+      if (ackBuilder_ == null) {
+        if (operationCase_ == 7) {
+          operationCase_ = 0;
+          operation_ = null;
+          onChanged();
+        }
+      } else {
+        if (operationCase_ == 7) {
+          operationCase_ = 0;
+          operation_ = null;
+        }
+        ackBuilder_.clear();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     */
+    public com.google.spanner.v1.Mutation.Ack.Builder getAckBuilder() {
+      return getAckFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.Mutation.AckOrBuilder getAckOrBuilder() {
+      if ((operationCase_ == 7) && (ackBuilder_ != null)) {
+        return ackBuilder_.getMessageOrBuilder();
+      } else {
+        if (operationCase_ == 7) {
+          return (com.google.spanner.v1.Mutation.Ack) operation_;
+        }
+        return com.google.spanner.v1.Mutation.Ack.getDefaultInstance();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Ack a message from a queue.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.Mutation.Ack ack = 7;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.Mutation.Ack,
+            com.google.spanner.v1.Mutation.Ack.Builder,
+            com.google.spanner.v1.Mutation.AckOrBuilder>
+        getAckFieldBuilder() {
+      if (ackBuilder_ == null) {
+        if (!(operationCase_ == 7)) {
+          operation_ = com.google.spanner.v1.Mutation.Ack.getDefaultInstance();
+        }
+        ackBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.Mutation.Ack,
+                com.google.spanner.v1.Mutation.Ack.Builder,
+                com.google.spanner.v1.Mutation.AckOrBuilder>(
+                (com.google.spanner.v1.Mutation.Ack) operation_, getParentForChildren(), isClean());
+        operation_ = null;
+      }
+      operationCase_ = 7;
+      onChanged();
+      return ackBuilder_;
     }
 
     @java.lang.Override
