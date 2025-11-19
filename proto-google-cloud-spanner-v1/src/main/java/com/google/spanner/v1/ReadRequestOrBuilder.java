@@ -511,4 +511,62 @@ public interface ReadRequestOrBuilder
    * @return The lockHint.
    */
   com.google.spanner.v1.ReadRequest.LockHint getLockHint();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If present, it makes the Spanner requests location-aware.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the routingHint field is set.
+   */
+  boolean hasRoutingHint();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If present, it makes the Spanner requests location-aware.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The routingHint.
+   */
+  com.google.spanner.v1.RoutingHint getRoutingHint();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. If present, it makes the Spanner requests location-aware.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 18 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.RoutingHintOrBuilder getRoutingHintOrBuilder();
 }

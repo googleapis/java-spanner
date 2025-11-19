@@ -88,4 +88,50 @@ public interface QueryPlanOrBuilder
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
   com.google.spanner.v1.PlanNodeOrBuilder getPlanNodesOrBuilder(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The advise/recommendations for a query. Currently this field will
+   * be serving index recommendations for a query.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the queryAdvice field is set.
+   */
+  boolean hasQueryAdvice();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The advise/recommendations for a query. Currently this field will
+   * be serving index recommendations for a query.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The queryAdvice.
+   */
+  com.google.spanner.v1.QueryAdvisorResult getQueryAdvice();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The advise/recommendations for a query. Currently this field will
+   * be serving index recommendations for a query.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.QueryAdvisorResult query_advice = 2 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.QueryAdvisorResultOrBuilder getQueryAdviceOrBuilder();
 }
