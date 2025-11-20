@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.spi.v1;
 
-import static com.google.cloud.spanner.SpannerExceptionFactory.asSpannerException;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadPerTaskExecutor;
 
@@ -539,7 +538,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         // is actually running.
         checkEmulatorConnection(options, channelProvider, credentialsProvider, emulatorHost);
       } catch (Exception e) {
-        throw asSpannerException(e);
+        throw newSpannerException(e);
       }
     } else {
       this.databaseAdminStub = null;
@@ -727,7 +726,7 @@ public class GapicSpannerRpc implements SpannerRpc {
           new AdminRequestsLimitExceededRetryAlgorithm<>(),
           NanoClock.getDefaultClock());
     } catch (RetryHelperException e) {
-      throw asSpannerException(e.getCause());
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
     }
   }
 
@@ -1318,7 +1317,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             throw newSpannerException(e);
           } catch (ExecutionException e) {
             Throwable t = e.getCause();
-            SpannerException se = asSpannerException(t);
+            SpannerException se = SpannerExceptionFactory.asSpannerException(t);
             if (se instanceof AdminRequestsPerMinuteExceededException) {
               // Propagate this to trigger a retry.
               throw se;
@@ -1984,12 +1983,8 @@ public class GapicSpannerRpc implements SpannerRpc {
       // We are the sole consumer of the future, so cancel it.
       future.cancel(true);
       throw SpannerExceptionFactory.propagateInterrupt(e);
-    } catch (ExecutionException e) {
-      throw asSpannerException(e.getCause());
-    } catch (CancellationException e) {
+    } catch (Exception e) {
       throw newSpannerException(context, e, null);
-    } catch (Exception exception) {
-      throw asSpannerException(exception);
     }
   }
 
@@ -2227,7 +2222,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       if (this.consumer.cancelQueryWhenClientIsClosed()) {
         unregisterResponseObserver(this);
       }
-      consumer.onError(asSpannerException(t));
+      consumer.onError(newSpannerException(t));
     }
 
     @Override

@@ -59,7 +59,7 @@ class AsyncRunnerImpl implements AsyncRunner {
           try {
             return work.doWorkAsync(transaction).get();
           } catch (ExecutionException e) {
-            throw SpannerExceptionFactory.asSpannerException(e.getCause());
+            throw SpannerExceptionFactory.newSpannerException(e.getCause());
           } catch (InterruptedException e) {
             throw SpannerExceptionFactory.propagateInterrupt(e);
           }

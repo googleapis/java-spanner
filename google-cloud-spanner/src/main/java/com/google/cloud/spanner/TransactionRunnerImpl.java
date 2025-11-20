@@ -281,7 +281,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       try {
         ensureTxnAsync().get();
       } catch (ExecutionException e) {
-        throw SpannerExceptionFactory.asSpannerException(e.getCause() == null ? e : e.getCause());
+        throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
       } catch (InterruptedException e) {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       }
@@ -370,7 +370,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw SpannerExceptionFactory.propagateTimeout((TimeoutException) e);
         }
       } catch (ExecutionException e) {
-        throw SpannerExceptionFactory.asSpannerException(e.getCause() == null ? e : e.getCause());
+        throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
       }
     }
 
@@ -679,7 +679,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               aborted = true;
             }
           }
-          throw SpannerExceptionFactory.asSpannerException(e.getCause());
+          throw SpannerExceptionFactory.newSpannerException(e.getCause());
         } catch (TimeoutException e) {
           // Throw an ABORTED exception to force a retry of the transaction if no transaction
           // has been returned by the first statement.

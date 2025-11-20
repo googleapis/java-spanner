@@ -55,12 +55,10 @@ public class SpannerException extends BaseGrpcServiceException {
   private static final long serialVersionUID = 20150916L;
   private static final Metadata.Key<RetryInfo> KEY_RETRY_INFO =
       ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
-  private static final String PG_ERR_CODE_KEY = "pg_sqlerrcode";
 
   private final ErrorCode code;
   private final ApiException apiException;
   private XGoogSpannerRequestId requestId;
-  private String statement;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   SpannerException(
@@ -101,29 +99,9 @@ public class SpannerException extends BaseGrpcServiceException {
     this.requestId = requestId;
   }
 
-  @Override
-  public String getMessage() {
-    if (this.statement == null) {
-      return super.getMessage();
-    }
-    return String.format("%s - Statement: '%s'", super.getMessage(), this.statement);
-  }
-
   /** Returns the error code associated with this exception. */
   public ErrorCode getErrorCode() {
     return code;
-  }
-
-  /**
-   * Returns the PostgreSQL SQLState error code that is encoded in this exception, or null if this
-   * {@link SpannerException} does not include a PostgreSQL error code.
-   */
-  public String getPostgreSQLErrorCode() {
-    ErrorDetails details = getErrorDetails();
-    if (details == null || details.getErrorInfo() == null) {
-      return null;
-    }
-    return details.getErrorInfo().getMetadataOrDefault(PG_ERR_CODE_KEY, null);
   }
 
   public String getRequestId() {
@@ -219,10 +197,6 @@ public class SpannerException extends BaseGrpcServiceException {
       return this.apiException.getErrorDetails();
     }
     return null;
-  }
-
-  void setStatement(String statement) {
-    this.statement = statement;
   }
 
   /** Sets the requestId. */

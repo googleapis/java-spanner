@@ -74,7 +74,7 @@ public final class PartitionId implements Serializable {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT, invalidClassException.getMessage(), invalidClassException);
     } catch (Exception exception) {
-      throw SpannerExceptionFactory.asSpannerException(exception);
+      throw SpannerExceptionFactory.newSpannerException(exception);
     }
   }
 
@@ -90,7 +90,7 @@ public final class PartitionId implements Serializable {
         new ObjectOutputStream(new GZIPOutputStream(byteArrayOutputStream))) {
       objectOutputStream.writeObject(id);
     } catch (Exception exception) {
-      throw SpannerExceptionFactory.asSpannerException(exception);
+      throw SpannerExceptionFactory.newSpannerException(exception);
     }
     return Base64.getUrlEncoder().encodeToString(byteArrayOutputStream.toByteArray());
   }
