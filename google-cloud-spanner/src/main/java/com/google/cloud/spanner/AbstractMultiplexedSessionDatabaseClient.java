@@ -27,11 +27,6 @@ import com.google.cloud.Timestamp;
 abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClient {
 
   @Override
-  public String getDatabaseRole() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
     return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
   }

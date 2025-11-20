@@ -270,10 +270,6 @@ public class BatchClientImpl implements BatchClient {
         }
         return partitions.build();
       } catch (SpannerException e) {
-        if (!isFallback && maybeMarkUnimplementedForPartitionedOps(e)) {
-          return partitionReadUsingIndex(
-              partitionOptions, table, index, keys, columns, true, option);
-        }
         e.setRequestId(reqId);
         throw e;
       }
@@ -330,30 +326,9 @@ public class BatchClientImpl implements BatchClient {
         }
         return partitions.build();
       } catch (SpannerException e) {
-        if (!isFallback && maybeMarkUnimplementedForPartitionedOps(e)) {
-          return partitionQuery(partitionOptions, statement, true, option);
-        }
         e.setRequestId(reqId);
         throw e;
       }
-    }
-
-    boolean maybeMarkUnimplementedForPartitionedOps(SpannerException spannerException) {
-      if (MultiplexedSessionDatabaseClient.verifyErrorMessage(
-          spannerException, "Partitioned operations are not supported with multiplexed sessions")) {
-        synchronized (fallbackInitiated) {
-          if (!fallbackInitiated.get()) {
-            session.setFallbackSessionReference(
-                sessionClient.createSession().getSessionReference());
-            sessionName = session.getName();
-            initFallbackTransaction();
-            unimplementedForPartitionedOps.set(true);
-            fallbackInitiated.set(true);
-          }
-          return true;
-        }
-      }
-      return false;
     }
 
     @Override

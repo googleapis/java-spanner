@@ -20,7 +20,6 @@ import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
-import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -301,7 +300,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     /** Creates a result for the query that detects the dialect that is used for the database. */
     public static StatementResult detectDialectResult(Dialect resultDialect) {
       return StatementResult.query(
-          SessionPool.DETERMINE_DIALECT_STATEMENT,
+          MultiplexedSessionDatabaseClient.DETERMINE_DIALECT_STATEMENT,
           ResultSet.newBuilder()
               .setMetadata(
                   ResultSetMetadata.newBuilder()
@@ -581,9 +580,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private double abortProbability = 0.0010D;
 
   /**
-   * Flip this switch to true if you want the {@link SessionPool#DETERMINE_DIALECT_STATEMENT}
-   * statement to be included in the recorded requests on the mock server. It is ignored by default
-   * to prevent tests that do not expect this request to suddenly start failing.
+   * Flip this switch to true if you want the {@link
+   * MultiplexedSessionDatabaseClient#DETERMINE_DIALECT_STATEMENT} statement to be included in the
+   * recorded requests on the mock server. It is ignored by default to prevent tests that do not
+   * expect this request to suddenly start failing.
    */
   private boolean includeDetermineDialectStatementInRequests = false;
 
@@ -746,9 +746,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   }
 
   /**
-   * Set this to true if you want the {@link SessionPool#DETERMINE_DIALECT_STATEMENT} statement to
-   * be included in the recorded requests on the mock server. It is ignored by default to prevent
-   * tests that do not expect this request to suddenly start failing.
+   * Set this to true if you want the {@link
+   * MultiplexedSessionDatabaseClient#DETERMINE_DIALECT_STATEMENT} statement to be included in the
+   * recorded requests on the mock server. It is ignored by default to prevent tests that do not
+   * expect this request to suddenly start failing.
    */
   public void setIncludeDetermineDialectStatementInRequests(boolean include) {
     this.includeDetermineDialectStatementInRequests = include;
@@ -760,9 +761,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
    */
   public void abortTransaction(TransactionContext transactionContext) {
     Preconditions.checkNotNull(transactionContext);
-    if (transactionContext instanceof SessionPoolTransactionContext) {
-      transactionContext = ((SessionPoolTransactionContext) transactionContext).delegate;
-    }
     if (transactionContext instanceof TransactionContextImpl) {
       TransactionContextImpl impl = (TransactionContextImpl) transactionContext;
       ByteString id =
@@ -1223,7 +1221,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   public void executeStreamingSql(
       ExecuteSqlRequest request, StreamObserver<PartialResultSet> responseObserver) {
     if (includeDetermineDialectStatementInRequests
-        || !request.getSql().equals(SessionPool.DETERMINE_DIALECT_STATEMENT.getSql())) {
+        || !request
+            .getSql()
+            .equals(MultiplexedSessionDatabaseClient.DETERMINE_DIALECT_STATEMENT.getSql())) {
       requests.add(request);
     }
     Preconditions.checkNotNull(request.getSession());

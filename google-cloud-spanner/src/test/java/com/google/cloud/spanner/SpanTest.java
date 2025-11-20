@@ -306,39 +306,16 @@ public class SpanTest {
     // OpenCensus spans and events verification
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
 
-    List<String> expectedAnnotations =
-        ImmutableList.of(
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Creating 2 sessions",
-            "Acquiring session",
-            "Acquired session",
-            "Using Session",
-            "Starting/Resuming stream");
     List<String> expectedAnnotationsForMultiplexedSession =
         ImmutableList.of(
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Request for 1 multiplexed session returned 1 session",
-            "Creating 2 sessions",
-            "Starting/Resuming stream");
-    if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotationsForMultiplexedSession);
-    } else {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotations);
-    }
+            "Request for 1 multiplexed session returned 1 session", "Starting/Resuming stream");
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotationsForMultiplexedSession);
   }
 
   @Test
@@ -359,41 +336,18 @@ public class SpanTest {
     // OpenCensus spans and events verification
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
 
-    List<String> expectedAnnotations =
-        ImmutableList.of(
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Creating 2 sessions",
-            "Acquiring session",
-            "Acquired session",
-            "Using Session",
-            "Starting/Resuming stream",
-            "Stream broken. Not safe to retry");
     List<String> expectedAnnotationsForMultiplexedSession =
         ImmutableList.of(
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
             "Request for 1 multiplexed session returned 1 session",
-            "Creating 2 sessions",
             "Starting/Resuming stream",
             "Stream broken. Not safe to retry");
-    if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotationsForMultiplexedSession);
-    } else {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotations);
-    }
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotationsForMultiplexedSession);
   }
 
   @Test
@@ -408,43 +362,19 @@ public class SpanTest {
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
 
-    List<String> expectedAnnotations =
-        ImmutableList.of(
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Creating 2 sessions",
-            "Acquiring session",
-            "Acquired session",
-            "Using Session",
-            "Starting/Resuming stream",
-            "Creating Transaction",
-            "Transaction Creation Done");
     List<String> expectedAnnotationsForMultiplexedSession =
         ImmutableList.of(
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
             "Request for 1 multiplexed session returned 1 session",
-            "Creating 2 sessions",
             "Starting/Resuming stream",
             "Creating Transaction",
             "Transaction Creation Done");
-    if (isMultiplexedSessionsEnabled()) {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotationsForMultiplexedSession);
-    } else {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotations);
-    }
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotationsForMultiplexedSession);
   }
 
   @Test
@@ -453,64 +383,20 @@ public class SpanTest {
     runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.Commit", true);
 
-    List<String> expectedAnnotations =
-        ImmutableList.of(
-            "Acquiring session",
-            "Acquired session",
-            "Using Session",
-            "Starting Transaction Attempt",
-            "Starting Commit",
-            "Commit Done",
-            "Transaction Attempt Succeeded",
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Creating 2 sessions");
-    List<String> expectedAnnotationsForMultiplexedSession =
-        ImmutableList.of(
-            "Acquiring session",
-            "Acquired session",
-            "Using Session",
-            "Starting Transaction Attempt",
-            "Starting Commit",
-            "Commit Done",
-            "Transaction Attempt Succeeded",
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Request for 1 multiplexed session returned 1 session",
-            "Creating 2 sessions");
     List<String> expectedAnnotationsForMultiplexedSessionsRW =
         ImmutableList.of(
             "Starting Transaction Attempt",
             "Starting Commit",
             "Commit Done",
             "Transaction Attempt Succeeded",
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Request for 1 multiplexed session returned 1 session",
-            "Creating 2 sessions");
-    if (isMultiplexedSessionsEnabledForRW()) {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotationsForMultiplexedSessionsRW);
-    } else if (isMultiplexedSessionsEnabled()) {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotationsForMultiplexedSession);
-    } else {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotations);
-    }
+            "Request for 1 multiplexed session returned 1 session");
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotationsForMultiplexedSessionsRW);
   }
 
   @Test
@@ -524,65 +410,21 @@ public class SpanTest {
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
 
-    if (isMultiplexedSessionsEnabled()) {
-      assertEquals(spans.toString(), 5, spans.size());
-      assertThat(spans).containsEntry("CloudSpannerOperation.CreateMultiplexedSession", true);
-    } else {
-      assertThat(spans.size()).isEqualTo(4);
-    }
+    assertEquals(spans.toString(), 3, spans.size());
+    assertThat(spans).containsEntry("CloudSpannerOperation.CreateMultiplexedSession", true);
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteUpdate", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
 
-    List<String> expectedAnnotations =
-        ImmutableList.of(
-            "Acquiring session",
-            "Acquired session",
-            "Using Session",
-            "Starting Transaction Attempt",
-            "Transaction Attempt Failed in user operation",
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Creating 2 sessions");
-    List<String> expectedAnnotationsForMultiplexedSession =
-        ImmutableList.of(
-            "Acquiring session",
-            "Acquired session",
-            "Using Session",
-            "Starting Transaction Attempt",
-            "Transaction Attempt Failed in user operation",
-            "Requesting 2 sessions",
-            "Request for 1 multiplexed session returned 1 session",
-            "Request for 2 sessions returned 2 sessions",
-            "Creating 2 sessions");
     List<String> expectedAnnotationsForMultiplexedSessionsRW =
         ImmutableList.of(
             "Starting Transaction Attempt",
             "Transaction Attempt Failed in user operation",
-            "Requesting 2 sessions",
-            "Request for 1 multiplexed session returned 1 session",
-            "Request for 2 sessions returned 2 sessions",
-            "Creating 2 sessions");
-    if (isMultiplexedSessionsEnabledForRW()) {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotationsForMultiplexedSessionsRW);
-    } else if (isMultiplexedSessionsEnabled()) {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotationsForMultiplexedSession);
-    } else {
-      verifyAnnotations(
-          failOnOverkillTraceComponent.getAnnotations().stream()
-              .distinct()
-              .collect(Collectors.toList()),
-          expectedAnnotations);
-    }
+            "Request for 1 multiplexed session returned 1 session");
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotationsForMultiplexedSessionsRW);
   }
 
   private void verifyAnnotations(List<String> actualAnnotations, List<String> expectedAnnotations) {

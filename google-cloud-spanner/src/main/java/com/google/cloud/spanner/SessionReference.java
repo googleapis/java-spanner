@@ -33,15 +33,17 @@ class SessionReference {
 
   private final String name;
   private final DatabaseId databaseId;
+  @Nullable private final String databaseRole;
   private final Map<SpannerRpc.Option, ?> options;
   private volatile Instant lastUseTime;
   @Nullable private final Instant createTime;
   private final boolean isMultiplexed;
 
-  SessionReference(String name, Map<SpannerRpc.Option, ?> options) {
+  SessionReference(String name, @Nullable String databaseRole, Map<SpannerRpc.Option, ?> options) {
     this.options = options;
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
+    this.databaseRole = databaseRole;
     this.lastUseTime = Instant.now();
     this.createTime = null;
     this.isMultiplexed = false;
@@ -49,12 +51,14 @@ class SessionReference {
 
   SessionReference(
       String name,
+      @Nullable String databaseRole,
       com.google.protobuf.Timestamp createTime,
       boolean isMultiplexed,
       Map<SpannerRpc.Option, ?> options) {
     this.options = options;
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
+    this.databaseRole = databaseRole;
     this.lastUseTime = Instant.now();
     this.createTime = convert(createTime);
     this.isMultiplexed = isMultiplexed;
@@ -62,6 +66,10 @@ class SessionReference {
 
   public String getName() {
     return name;
+  }
+
+  public String getDatabaseRole() {
+    return databaseRole;
   }
 
   public DatabaseId getDatabaseId() {

@@ -17,7 +17,6 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.BenchmarkingUtilityScripts.collectResults;
-import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -114,9 +113,6 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
   @Benchmark
   public void burstQueries(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
-    SessionPool pool = client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
@@ -132,9 +128,6 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
   @Benchmark
   public void burstQueriesAndWrites(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
-    SessionPool pool = client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
@@ -154,9 +147,6 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
   @Benchmark
   public void burstUpdates(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
-    SessionPool pool = client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));

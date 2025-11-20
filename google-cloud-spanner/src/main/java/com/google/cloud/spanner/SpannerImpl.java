@@ -342,24 +342,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
             useMultiplexedSession
                 ? multiplexedSessionDatabaseClient.getNumSessionsReleased()
                 : new AtomicLong();
-        SessionPool pool =
-            SessionPool.createPool(
-                getOptions(),
-                SpannerImpl.this.getSessionClient(db),
-                this.tracer,
-                labelValues,
-                attributesBuilder.build(),
-                numMultiplexedSessionsAcquired,
-                numMultiplexedSessionsReleased);
-        pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient =
             createDatabaseClient(
                 clientId,
-                pool,
-                getOptions().getSessionPoolOptions().getUseMultiplexedSessionBlindWrite(),
                 multiplexedSessionDatabaseClient,
-                getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps(),
-                useMultiplexedSessionForRW,
                 this.tracer.createDatabaseAttributes(db));
         dbClients.put(db, dbClient);
         return dbClient;
@@ -370,27 +356,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   @VisibleForTesting
   DatabaseClientImpl createDatabaseClient(
       String clientId,
-      SessionPool pool,
-      boolean useMultiplexedSessionBlindWrite,
-      @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient,
-      boolean useMultiplexedSessionPartitionedOps,
-      boolean useMultiplexedSessionForRW,
+      MultiplexedSessionDatabaseClient multiplexedSessionClient,
       Attributes databaseAttributes) {
-    if (multiplexedSessionClient != null) {
-      // Set the session pool in the multiplexed session client.
-      // This is required to handle fallback to regular sessions for in-progress transactions that
-      // use multiplexed sessions but fail with UNIMPLEMENTED errors.
-      multiplexedSessionClient.setPool(pool);
-    }
-    return new DatabaseClientImpl(
-        clientId,
-        pool,
-        useMultiplexedSessionBlindWrite,
-        multiplexedSessionClient,
-        useMultiplexedSessionPartitionedOps,
-        tracer,
-        useMultiplexedSessionForRW,
-        databaseAttributes);
+    return new DatabaseClientImpl(clientId, multiplexedSessionClient, tracer, databaseAttributes);
   }
 
   @Override
