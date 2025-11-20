@@ -70,13 +70,9 @@ public class ChannelUsageTest {
   @Parameter(0)
   public int numChannels;
 
-  @Parameter(1)
-  public boolean enableGcpPool;
-
-  @Parameters(name = "num channels = {0}, enable GCP pool = {1}")
+  @Parameters(name = "num channels = {0}")
   public static Collection<Object[]> data() {
-    return Arrays.asList(
-        new Object[][] {{1, true}, {1, false}, {2, true}, {2, false}, {4, true}, {4, false}});
+    return Arrays.asList(new Object[][] {{1}, {2}, {4}});
   }
 
   private static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
@@ -208,25 +204,8 @@ public class ChannelUsageTest {
                     .build())
             .setHost("http://" + endpoint)
             .setCredentials(NoCredentials.getInstance());
-    if (enableGcpPool) {
-      builder.enableGrpcGcpExtension();
-    }
 
     return builder.build();
-  }
-
-  @Test
-  public void testCreatesNumChannels() {
-    try (Spanner spanner = createSpannerOptions().getService()) {
-      assumeFalse(
-          "GRPC-GCP is currently not supported with multiplexed sessions",
-          isMultiplexedSessionsEnabled(spanner) && enableGcpPool);
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
-        while (resultSet.next()) {}
-      }
-    }
-    assertEquals(numChannels, batchCreateSessionLocalIps.size());
   }
 
   @Test

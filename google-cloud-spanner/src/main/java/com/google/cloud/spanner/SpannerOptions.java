@@ -1264,8 +1264,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * builder
      *     .getSpannerStubSettingsBuilder()
      *     .applyToAllUnaryMethods(
-     *         new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
-     *           public Void apply(Builder<?, ?> input) {
+     *         new ApiFunction&lt;UnaryCallSettings.Builder&lt;?, ?&gt;, Void&gt;() {
+     *           public Void apply(Builder&lt;?, ?&gt; input) {
      *             input.setRetrySettings(retrySettings);
      *             return null;
      *           }
@@ -1292,8 +1292,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * builder
      *     .getInstanceAdminStubSettingsBuilder()
      *     .applyToAllUnaryMethods(
-     *         new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
-     *           public Void apply(Builder<?, ?> input) {
+     *         new ApiFunction&lt;UnaryCallSettings.Builder&lt;?, ?&gt;, Void&gt;() {
+     *           public Void apply(Builder&lt;?, ?&gt; input) {
      *             input.setRetrySettings(retrySettings);
      *             return null;
      *           }
@@ -1320,8 +1320,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * builder
      *     .getDatabaseAdminStubSettingsBuilder()
      *     .applyToAllUnaryMethods(
-     *         new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
-     *           public Void apply(Builder<?, ?> input) {
+     *         new ApiFunction&lt;UnaryCallSettings.Builder&lt;?, ?&gt;, Void&gt;() {
+     *           public Void apply(Builder&lt;?, ?&gt; input) {
      *             input.setRetrySettings(retrySettings);
      *             return null;
      *           }
