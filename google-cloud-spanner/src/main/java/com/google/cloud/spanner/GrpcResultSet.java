@@ -17,7 +17,6 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.asSpannerException;
-import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.core.InternalApi;
