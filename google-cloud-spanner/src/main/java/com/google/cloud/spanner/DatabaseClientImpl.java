@@ -41,7 +41,7 @@ class DatabaseClientImpl implements DatabaseClient {
   private static final String READ_ONLY_TRANSACTION = "CloudSpanner.ReadOnlyTransaction";
   private static final String PARTITION_DML_TRANSACTION = "CloudSpanner.PartitionDMLTransaction";
   private final TraceWrapper tracer;
-  private final Attributes commonAttributes;
+  private final Attributes databaseAttributes;
   @VisibleForTesting final String clientId;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
   @VisibleForTesting final int dbId;
@@ -52,11 +52,11 @@ class DatabaseClientImpl implements DatabaseClient {
       String clientId,
       MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
       TraceWrapper tracer,
-      Attributes commonAttributes) {
+      Attributes databaseAttributes) {
     this.clientId = clientId;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
     this.tracer = tracer;
-    this.commonAttributes = commonAttributes;
+    this.databaseAttributes = databaseAttributes;
 
     this.clientIdToOrdinalMap = new HashMap<String, Integer>();
     this.dbId = this.dbIdFromClientId(this.clientId);
@@ -122,7 +122,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return multiplexedSessionDatabaseClient.writeWithOptions(mutations, options);
     } catch (RuntimeException e) {
@@ -142,7 +142,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeAtLeastOnceWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return multiplexedSessionDatabaseClient.writeAtLeastOnceWithOptions(mutations, options);
     } catch (RuntimeException e) {
@@ -166,7 +166,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       final Iterable<MutationGroup> mutationGroups, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return multiplexedSessionDatabaseClient.batchWriteAtLeastOnce(mutationGroups, options);
     } catch (RuntimeException e) {
@@ -179,7 +179,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadContext singleUse() {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, databaseAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().singleUse();
     } catch (RuntimeException e) {
@@ -191,7 +191,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadContext singleUse(TimestampBound bound) {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, databaseAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().singleUse(bound);
     } catch (RuntimeException e) {
@@ -203,7 +203,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction() {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, databaseAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().singleUseReadOnlyTransaction();
     } catch (RuntimeException e) {
@@ -215,7 +215,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, databaseAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().singleUseReadOnlyTransaction(bound);
     } catch (RuntimeException e) {
@@ -227,7 +227,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadOnlyTransaction readOnlyTransaction() {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, databaseAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().readOnlyTransaction();
     } catch (RuntimeException e) {
@@ -239,7 +239,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
-    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, commonAttributes);
+    ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION, databaseAttributes);
     try (IScope s = tracer.withSpan(span)) {
       return getMultiplexedSession().readOnlyTransaction(bound);
     } catch (RuntimeException e) {
@@ -251,7 +251,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return multiplexedSessionDatabaseClient.readWriteTransaction(options);
     } catch (RuntimeException e) {
@@ -263,7 +263,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return multiplexedSessionDatabaseClient.transactionManager(options);
     } catch (RuntimeException e) {
@@ -275,7 +275,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return multiplexedSessionDatabaseClient.runAsync(options);
     } catch (RuntimeException e) {
@@ -287,7 +287,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, commonAttributes, options);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
       return multiplexedSessionDatabaseClient.transactionManagerAsync(options);
     } catch (RuntimeException e) {

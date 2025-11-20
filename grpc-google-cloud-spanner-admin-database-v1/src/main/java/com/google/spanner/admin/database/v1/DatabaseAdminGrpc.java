@@ -29,9 +29,6 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  *   * restore a database from an existing backup
  * </pre>
  */
-@javax.annotation.Generated(
-    value = "by gRPC proto compiler",
-    comments = "Source: google/spanner/admin/database/v1/spanner_database_admin.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class DatabaseAdminGrpc {
 
@@ -2531,8 +2528,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.ListDatabasesResponse listDatabases(
-        com.google.spanner.admin.database.v1.ListDatabasesRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.ListDatabasesRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListDatabasesMethod(), getCallOptions(), request);
     }
 
@@ -2551,8 +2549,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation createDatabase(
-        com.google.spanner.admin.database.v1.CreateDatabaseRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.CreateDatabaseRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getCreateDatabaseMethod(), getCallOptions(), request);
     }
 
@@ -2564,8 +2563,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.Database getDatabase(
-        com.google.spanner.admin.database.v1.GetDatabaseRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.GetDatabaseRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetDatabaseMethod(), getCallOptions(), request);
     }
 
@@ -2607,8 +2607,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation updateDatabase(
-        com.google.spanner.admin.database.v1.UpdateDatabaseRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.UpdateDatabaseRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getUpdateDatabaseMethod(), getCallOptions(), request);
     }
 
@@ -2627,8 +2628,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation updateDatabaseDdl(
-        com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getUpdateDatabaseDdlMethod(), getCallOptions(), request);
     }
 
@@ -2644,8 +2646,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.protobuf.Empty dropDatabase(
-        com.google.spanner.admin.database.v1.DropDatabaseRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.DropDatabaseRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getDropDatabaseMethod(), getCallOptions(), request);
     }
 
@@ -2659,8 +2662,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.GetDatabaseDdlResponse getDatabaseDdl(
-        com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetDatabaseDdlMethod(), getCallOptions(), request);
     }
 
@@ -2676,8 +2680,9 @@ public final class DatabaseAdminGrpc {
      * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
      * </pre>
      */
-    public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+    public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
     }
 
@@ -2694,8 +2699,9 @@ public final class DatabaseAdminGrpc {
      * permission on [resource][google.iam.v1.GetIamPolicyRequest.resource].
      * </pre>
      */
-    public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+    public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
     }
 
@@ -2715,8 +2721,8 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.iam.v1.TestIamPermissionsResponse testIamPermissions(
-        com.google.iam.v1.TestIamPermissionsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.iam.v1.TestIamPermissionsRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getTestIamPermissionsMethod(), getCallOptions(), request);
     }
 
@@ -2739,8 +2745,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation createBackup(
-        com.google.spanner.admin.database.v1.CreateBackupRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.CreateBackupRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getCreateBackupMethod(), getCallOptions(), request);
     }
 
@@ -2764,8 +2771,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation copyBackup(
-        com.google.spanner.admin.database.v1.CopyBackupRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.CopyBackupRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getCopyBackupMethod(), getCallOptions(), request);
     }
 
@@ -2778,8 +2786,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.Backup getBackup(
-        com.google.spanner.admin.database.v1.GetBackupRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.GetBackupRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetBackupMethod(), getCallOptions(), request);
     }
 
@@ -2792,8 +2801,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.Backup updateBackup(
-        com.google.spanner.admin.database.v1.UpdateBackupRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.UpdateBackupRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getUpdateBackupMethod(), getCallOptions(), request);
     }
 
@@ -2806,8 +2816,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.protobuf.Empty deleteBackup(
-        com.google.spanner.admin.database.v1.DeleteBackupRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.DeleteBackupRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getDeleteBackupMethod(), getCallOptions(), request);
     }
 
@@ -2821,8 +2832,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.ListBackupsResponse listBackups(
-        com.google.spanner.admin.database.v1.ListBackupsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.ListBackupsRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListBackupsMethod(), getCallOptions(), request);
     }
 
@@ -2850,8 +2862,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.longrunning.Operation restoreDatabase(
-        com.google.spanner.admin.database.v1.RestoreDatabaseRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.RestoreDatabaseRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getRestoreDatabaseMethod(), getCallOptions(), request);
     }
 
@@ -2871,8 +2884,9 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse
         listDatabaseOperations(
-            com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+            com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest request)
+            throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListDatabaseOperationsMethod(), getCallOptions(), request);
     }
 
@@ -2893,8 +2907,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.ListBackupOperationsResponse listBackupOperations(
-        com.google.spanner.admin.database.v1.ListBackupOperationsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.ListBackupOperationsRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListBackupOperationsMethod(), getCallOptions(), request);
     }
 
@@ -2906,8 +2921,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.ListDatabaseRolesResponse listDatabaseRoles(
-        com.google.spanner.admin.database.v1.ListDatabaseRolesRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.ListDatabaseRolesRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListDatabaseRolesMethod(), getCallOptions(), request);
     }
 
@@ -2919,8 +2935,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.AddSplitPointsResponse addSplitPoints(
-        com.google.spanner.admin.database.v1.AddSplitPointsRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.AddSplitPointsRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getAddSplitPointsMethod(), getCallOptions(), request);
     }
 
@@ -2932,8 +2949,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.BackupSchedule createBackupSchedule(
-        com.google.spanner.admin.database.v1.CreateBackupScheduleRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.CreateBackupScheduleRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getCreateBackupScheduleMethod(), getCallOptions(), request);
     }
 
@@ -2945,8 +2963,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.BackupSchedule getBackupSchedule(
-        com.google.spanner.admin.database.v1.GetBackupScheduleRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.GetBackupScheduleRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetBackupScheduleMethod(), getCallOptions(), request);
     }
 
@@ -2958,8 +2977,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.BackupSchedule updateBackupSchedule(
-        com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getUpdateBackupScheduleMethod(), getCallOptions(), request);
     }
 
@@ -2971,8 +2991,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.protobuf.Empty deleteBackupSchedule(
-        com.google.spanner.admin.database.v1.DeleteBackupScheduleRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.DeleteBackupScheduleRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getDeleteBackupScheduleMethod(), getCallOptions(), request);
     }
 
@@ -2984,8 +3005,9 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.spanner.admin.database.v1.ListBackupSchedulesResponse listBackupSchedules(
-        com.google.spanner.admin.database.v1.ListBackupSchedulesRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+        com.google.spanner.admin.database.v1.ListBackupSchedulesRequest request)
+        throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListBackupSchedulesMethod(), getCallOptions(), request);
     }
 
@@ -2999,8 +3021,9 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse
         internalUpdateGraphOperation(
-            com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+            com.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest request)
+            throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getInternalUpdateGraphOperationMethod(), getCallOptions(), request);
     }
   }

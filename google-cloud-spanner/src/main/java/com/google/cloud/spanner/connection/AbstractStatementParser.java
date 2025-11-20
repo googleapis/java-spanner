@@ -109,7 +109,7 @@ public abstract class AbstractStatementParser {
   static final Set<String> ddlStatements =
       ImmutableSet.of("CREATE", "DROP", "ALTER", "ANALYZE", "GRANT", "REVOKE", "RENAME");
   static final Set<String> selectStatements =
-      ImmutableSet.of("SELECT", "WITH", "SHOW", "FROM", "GRAPH");
+      ImmutableSet.of("SELECT", "WITH", "SHOW", "FROM", "GRAPH", "CALL");
   static final Set<String> SELECT_STATEMENTS_ALLOWING_PRECEDING_BRACKETS =
       ImmutableSet.of("SELECT", "FROM");
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");

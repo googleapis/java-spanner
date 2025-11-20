@@ -344,7 +344,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 : new AtomicLong();
         DatabaseClientImpl dbClient =
             createDatabaseClient(
-                clientId, multiplexedSessionDatabaseClient, this.tracer.createCommonAttributes(db));
+                clientId,
+                multiplexedSessionDatabaseClient,
+                this.tracer.createDatabaseAttributes(db));
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -355,8 +357,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   DatabaseClientImpl createDatabaseClient(
       String clientId,
       MultiplexedSessionDatabaseClient multiplexedSessionClient,
-      Attributes commonAttributes) {
-    return new DatabaseClientImpl(clientId, multiplexedSessionClient, tracer, commonAttributes);
+      Attributes databaseAttributes) {
+    return new DatabaseClientImpl(clientId, multiplexedSessionClient, tracer, databaseAttributes);
   }
 
   @Override
