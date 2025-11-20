@@ -151,7 +151,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
-  private final boolean grpcGcpExtensionEnabled;
   private final GcpManagedChannelOptions grpcGcpOptions;
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
@@ -798,7 +797,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
-    grpcGcpExtensionEnabled = builder.grpcGcpExtensionEnabled;
     grpcGcpOptions = builder.grpcGcpOptions;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
@@ -1025,7 +1023,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
-    private boolean grpcGcpExtensionEnabled = false;
     private GcpManagedChannelOptions grpcGcpOptions;
     private RetrySettings retryAdministrativeRequestsSettings =
         DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
@@ -1097,7 +1094,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
-      this.grpcGcpExtensionEnabled = options.grpcGcpExtensionEnabled;
       this.grpcGcpOptions = options.grpcGcpOptions;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
@@ -1268,8 +1264,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * builder
      *     .getSpannerStubSettingsBuilder()
      *     .applyToAllUnaryMethods(
-     *         new ApiFunction&lt;UnaryCallSettings.Builder&lt;?, ?&gt;, Void&gt;() {
-     *           public Void apply(Builder&lt;?, ?&gt; input) {
+     *         new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
+     *           public Void apply(Builder<?, ?> input) {
      *             input.setRetrySettings(retrySettings);
      *             return null;
      *           }
@@ -1296,8 +1292,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * builder
      *     .getInstanceAdminStubSettingsBuilder()
      *     .applyToAllUnaryMethods(
-     *         new ApiFunction&lt;UnaryCallSettings.Builder&lt;?, ?&gt;, Void&gt;() {
-     *           public Void apply(Builder&lt;?, ?&gt; input) {
+     *         new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
+     *           public Void apply(Builder<?, ?> input) {
      *             input.setRetrySettings(retrySettings);
      *             return null;
      *           }
@@ -1324,8 +1320,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * builder
      *     .getDatabaseAdminStubSettingsBuilder()
      *     .applyToAllUnaryMethods(
-     *         new ApiFunction&lt;UnaryCallSettings.Builder&lt;?, ?&gt;, Void&gt;() {
-     *           public Void apply(Builder&lt;?, ?&gt; input) {
+     *         new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
+     *           public Void apply(Builder<?, ?> input) {
      *             input.setRetrySettings(retrySettings);
      *             return null;
      *           }
@@ -1573,14 +1569,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * Multiplexed sessions are not supported for gRPC-GCP.
      */
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
-      this.grpcGcpExtensionEnabled = true;
       this.grpcGcpOptions = options;
       return this;
     }
 
     /** Disables gRPC-GCP extension. */
     public Builder disableGrpcGcpExtension() {
-      this.grpcGcpExtensionEnabled = false;
       return this;
     }
 
@@ -1793,8 +1787,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         credentials = environment.getDefaultExperimentalHostCredentials();
       }
       if (this.numChannels == null) {
-        this.numChannels =
-            this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
+        this.numChannels = GRPC_GCP_ENABLED_DEFAULT_CHANNELS;
       }
 
       synchronized (lock) {
@@ -1989,7 +1982,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   public boolean isGrpcGcpExtensionEnabled() {
-    return grpcGcpExtensionEnabled;
+    return true;
   }
 
   public GcpManagedChannelOptions getGrpcGcpOptions() {
