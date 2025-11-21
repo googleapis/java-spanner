@@ -498,7 +498,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
             }
             readWriteBeginTransactionReferenceFuture.set(txn);
           } catch (Exception e) {
-            SpannerException spannerException = SpannerExceptionFactory.newSpannerException(e);
+            SpannerException spannerException = SpannerExceptionFactory.asSpannerException(e);
             // Mark multiplexed sessions for RW as unimplemented and fall back to regular sessions
             // if UNIMPLEMENTED is returned.
             maybeMarkUnimplementedForRW(spannerException);

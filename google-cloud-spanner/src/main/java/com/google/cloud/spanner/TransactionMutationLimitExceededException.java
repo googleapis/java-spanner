@@ -43,7 +43,7 @@ public class TransactionMutationLimitExceededException extends SpannerException 
     return code == ErrorCode.INVALID_ARGUMENT && message != null && message.contains(ERROR_MESSAGE);
   }
 
-  static boolean isTransactionMutationLimitException(Throwable cause) {
+  static boolean isTransactionMutationLimitException(Throwable cause, ApiException apiException) {
     if (cause == null
         || cause.getMessage() == null
         || !cause.getMessage().contains(ERROR_MESSAGE)) {
@@ -53,7 +53,7 @@ public class TransactionMutationLimitExceededException extends SpannerException 
     // was that the transaction mutation limit was exceeded. We use that here to identify the error,
     // as there is no other specific metadata in the error that identifies it (other than the error
     // message).
-    ErrorDetails errorDetails = extractErrorDetails(cause);
+    ErrorDetails errorDetails = extractErrorDetails(cause, apiException);
     if (errorDetails != null && errorDetails.getHelp() != null) {
       return errorDetails.getHelp().getLinksCount() == 1
           && errorDetails
