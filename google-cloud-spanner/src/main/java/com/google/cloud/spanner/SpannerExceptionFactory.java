@@ -297,7 +297,10 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
-  private static ErrorInfo extractErrorInfo(Throwable cause) {
+  private static ErrorInfo extractErrorInfo(Throwable cause, ApiException apiException) {
+    if (apiException != null && apiException.getErrorDetails() != null) {
+      return apiException.getErrorDetails().getErrorInfo();
+    }
     if (cause != null) {
       Metadata trailers = Status.trailersFromThrowable(cause);
       if (trailers != null) {
@@ -307,7 +310,11 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
-  static ErrorDetails extractErrorDetails(Throwable cause) {
+  static ErrorDetails extractErrorDetails(Throwable cause, ApiException apiException) {
+    if (apiException != null && apiException.getErrorDetails() != null) {
+      return apiException.getErrorDetails();
+    }
+
     Throwable prevCause = null;
     while (cause != null && cause != prevCause) {
       if (cause instanceof ApiException) {
@@ -356,7 +363,7 @@ public final class SpannerExceptionFactory {
       case ABORTED:
         return new AbortedException(token, message, cause, apiException, reqId);
       case RESOURCE_EXHAUSTED:
-        ErrorInfo info = extractErrorInfo(cause);
+        ErrorInfo info = extractErrorInfo(cause, apiException);
         if (info != null
             && info.getMetadataMap()
                 .containsKey(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY)
@@ -382,7 +389,7 @@ public final class SpannerExceptionFactory {
           }
         }
       case INVALID_ARGUMENT:
-        if (isTransactionMutationLimitException(cause)) {
+        if (isTransactionMutationLimitException(cause, apiException)) {
           return new TransactionMutationLimitExceededException(
               token, code, message, cause, apiException, reqId);
         }

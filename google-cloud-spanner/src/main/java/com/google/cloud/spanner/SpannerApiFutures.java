@@ -33,7 +33,7 @@ public class SpannerApiFutures {
       if (e.getCause() instanceof SpannerException) {
         throw (SpannerException) e.getCause();
       }
-      throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e, null /*TODO: requestId*/);
     } catch (CancellationException e) {

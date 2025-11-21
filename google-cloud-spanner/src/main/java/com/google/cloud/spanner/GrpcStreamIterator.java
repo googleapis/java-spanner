@@ -155,7 +155,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     call = null;
 
     if (error != null) {
-      throw SpannerExceptionFactory.newSpannerException(error);
+      throw SpannerExceptionFactory.asSpannerException(error);
     }
 
     endOfData();
@@ -192,25 +192,17 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     }
 
     @Override
-    public void onError(SpannerException e) {
+    public void onError(SpannerException exception) {
       if (statement != null) {
         if (logger.isLoggable(Level.FINEST)) {
           // Include parameter values if logging level is set to FINEST or higher.
-          e =
-              SpannerExceptionFactory.newSpannerExceptionPreformatted(
-                  e.getErrorCode(),
-                  String.format("%s - Statement: '%s'", e.getMessage(), statement.toString()),
-                  e);
-          logger.log(Level.FINEST, "Error executing statement", e);
+          exception.setStatement(statement.toString());
+          logger.log(Level.FINEST, "Error executing statement", exception);
         } else {
-          e =
-              SpannerExceptionFactory.newSpannerExceptionPreformatted(
-                  e.getErrorCode(),
-                  String.format("%s - Statement: '%s'", e.getMessage(), statement.getSql()),
-                  e);
+          exception.setStatement(statement.getSql());
         }
       }
-      error = e;
+      error = exception;
       addToStream(END_OF_STREAM);
     }
 
