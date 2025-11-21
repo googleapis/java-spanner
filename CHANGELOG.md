@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.104.0](https://github.com/googleapis/java-spanner/compare/v6.103.0...v6.104.0) (2025-11-21)
+
+
+### Features
+
+* Add Send and Ack mutations for Queues ([820efc3](https://github.com/googleapis/java-spanner/commit/820efc32dd37191dd858b8a7798174ea7df044c0))
+* Add Spanner location API ([820efc3](https://github.com/googleapis/java-spanner/commit/820efc32dd37191dd858b8a7798174ea7df044c0))
+* Include PostgreSQL error code in exceptions ([#4236](https://github.com/googleapis/java-spanner/issues/4236)) ([5874f8b](https://github.com/googleapis/java-spanner/commit/5874f8b3e65adc3e78832866ebe667cd746e2d7f))
+
+
+### Documentation
+
+* Minor update for Spanner Location API ([2349908](https://github.com/googleapis/java-spanner/commit/2349908aa5fb44eb9a4d148173224bc1791ea2a9))
+
 ## [6.103.0](https://github.com/googleapis/java-spanner/compare/v6.102.1...v6.103.0) (2025-11-17)
 
 
