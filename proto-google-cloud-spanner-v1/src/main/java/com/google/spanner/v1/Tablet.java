@@ -310,9 +310,8 @@ public final class Tablet extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Where this tablet is located. In the Spanner managed service, this is the
-   * name of a region, such as "us-central1". In Spanner Omni, this is a
-   * previously created location.
+   * Where this tablet is located. This is the name of a Google Cloud region,
+   * such as "us-central1".
    * </pre>
    *
    * <code>string location = 3;</code>
@@ -336,9 +335,8 @@ public final class Tablet extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Where this tablet is located. In the Spanner managed service, this is the
-   * name of a region, such as "us-central1". In Spanner Omni, this is a
-   * previously created location.
+   * Where this tablet is located. This is the name of a Google Cloud region,
+   * such as "us-central1".
    * </pre>
    *
    * <code>string location = 3;</code>
@@ -1146,9 +1144,8 @@ public final class Tablet extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Where this tablet is located. In the Spanner managed service, this is the
-     * name of a region, such as "us-central1". In Spanner Omni, this is a
-     * previously created location.
+     * Where this tablet is located. This is the name of a Google Cloud region,
+     * such as "us-central1".
      * </pre>
      *
      * <code>string location = 3;</code>
@@ -1171,9 +1168,8 @@ public final class Tablet extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Where this tablet is located. In the Spanner managed service, this is the
-     * name of a region, such as "us-central1". In Spanner Omni, this is a
-     * previously created location.
+     * Where this tablet is located. This is the name of a Google Cloud region,
+     * such as "us-central1".
      * </pre>
      *
      * <code>string location = 3;</code>
@@ -1196,9 +1192,8 @@ public final class Tablet extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Where this tablet is located. In the Spanner managed service, this is the
-     * name of a region, such as "us-central1". In Spanner Omni, this is a
-     * previously created location.
+     * Where this tablet is located. This is the name of a Google Cloud region,
+     * such as "us-central1".
      * </pre>
      *
      * <code>string location = 3;</code>
@@ -1220,9 +1215,8 @@ public final class Tablet extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Where this tablet is located. In the Spanner managed service, this is the
-     * name of a region, such as "us-central1". In Spanner Omni, this is a
-     * previously created location.
+     * Where this tablet is located. This is the name of a Google Cloud region,
+     * such as "us-central1".
      * </pre>
      *
      * <code>string location = 3;</code>
@@ -1240,9 +1234,8 @@ public final class Tablet extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Where this tablet is located. In the Spanner managed service, this is the
-     * name of a region, such as "us-central1". In Spanner Omni, this is a
-     * previously created location.
+     * Where this tablet is located. This is the name of a Google Cloud region,
+     * such as "us-central1".
      * </pre>
      *
      * <code>string location = 3;</code>
