@@ -312,6 +312,7 @@ public class TransactionChannelHintTest {
             return null;
           });
     }
+    System.out.println("streamingReadLocalIps: " + streamingReadLocalIps);
     assertEquals(1, streamingReadLocalIps.size());
   }
 }
