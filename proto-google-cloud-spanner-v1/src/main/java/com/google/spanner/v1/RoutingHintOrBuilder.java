@@ -230,10 +230,8 @@ public interface RoutingHintOrBuilder
    *
    *
    * <pre>
-   * If present, the client's current location. In the Spanner managed service,
-   * this should be the name of a Google Cloud zone or region, such as
-   * "us-central1". In Spanner Omni, this should correspond to a previously
-   * created location.
+   * If present, the client's current location. This should be the name of a
+   * Google Cloud zone or region, such as "us-central1".
    *
    * If absent, the client's location will be assumed to be the same as the
    * location of the server the client ends up connected to.
@@ -252,10 +250,8 @@ public interface RoutingHintOrBuilder
    *
    *
    * <pre>
-   * If present, the client's current location. In the Spanner managed service,
-   * this should be the name of a Google Cloud zone or region, such as
-   * "us-central1". In Spanner Omni, this should correspond to a previously
-   * created location.
+   * If present, the client's current location. This should be the name of a
+   * Google Cloud zone or region, such as "us-central1".
    *
    * If absent, the client's location will be assumed to be the same as the
    * location of the server the client ends up connected to.
