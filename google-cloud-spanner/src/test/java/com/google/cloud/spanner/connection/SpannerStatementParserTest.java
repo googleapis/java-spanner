@@ -54,6 +54,7 @@ public class SpannerStatementParserTest {
     assertEquals("'foo\"bar\"'", skip("'foo\"bar\"'  ", 0));
     assertEquals("\"foo'bar'\"", skip("\"foo'bar'\"  ", 0));
     assertEquals("`foo'bar'`", skip("`foo'bar'`  ", 0));
+    assertEquals("'test\\\\'", skip("'test\\\\'", 0));
 
     assertEquals("'''foo'bar'''", skip("'''foo'bar'''  ", 0));
     assertEquals("'''foo\\'bar'''", skip("'''foo\\'bar'''  ", 0));
