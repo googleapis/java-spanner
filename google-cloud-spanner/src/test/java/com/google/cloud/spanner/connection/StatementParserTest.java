@@ -1268,6 +1268,10 @@ public class StatementParserTest {
         "@p1'''?it\\'?s \n ?it\\'?s'''@p2",
         parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s \n ?it\\'?s'''?")
             .sqlWithNamedParameters);
+    assertEquals(
+        "@p1'?test?\\\\'@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'?test?\\\\'?")
+            .sqlWithNamedParameters);
 
     assertUnclosedLiteral(parser, "?'?it\\'?s \n ?it\\'?s'?");
     assertUnclosedLiteral(parser, "?'?it\\'?s \n ?it\\'?s?");
