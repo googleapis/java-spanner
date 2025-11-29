@@ -1033,8 +1033,9 @@ public abstract class AbstractStatementParser {
       } else if (supportsBackslashEscape()
           && currentChar == BACKSLASH
           && length > currentIndex + 1
-          && sql.charAt(currentIndex + 1) == startQuote) {
-        // This is an escaped quote (e.g. 'foo\'bar').
+          && (sql.charAt(currentIndex + 1) == startQuote
+              || sql.charAt(currentIndex + 1) == BACKSLASH)) {
+        // This is an escaped quote (e.g. 'foo\'bar') or an escaped backslash (e.g. 'test\\').
         // Note that in raw strings, the \ officially does not start an escape sequence, but the
         // result is still the same, as in a raw string 'both characters are preserved'.
         appendIfNotNull(result, currentChar);
