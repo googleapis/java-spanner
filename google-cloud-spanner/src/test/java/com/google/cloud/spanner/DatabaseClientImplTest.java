@@ -1899,6 +1899,31 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testBlindWriteWithTransactionTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    String transactionTag = "app=spanner,env=test,action=txn";
+    TransactionRunner runner = client.readWriteTransaction(Options.tag(transactionTag));
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.newInsertBuilder("abc").set("id").to(1L).build());
+          return null;
+        });
+
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactionRequests).hasSize(1);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(beginTransactionRequests.get(0).getRequestOptions().getTransactionTag())
+          .isEqualTo(transactionTag);
+    }
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    assertThat(commitRequests.get(0).getRequestOptions().getTransactionTag())
+        .isEqualTo(transactionTag);
+  }
+
+  @Test
   public void testReadWriteExecuteReadWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
