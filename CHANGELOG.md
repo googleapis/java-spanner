@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.104.0](https://github.com/googleapis/java-spanner/compare/v6.103.0...v6.104.0) (2025-12-03)
+
+
+### Features
+
+* Include PostgreSQL error code in exceptions ([#4236](https://github.com/googleapis/java-spanner/issues/4236)) ([5874f8b](https://github.com/googleapis/java-spanner/commit/5874f8b3e65adc3e78832866ebe667cd746e2d7f))
+
+
+### Bug Fixes
+
+* Backslash at end of string literal was misinterpreted ([#4246](https://github.com/googleapis/java-spanner/issues/4246)) ([477ca51](https://github.com/googleapis/java-spanner/commit/477ca51baf6cd1a0a5773bd53677f64195100ae2))
+* Fix transaction tag issue with the blind-write ([#4243](https://github.com/googleapis/java-spanner/issues/4243)) ([cf2ba69](https://github.com/googleapis/java-spanner/commit/cf2ba695cdb4038dc8e3ca3e9859231a2203da60))
+
 ## [6.103.0](https://github.com/googleapis/java-spanner/compare/v6.102.1...v6.103.0) (2025-11-17)
 
 
