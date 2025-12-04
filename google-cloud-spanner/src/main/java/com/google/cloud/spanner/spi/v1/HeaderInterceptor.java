@@ -159,38 +159,50 @@ class HeaderInterceptor implements ClientInterceptor {
       // updated to handle multiple metrics gracefully.
 
       Map<String, Float> serverTimingMetrics = parseServerTimingHeader(serverTiming);
-      if (serverTimingMetrics.containsKey(GFE_TIMING_HEADER)) {
-        float gfeLatency = serverTimingMetrics.get(GFE_TIMING_HEADER);
+      Float gfeLatency = serverTimingMetrics.get(GFE_TIMING_HEADER);
+      boolean isAfeEnabled = GapicSpannerRpc.isEnableAFEServerTiming();
+      Float afeLatency = isAfeEnabled ? serverTimingMetrics.get(AFE_TIMING_HEADER) : null;
 
-        measureMap.put(SPANNER_GFE_LATENCY, (long) gfeLatency);
+      // Record OpenCensus and Custom OpenTelemetry Metrics
+      if (gfeLatency != null) {
+        long gfeVal = gfeLatency.longValue();
+        measureMap.put(SPANNER_GFE_LATENCY, gfeVal);
         measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
-        measureMap.record(tagContext);
-
-        spannerRpcMetrics.recordGfeLatency((long) gfeLatency, attributes);
+        spannerRpcMetrics.recordGfeLatency(gfeVal, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
-        if (compositeTracer != null && !isDirectPathUsed) {
-          compositeTracer.recordGFELatency(gfeLatency);
-        }
-        if (span != null) {
-          span.setAttribute("gfe_latency", String.valueOf(gfeLatency));
-        }
       } else {
-        measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
+        measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L);
         spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
-        if (compositeTracer != null && !isDirectPathUsed) {
-          compositeTracer.recordGfeHeaderMissingCount(1L);
+      }
+      measureMap.record(tagContext);
+
+      // Record Built-in Metrics
+      if (compositeTracer != null) {
+        // GFE Latency Metrics
+        if (!isDirectPathUsed) {
+          if (gfeLatency != null) {
+            compositeTracer.recordGFELatency(gfeLatency);
+          } else {
+            compositeTracer.recordGfeHeaderMissingCount(1L);
+          }
+        }
+        // AFE Tracing
+        if (isAfeEnabled) {
+          if (afeLatency != null) {
+            compositeTracer.recordAFELatency(afeLatency);
+          } else {
+            compositeTracer.recordAfeHeaderMissingCount(1L);
+          }
         }
       }
 
-      // Record AFE metrics
-      if (compositeTracer != null && GapicSpannerRpc.isEnableAFEServerTiming()) {
-        if (serverTimingMetrics.containsKey(AFE_TIMING_HEADER)) {
-          float afeLatency = serverTimingMetrics.get(AFE_TIMING_HEADER);
-          compositeTracer.recordAFELatency(afeLatency);
-        } else {
-          // Disable afe_connectivity_error_count metric as AFE header is disabled in backend
-          // currently.
-          // compositeTracer.recordAfeHeaderMissingCount(1L);
+      // Record Span Attributes
+      if (span != null) {
+        if (gfeLatency != null) {
+          span.setAttribute("gfe_latency", gfeLatency.toString());
+        }
+        if (afeLatency != null) {
+          span.setAttribute("afe_latency", afeLatency.toString());
         }
       }
     } catch (NumberFormatException e) {
