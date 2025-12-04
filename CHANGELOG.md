@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.104.1-rc1](https://github.com/googleapis/java-spanner/compare/v6.104.0...v6.104.1-rc1) (2025-12-04)
+
+
+### Bug Fixes
+
+* next release candidate ([bf09da1](https://github.com/googleapis/java-spanner/commit/bf09da168e5e3c9d7e9297768e77c5833884a203))
+
 ## [6.104.0](https://github.com/googleapis/java-spanner/compare/v6.103.0...v6.104.0) (2025-12-03)
 
 
