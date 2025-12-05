@@ -1062,4 +1062,34 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.Object getConnectionPropertyValue(com.google.cloud.spanner.connection.ConnectionProperty)</method>
   </difference>
+  <!-- (Remove since these methods has no usage. CompositeTracer interface is annotated as internal API) -->
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordAFELatency(java.lang.Long)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordAFELatency(java.lang.Float)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordAfeHeaderMissingCount(java.lang.Long)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordGFELatency(java.lang.Long)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordGFELatency(java.lang.Float)</method>
+  </difference><difference>
+  <differenceType>7002</differenceType>
+  <className>com/google/cloud/spanner/CompositeTracer</className>
+  <method>void recordGfeHeaderMissingCount(java.lang.Long)</method>
+</difference>
 </differences>
