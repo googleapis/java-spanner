@@ -1,5 +1,5 @@
 gapic_generator_version: 2.64.1
-googleapis_commitish: ded7ed1e4cce7c165c56a417572cebea9bc1d82c
+googleapis_commitish: d534d01c1eefcc9efc7b9182a2b98e9fe5b0922b
 libraries_bom_version: 26.72.0
 libraries:
   - api_shortname: spanner
