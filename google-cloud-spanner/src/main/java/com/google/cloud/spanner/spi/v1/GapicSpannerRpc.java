@@ -279,7 +279,6 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final boolean leaderAwareRoutingEnabled;
   private final boolean endToEndTracingEnabled;
   private final int numChannels;
-  private final boolean isGrpcGcpExtensionEnabled;
 
   private final GrpcCallContext baseGrpcCallContext;
 
@@ -335,7 +334,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
     this.endToEndTracingEnabled = options.isEndToEndTracingEnabled();
     this.numChannels = options.getNumChannels();
-    this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
     this.baseGrpcCallContext = createBaseCallContext();
 
     if (initializeStubs) {
@@ -592,10 +590,6 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static void maybeEnableGrpcGcpExtension(
       InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder,
       final SpannerOptions options) {
-    if (!options.isGrpcGcpExtensionEnabled()) {
-      return;
-    }
-
     final String jsonApiConfig = parseGrpcGcpApiConfig();
     final GcpManagedChannelOptions grpcGcpOptions = grpcGcpOptionsWithMetrics(options);
 
@@ -2037,20 +2031,14 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context = this.baseGrpcCallContext;
     Long affinity = options == null ? null : Option.CHANNEL_HINT.getLong(options);
     if (affinity != null) {
-      if (this.isGrpcGcpExtensionEnabled) {
-        // Set channel affinity in gRPC-GCP.
-        // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
-        int boundedChannelHint = affinity.intValue() % this.numChannels;
-        context =
-            context.withCallOptions(
-                context
-                    .getCallOptions()
-                    .withOption(
-                        GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
-      } else {
-        // Set channel affinity in GAX.
-        context = context.withChannelAffinity(affinity.intValue());
-      }
+      // Set channel affinity in gRPC-GCP.
+      // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
+      int boundedChannelHint = affinity.intValue() % this.numChannels;
+      context =
+          context.withCallOptions(
+              context
+                  .getCallOptions()
+                  .withOption(GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
     }
     if (options != null) {
       // TODO(@odeke-em): Infer the affinity if it doesn't match up with in the request-id.
