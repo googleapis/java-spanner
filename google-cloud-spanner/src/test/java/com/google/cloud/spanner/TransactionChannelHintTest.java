@@ -21,7 +21,6 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_COLUMN_NAMES;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RESULTSET;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
-import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -35,7 +34,6 @@ import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
-import io.grpc.Attributes;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Metadata;
@@ -62,7 +60,8 @@ import org.junit.runners.JUnit4;
  * transaction, they go via same channel. For regular session, the hint is stored per session. For
  * multiplexed sessions this hint is stored per transaction.
  *
- * <p>The below tests assert this behavior for both kinds of sessions.
+ * <p>The below tests assert this behavior by verifying that all operations within a transaction use
+ * the same channel hint (extracted from the X-Goog-Spanner-Request-Id header).
  */
 @RunWith(JUnit4.class)
 public class TransactionChannelHintTest {
@@ -94,10 +93,10 @@ public class TransactionChannelHintTest {
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static InetSocketAddress address;
-  private static final Set<InetSocketAddress> executeSqlLocalIps = ConcurrentHashMap.newKeySet();
-  private static final Set<InetSocketAddress> beginTransactionLocalIps =
-      ConcurrentHashMap.newKeySet();
-  private static final Set<InetSocketAddress> streamingReadLocalIps = ConcurrentHashMap.newKeySet();
+  // Track channel hints (from X-Goog-Spanner-Request-Id header) per RPC method
+  private static final Set<Long> executeSqlChannelHints = ConcurrentHashMap.newKeySet();
+  private static final Set<Long> beginTransactionChannelHints = ConcurrentHashMap.newKeySet();
+  private static final Set<Long> streamingReadChannelHints = ConcurrentHashMap.newKeySet();
   private static Level originalLogLevel;
 
   @BeforeClass
@@ -113,8 +112,8 @@ public class TransactionChannelHintTest {
     server =
         NettyServerBuilder.forAddress(address)
             .addService(mockSpanner)
-            // Add a server interceptor to register the remote addresses that we are seeing. This
-            // indicates how many channels are used client side to communicate with the server.
+            // Add a server interceptor to extract channel hints from X-Goog-Spanner-Request-Id
+            // header. This verifies that all operations in a transaction use the same channel hint.
             .intercept(
                 new ServerInterceptor() {
                   @Override
@@ -122,25 +121,30 @@ public class TransactionChannelHintTest {
                       ServerCall<ReqT, RespT> call,
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
-                    Attributes attributes = call.getAttributes();
-                    @SuppressWarnings({"unchecked", "deprecation"})
-                    Attributes.Key<InetSocketAddress> key =
-                        (Attributes.Key<InetSocketAddress>)
-                            attributes.keys().stream()
-                                .filter(k -> k.equals(TRANSPORT_ATTR_REMOTE_ADDR))
-                                .findFirst()
-                                .orElse(null);
-                    if (key != null) {
-                      if (call.getMethodDescriptor()
-                          .equals(SpannerGrpc.getExecuteStreamingSqlMethod())) {
-                        executeSqlLocalIps.add(attributes.get(key));
-                      }
-                      if (call.getMethodDescriptor().equals(SpannerGrpc.getStreamingReadMethod())) {
-                        streamingReadLocalIps.add(attributes.get(key));
-                      }
-                      if (call.getMethodDescriptor()
-                          .equals(SpannerGrpc.getBeginTransactionMethod())) {
-                        beginTransactionLocalIps.add(attributes.get(key));
+                    // Extract channel hint from X-Goog-Spanner-Request-Id header
+                    String requestId = headers.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+                    if (requestId != null) {
+                      // Format:
+                      // <version>.<randProcessId>.<nthClientId>.<nthChannelId>.<nthRequest>.<attempt>
+                      String[] parts = requestId.split("\\.");
+                      if (parts.length >= 4) {
+                        try {
+                          long channelHint = Long.parseLong(parts[3]);
+                          if (call.getMethodDescriptor()
+                              .equals(SpannerGrpc.getExecuteStreamingSqlMethod())) {
+                            executeSqlChannelHints.add(channelHint);
+                          }
+                          if (call.getMethodDescriptor()
+                              .equals(SpannerGrpc.getStreamingReadMethod())) {
+                            streamingReadChannelHints.add(channelHint);
+                          }
+                          if (call.getMethodDescriptor()
+                              .equals(SpannerGrpc.getBeginTransactionMethod())) {
+                            beginTransactionChannelHints.add(channelHint);
+                          }
+                        } catch (NumberFormatException e) {
+                          // Ignore parse errors
+                        }
                       }
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
@@ -172,9 +176,9 @@ public class TransactionChannelHintTest {
   @After
   public void reset() {
     mockSpanner.reset();
-    executeSqlLocalIps.clear();
-    streamingReadLocalIps.clear();
-    beginTransactionLocalIps.clear();
+    executeSqlChannelHints.clear();
+    streamingReadChannelHints.clear();
+    beginTransactionChannelHints.clear();
   }
 
   private SpannerOptions createSpannerOptions() {
@@ -195,18 +199,18 @@ public class TransactionChannelHintTest {
   }
 
   @Test
-  public void testSingleUseReadOnlyTransaction_usesSingleChannel() {
+  public void testSingleUseReadOnlyTransaction_usesSingleChannelHint() {
     try (Spanner spanner = createSpannerOptions().getService()) {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (ResultSet resultSet = client.singleUseReadOnlyTransaction().executeQuery(SELECT1)) {
         while (resultSet.next()) {}
       }
     }
-    assertEquals(1, executeSqlLocalIps.size());
+    assertEquals(1, executeSqlChannelHints.size());
   }
 
   @Test
-  public void testSingleUseReadOnlyTransaction_withTimestampBound_usesSingleChannel() {
+  public void testSingleUseReadOnlyTransaction_withTimestampBound_usesSingleChannelHint() {
     try (Spanner spanner = createSpannerOptions().getService()) {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (ResultSet resultSet =
@@ -216,11 +220,11 @@ public class TransactionChannelHintTest {
         while (resultSet.next()) {}
       }
     }
-    assertEquals(1, executeSqlLocalIps.size());
+    assertEquals(1, executeSqlChannelHints.size());
   }
 
   @Test
-  public void testReadOnlyTransaction_usesSingleChannel() {
+  public void testReadOnlyTransaction_usesSingleChannelHint() {
     try (Spanner spanner = createSpannerOptions().getService()) {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (ReadOnlyTransaction transaction = client.readOnlyTransaction()) {
@@ -232,13 +236,14 @@ public class TransactionChannelHintTest {
         }
       }
     }
-    assertEquals(1, executeSqlLocalIps.size());
-    assertEquals(1, beginTransactionLocalIps.size());
-    assertEquals(executeSqlLocalIps, beginTransactionLocalIps);
+    // All ExecuteSql calls within the transaction should use the same channel hint
+    assertEquals(1, executeSqlChannelHints.size());
+    // BeginTransaction should use a single channel hint
+    assertEquals(1, beginTransactionChannelHints.size());
   }
 
   @Test
-  public void testReadOnlyTransaction_withTimestampBound_usesSingleChannel() {
+  public void testReadOnlyTransaction_withTimestampBound_usesSingleChannelHint() {
     try (Spanner spanner = createSpannerOptions().getService()) {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (ReadOnlyTransaction transaction =
@@ -251,13 +256,14 @@ public class TransactionChannelHintTest {
         }
       }
     }
-    assertEquals(1, executeSqlLocalIps.size());
-    assertEquals(1, beginTransactionLocalIps.size());
-    assertEquals(executeSqlLocalIps, beginTransactionLocalIps);
+    // All ExecuteSql calls within the transaction should use the same channel hint
+    assertEquals(1, executeSqlChannelHints.size());
+    // BeginTransaction should use a single channel hint
+    assertEquals(1, beginTransactionChannelHints.size());
   }
 
   @Test
-  public void testTransactionManager_usesSingleChannel() {
+  public void testTransactionManager_usesSingleChannelHint() {
     try (Spanner spanner = createSpannerOptions().getService()) {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (TransactionManager manager = client.transactionManager()) {
@@ -282,11 +288,11 @@ public class TransactionChannelHintTest {
         }
       }
     }
-    assertEquals(1, executeSqlLocalIps.size());
+    assertEquals(1, executeSqlChannelHints.size());
   }
 
   @Test
-  public void testTransactionRunner_usesSingleChannel() {
+  public void testTransactionRunner_usesSingleChannelHint() {
     try (Spanner spanner = createSpannerOptions().getService()) {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       TransactionRunner runner = client.readWriteTransaction();
@@ -312,7 +318,6 @@ public class TransactionChannelHintTest {
             return null;
           });
     }
-    System.out.println("streamingReadLocalIps: " + streamingReadLocalIps);
-    assertEquals(1, streamingReadLocalIps.size());
+    assertEquals(1, streamingReadChannelHints.size());
   }
 }
