@@ -840,6 +840,14 @@ abstract class AbstractReadContext
               request.setTransaction(selector);
             }
             this.ensureNonNullXGoogRequestId();
+            this.incrementXGoogRequestIdAttempt();
+            Map<SpannerRpc.Option, ?> txChannelHint = getTransactionChannelHint();
+            if (txChannelHint != null && txChannelHint.get(Option.CHANNEL_HINT) != null) {
+              long channelHint = Option.CHANNEL_HINT.getLong(txChannelHint);
+              this.xGoogRequestId.setChannelId(channelHint);
+            } else {
+              this.xGoogRequestId.setChannelId(session.getChannel());
+            }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
                     request.build(),
