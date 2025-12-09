@@ -99,21 +99,23 @@ class BuiltInMetricsRecorder extends OpenTelemetryMetricsRecorder {
   void recordServerTimingHeaderMetrics(
       Float gfeLatency,
       Float afeLatency,
-      Long gfeHeaderMissingCount,
-      Long afeHeaderMissingCount,
-      Map<String, String> attributes) {
+      Map<String, String> attributes,
+      boolean isDirectPathUsed,
+      boolean isAfeEnabled) {
     io.opentelemetry.api.common.Attributes otelAttributes = toOtelAttributes(attributes);
-    if (gfeLatency != null) {
-      gfeLatencyRecorder.record(gfeLatency, otelAttributes);
+    if (!isDirectPathUsed) {
+      if (gfeLatency != null) {
+        gfeLatencyRecorder.record(gfeLatency, otelAttributes);
+      } else {
+        gfeHeaderMissingCountRecorder.add(1, otelAttributes);
+      }
     }
-    if (gfeHeaderMissingCount > 0) {
-      gfeHeaderMissingCountRecorder.add(gfeHeaderMissingCount, otelAttributes);
-    }
-    if (afeLatency != null) {
-      afeLatencyRecorder.record(afeLatency, otelAttributes);
-    }
-    if (afeHeaderMissingCount > 0) {
-      afeHeaderMissingCountRecorder.add(afeHeaderMissingCount, otelAttributes);
+    if (isAfeEnabled) {
+      if (afeLatency != null) {
+        afeLatencyRecorder.record(afeLatency, otelAttributes);
+      } else {
+        afeHeaderMissingCountRecorder.add(1, otelAttributes);
+      }
     }
   }
 
