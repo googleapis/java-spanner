@@ -91,6 +91,11 @@
         <artifactId>proto-google-cloud-spanner-admin-database-v1</artifactId>
         <version>6.104.0</version><!-- {x-version-update:proto-google-cloud-spanner-admin-database-v1:current} -->
       </dependency>
+      <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>grpc-gcp</artifactId>
+        <version>1.7.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
