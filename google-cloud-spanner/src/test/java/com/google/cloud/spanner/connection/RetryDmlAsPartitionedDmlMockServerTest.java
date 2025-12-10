@@ -43,10 +43,37 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTest {
+  private enum ExceptionType {
+    MutationLimitExceeded {
+      @Override
+      StatusRuntimeException createException() {
+        return createTransactionMutationLimitExceededException();
+      }
+    },
+    ResourceLimitExceeded {
+      @Override
+      StatusRuntimeException createException() {
+        return createTransactionResourceLimitExceededException();
+      }
+    };
+
+    abstract StatusRuntimeException createException();
+  }
+
+  @Parameters(name = "exception = {0}")
+  public static Object[] data() {
+    return ExceptionType.values();
+  }
+
+  @SuppressWarnings("ClassEscapesDefinedScope")
+  @Parameter
+  public ExceptionType exceptionType;
 
   static StatusRuntimeException createTransactionMutationLimitExceededException() {
     Metadata.Key<byte[]> key =
@@ -70,10 +97,16 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
         .asRuntimeException(trailers);
   }
 
+  static StatusRuntimeException createTransactionResourceLimitExceededException() {
+    return Status.INVALID_ARGUMENT
+        .withDescription("Transaction resource limits exceeded")
+        .asRuntimeException();
+  }
+
   @Test
   public void testTransactionMutationLimitExceeded_isNotRetriedByDefault() {
     mockSpanner.setExecuteSqlExecutionTime(
-        SimulatedExecutionTime.ofException(createTransactionMutationLimitExceededException()));
+        SimulatedExecutionTime.ofException(exceptionType.createException()));
 
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
@@ -95,7 +128,7 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
   public void testTransactionMutationLimitExceeded_canBeRetriedAsPDML() {
     Statement statement = Statement.of("update test set value=1 where true");
     mockSpanner.setExecuteSqlExecutionTime(
-        SimulatedExecutionTime.ofException(createTransactionMutationLimitExceededException()));
+        SimulatedExecutionTime.ofException(exceptionType.createException()));
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.update(statement, 100000L));
 
@@ -134,7 +167,7 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
     Statement statement = Statement.of("insert into test (id, value) select -id, value from test");
     // The transactional update statement uses ExecuteSql(..).
     mockSpanner.setExecuteSqlExecutionTime(
-        SimulatedExecutionTime.ofException(createTransactionMutationLimitExceededException()));
+        SimulatedExecutionTime.ofException(exceptionType.createException()));
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.exception(
             statement,
@@ -230,7 +263,7 @@ public class RetryDmlAsPartitionedDmlMockServerTest extends AbstractMockServerTe
     Statement statement = Statement.of(sql);
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.exception(
-            statement, createTransactionMutationLimitExceededException()));
+            statement, exceptionType.createException()));
 
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
