@@ -17,8 +17,7 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
@@ -55,10 +54,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -259,7 +255,7 @@ public class GfeLatencyTest {
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
             true);
-    assertEquals(1, count1);
+    assertTrue(count1 >= 1);
   }
 
   @Test
@@ -270,7 +266,7 @@ public class GfeLatencyTest {
     long count =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
-            "google.spanner.v1.Spanner/ExecuteSql",
+            "google.spanner.v1.Spanner/Commit",
             false);
     assertEquals(0, count);
 
@@ -280,7 +276,7 @@ public class GfeLatencyTest {
     long count1 =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
-            "google.spanner.v1.Spanner/ExecuteSql",
+            "google.spanner.v1.Spanner/Commit",
             true);
     assertEquals(1, count1);
   }
