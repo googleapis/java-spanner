@@ -69,21 +69,17 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   private static final Statement SELECT_RANDOM = Statement.of("SELECT * FROM random");
   private static final Statement UPDATE_RANDOM = Statement.of("UPDATE random SET foo=1 WHERE id=1");
   private static InMemoryMetricReader metricReader;
-  private static Map<String, String> attributes =
+  private static final Map<String, String> attributes =
       BuiltInMetricsProvider.INSTANCE.createClientAttributes();
-  private static Attributes expectedCommonBaseAttributes =
+  private static final Attributes expectedCommonBaseAttributes =
       Attributes.builder()
           .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, "spanner-java/")
           .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
           .put(BuiltInMetricsConstant.INSTANCE_ID_KEY, "i")
           .put(BuiltInMetricsConstant.DATABASE_KEY, "d")
           .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "false")
+          .put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false")
           .build();
-  ;
-  private static Attributes expectedCommonRequestAttributes =
-      Attributes.builder().put(BuiltInMetricsConstant.DIRECT_PATH_USED_KEY, "false").build();
-  ;
-
   private static final double MIN_LATENCY = 0;
 
   private DatabaseClient client;
@@ -175,7 +171,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     double elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
     Attributes expectedAttributes =
         expectedCommonBaseAttributes.toBuilder()
-            .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteStreamingSql")
             .build();
@@ -237,7 +232,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     Attributes expectedAttributesBeginTransactionOK =
         expectedCommonBaseAttributes.toBuilder()
-            .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.BeginTransaction")
             .build();
@@ -323,7 +317,6 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     Attributes expectedAttributesCreateSessionOK =
         expectedCommonBaseAttributes.toBuilder()
-            .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.CreateSession")
             // Include the additional attributes that are added by the HeaderInterceptor in the
@@ -347,6 +340,10 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     // Attempt count should have a failed metric point for CreateSession.
     assertEquals(
         1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed), 0);
+    assertTrue(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
+    assertTrue(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
   }
 
   @Test
@@ -383,15 +380,15 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     Attributes expectedAttributes =
         expectedCommonBaseAttributes.toBuilder()
-            .putAll(expectedCommonRequestAttributes)
             .put(BuiltInMetricsConstant.STATUS_KEY, "OK")
             .put(BuiltInMetricsConstant.METHOD_KEY, "Spanner.ExecuteSql")
             .build();
 
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_LATENCIES_NAME));
     assertFalse(checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_LATENCIES_NAME));
-    // Metric is disabled currently
-    assertFalse(
+    assertTrue(
+        checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
+    assertTrue(
         checkIfMetricExists(metricReader, BuiltInMetricsConstant.AFE_CONNECTIVITY_ERROR_NAME));
 
     spannerNoHeader.close();
