@@ -72,6 +72,7 @@ import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
+import com.google.cloud.spanner.XGoogSpannerRequestId.NoopRequestIdCreator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -1455,6 +1456,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               any(ExecuteSqlRequest.class),
               any(ResultStreamConsumer.class),
               any(Map.class),
+              any(XGoogSpannerRequestId.class),
               eq(true)))
           .thenReturn(closedStreamingCall);
       when(rpc.executeQuery(any(ExecuteSqlRequest.class), any(Map.class), eq(true)))
@@ -1481,8 +1483,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
       when(closedSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
-      when(closedSession.getRequestIdCreator())
-          .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
+      when(closedSession.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
 
       Span oTspan = mock(Span.class);
       ISpan span = new OpenTelemetrySpan(oTspan);
@@ -1523,8 +1524,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(span);
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
-      when(openSession.getRequestIdCreator())
-          .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
+      when(openSession.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
 
       ResultSet openResultSet = mock(ResultSet.class);
       when(openResultSet.next()).thenReturn(true, false);
@@ -1648,14 +1648,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Collections.singletonList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
-    closedSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(closedSession.writeWithOptions(eq(mutations), any())).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
-    openSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(openSession.writeWithOptions(eq(mutations), any())).thenReturn(response);
     doAnswer(
             invocation -> {
@@ -1693,7 +1691,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Collections.singletonList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
-    closedSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(closedSession.writeAtLeastOnceWithOptions(eq(mutations), any()))
         .thenThrow(sessionNotFound);
 
@@ -1701,7 +1698,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
-    openSession.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     when(openSession.writeAtLeastOnceWithOptions(eq(mutations), any())).thenReturn(response);
     doAnswer(
             invocation -> {

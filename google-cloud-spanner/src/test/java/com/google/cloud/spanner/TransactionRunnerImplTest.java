@@ -36,6 +36,7 @@ import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
+import com.google.cloud.spanner.XGoogSpannerRequestId.NoopRequestIdCreator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Preconditions;
@@ -121,8 +122,8 @@ public class TransactionRunnerImplTest {
     when(session.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
     when(session.newTransaction(eq(Options.fromTransactionOptions()), any())).thenReturn(txn);
     when(session.getTracer()).thenReturn(tracer);
-    when(session.getRequestIdCreator())
-        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
+    when(rpc.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation -> {
@@ -195,7 +196,7 @@ public class TransactionRunnerImplTest {
             Mockito.anyString(),
             Mockito.anyString(),
             Mockito.anyMap(),
-            Mockito.anyMap(),
+            Mockito.eq(null),
             Mockito.eq(true)))
         .thenAnswer(
             invocation ->
@@ -336,7 +337,6 @@ public class TransactionRunnerImplTest {
             spanner,
             new SessionReference(
                 "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP)) {};
-    session.setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(span);

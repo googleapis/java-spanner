@@ -371,7 +371,7 @@ public class SpannerCloudMonitoringExporterTest {
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
             Attributes.builder()
-                .put(XGoogSpannerRequestId.REQUEST_ID, "test")
+                .put(XGoogSpannerRequestId.REQUEST_ID_HEADER_NAME, "test")
                 .put("lang", "java")
                 .build(),
             recordTimeEpoch,
@@ -448,8 +448,10 @@ public class SpannerCloudMonitoringExporterTest {
     // Assert only 1 attachment is there with 1 label for request_id.
     assertThat(filterAttributes.size()).isEqualTo(1);
     assertThat(filterAttributes.get(0).getLabelCount()).isEqualTo(1);
-    assertThat(filterAttributes.get(0).containsLabel(XGoogSpannerRequestId.REQUEST_ID)).isTrue();
-    assertThat(filterAttributes.get(0).getLabelOrThrow(XGoogSpannerRequestId.REQUEST_ID))
+    assertThat(filterAttributes.get(0).containsLabel(XGoogSpannerRequestId.REQUEST_ID_HEADER_NAME))
+        .isTrue();
+    assertThat(
+            filterAttributes.get(0).getLabelOrThrow(XGoogSpannerRequestId.REQUEST_ID_HEADER_NAME))
         .isEqualTo("test");
   }
 

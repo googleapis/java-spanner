@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
+import com.google.cloud.spanner.XGoogSpannerRequestId.NoopRequestIdCreator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.ByteString;
@@ -66,9 +67,9 @@ public class TransactionContextImplTest {
                 com.google.spanner.v1.CommitResponse.newBuilder()
                     .setCommitTimestamp(Timestamp.newBuilder().setSeconds(99L).setNanos(10).build())
                     .build()));
+    when(rpc.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     when(session.getName()).thenReturn("test");
-    when(session.getRequestIdCreator())
-        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     doNothing().when(span).setStatus(any(Throwable.class));
     doNothing().when(span).end();
     doNothing().when(span).addAnnotation("Starting Commit");
@@ -212,8 +213,7 @@ public class TransactionContextImplTest {
   private void batchDml(int status) {
     SessionImpl session = mock(SessionImpl.class);
     when(session.getName()).thenReturn("test");
-    when(session.getRequestIdCreator())
-        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     SpannerRpc rpc = mock(SpannerRpc.class);
     ExecuteBatchDmlResponse response =
         ExecuteBatchDmlResponse.newBuilder()

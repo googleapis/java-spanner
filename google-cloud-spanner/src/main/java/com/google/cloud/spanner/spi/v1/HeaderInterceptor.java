@@ -188,7 +188,7 @@ class HeaderInterceptor implements ClientInterceptor {
       if (afeLatency != null) {
         span.setAttribute("afe_latency", afeLatency.toString());
       }
-      span.setAttribute(XGoogSpannerRequestId.REQUEST_ID, requestId);
+      span.setAttribute(XGoogSpannerRequestId.REQUEST_ID_HEADER_NAME, requestId);
     }
   }
 
@@ -260,7 +260,7 @@ class HeaderInterceptor implements ClientInterceptor {
   }
 
   private String extractRequestId(Metadata headers) throws ExecutionException {
-    return headers.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+    return headers.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
   }
 
   private TagContext getTagContext(String key, String method, DatabaseName databaseName)

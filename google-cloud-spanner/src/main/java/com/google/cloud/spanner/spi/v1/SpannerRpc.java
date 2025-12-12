@@ -27,6 +27,8 @@ import com.google.cloud.ServiceRpc;
 import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.XGoogSpannerRequestId;
+import com.google.cloud.spanner.XGoogSpannerRequestId.RequestIdCreator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
@@ -78,8 +80,7 @@ import javax.annotation.Nullable;
 public interface SpannerRpc extends ServiceRpc {
   /** Options passed in {@link SpannerRpc} methods to control how an RPC is issued. */
   enum Option {
-    CHANNEL_HINT("Channel Hint"),
-    REQUEST_ID("Request Id");
+    CHANNEL_HINT("Channel Hint");
 
     private final String value;
 
@@ -187,6 +188,10 @@ public interface SpannerRpc extends ServiceRpc {
      * @param message a message to use in the final status of any underlying RPC
      */
     void cancel(@Nullable String message);
+  }
+
+  default RequestIdCreator getRequestIdCreator() {
+    throw new UnsupportedOperationException("Not implemented");
   }
 
   // Instance admin APIs.
@@ -389,6 +394,7 @@ public interface SpannerRpc extends ServiceRpc {
       ReadRequest request,
       ResultStreamConsumer consumer,
       @Nullable Map<Option, ?> options,
+      XGoogSpannerRequestId requestId,
       boolean routeToLeader);
 
   /** Returns the retry settings for streaming query operations. */
@@ -428,7 +434,10 @@ public interface SpannerRpc extends ServiceRpc {
   RetrySettings getPartitionedDmlRetrySettings();
 
   ServerStream<PartialResultSet> executeStreamingPartitionedDml(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, Duration timeout);
+      ExecuteSqlRequest request,
+      @Nullable Map<Option, ?> options,
+      XGoogSpannerRequestId requestId,
+      Duration timeout);
 
   ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       BatchWriteRequest request, @Nullable Map<Option, ?> options);
@@ -445,6 +454,7 @@ public interface SpannerRpc extends ServiceRpc {
       ExecuteSqlRequest request,
       ResultStreamConsumer consumer,
       @Nullable Map<Option, ?> options,
+      XGoogSpannerRequestId requestId,
       boolean routeToLeader);
 
   ExecuteBatchDmlResponse executeBatchDml(ExecuteBatchDmlRequest build, Map<Option, ?> options);
