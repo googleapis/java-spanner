@@ -1557,20 +1557,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /**
-     * Enables gRPC-GCP extension with the default settings. Do not set
-     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
-     * Multiplexed sessions are not supported for gRPC-GCP.
-     */
+    /** Enables gRPC-GCP extension with the default settings. */
     public Builder enableGrpcGcpExtension() {
       return this.enableGrpcGcpExtension(null);
     }
 
     /**
      * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
-     * and default Spanner metric labels will be added automatically. Do not set
-     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
-     * Multiplexed sessions are not supported for gRPC-GCP.
+     * and default Spanner metric labels will be added automatically.
      */
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
