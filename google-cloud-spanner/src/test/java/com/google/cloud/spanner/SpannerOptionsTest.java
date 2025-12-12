@@ -1103,7 +1103,7 @@ public class SpannerOptionsTest {
             .disableGrpcGcpExtension()
             .build();
 
-    assertEquals(SpannerOptions.GRPC_GCP_ENABLED_DEFAULT_CHANNELS, options.getNumChannels());
+    assertEquals(SpannerOptions.DEFAULT_CHANNELS, options.getNumChannels());
   }
 
   @Test
@@ -1139,7 +1139,7 @@ public class SpannerOptionsTest {
     SpannerOptions options =
         SpannerOptions.newBuilder().setProjectId("test-project").disableGrpcGcpExtension().build();
     SpannerOptions options1 = options.toBuilder().build();
-    assertEquals(true, options.isGrpcGcpExtensionEnabled());
+    assertEquals(false, options.isGrpcGcpExtensionEnabled());
     assertEquals(options.isGrpcGcpExtensionEnabled(), options1.isGrpcGcpExtensionEnabled());
 
     Spanner spanner1 = options.getService();
