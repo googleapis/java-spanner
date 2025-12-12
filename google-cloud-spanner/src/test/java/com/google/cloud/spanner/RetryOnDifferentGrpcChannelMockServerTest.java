@@ -27,7 +27,6 @@ import static org.junit.Assume.assumeFalse;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
-import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -64,6 +63,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServerTest {
   private static final Map<String, Set<InetSocketAddress>> SERVER_ADDRESSES = new HashMap<>();
+  private static final Map<String, Set<Long>> CHANNEL_HINTS = new HashMap<>();
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -79,6 +79,7 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
   @After
   public void clearRequests() {
     SERVER_ADDRESSES.clear();
+    CHANNEL_HINTS.clear();
     mockSpanner.clearRequests();
     mockSpanner.removeAllExecutionTimes();
   }
@@ -91,6 +92,7 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
           Metadata metadata,
           ServerCallHandler<ReqT, RespT> serverCallHandler) {
         Attributes attributes = serverCall.getAttributes();
+        String methodName = serverCall.getMethodDescriptor().getFullMethodName();
         //noinspection unchecked,deprecation
         Attributes.Key<InetSocketAddress> key =
             (Attributes.Key<InetSocketAddress>)
@@ -102,11 +104,26 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
           InetSocketAddress address = attributes.get(key);
           synchronized (SERVER_ADDRESSES) {
             Set<InetSocketAddress> addresses =
-                SERVER_ADDRESSES.getOrDefault(
-                    serverCall.getMethodDescriptor().getFullMethodName(), new HashSet<>());
+                SERVER_ADDRESSES.getOrDefault(methodName, new HashSet<>());
             addresses.add(address);
-            SERVER_ADDRESSES.putIfAbsent(
-                serverCall.getMethodDescriptor().getFullMethodName(), addresses);
+            SERVER_ADDRESSES.putIfAbsent(methodName, addresses);
+          }
+        }
+        String requestId = metadata.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+        if (requestId != null) {
+          // REQUEST_ID format: version.randProcessId.nthClientId.nthChannelId.nthRequest.attempt
+          String[] parts = requestId.split("\\.");
+          if (parts.length >= 6) {
+            try {
+              long channelHint = Long.parseLong(parts[3]);
+              synchronized (CHANNEL_HINTS) {
+                Set<Long> hints = CHANNEL_HINTS.getOrDefault(methodName, new HashSet<>());
+                hints.add(channelHint);
+                CHANNEL_HINTS.putIfAbsent(methodName, hints);
+              }
+            } catch (NumberFormatException ignore) {
+              // Ignore malformed header values in tests.
+            }
           }
         }
         return serverCallHandler.startCall(serverCall, metadata);
@@ -157,8 +174,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     assertNotEquals(requests.get(0).getSession(), requests.get(1).getSession());
     assertEquals(
         2,
-        SERVER_ADDRESSES
-            .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", ImmutableSet.of())
+        CHANNEL_HINTS
+            .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", new HashSet<>())
             .size());
   }
 
@@ -201,8 +218,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
       assertEquals(numChannels, sessions.size());
       assertEquals(
           numChannels,
-          SERVER_ADDRESSES
-              .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", ImmutableSet.of())
+          CHANNEL_HINTS
+              .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", new HashSet<>())
               .size());
     }
   }
@@ -275,8 +292,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
       assertEquals(numChannels + 1, sessions.size());
       assertEquals(
           numChannels,
-          SERVER_ADDRESSES
-              .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", ImmutableSet.of())
+          CHANNEL_HINTS
+              .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", new HashSet<>())
               .size());
       assertEquals(numChannels, mockSpanner.countRequestsOfType(BatchCreateSessionsRequest.class));
     }
@@ -303,11 +320,11 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     // The requests use the same multiplexed session.
     assertEquals(requests.get(0).getSession(), requests.get(1).getSession());
-    // The requests use two different gRPC channels.
+    // The requests use two different channel hints (which may map to same physical channel).
     assertEquals(
         2,
-        SERVER_ADDRESSES
-            .getOrDefault("google.spanner.v1.Spanner/ExecuteStreamingSql", ImmutableSet.of())
+        CHANNEL_HINTS
+            .getOrDefault("google.spanner.v1.Spanner/ExecuteStreamingSql", new HashSet<>())
             .size());
   }
 
@@ -327,19 +344,19 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
         assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
       }
       int numChannels = spanner.getOptions().getNumChannels();
-      assertEquals(numChannels, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
       List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
       // The requests use the same multiplexed session.
       String session = requests.get(0).getSession();
       for (ExecuteSqlRequest request : requests) {
         assertEquals(session, request.getSession());
       }
-      // The requests use all gRPC channels.
-      assertEquals(
-          numChannels,
-          SERVER_ADDRESSES
-              .getOrDefault("google.spanner.v1.Spanner/ExecuteStreamingSql", ImmutableSet.of())
-              .size());
+      // Each attempt, including retries, must use a distinct channel hint.
+      int totalRequests = mockSpanner.countRequestsOfType(ExecuteSqlRequest.class);
+      int distinctHints =
+          CHANNEL_HINTS
+              .getOrDefault("google.spanner.v1.Spanner/ExecuteStreamingSql", new HashSet<>())
+              .size();
+      assertEquals(totalRequests, distinctHints);
     }
   }
 
