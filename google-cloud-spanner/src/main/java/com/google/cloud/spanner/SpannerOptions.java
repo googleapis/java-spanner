@@ -1625,6 +1625,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.experimentalHost = "http://" + this.experimentalHost;
         super.setHost(this.experimentalHost);
       }
+      this.usePlainText = true;
       return this;
     }
 

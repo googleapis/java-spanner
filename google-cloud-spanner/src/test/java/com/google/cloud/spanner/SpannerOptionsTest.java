@@ -1201,4 +1201,27 @@ public class SpannerOptionsTest {
     assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionForRW());
     assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());
   }
+
+  @Test
+  public void testPlainTextOptions() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setExperimentalHost("localhost:8080").usePlainText().build();
+    assertEquals("http://localhost:8080", options.getHost());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    options =
+        SpannerOptions.newBuilder()
+            .setExperimentalHost("http://localhost:8080")
+            .usePlainText()
+            .build();
+    assertEquals("http://localhost:8080", options.getHost());
+    options =
+        SpannerOptions.newBuilder().usePlainText().setExperimentalHost("localhost:8080").build();
+    assertEquals("http://localhost:8080", options.getHost());
+    options =
+        SpannerOptions.newBuilder()
+            .usePlainText()
+            .setExperimentalHost("http://localhost:8080")
+            .build();
+    assertEquals("http://localhost:8080", options.getHost());
+  }
 }
