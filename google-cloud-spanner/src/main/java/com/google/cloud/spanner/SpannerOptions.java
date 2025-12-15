@@ -1551,13 +1551,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
     public Builder setExperimentalHost(String host) {
-      if (usePlainText && !host.startsWith("http")) {
+      if (this.usePlainText && !host.startsWith("http")) {
         host = "http://" + host;
       }
       super.setHost(host);
       super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
       setSessionPoolOption(SessionPoolOptions.newBuilder().setExperimentalHost().build());
-      experimentalHost = host;
+      this.experimentalHost = host;
       return this;
     }
 
@@ -1617,15 +1617,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * the transport to use plaintext (no TLS) and will set credentials to {@link
      * com.google.cloud.NoCredentials} to avoid sending authentication over an unsecured channel.
      */
-    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3574")
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/4264")
     public Builder usePlainText() {
+      this.usePlainText = true;
       this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
           .setCredentials(NoCredentials.getInstance());
-      if (this.experimentalHost != null && !this.experimentalHost.startsWith("http")) {
-        this.experimentalHost = "http://" + this.experimentalHost;
-        super.setHost(this.experimentalHost);
+      if (this.experimentalHost != null) {
+        // Re-apply host settings to ensure http:// is prepended.
+        setExperimentalHost(this.experimentalHost);
       }
-      this.usePlainText = true;
       return this;
     }
 
