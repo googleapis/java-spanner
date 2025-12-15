@@ -1557,7 +1557,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /** Enables gRPC-GCP extension with the default settings. */
+    /** Enables gRPC-GCP extension with the default settings. This option is enabled by default. */
     public Builder enableGrpcGcpExtension() {
       return this.enableGrpcGcpExtension(null);
     }

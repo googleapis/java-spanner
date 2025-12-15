@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.client.util.BackOff;
 import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
+import com.google.cloud.spanner.XGoogSpannerRequestId.NoopRequestIdCreator;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
@@ -168,11 +169,12 @@ public class ResumableStreamIteratorTest {
             DefaultErrorHandler.INSTANCE,
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes(),
-            new XGoogSpannerRequestId.NoopRequestIdCreator()) {
+            NoopRequestIdCreator.INSTANCE) {
           @Override
           AbstractResultSet.CloseableIterator<PartialResultSet> startStream(
               @Nullable ByteString resumeToken,
-              AsyncResultSet.StreamMessageListener streamMessageListener) {
+              AsyncResultSet.StreamMessageListener streamMessageListener,
+              XGoogSpannerRequestId requestId) {
             return starter.startStream(resumeToken, null);
           }
         };

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -67,17 +68,14 @@ public class XGoogSpannerRequestIdTest {
   }
 
   public static class ServerHeaderEnforcer implements ServerInterceptor {
-    private Map<String, CopyOnWriteArrayList<XGoogSpannerRequestId>> unaryResults;
-    private Map<String, CopyOnWriteArrayList<XGoogSpannerRequestId>> streamingResults;
-    private List<String> gotValues;
-    private Set<String> checkMethods;
+    private final Map<String, CopyOnWriteArrayList<XGoogSpannerRequestId>> unaryResults =
+        new ConcurrentHashMap<>();
+    private final Map<String, CopyOnWriteArrayList<XGoogSpannerRequestId>> streamingResults =
+        new ConcurrentHashMap<>();
+    private final List<String> gotValues = new CopyOnWriteArrayList<>();
+    private final Set<String> checkMethods;
 
     ServerHeaderEnforcer(Set<String> checkMethods) {
-      this.gotValues = new CopyOnWriteArrayList<String>();
-      this.unaryResults =
-          new ConcurrentHashMap<String, CopyOnWriteArrayList<XGoogSpannerRequestId>>();
-      this.streamingResults =
-          new ConcurrentHashMap<String, CopyOnWriteArrayList<XGoogSpannerRequestId>>();
       this.checkMethods = checkMethods;
     }
 
@@ -88,7 +86,7 @@ public class XGoogSpannerRequestIdTest {
         ServerCallHandler<ReqT, RespT> next) {
       boolean isUnary = call.getMethodDescriptor().getType() == MethodType.UNARY;
       String methodName = call.getMethodDescriptor().getFullMethodName();
-      String gotReqIdStr = requestHeaders.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+      String gotReqIdStr = requestHeaders.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
       if (!this.checkMethods.contains(methodName)) {
         return next.startCall(call, requestHeaders);
       }
@@ -102,7 +100,7 @@ public class XGoogSpannerRequestIdTest {
         Status status =
             Status.fromCode(Status.Code.INVALID_ARGUMENT)
                 .augmentDescription(
-                    methodName + " lacks " + XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+                    methodName + " lacks " + XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
         call.close(status, requestHeaders);
         return next.startCall(call, requestHeaders);
       }
@@ -128,14 +126,8 @@ public class XGoogSpannerRequestIdTest {
     }
 
     public void assertIntegrity() {
-      this.unaryResults.forEach(
-          (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
-            assertMonotonicityOfIds(method, values);
-          });
-      this.streamingResults.forEach(
-          (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
-            assertMonotonicityOfIds(method, values);
-          });
+      this.unaryResults.forEach(this::assertMonotonicityOfIds);
+      this.streamingResults.forEach(this::assertMonotonicityOfIds);
     }
 
     private void assertMonotonicityOfIds(String prefix, List<XGoogSpannerRequestId> reqIds) {
@@ -161,22 +153,22 @@ public class XGoogSpannerRequestIdTest {
     }
 
     public MethodAndRequestId[] accumulatedUnaryValues() {
-      List<MethodAndRequestId> accumulated = new ArrayList();
+      List<MethodAndRequestId> accumulated = new ArrayList<>();
       this.unaryResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
-            for (int i = 0; i < values.size(); i++) {
-              accumulated.add(new MethodAndRequestId(method, values.get(i)));
+            for (XGoogSpannerRequestId value : values) {
+              accumulated.add(new MethodAndRequestId(method, value));
             }
           });
       return accumulated.toArray(new MethodAndRequestId[0]);
     }
 
     public MethodAndRequestId[] accumulatedStreamingValues() {
-      List<MethodAndRequestId> accumulated = new ArrayList();
+      List<MethodAndRequestId> accumulated = new ArrayList<>();
       this.streamingResults.forEach(
           (String method, CopyOnWriteArrayList<XGoogSpannerRequestId> values) -> {
-            for (int i = 0; i < values.size(); i++) {
-              accumulated.add(new MethodAndRequestId(method, values.get(i)));
+            for (XGoogSpannerRequestId value : values) {
+              accumulated.add(new MethodAndRequestId(method, value));
             }
           });
       return accumulated.toArray(new MethodAndRequestId[0]);
@@ -188,7 +180,7 @@ public class XGoogSpannerRequestIdTest {
       for (int i = 0; i < gotUnaryValues.length && false; i++) {
         System.out.println("\033[33misUnary: #" + i + ":: " + gotUnaryValues[i] + "\033[00m");
       }
-      assertEquals(wantUnaryValues, gotUnaryValues);
+      assertArrayEquals(wantUnaryValues, gotUnaryValues);
     }
 
     public void checkAtLeastHasExpectedUnaryXGoogRequestIds(MethodAndRequestId... wantUnaryValues) {
@@ -200,9 +192,9 @@ public class XGoogSpannerRequestIdTest {
       if (wantUnaryValues.length < gotUnaryValues.length) {
         MethodAndRequestId[] gotSliced =
             Arrays.copyOfRange(gotUnaryValues, 0, wantUnaryValues.length);
-        assertEquals(wantUnaryValues, gotSliced);
+        assertArrayEquals(wantUnaryValues, gotSliced);
       } else {
-        assertEquals(wantUnaryValues, gotUnaryValues);
+        assertArrayEquals(wantUnaryValues, gotUnaryValues);
       }
     }
 
@@ -218,9 +210,9 @@ public class XGoogSpannerRequestIdTest {
                 gotUnaryValues,
                 gotUnaryValues.length - wantUnaryValues.length,
                 gotUnaryValues.length);
-        assertEquals(wantUnaryValues, gotSliced);
+        assertArrayEquals(wantUnaryValues, gotSliced);
       } else {
-        assertEquals(wantUnaryValues, gotUnaryValues);
+        assertArrayEquals(wantUnaryValues, gotUnaryValues);
       }
     }
 
@@ -236,7 +228,7 @@ public class XGoogSpannerRequestIdTest {
             "\033[32misStreaming: #" + i + ":: " + gotStreamingValues[i] + "\033[00m");
       }
       sortValues(gotStreamingValues);
-      assertEquals(wantStreamingValues, gotStreamingValues);
+      assertArrayEquals(wantStreamingValues, gotStreamingValues);
     }
 
     public void reset() {

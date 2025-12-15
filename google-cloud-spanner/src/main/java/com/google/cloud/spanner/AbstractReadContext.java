@@ -457,30 +457,22 @@ abstract class AbstractReadContext
     }
 
     private void initTransactionInternal(BeginTransactionRequest request) {
-      XGoogSpannerRequestId reqId =
-          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       try {
         Transaction transaction =
-            rpc.beginTransaction(
-                request, reqId.withOptions(getTransactionChannelHint()), isRouteToLeader());
+            rpc.beginTransaction(request, getTransactionChannelHint(), isRouteToLeader());
         if (!transaction.hasReadTimestamp()) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL,
-              "Missing expected transaction.read_timestamp metadata field",
-              reqId);
+              ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
         }
         if (transaction.getId().isEmpty()) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL, "Missing expected transaction.id metadata field", reqId);
+              ErrorCode.INTERNAL, "Missing expected transaction.id metadata field");
         }
         try {
           timestamp = Timestamp.fromProto(transaction.getReadTimestamp());
         } catch (IllegalArgumentException e) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL,
-              "Bad value in transaction.read_timestamp metadata field",
-              e,
-              reqId);
+              ErrorCode.INTERNAL, "Bad value in transaction.read_timestamp metadata field", e);
         }
         transactionId = transaction.getId();
         span.addAnnotation(
@@ -816,7 +808,8 @@ abstract class AbstractReadContext
           @Override
           CloseableIterator<PartialResultSet> startStream(
               @Nullable ByteString resumeToken,
-              AsyncResultSet.StreamMessageListener streamListener) {
+              AsyncResultSet.StreamMessageListener streamListener,
+              XGoogSpannerRequestId requestId) {
             GrpcStreamIterator stream =
                 new GrpcStreamIterator(
                     statement,
@@ -839,20 +832,12 @@ abstract class AbstractReadContext
             if (selector != null) {
               request.setTransaction(selector);
             }
-            this.ensureNonNullXGoogRequestId();
-            this.incrementXGoogRequestIdAttempt();
-            Map<SpannerRpc.Option, ?> txChannelHint = getTransactionChannelHint();
-            if (txChannelHint != null && txChannelHint.get(Option.CHANNEL_HINT) != null) {
-              long channelHint = Option.CHANNEL_HINT.getLong(txChannelHint);
-              this.xGoogRequestId.setChannelId(channelHint);
-            } else {
-              this.xGoogRequestId.setChannelId(session.getChannel());
-            }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
                     request.build(),
                     stream.consumer(),
-                    this.xGoogRequestId.withOptions(getTransactionChannelHint()),
+                    getTransactionChannelHint(),
+                    requestId,
                     isRouteToLeader());
             session.markUsed(clock.instant());
             stream.setCall(call, request.getTransaction().hasBegin());
@@ -868,7 +853,7 @@ abstract class AbstractReadContext
         stream, this, options.hasDecodeMode() ? options.decodeMode() : defaultDecodeMode);
   }
 
-  Map<SpannerRpc.Option, ?> getChannelHintOptions(
+  static Map<SpannerRpc.Option, ?> getChannelHintOptions(
       Map<SpannerRpc.Option, ?> channelHintForSession, Long channelHintForTransaction) {
     if (channelHintForSession != null) {
       return channelHintForSession;
@@ -1038,7 +1023,8 @@ abstract class AbstractReadContext
           @Override
           CloseableIterator<PartialResultSet> startStream(
               @Nullable ByteString resumeToken,
-              AsyncResultSet.StreamMessageListener streamListener) {
+              AsyncResultSet.StreamMessageListener streamListener,
+              XGoogSpannerRequestId requestId) {
             GrpcStreamIterator stream =
                 new GrpcStreamIterator(
                     lastStatement, prefetchChunks, cancelQueryWhenClientIsClosed);
@@ -1056,13 +1042,12 @@ abstract class AbstractReadContext
               builder.setTransaction(selector);
             }
             builder.setRequestOptions(buildRequestOptions(readOptions));
-            this.incrementXGoogRequestIdAttempt();
-            this.xGoogRequestId.setChannelId(session.getChannel());
             SpannerRpc.StreamingCall call =
                 rpc.read(
                     builder.build(),
                     stream.consumer(),
-                    this.xGoogRequestId.withOptions(getTransactionChannelHint()),
+                    getTransactionChannelHint(),
+                    requestId,
                     isRouteToLeader());
             session.markUsed(clock.instant());
             stream.setCall(call, /* withBeginTransaction= */ builder.getTransaction().hasBegin());
