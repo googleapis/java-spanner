@@ -38,9 +38,8 @@ public class MissingDefaultSequenceKindException extends SpannerException {
       ErrorCode errorCode,
       String message,
       Throwable cause,
-      @Nullable ApiException apiException,
-      @Nullable XGoogSpannerRequestId reqId) {
-    super(token, errorCode, /* retryable= */ false, message, cause, apiException, reqId);
+      @Nullable ApiException apiException) {
+    super(token, errorCode, /* retryable= */ false, message, cause, apiException);
   }
 
   static boolean isMissingDefaultSequenceKindException(Throwable cause) {

@@ -459,6 +459,14 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     }
   }
 
+  void resetRequestIdCounters() {
+    gapicRpc.getRequestIdCreator().reset();
+  }
+
+  long getRequestIdClientId() {
+    return gapicRpc.getRequestIdCreator().getClientId();
+  }
+
   /** Helper class for gRPC calls that can return paginated results. */
   abstract static class PageFetcher<S, T> implements NextPageFetcher<S> {
     private String nextPageToken;
