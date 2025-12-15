@@ -122,7 +122,7 @@ public class TransactionChannelHintTest {
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
                     // Extract channel hint from X-Goog-Spanner-Request-Id header
-                    String requestId = headers.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+                    String requestId = headers.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
                     if (requestId != null) {
                       // Format:
                       // <version>.<randProcessId>.<nthClientId>.<nthChannelId>.<nthRequest>.<attempt>

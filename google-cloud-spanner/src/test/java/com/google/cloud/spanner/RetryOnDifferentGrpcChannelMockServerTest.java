@@ -109,7 +109,7 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
             SERVER_ADDRESSES.putIfAbsent(methodName, addresses);
           }
         }
-        String requestId = metadata.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+        String requestId = metadata.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
         if (requestId != null) {
           // REQUEST_ID format: version.randProcessId.nthClientId.nthChannelId.nthRequest.attempt
           String[] parts = requestId.split("\\.");

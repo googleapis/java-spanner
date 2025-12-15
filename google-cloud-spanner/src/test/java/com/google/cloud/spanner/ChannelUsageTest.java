@@ -133,7 +133,7 @@ public class ChannelUsageTest {
                             Metadata.Key.of(
                                 "x-response-encoding", Metadata.ASCII_STRING_MARSHALLER)));
                     // Extract channel hint from X-Goog-Spanner-Request-Id header
-                    String requestId = headers.get(XGoogSpannerRequestId.REQUEST_HEADER_KEY);
+                    String requestId = headers.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
                     if (requestId != null) {
                       // Format:
                       // <version>.<randProcessId>.<nthClientId>.<nthChannelId>.<nthRequest>.<attempt>
