@@ -1025,7 +1025,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
-    private boolean grpcGcpExtensionEnabled = false;
+    private boolean grpcGcpExtensionEnabled = true;
     private GcpManagedChannelOptions grpcGcpOptions;
     private RetrySettings retryAdministrativeRequestsSettings =
         DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
@@ -1557,20 +1557,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /**
-     * Enables gRPC-GCP extension with the default settings. Do not set
-     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
-     * Multiplexed sessions are not supported for gRPC-GCP.
-     */
+    /** Enables gRPC-GCP extension with the default settings. This option is enabled by default. */
     public Builder enableGrpcGcpExtension() {
       return this.enableGrpcGcpExtension(null);
     }
 
     /**
      * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
-     * and default Spanner metric labels will be added automatically. Do not set
-     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
-     * Multiplexed sessions are not supported for gRPC-GCP.
+     * and default Spanner metric labels will be added automatically.
      */
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
@@ -1578,7 +1572,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /** Disables gRPC-GCP extension. */
+    /** Disables gRPC-GCP extension and uses GAX channel pool instead. */
     public Builder disableGrpcGcpExtension() {
       this.grpcGcpExtensionEnabled = false;
       return this;

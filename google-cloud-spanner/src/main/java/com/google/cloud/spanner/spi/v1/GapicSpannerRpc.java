@@ -188,7 +188,6 @@ import io.grpc.CallCredentials;
 import io.grpc.Context;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
-import io.opencensus.metrics.Metrics;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -570,7 +569,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
-  // Enhance metric options for gRPC-GCP extension. Adds metric registry if not specified.
+  // Enhance metric options for gRPC-GCP extension.
   private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
     GcpManagedChannelOptions grpcGcpOptions =
         MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
@@ -578,9 +577,6 @@ public class GapicSpannerRpc implements SpannerRpc {
         MoreObjects.firstNonNull(
             grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
     GcpMetricsOptions.Builder metricsOptionsBuilder = GcpMetricsOptions.newBuilder(metricsOptions);
-    if (metricsOptions.getMetricRegistry() == null) {
-      metricsOptionsBuilder.withMetricRegistry(Metrics.getMetricRegistry());
-    }
     // TODO: Add default labels with values: client_id, database, instance_id.
     if (metricsOptions.getNamePrefix().equals("")) {
       metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");

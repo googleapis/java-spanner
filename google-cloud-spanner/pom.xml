@@ -166,6 +166,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>grpc-gcp</artifactId>
+      <version>${grpc.gcp.version}</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
