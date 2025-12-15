@@ -1551,8 +1551,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
     public Builder setExperimentalHost(String host) {
-      if (this.usePlainText && !host.startsWith("http")) {
-        host = "http://" + host;
+      if (this.usePlainText) {
+        Preconditions.checkArgument(
+            !host.startsWith("https:"),
+            "Please remove the 'https:' protocol prefix from the host string when using plain text communication");
+        if (!host.startsWith("http")) {
+          host = "http://" + host;
+        }
       }
       super.setHost(host);
       super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
@@ -1613,9 +1618,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * {@code usePlainText} is only supported for experimental spanner hosts. This will configure
-     * the transport to use plaintext (no TLS) and will set credentials to {@link
-     * com.google.cloud.NoCredentials} to avoid sending authentication over an unsecured channel.
+     * {@code usePlainText} will configure the transport to use plaintext (no TLS) and will set
+     * credentials to {@link com.google.cloud.NoCredentials} to avoid sending authentication over an
+     * unsecured channel.
      */
     @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/4264")
     public Builder usePlainText() {
