@@ -38,7 +38,7 @@ public class AbortedException extends SpannerException {
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   AbortedException(
       DoNotConstructDirectly token, @Nullable String message, @Nullable Throwable cause) {
-    this(token, message, cause, null, null);
+    this(token, message, cause, null);
   }
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
@@ -46,9 +46,8 @@ public class AbortedException extends SpannerException {
       DoNotConstructDirectly token,
       @Nullable String message,
       @Nullable Throwable cause,
-      @Nullable ApiException apiException,
-      @Nullable XGoogSpannerRequestId reqId) {
-    super(token, ErrorCode.ABORTED, IS_RETRYABLE, message, cause, apiException, reqId);
+      @Nullable ApiException apiException) {
+    super(token, ErrorCode.ABORTED, IS_RETRYABLE, message, cause, apiException);
     if (cause instanceof AbortedException) {
       this.transactionID = ((AbortedException) cause).getTransactionID();
     }
