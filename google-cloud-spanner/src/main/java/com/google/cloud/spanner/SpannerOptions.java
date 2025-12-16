@@ -43,6 +43,7 @@ import com.google.cloud.ServiceOptions;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.DirectedReadOption;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -154,13 +155,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   /** Default min number of channels for dynamic pool. */
   public static final int DEFAULT_DYNAMIC_POOL_MIN_CHANNELS = 2;
 
-  // DCP bounds
-  static final int MAX_DYNAMIC_POOL_MAX_RPC = 100;
-  static final int MAX_DYNAMIC_POOL_MAX_CHANNELS = 20;
-  static final int MAX_DYNAMIC_POOL_INITIAL_SIZE = 256;
-  static final Duration MIN_DYNAMIC_POOL_SCALE_DOWN_INTERVAL = Duration.ofSeconds(30);
-  static final Duration MAX_DYNAMIC_POOL_SCALE_DOWN_INTERVAL = Duration.ofHours(1);
-
   /**
    * Default affinity key lifetime for dynamic channel pool. This is how long to keep an affinity
    * key after its last use. Zero means keeping keys forever. Default is 10 minutes, which is
@@ -173,6 +167,39 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * affinity key cleanup process runs. Default is 1 minute (1/10 of default affinity key lifetime).
    */
   public static final Duration DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL = Duration.ofMinutes(1);
+
+  /**
+   * Creates a {@link GcpChannelPoolOptions} instance with Spanner-specific defaults for dynamic
+   * channel pooling. These defaults are optimized for typical Spanner workloads.
+   *
+   * <p>Default values:
+   *
+   * <ul>
+   *   <li>Max size: {@value #DEFAULT_DYNAMIC_POOL_MAX_CHANNELS}
+   *   <li>Min size: {@value #DEFAULT_DYNAMIC_POOL_MIN_CHANNELS}
+   *   <li>Initial size: {@value #DEFAULT_DYNAMIC_POOL_INITIAL_SIZE}
+   *   <li>Max RPC per channel: {@value #DEFAULT_DYNAMIC_POOL_MAX_RPC}
+   *   <li>Min RPC per channel: {@value #DEFAULT_DYNAMIC_POOL_MIN_RPC}
+   *   <li>Scale down interval: 3 minutes
+   *   <li>Affinity key lifetime: 10 minutes
+   *   <li>Cleanup interval: 1 minute
+   * </ul>
+   *
+   * @return a new {@link GcpChannelPoolOptions} instance with Spanner defaults
+   */
+  public static GcpChannelPoolOptions createDefaultDynamicChannelPoolOptions() {
+    return GcpChannelPoolOptions.newBuilder()
+        .setMaxSize(DEFAULT_DYNAMIC_POOL_MAX_CHANNELS)
+        .setMinSize(DEFAULT_DYNAMIC_POOL_MIN_CHANNELS)
+        .setInitSize(DEFAULT_DYNAMIC_POOL_INITIAL_SIZE)
+        .setDynamicScaling(
+            DEFAULT_DYNAMIC_POOL_MIN_RPC,
+            DEFAULT_DYNAMIC_POOL_MAX_RPC,
+            DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL)
+        .setAffinityKeyLifetime(DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME)
+        .setCleanupInterval(DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL)
+        .build();
+  }
 
   private final TransportChannelProvider channelProvider;
 
@@ -194,14 +221,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean grpcGcpExtensionEnabled;
   private final GcpManagedChannelOptions grpcGcpOptions;
   private final boolean dynamicChannelPoolEnabled;
-  private final int dynamicPoolMaxRpc;
-  private final int dynamicPoolMinRpc;
-  private final Duration dynamicPoolScaleDownInterval;
-  private final int dynamicPoolInitialSize;
-  private final int dynamicPoolMaxChannels;
-  private final int dynamicPoolMinChannels;
-  private final Duration dynamicPoolAffinityKeyLifetime;
-  private final Duration dynamicPoolCleanupInterval;
+  private final GcpChannelPoolOptions gcpChannelPoolOptions;
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
@@ -863,68 +883,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       dynamicChannelPoolEnabled = false;
     }
 
-    // Use defaults with proper bounds checking for DCP configuration
-    int effectiveMaxRpc =
-        builder.dynamicPoolMaxRpc != null
-            ? builder.dynamicPoolMaxRpc
-            : DEFAULT_DYNAMIC_POOL_MAX_RPC;
-    dynamicPoolMaxRpc = effectiveMaxRpc;
-
-    int effectiveMinRpc =
-        builder.dynamicPoolMinRpc != null
-            ? builder.dynamicPoolMinRpc
-            : DEFAULT_DYNAMIC_POOL_MIN_RPC;
-    // Ensure minRpc does not exceed maxRpc
-    dynamicPoolMinRpc = Math.min(effectiveMinRpc, effectiveMaxRpc);
-
-    dynamicPoolScaleDownInterval =
-        builder.dynamicPoolScaleDownInterval != null
-            ? builder.dynamicPoolScaleDownInterval
-            : DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL;
-
-    int effectiveMaxChannels =
-        builder.dynamicPoolMaxChannels != null
-            ? builder.dynamicPoolMaxChannels
-            : DEFAULT_DYNAMIC_POOL_MAX_CHANNELS;
-    dynamicPoolMaxChannels = effectiveMaxChannels;
-
-    int effectiveMinChannels =
-        builder.dynamicPoolMinChannels != null
-            ? builder.dynamicPoolMinChannels
-            : DEFAULT_DYNAMIC_POOL_MIN_CHANNELS;
-    // Ensure minChannels does not exceed maxChannels
-    dynamicPoolMinChannels = Math.min(effectiveMinChannels, effectiveMaxChannels);
-
-    int effectiveInitialSize =
-        builder.dynamicPoolInitialSize != null
-            ? builder.dynamicPoolInitialSize
-            : DEFAULT_DYNAMIC_POOL_INITIAL_SIZE;
-    // Ensure initialSize is within [minChannels, maxChannels]
-    dynamicPoolInitialSize =
-        Math.max(dynamicPoolMinChannels, Math.min(effectiveInitialSize, dynamicPoolMaxChannels));
-
-    dynamicPoolAffinityKeyLifetime =
-        builder.dynamicPoolAffinityKeyLifetime != null
-            ? builder.dynamicPoolAffinityKeyLifetime
-            : DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME;
-
-    // If cleanup interval is not set but affinity key lifetime is set, default to 1/10 of lifetime
-    if (builder.dynamicPoolCleanupInterval != null) {
-      dynamicPoolCleanupInterval = builder.dynamicPoolCleanupInterval;
-    } else if (!dynamicPoolAffinityKeyLifetime.isZero()) {
-      dynamicPoolCleanupInterval = dynamicPoolAffinityKeyLifetime.dividedBy(10);
-    } else {
-      dynamicPoolCleanupInterval = DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL;
-    }
-
-    // Validate that if affinity key lifetime is set (non-zero), cleanup interval must be positive.
-    // A zero cleanup interval with a non-zero affinity key lifetime would disable cleanup of stale
-    // affinity keys, potentially leading to a memory leak.
-    Preconditions.checkArgument(
-        dynamicPoolAffinityKeyLifetime.isZero() || !dynamicPoolCleanupInterval.isZero(),
-        "Cleanup interval must be positive when affinity key lifetime is set, got cleanup interval:"
-            + " %s",
-        dynamicPoolCleanupInterval);
+    // Use user-provided GcpChannelPoolOptions or create Spanner-specific defaults
+    gcpChannelPoolOptions =
+        builder.gcpChannelPoolOptions != null
+            ? builder.gcpChannelPoolOptions
+            : createDefaultDynamicChannelPoolOptions();
 
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
@@ -1155,14 +1118,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean grpcGcpExtensionEnabled = true;
     private GcpManagedChannelOptions grpcGcpOptions;
     private Boolean dynamicChannelPoolEnabled;
-    private Integer dynamicPoolMaxRpc;
-    private Integer dynamicPoolMinRpc;
-    private Duration dynamicPoolScaleDownInterval;
-    private Integer dynamicPoolInitialSize;
-    private Integer dynamicPoolMaxChannels;
-    private Integer dynamicPoolMinChannels;
-    private Duration dynamicPoolAffinityKeyLifetime;
-    private Duration dynamicPoolCleanupInterval;
+    private GcpChannelPoolOptions gcpChannelPoolOptions;
     private RetrySettings retryAdministrativeRequestsSettings =
         DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
@@ -1236,14 +1192,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.grpcGcpExtensionEnabled = options.grpcGcpExtensionEnabled;
       this.grpcGcpOptions = options.grpcGcpOptions;
       this.dynamicChannelPoolEnabled = options.dynamicChannelPoolEnabled;
-      this.dynamicPoolMaxRpc = options.dynamicPoolMaxRpc;
-      this.dynamicPoolMinRpc = options.dynamicPoolMinRpc;
-      this.dynamicPoolScaleDownInterval = options.dynamicPoolScaleDownInterval;
-      this.dynamicPoolInitialSize = options.dynamicPoolInitialSize;
-      this.dynamicPoolMaxChannels = options.dynamicPoolMaxChannels;
-      this.dynamicPoolMinChannels = options.dynamicPoolMinChannels;
-      this.dynamicPoolAffinityKeyLifetime = options.dynamicPoolAffinityKeyLifetime;
-      this.dynamicPoolCleanupInterval = options.dynamicPoolCleanupInterval;
+      this.gcpChannelPoolOptions = options.gcpChannelPoolOptions;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
@@ -1750,128 +1699,33 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Sets the maximum number of concurrent RPCs per channel before triggering a scale up of the
-     * channel pool. Default is 25. Must be between 1 and 100.
+     * Sets the channel pool options for dynamic channel pooling. Use this to configure the dynamic
+     * channel pool behavior when {@link #enableDynamicChannelPool()} is enabled.
      *
-     * <p>This setting is only effective when dynamic channel pooling is enabled.
-     */
-    public Builder setDynamicPoolMaxRpc(int maxRpc) {
-      Preconditions.checkArgument(
-          maxRpc >= 1 && maxRpc <= MAX_DYNAMIC_POOL_MAX_RPC,
-          "Dynamic pool max RPC must be between 1 and %s, got: %s",
-          MAX_DYNAMIC_POOL_MAX_RPC,
-          maxRpc);
-      this.dynamicPoolMaxRpc = maxRpc;
-      return this;
-    }
-
-    /**
-     * Sets the minimum number of concurrent RPCs per channel used for scale down checks. When the
-     * average concurrent RPCs per channel falls below this value, the pool may scale down. Default
-     * is 15. Must be between 1 and the configured max RPC value.
+     * <p>If not set, Spanner-specific defaults will be used (see {@link
+     * #createDefaultDynamicChannelPoolOptions()}).
      *
-     * <p>This setting is only effective when dynamic channel pooling is enabled.
-     */
-    public Builder setDynamicPoolMinRpc(int minRpc) {
-      Preconditions.checkArgument(
-          minRpc >= 1, "Dynamic pool min RPC must be at least 1, got: %s", minRpc);
-      this.dynamicPoolMinRpc = minRpc;
-      return this;
-    }
-
-    /**
-     * Sets the interval at which the channel pool checks whether it can scale down. Default is 3
-     * minutes. Must be between 30 seconds and 1 hour.
+     * <p>Example usage:
      *
-     * <p>This setting is only effective when dynamic channel pooling is enabled.
-     */
-    public Builder setDynamicPoolScaleDownInterval(Duration interval) {
-      Preconditions.checkNotNull(interval, "Scale down interval cannot be null");
-      Preconditions.checkArgument(
-          interval.compareTo(MIN_DYNAMIC_POOL_SCALE_DOWN_INTERVAL) >= 0
-              && interval.compareTo(MAX_DYNAMIC_POOL_SCALE_DOWN_INTERVAL) <= 0,
-          "Scale down interval must be between %s and %s, got: %s",
-          MIN_DYNAMIC_POOL_SCALE_DOWN_INTERVAL,
-          MAX_DYNAMIC_POOL_SCALE_DOWN_INTERVAL,
-          interval);
-      this.dynamicPoolScaleDownInterval = interval;
-      return this;
-    }
-
-    /**
-     * Sets the initial number of channels to create for the dynamic channel pool. Default is 4.
-     * Must be between 1 and 256.
+     * <pre>{@code
+     * SpannerOptions options = SpannerOptions.newBuilder()
+     *     .setProjectId("my-project")
+     *     .enableDynamicChannelPool()
+     *     .setGcpChannelPoolOptions(
+     *         GcpChannelPoolOptions.newBuilder()
+     *             .setMaxSize(15)
+     *             .setMinSize(3)
+     *             .setInitSize(5)
+     *             .setDynamicScaling(10, 30, Duration.ofMinutes(5))
+     *             .build())
+     *     .build();
+     * }</pre>
      *
-     * <p>This setting is only effective when dynamic channel pooling is enabled.
+     * @param gcpChannelPoolOptions the channel pool options to use
+     * @return this builder for chaining
      */
-    public Builder setDynamicPoolInitialSize(int initialSize) {
-      Preconditions.checkArgument(
-          initialSize >= 1 && initialSize <= MAX_DYNAMIC_POOL_INITIAL_SIZE,
-          "Dynamic pool initial size must be between 1 and %s, got: %s",
-          MAX_DYNAMIC_POOL_INITIAL_SIZE,
-          initialSize);
-      this.dynamicPoolInitialSize = initialSize;
-      return this;
-    }
-
-    /**
-     * Sets the maximum number of channels for the dynamic channel pool. Default is 10. Must be
-     * between 1 and 20.
-     *
-     * <p>This setting is only effective when dynamic channel pooling is enabled.
-     */
-    public Builder setDynamicPoolMaxChannels(int maxChannels) {
-      Preconditions.checkArgument(
-          maxChannels >= 1 && maxChannels <= MAX_DYNAMIC_POOL_MAX_CHANNELS,
-          "Dynamic pool max channels must be between 1 and %s, got: %s",
-          MAX_DYNAMIC_POOL_MAX_CHANNELS,
-          maxChannels);
-      this.dynamicPoolMaxChannels = maxChannels;
-      return this;
-    }
-
-    /**
-     * Sets the minimum number of channels for the dynamic channel pool. The pool will not scale
-     * down below this number. Default is 2. Must be between 1 and the configured max channels.
-     *
-     * <p>This setting is only effective when dynamic channel pooling is enabled.
-     */
-    public Builder setDynamicPoolMinChannels(int minChannels) {
-      Preconditions.checkArgument(
-          minChannels >= 1, "Dynamic pool min channels must be at least 1, got: %s", minChannels);
-      this.dynamicPoolMinChannels = minChannels;
-      return this;
-    }
-
-    /**
-     * Sets the affinity key lifetime for the dynamic channel pool. This determines how long to keep
-     * an affinity key after its last use. Setting this to a non-zero value enables automatic
-     * cleanup of stale affinity keys, which is important for long-running applications. Default is
-     * 1 hour. Use {@link Duration#ZERO} to keep keys forever (not recommended for long-running
-     * applications).
-     *
-     * <p>This setting is only effective when dynamic channel pooling is enabled.
-     */
-    public Builder setDynamicPoolAffinityKeyLifetime(Duration lifetime) {
-      Preconditions.checkNotNull(lifetime, "Affinity key lifetime cannot be null");
-      Preconditions.checkArgument(
-          !lifetime.isNegative(), "Affinity key lifetime must not be negative, got: %s", lifetime);
-      this.dynamicPoolAffinityKeyLifetime = lifetime;
-      return this;
-    }
-
-    /**
-     * Sets the cleanup interval for the dynamic channel pool affinity keys. This determines how
-     * frequently the affinity key cleanup process runs. Default is 1 minute. Must be positive if
-     * affinity key lifetime is set.
-     *
-     * <p>This setting is only effective when dynamic channel pooling is enabled.
-     */
-    public Builder setDynamicPoolCleanupInterval(Duration interval) {
-      Preconditions.checkNotNull(interval, "Cleanup interval cannot be null");
-      Preconditions.checkArgument(
-          !interval.isNegative(), "Cleanup interval must not be negative, got: %s", interval);
-      this.dynamicPoolCleanupInterval = interval;
+    public Builder setGcpChannelPoolOptions(GcpChannelPoolOptions gcpChannelPoolOptions) {
+      this.gcpChannelPoolOptions = Preconditions.checkNotNull(gcpChannelPoolOptions);
       return this;
     }
 
@@ -2298,52 +2152,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   /**
-   * Returns the maximum number of concurrent RPCs per channel before triggering a scale up. Default
-   * is 25.
+   * Returns the channel pool options for dynamic channel pooling. If no options were explicitly
+   * set, returns the Spanner-specific defaults.
+   *
+   * @see #createDefaultDynamicChannelPoolOptions()
    */
-  public int getDynamicPoolMaxRpc() {
-    return dynamicPoolMaxRpc;
-  }
-
-  /**
-   * Returns the minimum number of concurrent RPCs per channel used for scale down checks. Default
-   * is 15.
-   */
-  public int getDynamicPoolMinRpc() {
-    return dynamicPoolMinRpc;
-  }
-
-  /** Returns the scale down check interval. Default is 3 minutes. */
-  public Duration getDynamicPoolScaleDownInterval() {
-    return dynamicPoolScaleDownInterval;
-  }
-
-  /** Returns the initial number of channels for the dynamic pool. Default is 4. */
-  public int getDynamicPoolInitialSize() {
-    return dynamicPoolInitialSize;
-  }
-
-  /** Returns the maximum number of channels for the dynamic pool. Default is 10. */
-  public int getDynamicPoolMaxChannels() {
-    return dynamicPoolMaxChannels;
-  }
-
-  /** Returns the minimum number of channels for the dynamic pool. Default is 2. */
-  public int getDynamicPoolMinChannels() {
-    return dynamicPoolMinChannels;
-  }
-
-  /**
-   * Returns the affinity key lifetime for the dynamic pool. This is how long to keep an affinity
-   * key after its last use. Default is 10 minutes.
-   */
-  public Duration getDynamicPoolAffinityKeyLifetime() {
-    return dynamicPoolAffinityKeyLifetime;
-  }
-
-  /** Returns the cleanup interval for dynamic pool affinity keys. Default is 1 minute. */
-  public Duration getDynamicPoolCleanupInterval() {
-    return dynamicPoolCleanupInterval;
+  public GcpChannelPoolOptions getGcpChannelPoolOptions() {
+    return gcpChannelPoolOptions;
   }
 
   public boolean isAutoThrottleAdministrativeRequests() {

@@ -37,6 +37,7 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.spanner.SpannerOptions.Builder.DefaultReadWriteTransactionOptions;
 import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
@@ -1221,17 +1222,18 @@ public class SpannerOptionsTest {
             .enableDynamicChannelPool()
             .build();
     assertTrue(options.isDynamicChannelPoolEnabled());
-    assertEquals(
-        SpannerOptions.DEFAULT_DYNAMIC_POOL_INITIAL_SIZE, options.getDynamicPoolInitialSize());
-    assertEquals(
-        SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_CHANNELS, options.getDynamicPoolMaxChannels());
-    assertEquals(
-        SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_CHANNELS, options.getDynamicPoolMinChannels());
-    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_RPC, options.getDynamicPoolMaxRpc());
-    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_RPC, options.getDynamicPoolMinRpc());
+
+    // Verify Spanner-specific defaults are applied
+    GcpChannelPoolOptions poolOptions = options.getGcpChannelPoolOptions();
+    assertNotNull(poolOptions);
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_INITIAL_SIZE, poolOptions.getInitSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_CHANNELS, poolOptions.getMaxSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_CHANNELS, poolOptions.getMinSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_RPC, poolOptions.getMaxRpcPerChannel());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_RPC, poolOptions.getMinRpcPerChannel());
     assertEquals(
         SpannerOptions.DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL,
-        options.getDynamicPoolScaleDownInterval());
+        poolOptions.getScaleDownInterval());
   }
 
   @Test
@@ -1262,104 +1264,52 @@ public class SpannerOptionsTest {
   @Test
   public void testDynamicChannelPoolingCustomSettings() {
     Duration scaleDownInterval = Duration.ofMinutes(5);
+    GcpChannelPoolOptions customPoolOptions =
+        GcpChannelPoolOptions.newBuilder()
+            .setInitSize(6)
+            .setMaxSize(15)
+            .setMinSize(3)
+            .setDynamicScaling(10, 50, scaleDownInterval)
+            .build();
+
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setCredentials(NoCredentials.getInstance())
             .enableDynamicChannelPool()
-            .setDynamicPoolInitialSize(6)
-            .setDynamicPoolMaxChannels(15)
-            .setDynamicPoolMinChannels(3)
-            .setDynamicPoolMaxRpc(50)
-            .setDynamicPoolMinRpc(10)
-            .setDynamicPoolScaleDownInterval(scaleDownInterval)
+            .setGcpChannelPoolOptions(customPoolOptions)
             .build();
+
     assertTrue(options.isDynamicChannelPoolEnabled());
-    assertEquals(6, options.getDynamicPoolInitialSize());
-    assertEquals(15, options.getDynamicPoolMaxChannels());
-    assertEquals(3, options.getDynamicPoolMinChannels());
-    assertEquals(50, options.getDynamicPoolMaxRpc());
-    assertEquals(10, options.getDynamicPoolMinRpc());
-    assertEquals(scaleDownInterval, options.getDynamicPoolScaleDownInterval());
-  }
-
-  @Test
-  public void testDynamicPoolMaxRpcOutOfBounds() {
-    // Test upper bound.
-    IllegalArgumentException exception1 =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolMaxRpc(101)
-                    .build());
-    assertTrue(exception1.getMessage().contains("Dynamic pool max RPC must be between"));
-
-    // Test lower bound.
-    IllegalArgumentException exception2 =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolMaxRpc(0)
-                    .build());
-    assertTrue(exception2.getMessage().contains("Dynamic pool max RPC must be between"));
-  }
-
-  @Test
-  public void testDynamicPoolMinRpcOutOfBounds() {
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolMinRpc(0)
-                    .build());
-    assertTrue(exception.getMessage().contains("Dynamic pool min RPC must be at least"));
-  }
-
-  @Test
-  public void testDynamicPoolScaleDownIntervalOutOfBounds() {
-    // Test lower bound.
-    IllegalArgumentException exception1 =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolScaleDownInterval(Duration.ofSeconds(29))
-                    .build());
-    assertTrue(exception1.getMessage().contains("Scale down interval must be between"));
-
-    // Test upper bound.
-    IllegalArgumentException exception2 =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolScaleDownInterval(Duration.ofHours(2))
-                    .build());
-    assertTrue(exception2.getMessage().contains("Scale down interval must be between"));
+    GcpChannelPoolOptions poolOptions = options.getGcpChannelPoolOptions();
+    assertEquals(6, poolOptions.getInitSize());
+    assertEquals(15, poolOptions.getMaxSize());
+    assertEquals(3, poolOptions.getMinSize());
+    assertEquals(50, poolOptions.getMaxRpcPerChannel());
+    assertEquals(10, poolOptions.getMinRpcPerChannel());
+    assertEquals(scaleDownInterval, poolOptions.getScaleDownInterval());
   }
 
   @Test
   public void testAffinityKeySettings() {
     Duration affinityKeyLifetime = Duration.ofMinutes(10);
     Duration cleanupInterval = Duration.ofMinutes(5);
+    GcpChannelPoolOptions poolOptions =
+        GcpChannelPoolOptions.newBuilder()
+            .setAffinityKeyLifetime(affinityKeyLifetime)
+            .setCleanupInterval(cleanupInterval)
+            .build();
+
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setCredentials(NoCredentials.getInstance())
             .enableGrpcGcpExtension()
-            .setDynamicPoolAffinityKeyLifetime(affinityKeyLifetime)
-            .setDynamicPoolCleanupInterval(cleanupInterval)
+            .setGcpChannelPoolOptions(poolOptions)
             .build();
-    assertEquals(affinityKeyLifetime, options.getDynamicPoolAffinityKeyLifetime());
-    assertEquals(cleanupInterval, options.getDynamicPoolCleanupInterval());
+
+    assertEquals(affinityKeyLifetime, options.getGcpChannelPoolOptions().getAffinityKeyLifetime());
+    assertEquals(cleanupInterval, options.getGcpChannelPoolOptions().getCleanupInterval());
   }
 
   @Test
@@ -1370,12 +1320,14 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .enableGrpcGcpExtension()
             .build();
+
+    // Verify default affinity key settings from Spanner defaults
+    GcpChannelPoolOptions poolOptions = options.getGcpChannelPoolOptions();
     assertEquals(
         SpannerOptions.DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME,
-        options.getDynamicPoolAffinityKeyLifetime());
+        poolOptions.getAffinityKeyLifetime());
     assertEquals(
-        SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL,
-        options.getDynamicPoolCleanupInterval());
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL, poolOptions.getCleanupInterval());
   }
 
   @Test
@@ -1391,53 +1343,21 @@ public class SpannerOptionsTest {
   }
 
   @Test
-  public void testDynamicPoolInitialSizeOutOfBounds() {
-    // Test upper bound.
-    IllegalArgumentException exception1 =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolInitialSize(257)
-                    .build());
-    assertTrue(exception1.getMessage().contains("Dynamic pool initial size must be between"));
-
-    // Test lower bound.
-    IllegalArgumentException exception2 =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolInitialSize(0)
-                    .build());
-    assertTrue(exception2.getMessage().contains("Dynamic pool initial size must be between"));
-  }
-
-  @Test
-  public void testDynamicPoolMaxChannelsOutOfBounds() {
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolMaxChannels(21)
-                    .build());
-    assertTrue(exception.getMessage().contains("Dynamic pool max channels must be between"));
-  }
-
-  @Test
-  public void testDynamicPoolMinChannelsOutOfBounds() {
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SpannerOptions.newBuilder()
-                    .setProjectId("test-project")
-                    .setDynamicPoolMinChannels(0)
-                    .build());
-    assertTrue(exception.getMessage().contains("Dynamic pool min channels must be at least"));
+  public void testCreateDefaultDynamicChannelPoolOptions() {
+    // Test the static factory method for creating default options
+    GcpChannelPoolOptions defaults = SpannerOptions.createDefaultDynamicChannelPoolOptions();
+    assertNotNull(defaults);
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_CHANNELS, defaults.getMaxSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_CHANNELS, defaults.getMinSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_INITIAL_SIZE, defaults.getInitSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_RPC, defaults.getMaxRpcPerChannel());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_RPC, defaults.getMinRpcPerChannel());
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL, defaults.getScaleDownInterval());
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME,
+        defaults.getAffinityKeyLifetime());
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL, defaults.getCleanupInterval());
   }
 }

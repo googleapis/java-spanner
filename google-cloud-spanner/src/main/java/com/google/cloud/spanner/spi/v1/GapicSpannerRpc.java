@@ -62,7 +62,6 @@ import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
-import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
@@ -596,33 +595,11 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
     optionsBuilder.withMetricsOptions(metricsOptionsBuilder.build());
 
-    // Configure dynamic channel pool options if enabled
+    // Configure dynamic channel pool options if enabled.
+    // Uses the GcpChannelPoolOptions from SpannerOptions, which contains Spanner-specific defaults
+    // or user-provided configuration.
     if (options.isDynamicChannelPoolEnabled()) {
-      GcpChannelPoolOptions existingPoolOptions =
-          MoreObjects.firstNonNull(
-              grpcGcpOptions.getChannelPoolOptions(), GcpChannelPoolOptions.newBuilder().build());
-      GcpChannelPoolOptions.Builder poolOptionsBuilder =
-          GcpChannelPoolOptions.newBuilder(existingPoolOptions);
-
-      poolOptionsBuilder
-          .setMaxSize(options.getDynamicPoolMaxChannels())
-          .setMinSize(options.getDynamicPoolMinChannels())
-          .setInitSize(options.getDynamicPoolInitialSize())
-          .setDynamicScaling(
-              options.getDynamicPoolMinRpc(),
-              options.getDynamicPoolMaxRpc(),
-              options.getDynamicPoolScaleDownInterval());
-
-      // Configure affinity key lifetime and cleanup interval for automatic cleanup of stale keys.
-      // This is important when DCP is enabled because we don't apply modulo to affinity keys,
-      // so the affinity map could grow large without periodic cleanup.
-      Duration affinityKeyLifetime = options.getDynamicPoolAffinityKeyLifetime();
-      if (!affinityKeyLifetime.isZero()) {
-        poolOptionsBuilder.setAffinityKeyLifetime(affinityKeyLifetime);
-        poolOptionsBuilder.setCleanupInterval(options.getDynamicPoolCleanupInterval());
-      }
-
-      optionsBuilder.withChannelPoolOptions(poolOptionsBuilder.build());
+      optionsBuilder.withChannelPoolOptions(options.getGcpChannelPoolOptions());
     }
 
     return optionsBuilder.build();
