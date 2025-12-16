@@ -533,7 +533,7 @@ public class RequestIdMockServerTest {
             XGoogSpannerRequestId.of(getClientId(), -1, 1, 1),
             XGoogSpannerRequestId.of(getClientId(), -1, 2, 1)),
         actual);
-    // Channel ID is determined by grpc-gcp, so we don't verify same channel ID here.
+    verifySameChannelId(actual);
   }
 
   @Test
@@ -559,7 +559,7 @@ public class RequestIdMockServerTest {
             XGoogSpannerRequestId.of(getClientId(), -1, 1, 1),
             XGoogSpannerRequestId.of(getClientId(), -1, 2, 1)),
         actual);
-    // Channel ID is determined by grpc-gcp, so we don't verify same channel ID here.
+    verifySameChannelId(actual);
     assertEquals(XGoogSpannerRequestId.of(exception.getRequestId()), actual.get(1));
   }
 
@@ -586,7 +586,7 @@ public class RequestIdMockServerTest {
             XGoogSpannerRequestId.of(getClientId(), -1, 3, 1),
             XGoogSpannerRequestId.of(getClientId(), -1, 4, 1)),
         actual);
-    // Channel ID is determined by grpc-gcp, so we don't verify same channel ID here.
+    verifySameChannelId(actual);
   }
 
   @Test
@@ -612,7 +612,7 @@ public class RequestIdMockServerTest {
             XGoogSpannerRequestId.of(getClientId(), -1, 3, 1),
             XGoogSpannerRequestId.of(getClientId(), -1, 4, 1)),
         actual);
-    // Channel ID is determined by grpc-gcp, so we don't verify same channel ID here.
+    verifySameChannelId(actual);
   }
 
   @Test
@@ -648,7 +648,7 @@ public class RequestIdMockServerTest {
             XGoogSpannerRequestId.of(getClientId(), -1, 2, 1),
             XGoogSpannerRequestId.of(getClientId(), -1, 2, 2)),
         actual);
-    // Channel ID is determined by grpc-gcp, so we don't verify same channel ID here.
+    verifySameChannelId(actual);
   }
 
   @Test

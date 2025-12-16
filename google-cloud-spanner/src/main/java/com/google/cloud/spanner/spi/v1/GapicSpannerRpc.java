@@ -478,7 +478,8 @@ public class GapicSpannerRpc implements SpannerRpc {
                   .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
         }
         this.partitionedDmlStub =
-            GrpcSpannerStubWithStubSettingsAndClientContext.create(pdmlSettings.build());
+            GrpcSpannerStubWithStubSettingsAndClientContext.create(
+                pdmlSettings.build(), clientContext);
         this.instanceAdminStubSettings =
             options.getInstanceAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
