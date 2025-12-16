@@ -597,7 +597,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     // Configure dynamic channel pool options if enabled
     if (options.isDynamicChannelPoolEnabled()) {
-      GcpChannelPoolOptions existingPoolOptions = grpcGcpOptions.getChannelPoolOptions();
+      GcpChannelPoolOptions existingPoolOptions =
+          MoreObjects.firstNonNull(
+              grpcGcpOptions.getChannelPoolOptions(), GcpChannelPoolOptions.newBuilder().build());
       GcpChannelPoolOptions.Builder poolOptionsBuilder =
           GcpChannelPoolOptions.newBuilder(existingPoolOptions);
 

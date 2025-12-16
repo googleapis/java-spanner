@@ -163,16 +163,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   /**
    * Default affinity key lifetime for dynamic channel pool. This is how long to keep an affinity
-   * key after its last use. Zero means keeping keys forever. Default is 1 hour.
+   * key after its last use. Zero means keeping keys forever. Default is 10 minutes, which is
+   * sufficient to ensure that requests within a single transaction use the same channel.
    */
-  public static final Duration DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME = Duration.ofHours(1);
+  public static final Duration DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME = Duration.ofMinutes(10);
 
   /**
    * Default cleanup interval for dynamic channel pool affinity keys. This is how frequently the
-   * affinity key cleanup process runs. Default is 6 minutes (1/10 of default affinity key
-   * lifetime).
+   * affinity key cleanup process runs. Default is 1 minute (1/10 of default affinity key lifetime).
    */
-  public static final Duration DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL = Duration.ofMinutes(6);
+  public static final Duration DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL = Duration.ofMinutes(1);
 
   private final TransportChannelProvider channelProvider;
 
@@ -914,6 +914,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     } else {
       dynamicPoolCleanupInterval = DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL;
     }
+
+    // Validate that if affinity key lifetime is set (non-zero), cleanup interval must be positive.
+    // A zero cleanup interval with a non-zero affinity key lifetime would disable cleanup of stale
+    // affinity keys, potentially leading to a memory leak.
+    Preconditions.checkArgument(
+        dynamicPoolAffinityKeyLifetime.isZero() || !dynamicPoolCleanupInterval.isZero(),
+        "Cleanup interval must be positive when affinity key lifetime is set, got cleanup interval: %s",
+        dynamicPoolCleanupInterval);
 
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
@@ -1838,7 +1846,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets the cleanup interval for the dynamic channel pool affinity keys. This determines how
-     * frequently the affinity key cleanup process runs. Default is 6 minutes. Must be positive if
+     * frequently the affinity key cleanup process runs. Default is 1 minute. Must be positive if
      * affinity key lifetime is set.
      *
      * <p>This setting is only effective when dynamic channel pooling is enabled.
@@ -2310,13 +2318,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   /**
    * Returns the affinity key lifetime for the dynamic pool. This is how long to keep an affinity
-   * key after its last use. Default is 1 hour.
+   * key after its last use. Default is 10 minutes.
    */
   public Duration getDynamicPoolAffinityKeyLifetime() {
     return dynamicPoolAffinityKeyLifetime;
   }
 
-  /** Returns the cleanup interval for dynamic pool affinity keys. Default is 6 minutes. */
+  /** Returns the cleanup interval for dynamic pool affinity keys. Default is 1 minute. */
   public Duration getDynamicPoolCleanupInterval() {
     return dynamicPoolCleanupInterval;
   }

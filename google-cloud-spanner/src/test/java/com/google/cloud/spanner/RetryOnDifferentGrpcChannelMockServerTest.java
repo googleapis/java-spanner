@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -33,7 +32,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
-import io.grpc.Attributes;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -41,15 +39,8 @@ import io.grpc.ClientInterceptor;
 import io.grpc.Context;
 import io.grpc.Deadline;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
-import io.grpc.ServerCall;
-import io.grpc.ServerCall.Listener;
-import io.grpc.ServerCallHandler;
-import io.grpc.ServerInterceptor;
 import io.grpc.Status;
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,18 +61,14 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServerTest {
-  private static final Map<String, Set<InetSocketAddress>> SERVER_ADDRESSES = new HashMap<>();
-
-  /** Tracks the physical channel IDs from request ID headers (set by grpc-gcp). */
-  private static final Map<String, Set<Long>> CHANNEL_HINTS = new HashMap<>();
-
   /** Tracks the logical affinity keys before grpc-gcp routes the request. */
   private static final Map<String, Set<String>> LOGICAL_AFFINITY_KEYS = new HashMap<>();
 
   @BeforeClass
-  public static void startStaticServer() throws IOException {
+  public static void setupAndStartServer() throws Exception {
     System.setProperty("spanner.retry_deadline_exceeded_on_different_channel", "true");
-    startStaticServer(createServerInterceptor());
+    // Call the parent's startStaticServer to set up the mock server
+    AbstractMockServerTest.startStaticServer();
   }
 
   @AfterClass
@@ -91,8 +78,6 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
 
   @After
   public void clearRequests() {
-    SERVER_ADDRESSES.clear();
-    CHANNEL_HINTS.clear();
     LOGICAL_AFFINITY_KEYS.clear();
     mockSpanner.clearRequests();
     mockSpanner.removeAllExecutionTimes();
@@ -123,53 +108,6 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
                 return next.newCall(method, callOptions);
               }
             });
-  }
-
-  static ServerInterceptor createServerInterceptor() {
-    return new ServerInterceptor() {
-      @Override
-      public <ReqT, RespT> Listener<ReqT> interceptCall(
-          ServerCall<ReqT, RespT> serverCall,
-          Metadata metadata,
-          ServerCallHandler<ReqT, RespT> serverCallHandler) {
-        Attributes attributes = serverCall.getAttributes();
-        String methodName = serverCall.getMethodDescriptor().getFullMethodName();
-        //noinspection unchecked,deprecation
-        Attributes.Key<InetSocketAddress> key =
-            (Attributes.Key<InetSocketAddress>)
-                attributes.keys().stream()
-                    .filter(k -> k.equals(TRANSPORT_ATTR_REMOTE_ADDR))
-                    .findFirst()
-                    .orElse(null);
-        if (key != null) {
-          InetSocketAddress address = attributes.get(key);
-          synchronized (SERVER_ADDRESSES) {
-            Set<InetSocketAddress> addresses =
-                SERVER_ADDRESSES.getOrDefault(methodName, new HashSet<>());
-            addresses.add(address);
-            SERVER_ADDRESSES.putIfAbsent(methodName, addresses);
-          }
-        }
-        String requestId = metadata.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
-        if (requestId != null) {
-          // REQUEST_ID format: version.randProcessId.nthClientId.nthChannelId.nthRequest.attempt
-          String[] parts = requestId.split("\\.");
-          if (parts.length >= 6) {
-            try {
-              long channelHint = Long.parseLong(parts[3]);
-              synchronized (CHANNEL_HINTS) {
-                Set<Long> hints = CHANNEL_HINTS.getOrDefault(methodName, new HashSet<>());
-                hints.add(channelHint);
-                CHANNEL_HINTS.putIfAbsent(methodName, hints);
-              }
-            } catch (NumberFormatException ignore) {
-              // Ignore malformed header values in tests.
-            }
-          }
-        }
-        return serverCallHandler.startCall(serverCall, metadata);
-      }
-    };
   }
 
   SpannerOptions.Builder createSpannerOptionsBuilder() {
