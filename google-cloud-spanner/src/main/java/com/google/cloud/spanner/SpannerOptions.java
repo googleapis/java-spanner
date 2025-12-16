@@ -850,15 +850,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     grpcGcpExtensionEnabled = builder.grpcGcpExtensionEnabled;
     grpcGcpOptions = builder.grpcGcpOptions;
 
-    // Dynamic channel pooling is enabled by default when:
-    // 1. grpc-gcp extension is enabled, AND
-    // 2. numChannels is not explicitly set, AND
-    // 3. dynamicChannelPoolEnabled is not explicitly set to false
-    if (builder.dynamicChannelPoolEnabled != null) {
-      dynamicChannelPoolEnabled = builder.dynamicChannelPoolEnabled && grpcGcpExtensionEnabled;
-    } else {
-      // Enable DCP by default only if grpc-gcp is enabled and numChannels was not explicitly set
+    // Dynamic channel pooling is disabled by default.
+    // It is only enabled when:
+    // 1. enableDynamicChannelPool() was explicitly called, AND
+    // 2. grpc-gcp extension is enabled, AND
+    // 3. numChannels was not explicitly set
+    if (builder.dynamicChannelPoolEnabled != null && builder.dynamicChannelPoolEnabled) {
+      // DCP was explicitly enabled, but respect numChannels if set
       dynamicChannelPoolEnabled = grpcGcpExtensionEnabled && !builder.numChannelsExplicitlySet;
+    } else {
+      // DCP is disabled by default, or was explicitly disabled
+      dynamicChannelPoolEnabled = false;
     }
 
     // Use defaults with proper bounds checking for DCP configuration
@@ -1723,11 +1725,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Enables dynamic channel pooling. When enabled, the client will automatically scale the number
+     * of channels based on load. This requires the gRPC-GCP extension to be enabled.
+     *
+     * <p>Dynamic channel pooling is disabled by default. Use this method to explicitly enable it.
+     * Note that calling {@link #setNumChannels(int)} will disable dynamic channel pooling even if
+     * this method was called.
+     */
+    public Builder enableDynamicChannelPool() {
+      this.dynamicChannelPoolEnabled = true;
+      return this;
+    }
+
+    /**
      * Disables dynamic channel pooling. When disabled, the client will use a static number of
      * channels as configured by {@link #setNumChannels(int)}.
      *
-     * <p>Dynamic channel pooling is enabled by default unless {@link #setNumChannels(int)} is
-     * called or this method is used to disable it.
+     * <p>Dynamic channel pooling is disabled by default, so this method is typically not needed
+     * unless you want to explicitly disable it after enabling it.
      */
     public Builder disableDynamicChannelPool() {
       this.dynamicChannelPoolEnabled = false;
@@ -2273,9 +2288,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   /**
-   * Returns whether dynamic channel pooling is enabled. Dynamic channel pooling is enabled by
-   * default unless {@link Builder#setNumChannels(int)} is called or {@link
-   * Builder#disableDynamicChannelPool()} is used.
+   * Returns whether dynamic channel pooling is enabled. Dynamic channel pooling is disabled by
+   * default. Use {@link Builder#enableDynamicChannelPool()} to explicitly enable it. Note that
+   * calling {@link Builder#setNumChannels(int)} will disable dynamic channel pooling even if it was
+   * explicitly enabled.
    */
   public boolean isDynamicChannelPoolEnabled() {
     return dynamicChannelPoolEnabled;

@@ -1203,12 +1203,22 @@ public class SpannerOptionsTest {
   }
 
   @Test
-  public void testDynamicChannelPoolingEnabledByDefault() {
+  public void testDynamicChannelPoolingDisabledByDefault() {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setCredentials(NoCredentials.getInstance())
-            .enableGrpcGcpExtension()
+            .build();
+    assertFalse(options.isDynamicChannelPoolEnabled());
+  }
+
+  @Test
+  public void testDynamicChannelPoolingEnabledExplicitly() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableDynamicChannelPool()
             .build();
     assertTrue(options.isDynamicChannelPoolEnabled());
     assertEquals(
@@ -1230,7 +1240,7 @@ public class SpannerOptionsTest {
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setCredentials(NoCredentials.getInstance())
-            .enableGrpcGcpExtension()
+            .enableDynamicChannelPool()
             .setNumChannels(5) // Explicitly setting numChannels should disable DCP.
             .build();
     assertFalse(options.isDynamicChannelPoolEnabled());
@@ -1243,7 +1253,7 @@ public class SpannerOptionsTest {
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setCredentials(NoCredentials.getInstance())
-            .enableGrpcGcpExtension()
+            .enableDynamicChannelPool()
             .disableDynamicChannelPool()
             .build();
     assertFalse(options.isDynamicChannelPoolEnabled());
@@ -1256,7 +1266,7 @@ public class SpannerOptionsTest {
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setCredentials(NoCredentials.getInstance())
-            .enableGrpcGcpExtension()
+            .enableDynamicChannelPool()
             .setDynamicPoolInitialSize(6)
             .setDynamicPoolMaxChannels(15)
             .setDynamicPoolMinChannels(3)

@@ -183,6 +183,56 @@ public class RequestIdInterceptorTest {
   }
 
   @Test
+  public void testInterceptorOverridesChannelIdWhenGrpcGcpProvides() {
+    RequestIdInterceptor interceptor = new RequestIdInterceptor();
+
+    // Start with a non-zero channel ID.
+    long originalChannelId = 3;
+    XGoogSpannerRequestId requestId = XGoogSpannerRequestId.of(1, originalChannelId, 5, 0);
+
+    // Simulate grpc-gcp setting a different channel ID.
+    int gcpChannelId = 7;
+    CallOptions callOptions =
+        CallOptions.DEFAULT
+            .withOption(REQUEST_ID_CALL_OPTIONS_KEY, requestId)
+            .withOption(GcpManagedChannel.CHANNEL_ID_KEY, gcpChannelId);
+
+    AtomicReference<Metadata> capturedHeaders = new AtomicReference<>();
+
+    Channel fakeChannel =
+        new FakeChannel() {
+          @Override
+          public <ReqT, RespT> ClientCall<ReqT, RespT> newCall(
+              MethodDescriptor<ReqT, RespT> methodDescriptor, CallOptions callOptions) {
+            return new FakeClientCall<ReqT, RespT>() {
+              @Override
+              public void start(Listener<RespT> responseListener, Metadata headers) {
+                capturedHeaders.set(headers);
+              }
+            };
+          }
+        };
+
+    MethodDescriptor<String, String> methodDescriptor = createMethodDescriptor();
+    ClientCall<String, String> call =
+        interceptor.interceptCall(methodDescriptor, callOptions, fakeChannel);
+    call.start(new NoOpListener<>(), new Metadata());
+
+    assertNotNull(capturedHeaders.get());
+    String headerValue = capturedHeaders.get().get(REQUEST_ID_HEADER_KEY);
+    assertNotNull(headerValue);
+
+    // Parse the header and verify the channel ID WAS updated to grpc-gcp's value.
+    Matcher matcher = REQUEST_ID_PATTERN.matcher(headerValue);
+    assertTrue("Header value should match request ID pattern", matcher.matches());
+    String channelIdStr = matcher.group(4);
+    // Channel ID should be gcpChannelId + 1 = 8 (grpc-gcp's channel ID overrides the original).
+    assertTrue(
+        "Channel ID should be " + (gcpChannelId + 1) + " but was " + channelIdStr,
+        channelIdStr.equals(String.valueOf(gcpChannelId + 1)));
+  }
+
+  @Test
   public void testInterceptorWithNoRequestId() {
     RequestIdInterceptor interceptor = new RequestIdInterceptor();
 
