@@ -638,10 +638,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     // When dynamic channel pool is enabled, use the DCP initial size as the pool size.
     // When disabled, use the explicitly configured numChannels.
-    final int poolSize =
-        options.isDynamicChannelPoolEnabled()
-            ? 0
-            : options.getNumChannels();
+    final int poolSize = options.isDynamicChannelPoolEnabled() ? 0 : options.getNumChannels();
 
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
         channelBuilder -> {
