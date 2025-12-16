@@ -920,7 +920,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     // affinity keys, potentially leading to a memory leak.
     Preconditions.checkArgument(
         dynamicPoolAffinityKeyLifetime.isZero() || !dynamicPoolCleanupInterval.isZero(),
-        "Cleanup interval must be positive when affinity key lifetime is set, got cleanup interval: %s",
+        "Cleanup interval must be positive when affinity key lifetime is set, got cleanup interval:"
+            + " %s",
         dynamicPoolCleanupInterval);
 
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
