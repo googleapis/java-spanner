@@ -640,7 +640,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     // When disabled, use the explicitly configured numChannels.
     final int poolSize =
         options.isDynamicChannelPoolEnabled()
-            ? options.getDynamicPoolInitialSize()
+            ? 0
             : options.getNumChannels();
 
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
