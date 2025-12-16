@@ -1100,6 +1100,7 @@ public class SpannerOptionsTest {
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setCredentials(NoCredentials.getInstance())
+            .disableGrpcGcpExtension()
             .build();
 
     assertEquals(SpannerOptions.DEFAULT_CHANNELS, options.getNumChannels());
@@ -1135,7 +1136,8 @@ public class SpannerOptionsTest {
 
   @Test
   public void checkCreatedInstanceWhenGrpcGcpExtensionDisabled() {
-    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("test-project").disableGrpcGcpExtension().build();
     SpannerOptions options1 = options.toBuilder().build();
     assertEquals(false, options.isGrpcGcpExtensionEnabled());
     assertEquals(options.isGrpcGcpExtensionEnabled(), options1.isGrpcGcpExtensionEnabled());
