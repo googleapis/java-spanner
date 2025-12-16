@@ -24,17 +24,25 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
+import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
+import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Attributes;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
 import io.grpc.Context;
 import io.grpc.Deadline;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
 import io.grpc.ServerCall;
 import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
@@ -63,7 +71,12 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServerTest {
   private static final Map<String, Set<InetSocketAddress>> SERVER_ADDRESSES = new HashMap<>();
+
+  /** Tracks the physical channel IDs from request ID headers (set by grpc-gcp). */
   private static final Map<String, Set<Long>> CHANNEL_HINTS = new HashMap<>();
+
+  /** Tracks the logical affinity keys before grpc-gcp routes the request. */
+  private static final Map<String, Set<String>> LOGICAL_AFFINITY_KEYS = new HashMap<>();
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -80,8 +93,36 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
   public void clearRequests() {
     SERVER_ADDRESSES.clear();
     CHANNEL_HINTS.clear();
+    LOGICAL_AFFINITY_KEYS.clear();
     mockSpanner.clearRequests();
     mockSpanner.removeAllExecutionTimes();
+  }
+
+  /**
+   * Creates a client interceptor that captures the logical affinity key before grpc-gcp routes the
+   * request. This allows us to verify that retry logic uses distinct logical channel hints, even
+   * when DCP maps them to fewer physical channels.
+   */
+  static GrpcInterceptorProvider createAffinityKeyInterceptorProvider() {
+    return () ->
+        ImmutableList.of(
+            new ClientInterceptor() {
+              @Override
+              public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+                  MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+                // Capture the AFFINITY_KEY before grpc-gcp processes it
+                String affinityKey = callOptions.getOption(GcpManagedChannel.AFFINITY_KEY);
+                if (affinityKey != null) {
+                  String methodName = method.getFullMethodName();
+                  synchronized (LOGICAL_AFFINITY_KEYS) {
+                    Set<String> keys =
+                        LOGICAL_AFFINITY_KEYS.computeIfAbsent(methodName, k -> new HashSet<>());
+                    keys.add(affinityKey);
+                  }
+                }
+                return next.newCall(method, callOptions);
+              }
+            });
   }
 
   static ServerInterceptor createServerInterceptor() {
@@ -136,7 +177,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
         .setProjectId("my-project")
         .setHost(String.format("http://localhost:%d", getPort()))
         .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
-        .setCredentials(NoCredentials.getInstance());
+        .setCredentials(NoCredentials.getInstance())
+        .setInterceptorProvider(createAffinityKeyInterceptorProvider());
   }
 
   @Test
@@ -172,9 +214,10 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     List<BeginTransactionRequest> requests =
         mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
     assertNotEquals(requests.get(0).getSession(), requests.get(1).getSession());
+    // Verify that the retry used 2 distinct logical affinity keys (before grpc-gcp routing).
     assertEquals(
         2,
-        CHANNEL_HINTS
+        LOGICAL_AFFINITY_KEYS
             .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", new HashSet<>())
             .size());
   }
@@ -216,9 +259,11 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
       Set<String> sessions =
           requests.stream().map(BeginTransactionRequest::getSession).collect(Collectors.toSet());
       assertEquals(numChannels, sessions.size());
+      // Verify that the retry logic used distinct logical affinity keys (before grpc-gcp routing).
+      // This confirms each retry attempt targeted a different logical channel.
       assertEquals(
           numChannels,
-          CHANNEL_HINTS
+          LOGICAL_AFFINITY_KEYS
               .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", new HashSet<>())
               .size());
     }
@@ -290,9 +335,11 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
       // of the first transaction. That fails, the session is deny-listed, the transaction is
       // retried on yet another session and succeeds.
       assertEquals(numChannels + 1, sessions.size());
+      // Verify that the retry logic used distinct logical affinity keys (before grpc-gcp routing).
+      // This confirms each retry attempt targeted a different logical channel.
       assertEquals(
           numChannels,
-          CHANNEL_HINTS
+          LOGICAL_AFFINITY_KEYS
               .getOrDefault("google.spanner.v1.Spanner/BeginTransaction", new HashSet<>())
               .size());
       assertEquals(numChannels, mockSpanner.countRequestsOfType(BatchCreateSessionsRequest.class));
@@ -320,10 +367,10 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     // The requests use the same multiplexed session.
     assertEquals(requests.get(0).getSession(), requests.get(1).getSession());
-    // The requests use two different channel hints (which may map to same physical channel).
+    // Verify that the retry used 2 distinct logical affinity keys (before grpc-gcp routing).
     assertEquals(
         2,
-        CHANNEL_HINTS
+        LOGICAL_AFFINITY_KEYS
             .getOrDefault("google.spanner.v1.Spanner/ExecuteStreamingSql", new HashSet<>())
             .size());
   }
@@ -350,13 +397,15 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
       for (ExecuteSqlRequest request : requests) {
         assertEquals(session, request.getSession());
       }
-      // Each attempt, including retries, must use a distinct channel hint.
+      // Verify that the retry mechanism is working (made numChannels requests).
       int totalRequests = mockSpanner.countRequestsOfType(ExecuteSqlRequest.class);
-      int distinctHints =
-          CHANNEL_HINTS
+      assertEquals(numChannels, totalRequests);
+      // Verify each attempt used a distinct logical affinity key (before grpc-gcp routing).
+      int distinctLogicalKeys =
+          LOGICAL_AFFINITY_KEYS
               .getOrDefault("google.spanner.v1.Spanner/ExecuteStreamingSql", new HashSet<>())
               .size();
-      assertEquals(totalRequests, distinctHints);
+      assertEquals(totalRequests, distinctLogicalKeys);
     }
   }
 
