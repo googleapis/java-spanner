@@ -24,23 +24,25 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
-import io.grpc.Context;
-import io.grpc.Contexts;
-import io.grpc.Metadata;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
+import io.grpc.MethodDescriptor;
 import io.grpc.Server;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
-import io.grpc.ServerInterceptor;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.net.InetSocketAddress;
 import java.util.Set;
@@ -93,10 +95,11 @@ public class TransactionChannelHintTest {
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static InetSocketAddress address;
-  // Track channel hints (from X-Goog-Spanner-Request-Id header) per RPC method
-  private static final Set<Long> executeSqlChannelHints = ConcurrentHashMap.newKeySet();
-  private static final Set<Long> beginTransactionChannelHints = ConcurrentHashMap.newKeySet();
-  private static final Set<Long> streamingReadChannelHints = ConcurrentHashMap.newKeySet();
+  // Track logical affinity keys (before grpc-gcp routing) per RPC method.
+  // These are captured by a client interceptor to verify channel affinity consistency.
+  private static final Set<String> executeSqlAffinityKeys = ConcurrentHashMap.newKeySet();
+  private static final Set<String> beginTransactionAffinityKeys = ConcurrentHashMap.newKeySet();
+  private static final Set<String> streamingReadAffinityKeys = ConcurrentHashMap.newKeySet();
   private static Level originalLogLevel;
 
   @BeforeClass
@@ -109,49 +112,40 @@ public class TransactionChannelHintTest {
         StatementResult.query(READ_ONE_KEY_VALUE_STATEMENT, READ_ONE_KEY_VALUE_RESULTSET));
 
     address = new InetSocketAddress("localhost", 0);
-    server =
-        NettyServerBuilder.forAddress(address)
-            .addService(mockSpanner)
-            // Add a server interceptor to extract channel hints from X-Goog-Spanner-Request-Id
-            // header. This verifies that all operations in a transaction use the same channel hint.
-            .intercept(
-                new ServerInterceptor() {
-                  @Override
-                  public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-                      ServerCall<ReqT, RespT> call,
-                      Metadata headers,
-                      ServerCallHandler<ReqT, RespT> next) {
-                    // Extract channel hint from X-Goog-Spanner-Request-Id header
-                    String requestId = headers.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
-                    if (requestId != null) {
-                      // Format:
-                      // <version>.<randProcessId>.<nthClientId>.<nthChannelId>.<nthRequest>.<attempt>
-                      String[] parts = requestId.split("\\.");
-                      if (parts.length >= 4) {
-                        try {
-                          long channelHint = Long.parseLong(parts[3]);
-                          if (call.getMethodDescriptor()
-                              .equals(SpannerGrpc.getExecuteStreamingSqlMethod())) {
-                            executeSqlChannelHints.add(channelHint);
-                          }
-                          if (call.getMethodDescriptor()
-                              .equals(SpannerGrpc.getStreamingReadMethod())) {
-                            streamingReadChannelHints.add(channelHint);
-                          }
-                          if (call.getMethodDescriptor()
-                              .equals(SpannerGrpc.getBeginTransactionMethod())) {
-                            beginTransactionChannelHints.add(channelHint);
-                          }
-                        } catch (NumberFormatException e) {
-                          // Ignore parse errors
-                        }
-                      }
-                    }
-                    return Contexts.interceptCall(Context.current(), call, headers, next);
+    server = NettyServerBuilder.forAddress(address).addService(mockSpanner).build().start();
+  }
+
+  /**
+   * Creates a client interceptor that captures the logical affinity key before grpc-gcp routes the
+   * request. This allows us to verify that all operations within a transaction use the same logical
+   * channel affinity, even though the physical channel ID may vary.
+   */
+  private static GrpcInterceptorProvider createAffinityKeyInterceptorProvider() {
+    return () ->
+        ImmutableList.of(
+            new ClientInterceptor() {
+              @Override
+              public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+                  MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+                // Capture the AFFINITY_KEY before grpc-gcp processes it
+                String affinityKey = callOptions.getOption(GcpManagedChannel.AFFINITY_KEY);
+                if (affinityKey != null) {
+                  String methodName = method.getFullMethodName();
+                  if (methodName.equals(
+                      SpannerGrpc.getExecuteStreamingSqlMethod().getFullMethodName())) {
+                    executeSqlAffinityKeys.add(affinityKey);
                   }
-                })
-            .build()
-            .start();
+                  if (methodName.equals(SpannerGrpc.getStreamingReadMethod().getFullMethodName())) {
+                    streamingReadAffinityKeys.add(affinityKey);
+                  }
+                  if (methodName.equals(
+                      SpannerGrpc.getBeginTransactionMethod().getFullMethodName())) {
+                    beginTransactionAffinityKeys.add(affinityKey);
+                  }
+                }
+                return next.newCall(method, callOptions);
+              }
+            });
   }
 
   @AfterClass
@@ -176,9 +170,9 @@ public class TransactionChannelHintTest {
   @After
   public void reset() {
     mockSpanner.reset();
-    executeSqlChannelHints.clear();
-    streamingReadChannelHints.clear();
-    beginTransactionChannelHints.clear();
+    executeSqlAffinityKeys.clear();
+    streamingReadAffinityKeys.clear();
+    beginTransactionAffinityKeys.clear();
   }
 
   private SpannerOptions createSpannerOptions() {
@@ -193,6 +187,7 @@ public class TransactionChannelHintTest {
         .setCompressorName("gzip")
         .setHost("http://" + endpoint)
         .setCredentials(NoCredentials.getInstance())
+        .setInterceptorProvider(createAffinityKeyInterceptorProvider())
         .setSessionPoolOption(
             SessionPoolOptions.newBuilder().setSkipVerifyingBeginTransactionForMuxRW(true).build())
         .build();
@@ -206,7 +201,8 @@ public class TransactionChannelHintTest {
         while (resultSet.next()) {}
       }
     }
-    assertEquals(1, executeSqlChannelHints.size());
+    // All ExecuteSql calls should use the same logical affinity key
+    assertEquals(1, executeSqlAffinityKeys.size());
   }
 
   @Test
@@ -220,7 +216,8 @@ public class TransactionChannelHintTest {
         while (resultSet.next()) {}
       }
     }
-    assertEquals(1, executeSqlChannelHints.size());
+    // All ExecuteSql calls should use the same logical affinity key
+    assertEquals(1, executeSqlAffinityKeys.size());
   }
 
   @Test
@@ -236,10 +233,10 @@ public class TransactionChannelHintTest {
         }
       }
     }
-    // All ExecuteSql calls within the transaction should use the same channel hint
-    assertEquals(1, executeSqlChannelHints.size());
-    // BeginTransaction should use a single channel hint
-    assertEquals(1, beginTransactionChannelHints.size());
+    // All ExecuteSql calls within the transaction should use the same logical affinity key
+    assertEquals(1, executeSqlAffinityKeys.size());
+    // BeginTransaction should use a single logical affinity key
+    assertEquals(1, beginTransactionAffinityKeys.size());
   }
 
   @Test
@@ -256,10 +253,10 @@ public class TransactionChannelHintTest {
         }
       }
     }
-    // All ExecuteSql calls within the transaction should use the same channel hint
-    assertEquals(1, executeSqlChannelHints.size());
-    // BeginTransaction should use a single channel hint
-    assertEquals(1, beginTransactionChannelHints.size());
+    // All ExecuteSql calls within the transaction should use the same logical affinity key
+    assertEquals(1, executeSqlAffinityKeys.size());
+    // BeginTransaction should use a single logical affinity key
+    assertEquals(1, beginTransactionAffinityKeys.size());
   }
 
   @Test
@@ -288,7 +285,8 @@ public class TransactionChannelHintTest {
         }
       }
     }
-    assertEquals(1, executeSqlChannelHints.size());
+    // All ExecuteSql calls within the transaction should use the same logical affinity key
+    assertEquals(1, executeSqlAffinityKeys.size());
   }
 
   @Test
@@ -318,6 +316,7 @@ public class TransactionChannelHintTest {
             return null;
           });
     }
-    assertEquals(1, streamingReadChannelHints.size());
+    // All StreamingRead calls within the transaction should use the same logical affinity key
+    assertEquals(1, streamingReadAffinityKeys.size());
   }
 }
