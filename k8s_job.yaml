@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bypass-point-read-test
+  # Update this namespace to match where your Spanner pods are running!
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+      - name: test-runner
+        image: us-west1-docker.pkg.dev/outbound-flight/spanner-box/irahul-client:latest
+        imagePullPolicy: Always
+        env:
+        - name: BYPASS_HOST
+          value: "spanner-a-1.pod.spanner-ns:15000"
+      restartPolicy: Never
+  backoffLimit: 1

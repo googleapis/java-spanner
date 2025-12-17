@@ -257,6 +257,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
   private final TransactionOptions defaultTransactionOptions;
+  private final boolean isExperimentalHost;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -922,6 +923,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
+    isExperimentalHost = builder.isExperimentalHost;
   }
 
   private String getResolvedUniverseDomain() {
@@ -2320,6 +2322,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public TransactionOptions getDefaultTransactionOptions() {
     return defaultTransactionOptions;
+  }
+
+  public boolean isExperimentalHost() {
+    return isExperimentalHost;
   }
 
   @BetaApi
