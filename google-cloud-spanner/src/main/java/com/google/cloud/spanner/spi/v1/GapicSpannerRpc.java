@@ -281,6 +281,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final boolean endToEndTracingEnabled;
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
+  private final boolean isDynamicChannelPoolEnabled;
 
   private final GrpcCallContext baseGrpcCallContext;
 
@@ -337,6 +338,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.endToEndTracingEnabled = options.isEndToEndTracingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
+    this.isDynamicChannelPoolEnabled = options.isDynamicChannelPoolEnabled();
     this.baseGrpcCallContext = createBaseCallContext();
 
     if (initializeStubs) {
@@ -475,7 +477,8 @@ public class GapicSpannerRpc implements SpannerRpc {
                   .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
         }
         this.partitionedDmlStub =
-            GrpcSpannerStubWithStubSettingsAndClientContext.create(pdmlSettings.build());
+            GrpcSpannerStubWithStubSettingsAndClientContext.create(
+                pdmlSettings.build(), clientContext);
         this.instanceAdminStubSettings =
             options.getInstanceAdminStubSettings().toBuilder()
                 .setTransportChannelProvider(channelProvider)
@@ -569,10 +572,14 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
-  // Enhance metric options for gRPC-GCP extension.
-  private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
+  // Enhance gRPC-GCP options with metrics and dynamic channel pool configuration.
+  private static GcpManagedChannelOptions grpcGcpOptionsWithMetricsAndDcp(SpannerOptions options) {
     GcpManagedChannelOptions grpcGcpOptions =
         MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
+    GcpManagedChannelOptions.Builder optionsBuilder =
+        GcpManagedChannelOptions.newBuilder(grpcGcpOptions);
+
+    // Configure metrics options with OpenTelemetry meter
     GcpMetricsOptions metricsOptions =
         MoreObjects.firstNonNull(
             grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
@@ -581,9 +588,21 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (metricsOptions.getNamePrefix().equals("")) {
       metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
     }
-    return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
-        .withMetricsOptions(metricsOptionsBuilder.build())
-        .build();
+    // Pass OpenTelemetry meter to grpc-gcp for channel pool metrics
+    if (metricsOptions.getOpenTelemetryMeter() == null) {
+      metricsOptionsBuilder.withOpenTelemetryMeter(
+          options.getOpenTelemetry().getMeter("com.google.cloud.spanner"));
+    }
+    optionsBuilder.withMetricsOptions(metricsOptionsBuilder.build());
+
+    // Configure dynamic channel pool options if enabled.
+    // Uses the GcpChannelPoolOptions from SpannerOptions, which contains Spanner-specific defaults
+    // or user-provided configuration.
+    if (options.isDynamicChannelPoolEnabled()) {
+      optionsBuilder.withChannelPoolOptions(options.getGcpChannelPoolOptions());
+    }
+
+    return optionsBuilder.build();
   }
 
   @SuppressWarnings("rawtypes")
@@ -595,7 +614,11 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
 
     final String jsonApiConfig = parseGrpcGcpApiConfig();
-    final GcpManagedChannelOptions grpcGcpOptions = grpcGcpOptionsWithMetrics(options);
+    final GcpManagedChannelOptions grpcGcpOptions = grpcGcpOptionsWithMetricsAndDcp(options);
+
+    // When dynamic channel pool is enabled, use the DCP initial size as the pool size.
+    // When disabled, use the explicitly configured numChannels.
+    final int poolSize = options.isDynamicChannelPoolEnabled() ? 0 : options.getNumChannels();
 
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
         channelBuilder -> {
@@ -605,7 +628,7 @@ public class GapicSpannerRpc implements SpannerRpc {
           return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
               .withApiConfigJsonString(jsonApiConfig)
               .withOptions(grpcGcpOptions)
-              .setPoolSize(options.getNumChannels());
+              .setPoolSize(poolSize);
         };
 
     // Disable the GAX channel pooling functionality by setting the GAX channel pool size to 1.
@@ -2060,20 +2083,34 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (affinity != null) {
       if (this.isGrpcGcpExtensionEnabled) {
         // Set channel affinity in gRPC-GCP.
-        // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
-        int boundedChannelHint = affinity.intValue() % this.numChannels;
+        String affinityKey;
+        if (this.isDynamicChannelPoolEnabled) {
+          // When dynamic channel pooling is enabled, we use the raw affinity value as the key.
+          // This allows grpc-gcp to use round-robin for new keys, enabling new channels
+          // (created during scale-up) to receive requests. The affinity key lifetime setting
+          // ensures the affinity map doesn't grow unbounded.
+          affinityKey = String.valueOf(affinity);
+        } else {
+          // When DCP is disabled, compute bounded channel hint to prevent
+          // gRPC-GCP affinity map from getting unbounded.
+          int boundedChannelHint = affinity.intValue() % this.numChannels;
+          affinityKey = String.valueOf(boundedChannelHint);
+        }
         context =
             context.withCallOptions(
-                context
-                    .getCallOptions()
-                    .withOption(
-                        GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
+                context.getCallOptions().withOption(GcpManagedChannel.AFFINITY_KEY, affinityKey));
       } else {
         // Set channel affinity in GAX.
         context = context.withChannelAffinity(affinity.intValue());
       }
     }
-    int requestIdChannel = convertToRequestIdChannelNumber(affinity);
+    // When grpc-gcp extension with dynamic channel pooling is enabled, the actual channel ID
+    // will be set by RequestIdInterceptor after grpc-gcp selects the channel.
+    // Set to 0 (unknown) here as a placeholder.
+    int requestIdChannel =
+        (this.isGrpcGcpExtensionEnabled && this.isDynamicChannelPoolEnabled)
+            ? 0
+            : convertToRequestIdChannelNumber(affinity);
     if (requestId == null) {
       requestId = requestIdCreator.nextRequestId(requestIdChannel);
     } else {
