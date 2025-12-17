@@ -32,7 +32,7 @@ public class AdminRequestsPerMinuteExceededException extends SpannerException {
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   AdminRequestsPerMinuteExceededException(
       DoNotConstructDirectly token, @Nullable String message, @Nullable Throwable cause) {
-    this(token, message, cause, null, null);
+    this(token, message, cause, null);
   }
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
@@ -40,8 +40,7 @@ public class AdminRequestsPerMinuteExceededException extends SpannerException {
       DoNotConstructDirectly token,
       @Nullable String message,
       @Nullable Throwable cause,
-      @Nullable ApiException apiException,
-      @Nullable XGoogSpannerRequestId reqId) {
-    super(token, ErrorCode.RESOURCE_EXHAUSTED, true, message, cause, apiException, reqId);
+      @Nullable ApiException apiException) {
+    super(token, ErrorCode.RESOURCE_EXHAUSTED, true, message, cause, apiException);
   }
 }
