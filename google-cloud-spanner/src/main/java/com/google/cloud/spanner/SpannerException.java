@@ -16,11 +16,11 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.InternalApi;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ErrorDetails;
 import com.google.cloud.grpc.BaseGrpcServiceException;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.protobuf.util.Durations;
 import com.google.rpc.ResourceInfo;
 import com.google.rpc.RetryInfo;
@@ -41,9 +41,8 @@ public class SpannerException extends BaseGrpcServiceException {
         @Nullable String message,
         ResourceInfo resourceInfo,
         @Nullable Throwable cause,
-        @Nullable ApiException apiException,
-        @Nullable XGoogSpannerRequestId reqId) {
-      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause, apiException, reqId);
+        @Nullable ApiException apiException) {
+      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause, apiException);
       this.resourceInfo = resourceInfo;
     }
 
@@ -59,7 +58,7 @@ public class SpannerException extends BaseGrpcServiceException {
 
   private final ErrorCode code;
   private final ApiException apiException;
-  private XGoogSpannerRequestId requestId;
+  private final XGoogSpannerRequestId requestId;
   private String statement;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
@@ -80,25 +79,13 @@ public class SpannerException extends BaseGrpcServiceException {
       @Nullable String message,
       @Nullable Throwable cause,
       @Nullable ApiException apiException) {
-    this(token, code, retryable, message, cause, apiException, null);
-  }
-
-  /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
-  SpannerException(
-      DoNotConstructDirectly token,
-      ErrorCode code,
-      boolean retryable,
-      @Nullable String message,
-      @Nullable Throwable cause,
-      @Nullable ApiException apiException,
-      @Nullable XGoogSpannerRequestId requestId) {
     super(message, cause, code.getCode(), retryable);
     if (token != DoNotConstructDirectly.ALLOWED) {
       throw new AssertionError("Do not construct directly: use SpannerExceptionFactory");
     }
     this.code = Preconditions.checkNotNull(code);
     this.apiException = apiException;
-    this.requestId = requestId;
+    this.requestId = extractRequestId(cause);
   }
 
   @Override
@@ -107,6 +94,14 @@ public class SpannerException extends BaseGrpcServiceException {
       return super.getMessage();
     }
     return String.format("%s - Statement: '%s'", super.getMessage(), this.statement);
+  }
+
+  @Override
+  public String toString() {
+    if (this.requestId == null) {
+      return super.toString();
+    }
+    return super.toString() + " - RequestId: " + this.requestId;
   }
 
   /** Returns the error code associated with this exception. */
@@ -150,12 +145,26 @@ public class SpannerException extends BaseGrpcServiceException {
       Metadata trailers = Status.trailersFromThrowable(cause);
       if (trailers != null && trailers.containsKey(KEY_RETRY_INFO)) {
         RetryInfo retryInfo = trailers.get(KEY_RETRY_INFO);
-        if (retryInfo.hasRetryDelay()) {
+        if (retryInfo != null && retryInfo.hasRetryDelay()) {
           return Durations.toMillis(retryInfo.getRetryDelay());
         }
       }
     }
     return -1L;
+  }
+
+  @Nullable
+  static XGoogSpannerRequestId extractRequestId(Throwable cause) {
+    if (cause != null) {
+      Metadata trailers = Status.trailersFromThrowable(cause);
+      if (trailers != null && trailers.containsKey(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY)) {
+        String requestId = trailers.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
+        if (!Strings.isNullOrEmpty(requestId)) {
+          return XGoogSpannerRequestId.of(requestId);
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -223,11 +232,5 @@ public class SpannerException extends BaseGrpcServiceException {
 
   void setStatement(String statement) {
     this.statement = statement;
-  }
-
-  /** Sets the requestId. */
-  @InternalApi
-  public void setRequestId(XGoogSpannerRequestId reqId) {
-    this.requestId = reqId;
   }
 }

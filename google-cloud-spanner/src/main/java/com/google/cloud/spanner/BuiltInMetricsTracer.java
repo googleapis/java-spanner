@@ -39,10 +39,10 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
   private final Map<String, String> attributes = new HashMap<>();
   private Float gfeLatency = null;
   private Float afeLatency = null;
-  private TraceWrapper traceWrapper;
-  private long gfeHeaderMissingCount = 0;
-  private long afeHeaderMissingCount = 0;
+  private final TraceWrapper traceWrapper;
   private final ISpan currentSpan;
+  private boolean isDirectPathUsed;
+  private boolean isAfeEnabled;
 
   BuiltInMetricsTracer(
       MethodName methodName,
@@ -66,7 +66,7 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
       super.attemptSucceeded();
       attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.OK.toString());
       builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+          gfeLatency, afeLatency, attributes, isDirectPathUsed, isAfeEnabled);
     }
   }
 
@@ -80,7 +80,7 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
       super.attemptCancelled();
       attributes.put(STATUS_ATTRIBUTE, StatusCode.Code.CANCELLED.toString());
       builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+          gfeLatency, afeLatency, attributes, isDirectPathUsed, isAfeEnabled);
     }
   }
 
@@ -98,7 +98,7 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
       super.attemptFailedDuration(error, delay);
       attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
       builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+          gfeLatency, afeLatency, attributes, isDirectPathUsed, isAfeEnabled);
     }
   }
 
@@ -115,7 +115,7 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
       super.attemptFailedRetriesExhausted(error);
       attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
       builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+          gfeLatency, afeLatency, attributes, isDirectPathUsed, isAfeEnabled);
     }
   }
 
@@ -132,24 +132,16 @@ class BuiltInMetricsTracer extends MetricsTracer implements ApiTracer {
       super.attemptPermanentFailure(error);
       attributes.put(STATUS_ATTRIBUTE, extractStatus(error));
       builtInOpenTelemetryMetricsRecorder.recordServerTimingHeaderMetrics(
-          gfeLatency, afeLatency, gfeHeaderMissingCount, afeHeaderMissingCount, attributes);
+          gfeLatency, afeLatency, attributes, isDirectPathUsed, isAfeEnabled);
     }
   }
 
-  void recordGFELatency(Float gfeLatency) {
+  public void recordServerTimingHeaderMetrics(
+      Float gfeLatency, Float afeLatency, boolean isDirectPathUsed, boolean isAfeEnabled) {
     this.gfeLatency = gfeLatency;
-  }
-
-  void recordAFELatency(Float afeLatency) {
+    this.isDirectPathUsed = isDirectPathUsed;
     this.afeLatency = afeLatency;
-  }
-
-  void recordGfeHeaderMissingCount(Long value) {
-    this.gfeHeaderMissingCount = value;
-  }
-
-  void recordAfeHeaderMissingCount(Long value) {
-    this.afeHeaderMissingCount = value;
+    this.isAfeEnabled = isAfeEnabled;
   }
 
   @Override
