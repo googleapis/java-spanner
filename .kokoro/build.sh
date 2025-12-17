@@ -92,6 +92,7 @@ javadoc)
 integration)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
+      -Dprotobuf.version=4.33.0 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -104,9 +105,26 @@ integration)
       verify
     RETURN_CODE=$?
     ;;
-integration-regular-sessions)
+integration-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
+      -Dprotobuf.version=4.33.0 \
+      -Penable-integration-tests \
+      -Djava.net.preferIPv4Stack=true \
+      -DtrimStackTrace=false \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-java-client-directpath \
+      -Dspanner.gce.config.project_id=span-cloud-testing \
+      -fae \
+      verify
+    RETURN_CODE=$?
+    ;;
+integration-multiplexed-sessions-enabled)
+    mvn -B ${INTEGRATION_TEST_ARGS} \
+      -ntp \
+      -Dprotobuf.version=4.33.0 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -137,6 +155,7 @@ integration-directpath-enabled)
 integration-cloud-devel)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
+      -Dprotobuf.version=4.33.0 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -153,6 +172,7 @@ integration-cloud-devel)
 integration-cloud-devel-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
+      -Dprotobuf.version=4.33.0 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -169,6 +189,7 @@ integration-cloud-devel-directpath-enabled)
 integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
+      -Dprotobuf.version=4.33.0 \
       -Penable-integration-tests \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
@@ -184,14 +205,14 @@ integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     ;;
 graalvm)
     # Run Unit and Integration Tests with Native Image
-    # NOTE: These integration tests run on the Emulator.
-    mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-graalvm
+    mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests \
+      -Dprotobuf.version=4.33.0
     RETURN_CODE=$?
     ;;
 graalvm17)
     # Run Unit and Integration Tests with Native Image
-    # NOTE: These integration tests run on the Emulator.
-    mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-graalvm
+    mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests \
+      -Dprotobuf.version=4.33.0
     RETURN_CODE=$?
     ;;
 slowtests)
