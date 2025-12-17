@@ -19,6 +19,7 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.cloud.spanner.XGoogSpannerRequestId.REQUEST_ID_CALL_OPTIONS_KEY;
 import static com.google.cloud.spanner.XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY;
 
+import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.spanner.XGoogSpannerRequestId;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -47,6 +48,15 @@ class RequestIdInterceptor implements ClientInterceptor {
       public void start(Listener<RespT> responseListener, Metadata headers) {
         XGoogSpannerRequestId requestId = callOptions.getOption(REQUEST_ID_CALL_OPTIONS_KEY);
         if (requestId != null) {
+          // If grpc-gcp has set the actual channel ID, use it to update the request ID.
+          // This provides the real channel ID used after channel selection, especially
+          // important when dynamic channel pooling is enabled.
+          Integer gcpChannelId = callOptions.getOption(GcpManagedChannel.CHANNEL_ID_KEY);
+          if (gcpChannelId != null) {
+            // Channel IDs from grpc-gcp are 0-based, add 1 to match request ID convention
+            // where 0 means unknown and >0 means a known channel.
+            requestId.setChannelId(gcpChannelId + 1);
+          }
           requestId.incrementAttempt();
           headers.put(REQUEST_ID_HEADER_KEY, requestId.getHeaderValue());
         }
