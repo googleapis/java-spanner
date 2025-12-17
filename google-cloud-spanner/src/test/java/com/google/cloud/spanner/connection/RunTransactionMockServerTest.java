@@ -151,7 +151,7 @@ public class RunTransactionMockServerTest extends AbstractMockServerTest {
                         return null;
                       }));
       assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
-      assertTrue(exception.getMessage(), exception.getMessage().endsWith("invalid statement"));
+      assertTrue(exception.getMessage(), exception.getMessage().contains("invalid statement"));
     }
     assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));

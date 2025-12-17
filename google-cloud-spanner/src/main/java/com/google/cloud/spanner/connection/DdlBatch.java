@@ -266,7 +266,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
               } catch (SpannerException e) {
                 long[] updateCounts = extractUpdateCounts(operationReference.get());
                 throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                    e.getErrorCode(), e.getMessage(), updateCounts, null /* TODO: requestId */);
+                    e.getErrorCode(), e.getMessage(), updateCounts);
               }
             } catch (Throwable t) {
               span.setStatus(StatusCode.ERROR);

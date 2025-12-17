@@ -27,6 +27,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.XGoogSpannerRequestId.NoopRequestIdCreator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
@@ -72,6 +73,7 @@ abstract class BaseSessionPoolTest {
     final SessionImpl session = mock(SessionImpl.class);
     Map options = new HashMap<>();
     options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
+    when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     when(session.getOptions()).thenReturn(options);
     when(session.getName())
         .thenReturn(
