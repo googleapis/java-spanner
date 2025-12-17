@@ -1950,7 +1950,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
-      if (emulatorHost != null) {
+      if (emulatorHost != null && experimentalHost == null) {
         if (!emulatorHost.startsWith("http")) {
           emulatorHost = "http://" + emulatorHost;
         }
