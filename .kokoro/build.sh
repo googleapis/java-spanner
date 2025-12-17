@@ -93,6 +93,7 @@ integration)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -104,10 +105,27 @@ integration)
       verify
     RETURN_CODE=$?
     ;;
-integration-regular-sessions)
+integration-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
+      -Djava.net.preferIPv4Stack=true \
+      -DtrimStackTrace=false \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-java-client-directpath \
+      -Dspanner.gce.config.project_id=span-cloud-testing \
+      -fae \
+      verify
+    RETURN_CODE=$?
+    ;;
+integration-multiplexed-sessions-enabled)
+    mvn -B ${INTEGRATION_TEST_ARGS} \
+      -ntp \
+      -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -138,6 +156,7 @@ integration-cloud-devel)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -154,6 +173,7 @@ integration-cloud-devel-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
@@ -170,6 +190,7 @@ integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dprotobuf.version=4.29.4 \
       -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
