@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.105.0](https://github.com/googleapis/java-spanner/compare/v6.104.0...v6.105.0) (2025-12-16)
+
+
+### Features
+
+* Add support of dynamic channel pooling ([#4265](https://github.com/googleapis/java-spanner/issues/4265)) ([923a14a](https://github.com/googleapis/java-spanner/commit/923a14aad99ff6fc91868f02d657145dd0f31c18))
+* Include RequestID in requests and errors ([#4263](https://github.com/googleapis/java-spanner/issues/4263)) ([afd7d6b](https://github.com/googleapis/java-spanner/commit/afd7d6b008f13d7a4d1a3b7f924122bd41d14b59))
+* Make grpc-gcp default enabled ([#4239](https://github.com/googleapis/java-spanner/issues/4239)) ([bb82f9e](https://github.com/googleapis/java-spanner/commit/bb82f9e55c40cac29b090e54be780c2e42545ee1))
+
+
+### Bug Fixes
+
+* Refine connecitivity metrics to capture RPCs with no response he… ([#4252](https://github.com/googleapis/java-spanner/issues/4252)) ([7b49412](https://github.com/googleapis/java-spanner/commit/7b4941221969f48d077ff459214c7d1e65ef843c))
+* Retry as PDML dit not retry Resource limit exceeded ([#4258](https://github.com/googleapis/java-spanner/issues/4258)) ([c735d42](https://github.com/googleapis/java-spanner/commit/c735d42875092b0d1482fe641b99645f288cdf4f)), closes [#4253](https://github.com/googleapis/java-spanner/issues/4253)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.54.2 ([#4261](https://github.com/googleapis/java-spanner/issues/4261)) ([61dfd62](https://github.com/googleapis/java-spanner/commit/61dfd620637da6ef76b699edbad1095c26b81950))
+* Update googleapis/sdk-platform-java action to v2.64.2 ([#4262](https://github.com/googleapis/java-spanner/issues/4262)) ([f9505a9](https://github.com/googleapis/java-spanner/commit/f9505a97bdd9f6da7dd5ab1b60b47f7ed0a70402))
+
 ## [6.104.0](https://github.com/googleapis/java-spanner/compare/v6.103.0...v6.104.0) (2025-12-03)
 
 
