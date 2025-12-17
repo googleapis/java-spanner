@@ -1360,7 +1360,7 @@ public class SpannerOptionsTest {
     assertEquals(
         SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL, defaults.getCleanupInterval());
   }
-  
+
   @Test
   public void testPlainTextOptions() {
     SpannerOptions options =
