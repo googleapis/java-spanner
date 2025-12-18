@@ -44,12 +44,15 @@ public final class ChannelFinder {
     lock.writeLock().lock();
     try {
       if (databaseId != cacheUpdate.getDatabaseId()) {
+        System.out.println("DEBUG [BYPASS]: Database ID changed from " + databaseId 
+            + " to " + cacheUpdate.getDatabaseId() + ", clearing caches");
         recipeCache.clear();
         rangeCache.clear();
         databaseId = cacheUpdate.getDatabaseId();
       }
       recipeCache.addRecipes(cacheUpdate.getKeyRecipes());
       rangeCache.addRanges(cacheUpdate);
+      System.out.println("DEBUG [BYPASS]: Cache updated. Current state:\n" + rangeCache.debugString());
     } finally {
       lock.writeLock().unlock();
     }
@@ -69,9 +72,16 @@ public final class ChannelFinder {
       if (databaseId != 0) {
         hintBuilder.setDatabaseId(databaseId);
       }
+      System.out.println("DEBUG [BYPASS]: findServer - computing keys for table: " 
+          + reqBuilder.getTable());
       recipeCache.computeKeys(reqBuilder); // Modifies hintBuilder within reqBuilder
-      return rangeCache.fillRoutingInfo(
-          reqBuilder.getSession(), false, hintBuilder); // hintBuilder is already part of reqBuilder
+      System.out.println("DEBUG [BYPASS]: findServer - after computeKeys, key: " 
+          + hintBuilder.getKey().toStringUtf8());
+      ChannelFinderServer server = rangeCache.fillRoutingInfo(
+          reqBuilder.getSession(), false, hintBuilder);
+      System.out.println("DEBUG [BYPASS]: findServer - fillRoutingInfo returned server: " 
+          + (server != null ? server.getAddress() : "null"));
+      return server;
     } finally {
       lock.readLock().unlock();
     }

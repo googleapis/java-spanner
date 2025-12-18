@@ -171,11 +171,22 @@ final class KeyAwareChannel extends ManagedChannel {
 
         if (databaseId == null) {
           server = parentChannel.serverFactory.defaultServer();
+          System.out.println("DEBUG [BYPASS]: No database ID found, using default server: " 
+              + server.getAddress());
         } else {
           this.channelFinder = parentChannel.getOrCreateChannelFinder(databaseId);
           server = this.channelFinder.findServer(reqBuilder);
           message = (RequestT) reqBuilder.build(); // Apply routing info changes
-          System.out.println("DEBUG: Routing hint: " + ((ReadRequest) message).getRoutingHint());
+          
+          ReadRequest finalReq = (ReadRequest) message;
+          System.out.println("DEBUG [BYPASS]: === Request Details ===");
+          System.out.println("DEBUG [BYPASS]: Table: " + finalReq.getTable());
+          System.out.println("DEBUG [BYPASS]: KeySet: " + finalReq.getKeySet());
+          System.out.println("DEBUG [BYPASS]: Routing hint: " + finalReq.getRoutingHint());
+          System.out.println("DEBUG [BYPASS]: Selected server: " + server.getAddress());
+          System.out.println("DEBUG [BYPASS]: Is bypass routing: " 
+              + (finalReq.getRoutingHint().getGroupUid() != 0));
+          System.out.println("DEBUG [BYPASS]: ========================");
         }
       } else {
         // Other types of requests should never be passed to KeyAwareClientCall to begin with.
@@ -228,7 +239,36 @@ final class KeyAwareChannel extends ManagedChannel {
       if (message instanceof PartialResultSet) {
         PartialResultSet response = (PartialResultSet) message;
         if (response.hasCacheUpdate() && call.channelFinder != null) {
-          call.channelFinder.update(response.getCacheUpdate());
+          com.google.spanner.v1.CacheUpdate update = response.getCacheUpdate();
+          System.out.println("DEBUG [BYPASS]: === CacheUpdate Received ===");
+          System.out.println("DEBUG [BYPASS]: database_id: " + update.getDatabaseId());
+          System.out.println("DEBUG [BYPASS]: groups count: " + update.getGroupCount());
+          System.out.println("DEBUG [BYPASS]: ranges count: " + update.getRangeCount());
+          if (update.hasKeyRecipes()) {
+            System.out.println("DEBUG [BYPASS]: recipes count: " 
+                + update.getKeyRecipes().getRecipeCount());
+            System.out.println("DEBUG [BYPASS]: schema_generation: " 
+                + update.getKeyRecipes().getSchemaGeneration());
+          }
+          for (int i = 0; i < update.getGroupCount(); i++) {
+            com.google.spanner.v1.Group g = update.getGroup(i);
+            System.out.println("DEBUG [BYPASS]: Group[" + i + "]: uid=" + g.getGroupUid() 
+                + ", tablets=" + g.getTabletsCount() + ", leader_index=" + g.getLeaderIndex());
+            for (int t = 0; t < g.getTabletsCount(); t++) {
+              com.google.spanner.v1.Tablet tab = g.getTablets(t);
+              System.out.println("DEBUG [BYPASS]:   Tablet[" + t + "]: uid=" + tab.getTabletUid() 
+                  + ", server=" + tab.getServerAddress() 
+                  + ", distance=" + tab.getDistance()
+                  + ", skip=" + tab.getSkip());
+            }
+          }
+          for (int i = 0; i < update.getRangeCount(); i++) {
+            com.google.spanner.v1.Range r = update.getRange(i);
+            System.out.println("DEBUG [BYPASS]: Range[" + i + "]: group_uid=" + r.getGroupUid() 
+                + ", split_id=" + r.getSplitId());
+          }
+          System.out.println("DEBUG [BYPASS]: ============================");
+          call.channelFinder.update(update);
         }
       }
       super.onMessage(message);
