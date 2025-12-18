@@ -14,14 +14,22 @@ import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
 
+/**
+ * Cache for routing information. - Tablets are stored directly within Groups - Groups are updated
+ * atomically with their tablets - Ranges reference groups
+ */
 public final class KeyRangeCache {
 
   private final ChannelFinderServerFactory serverFactory;
 
+  // Map keyed by limit_key, value contains start_key and group reference
   private final NavigableMap<ByteString, CachedRange> ranges =
       new TreeMap<>(ByteString.unsignedLexicographicalComparator());
+
+  // Groups indexed by group_uid
   private final Map<Long, CachedGroup> groups = new HashMap<>();
-  private final Map<Long, CachedTablet> tablets = new HashMap<>();
+
+  // Servers indexed by address - shared across all tablets
   private final Map<String, ServerEntry> servers = new HashMap<>();
 
   public KeyRangeCache(ChannelFinderServerFactory serverFactory) {
@@ -30,7 +38,7 @@ public final class KeyRangeCache {
 
   private static class ServerEntry {
     final ChannelFinderServer server;
-    int refs = 1; // Start with 1 as it's added to the map
+    int refs = 1;
 
     ServerEntry(ChannelFinderServer server) {
       this.server = server;
@@ -41,59 +49,206 @@ public final class KeyRangeCache {
     }
   }
 
-  private static class CachedTablet {
-    final long tabletUid;
+  /**
+   * Represents a single tablet within a Group. Tablets are stored directly in the Group, not in a
+   * separate cache.
+   */
+  private class CachedTablet {
+    long tabletUid = 0;
     ByteString incarnation = ByteString.EMPTY;
-    ServerEntry server = null; // Can be null initially or if server is removed
-    int refs = 1;
+    String serverAddress = "";
+    int distance = 0;
+    boolean skip = false;
+    Tablet.Role role = Tablet.Role.ROLE_UNSPECIFIED;
+    String location = "";
 
-    CachedTablet(long tabletUid) {
-      this.tabletUid = tabletUid;
+    // Lazily initialized server connection
+    ChannelFinderServer server = null;
+
+    CachedTablet() {}
+
+    /** Updates tablet from proto, ignoring updates that are too old. */
+    void update(Tablet tabletIn) {
+      // Check incarnation - only update if newer
+      if (tabletUid > 0
+          && ByteString.unsignedLexicographicalComparator()
+                  .compare(incarnation, tabletIn.getIncarnation())
+              > 0) {
+        return;
+      }
+
+      tabletUid = tabletIn.getTabletUid();
+      incarnation = tabletIn.getIncarnation();
+      distance = tabletIn.getDistance();
+      skip = tabletIn.getSkip();
+      role = tabletIn.getRole();
+      location = tabletIn.getLocation();
+
+      // Only reset server if address changed
+      if (!serverAddress.equals(tabletIn.getServerAddress())) {
+        serverAddress = tabletIn.getServerAddress();
+        server = null; // Will be lazily initialized
+      }
+    }
+
+    /** Returns true if tablet should be skipped (unhealthy, marked skip, or no address). */
+    boolean shouldSkip(RoutingHint.Builder hintBuilder) {
+      if (skip || serverAddress.isEmpty()) {
+        addSkippedTablet(hintBuilder);
+        return true;
+      }
+      // Check server health
+      if (server != null && !server.isHealthy()) {
+        addSkippedTablet(hintBuilder);
+        return true;
+      }
+      return false;
+    }
+
+    private void addSkippedTablet(RoutingHint.Builder hintBuilder) {
+      RoutingHint.SkippedTablet.Builder skipped = hintBuilder.addSkippedTabletUidBuilder();
+      skipped.setTabletUid(tabletUid);
+      skipped.setIncarnation(incarnation);
+    }
+
+    /** Picks this tablet for the request and returns the server. */
+    ChannelFinderServer pick(RoutingHint.Builder hintBuilder) {
+      hintBuilder.setTabletUid(tabletUid);
+      if (server == null && !serverAddress.isEmpty()) {
+        // Lazy server initialization - matches C++ behavior
+        ServerEntry entry = findOrInsertServer(serverAddress);
+        server = entry.server;
+      }
+      return server;
     }
 
     String debugString() {
       return tabletUid
           + ":"
-          + (server != null ? server.server.getAddress() : "null_server")
+          + serverAddress
           + "@"
           + incarnation
-          + "#"
-          + refs;
+          + "(location="
+          + location
+          + ",role="
+          + role
+          + ",distance="
+          + distance
+          + (skip ? ",skip" : "")
+          + ")";
     }
   }
 
-  private static class CachedGroup {
+  /** Represents a paxos group with its tablets. Tablets are stored directly in the group. */
+  private class CachedGroup {
     final long groupUid;
-    ByteString generation = ByteString.EMPTY; // Initialize to empty
-    List<CachedTablet> localTablets = new ArrayList<>();
-    CachedTablet leader = null;
+    ByteString generation = ByteString.EMPTY;
+    List<CachedTablet> tablets = new ArrayList<>();
+    int leaderIndex = -1;
     int refs = 1;
 
     CachedGroup(long groupUid) {
       this.groupUid = groupUid;
     }
 
+    /** Updates group from proto, including its tablets. */
+    void update(Group groupIn) {
+      // Only update leader if generation is newer
+      if (ByteString.unsignedLexicographicalComparator()
+              .compare(groupIn.getGeneration(), generation)
+          > 0) {
+        generation = groupIn.getGeneration();
+
+        // Update leader index - matches C++ logic
+        if (groupIn.getLeaderIndex() >= 0 && groupIn.getLeaderIndex() < groupIn.getTabletsCount()) {
+          leaderIndex = groupIn.getLeaderIndex();
+        } else {
+          leaderIndex = -1;
+        }
+      }
+
+      // Update tablet locations. Optimize for typical case where tablets haven't changed.
+      if (tablets.size() == groupIn.getTabletsCount()) {
+        boolean mismatch = false;
+        for (int t = 0; t < groupIn.getTabletsCount(); t++) {
+          if (tablets.get(t).tabletUid != groupIn.getTablets(t).getTabletUid()) {
+            mismatch = true;
+            break;
+          }
+        }
+        if (!mismatch) {
+          // Same tablets, just update them in place
+          for (int t = 0; t < groupIn.getTabletsCount(); t++) {
+            tablets.get(t).update(groupIn.getTablets(t));
+          }
+          return;
+        }
+      }
+
+      // Tablets changed - rebuild the list, reusing existing tablets where possible
+      Map<Long, CachedTablet> tabletsByUid = new HashMap<>();
+      for (CachedTablet tablet : tablets) {
+        tabletsByUid.put(tablet.tabletUid, tablet);
+      }
+
+      List<CachedTablet> newTablets = new ArrayList<>(groupIn.getTabletsCount());
+      for (int t = 0; t < groupIn.getTabletsCount(); t++) {
+        Tablet tabletIn = groupIn.getTablets(t);
+        CachedTablet tablet = tabletsByUid.get(tabletIn.getTabletUid());
+        if (tablet == null) {
+          tablet = new CachedTablet();
+        }
+        tablet.update(tabletIn);
+        newTablets.add(tablet);
+      }
+      tablets = newTablets;
+    }
+
+    /** Fills routing hint with tablet information and returns the server. */
+    ChannelFinderServer fillRoutingHint(boolean preferLeader, RoutingHint.Builder hintBuilder) {
+
+      // Try leader first if preferred
+      if (preferLeader && hasLeader() && !leader().shouldSkip(hintBuilder)) {
+        return leader().pick(hintBuilder);
+      }
+
+      // Try other tablets in order (they're ordered by distance)
+      for (CachedTablet tablet : tablets) {
+        if (!tablet.shouldSkip(hintBuilder)) {
+          return tablet.pick(hintBuilder);
+        }
+      }
+
+      return null;
+    }
+
+    boolean hasLeader() {
+      return leaderIndex >= 0 && leaderIndex < tablets.size();
+    }
+
+    CachedTablet leader() {
+      return tablets.get(leaderIndex);
+    }
+
     String debugString() {
       StringBuilder sb = new StringBuilder();
       sb.append(groupUid).append(":[");
-      for (int i = 0; i < localTablets.size(); i++) {
-        sb.append(localTablets.get(i).tabletUid);
-        if (i < localTablets.size() - 1) {
-          sb.append(",");
+      for (int i = 0; i < tablets.size(); i++) {
+        sb.append(tablets.get(i).debugString());
+        if (hasLeader() && i == leaderIndex) {
+          sb.append(" (leader)");
+        }
+        if (i < tablets.size() - 1) {
+          sb.append(", ");
         }
       }
-      sb.append("],");
-      sb.append(leader == null ? "null" : leader.tabletUid);
-      sb.append("@")
-          .append(
-              generation.isEmpty()
-                  ? ""
-                  : generation.toStringUtf8()); // TODO: Escape generation if needed
+      sb.append("]@").append(generation.toStringUtf8());
       sb.append("#").append(refs);
       return sb.toString();
     }
   }
 
+  /** Represents a cached range with its group and split information. */
   private static class CachedRange {
     final ByteString startKey;
     CachedGroup group = null;
@@ -107,18 +262,12 @@ public final class KeyRangeCache {
       this.generation = generation;
     }
 
-    CachedRange() {
-      this.startKey = ByteString.EMPTY;
-    }
-
     String debugString() {
       return (group != null ? group.groupUid : "null_group")
           + ","
           + splitId
           + "@"
-          + (generation.isEmpty()
-              ? ""
-              : generation.toStringUtf8()); // TODO: Escape generation if needed
+          + (generation.isEmpty() ? "" : generation.toStringUtf8());
     }
   }
 
@@ -133,26 +282,6 @@ public final class KeyRangeCache {
     return entry;
   }
 
-  private CachedTablet findTablet(long tabletUid) {
-    CachedTablet tablet = tablets.get(tabletUid);
-    if (tablet != null) {
-      tablet.refs++;
-    }
-    return tablet;
-  }
-
-  private void unref(CachedTablet tablet) {
-    if (tablet == null) {
-      return;
-    }
-    if (--tablet.refs == 0) {
-      if (tablet.server != null) {
-        unref(tablet.server);
-      }
-      tablets.remove(tablet.tabletUid);
-    }
-  }
-
   private void unref(ServerEntry serverEntry) {
     if (serverEntry == null) {
       return;
@@ -160,44 +289,6 @@ public final class KeyRangeCache {
     if (--serverEntry.refs == 0) {
       servers.remove(serverEntry.server.getAddress());
     }
-  }
-
-  private void unref(CachedGroup group) {
-    if (group == null) {
-      return;
-    }
-    if (--group.refs == 0) {
-      for (CachedTablet t : group.localTablets) {
-        unref(t);
-      }
-      if (group.leader != null) {
-        unref(group.leader);
-      }
-      groups.remove(group.groupUid);
-    }
-  }
-
-  private CachedTablet findOrInsertTablet(Tablet tabletIn) {
-    CachedTablet tablet = tablets.get(tabletIn.getTabletUid());
-    if (tablet == null) {
-      tablet = new CachedTablet(tabletIn.getTabletUid());
-      tablets.put(tabletIn.getTabletUid(), tablet);
-    } else {
-      tablet.refs++;
-    }
-
-    if (ByteString.unsignedLexicographicalComparator()
-            .compare(tabletIn.getIncarnation(), tablet.incarnation)
-        <= 0) {
-      return tablet;
-    }
-    tablet.incarnation = tabletIn.getIncarnation();
-    ServerEntry newServer = findOrInsertServer(tabletIn.getServerAddress());
-    if (tablet.server != null) {
-      unref(tablet.server); // Unref old server before assigning new one
-    }
-    tablet.server = newServer;
-    return tablet;
   }
 
   private CachedGroup findGroup(long groupUid) {
@@ -208,6 +299,7 @@ public final class KeyRangeCache {
     return group;
   }
 
+  /** Finds or inserts a group and updates it with proto data. */
   private CachedGroup findOrInsertGroup(Group groupIn) {
     CachedGroup group = groups.get(groupIn.getGroupUid());
     if (group == null) {
@@ -216,89 +308,45 @@ public final class KeyRangeCache {
     } else {
       group.refs++;
     }
-
-    if (ByteString.unsignedLexicographicalComparator()
-                .compare(groupIn.getGeneration(), group.generation)
-            <= 0
-        && !group.generation.isEmpty()) {
-      return group;
-    }
-    group.generation = groupIn.getGeneration();
-
-    // Clear old tablets and leader refs
-    for (CachedTablet t : group.localTablets) {
-      unref(t);
-    }
-    group.localTablets.clear();
-    if (group.leader != null) {
-      unref(group.leader);
-      group.leader = null;
-    }
-
-    for (Tablet t : groupIn.getTabletsList()) {
-      CachedTablet tablet = findTablet(t.getTabletUid());
-      if (tablet == null) {
-        System.err.println(
-            "Tablet not found during group update: " + t + " in group " + group.groupUid);
-        continue;
-      }
-      group.localTablets.add(tablet); // findTablet already incremented ref
-    }
-
-    int leaderIndex = groupIn.getLeaderIndex();
-    if (leaderIndex >= 0 && leaderIndex < group.localTablets.size()) {
-      group.leader = group.localTablets.get(leaderIndex);
-      group.leader.refs++; // Add ref for leader reference
-    }
+    group.update(groupIn);
     return group;
   }
 
-  private void replaceRangeIfNewer(Range rangeIn) {
-    // IntervalMap logic is complex. This is a simplified interpretation.
-    // For a production system, a robust IntervalMap implementation is needed.
-    // This simplified logic handles basic non-overlapping and replacement scenarios.
+  private void unref(CachedGroup group) {
+    if (group == null) {
+      return;
+    }
+    if (--group.refs == 0) {
+      groups.remove(group.groupUid);
+    }
+  }
 
+  private void replaceRangeIfNewer(Range rangeIn) {
     ByteString startKey = rangeIn.getStartKey();
     ByteString limitKey = rangeIn.getLimitKey();
 
-    // With limitKey as the map key, the logic for finding overlaps changes.
-    // We are looking for ranges (existingStart, existingLimit] where
-    // existingLimit > newStartKey AND existingStart < newLimitKey.
-
     List<ByteString> affectedLimitKeys = new ArrayList<>();
-    boolean newerOrIdenticalBlockingRangeExists = false;
+    boolean newerBlockingRangeExists = false;
 
-    // Iterate through ranges that *might* overlap or be affected.
-    // A range [s, l] is affected if l > startKey AND s < limitKey.
-    // Since map is keyed by limit, we look for entries with limitKey > startKey.
+    // Find overlapping ranges
     for (Map.Entry<ByteString, CachedRange> entry : ranges.tailMap(startKey, false).entrySet()) {
-      ByteString existingLimit = entry.getKey(); // This is the key of the map
+      ByteString existingLimit = entry.getKey();
       CachedRange existingRange = entry.getValue();
       ByteString existingStart = existingRange.startKey;
 
       if (ByteString.unsignedLexicographicalComparator().compare(existingStart, limitKey) >= 0) {
-        // This existing range starts at or after the new range's limit, so no more overlaps
-        // possible.
         break;
       }
 
-      // Now we have an overlapping or adjacent candidate:
-      // existing: [existingStart, existingLimit]
-      // new:      [startKey, limitKey]
-
       if (isNewerOrSame(rangeIn, existingRange, existingLimit)) {
-        // The new range is newer or same. The existing range might be removed or split.
-        // For simplification, if there's any overlap, we'll mark the existing for removal.
-        // A true interval map would handle splits.
         affectedLimitKeys.add(existingLimit);
       } else {
-        // An existing range is newer and overlaps/is identical. Block the new range.
-        newerOrIdenticalBlockingRangeExists = true;
+        newerBlockingRangeExists = true;
         break;
       }
     }
 
-    if (newerOrIdenticalBlockingRangeExists) {
+    if (newerBlockingRangeExists) {
       return;
     }
 
@@ -329,81 +377,47 @@ public final class KeyRangeCache {
     CachedRange newCachedRange =
         new CachedRange(
             startKey,
-            findGroup(rangeIn.getGroupUid()), // findGroup increments ref
+            findGroup(rangeIn.getGroupUid()),
             rangeIn.getSplitId(),
             rangeIn.getGeneration());
-    ranges.put(limitKey, newCachedRange); // Key by limitKey now
+    ranges.put(limitKey, newCachedRange);
   }
 
-  private boolean isOverlapping(
-      ByteString newStart,
-      ByteString newLimit,
-      ByteString existingStart,
-      ByteString existingLimit) {
-    // Assuming empty limit means infinity for newLimit, but existingLimit (map key) should not be
-    // empty unless it represents positive infinity.
-    boolean newLimitInfinite = newLimit.isEmpty();
-    boolean existingLimitInfinite = existingLimit.isEmpty();
-
-    if (newLimitInfinite && existingLimitInfinite) {
-      return true;
-    }
-    if (newLimitInfinite) {
-      return ByteString.unsignedLexicographicalComparator().compare(newStart, existingLimit) < 0;
-    }
-    if (existingLimitInfinite) {
-      return ByteString.unsignedLexicographicalComparator().compare(existingStart, newLimit) < 0;
-    }
-
-    // Standard overlap: newStart < existingLimit AND existingStart < newLimit
-    return ByteString.unsignedLexicographicalComparator().compare(newStart, existingLimit) < 0
-        && ByteString.unsignedLexicographicalComparator().compare(existingStart, newLimit) < 0;
-  }
-
-  // Check if rangeIn is newer or same as existingCachedRange (identified by its limitKey)
   private boolean isNewerOrSame(
       Range rangeIn, CachedRange existingCachedRange, ByteString existingMapKeyLimit) {
     int genCompare =
         ByteString.unsignedLexicographicalComparator()
             .compare(rangeIn.getGeneration(), existingCachedRange.generation);
     if (genCompare > 0) {
-      return true; // new is strictly newer
+      return true;
     }
-    if (genCompare == 0) { // Same generation, check if bounds are identical
+    if (genCompare == 0) {
       return rangeIn.getStartKey().equals(existingCachedRange.startKey)
           && rangeIn.getLimitKey().equals(existingMapKeyLimit);
     }
-    return false; // new is older
+    return false;
   }
 
+  /** Applies cache updates. Tablets are processed inside group updates. */
   public void addRanges(CacheUpdate cacheUpdate) {
-    List<CachedTablet> newTablets = new ArrayList<>();
-    for (Group groupIn : cacheUpdate.getGroupList()) {
-      for (Tablet tabletIn : groupIn.getTabletsList()) {
-        newTablets.add(findOrInsertTablet(tabletIn));
-      }
-    }
+    // Insert all groups. Tablets are processed inside findOrInsertGroup -> Group.update()
     List<CachedGroup> newGroups = new ArrayList<>();
-
     for (Group groupIn : cacheUpdate.getGroupList()) {
       newGroups.add(findOrInsertGroup(groupIn));
     }
 
+    // Process ranges
     for (Range rangeIn : cacheUpdate.getRangeList()) {
       replaceRangeIfNewer(rangeIn);
     }
 
-    // Unref newly acquired groups and tablets if they were only temporary for this update
-    // The ones that are now part of the cache structure (ranges_, groups_, tablets_)
-    // will have their refs maintained by those structures.
+    // Unref the groups we acquired (ranges hold their own refs)
     for (CachedGroup g : newGroups) {
       unref(g);
     }
-    for (CachedTablet t : newTablets) {
-      unref(t);
-    }
   }
 
+  /** Fills routing hint and returns the server to use. */
   public ChannelFinderServer fillRoutingInfo(
       String sessionUri, boolean preferLeader, RoutingHint.Builder hintBuilder) {
     if (hintBuilder.getKey().isEmpty()) {
@@ -411,194 +425,88 @@ public final class KeyRangeCache {
     }
 
     ByteString requestKey = hintBuilder.getKey();
-    // Find the first range whose limitKey is >= requestKey.
-    // This means the requestKey *might* fall into this range or an earlier one.
-    Map.Entry<ByteString, CachedRange> ceilingEntry = ranges.ceilingEntry(requestKey);
+    ByteString requestLimitKey = hintBuilder.getLimitKey();
+
+    // Find range containing the key
+    Map.Entry<ByteString, CachedRange> entry = ranges.higherEntry(requestKey);
 
     CachedRange targetRange = null;
     ByteString targetRangeLimitKey = null;
 
-    if (ceilingEntry != null) {
-      // Check if the requestKey falls into the range ending at ceilingEntry.getKey()
-      if (ByteString.unsignedLexicographicalComparator()
-              .compare(requestKey, ceilingEntry.getValue().startKey)
-          >= 0) {
-        targetRange = ceilingEntry.getValue();
-        targetRangeLimitKey = ceilingEntry.getKey();
-      } else {
-        // The requestKey is before the start of the ceilingEntry's range.
-        // We need to check the range *before* the ceilingEntry.
-        Map.Entry<ByteString, CachedRange> floorEntry = ranges.lowerEntry(ceilingEntry.getKey());
-        if (floorEntry != null
-            && ByteString.unsignedLexicographicalComparator()
-                    .compare(requestKey, floorEntry.getValue().startKey)
-                >= 0
-            && ByteString.unsignedLexicographicalComparator()
-                    .compare(requestKey, floorEntry.getKey())
-                < 0) {
-          targetRange = floorEntry.getValue();
-          targetRangeLimitKey = floorEntry.getKey();
-        }
-      }
-    } else {
-      // No range limit is >= requestKey. This means the requestKey might be in the last range
-      // if the map is not empty (i.e., a range with an "infinite" or very large limit key).
-      // Or, the key is beyond all known ranges.
-      if (!ranges.isEmpty()) {
-        Map.Entry<ByteString, CachedRange> lastEntry = ranges.lastEntry();
-        if (lastEntry != null
-            && ByteString.unsignedLexicographicalComparator()
-                    .compare(requestKey, lastEntry.getValue().startKey)
-                >= 0) {
-          // Assuming last range extends to infinity if its limit is the map's greatest key
-          // and this key is effectively unbounded, or if its limit is an empty string (our
-          // infinity).
-          targetRange = lastEntry.getValue();
-          targetRangeLimitKey = lastEntry.getKey();
-        }
+    if (entry != null) {
+      ByteString rangeLimit = entry.getKey();
+      CachedRange range = entry.getValue();
+
+      // Check if key is within this range
+      if (ByteString.unsignedLexicographicalComparator().compare(requestKey, range.startKey) >= 0) {
+        targetRange = range;
+        targetRangeLimitKey = rangeLimit;
       }
     }
 
     if (targetRange == null) {
-      return pickDefaultServer(sessionUri); // No suitable range found
-    }
-
-    // Check if the request's limitKey (if any) exceeds the found range's limitKey
-    if (!hintBuilder.getLimitKey().isEmpty()
-        && !targetRangeLimitKey.isEmpty()
-        && ByteString.unsignedLexicographicalComparator()
-                .compare(hintBuilder.getLimitKey(), targetRangeLimitKey)
-            > 0) {
       return serverFactory.defaultServer();
     }
 
-    if (targetRange.group == null) {
-      return pickDefaultServer(sessionUri);
+    // For point reads (empty limit_key), check if key is in the split
+    // For range reads, check if the whole range is covered
+    if (!requestLimitKey.isEmpty()) {
+      // Range read - check if limit is within the split
+      if (ByteString.unsignedLexicographicalComparator()
+              .compare(requestLimitKey, targetRangeLimitKey)
+          > 0) {
+        // Range extends beyond this split
+        return serverFactory.defaultServer();
+      }
     }
 
+    if (targetRange.group == null) {
+      return serverFactory.defaultServer();
+    }
+
+    // Fill in routing hint with range/group/split info
     hintBuilder.setGroupUid(targetRange.group.groupUid);
     hintBuilder.setSplitId(targetRange.splitId);
     hintBuilder.setKey(targetRange.startKey);
     hintBuilder.setLimitKey(targetRangeLimitKey);
 
-    // Try to pick a tablet
-    if (preferLeader && targetRange.group.leader != null) {
-      if (tryPickTablet(targetRange.group.leader, hintBuilder)) {
-        return targetRange.group.leader.server.server;
-      }
+    // Let the group pick the tablet
+    ChannelFinderServer server = targetRange.group.fillRoutingHint(preferLeader, hintBuilder);
+    if (server != null) {
+      return server;
     }
 
-    if (targetRange.group.localTablets.isEmpty()) {
-      return pickDefaultServer(sessionUri);
-    }
-
-    long fp = sessionUri.hashCode();
-    int offset =
-        targetRange.group.localTablets.size() <= 1
-            ? 0
-            : (int) (fp % targetRange.group.localTablets.size());
-    if (offset < 0) {
-      offset += targetRange.group.localTablets.size(); // ensure positive for modulo
-    }
-
-    for (int i = 0; i < targetRange.group.localTablets.size(); ++i) {
-      int idx = (offset + i) % targetRange.group.localTablets.size();
-      CachedTablet tablet = targetRange.group.localTablets.get(idx);
-      if (tryPickTablet(tablet, hintBuilder)) {
-        return tablet.server.server;
-      }
-    }
-    return pickDefaultServer(sessionUri);
-  }
-
-  private boolean tryPickTablet(CachedTablet tablet, RoutingHint.Builder hintBuilder) {
-    if (tablet.server == null || !tablet.server.server.isHealthy()) {
-      RoutingHint.SkippedTablet.Builder skipped = hintBuilder.addSkippedTabletUidBuilder();
-      skipped.setTabletUid(tablet.tabletUid);
-      skipped.setIncarnation(tablet.incarnation);
-      return false;
-    }
-    hintBuilder.setTabletUid(tablet.tabletUid);
-    return true;
-  }
-
-  private ChannelFinderServer pickDefaultServer(String key) {
-    try {
-      if (!servers.isEmpty()) {
-        long fp = key.hashCode();
-        int idx = (int) (fp % servers.size());
-        if (idx < 0) {
-          idx += servers.size(); // Ensure positive index
-        }
-
-        List<ServerEntry> serverList = new ArrayList<>(servers.values());
-
-        // Try from idx to end
-        for (int i = 0; i < serverList.size(); ++i) {
-          int currentIdx = (idx + i) % serverList.size();
-          ServerEntry entry = serverList.get(currentIdx);
-          if (entry.server.isHealthy()) {
-            return entry.server;
-          }
-        }
-      }
-      return serverFactory.defaultServer();
-    } finally {
-    }
+    return serverFactory.defaultServer();
   }
 
   public void clear() {
-    try {
-      for (CachedRange range : ranges.values()) {
-        if (range.group != null) {
-          unref(range.group);
-        }
+    for (CachedRange range : ranges.values()) {
+      if (range.group != null) {
+        unref(range.group);
       }
-      ranges.clear();
-      // groups, tablets, servers should be empty if all unrefs were correct
-      if (!groups.isEmpty() || !tablets.isEmpty() || !servers.isEmpty()) {
-        // This indicates a potential ref counting issue
-        System.err.println("Warning: Non-empty collections after clearing KeyRangeCache.");
-        System.err.println(
-            "Groups: "
-                + groups.size()
-                + ", Tablets: "
-                + tablets.size()
-                + ", Servers: "
-                + servers.size());
-        // Force clear them to ensure clean state for next use, though this hides the root cause.
-        groups.clear();
-        tablets.clear();
-        servers.clear();
-      }
-    } finally {
     }
+    ranges.clear();
+    groups.clear();
+    servers.clear();
   }
 
   public String debugString() {
-    try {
-      StringBuilder sb = new StringBuilder();
-      for (Map.Entry<ByteString, CachedRange> entry : ranges.entrySet()) {
-        CachedRange cachedRange = entry.getValue();
-        // Key of the map is the limitKey
-        sb.append("Range[")
-            .append(cachedRange.startKey.toStringUtf8())
-            .append("-")
-            .append(entry.getKey().toStringUtf8()) // entry.getKey() is the limitKey
-            .append("]: ");
-        sb.append(cachedRange.debugString()).append("\n");
-      }
-      for (CachedGroup g : groups.values()) {
-        sb.append(g.debugString()).append("\n");
-      }
-      for (CachedTablet t : tablets.values()) {
-        sb.append(t.debugString()).append("\n");
-      }
-      for (ServerEntry s : servers.values()) {
-        sb.append(s.debugString()).append("\n");
-      }
-      return sb.toString();
-    } finally {
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<ByteString, CachedRange> entry : ranges.entrySet()) {
+      CachedRange cachedRange = entry.getValue();
+      sb.append("Range[")
+          .append(cachedRange.startKey.toStringUtf8())
+          .append("-")
+          .append(entry.getKey().toStringUtf8())
+          .append("]: ");
+      sb.append(cachedRange.debugString()).append("\n");
     }
+    for (CachedGroup g : groups.values()) {
+      sb.append(g.debugString()).append("\n");
+    }
+    for (ServerEntry s : servers.values()) {
+      sb.append(s.debugString()).append("\n");
+    }
+    return sb.toString();
   }
 }
