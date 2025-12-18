@@ -1168,7 +1168,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       databaseAdminStubSettingsBuilder
           .updateDatabaseDdlOperationSettings()
           .setPollingAlgorithm(shortInitialPollingDelayAlgorithm);
- 
+
       // The polling setting with a long initial delay as we expect
       // the operation to take a bit long time to return.
       OperationTimedPollAlgorithm longInitialPollingDelayAlgorithm =
@@ -1182,7 +1182,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
                   .setRpcTimeoutMultiplier(1.5)
                   .setTotalTimeoutDuration(Duration.ofHours(48L))
                   .build());
-     databaseAdminStubSettingsBuilder
+      databaseAdminStubSettingsBuilder
           .createBackupOperationSettings()
           .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
       databaseAdminStubSettingsBuilder
