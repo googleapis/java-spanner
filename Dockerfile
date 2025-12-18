@@ -7,7 +7,7 @@ COPY . .
 
 # Install dependencies (skipping tests to save time during build, we only want to run one specific test)
 # We need to install the modules because it is a multi-module project
-RUN mvn install -DskipTests -Dmaven.javadoc.skip=true -Dcheckstyle.skip
+RUN mvn install -DskipTests -Dclirr.skip -Dmaven.javadoc.skip=true -Dcheckstyle.skip
 
 # Set the working directory to the module containing the test
 WORKDIR /app/google-cloud-spanner

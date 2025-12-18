@@ -989,6 +989,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default GoogleCredentials getDefaultExperimentalHostCredentials() {
       return null;
     }
+
+    /**
+     * Returns true if the experimental location API (SpanFE bypass) should be enabled. When
+     * enabled, the client will use location-aware routing to send requests directly to the
+     * appropriate Spanner server.
+     */
+    default boolean isEnableLocationApi() {
+      return false;
+    }
   }
 
   static final String DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS =
@@ -1013,6 +1022,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS =
         "SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS";
     private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
+    private static final String GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API =
+        "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
 
     private SpannerEnvironmentImpl() {}
 
@@ -1070,6 +1081,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public GoogleCredentials getDefaultExperimentalHostCredentials() {
       return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
+    }
+
+    @Override
+    public boolean isEnableLocationApi() {
+      return Boolean.parseBoolean(System.getenv(GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API));
     }
   }
 
@@ -1976,6 +1992,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public static void useDefaultEnvironment() {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
+  /** Returns the current {@link SpannerEnvironment}. */
+  @InternalApi
+  public static SpannerEnvironment getEnvironment() {
+    return environment;
   }
 
   @InternalApi

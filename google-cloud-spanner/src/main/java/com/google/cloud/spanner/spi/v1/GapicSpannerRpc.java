@@ -479,7 +479,12 @@ public class GapicSpannerRpc implements SpannerRpc {
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
       TransportChannelProvider channelProvider;
-      if (options.isExperimentalHost()) {
+      // Enable KeyAwareChannel (SpanFE bypass / location API) if either:
+      // 1. Using experimental host (setExperimentalHost was called), OR
+      // 2. GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API env var is set to true
+      boolean enableLocationApi =
+          options.isExperimentalHost() || SpannerOptions.getEnvironment().isEnableLocationApi();
+      if (enableLocationApi) {
         channelProvider = new KeyAwareTransportChannelProvider(defaultChannelProviderBuilder);
       } else {
         channelProvider =

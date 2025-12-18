@@ -13,5 +13,9 @@ spec:
         env:
         - name: BYPASS_HOST
           value: "http://spanner-a-1.pod.spanner-ns:15000"
+        # Set to "true" to enable SpanFE bypass (location-aware routing)
+        # Set to "false" or remove to use standard routing
+        - name: GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API
+          value: "true"
       restartPolicy: Never
   backoffLimit: 1

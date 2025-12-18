@@ -79,8 +79,8 @@ public class BypassPointReadTest {
   }
 
   private static void testPointRead(DatabaseClient dbClient) {
-      long testKey = 1L;
-      List<String> columns = Arrays.asList(KEY_COLUMN, "Value");
+    long testKey = 1L;
+    List<String> columns = Arrays.asList(KEY_COLUMN, "Value");
 
     System.out.println("Reading key: " + testKey);
     System.out.println("Columns: " + columns);
@@ -94,7 +94,7 @@ public class BypassPointReadTest {
         System.out.println("  Row " + rowCount + ": Key=" + resultSet.getLong(KEY_COLUMN));
         if (columns.size() > 1) {
           try {
-              System.out.println("           Value=" + resultSet.getString("Value"));
+            System.out.println("           Value=" + resultSet.getString("Value"));
           } catch (Exception e) {
             // Column might not exist
           }
@@ -117,7 +117,7 @@ public class BypassPointReadTest {
     // Third+ reads: should hit fast path
 
     for (int i = 1; i <= 5; i++) {
-        long testKey = i;
+      long testKey = i;
       long startTime = System.nanoTime();
 
       try (ResultSet resultSet =
