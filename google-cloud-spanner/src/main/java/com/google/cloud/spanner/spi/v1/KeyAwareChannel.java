@@ -175,6 +175,7 @@ final class KeyAwareChannel extends ManagedChannel {
           this.channelFinder = parentChannel.getOrCreateChannelFinder(databaseId);
           server = this.channelFinder.findServer(reqBuilder);
           message = (RequestT) reqBuilder.build(); // Apply routing info changes
+          System.out.println("DEBUG: Routing hint: " + ((ReadRequest) message).getRoutingHint());
         }
       } else {
         // Other types of requests should never be passed to KeyAwareClientCall to begin with.

@@ -2,8 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: bypass-point-read-test
-  # Update this namespace to match where your Spanner pods are running!
-  namespace: default
+  namespace: spanner-ns
 spec:
   template:
     spec:
