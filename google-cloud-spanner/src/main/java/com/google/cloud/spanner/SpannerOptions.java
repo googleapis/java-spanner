@@ -1148,7 +1148,30 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     protected Builder() {
       // Manually set retry and polling settings that work.
-      OperationTimedPollAlgorithm longRunningPollingAlgorithm =
+
+      // The polling setting with a short initial delay as we expect
+      // it to return soon.
+      OperationTimedPollAlgorithm shortInitialPollingDelayAlgorithm =
+          OperationTimedPollAlgorithm.create(
+              RetrySettings.newBuilder()
+                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(1L))
+                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
+                  .setRetryDelayMultiplier(1.5)
+                  .setRpcTimeoutMultiplier(1.5)
+                  .setTotalTimeoutDuration(Duration.ofHours(48L))
+                  .build());
+      databaseAdminStubSettingsBuilder
+          .createDatabaseOperationSettings()
+          .setPollingAlgorithm(shortInitialPollingDelayAlgorithm);
+      databaseAdminStubSettingsBuilder
+          .updateDatabaseDdlOperationSettings()
+          .setPollingAlgorithm(shortInitialPollingDelayAlgorithm);
+ 
+      // The polling setting with a long initial delay as we expect
+      // the operation to take a bit long time to return.
+      OperationTimedPollAlgorithm longInitialPollingDelayAlgorithm =
           OperationTimedPollAlgorithm.create(
               RetrySettings.newBuilder()
                   .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
@@ -1159,15 +1182,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
                   .setRpcTimeoutMultiplier(1.5)
                   .setTotalTimeoutDuration(Duration.ofHours(48L))
                   .build());
-      databaseAdminStubSettingsBuilder
-          .createDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
-      databaseAdminStubSettingsBuilder
+     databaseAdminStubSettingsBuilder
           .createBackupOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
+          .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
       databaseAdminStubSettingsBuilder
           .restoreDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
+          .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
     }
 
     Builder(SpannerOptions options) {
