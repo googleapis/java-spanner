@@ -8,10 +8,10 @@ spec:
     spec:
       containers:
       - name: test-runner
-        image: us-west1-docker.pkg.dev/outbound-flight/spanner-box/irahul-client:latest
+        image: us-west1-docker.pkg.dev/outbound-flight/spanner-box/irahul-client:cloudtop
         imagePullPolicy: Always
         env:
         - name: BYPASS_HOST
-          value: "spanner-a-1.pod.spanner-ns:15000"
+          value: "http://spanner-a-1.pod.spanner-ns:15000"
       restartPolicy: Never
   backoffLimit: 1
