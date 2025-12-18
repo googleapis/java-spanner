@@ -216,6 +216,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -225,6 +227,7 @@ import javax.annotation.Nullable;
 public class GapicSpannerRpc implements SpannerRpc {
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
+  private static final Logger logger = Logger.getLogger(GapicSpannerRpc.class.getName());
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
       PathTemplate.create("{database=projects/*/instances/*/databases/*}/operations/{operation}");
   private static final int MAX_MESSAGE_SIZE = 256 * 1024 * 1024;
@@ -479,17 +482,33 @@ public class GapicSpannerRpc implements SpannerRpc {
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
       TransportChannelProvider channelProvider;
-      // Enable KeyAwareChannel (SpanFE bypass / location API) if either:
-      // 1. Using experimental host (setExperimentalHost was called), OR
-      // 2. GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API env var is set to true
-      boolean enableLocationApi =
-          options.isExperimentalHost() || SpannerOptions.getEnvironment().isEnableLocationApi();
+      // Enable KeyAwareChannel (SpanFE bypass / location API) only when BOTH conditions are met:
+      // 1. Using experimental host (setExperimentalHost was called)
+      // 2. GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API env var is set to "true"
+      // Default is DISABLED even for experimental host.
+      String locationApiEnvVar = System.getenv("GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API");
+      boolean isExperimentalHost = options.isExperimentalHost();
+      boolean envVarEnabled = "true".equalsIgnoreCase(locationApiEnvVar);
+
+      // Both conditions must be true to enable bypass
+      boolean enableLocationApi = isExperimentalHost && envVarEnabled;
+
+      logger.log(
+          Level.INFO,
+          "SpanFE bypass (KeyAwareChannel) configuration: "
+              + "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API={0}, "
+              + "isExperimentalHost={1}, "
+              + "enableLocationApi={2}",
+          new Object[] {locationApiEnvVar, isExperimentalHost, enableLocationApi});
+
       if (enableLocationApi) {
         channelProvider = new KeyAwareTransportChannelProvider(defaultChannelProviderBuilder);
+        logger.log(Level.INFO, "KeyAwareChannel (SpanFE bypass) ENABLED");
       } else {
         channelProvider =
             MoreObjects.firstNonNull(
                 options.getChannelProvider(), defaultChannelProviderBuilder.build());
+        logger.log(Level.INFO, "KeyAwareChannel (SpanFE bypass) DISABLED - using standard routing");
       }
 
       CredentialsProvider credentialsProvider =
