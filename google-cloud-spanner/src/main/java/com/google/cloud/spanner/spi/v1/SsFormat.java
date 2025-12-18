@@ -305,4 +305,54 @@ public final class SsFormat {
   public static void appendBytesDecreasing(ByteArrayOutputStream out, byte[] value) {
     appendByteSequence(out, value, true);
   }
+
+  /**
+   * Encodes a timestamp as 12 bytes: 8 bytes for seconds since epoch (with offset to handle
+   * negative), 4 bytes for nanoseconds.
+   */
+  public static byte[] encodeTimestamp(long seconds, int nanos) {
+    // Add offset to make negative seconds sort correctly
+    long kSecondsOffset = 1L << 63;
+    long hi = seconds + kSecondsOffset;
+    int lo = nanos;
+
+    byte[] buf = new byte[12];
+    // Big-endian encoding
+    buf[0] = (byte) (hi >> 56);
+    buf[1] = (byte) (hi >> 48);
+    buf[2] = (byte) (hi >> 40);
+    buf[3] = (byte) (hi >> 32);
+    buf[4] = (byte) (hi >> 24);
+    buf[5] = (byte) (hi >> 16);
+    buf[6] = (byte) (hi >> 8);
+    buf[7] = (byte) hi;
+    buf[8] = (byte) (lo >> 24);
+    buf[9] = (byte) (lo >> 16);
+    buf[10] = (byte) (lo >> 8);
+    buf[11] = (byte) lo;
+    return buf;
+  }
+
+  /** Encodes a UUID (128-bit) as 16 bytes in big-endian order. */
+  public static byte[] encodeUuid(long high, long low) {
+    byte[] buf = new byte[16];
+    // Big-endian encoding
+    buf[0] = (byte) (high >> 56);
+    buf[1] = (byte) (high >> 48);
+    buf[2] = (byte) (high >> 40);
+    buf[3] = (byte) (high >> 32);
+    buf[4] = (byte) (high >> 24);
+    buf[5] = (byte) (high >> 16);
+    buf[6] = (byte) (high >> 8);
+    buf[7] = (byte) high;
+    buf[8] = (byte) (low >> 56);
+    buf[9] = (byte) (low >> 48);
+    buf[10] = (byte) (low >> 40);
+    buf[11] = (byte) (low >> 32);
+    buf[12] = (byte) (low >> 24);
+    buf[13] = (byte) (low >> 16);
+    buf[14] = (byte) (low >> 8);
+    buf[15] = (byte) low;
+    return buf;
+  }
 }

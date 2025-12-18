@@ -107,7 +107,8 @@ public final class KeyRecipeCache {
             System.err.println("POINT read has no keys in KeySet.");
             return;
           }
-          hintBuilder.setKey(recipe.keyToSS(reqBuilder.getKeySet().getKeys(0)));
+          TargetRange pointTarget = recipe.keyToTargetRange(reqBuilder.getKeySet().getKeys(0));
+          hintBuilder.setKey(pointTarget.start);
           break;
         case RANGE:
         case RANGE_WITH_LIMIT:
@@ -115,9 +116,10 @@ public final class KeyRecipeCache {
             System.err.println("RANGE read has no ranges in KeySet.");
             return;
           }
-          hintBuilder.setKey(recipe.keyRangeToSSRangeStart(reqBuilder.getKeySet().getRanges(0)));
-          hintBuilder.setLimitKey(
-              recipe.keyRangeToSSRangeLimit(reqBuilder.getKeySet().getRanges(0)));
+          TargetRange rangeTarget =
+              recipe.keyRangeToTargetRange(reqBuilder.getKeySet().getRanges(0));
+          hintBuilder.setKey(rangeTarget.start);
+          hintBuilder.setLimitKey(rangeTarget.limit);
           break;
         case INELIGIBLE:
           // recordMiss(MissReason.INELIGIBLE_READ);
