@@ -245,15 +245,10 @@ public final class KeyRangeCache {
       group.localTablets.add(tablet); // findTablet already incremented ref
     }
 
-    if (groupIn.getLeaderIndex() != 0) {
-      group.leader = findTablet(groupIn.getLeaderIndex());
-      if (group.leader == null) {
-        System.err.println(
-            "Leader tablet not found during group update: "
-                + groupIn.getLeaderIndex()
-                + " in group "
-                + group.groupUid);
-      }
+    int leaderIndex = groupIn.getLeaderIndex();
+    if (leaderIndex >= 0 && leaderIndex < group.localTablets.size()) {
+      group.leader = group.localTablets.get(leaderIndex);
+      group.leader.refs++; // Add ref for leader reference
     }
     return group;
   }
