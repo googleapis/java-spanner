@@ -3202,7 +3202,8 @@ public class DatabaseClientImplTest {
               mockSpanner.unfreeze();
               assertThrows(ResourceNotFoundException.class, rs::next);
               // The server should only receive one BatchCreateSessions request.
-              assertThat(mockSpanner.getRequests()).hasSize(1);
+              // If multiplexed session used, it will be retried once so 2 CreateSession requests
+              assertThat(mockSpanner.getRequests()).hasSize(useMultiplexedSession ? 2 : 1);
             }
             assertThrows(
                 ResourceNotFoundException.class,
@@ -3221,9 +3222,9 @@ public class DatabaseClientImplTest {
             } else {
               // Note that in case of the use of regular sessions, then we have 1 request:
               // BatchCreateSessions for the session pool.
-              // Note that in case of the use of multiplexed sessions for read-write, then we have 1
-              // request: CreateSession for the multiplexed session.
-              assertThat(mockSpanner.getRequests()).hasSize(1);
+              // Note that in case of the use of multiplexed sessions for read-write, then we have 3
+              // requests: CreateSession for the multiplexed session.
+              assertThat(mockSpanner.getRequests()).hasSize(useMultiplexedSession ? 3 : 1);
             }
           }
         }
@@ -3413,7 +3414,9 @@ public class DatabaseClientImplTest {
             if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
               // We should only receive 1 CreateSession request. The query should never be executed,
               // as the session creation fails before it gets to executing a query.
-              assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+              assertEquals(
+                  2 + (2 * run) + useClient,
+                  mockSpanner.countRequestsOfType(CreateSessionRequest.class));
               assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
             } else {
               // The server should only receive one BatchCreateSessions request for each run as we

@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * {@link TransactionRunner} that automatically handles "UNIMPLEMENTED" errors with the message
@@ -283,6 +284,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   /** The current multiplexed session that is used by this client. */
   private final AtomicReference<ApiFuture<SessionReference>> multiplexedSessionReference;
 
+  /** The in progress multiplexed session reference that is used by this client. */
+  private final AtomicReference<ApiFuture<SessionReference>> inProgressMultiplexedSessionReference;
+
   /**
    * The Transaction response returned by the BeginTransaction request with read-write when a
    * multiplexed session is created during client initialization.
@@ -314,6 +318,18 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    * session. TODO: Remove once this is guaranteed to be available.
    */
   private final AtomicBoolean unimplemented = new AtomicBoolean(false);
+
+  /**
+   * This flag is set to true if create session RPC is in progress. This flag prevents application
+   * from firing two requests concurrently
+   */
+  private final AtomicBoolean sessionCreationInProgress = new AtomicBoolean(true);
+
+  /**
+   * This lock is used to prevent two threads from retrying createSession RPC requests in
+   * concurrently.
+   */
+  private final ReentrantLock sessionCreationLock = new ReentrantLock();
 
   /**
    * This flag is set to true if the server return UNIMPLEMENTED when a read-write transaction is
@@ -358,11 +374,23 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         SettableApiFuture.create();
     this.readWriteBeginTransactionReferenceFuture = SettableApiFuture.create();
     this.multiplexedSessionReference = new AtomicReference<>(initialSessionReferenceFuture);
+    this.inProgressMultiplexedSessionReference =
+        new AtomicReference<>(initialSessionReferenceFuture);
+    asyncCreateMultiplexedSession(initialSessionReferenceFuture);
+    maybeWaitForSessionCreation(
+        sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
+        initialSessionReferenceFuture);
+  }
+
+  private void asyncCreateMultiplexedSession(
+      SettableApiFuture<SessionReference> sessionReferenceFuture) {
     this.sessionClient.asyncCreateMultiplexedSession(
         new SessionConsumer() {
           @Override
           public void onSessionReady(SessionImpl session) {
-            initialSessionReferenceFuture.set(session.getSessionReference());
+            sessionCreationInProgress.set(false);
+            multiplexedSessionReference.set(sessionReferenceFuture);
+            sessionReferenceFuture.set(session.getSessionReference());
             // only start the maintainer if we actually managed to create a session in the first
             // place.
             maintainer.start();
@@ -394,13 +422,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
           public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
             // Mark multiplexes sessions as unimplemented and fall back to regular sessions if
             // UNIMPLEMENTED is returned.
+            sessionCreationInProgress.set(false);
+            multiplexedSessionReference.set(sessionReferenceFuture);
             maybeMarkUnimplemented(t);
-            initialSessionReferenceFuture.setException(t);
+            sessionReferenceFuture.setException(t);
           }
         });
-    maybeWaitForSessionCreation(
-        sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
-        initialSessionReferenceFuture);
   }
 
   void setPool(SessionPool pool) {
@@ -546,10 +573,36 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     return this.maintainer;
   }
 
+  ApiFuture<SessionReference> getCurrentSessionReferenceFuture() {
+    return ApiFutures.catchingAsync(
+        this.multiplexedSessionReference.get(),
+        Throwable.class,
+        (throwable) -> {
+          maybeRetrySessionCreation();
+          return this.inProgressMultiplexedSessionReference.get();
+        },
+        MoreExecutors.directExecutor());
+  }
+
+  private void maybeRetrySessionCreation() {
+    sessionCreationLock.lock();
+    try {
+      if (isValid()
+          && isMultiplexedSessionsSupported()
+          && sessionCreationInProgress.compareAndSet(false, true)) {
+        SettableApiFuture<SessionReference> settableApiFuture = SettableApiFuture.create();
+        asyncCreateMultiplexedSession(settableApiFuture);
+        inProgressMultiplexedSessionReference.set(settableApiFuture);
+      }
+    } finally {
+      sessionCreationLock.unlock();
+    }
+  }
+
   @VisibleForTesting
   SessionReference getCurrentSessionReference() {
     try {
-      return this.multiplexedSessionReference.get().get();
+      return getCurrentSessionReferenceFuture().get();
     } catch (ExecutionException executionException) {
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
     } catch (InterruptedException interruptedException) {
@@ -587,28 +640,22 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private MultiplexedSessionTransaction createDirectMultiplexedSessionTransaction(
       boolean singleUse) {
-    try {
-      return new MultiplexedSessionTransaction(
-          this,
-          tracer.getCurrentSpan(),
-          // Getting the result of the SettableApiFuture that contains the multiplexed session will
-          // also automatically propagate any error that happened during the creation of the
-          // session, such as for example a DatabaseNotFound exception. We therefore do not need
-          // any special handling of such errors.
-          multiplexedSessionReference.get().get(),
-          singleUse ? getSingleUseChannelHint() : NO_CHANNEL_HINT,
-          singleUse,
-          this.pool);
-    } catch (ExecutionException executionException) {
-      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
-    } catch (InterruptedException interruptedException) {
-      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-    }
+    return new MultiplexedSessionTransaction(
+        this,
+        tracer.getCurrentSpan(),
+        // Getting the result of the SettableApiFuture that contains the multiplexed session will
+        // also automatically propagate any error that happened during the creation of the
+        // session, such as for example a DatabaseNotFound exception. We therefore do not need
+        // any special handling of such errors.
+        getCurrentSessionReference(),
+        singleUse ? getSingleUseChannelHint() : NO_CHANNEL_HINT,
+        singleUse,
+        this.pool);
   }
 
   private DelayedMultiplexedSessionTransaction createDelayedMultiplexSessionTransaction() {
     return new DelayedMultiplexedSessionTransaction(
-        this, tracer.getCurrentSpan(), multiplexedSessionReference.get(), this.pool);
+        this, tracer.getCurrentSpan(), getCurrentSessionReferenceFuture(), this.pool);
   }
 
   private int getSingleUseChannelHint() {
