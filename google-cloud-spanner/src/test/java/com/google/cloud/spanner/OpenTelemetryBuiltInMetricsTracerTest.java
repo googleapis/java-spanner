@@ -264,7 +264,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
   }
 
   @Test
-  public void testNoNetworkConnection() {
+  public void testNoNetworkConnection() throws InterruptedException {
     assumeFalse(TestHelper.isMultiplexSessionDisabled());
     // Create a Spanner instance that tries to connect to a server that does not exist.
     // This simulates a bad network connection.
@@ -308,6 +308,11 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
     String instance = "i";
     DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("test-project", instance, "d"));
 
+    // Wait for the initial async session creation to complete (fail).
+    // This ensures deterministic behavior - the first creation will have failed by the time
+    // we execute the query, so the query will trigger a retry attempt.
+    Thread.sleep(100);
+
     // Using this client will return UNAVAILABLE, as the server is not reachable and we have
     // disabled retries.
     SpannerException exception =
@@ -337,9 +342,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
         getMetricData(metricReader, BuiltInMetricsConstant.ATTEMPT_COUNT_NAME);
     assertNotNull(attemptCountMetricData);
 
-    // Attempt count should have a failed metric point for CreateSession.
+    // Attempt count should have failed metric points for CreateSession.
+    // With retry-on-access behavior, we expect 2 attempts:
+    // 1. Initial async CreateSession during client construction
+    // 2. Retry attempt when executeQuery().next() is called
     assertEquals(
-        1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed), 0);
+        2, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed), 0);
     assertTrue(
         checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
     assertTrue(
