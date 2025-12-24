@@ -261,8 +261,8 @@ public class SpanTest {
 
   @Test
   public void singleUseNonRetryableErrorOnNext() {
+    mockSpanner.addException(FAILED_PRECONDITION);
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
-      mockSpanner.addException(FAILED_PRECONDITION);
       SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
