@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
@@ -2452,6 +2453,236 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     while (sessionReference
         == client.multiplexedSessionDatabaseClient.getCurrentSessionReference()) {
       Thread.yield();
+    }
+  }
+
+  /**
+   * Test that when initial session creation fails with a sticky DEADLINE_EXCEEDED error, multiple
+   * RPCs all receive errors, but subsequent RPCs after clearing the error succeed.
+   */
+  @Test
+  public void testStickyError_allRPCsFail_thenRetrySucceeds() throws Exception {
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setMultiplexedSessionMaintenanceLoopFrequency(Duration.ofMinutes(10))
+                    .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(7))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    try {
+      // Set up the mock to return sticky DEADLINE_EXCEEDED
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(
+              Status.DEADLINE_EXCEEDED
+                  .withDescription("Deadline exceeded during session creation")
+                  .asRuntimeException()));
+
+      // Get a database client - this will start the async session creation
+      DatabaseClientImpl client =
+          (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+      // Wait for initial creation to fail
+      Thread.sleep(200);
+
+      // First query should fail
+      SpannerException error1 =
+          assertThrows(
+              SpannerException.class,
+              () -> {
+                try (ResultSet rs = client.singleUse().executeQuery(STATEMENT)) {
+                  rs.next();
+                }
+              });
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, error1.getErrorCode());
+
+      // Second query should also fail (sticky error)
+      SpannerException error2 =
+          assertThrows(
+              SpannerException.class,
+              () -> {
+                try (ResultSet rs = client.singleUse().executeQuery(STATEMENT)) {
+                  rs.next();
+                }
+              });
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, error2.getErrorCode());
+
+      // Now clear the error
+      mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
+
+      // Next query should trigger retry and succeed
+      try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+        assertTrue(resultSet.next());
+      }
+
+      // Verify session was created
+      assertNotNull(client.multiplexedSessionDatabaseClient.getCurrentSessionReference());
+    } finally {
+      testSpanner.close();
+    }
+  }
+
+  /** Test that an RPC arriving after initial creation failure triggers a retry and can succeed. */
+  @Test
+  public void testRPCAfterFailure_triggersRetryAndSucceeds() throws Exception {
+    // Create a spanner instance with slower maintainer to control retry timing
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    // Slow maintainer so it doesn't interfere with test timing
+                    .setMultiplexedSessionMaintenanceLoopFrequency(Duration.ofMinutes(10))
+                    .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(7))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    try {
+      // First call to CreateSession fails with DEADLINE_EXCEEDED (not sticky, so only first call)
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofException(
+              Status.DEADLINE_EXCEEDED.withDescription("Deadline exceeded").asRuntimeException()));
+
+      // Get a database client - initial creation will fail
+      DatabaseClientImpl client =
+          (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+      // Wait a bit for the initial creation to complete (and fail)
+      Thread.sleep(200);
+
+      // Verify the error is stored
+      assertNotNull(client.multiplexedSessionDatabaseClient);
+      assertNotNull(client.multiplexedSessionDatabaseClient.lastCreationError.get());
+
+      // The non-sticky exception was already consumed, so subsequent calls succeed
+      // Now execute a query - this should trigger a retry and succeed
+      try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+        assertTrue(resultSet.next());
+      }
+
+      // Verify the session was created on retry
+      assertNull(client.multiplexedSessionDatabaseClient.lastCreationError.get());
+      assertNotNull(client.multiplexedSessionDatabaseClient.getCurrentSessionReference());
+
+      // Verify we used a multiplexed session
+      List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+      assertEquals(1, requests.size());
+      Session session = mockSpanner.getSession(requests.get(0).getSession());
+      assertNotNull(session);
+      assertTrue(session.getMultiplexed());
+    } finally {
+      testSpanner.close();
+    }
+  }
+
+  /** Test that UNIMPLEMENTED errors fall back to regular sessions without retrying. */
+  @Test
+  public void testUnimplementedError_fallsBackToRegularSessions() throws Exception {
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setMultiplexedSessionMaintenanceLoopFrequency(Duration.ofMinutes(10))
+                    .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(7))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    try {
+      // Set sticky UNIMPLEMENTED error
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(
+              Status.UNIMPLEMENTED
+                  .withDescription("Multiplexed sessions not supported")
+                  .asRuntimeException()));
+
+      DatabaseClientImpl client =
+          (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+      // Wait for creation to fail
+      Thread.sleep(200);
+
+      // Verify unimplemented flag is set
+      assertNotNull(client.multiplexedSessionDatabaseClient);
+      assertFalse(client.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported());
+
+      // Query should fall back to regular session
+      try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+        assertTrue(resultSet.next());
+      }
+
+      // Verify regular session was used
+      List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+      assertEquals(1, requests.size());
+      Session session = mockSpanner.getSession(requests.get(0).getSession());
+      assertFalse(session.getMultiplexed());
+    } finally {
+      testSpanner.close();
+    }
+  }
+
+  /** Test that the maintainer retries session creation after initial non-UNIMPLEMENTED failure. */
+  @Test
+  public void testMaintainer_retriesAfterInitialFailure() throws Exception {
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    // Fast maintainer for test
+                    .setMultiplexedSessionMaintenanceLoopFrequency(Duration.ofMillis(50L))
+                    .setMultiplexedSessionMaintenanceDuration(Duration.ofMillis(1L))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    try {
+      // Initial creation fails (non-sticky, consumed after first call)
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofException(
+              Status.DEADLINE_EXCEEDED.withDescription("Deadline exceeded").asRuntimeException()));
+
+      DatabaseClientImpl client =
+          (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+      // Wait for initial creation to fail and maintainer to retry (exception is consumed)
+      Thread.sleep(200);
+
+      // Session should now be created (either by retry on access or by maintainer)
+      try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+        assertTrue(resultSet.next());
+      }
+
+      // Verify multiplexed session was used
+      List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+      assertEquals(1, requests.size());
+      Session session = mockSpanner.getSession(requests.get(0).getSession());
+      assertTrue(session.getMultiplexed());
+    } finally {
+      testSpanner.close();
     }
   }
 }

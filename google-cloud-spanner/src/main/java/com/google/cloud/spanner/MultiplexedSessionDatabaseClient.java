@@ -42,17 +42,18 @@ import java.time.Instant;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * {@link TransactionRunner} that automatically handles "UNIMPLEMENTED" errors with the message
@@ -327,6 +328,31 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    */
   @VisibleForTesting final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
 
+  /**
+   * Lock to synchronize session creation attempts. This ensures that only one thread attempts to
+   * create a session at a time, while other threads wait for the result.
+   */
+  private final ReentrantLock creationLock = new ReentrantLock();
+
+  /**
+   * Flag to indicate if session creation is currently in progress. Used to allow waiting threads to
+   * know if they should wait or trigger a new creation attempt.
+   */
+  private final AtomicBoolean creationInProgress = new AtomicBoolean(false);
+
+  /**
+   * Latch that waiting threads block on while session creation is in progress. This is replaced
+   * with a new latch after each creation attempt completes.
+   */
+  private volatile CountDownLatch creationLatch = new CountDownLatch(1);
+
+  /**
+   * The last error that occurred during session creation. This is stored temporarily and cleared
+   * when a session is successfully created. Unlike the previous implementation, this error is not
+   * cached forever - subsequent requests will retry session creation.
+   */
+  @VisibleForTesting final AtomicReference<Throwable> lastCreationError = new AtomicReference<>();
+
   private SessionPool pool;
 
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
@@ -354,18 +380,16 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     this.sessionClient = sessionClient;
     this.maintainer = new MultiplexedSessionMaintainer(clock);
     this.tracer = sessionClient.getSpanner().getTracer();
-    final SettableApiFuture<SessionReference> initialSessionReferenceFuture =
-        SettableApiFuture.create();
     this.readWriteBeginTransactionReferenceFuture = SettableApiFuture.create();
-    this.multiplexedSessionReference = new AtomicReference<>(initialSessionReferenceFuture);
+    // Initialize with null - session will be set when created successfully
+    this.multiplexedSessionReference = new AtomicReference<>(null);
+    // Mark creation as in progress for the initial attempt
+    this.creationInProgress.set(true);
     this.sessionClient.asyncCreateMultiplexedSession(
         new SessionConsumer() {
           @Override
           public void onSessionReady(SessionImpl session) {
-            initialSessionReferenceFuture.set(session.getSessionReference());
-            // only start the maintainer if we actually managed to create a session in the first
-            // place.
-            maintainer.start();
+            onSessionCreatedSuccessfully(session);
 
             // initiate a begin transaction request to verify if read-write transactions are
             // supported using multiplexed sessions.
@@ -392,38 +416,219 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
           @Override
           public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
-            // Mark multiplexes sessions as unimplemented and fall back to regular sessions if
-            // UNIMPLEMENTED is returned.
-            maybeMarkUnimplemented(t);
-            initialSessionReferenceFuture.setException(t);
+            onSessionCreationFailed(t);
           }
         });
-    maybeWaitForSessionCreation(
-        sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
-        initialSessionReferenceFuture);
+    maybeWaitForInitialSessionCreation(
+        sessionClient.getSpanner().getOptions().getSessionPoolOptions());
   }
 
   void setPool(SessionPool pool) {
     this.pool = pool;
   }
 
-  private static void maybeWaitForSessionCreation(
-      SessionPoolOptions sessionPoolOptions, ApiFuture<SessionReference> future) {
+  /**
+   * Called when a multiplexed session is successfully created. This method stores the session
+   * reference, clears any previous error, starts the maintainer, and notifies waiting threads.
+   */
+  private void onSessionCreatedSuccessfully(SessionImpl session) {
+    creationLock.lock();
+    try {
+      multiplexedSessionReference.set(ApiFutures.immediateFuture(session.getSessionReference()));
+      lastCreationError.set(null);
+      expirationDate.set(Instant.now().plus(sessionExpirationDuration));
+      creationInProgress.set(false);
+      // Start the maintainer if not already started
+      if (!maintainer.isStarted()) {
+        maintainer.start();
+      }
+      // Notify all waiting threads
+      creationLatch.countDown();
+      creationLatch = new CountDownLatch(1);
+    } finally {
+      creationLock.unlock();
+    }
+  }
+
+  /**
+   * Called when multiplexed session creation fails. This method stores the error temporarily,
+   * notifies waiting threads, and starts the maintainer for retry (unless UNIMPLEMENTED).
+   */
+  private void onSessionCreationFailed(Throwable t) {
+    creationLock.lock();
+    try {
+      // Mark multiplexed sessions as unimplemented and fall back to regular sessions if
+      // UNIMPLEMENTED is returned.
+      maybeMarkUnimplemented(t);
+      lastCreationError.set(t);
+      creationInProgress.set(false);
+      // Notify all waiting threads
+      creationLatch.countDown();
+      creationLatch = new CountDownLatch(1);
+      // Start the maintainer even on failure (except for UNIMPLEMENTED) so it can retry
+      if (!unimplemented.get() && !maintainer.isStarted()) {
+        maintainer.start();
+      }
+    } finally {
+      creationLock.unlock();
+    }
+  }
+
+  /**
+   * Waits for the initial session creation to complete if configured to do so. This method handles
+   * the case where the session creation is still in progress or has failed.
+   */
+  private void maybeWaitForInitialSessionCreation(SessionPoolOptions sessionPoolOptions) {
     Duration waitDuration = sessionPoolOptions.getWaitForMinSessions();
     if (waitDuration != null && !waitDuration.isZero()) {
       long timeoutMillis = waitDuration.toMillis();
       try {
-        future.get(timeoutMillis, TimeUnit.MILLISECONDS);
-      } catch (ExecutionException executionException) {
-        throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+        if (!creationLatch.await(timeoutMillis, TimeUnit.MILLISECONDS)) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.DEADLINE_EXCEEDED,
+              "Timed out after waiting " + timeoutMillis + "ms for multiplexed session creation");
+        }
+        // Check if there was an error during creation
+        Throwable error = lastCreationError.get();
+        if (error != null && multiplexedSessionReference.get() == null) {
+          throw SpannerExceptionFactory.asSpannerException(error);
+        }
       } catch (InterruptedException interruptedException) {
         throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-      } catch (TimeoutException timeoutException) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.DEADLINE_EXCEEDED,
-            "Timed out after waiting " + timeoutMillis + "ms for multiplexed session creation");
       }
     }
+  }
+
+  /**
+   * Gets or creates a multiplexed session reference. This method implements retry-on-access
+   * semantics: if no session exists and creation is not in progress, it triggers a new creation
+   * attempt. If creation is in progress, it waits for the result.
+   *
+   * @return the session reference
+   * @throws SpannerException if session creation fails
+   */
+  @VisibleForTesting
+  SessionReference getOrCreateSessionReference() {
+    // Fast path: session already exists
+    ApiFuture<SessionReference> sessionFuture = multiplexedSessionReference.get();
+    if (sessionFuture != null) {
+      try {
+        return sessionFuture.get();
+      } catch (ExecutionException | InterruptedException e) {
+        // This shouldn't happen with immediateFuture, but handle it anyway
+        throw SpannerExceptionFactory.asSpannerException(e.getCause() != null ? e.getCause() : e);
+      }
+    }
+
+    // Check if UNIMPLEMENTED - don't retry in this case
+    if (unimplemented.get()) {
+      Throwable error = lastCreationError.get();
+      if (error != null) {
+        throw SpannerExceptionFactory.asSpannerException(error);
+      }
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Multiplexed sessions are not supported");
+    }
+
+    // Try to acquire the lock for creation
+    if (creationLock.tryLock()) {
+      try {
+        // Double-check after acquiring lock
+        sessionFuture = multiplexedSessionReference.get();
+        if (sessionFuture != null) {
+          try {
+            return sessionFuture.get();
+          } catch (ExecutionException | InterruptedException e) {
+            throw SpannerExceptionFactory.asSpannerException(
+                e.getCause() != null ? e.getCause() : e);
+          }
+        }
+
+        // Check if creation is already in progress
+        if (creationInProgress.get()) {
+          // Wait for the ongoing creation to complete
+          creationLock.unlock();
+          return waitForSessionCreation();
+        }
+
+        // Start a new creation attempt
+        creationInProgress.set(true);
+        CountDownLatch currentLatch = creationLatch;
+        creationLock.unlock();
+
+        // Trigger async session creation
+        sessionClient.asyncCreateMultiplexedSession(
+            new SessionConsumer() {
+              @Override
+              public void onSessionReady(SessionImpl session) {
+                onSessionCreatedSuccessfully(session);
+              }
+
+              @Override
+              public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+                onSessionCreationFailed(t);
+              }
+            });
+
+        // Wait for creation to complete
+        try {
+          currentLatch.await();
+        } catch (InterruptedException e) {
+          throw SpannerExceptionFactory.propagateInterrupt(e);
+        }
+
+        // Check result
+        sessionFuture = multiplexedSessionReference.get();
+        if (sessionFuture != null) {
+          try {
+            return sessionFuture.get();
+          } catch (ExecutionException | InterruptedException e) {
+            throw SpannerExceptionFactory.asSpannerException(
+                e.getCause() != null ? e.getCause() : e);
+          }
+        }
+
+        // Creation failed
+        Throwable error = lastCreationError.get();
+        if (error != null) {
+          throw SpannerExceptionFactory.asSpannerException(error);
+        }
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INTERNAL, "Failed to create multiplexed session");
+      } finally {
+        if (creationLock.isHeldByCurrentThread()) {
+          creationLock.unlock();
+        }
+      }
+    } else {
+      // Another thread is creating, wait for it
+      return waitForSessionCreation();
+    }
+  }
+
+  /** Waits for an ongoing session creation to complete and returns the result. */
+  private SessionReference waitForSessionCreation() {
+    try {
+      creationLatch.await();
+    } catch (InterruptedException e) {
+      throw SpannerExceptionFactory.propagateInterrupt(e);
+    }
+
+    ApiFuture<SessionReference> sessionFuture = multiplexedSessionReference.get();
+    if (sessionFuture != null) {
+      try {
+        return sessionFuture.get();
+      } catch (ExecutionException | InterruptedException e) {
+        throw SpannerExceptionFactory.asSpannerException(e.getCause() != null ? e.getCause() : e);
+      }
+    }
+
+    Throwable error = lastCreationError.get();
+    if (error != null) {
+      throw SpannerExceptionFactory.asSpannerException(error);
+    }
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INTERNAL, "Failed to create multiplexed session");
   }
 
   private void maybeMarkUnimplemented(Throwable t) {
@@ -548,13 +753,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   @VisibleForTesting
   SessionReference getCurrentSessionReference() {
-    try {
-      return this.multiplexedSessionReference.get().get();
-    } catch (ExecutionException executionException) {
-      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
-    } catch (InterruptedException interruptedException) {
-      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-    }
+    return getOrCreateSessionReference();
   }
 
   @VisibleForTesting
@@ -575,7 +774,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    * actual statement that is being executed (e.g. the first query that is sent to Spanner).
    */
   private boolean isMultiplexedSessionCreated() {
-    return multiplexedSessionReference.get().isDone();
+    ApiFuture<SessionReference> future = multiplexedSessionReference.get();
+    return future != null && future.isDone();
   }
 
   private DatabaseClient createMultiplexedSessionTransaction(boolean singleUse) {
@@ -587,28 +787,35 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private MultiplexedSessionTransaction createDirectMultiplexedSessionTransaction(
       boolean singleUse) {
-    try {
-      return new MultiplexedSessionTransaction(
-          this,
-          tracer.getCurrentSpan(),
-          // Getting the result of the SettableApiFuture that contains the multiplexed session will
-          // also automatically propagate any error that happened during the creation of the
-          // session, such as for example a DatabaseNotFound exception. We therefore do not need
-          // any special handling of such errors.
-          multiplexedSessionReference.get().get(),
-          singleUse ? getSingleUseChannelHint() : NO_CHANNEL_HINT,
-          singleUse,
-          this.pool);
-    } catch (ExecutionException executionException) {
-      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
-    } catch (InterruptedException interruptedException) {
-      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-    }
+    // Use getOrCreateSessionReference() which implements retry-on-access semantics.
+    // This will trigger a new creation attempt if the session doesn't exist yet.
+    SessionReference sessionReference = getOrCreateSessionReference();
+    return new MultiplexedSessionTransaction(
+        this,
+        tracer.getCurrentSpan(),
+        sessionReference,
+        singleUse ? getSingleUseChannelHint() : NO_CHANNEL_HINT,
+        singleUse,
+        this.pool);
   }
 
   private DelayedMultiplexedSessionTransaction createDelayedMultiplexSessionTransaction() {
+    // For delayed transactions, we create a future that will be resolved when
+    // getOrCreateSessionReference()
+    // is called. This allows the transaction to be created immediately while the session creation
+    // may still be in progress or may need to be retried.
+    SettableApiFuture<SessionReference> delayedFuture = SettableApiFuture.create();
+    MAINTAINER_SERVICE.submit(
+        () -> {
+          try {
+            SessionReference sessionRef = getOrCreateSessionReference();
+            delayedFuture.set(sessionRef);
+          } catch (Throwable t) {
+            delayedFuture.setException(t);
+          }
+        });
     return new DelayedMultiplexedSessionTransaction(
-        this, tracer.getCurrentSpan(), multiplexedSessionReference.get(), this.pool);
+        this, tracer.getCurrentSpan(), delayedFuture, this.pool);
   }
 
   private int getSingleUseChannelHint() {
@@ -765,13 +972,22 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   final class MultiplexedSessionMaintainer {
     private final Clock clock;
 
-    private ScheduledFuture<?> scheduledFuture;
+    private volatile ScheduledFuture<?> scheduledFuture;
+    private volatile boolean started = false;
 
     MultiplexedSessionMaintainer(Clock clock) {
       this.clock = clock;
     }
 
+    boolean isStarted() {
+      return started;
+    }
+
     void start() {
+      if (started) {
+        return;
+      }
+      started = true;
       // Schedule the maintainer to run once every ten minutes (by default).
       long loopFrequencyMillis =
           MultiplexedSessionDatabaseClient.this
@@ -793,27 +1009,36 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
 
     void maintain() {
-      if (clock.instant().isAfter(expirationDate.get())) {
+      // Check if session needs to be created (either null or expired)
+      boolean sessionNeedsCreation =
+          multiplexedSessionReference.get() == null
+              || clock.instant().isAfter(expirationDate.get());
+
+      if (sessionNeedsCreation && !creationInProgress.get()) {
+        // Only attempt creation if not already in progress
+        creationLock.lock();
+        try {
+          // Double-check after acquiring lock
+          if (creationInProgress.get()) {
+            return;
+          }
+          creationInProgress.set(true);
+        } finally {
+          creationLock.unlock();
+        }
+
         sessionClient.asyncCreateMultiplexedSession(
             new SessionConsumer() {
               @Override
               public void onSessionReady(SessionImpl session) {
-                multiplexedSessionReference.set(
-                    ApiFutures.immediateFuture(session.getSessionReference()));
-                expirationDate.set(
-                    clock
-                        .instant()
-                        .plus(MultiplexedSessionDatabaseClient.this.sessionExpirationDuration));
+                onSessionCreatedSuccessfully(session);
               }
 
               @Override
               public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
-                // ignore any errors during re-creation of the multiplexed session. This means that
-                // we continue to use the session that has passed its expiration date for now, and
-                // that a new attempt at creating a new session will be done in 10 minutes from now.
-                // The only exception to this rule is if the server returns UNIMPLEMENTED. In that
-                // case we invalidate the client and fall back to regular sessions.
-                maybeMarkUnimplemented(t);
+                // Store the error but allow future retries.
+                // The only exception is UNIMPLEMENTED which falls back to regular sessions.
+                onSessionCreationFailed(t);
               }
             });
       }
