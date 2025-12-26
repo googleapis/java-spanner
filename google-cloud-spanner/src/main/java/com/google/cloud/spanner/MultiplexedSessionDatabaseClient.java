@@ -580,8 +580,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   private void maybeRetrySessionCreation() {
     sessionCreationLock.lock();
     try {
-      if (isMultiplexedSessionsSupported()
-          && retryingSessionCreation.compareAndSet(false, true)) {
+      if (isMultiplexedSessionsSupported() && retryingSessionCreation.compareAndSet(false, true)) {
         SettableApiFuture<SessionReference> settableApiFuture = SettableApiFuture.create();
         asyncCreateMultiplexedSession(settableApiFuture);
         multiplexedSessionReference.set(settableApiFuture);
