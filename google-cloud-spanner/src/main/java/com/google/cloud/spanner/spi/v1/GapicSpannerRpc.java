@@ -51,12 +51,14 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.api.gax.rpc.StreamController;
+import com.google.api.gax.rpc.TransportChannel;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
+import com.google.auth.Credentials;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannel;
@@ -64,6 +66,9 @@ import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.grpc.fallback.GcpFallbackChannel;
+import com.google.cloud.grpc.fallback.GcpFallbackChannelOptions;
+import com.google.cloud.grpc.fallback.GcpFallbackOpenTelemetry;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
 import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.ErrorCode;
@@ -185,9 +190,21 @@ import com.google.spanner.v1.Session;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
 import io.grpc.Context;
+import io.grpc.ForwardingChannelBuilder2;
+import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.grpc.NameResolver;
+import io.grpc.StatusRuntimeException;
+import io.grpc.auth.MoreCallCredentials;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.channel.nio.NioEventLoopGroup;
+import io.grpc.netty.shaded.io.netty.channel.socket.nio.NioSocketChannel;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -214,6 +231,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -341,64 +359,88 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.isDynamicChannelPoolEnabled = options.isDynamicChannelPoolEnabled();
     this.baseGrpcCallContext = createBaseCallContext();
 
+    boolean isEnableDirectAccess = options.isEnableDirectAccess();
+
     if (initializeStubs) {
+      CredentialsProvider credentialsProvider =
+        GrpcTransportOptions.setUpCredentialsProvider(options);
+
+      InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder = getDefaultChannelProviderBuilder(options, headerProviderWithUserAgent, isEnableDirectAccess);
+
+      if (options.getChannelProvider() == null && isEnableDirectAccess && isEnableGcpFallbackEnv()) {
+        InstantiatingGrpcChannelProvider.Builder cloudPathProviderBuilder = getDefaultChannelProviderBuilder(options, headerProviderWithUserAgent, /*isEnableDirectAccess=*/false);
+        cloudPathProviderBuilder.setAttemptDirectPath(false);
+
+        final AtomicReference<ManagedChannelBuilder> cloudPathBuilderRef = new AtomicReference<>();
+        cloudPathProviderBuilder.setChannelConfigurator(builder -> {
+          cloudPathBuilderRef.set(builder);
+          return builder;
+        });
+
+        try (TransportChannel ignored = cloudPathProviderBuilder.build().getTransportChannel()) {
+        } catch (Exception e) {
+          throw asSpannerException(e);
+        }
+
+        ManagedChannelBuilder cloudPathBuilder = cloudPathBuilderRef.get();
+        if (cloudPathBuilder == null) {
+          throw new IllegalStateException("CloudPath builder was not captured.");
+        }
+
+        try {
+          Credentials credentials = credentialsProvider.getCredentials();
+          if (credentials != null) {
+            cloudPathBuilder.intercept(new ClientInterceptor() {
+            @Override
+            public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+                MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+              return next.newCall(method, callOptions.withCallCredentials(MoreCallCredentials.from(credentials)));
+            }
+            });
+          }
+        } catch (Exception e) {
+          throw asSpannerException(e);
+        }
+
+        defaultChannelProviderBuilder.setChannelConfigurator(directPathBuilder -> {
+          String jsonApiConfig = parseGrpcGcpApiConfig();
+          GcpManagedChannelOptions gcpOptions = options.getGrpcGcpOptions();
+          if (gcpOptions == null) {
+            gcpOptions = GcpManagedChannelOptions.newBuilder().build();
+          }
+
+          GcpManagedChannelBuilder primaryGcpBuilder =
+              GcpManagedChannelBuilder.forDelegateBuilder(directPathBuilder)
+                  .withApiConfigJsonString(jsonApiConfig)
+                  .withOptions(gcpOptions);
+
+          GcpManagedChannelBuilder fallbackGcpBuilder =
+              GcpManagedChannelBuilder.forDelegateBuilder(cloudPathBuilder)
+                  .withApiConfigJsonString(jsonApiConfig)
+                  .withOptions(gcpOptions);
+
+          GcpFallbackOpenTelemetry fallbackTelemetry = GcpFallbackOpenTelemetry.newBuilder()
+              .withSdk(options.getOpenTelemetry())
+              .build();
+
+          return new FallbackChannelBuilder(
+              primaryGcpBuilder, 
+              fallbackGcpBuilder,
+              GcpFallbackChannelOptions.newBuilder()
+                  .setPrimaryChannelName("directpath")
+                  .setFallbackChannelName("cloudpath")
+                  .setMinFailedCalls(1)
+                  .setGcpFallbackOpenTelemetry(fallbackTelemetry)
+                  .build() 
+          );
+        });
+      }
+
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
       // with information gathered from SpannerOptions if none is provided
-      InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
-          InstantiatingGrpcChannelProvider.newBuilder()
-              .setChannelConfigurator(options.getChannelConfigurator())
-              .setEndpoint(options.getEndpoint())
-              .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
-              .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
-              .setPoolSize(options.getNumChannels())
-
-              // Set a keepalive time of 120 seconds to help long running
-              // commit GRPC calls succeed
-              .setKeepAliveTimeDuration(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
-
-              // Then check if SpannerOptions provides an InterceptorProvider. Create a default
-              // SpannerInterceptorProvider if none is provided
-              .setInterceptorProvider(
-                  SpannerInterceptorProvider.create(
-                          MoreObjects.firstNonNull(
-                              options.getInterceptorProvider(),
-                              SpannerInterceptorProvider.createDefault(options.getOpenTelemetry())))
-                      // This sets the trace context headers.
-                      .withTraceContext(endToEndTracingEnabled, options.getOpenTelemetry())
-                      // This sets the response compressor (Server -> Client).
-                      .withEncoding(compressorName))
-              .setHeaderProvider(headerProviderWithUserAgent)
-              .setAllowNonDefaultServiceAccount(true);
-      boolean isEnableDirectAccess = options.isEnableDirectAccess();
-      if (isEnableDirectAccess) {
-        defaultChannelProviderBuilder.setAttemptDirectPath(true);
-        if (isEnableDirectPathBoundToken()) {
-          // This will let the credentials try to fetch a hard-bound access token if the runtime
-          // environment supports it.
-          defaultChannelProviderBuilder.setAllowHardBoundTokenTypes(
-              Collections.singletonList(InstantiatingGrpcChannelProvider.HardBoundTokenTypes.ALTS));
-        }
-        defaultChannelProviderBuilder.setAttemptDirectPathXds();
-      }
-
-      options.enablegRPCMetrics(defaultChannelProviderBuilder);
-
-      if (options.isUseVirtualThreads()) {
-        ExecutorService executor =
-            tryCreateVirtualThreadPerTaskExecutor("spanner-virtual-grpc-executor");
-        if (executor != null) {
-          defaultChannelProviderBuilder.setExecutor(executor);
-        }
-      }
-      // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
-      maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
-
       TransportChannelProvider channelProvider =
           MoreObjects.firstNonNull(
               options.getChannelProvider(), defaultChannelProviderBuilder.build());
-
-      CredentialsProvider credentialsProvider =
-          GrpcTransportOptions.setUpCredentialsProvider(options);
 
       spannerWatchdog =
           Executors.newSingleThreadScheduledExecutor(
@@ -572,6 +614,57 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
+  private InstantiatingGrpcChannelProvider.Builder getDefaultChannelProviderBuilder(final SpannerOptions options, final HeaderProvider headerProviderWithUserAgent, Boolean isEnableDirectAccess) {
+    InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
+        InstantiatingGrpcChannelProvider.newBuilder()
+            .setChannelConfigurator(options.getChannelConfigurator())
+            .setEndpoint(options.getEndpoint())
+            .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
+            .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
+            .setPoolSize(options.getNumChannels())
+
+            // Set a keepalive time of 120 seconds to help long running
+            // commit GRPC calls succeed
+            .setKeepAliveTimeDuration(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
+
+            // Then check if SpannerOptions provides an InterceptorProvider. Create a default
+            // SpannerInterceptorProvider if none is provided
+            .setInterceptorProvider(
+                SpannerInterceptorProvider.create(
+                        MoreObjects.firstNonNull(
+                            options.getInterceptorProvider(),
+                            SpannerInterceptorProvider.createDefault(options.getOpenTelemetry())))
+                    // This sets the trace context headers.
+                    .withTraceContext(endToEndTracingEnabled, options.getOpenTelemetry())
+                    // This sets the response compressor (Server -> Client).
+                    .withEncoding(compressorName))
+            .setHeaderProvider(headerProviderWithUserAgent)
+            .setAllowNonDefaultServiceAccount(true);
+    if (isEnableDirectAccess) {
+      defaultChannelProviderBuilder.setAttemptDirectPath(true);
+      defaultChannelProviderBuilder.setAttemptDirectPathXds();
+      if (isEnableDirectPathBoundToken()) {
+        // This will let the credentials try to fetch a hard-bound access token if the runtime
+        // environment supports it.
+        defaultChannelProviderBuilder.setAllowHardBoundTokenTypes(
+            Collections.singletonList(InstantiatingGrpcChannelProvider.HardBoundTokenTypes.ALTS));
+      }
+    }
+
+    options.enablegRPCMetrics(defaultChannelProviderBuilder);
+
+    if (options.isUseVirtualThreads()) {
+      ExecutorService executor =
+          tryCreateVirtualThreadPerTaskExecutor("spanner-virtual-grpc-executor");
+      if (executor != null) {
+        defaultChannelProviderBuilder.setExecutor(executor);
+      }
+    }
+    // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
+    maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
+    return defaultChannelProviderBuilder;
+  }
+
   // Enhance gRPC-GCP options with metrics and dynamic channel pool configuration.
   private static GcpManagedChannelOptions grpcGcpOptionsWithMetricsAndDcp(SpannerOptions options) {
     GcpManagedChannelOptions grpcGcpOptions =
@@ -713,6 +806,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   public static boolean isEnableDirectPathBoundToken() {
     return !Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_DISABLE_DIRECT_ACCESS_BOUND_TOKEN"));
+  }
+
+  public static boolean isEnableGcpFallbackEnv() {
+    return Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_ENABLE_GCP_FALLBACK"));
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
@@ -2312,5 +2409,40 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static Duration systemProperty(String name, int defaultValue) {
     String stringValue = System.getProperty(name, "");
     return Duration.ofSeconds(stringValue.isEmpty() ? defaultValue : Integer.parseInt(stringValue));
+  }
+
+  // Wrapper class to build the GcpFallbackChannel using GAX's configuration
+  private static class FallbackChannelBuilder extends ForwardingChannelBuilder2<FallbackChannelBuilder> {
+    private final GcpFallbackChannelOptions options;
+
+    private final GcpManagedChannelBuilder primaryGcpBuilder;
+    private final GcpManagedChannelBuilder fallbackGcpBuilder;
+
+    private FallbackChannelBuilder(
+        GcpManagedChannelBuilder primary,
+        GcpManagedChannelBuilder fallback,
+        GcpFallbackChannelOptions options) {
+      this.primaryGcpBuilder = primary;
+      this.fallbackGcpBuilder = fallback;
+      this.options = options;
+    }
+
+    /**
+     * Delegates all configuration calls (e.g., interceptors, userAgent) to the primary builder.
+     * This ensures the primary channel receives all of GAX's standard configuration.
+     */
+    @Override
+    protected ManagedChannelBuilder<?> delegate() {
+      return primaryGcpBuilder;
+    }
+
+    /**
+     * Overrides the build method to return our custom GcpFallbackChannel
+     * instead of a standard gRPC channel.
+     */
+    @Override
+    public ManagedChannel build() {
+      return new GcpFallbackChannel(options, primaryGcpBuilder, fallbackGcpBuilder);
+    }
   }
 }
