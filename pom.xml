@@ -102,7 +102,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-spanner</artifactId>
-        <version>6.105.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+        <version>6.106.0-rc1</version><!-- {x-version-update:google-cloud-spanner:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.cloud</groupId>
