@@ -339,7 +339,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
 
     // Attempt count should have a failed metric point for CreateSession.
     assertEquals(
-        1, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed), 0);
+        2, getAggregatedValue(attemptCountMetricData, expectedAttributesCreateSessionFailed), 0);
     assertTrue(
         checkIfMetricExists(metricReader, BuiltInMetricsConstant.GFE_CONNECTIVITY_ERROR_NAME));
     assertTrue(

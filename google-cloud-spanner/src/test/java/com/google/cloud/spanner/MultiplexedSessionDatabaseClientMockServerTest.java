@@ -54,6 +54,8 @@ import io.grpc.Status;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -243,6 +245,169 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(0L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
     assertEquals(0L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
+  @Test
+  public void testDeadlineExceededErrorWithOneRetry() {
+    // Setting up two exceptions
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofExceptions(
+            Arrays.asList(
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException(),
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException())));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+
+    // initial fetch call fails with exception
+    // this call will try to fetch it again which again throws an exception
+    assertThrows(
+        SpannerException.class,
+        () -> {
+          try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+            //noinspection StatementWithEmptyBody
+            while (resultSet.next()) {
+              // ignore
+            }
+          }
+        });
+
+    // When third request comes it should succeed
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {
+        // ignore
+      }
+    }
+
+    // Verify that we received one ExecuteSqlRequest, and that it used a multiplexed session.
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+
+    Session session = mockSpanner.getSession(requests.get(0).getSession());
+    assertNotNull(session);
+    assertTrue(session.getMultiplexed());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+  }
+
+  @Test
+  public void testDeadlineExceededErrorWithOneRetryWithParallelRequests()
+      throws InterruptedException {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofExceptions(
+            Arrays.asList(
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException(),
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException())));
+
+    SpannerOptions spannerOptions =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .setChannelProvider(channelProvider)
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMultiplexedSessionMaintenanceDuration(Duration.ofMinutes(10))
+                    .build())
+            .build();
+
+    Spanner testSpanner = spannerOptions.getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+
+    ExecutorService executor = Executors.newCachedThreadPool();
+
+    // First set of request should fail with an error
+    CountDownLatch failureCountDownLatch = new CountDownLatch(3);
+    CountDownLatch executionCountLatch = new CountDownLatch(3);
+    mockSpanner.freeze();
+    for (int i = 0; i < 3; i++) {
+      executor.submit(
+          () -> {
+            executionCountLatch.countDown();
+            try {
+              try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+                //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {
+                  // ignore
+                }
+              }
+            } catch (SpannerException e) {
+              failureCountDownLatch.countDown();
+            }
+          });
+    }
+    assertTrue(executionCountLatch.await(2, TimeUnit.SECONDS));
+    Thread.sleep(1000);
+    mockSpanner.unfreeze();
+
+    assertTrue(failureCountDownLatch.await(2, TimeUnit.SECONDS));
+    assertEquals(0, failureCountDownLatch.getCount());
+
+    // Second set of requests should pass
+    CountDownLatch countDownLatch = new CountDownLatch(3);
+    CountDownLatch successExecutionCountLatch = new CountDownLatch(3);
+
+    mockSpanner.freeze();
+    for (int i = 0; i < 3; i++) {
+      executor.submit(
+          () -> {
+            try {
+              successExecutionCountLatch.countDown();
+              try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+                //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {
+                  // ignore
+                }
+              }
+            } catch (SpannerException e) {
+              countDownLatch.countDown();
+            }
+          });
+    }
+    assertTrue(successExecutionCountLatch.await(2, TimeUnit.SECONDS));
+    Thread.sleep(1000);
+    mockSpanner.unfreeze();
+
+    assertFalse(countDownLatch.await(2, TimeUnit.SECONDS));
+    assertEquals(3, countDownLatch.getCount());
+
+    // Verify that we received 3 ExecuteSqlRequest, and that it used a multiplexed session.
+    assertEquals(3, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+
+    Session session = mockSpanner.getSession(requests.get(0).getSession());
+    assertNotNull(session);
+    assertTrue(session.getMultiplexed());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(3L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(3L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+
+    testSpanner.close();
   }
 
   @Test
