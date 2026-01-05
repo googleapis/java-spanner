@@ -1148,19 +1148,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     protected Builder() {
       // Manually set retry and polling settings that work.
+      RetrySettings baseRetrySettings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+              .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+              .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
+              .setRetryDelayMultiplier(1.5)
+              .setRpcTimeoutMultiplier(1.5)
+              .setTotalTimeoutDuration(Duration.ofHours(48L))
+              .build();
 
       // The polling setting with a short initial delay as we expect
       // it to return soon.
       OperationTimedPollAlgorithm shortInitialPollingDelayAlgorithm =
           OperationTimedPollAlgorithm.create(
-              RetrySettings.newBuilder()
-                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
-                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+              baseRetrySettings.toBuilder()
                   .setInitialRetryDelayDuration(Duration.ofSeconds(1L))
-                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
-                  .setRetryDelayMultiplier(1.5)
-                  .setRpcTimeoutMultiplier(1.5)
-                  .setTotalTimeoutDuration(Duration.ofHours(48L))
                   .build());
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
@@ -1173,14 +1176,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       // the operation to take a bit long time to return.
       OperationTimedPollAlgorithm longInitialPollingDelayAlgorithm =
           OperationTimedPollAlgorithm.create(
-              RetrySettings.newBuilder()
-                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
-                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+              baseRetrySettings.toBuilder()
                   .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
-                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
-                  .setRetryDelayMultiplier(1.5)
-                  .setRpcTimeoutMultiplier(1.5)
-                  .setTotalTimeoutDuration(Duration.ofHours(48L))
                   .build());
       databaseAdminStubSettingsBuilder
           .createBackupOperationSettings()
