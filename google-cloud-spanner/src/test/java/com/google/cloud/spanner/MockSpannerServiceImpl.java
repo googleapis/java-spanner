@@ -542,15 +542,15 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         boolean stickyGlobalExceptions,
         CountDownLatch freezeLock) {
       Uninterruptibles.awaitUninterruptibly(freezeLock);
-      checkException(globalExceptions, stickyGlobalExceptions);
-      if (streamIndices.isEmpty()) {
-        checkException(this.exceptions, stickyException);
-      }
       if (minimumExecutionTime > 0 || randomExecutionTime > 0) {
         Uninterruptibles.sleepUninterruptibly(
             (randomExecutionTime == 0 ? 0 : RANDOM.nextInt(randomExecutionTime))
                 + minimumExecutionTime,
             TimeUnit.MILLISECONDS);
+      }
+      checkException(globalExceptions, stickyGlobalExceptions);
+      if (streamIndices.isEmpty()) {
+        checkException(this.exceptions, stickyException);
       }
     }
 
