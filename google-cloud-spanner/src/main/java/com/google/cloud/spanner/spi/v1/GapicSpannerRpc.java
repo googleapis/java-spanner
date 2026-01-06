@@ -433,12 +433,7 @@ public class GapicSpannerRpc implements SpannerRpc {
               return new FallbackChannelBuilder(
                   primaryGcpBuilder,
                   fallbackGcpBuilder,
-                  GcpFallbackChannelOptions.newBuilder()
-                      .setPrimaryChannelName("directpath")
-                      .setFallbackChannelName("cloudpath")
-                      .setMinFailedCalls(1)
-                      .setGcpFallbackOpenTelemetry(fallbackTelemetry)
-                      .build());
+                  createFallbackChannelOptions(fallbackTelemetry));
             });
       }
 
@@ -609,6 +604,17 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.spannerWatchdog = null;
       this.partitionedDmlRetrySettings = null;
     }
+  }
+
+  @VisibleForTesting
+  GcpFallbackChannelOptions createFallbackChannelOptions(
+      GcpFallbackOpenTelemetry fallbackTelemetry) {
+    return GcpFallbackChannelOptions.newBuilder()
+        .setPrimaryChannelName("directpath")
+        .setFallbackChannelName("cloudpath")
+        .setMinFailedCalls(1)
+        .setGcpFallbackOpenTelemetry(fallbackTelemetry)
+        .build();
   }
 
   private static String parseGrpcGcpApiConfig() {
@@ -817,7 +823,12 @@ public class GapicSpannerRpc implements SpannerRpc {
     return !Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_DISABLE_DIRECT_ACCESS_BOUND_TOKEN"));
   }
 
+  @VisibleForTesting static Boolean enableGcpFallbackEnv = null;
+
   public static boolean isEnableGcpFallbackEnv() {
+    if (enableGcpFallbackEnv != null) {
+      return enableGcpFallbackEnv;
+    }
     return Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_ENABLE_GCP_FALLBACK"));
   }
 
