@@ -390,7 +390,6 @@
     <dependency>
       <groupId>org.graalvm.sdk</groupId>
       <artifactId>nativeimage</artifactId>
-      <version>${graal-sdk-nativeimage.version}</version>
       <scope>provided</scope>
     </dependency>
 
