@@ -914,7 +914,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     openTelemetry = builder.openTelemetry;
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
-    if (builder.isExperimentalHost) {
+    if (builder.experimentalHost != null) {
       enableBuiltInMetrics = false;
     } else {
       enableBuiltInMetrics = builder.enableBuiltInMetrics;
@@ -1139,7 +1139,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
-    private boolean isExperimentalHost = false;
+    private String experimentalHost = null;
+    private boolean usePlainText = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
 
     private static String createCustomClientLibToken(String token) {
@@ -1675,10 +1676,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
     public Builder setExperimentalHost(String host) {
+      if (this.usePlainText) {
+        Preconditions.checkArgument(
+            !host.startsWith("https:"),
+            "Please remove the 'https:' protocol prefix from the host string when using plain text communication");
+        if (!host.startsWith("http")) {
+          host = "http://" + host;
+        }
+      }
       super.setHost(host);
       super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
       setSessionPoolOption(SessionPoolOptions.newBuilder().setExperimentalHost().build());
-      this.isExperimentalHost = true;
+      this.experimentalHost = host;
       return this;
     }
 
@@ -1785,6 +1794,23 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
                 .build();
       } catch (Exception e) {
         throw SpannerExceptionFactory.asSpannerException(e);
+      }
+      return this;
+    }
+
+    /**
+     * {@code usePlainText} will configure the transport to use plaintext (no TLS) and will set
+     * credentials to {@link com.google.cloud.NoCredentials} to avoid sending authentication over an
+     * unsecured channel.
+     */
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/4264")
+    public Builder usePlainText() {
+      this.usePlainText = true;
+      this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+          .setCredentials(NoCredentials.getInstance());
+      if (this.experimentalHost != null) {
+        // Re-apply host settings to ensure http:// is prepended.
+        setExperimentalHost(this.experimentalHost);
       }
       return this;
     }
@@ -1954,7 +1980,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
-      if (emulatorHost != null) {
+      if (emulatorHost != null && experimentalHost == null) {
         if (!emulatorHost.startsWith("http")) {
           emulatorHost = "http://" + emulatorHost;
         }
@@ -1964,7 +1990,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-      } else if (isExperimentalHost && credentials == null) {
+      } else if (experimentalHost != null && credentials == null) {
         credentials = environment.getDefaultExperimentalHostCredentials();
       }
       if (this.numChannels == null) {
