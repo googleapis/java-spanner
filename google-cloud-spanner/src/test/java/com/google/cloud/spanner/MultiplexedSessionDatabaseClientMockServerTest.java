@@ -285,7 +285,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
                     .setUseMultiplexedSession(true)
                     .setUseMultiplexedSessionForRW(true)
                     .setUseMultiplexedSessionPartitionedOps(true)
-                    .setWaitForMinSessionsDuration(Duration.ofSeconds(1))
+                    .setWaitForMinSessionsDuration(Duration.ofMillis(200))
                     .setFailOnSessionLeak()
                     .build())
             .build()
@@ -361,7 +361,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   public void testRetryWithDelayedInResponseExceedsSessionCreationWaitTime() {
     mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTimeAndExceptions(
-            600,
+            150,
             0,
             Arrays.asList(
                 Status.DEADLINE_EXCEEDED
@@ -370,7 +370,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
                             + "Name resolution delay 6.911918521 seconds. [closed=[], "
                             + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
                     .asRuntimeException(),
-                Status.DEADLINE_EXCEEDED
+                Status.UNAVAILABLE
                     .withDescription(
                         "CallOptions deadline exceeded after 22.986872393s. "
                             + "Name resolution delay 6.911918521 seconds. [closed=[], "
@@ -387,7 +387,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
                     .setUseMultiplexedSession(true)
                     .setUseMultiplexedSessionForRW(true)
                     .setUseMultiplexedSessionPartitionedOps(true)
-                    .setWaitForMinSessionsDuration(Duration.ofMillis(1000))
+                    .setWaitForMinSessionsDuration(Duration.ofMillis(200))
                     .setFailOnSessionLeak()
                     .build())
             .build()
@@ -423,7 +423,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   public void testRetryWithDelayInExceptionWithInSessionCreationWaitTime() {
     mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTimeAndExceptions(
-            200,
+            50,
             0,
             Arrays.asList(
                 Status.DEADLINE_EXCEEDED
@@ -449,7 +449,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
                     .setUseMultiplexedSession(true)
                     .setUseMultiplexedSessionForRW(true)
                     .setUseMultiplexedSessionPartitionedOps(true)
-                    .setWaitForMinSessionsDuration(Duration.ofMillis(1000))
+                    .setWaitForMinSessionsDuration(Duration.ofMillis(200))
                     .setFailOnSessionLeak()
                     .build())
             .build()
