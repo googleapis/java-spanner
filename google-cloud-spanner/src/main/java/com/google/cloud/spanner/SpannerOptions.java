@@ -1148,26 +1148,56 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     protected Builder() {
       // Manually set retry and polling settings that work.
-      OperationTimedPollAlgorithm longRunningPollingAlgorithm =
+      RetrySettings baseRetrySettings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+              .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+              .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
+              .setRetryDelayMultiplier(1.5)
+              .setRpcTimeoutMultiplier(1.5)
+              .setTotalTimeoutDuration(Duration.ofHours(48L))
+              .build();
+
+      // The polling setting with a short initial delay as we expect
+      // it to return soon.
+      OperationTimedPollAlgorithm shortInitialPollingDelayAlgorithm =
           OperationTimedPollAlgorithm.create(
-              RetrySettings.newBuilder()
-                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
-                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
-                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
-                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
-                  .setRetryDelayMultiplier(1.5)
-                  .setRpcTimeoutMultiplier(1.5)
-                  .setTotalTimeoutDuration(Duration.ofHours(48L))
+              baseRetrySettings.toBuilder()
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(1L))
                   .build());
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
+          .setPollingAlgorithm(shortInitialPollingDelayAlgorithm);
+
+      // The polling setting with a long initial delay as we expect
+      // the operation to take a bit long time to return.
+      OperationTimedPollAlgorithm longInitialPollingDelayAlgorithm =
+          OperationTimedPollAlgorithm.create(
+              baseRetrySettings.toBuilder()
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
+                  .build());
       databaseAdminStubSettingsBuilder
           .createBackupOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
+          .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
       databaseAdminStubSettingsBuilder
           .restoreDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
+          .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
+
+      // updateDatabaseDdl requires a separate setting because
+      // it has no existing overrides on RPC timeouts for LRO polling.
+      databaseAdminStubSettingsBuilder
+          .updateDatabaseDdlOperationSettings()
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelayDuration(Duration.ofMillis(1000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelayDuration(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeoutDuration(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeoutDuration(Duration.ZERO)
+                      .setTotalTimeoutDuration(Duration.ofHours(48L))
+                      .build()));
     }
 
     Builder(SpannerOptions options) {
