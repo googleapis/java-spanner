@@ -144,10 +144,10 @@ public class ITQueryTest {
           exception.getMessage().contains("column \"apples\" does not exist"));
       // See https://www.postgresql.org/docs/current/errcodes-appendix.html
       // '42703' == undefined_column
-      // Skipping the check for experimental host - b/473270453
-      if (!isExperimentalHost()) {
-        assertEquals("42703", exception.getPostgreSQLErrorCode());
-      }
+      assumeFalse(
+          "Skipping PGErrorCode check on experimental host due to b/473270453",
+          isExperimentalHost());
+      assertEquals("42703", exception.getPostgreSQLErrorCode());
     } else {
       assertTrue(
           exception.getMessage(), exception.getMessage().contains("Unrecognized name: Apples"));
