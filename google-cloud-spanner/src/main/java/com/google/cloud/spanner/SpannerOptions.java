@@ -1679,7 +1679,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       if (this.usePlainText) {
         Preconditions.checkArgument(
             !host.startsWith("https:"),
-            "Please remove the 'https:' protocol prefix from the host string when using plain text communication");
+            "Please remove the 'https:' protocol prefix from the host string when using plain text"
+                + " communication");
         if (!host.startsWith("http")) {
           host = "http://" + host;
         }
