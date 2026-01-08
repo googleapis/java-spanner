@@ -16,10 +16,8 @@
 
 package com.google.cloud.spanner.testing;
 
-import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.base.Strings;
-import io.grpc.ManagedChannelBuilder;
 
 public class ExperimentalHostHelper {
   private static final String EXPERIMENTAL_HOST = "spanner.experimental_host";
@@ -58,9 +56,7 @@ public class ExperimentalHostHelper {
     builder.setExperimentalHost(experimentalHost);
     builder.setBuiltInMetricsEnabled(false);
     if (usePlainText) {
-      builder
-          .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
-          .setCredentials(NoCredentials.getInstance());
+      builder.usePlainText();
     }
     if (isMtlsSetup()) {
       String clientCertificate = System.getProperty(CLIENT_CERT_PATH, "");
