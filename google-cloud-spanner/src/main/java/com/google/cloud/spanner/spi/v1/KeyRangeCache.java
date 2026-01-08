@@ -169,9 +169,13 @@ public final class KeyRangeCache {
 
     /** Updates group from proto, including its tablets. */
     void update(Group groupIn) {
-      System.out.println("DEBUG [BYPASS]: Group.update for group " + groupUid 
-          + ", incoming tablets: " + groupIn.getTabletsCount() 
-          + ", leader_index: " + groupIn.getLeaderIndex());
+      System.out.println(
+          "DEBUG [BYPASS]: Group.update for group "
+              + groupUid
+              + ", incoming tablets: "
+              + groupIn.getTabletsCount()
+              + ", leader_index: "
+              + groupIn.getLeaderIndex());
 
       // Only update leader if generation is newer
       if (ByteString.unsignedLexicographicalComparator()
@@ -221,33 +225,49 @@ public final class KeyRangeCache {
         CachedTablet tablet = tabletsByUid.get(tabletIn.getTabletUid());
         if (tablet == null) {
           tablet = new CachedTablet();
-          System.out.println("DEBUG [BYPASS]: Created new tablet for uid " + tabletIn.getTabletUid());
+          System.out.println(
+              "DEBUG [BYPASS]: Created new tablet for uid " + tabletIn.getTabletUid());
         }
         tablet.update(tabletIn);
-        System.out.println("DEBUG [BYPASS]: Tablet[" + t + "]: uid=" + tablet.tabletUid 
-            + ", server=" + tablet.serverAddress 
-            + ", distance=" + tablet.distance);
+        System.out.println(
+            "DEBUG [BYPASS]: Tablet["
+                + t
+                + "]: uid="
+                + tablet.tabletUid
+                + ", server="
+                + tablet.serverAddress
+                + ", distance="
+                + tablet.distance);
         newTablets.add(tablet);
       }
       tablets = newTablets;
-      System.out.println("DEBUG [BYPASS]: Group " + groupUid + " now has " + tablets.size() + " tablets");
+      System.out.println(
+          "DEBUG [BYPASS]: Group " + groupUid + " now has " + tablets.size() + " tablets");
     }
 
     /** Fills routing hint with tablet information and returns the server. */
     ChannelFinderServer fillRoutingHint(boolean preferLeader, RoutingHint.Builder hintBuilder) {
-      System.out.println("DEBUG [BYPASS]: Group.fillRoutingHint - preferLeader: " + preferLeader 
-          + ", tablets count: " + tablets.size());
+      System.out.println(
+          "DEBUG [BYPASS]: Group.fillRoutingHint - preferLeader: "
+              + preferLeader
+              + ", tablets count: "
+              + tablets.size());
 
       // Try leader first if preferred
       if (preferLeader && hasLeader()) {
         CachedTablet leaderTablet = leader();
-        System.out.println("DEBUG [BYPASS]: Trying leader tablet: uid=" + leaderTablet.tabletUid 
-            + ", address=" + leaderTablet.serverAddress 
-            + ", skip=" + leaderTablet.skip);
+        System.out.println(
+            "DEBUG [BYPASS]: Trying leader tablet: uid="
+                + leaderTablet.tabletUid
+                + ", address="
+                + leaderTablet.serverAddress
+                + ", skip="
+                + leaderTablet.skip);
         if (!leaderTablet.shouldSkip(hintBuilder)) {
           ChannelFinderServer server = leaderTablet.pick(hintBuilder);
-          System.out.println("DEBUG [BYPASS]: Leader tablet picked, server: " 
-              + (server != null ? server.getAddress() : "null"));
+          System.out.println(
+              "DEBUG [BYPASS]: Leader tablet picked, server: "
+                  + (server != null ? server.getAddress() : "null"));
           return server;
         }
       }
@@ -255,14 +275,24 @@ public final class KeyRangeCache {
       // Try other tablets in order (they're ordered by distance)
       for (int i = 0; i < tablets.size(); i++) {
         CachedTablet tablet = tablets.get(i);
-        System.out.println("DEBUG [BYPASS]: Trying tablet[" + i + "]: uid=" + tablet.tabletUid 
-            + ", address=" + tablet.serverAddress 
-            + ", distance=" + tablet.distance 
-            + ", skip=" + tablet.skip);
+        System.out.println(
+            "DEBUG [BYPASS]: Trying tablet["
+                + i
+                + "]: uid="
+                + tablet.tabletUid
+                + ", address="
+                + tablet.serverAddress
+                + ", distance="
+                + tablet.distance
+                + ", skip="
+                + tablet.skip);
         if (!tablet.shouldSkip(hintBuilder)) {
           ChannelFinderServer server = tablet.pick(hintBuilder);
-          System.out.println("DEBUG [BYPASS]: Tablet[" + i + "] picked, server: " 
-              + (server != null ? server.getAddress() : "null"));
+          System.out.println(
+              "DEBUG [BYPASS]: Tablet["
+                  + i
+                  + "] picked, server: "
+                  + (server != null ? server.getAddress() : "null"));
           return server;
         }
       }
@@ -449,22 +479,32 @@ public final class KeyRangeCache {
 
   /** Applies cache updates. Tablets are processed inside group updates. */
   public void addRanges(CacheUpdate cacheUpdate) {
-    System.out.println("DEBUG [BYPASS]: addRanges called with " 
-        + cacheUpdate.getGroupCount() + " groups, " 
-        + cacheUpdate.getRangeCount() + " ranges");
+    System.out.println(
+        "DEBUG [BYPASS]: addRanges called with "
+            + cacheUpdate.getGroupCount()
+            + " groups, "
+            + cacheUpdate.getRangeCount()
+            + " ranges");
 
     // Insert all groups. Tablets are processed inside findOrInsertGroup -> Group.update()
     List<CachedGroup> newGroups = new ArrayList<>();
     for (Group groupIn : cacheUpdate.getGroupList()) {
-      System.out.println("DEBUG [BYPASS]: Processing group " + groupIn.getGroupUid() 
-          + " with " + groupIn.getTabletsCount() + " tablets");
+      System.out.println(
+          "DEBUG [BYPASS]: Processing group "
+              + groupIn.getGroupUid()
+              + " with "
+              + groupIn.getTabletsCount()
+              + " tablets");
       newGroups.add(findOrInsertGroup(groupIn));
     }
 
     // Process ranges
     for (Range rangeIn : cacheUpdate.getRangeList()) {
-      System.out.println("DEBUG [BYPASS]: Processing range for group " + rangeIn.getGroupUid() 
-          + ", split_id=" + rangeIn.getSplitId());
+      System.out.println(
+          "DEBUG [BYPASS]: Processing range for group "
+              + rangeIn.getGroupUid()
+              + ", split_id="
+              + rangeIn.getSplitId());
       replaceRangeIfNewer(rangeIn);
     }
 
@@ -473,16 +513,24 @@ public final class KeyRangeCache {
       unref(g);
     }
 
-    System.out.println("DEBUG [BYPASS]: After addRanges - ranges: " + ranges.size() 
-        + ", groups: " + groups.size() + ", servers: " + servers.size());
+    System.out.println(
+        "DEBUG [BYPASS]: After addRanges - ranges: "
+            + ranges.size()
+            + ", groups: "
+            + groups.size()
+            + ", servers: "
+            + servers.size());
   }
 
   /** Fills routing hint and returns the server to use. */
   public ChannelFinderServer fillRoutingInfo(
       String sessionUri, boolean preferLeader, RoutingHint.Builder hintBuilder) {
-    System.out.println("DEBUG [BYPASS]: fillRoutingInfo called, ranges in cache: " + ranges.size() 
-        + ", groups in cache: " + groups.size());
-    
+    System.out.println(
+        "DEBUG [BYPASS]: fillRoutingInfo called, ranges in cache: "
+            + ranges.size()
+            + ", groups in cache: "
+            + groups.size());
+
     if (hintBuilder.getKey().isEmpty()) {
       System.out.println("DEBUG [BYPASS]: No key in hint, using default server");
       return serverFactory.defaultServer();
@@ -505,8 +553,9 @@ public final class KeyRangeCache {
       if (ByteString.unsignedLexicographicalComparator().compare(requestKey, range.startKey) >= 0) {
         targetRange = range;
         targetRangeLimitKey = rangeLimit;
-        System.out.println("DEBUG [BYPASS]: Found range for key, group_uid: " 
-            + (range.group != null ? range.group.groupUid : "null"));
+        System.out.println(
+            "DEBUG [BYPASS]: Found range for key, group_uid: "
+                + (range.group != null ? range.group.groupUid : "null"));
       }
     }
 
@@ -539,10 +588,16 @@ public final class KeyRangeCache {
     hintBuilder.setKey(targetRange.startKey);
     hintBuilder.setLimitKey(targetRangeLimitKey);
 
-    System.out.println("DEBUG [BYPASS]: Group " + targetRange.group.groupUid 
-        + " has " + targetRange.group.tablets.size() + " tablets"
-        + ", hasLeader: " + targetRange.group.hasLeader()
-        + ", leaderIndex: " + targetRange.group.leaderIndex);
+    System.out.println(
+        "DEBUG [BYPASS]: Group "
+            + targetRange.group.groupUid
+            + " has "
+            + targetRange.group.tablets.size()
+            + " tablets"
+            + ", hasLeader: "
+            + targetRange.group.hasLeader()
+            + ", leaderIndex: "
+            + targetRange.group.leaderIndex);
 
     // Let the group pick the tablet
     ChannelFinderServer server = targetRange.group.fillRoutingHint(preferLeader, hintBuilder);
