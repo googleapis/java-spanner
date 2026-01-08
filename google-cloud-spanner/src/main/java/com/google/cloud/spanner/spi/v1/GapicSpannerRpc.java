@@ -361,16 +361,14 @@ public class GapicSpannerRpc implements SpannerRpc {
           GrpcTransportOptions.setUpCredentialsProvider(options);
 
       InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
-          getDefaultChannelProviderBuilder(
-              options, headerProviderWithUserAgent, isEnableDirectAccess);
+          createChannelProviderBuilder(options, headerProviderWithUserAgent, isEnableDirectAccess);
 
       if (options.getChannelProvider() == null
           && isEnableDirectAccess
           && isEnableGcpFallbackEnv()) {
         InstantiatingGrpcChannelProvider.Builder cloudPathProviderBuilder =
-            getDefaultChannelProviderBuilder(
+            createChannelProviderBuilder(
                 options, headerProviderWithUserAgent, /* isEnableDirectAccess= */ false);
-        cloudPathProviderBuilder.setAttemptDirectPath(false);
 
         final AtomicReference<ManagedChannelBuilder> cloudPathBuilderRef = new AtomicReference<>();
         cloudPathProviderBuilder.setChannelConfigurator(
@@ -612,7 +610,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     return GcpFallbackChannelOptions.newBuilder()
         .setPrimaryChannelName("directpath")
         .setFallbackChannelName("cloudpath")
-        .setMinFailedCalls(1)
         .setGcpFallbackOpenTelemetry(fallbackTelemetry)
         .build();
   }
@@ -626,7 +623,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
-  private InstantiatingGrpcChannelProvider.Builder getDefaultChannelProviderBuilder(
+  private InstantiatingGrpcChannelProvider.Builder createChannelProviderBuilder(
       final SpannerOptions options,
       final HeaderProvider headerProviderWithUserAgent,
       boolean isEnableDirectAccess) {

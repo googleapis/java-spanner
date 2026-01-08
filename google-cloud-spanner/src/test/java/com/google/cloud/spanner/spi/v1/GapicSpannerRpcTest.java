@@ -910,6 +910,74 @@ public class GapicSpannerRpcTest {
       return GcpFallbackChannelOptions.newBuilder()
           .setPrimaryChannelName("directpath")
           .setFallbackChannelName("cloudpath")
+          .setPeriod(Duration.ofMillis(10))
+          .setGcpFallbackOpenTelemetry(fallbackTelemetry)
+          .build();
+    }
+  }
+
+  @Test
+  public void testFallbackIntegration_doesNotSwitchWhenThresholdNotMet() throws Exception {
+    GapicSpannerRpc.enableGcpFallbackEnv = true;
+
+    // Setup OpenTelemetry to capture metrics
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
+
+    // Setup Options with invalid host to force error
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setEnableDirectAccess(true)
+            .setHost("http://localhost:1") // Closed port
+            .setCredentials(NoCredentials.getInstance())
+            .setOpenTelemetry(openTelemetry)
+            .build();
+
+    TestableGapicSpannerRpc rpc = new TestableGapicSpannerRpc(options);
+
+    try {
+      // Make a call that is expected to fail
+      try {
+        rpc.executeBatchDml(
+            com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
+                .setSession("projects/p/instances/i/databases/d/sessions/s")
+                .build(),
+            null);
+      } catch (Exception expected) {
+        // Expect a connection error
+      }
+
+      // Wait briefly for the 10ms period to trigger the fallback check
+      Thread.sleep(100);
+
+      // Verify Fallback via Metrics
+      Collection<MetricData> metrics = metricReader.collectAllMetrics();
+      boolean fallbackOccurred =
+          metrics.stream().anyMatch(md -> md.getName().contains("fallback_count") && hasValue(md));
+
+      assertFalse("Fallback metric should not be present", fallbackOccurred);
+
+    } finally {
+      rpc.shutdown();
+    }
+  }
+
+  static class TestableGapicSpannerRpcWithLowerMinFailedCalls extends GapicSpannerRpc {
+    public TestableGapicSpannerRpcWithLowerMinFailedCalls(SpannerOptions options) {
+      super(options);
+    }
+
+    @Override
+    GcpFallbackChannelOptions createFallbackChannelOptions(
+        GcpFallbackOpenTelemetry fallbackTelemetry) {
+      // Override default 1-minute period to 10ms for instant testing
+      return GcpFallbackChannelOptions.newBuilder()
+          .setPrimaryChannelName("directpath")
+          .setFallbackChannelName("cloudpath")
           .setMinFailedCalls(1)
           .setPeriod(Duration.ofMillis(10))
           .setGcpFallbackOpenTelemetry(fallbackTelemetry)
@@ -938,7 +1006,8 @@ public class GapicSpannerRpcTest {
             .setOpenTelemetry(openTelemetry)
             .build();
 
-    TestableGapicSpannerRpc rpc = new TestableGapicSpannerRpc(options);
+    TestableGapicSpannerRpcWithLowerMinFailedCalls rpc =
+        new TestableGapicSpannerRpcWithLowerMinFailedCalls(options);
 
     try {
       // Make a call that is expected to fail
