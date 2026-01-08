@@ -6255,6 +6255,24 @@
     "allPublicClasses": true
   },
   {
+    "name": "com.google.spanner.v1.RequestOptions$ClientContext",
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredClasses": true,
+    "allPublicClasses": true
+  },
+  {
+    "name": "com.google.spanner.v1.RequestOptions$ClientContext$Builder",
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredClasses": true,
+    "allPublicClasses": true
+  },
+  {
     "name": "com.google.spanner.v1.RequestOptions$Priority",
     "queryAllDeclaredConstructors": true,
     "queryAllPublicConstructors": true,

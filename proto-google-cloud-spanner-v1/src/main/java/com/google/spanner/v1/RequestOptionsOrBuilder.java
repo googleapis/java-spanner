@@ -141,4 +141,47 @@ public interface RequestOptionsOrBuilder
    * @return The bytes for transactionTag.
    */
   com.google.protobuf.ByteString getTransactionTagBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional context that may be needed for some requests.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the clientContext field is set.
+   */
+  boolean hasClientContext();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional context that may be needed for some requests.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The clientContext.
+   */
+  com.google.spanner.v1.RequestOptions.ClientContext getClientContext();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional context that may be needed for some requests.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.RequestOptions.ClientContextOrBuilder getClientContextOrBuilder();
 }

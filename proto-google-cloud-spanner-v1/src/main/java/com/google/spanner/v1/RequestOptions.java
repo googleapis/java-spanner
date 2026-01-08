@@ -279,6 +279,953 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
     // @@protoc_insertion_point(enum_scope:google.spanner.v1.RequestOptions.Priority)
   }
 
+  public interface ClientContextOrBuilder
+      extends
+      // @@protoc_insertion_point(interface_extends:google.spanner.v1.RequestOptions.ClientContext)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    int getSecureContextCount();
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    boolean containsSecureContext(java.lang.String key);
+
+    /** Use {@link #getSecureContextMap()} instead. */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, com.google.protobuf.Value> getSecureContext();
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    java.util.Map<java.lang.String, com.google.protobuf.Value> getSecureContextMap();
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    /* nullable */
+    com.google.protobuf.Value getSecureContextOrDefault(
+        java.lang.String key,
+        /* nullable */
+        com.google.protobuf.Value defaultValue);
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    com.google.protobuf.Value getSecureContextOrThrow(java.lang.String key);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Container for various pieces of client-owned context attached to a request.
+   * </pre>
+   *
+   * Protobuf type {@code google.spanner.v1.RequestOptions.ClientContext}
+   */
+  public static final class ClientContext extends com.google.protobuf.GeneratedMessage
+      implements
+      // @@protoc_insertion_point(message_implements:google.spanner.v1.RequestOptions.ClientContext)
+      ClientContextOrBuilder {
+    private static final long serialVersionUID = 0L;
+
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+          com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+          /* major= */ 4,
+          /* minor= */ 33,
+          /* patch= */ 0,
+          /* suffix= */ "",
+          "ClientContext");
+    }
+
+    // Use ClientContext.newBuilder() to construct.
+    private ClientContext(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+
+    private ClientContext() {}
+
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.google.spanner.v1.SpannerProto
+          .internal_static_google_spanner_v1_RequestOptions_ClientContext_descriptor;
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    @java.lang.Override
+    protected com.google.protobuf.MapFieldReflectionAccessor internalGetMapFieldReflection(
+        int number) {
+      switch (number) {
+        case 1:
+          return internalGetSecureContext();
+        default:
+          throw new RuntimeException("Invalid map field number: " + number);
+      }
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.SpannerProto
+          .internal_static_google_spanner_v1_RequestOptions_ClientContext_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.RequestOptions.ClientContext.class,
+              com.google.spanner.v1.RequestOptions.ClientContext.Builder.class);
+    }
+
+    public static final int SECURE_CONTEXT_FIELD_NUMBER = 1;
+
+    private static final class SecureContextDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<java.lang.String, com.google.protobuf.Value>
+          defaultEntry =
+              com.google.protobuf.MapEntry
+                  .<java.lang.String, com.google.protobuf.Value>newDefaultInstance(
+                      com.google.spanner.v1.SpannerProto
+                          .internal_static_google_spanner_v1_RequestOptions_ClientContext_SecureContextEntry_descriptor,
+                      com.google.protobuf.WireFormat.FieldType.STRING,
+                      "",
+                      com.google.protobuf.WireFormat.FieldType.MESSAGE,
+                      com.google.protobuf.Value.getDefaultInstance());
+    }
+
+    @SuppressWarnings("serial")
+    private com.google.protobuf.MapField<java.lang.String, com.google.protobuf.Value>
+        secureContext_;
+
+    private com.google.protobuf.MapField<java.lang.String, com.google.protobuf.Value>
+        internalGetSecureContext() {
+      if (secureContext_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            SecureContextDefaultEntryHolder.defaultEntry);
+      }
+      return secureContext_;
+    }
+
+    public int getSecureContextCount() {
+      return internalGetSecureContext().getMap().size();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    @java.lang.Override
+    public boolean containsSecureContext(java.lang.String key) {
+      if (key == null) {
+        throw new NullPointerException("map key");
+      }
+      return internalGetSecureContext().getMap().containsKey(key);
+    }
+
+    /** Use {@link #getSecureContextMap()} instead. */
+    @java.lang.Override
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, com.google.protobuf.Value> getSecureContext() {
+      return getSecureContextMap();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    @java.lang.Override
+    public java.util.Map<java.lang.String, com.google.protobuf.Value> getSecureContextMap() {
+      return internalGetSecureContext().getMap();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    @java.lang.Override
+    public /* nullable */ com.google.protobuf.Value getSecureContextOrDefault(
+        java.lang.String key,
+        /* nullable */
+        com.google.protobuf.Value defaultValue) {
+      if (key == null) {
+        throw new NullPointerException("map key");
+      }
+      java.util.Map<java.lang.String, com.google.protobuf.Value> map =
+          internalGetSecureContext().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Map of parameter name to value for this request. These values
+     * will be returned by any SECURE_CONTEXT() calls invoked by this request
+     * (e.g., by queries against Parameterized Secure Views).
+     * </pre>
+     *
+     * <code>
+     * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.Value getSecureContextOrThrow(java.lang.String key) {
+      if (key == null) {
+        throw new NullPointerException("map key");
+      }
+      java.util.Map<java.lang.String, com.google.protobuf.Value> map =
+          internalGetSecureContext().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    private byte memoizedIsInitialized = -1;
+
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
+      com.google.protobuf.GeneratedMessage.serializeStringMapTo(
+          output, internalGetSecureContext(), SecureContextDefaultEntryHolder.defaultEntry, 1);
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (java.util.Map.Entry<java.lang.String, com.google.protobuf.Value> entry :
+          internalGetSecureContext().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, com.google.protobuf.Value> secureContext__ =
+            SecureContextDefaultEntryHolder.defaultEntry
+                .newBuilderForType()
+                .setKey(entry.getKey())
+                .setValue(entry.getValue())
+                .build();
+        size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, secureContext__);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj instanceof com.google.spanner.v1.RequestOptions.ClientContext)) {
+        return super.equals(obj);
+      }
+      com.google.spanner.v1.RequestOptions.ClientContext other =
+          (com.google.spanner.v1.RequestOptions.ClientContext) obj;
+
+      if (!internalGetSecureContext().equals(other.internalGetSecureContext())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (!internalGetSecureContext().getMap().isEmpty()) {
+        hash = (37 * hash) + SECURE_CONTEXT_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetSecureContext().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        java.io.InputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseDelimitedFrom(
+        java.io.InputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage.parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseDelimitedFrom(
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(com.google.spanner.v1.RequestOptions.ClientContext prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Container for various pieces of client-owned context attached to a request.
+     * </pre>
+     *
+     * Protobuf type {@code google.spanner.v1.RequestOptions.ClientContext}
+     */
+    public static final class Builder extends com.google.protobuf.GeneratedMessage.Builder<Builder>
+        implements
+        // @@protoc_insertion_point(builder_implements:google.spanner.v1.RequestOptions.ClientContext)
+        com.google.spanner.v1.RequestOptions.ClientContextOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.google.spanner.v1.SpannerProto
+            .internal_static_google_spanner_v1_RequestOptions_ClientContext_descriptor;
+      }
+
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapFieldReflectionAccessor internalGetMapFieldReflection(
+          int number) {
+        switch (number) {
+          case 1:
+            return internalGetSecureContext();
+          default:
+            throw new RuntimeException("Invalid map field number: " + number);
+        }
+      }
+
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapFieldReflectionAccessor internalGetMutableMapFieldReflection(
+          int number) {
+        switch (number) {
+          case 1:
+            return internalGetMutableSecureContext();
+          default:
+            throw new RuntimeException("Invalid map field number: " + number);
+        }
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.v1.SpannerProto
+            .internal_static_google_spanner_v1_RequestOptions_ClientContext_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.v1.RequestOptions.ClientContext.class,
+                com.google.spanner.v1.RequestOptions.ClientContext.Builder.class);
+      }
+
+      // Construct using com.google.spanner.v1.RequestOptions.ClientContext.newBuilder()
+      private Builder() {}
+
+      private Builder(com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+      }
+
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        internalGetMutableSecureContext().clear();
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.google.spanner.v1.SpannerProto
+            .internal_static_google_spanner_v1_RequestOptions_ClientContext_descriptor;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.RequestOptions.ClientContext getDefaultInstanceForType() {
+        return com.google.spanner.v1.RequestOptions.ClientContext.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.RequestOptions.ClientContext build() {
+        com.google.spanner.v1.RequestOptions.ClientContext result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.RequestOptions.ClientContext buildPartial() {
+        com.google.spanner.v1.RequestOptions.ClientContext result =
+            new com.google.spanner.v1.RequestOptions.ClientContext(this);
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.RequestOptions.ClientContext result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.secureContext_ =
+              internalGetSecureContext().build(SecureContextDefaultEntryHolder.defaultEntry);
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.google.spanner.v1.RequestOptions.ClientContext) {
+          return mergeFrom((com.google.spanner.v1.RequestOptions.ClientContext) other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.google.spanner.v1.RequestOptions.ClientContext other) {
+        if (other == com.google.spanner.v1.RequestOptions.ClientContext.getDefaultInstance())
+          return this;
+        internalGetMutableSecureContext().mergeFrom(other.internalGetSecureContext());
+        bitField0_ |= 0x00000001;
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  com.google.protobuf.MapEntry<java.lang.String, com.google.protobuf.Value>
+                      secureContext__ =
+                          input.readMessage(
+                              SecureContextDefaultEntryHolder.defaultEntry.getParserForType(),
+                              extensionRegistry);
+                  internalGetMutableSecureContext()
+                      .ensureBuilderMap()
+                      .put(secureContext__.getKey(), secureContext__.getValue());
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+
+      private int bitField0_;
+
+      private static final class SecureContextConverter
+          implements com.google.protobuf.MapFieldBuilder.Converter<
+              java.lang.String, com.google.protobuf.ValueOrBuilder, com.google.protobuf.Value> {
+        @java.lang.Override
+        public com.google.protobuf.Value build(com.google.protobuf.ValueOrBuilder val) {
+          if (val instanceof com.google.protobuf.Value) {
+            return (com.google.protobuf.Value) val;
+          }
+          return ((com.google.protobuf.Value.Builder) val).build();
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.MapEntry<java.lang.String, com.google.protobuf.Value>
+            defaultEntry() {
+          return SecureContextDefaultEntryHolder.defaultEntry;
+        }
+      }
+      ;
+
+      private static final SecureContextConverter secureContextConverter =
+          new SecureContextConverter();
+
+      private com.google.protobuf.MapFieldBuilder<
+              java.lang.String,
+              com.google.protobuf.ValueOrBuilder,
+              com.google.protobuf.Value,
+              com.google.protobuf.Value.Builder>
+          secureContext_;
+
+      private com.google.protobuf.MapFieldBuilder<
+              java.lang.String,
+              com.google.protobuf.ValueOrBuilder,
+              com.google.protobuf.Value,
+              com.google.protobuf.Value.Builder>
+          internalGetSecureContext() {
+        if (secureContext_ == null) {
+          return new com.google.protobuf.MapFieldBuilder<>(secureContextConverter);
+        }
+        return secureContext_;
+      }
+
+      private com.google.protobuf.MapFieldBuilder<
+              java.lang.String,
+              com.google.protobuf.ValueOrBuilder,
+              com.google.protobuf.Value,
+              com.google.protobuf.Value.Builder>
+          internalGetMutableSecureContext() {
+        if (secureContext_ == null) {
+          secureContext_ = new com.google.protobuf.MapFieldBuilder<>(secureContextConverter);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return secureContext_;
+      }
+
+      public int getSecureContextCount() {
+        return internalGetSecureContext().ensureBuilderMap().size();
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Map of parameter name to value for this request. These values
+       * will be returned by any SECURE_CONTEXT() calls invoked by this request
+       * (e.g., by queries against Parameterized Secure Views).
+       * </pre>
+       *
+       * <code>
+       * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      @java.lang.Override
+      public boolean containsSecureContext(java.lang.String key) {
+        if (key == null) {
+          throw new NullPointerException("map key");
+        }
+        return internalGetSecureContext().ensureBuilderMap().containsKey(key);
+      }
+
+      /** Use {@link #getSecureContextMap()} instead. */
+      @java.lang.Override
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, com.google.protobuf.Value> getSecureContext() {
+        return getSecureContextMap();
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Map of parameter name to value for this request. These values
+       * will be returned by any SECURE_CONTEXT() calls invoked by this request
+       * (e.g., by queries against Parameterized Secure Views).
+       * </pre>
+       *
+       * <code>
+       * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      @java.lang.Override
+      public java.util.Map<java.lang.String, com.google.protobuf.Value> getSecureContextMap() {
+        return internalGetSecureContext().getImmutableMap();
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Map of parameter name to value for this request. These values
+       * will be returned by any SECURE_CONTEXT() calls invoked by this request
+       * (e.g., by queries against Parameterized Secure Views).
+       * </pre>
+       *
+       * <code>
+       * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      @java.lang.Override
+      public /* nullable */ com.google.protobuf.Value getSecureContextOrDefault(
+          java.lang.String key,
+          /* nullable */
+          com.google.protobuf.Value defaultValue) {
+        if (key == null) {
+          throw new NullPointerException("map key");
+        }
+        java.util.Map<java.lang.String, com.google.protobuf.ValueOrBuilder> map =
+            internalGetMutableSecureContext().ensureBuilderMap();
+        return map.containsKey(key) ? secureContextConverter.build(map.get(key)) : defaultValue;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Map of parameter name to value for this request. These values
+       * will be returned by any SECURE_CONTEXT() calls invoked by this request
+       * (e.g., by queries against Parameterized Secure Views).
+       * </pre>
+       *
+       * <code>
+       * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      @java.lang.Override
+      public com.google.protobuf.Value getSecureContextOrThrow(java.lang.String key) {
+        if (key == null) {
+          throw new NullPointerException("map key");
+        }
+        java.util.Map<java.lang.String, com.google.protobuf.ValueOrBuilder> map =
+            internalGetMutableSecureContext().ensureBuilderMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return secureContextConverter.build(map.get(key));
+      }
+
+      public Builder clearSecureContext() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        internalGetMutableSecureContext().clear();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Map of parameter name to value for this request. These values
+       * will be returned by any SECURE_CONTEXT() calls invoked by this request
+       * (e.g., by queries against Parameterized Secure Views).
+       * </pre>
+       *
+       * <code>
+       * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public Builder removeSecureContext(java.lang.String key) {
+        if (key == null) {
+          throw new NullPointerException("map key");
+        }
+        internalGetMutableSecureContext().ensureBuilderMap().remove(key);
+        return this;
+      }
+
+      /** Use alternate mutation accessors instead. */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, com.google.protobuf.Value> getMutableSecureContext() {
+        bitField0_ |= 0x00000001;
+        return internalGetMutableSecureContext().ensureMessageMap();
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Map of parameter name to value for this request. These values
+       * will be returned by any SECURE_CONTEXT() calls invoked by this request
+       * (e.g., by queries against Parameterized Secure Views).
+       * </pre>
+       *
+       * <code>
+       * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public Builder putSecureContext(java.lang.String key, com.google.protobuf.Value value) {
+        if (key == null) {
+          throw new NullPointerException("map key");
+        }
+        if (value == null) {
+          throw new NullPointerException("map value");
+        }
+        internalGetMutableSecureContext().ensureBuilderMap().put(key, value);
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Map of parameter name to value for this request. These values
+       * will be returned by any SECURE_CONTEXT() calls invoked by this request
+       * (e.g., by queries against Parameterized Secure Views).
+       * </pre>
+       *
+       * <code>
+       * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public Builder putAllSecureContext(
+          java.util.Map<java.lang.String, com.google.protobuf.Value> values) {
+        for (java.util.Map.Entry<java.lang.String, com.google.protobuf.Value> e :
+            values.entrySet()) {
+          if (e.getKey() == null || e.getValue() == null) {
+            throw new NullPointerException();
+          }
+        }
+        internalGetMutableSecureContext().ensureBuilderMap().putAll(values);
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. Map of parameter name to value for this request. These values
+       * will be returned by any SECURE_CONTEXT() calls invoked by this request
+       * (e.g., by queries against Parameterized Secure Views).
+       * </pre>
+       *
+       * <code>
+       * map&lt;string, .google.protobuf.Value&gt; secure_context = 1 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       */
+      public com.google.protobuf.Value.Builder putSecureContextBuilderIfAbsent(
+          java.lang.String key) {
+        java.util.Map<java.lang.String, com.google.protobuf.ValueOrBuilder> builderMap =
+            internalGetMutableSecureContext().ensureBuilderMap();
+        com.google.protobuf.ValueOrBuilder entry = builderMap.get(key);
+        if (entry == null) {
+          entry = com.google.protobuf.Value.newBuilder();
+          builderMap.put(key, entry);
+        }
+        if (entry instanceof com.google.protobuf.Value) {
+          entry = ((com.google.protobuf.Value) entry).toBuilder();
+          builderMap.put(key, entry);
+        }
+        return (com.google.protobuf.Value.Builder) entry;
+      }
+
+      // @@protoc_insertion_point(builder_scope:google.spanner.v1.RequestOptions.ClientContext)
+    }
+
+    // @@protoc_insertion_point(class_scope:google.spanner.v1.RequestOptions.ClientContext)
+    private static final com.google.spanner.v1.RequestOptions.ClientContext DEFAULT_INSTANCE;
+
+    static {
+      DEFAULT_INSTANCE = new com.google.spanner.v1.RequestOptions.ClientContext();
+    }
+
+    public static com.google.spanner.v1.RequestOptions.ClientContext getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ClientContext> PARSER =
+        new com.google.protobuf.AbstractParser<ClientContext>() {
+          @java.lang.Override
+          public ClientContext parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
+          }
+        };
+
+    public static com.google.protobuf.Parser<ClientContext> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ClientContext> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.spanner.v1.RequestOptions.ClientContext getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+  }
+
+  private int bitField0_;
   public static final int PRIORITY_FIELD_NUMBER = 1;
   private int priority_ = 0;
 
@@ -460,6 +1407,65 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
     }
   }
 
+  public static final int CLIENT_CONTEXT_FIELD_NUMBER = 4;
+  private com.google.spanner.v1.RequestOptions.ClientContext clientContext_;
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional context that may be needed for some requests.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the clientContext field is set.
+   */
+  @java.lang.Override
+  public boolean hasClientContext() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional context that may be needed for some requests.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The clientContext.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RequestOptions.ClientContext getClientContext() {
+    return clientContext_ == null
+        ? com.google.spanner.v1.RequestOptions.ClientContext.getDefaultInstance()
+        : clientContext_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Optional context that may be needed for some requests.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RequestOptions.ClientContextOrBuilder getClientContextOrBuilder() {
+    return clientContext_ == null
+        ? com.google.spanner.v1.RequestOptions.ClientContext.getDefaultInstance()
+        : clientContext_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -484,6 +1490,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(transactionTag_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 3, transactionTag_);
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(4, getClientContext());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -503,6 +1512,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(transactionTag_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(3, transactionTag_);
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getClientContext());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -521,6 +1533,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
     if (priority_ != other.priority_) return false;
     if (!getRequestTag().equals(other.getRequestTag())) return false;
     if (!getTransactionTag().equals(other.getTransactionTag())) return false;
+    if (hasClientContext() != other.hasClientContext()) return false;
+    if (hasClientContext()) {
+      if (!getClientContext().equals(other.getClientContext())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -538,6 +1554,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
     hash = (53 * hash) + getRequestTag().hashCode();
     hash = (37 * hash) + TRANSACTION_TAG_FIELD_NUMBER;
     hash = (53 * hash) + getTransactionTag().hashCode();
+    if (hasClientContext()) {
+      hash = (37 * hash) + CLIENT_CONTEXT_FIELD_NUMBER;
+      hash = (53 * hash) + getClientContext().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -667,10 +1687,19 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
     }
 
     // Construct using com.google.spanner.v1.RequestOptions.newBuilder()
-    private Builder() {}
+    private Builder() {
+      maybeForceBuilderInitialization();
+    }
 
     private Builder(com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       super(parent);
+      maybeForceBuilderInitialization();
+    }
+
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        internalGetClientContextFieldBuilder();
+      }
     }
 
     @java.lang.Override
@@ -680,6 +1709,11 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
       priority_ = 0;
       requestTag_ = "";
       transactionTag_ = "";
+      clientContext_ = null;
+      if (clientContextBuilder_ != null) {
+        clientContextBuilder_.dispose();
+        clientContextBuilder_ = null;
+      }
       return this;
     }
 
@@ -724,6 +1758,13 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.transactionTag_ = transactionTag_;
       }
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.clientContext_ =
+            clientContextBuilder_ == null ? clientContext_ : clientContextBuilder_.build();
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ |= to_bitField0_;
     }
 
     @java.lang.Override
@@ -750,6 +1791,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
         transactionTag_ = other.transactionTag_;
         bitField0_ |= 0x00000004;
         onChanged();
+      }
+      if (other.hasClientContext()) {
+        mergeClientContext(other.getClientContext());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -795,6 +1839,13 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
                 bitField0_ |= 0x00000004;
                 break;
               } // case 26
+            case 34:
+              {
+                input.readMessage(
+                    internalGetClientContextFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1224,6 +2275,220 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
       bitField0_ |= 0x00000004;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.v1.RequestOptions.ClientContext clientContext_;
+    private com.google.protobuf.SingleFieldBuilder<
+            com.google.spanner.v1.RequestOptions.ClientContext,
+            com.google.spanner.v1.RequestOptions.ClientContext.Builder,
+            com.google.spanner.v1.RequestOptions.ClientContextOrBuilder>
+        clientContextBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the clientContext field is set.
+     */
+    public boolean hasClientContext() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The clientContext.
+     */
+    public com.google.spanner.v1.RequestOptions.ClientContext getClientContext() {
+      if (clientContextBuilder_ == null) {
+        return clientContext_ == null
+            ? com.google.spanner.v1.RequestOptions.ClientContext.getDefaultInstance()
+            : clientContext_;
+      } else {
+        return clientContextBuilder_.getMessage();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setClientContext(com.google.spanner.v1.RequestOptions.ClientContext value) {
+      if (clientContextBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        clientContext_ = value;
+      } else {
+        clientContextBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setClientContext(
+        com.google.spanner.v1.RequestOptions.ClientContext.Builder builderForValue) {
+      if (clientContextBuilder_ == null) {
+        clientContext_ = builderForValue.build();
+      } else {
+        clientContextBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeClientContext(com.google.spanner.v1.RequestOptions.ClientContext value) {
+      if (clientContextBuilder_ == null) {
+        if (((bitField0_ & 0x00000008) != 0)
+            && clientContext_ != null
+            && clientContext_
+                != com.google.spanner.v1.RequestOptions.ClientContext.getDefaultInstance()) {
+          getClientContextBuilder().mergeFrom(value);
+        } else {
+          clientContext_ = value;
+        }
+      } else {
+        clientContextBuilder_.mergeFrom(value);
+      }
+      if (clientContext_ != null) {
+        bitField0_ |= 0x00000008;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearClientContext() {
+      bitField0_ = (bitField0_ & ~0x00000008);
+      clientContext_ = null;
+      if (clientContextBuilder_ != null) {
+        clientContextBuilder_.dispose();
+        clientContextBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.RequestOptions.ClientContext.Builder getClientContextBuilder() {
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return internalGetClientContextFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.RequestOptions.ClientContextOrBuilder getClientContextOrBuilder() {
+      if (clientContextBuilder_ != null) {
+        return clientContextBuilder_.getMessageOrBuilder();
+      } else {
+        return clientContext_ == null
+            ? com.google.spanner.v1.RequestOptions.ClientContext.getDefaultInstance()
+            : clientContext_;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Optional context that may be needed for some requests.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.RequestOptions.ClientContext client_context = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+            com.google.spanner.v1.RequestOptions.ClientContext,
+            com.google.spanner.v1.RequestOptions.ClientContext.Builder,
+            com.google.spanner.v1.RequestOptions.ClientContextOrBuilder>
+        internalGetClientContextFieldBuilder() {
+      if (clientContextBuilder_ == null) {
+        clientContextBuilder_ =
+            new com.google.protobuf.SingleFieldBuilder<
+                com.google.spanner.v1.RequestOptions.ClientContext,
+                com.google.spanner.v1.RequestOptions.ClientContext.Builder,
+                com.google.spanner.v1.RequestOptions.ClientContextOrBuilder>(
+                getClientContext(), getParentForChildren(), isClean());
+        clientContext_ = null;
+      }
+      return clientContextBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:google.spanner.v1.RequestOptions)
