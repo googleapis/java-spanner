@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.106.0](https://github.com/googleapis/java-spanner/compare/v6.105.0...v6.106.0) (2026-01-07)
+
+
+### Features
+
+* Support SHOW DEFAULT_TRANSACTION_ISOLATION for PG databases ([#4285](https://github.com/googleapis/java-spanner/issues/4285)) ([aec0515](https://github.com/googleapis/java-spanner/commit/aec051514dd3d122a7231eb6d25d1aaec8d90bda))
+
+
+### Bug Fixes
+
+* Adjust the initial polling delay for ddl operations ([#4275](https://github.com/googleapis/java-spanner/issues/4275)) ([8d36967](https://github.com/googleapis/java-spanner/commit/8d36967d010bed8f5a4a0c32f9ec1b5fe7d33e1d))
+* Retry creation of multiplexed session ([#4288](https://github.com/googleapis/java-spanner/issues/4288)) ([735e29e](https://github.com/googleapis/java-spanner/commit/735e29ed394faea9f5e697b5934a1f4895055d56))
+
 ## [6.105.0](https://github.com/googleapis/java-spanner/compare/v6.104.0...v6.105.0) (2025-12-16)
 
 
