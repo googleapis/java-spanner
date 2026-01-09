@@ -1412,7 +1412,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
           .setPollingAlgorithm(
               OperationTimedPollAlgorithm.create(
                   RetrySettings.newBuilder()
-                      .setInitialRetryDelayDuration(Duration.ofMillis(20000L))
+                      .setInitialRetryDelayDuration(Duration.ofMillis(1000L))
                       .setRetryDelayMultiplier(1.5)
                       .setMaxRetryDelayDuration(Duration.ofMillis(45000L))
                       .setInitialRpcTimeoutDuration(Duration.ZERO)
@@ -1461,7 +1461,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
           .setPollingAlgorithm(
               OperationTimedPollAlgorithm.create(
                   RetrySettings.newBuilder()
-                      .setInitialRetryDelayDuration(Duration.ofMillis(20000L))
+                      .setInitialRetryDelayDuration(Duration.ofMillis(1000L))
                       .setRetryDelayMultiplier(1.5)
                       .setMaxRetryDelayDuration(Duration.ofMillis(45000L))
                       .setInitialRpcTimeoutDuration(Duration.ZERO)
