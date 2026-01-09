@@ -400,7 +400,7 @@ public final class Mutation implements Serializable {
   /** Returns the delivery timestamp of the message to the queue that this mutation will affect. */
   @Nullable
   public Instant getDeliveryTime() {
-    checkState(operation == Op.SEND, "getDeliverAt() can only be called for a SEND mutation");
+    checkState(operation == Op.SEND, "getDeliverTime() can only be called for a SEND mutation");
     return deliveryTime;
   }
 
@@ -622,7 +622,7 @@ public final class Mutation implements Serializable {
         if (last != null && last.operation == Op.DELETE && mutation.table.equals(last.table)) {
           mutation.keySet.appendToProto(keySet);
         } else {
-          largestInsertMutation = FlushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+          largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
           proto = com.google.spanner.v1.Mutation.newBuilder();
           com.google.spanner.v1.Mutation.Delete.Builder delete =
               proto.getDeleteBuilder().setTable(mutation.table);
@@ -631,7 +631,7 @@ public final class Mutation implements Serializable {
         }
         write = null;
       } else if (mutation.operation == Op.SEND) {
-        largestInsertMutation = FlushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+        largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
         proto = com.google.spanner.v1.Mutation.newBuilder();
         com.google.spanner.v1.Mutation.Send.Builder send = proto.getSendBuilder()
             .setQueue(mutation.queue)
@@ -645,7 +645,7 @@ public final class Mutation implements Serializable {
           send.setDeliverTime(timeBuilder);
         }
       } else if (mutation.operation == Op.ACK) {
-        largestInsertMutation = FlushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+        largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
         proto = com.google.spanner.v1.Mutation.newBuilder();
         proto.getAckBuilder()
             .setQueue(mutation.queue)
@@ -663,7 +663,7 @@ public final class Mutation implements Serializable {
           // Same as previous mutation: coalesce values to reduce request size.
           write.addValues(values);
         } else {
-          largestInsertMutation = FlushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+          largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
           proto = com.google.spanner.v1.Mutation.newBuilder();
           switch (mutation.operation) {
             case INSERT:
@@ -688,7 +688,7 @@ public final class Mutation implements Serializable {
       last = mutation;
     }
     // Flush last item.
-    largestInsertMutation = FlushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+    largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
 
     // Select a random mutation based on the heuristic.
     if (!allMutationsExcludingInsert.isEmpty()) {
@@ -699,10 +699,10 @@ public final class Mutation implements Serializable {
     }
   }
 
-  private static com.google.spanner.v1.Mutation FlushMutation(List<com.google.spanner.v1.Mutation> out,
-                                    com.google.spanner.v1.Mutation.Builder proto,
-                                    List<com.google.spanner.v1.Mutation> allMutationsExcludingInsert,
-                                    com.google.spanner.v1.Mutation largestInsertMutation) {
+  private static com.google.spanner.v1.Mutation flushMutation(List<com.google.spanner.v1.Mutation> out,
+                                                              com.google.spanner.v1.Mutation.Builder proto,
+                                                              List<com.google.spanner.v1.Mutation> allMutationsExcludingInsert,
+                                                              com.google.spanner.v1.Mutation largestInsertMutation) {
     if (proto != null) {
       com.google.spanner.v1.Mutation builtMutation = proto.build();
       out.add(builtMutation);
