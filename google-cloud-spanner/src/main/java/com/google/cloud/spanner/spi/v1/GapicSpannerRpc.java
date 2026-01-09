@@ -373,6 +373,9 @@ public class GapicSpannerRpc implements SpannerRpc {
         final AtomicReference<ManagedChannelBuilder> cloudPathBuilderRef = new AtomicReference<>();
         cloudPathProviderBuilder.setChannelConfigurator(
             builder -> {
+              if (options.getChannelConfigurator() != null) {
+                builder = options.getChannelConfigurator().apply(builder);
+              }
               cloudPathBuilderRef.set(builder);
               return builder;
             });
@@ -409,8 +412,12 @@ public class GapicSpannerRpc implements SpannerRpc {
 
         defaultChannelProviderBuilder.setChannelConfigurator(
             directPathBuilder -> {
+              if (options.getChannelConfigurator() != null) {
+                directPathBuilder = options.getChannelConfigurator().apply(directPathBuilder);
+              }
+
               String jsonApiConfig = parseGrpcGcpApiConfig();
-              GcpManagedChannelOptions gcpOptions = options.getGrpcGcpOptions();
+              GcpManagedChannelOptions gcpOptions = grpcGcpOptionsWithMetricsAndDcp(options);
               if (gcpOptions == null) {
                 gcpOptions = GcpManagedChannelOptions.newBuilder().build();
               }
@@ -610,6 +617,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     return GcpFallbackChannelOptions.newBuilder()
         .setPrimaryChannelName("directpath")
         .setFallbackChannelName("cloudpath")
+        .setMinFailedCalls(1)
         .setGcpFallbackOpenTelemetry(fallbackTelemetry)
         .build();
   }
