@@ -257,6 +257,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
   private final TransactionOptions defaultTransactionOptions;
+  private final boolean isExperimentalHost;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -914,7 +915,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     openTelemetry = builder.openTelemetry;
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
-    if (builder.experimentalHost != null) {
+    if (builder.isExperimentalHost) {
       enableBuiltInMetrics = false;
     } else {
       enableBuiltInMetrics = builder.enableBuiltInMetrics;
@@ -922,6 +923,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
+    isExperimentalHost = builder.isExperimentalHost;
   }
 
   private String getResolvedUniverseDomain() {
@@ -987,6 +989,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default GoogleCredentials getDefaultExperimentalHostCredentials() {
       return null;
     }
+
+    /**
+     * Returns true if the experimental location API (SpanFE bypass) should be enabled. When
+     * enabled, the client will use location-aware routing to send requests directly to the
+     * appropriate Spanner server.
+     */
+    default boolean isEnableLocationApi() {
+      return false;
+    }
   }
 
   static final String DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS =
@@ -1011,6 +1022,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS =
         "SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS";
     private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
+    private static final String GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API =
+        "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
 
     private SpannerEnvironmentImpl() {}
 
@@ -1068,6 +1081,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public GoogleCredentials getDefaultExperimentalHostCredentials() {
       return getOAuthTokenFromFile(System.getenv(DEFAULT_SPANNER_EXPERIMENTAL_HOST_CREDENTIALS));
+    }
+
+    @Override
+    public boolean isEnableLocationApi() {
+      return Boolean.parseBoolean(System.getenv(GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API));
     }
   }
 
@@ -1139,8 +1157,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
-    private String experimentalHost = null;
-    private boolean usePlainText = false;
+    private boolean isExperimentalHost = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
 
     private static String createCustomClientLibToken(String token) {
@@ -1149,56 +1166,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     protected Builder() {
       // Manually set retry and polling settings that work.
-      RetrySettings baseRetrySettings =
-          RetrySettings.newBuilder()
-              .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
-              .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
-              .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
-              .setRetryDelayMultiplier(1.5)
-              .setRpcTimeoutMultiplier(1.5)
-              .setTotalTimeoutDuration(Duration.ofHours(48L))
-              .build();
-
-      // The polling setting with a short initial delay as we expect
-      // it to return soon.
-      OperationTimedPollAlgorithm shortInitialPollingDelayAlgorithm =
+      OperationTimedPollAlgorithm longRunningPollingAlgorithm =
           OperationTimedPollAlgorithm.create(
-              baseRetrySettings.toBuilder()
-                  .setInitialRetryDelayDuration(Duration.ofSeconds(1L))
+              RetrySettings.newBuilder()
+                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
+                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
+                  .setRetryDelayMultiplier(1.5)
+                  .setRpcTimeoutMultiplier(1.5)
+                  .setTotalTimeoutDuration(Duration.ofHours(48L))
                   .build());
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
-          .setPollingAlgorithm(shortInitialPollingDelayAlgorithm);
-
-      // The polling setting with a long initial delay as we expect
-      // the operation to take a bit long time to return.
-      OperationTimedPollAlgorithm longInitialPollingDelayAlgorithm =
-          OperationTimedPollAlgorithm.create(
-              baseRetrySettings.toBuilder()
-                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
-                  .build());
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
       databaseAdminStubSettingsBuilder
           .createBackupOperationSettings()
-          .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
       databaseAdminStubSettingsBuilder
           .restoreDatabaseOperationSettings()
-          .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
-
-      // updateDatabaseDdl requires a separate setting because
-      // it has no existing overrides on RPC timeouts for LRO polling.
-      databaseAdminStubSettingsBuilder
-          .updateDatabaseDdlOperationSettings()
-          .setPollingAlgorithm(
-              OperationTimedPollAlgorithm.create(
-                  RetrySettings.newBuilder()
-                      .setInitialRetryDelayDuration(Duration.ofMillis(1000L))
-                      .setRetryDelayMultiplier(1.5)
-                      .setMaxRetryDelayDuration(Duration.ofMillis(45000L))
-                      .setInitialRpcTimeoutDuration(Duration.ZERO)
-                      .setRpcTimeoutMultiplier(1.0)
-                      .setMaxRpcTimeoutDuration(Duration.ZERO)
-                      .setTotalTimeoutDuration(Duration.ofHours(48L))
-                      .build()));
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
     }
 
     Builder(SpannerOptions options) {
@@ -1676,19 +1663,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
     public Builder setExperimentalHost(String host) {
-      if (this.usePlainText) {
-        Preconditions.checkArgument(
-            !host.startsWith("https:"),
-            "Please remove the 'https:' protocol prefix from the host string when using plain text"
-                + " communication");
-        if (!host.startsWith("http")) {
-          host = "http://" + host;
-        }
-      }
       super.setHost(host);
       super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
       setSessionPoolOption(SessionPoolOptions.newBuilder().setExperimentalHost().build());
-      this.experimentalHost = host;
+      this.isExperimentalHost = true;
       return this;
     }
 
@@ -1795,23 +1773,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
                 .build();
       } catch (Exception e) {
         throw SpannerExceptionFactory.asSpannerException(e);
-      }
-      return this;
-    }
-
-    /**
-     * {@code usePlainText} will configure the transport to use plaintext (no TLS) and will set
-     * credentials to {@link com.google.cloud.NoCredentials} to avoid sending authentication over an
-     * unsecured channel.
-     */
-    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/4264")
-    public Builder usePlainText() {
-      this.usePlainText = true;
-      this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
-          .setCredentials(NoCredentials.getInstance());
-      if (this.experimentalHost != null) {
-        // Re-apply host settings to ensure http:// is prepended.
-        setExperimentalHost(this.experimentalHost);
       }
       return this;
     }
@@ -1981,7 +1942,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
-      if (emulatorHost != null && experimentalHost == null) {
+      if (emulatorHost != null) {
         if (!emulatorHost.startsWith("http")) {
           emulatorHost = "http://" + emulatorHost;
         }
@@ -1991,7 +1952,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-      } else if (experimentalHost != null && credentials == null) {
+      } else if (isExperimentalHost && credentials == null) {
         credentials = environment.getDefaultExperimentalHostCredentials();
       }
       if (this.numChannels == null) {
@@ -2031,6 +1992,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public static void useDefaultEnvironment() {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
+  /** Returns the current {@link SpannerEnvironment}. */
+  @InternalApi
+  public static SpannerEnvironment getEnvironment() {
+    return environment;
   }
 
   @InternalApi
@@ -2377,6 +2344,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public TransactionOptions getDefaultTransactionOptions() {
     return defaultTransactionOptions;
+  }
+
+  public boolean isExperimentalHost() {
+    return isExperimentalHost;
   }
 
   @BetaApi

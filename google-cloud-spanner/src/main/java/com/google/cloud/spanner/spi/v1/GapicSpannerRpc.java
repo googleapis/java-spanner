@@ -57,6 +57,7 @@ import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
+import com.google.auth.Credentials;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannel;
@@ -209,11 +210,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -223,6 +227,7 @@ import javax.annotation.Nullable;
 public class GapicSpannerRpc implements SpannerRpc {
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
+  private static final Logger logger = Logger.getLogger(GapicSpannerRpc.class.getName());
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
       PathTemplate.create("{database=projects/*/instances/*/databases/*}/operations/{operation}");
   private static final int MAX_MESSAGE_SIZE = 256 * 1024 * 1024;
@@ -284,6 +289,89 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final boolean isDynamicChannelPoolEnabled;
 
   private final GrpcCallContext baseGrpcCallContext;
+
+  private static class KeyAwareTransportChannelProvider implements TransportChannelProvider {
+    private final InstantiatingGrpcChannelProvider.Builder delegateBuilder;
+    private final TransportChannelProvider delegate;
+
+    public KeyAwareTransportChannelProvider(
+        InstantiatingGrpcChannelProvider.Builder delegateBuilder) {
+      this.delegateBuilder = delegateBuilder;
+      this.delegate = delegateBuilder.build();
+    }
+
+    @Override
+    public GrpcTransportChannel getTransportChannel() throws IOException {
+      return GrpcTransportChannel.newBuilder()
+          .setManagedChannel(KeyAwareChannel.create(delegateBuilder))
+          .build();
+    }
+
+    @Override
+    public String getTransportName() {
+      return delegate.getTransportName();
+    }
+
+    @Override
+    public boolean needsEndpoint() {
+      return delegate.needsEndpoint();
+    }
+
+    @Override
+    public boolean needsCredentials() {
+      return delegate.needsCredentials();
+    }
+
+    @Override
+    public boolean needsExecutor() {
+      return delegate.needsExecutor();
+    }
+
+    @Override
+    public boolean needsHeaders() {
+      return delegate.needsHeaders();
+    }
+
+    @Override
+    public boolean shouldAutoClose() {
+      return delegate.shouldAutoClose();
+    }
+
+    @Override
+    public TransportChannelProvider withEndpoint(String endpoint) {
+      return delegate.withEndpoint(endpoint);
+    }
+
+    @Override
+    public TransportChannelProvider withCredentials(Credentials credentials) {
+      return delegate.withCredentials(credentials);
+    }
+
+    @Override
+    public TransportChannelProvider withHeaders(java.util.Map<String, String> headers) {
+      return delegate.withHeaders(headers);
+    }
+
+    @Override
+    public TransportChannelProvider withPoolSize(int poolSize) {
+      return delegate.withPoolSize(poolSize);
+    }
+
+    @Override
+    public TransportChannelProvider withExecutor(ScheduledExecutorService executor) {
+      return delegate.withExecutor(executor);
+    }
+
+    @Override
+    public TransportChannelProvider withExecutor(Executor executor) {
+      return delegate.withExecutor(executor);
+    }
+
+    @Override
+    public boolean acceptsPoolSize() {
+      return delegate.acceptsPoolSize();
+    }
+  }
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -393,9 +481,35 @@ public class GapicSpannerRpc implements SpannerRpc {
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
-      TransportChannelProvider channelProvider =
-          MoreObjects.firstNonNull(
-              options.getChannelProvider(), defaultChannelProviderBuilder.build());
+      TransportChannelProvider channelProvider;
+      // Enable KeyAwareChannel (SpanFE bypass / location API) only when BOTH conditions are met:
+      // 1. Using experimental host (setExperimentalHost was called)
+      // 2. GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API env var is set to "true"
+      // Default is DISABLED even for experimental host.
+      String locationApiEnvVar = System.getenv("GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API");
+      boolean isExperimentalHost = options.isExperimentalHost();
+      boolean envVarEnabled = "true".equalsIgnoreCase(locationApiEnvVar);
+
+      // Both conditions must be true to enable bypass
+      boolean enableLocationApi = isExperimentalHost && envVarEnabled;
+
+      logger.log(
+          Level.INFO,
+          "SpanFE bypass (KeyAwareChannel) configuration: "
+              + "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API={0}, "
+              + "isExperimentalHost={1}, "
+              + "enableLocationApi={2}",
+          new Object[] {locationApiEnvVar, isExperimentalHost, enableLocationApi});
+
+      if (enableLocationApi) {
+        channelProvider = new KeyAwareTransportChannelProvider(defaultChannelProviderBuilder);
+        logger.log(Level.INFO, "KeyAwareChannel (SpanFE bypass) ENABLED");
+      } else {
+        channelProvider =
+            MoreObjects.firstNonNull(
+                options.getChannelProvider(), defaultChannelProviderBuilder.build());
+        logger.log(Level.INFO, "KeyAwareChannel (SpanFE bypass) DISABLED - using standard routing");
+      }
 
       CredentialsProvider credentialsProvider =
           GrpcTransportOptions.setUpCredentialsProvider(options);
