@@ -481,9 +481,12 @@ class SessionImpl implements Session {
     if (sessionReference.getIsMultiplexed() && mutation != null) {
       requestBuilder.setMutationKey(mutation);
     }
-    if (sessionReference.getIsMultiplexed() && !Strings.isNullOrEmpty(transactionOptions.tag())) {
-      requestBuilder.setRequestOptions(
-          RequestOptions.newBuilder().setTransactionTag(transactionOptions.tag()).build());
+    RequestOptions requestOptions = transactionOptions.toRequestOptionsProto(true);
+    if (!sessionReference.getIsMultiplexed()) {
+      requestOptions = requestOptions.toBuilder().clearTransactionTag().build();
+    }
+    if (!requestOptions.equals(RequestOptions.getDefaultInstance())) {
+      requestBuilder.setRequestOptions(requestOptions);
     }
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;

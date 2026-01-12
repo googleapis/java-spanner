@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -53,6 +54,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -79,6 +81,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -97,6 +100,37 @@ public class TransactionRunnerImplTest {
     public void release(ScheduledExecutorService exec) {
       exec.shutdown();
     }
+  }
+
+  @Test
+  public void testCommitWithClientContext() {
+    RequestOptions.ClientContext clientContext =
+        RequestOptions.ClientContext.newBuilder()
+            .putSecureContext(
+                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
+            .build();
+    Options options =
+        Options.fromTransactionOptions(
+            Options.priority(Options.RpcPriority.HIGH),
+            Options.tag("tag"),
+            Options.clientContext(clientContext));
+    transactionRunner = new TransactionRunnerImpl(session, options);
+    when(session.getName()).thenReturn("projects/p/instances/i/databases/d/sessions/s");
+    when(session.newTransaction(any(Options.class), any())).thenReturn(txn);
+
+    transactionRunner.run(
+        transaction -> {
+          return null;
+        });
+
+    ArgumentCaptor<CommitRequest> commitRequestCaptor =
+        ArgumentCaptor.forClass(CommitRequest.class);
+    verify(rpc).commitAsync(commitRequestCaptor.capture(), anyMap());
+    CommitRequest request = commitRequestCaptor.getValue();
+    RequestOptions requestOptions = request.getRequestOptions();
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, requestOptions.getPriority());
+    assertEquals("tag", requestOptions.getTransactionTag());
+    assertEquals(clientContext, requestOptions.getClientContext());
   }
 
   @Mock private SpannerRpc rpc;

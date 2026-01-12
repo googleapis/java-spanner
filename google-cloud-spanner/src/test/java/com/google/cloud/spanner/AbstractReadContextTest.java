@@ -346,6 +346,18 @@ public class AbstractReadContextTest {
   }
 
   @Test
+  public void testBuildRequestOptionsWithClientContext() {
+    RequestOptions.ClientContext clientContext =
+        RequestOptions.ClientContext.newBuilder()
+            .putSecureContext(
+                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
+            .build();
+    RequestOptions requestOptions =
+        context.buildRequestOptions(Options.fromQueryOptions(Options.clientContext(clientContext)));
+    assertEquals(clientContext, requestOptions.getClientContext());
+  }
+
+  @Test
   public void testGetExecuteSqlRequestBuilderWithDirectedReadOptions() {
     ExecuteSqlRequest.Builder request =
         context.getExecuteSqlRequestBuilder(

@@ -684,22 +684,11 @@ abstract class AbstractReadContext
   }
 
   RequestOptions buildRequestOptions(Options options) {
-    // Shortcut for the most common return value.
-    if (!(options.hasPriority() || options.hasTag() || getTransactionTag() != null)) {
-      return RequestOptions.getDefaultInstance();
-    }
-
-    RequestOptions.Builder builder = RequestOptions.newBuilder();
-    if (options.hasPriority()) {
-      builder.setPriority(options.priority());
-    }
-    if (options.hasTag()) {
-      builder.setRequestTag(options.tag());
-    }
+    RequestOptions requestOptions = options.toRequestOptionsProto(false);
     if (getTransactionTag() != null) {
-      builder.setTransactionTag(getTransactionTag());
+      return requestOptions.toBuilder().setTransactionTag(getTransactionTag()).build();
     }
-    return builder.build();
+    return requestOptions;
   }
 
   ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(
