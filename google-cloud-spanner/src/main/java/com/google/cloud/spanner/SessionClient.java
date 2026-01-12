@@ -213,7 +213,13 @@ class SessionClient implements AutoCloseable {
     return db;
   }
 
-  /** Create a single session. */
+  /**
+   * Create a single session.
+   *
+   * @deprecated This method is deprecated. The Java Spanner client now uses multiplexed sessions
+   *     exclusively. Use {@link #createMultiplexedSession()} instead.
+   */
+  @Deprecated
   SessionImpl createSession() {
     // The sessionChannelCounter could overflow, but that will just flip it to Integer.MIN_VALUE,
     // which is also a valid channel hint.
@@ -346,7 +352,10 @@ class SessionClient implements AutoCloseable {
    * @param distributeOverChannels Whether to distribute the sessions over all available channels
    *     (true) or create all for the next channel round robin.
    * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
+   * @deprecated This method is deprecated. The Java Spanner client now uses multiplexed sessions
+   *     exclusively. Use {@link #asyncCreateMultiplexedSession(SessionConsumer)} instead.
    */
+  @Deprecated
   void asyncBatchCreateSessions(
       final int sessionCount, boolean distributeOverChannels, SessionConsumer consumer) {
     int sessionCountPerChannel;

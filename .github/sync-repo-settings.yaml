@@ -14,13 +14,10 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
       - compile (11)
-      - units-with-multiplexed-session (8)
-      - units-with-multiplexed-session (11)
       - unmanaged_dependency_check
       - library_generation
   - pattern: 3.3.x
@@ -154,13 +151,10 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
       - compile (11)
-      - units-with-multiplexed-session (8)
-      - units-with-multiplexed-session (11)
   - pattern: 6.88.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -173,13 +167,10 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
       - compile (11)
-      - units-with-multiplexed-session (8)
-      - units-with-multiplexed-session (11)
       - unmanaged_dependency_check
       - library_generation
   - pattern: 6.96.x
@@ -194,13 +185,10 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
       - compile (11)
-      - units-with-multiplexed-session (8)
-      - units-with-multiplexed-session (11)
       - unmanaged_dependency_check
       - library_generation
   - pattern: 6.95.x
@@ -215,13 +203,10 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
       - compile (11)
-      - units-with-multiplexed-session (8)
-      - units-with-multiplexed-session (11)
       - unmanaged_dependency_check
       - library_generation
 permissionRules:

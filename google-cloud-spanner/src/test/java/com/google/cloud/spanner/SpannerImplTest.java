@@ -28,7 +28,6 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
-import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
@@ -248,20 +247,6 @@ public class SpannerImplTest {
     DatabaseId db2 = DatabaseId.of(dbName2);
     DatabaseClientImpl databaseClient2 = (DatabaseClientImpl) impl.getDatabaseClient(db2);
     assertThat(databaseClient2.clientId).isEqualTo("client-1");
-
-    // Getting a new database client for an invalidated database should use the same client id.
-    databaseClient.pool.setResourceNotFoundException(
-        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
-    DatabaseClientImpl revalidated = (DatabaseClientImpl) impl.getDatabaseClient(db);
-    assertThat(revalidated).isNotSameInstanceAs(databaseClient);
-    assertThat(revalidated.clientId).isEqualTo(databaseClient.clientId);
-
-    // Now invalidate the second client and request a new one.
-    revalidated.pool.setResourceNotFoundException(
-        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
-    DatabaseClientImpl revalidated2 = (DatabaseClientImpl) impl.getDatabaseClient(db);
-    assertThat(revalidated2).isNotSameInstanceAs(revalidated);
-    assertThat(revalidated2.clientId).isEqualTo(revalidated.clientId);
 
     // Create a new Spanner instance. This will generate new database clients with new ids.
     try (Spanner spanner =

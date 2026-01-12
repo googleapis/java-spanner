@@ -20,10 +20,11 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
-import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.Statement.StatementFactory;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
 import io.opentelemetry.api.common.Attributes;
@@ -34,7 +35,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
@@ -44,59 +44,35 @@ class DatabaseClientImpl implements DatabaseClient {
   private final TraceWrapper tracer;
   private final Attributes databaseAttributes;
   @VisibleForTesting final String clientId;
-  @VisibleForTesting final SessionPool pool;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
   @VisibleForTesting final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final boolean useMultiplexedSessionForRW;
   @VisibleForTesting final int dbId;
   private final AtomicInteger nthRequest;
   private final Map<String, Integer> clientIdToOrdinalMap;
+  private final String databaseRole;
 
   final boolean useMultiplexedSessionBlindWrite;
 
-  @VisibleForTesting
-  DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this(
-        "",
-        pool,
-        /* useMultiplexedSessionBlindWrite= */ false,
-        /* multiplexedSessionDatabaseClient= */ null,
-        /* useMultiplexedSessionPartitionedOps= */ false,
-        tracer,
-        /* useMultiplexedSessionForRW= */ false,
-        Attributes.empty());
-  }
-
-  @VisibleForTesting
-  DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(
-        clientId,
-        pool,
-        /* useMultiplexedSessionBlindWrite= */ false,
-        /* multiplexedSessionDatabaseClient= */ null,
-        /* useMultiplexedSessionPartitionedOps= */ false,
-        tracer,
-        /* useMultiplexedSessionForRW= */ false,
-        Attributes.empty());
-  }
-
   DatabaseClientImpl(
       String clientId,
-      SessionPool pool,
+      MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
       boolean useMultiplexedSessionBlindWrite,
-      @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
       boolean useMultiplexedSessionPartitionedOps,
       TraceWrapper tracer,
       boolean useMultiplexedSessionForRW,
-      Attributes databaseAttributes) {
+      Attributes databaseAttributes,
+      String databaseRole) {
+    Preconditions.checkNotNull(
+        multiplexedSessionDatabaseClient, "multiplexedSessionDatabaseClient cannot be null");
     this.clientId = clientId;
-    this.pool = pool;
     this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
     this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
     this.tracer = tracer;
     this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
     this.databaseAttributes = databaseAttributes;
+    this.databaseRole = databaseRole;
 
     this.clientIdToOrdinalMap = new HashMap<String, Integer>();
     this.dbId = this.dbIdFromClientId(this.clientId);
@@ -114,54 +90,18 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @VisibleForTesting
-  PooledSessionFuture getSession() {
-    return pool.getSession();
-  }
-
-  @VisibleForTesting
   DatabaseClient getMultiplexedSession() {
-    if (canUseMultiplexedSessions()) {
-      return this.multiplexedSessionDatabaseClient;
-    }
-    return pool.getMultiplexedSessionWithFallback();
+    return this.multiplexedSessionDatabaseClient;
   }
 
   @VisibleForTesting
   DatabaseClient getMultiplexedSessionForRW() {
-    if (canUseMultiplexedSessionsForRW()) {
-      return getMultiplexedSession();
-    }
-    return getSession();
-  }
-
-  private MultiplexedSessionDatabaseClient getMultiplexedSessionDatabaseClient() {
-    return canUseMultiplexedSessions() ? this.multiplexedSessionDatabaseClient : null;
-  }
-
-  private boolean canUseMultiplexedSessions() {
-    return this.multiplexedSessionDatabaseClient != null
-        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported();
-  }
-
-  private boolean canUseMultiplexedSessionsForRW() {
-    return this.useMultiplexedSessionForRW
-        && this.multiplexedSessionDatabaseClient != null
-        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsForRWSupported();
-  }
-
-  private boolean canUseMultiplexedSessionsForPartitionedOps() {
-    return this.useMultiplexedSessionPartitionedOps
-        && this.multiplexedSessionDatabaseClient != null
-        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsForPartitionedOpsSupported();
+    return this.multiplexedSessionDatabaseClient;
   }
 
   @Override
   public Dialect getDialect() {
-    MultiplexedSessionDatabaseClient client = getMultiplexedSessionDatabaseClient();
-    if (client != null) {
-      return client.getDialect();
-    }
-    return pool.getDialect();
+    return multiplexedSessionDatabaseClient.getDialect();
   }
 
   private final AbstractLazyInitializer<StatementFactory> statementFactorySupplier =
@@ -191,7 +131,7 @@ class DatabaseClientImpl implements DatabaseClient {
   @Override
   @Nullable
   public String getDatabaseRole() {
-    return pool.getDatabaseRole();
+    return databaseRole;
   }
 
   @Override
@@ -205,14 +145,7 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
-      if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
-        return getMultiplexedSessionDatabaseClient().writeWithOptions(mutations, options);
-      }
-
-      return runWithSessionRetry(
-          (session, reqId) -> {
-            return session.writeWithOptions(mutations, withReqId(reqId, options));
-          });
+      return multiplexedSessionDatabaseClient.writeWithOptions(mutations, options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -232,13 +165,7 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
-      if (useMultiplexedSessionBlindWrite && getMultiplexedSessionDatabaseClient() != null) {
-        return getMultiplexedSessionDatabaseClient()
-            .writeAtLeastOnceWithOptions(mutations, options);
-      }
-      return runWithSessionRetry(
-          (session, reqId) ->
-              session.writeAtLeastOnceWithOptions(mutations, withReqId(reqId, options)));
+      return multiplexedSessionDatabaseClient.writeAtLeastOnceWithOptions(mutations, options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -247,27 +174,13 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
-  private int nextNthRequest() {
-    return this.nthRequest.incrementAndGet();
-  }
-
-  @VisibleForTesting
-  int getNthRequest() {
-    return this.nthRequest.get();
-  }
-
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       final Iterable<MutationGroup> mutationGroups, final TransactionOption... options)
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, databaseAttributes, options);
     try (IScope s = tracer.withSpan(span)) {
-      if (canUseMultiplexedSessionsForRW() && getMultiplexedSessionDatabaseClient() != null) {
-        return getMultiplexedSessionDatabaseClient().batchWriteAtLeastOnce(mutationGroups, options);
-      }
-      return runWithSessionRetry(
-          (session, reqId) ->
-              session.batchWriteAtLeastOnce(mutationGroups, withReqId(reqId, options)));
+      return multiplexedSessionDatabaseClient.batchWriteAtLeastOnce(mutationGroups, options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -398,102 +311,27 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
-
-    if (canUseMultiplexedSessionsForPartitionedOps()) {
-      try {
-        return getMultiplexedSession().executePartitionedUpdate(stmt, options);
-      } catch (SpannerException e) {
-        if (!multiplexedSessionDatabaseClient.maybeMarkUnimplementedForPartitionedOps(e)) {
-          throw e;
-        }
-      }
+    ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION, databaseAttributes);
+    try (IScope s = tracer.withSpan(span)) {
+      return getMultiplexedSession().executePartitionedUpdate(stmt, options);
+    } catch (RuntimeException e) {
+      span.setStatus(e);
+      throw e;
+    } finally {
+      span.end();
     }
-    return executePartitionedUpdateWithPooledSession(stmt, options);
   }
 
   private Future<Dialect> getDialectAsync() {
-    MultiplexedSessionDatabaseClient client = getMultiplexedSessionDatabaseClient();
-    if (client != null) {
-      return client.getDialectAsync();
-    }
-    return pool.getDialectAsync();
-  }
-
-  private UpdateOption[] withReqId(
-      final XGoogSpannerRequestId reqId, final UpdateOption... options) {
-    if (reqId == null) {
-      return options;
-    }
-    if (options == null || options.length == 0) {
-      return new UpdateOption[] {new Options.RequestIdOption(reqId)};
-    }
-    UpdateOption[] allOptions = new UpdateOption[options.length + 1];
-    System.arraycopy(options, 0, allOptions, 0, options.length);
-    allOptions[options.length] = new Options.RequestIdOption(reqId);
-    return allOptions;
-  }
-
-  private TransactionOption[] withReqId(
-      final XGoogSpannerRequestId reqId, final TransactionOption... options) {
-    if (reqId == null) {
-      return options;
-    }
-    if (options == null || options.length == 0) {
-      return new TransactionOption[] {new Options.RequestIdOption(reqId)};
-    }
-    TransactionOption[] allOptions = new TransactionOption[options.length + 1];
-    System.arraycopy(options, 0, allOptions, 0, options.length);
-    allOptions[options.length] = new Options.RequestIdOption(reqId);
-    return allOptions;
-  }
-
-  private long executePartitionedUpdateWithPooledSession(
-      final Statement stmt, final UpdateOption... options) {
-    ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION, databaseAttributes);
-    try (IScope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(
-          (session, reqId) -> {
-            return session.executePartitionedUpdate(stmt, withReqId(reqId, options));
-          });
-    } catch (RuntimeException e) {
-      span.setStatus(e);
-      span.end();
-      throw e;
-    }
-  }
-
-  @VisibleForTesting
-  <T> T runWithSessionRetry(BiFunction<Session, XGoogSpannerRequestId, T> callable) {
-    PooledSessionFuture session = getSession();
-    XGoogSpannerRequestId reqId =
-        XGoogSpannerRequestId.of(
-            this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 1);
-    while (true) {
-      try {
-        return callable.apply(session, reqId);
-      } catch (SessionNotFoundException e) {
-        session =
-            (PooledSessionFuture)
-                pool.getPooledSessionReplacementHandler().replaceSession(e, session);
-        reqId =
-            XGoogSpannerRequestId.of(
-                this.dbId, Long.valueOf(session.getChannel()), this.nextNthRequest(), 1);
-      }
-    }
+    return multiplexedSessionDatabaseClient.getDialectAsync();
   }
 
   boolean isValid() {
-    return pool.isValid()
-        && (multiplexedSessionDatabaseClient == null
-            || multiplexedSessionDatabaseClient.isValid()
-            || !multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported());
+    return multiplexedSessionDatabaseClient.isValid();
   }
 
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
-    if (this.multiplexedSessionDatabaseClient != null) {
-      // This method is non-blocking.
-      this.multiplexedSessionDatabaseClient.close();
-    }
-    return pool.closeAsync(closedException);
+    this.multiplexedSessionDatabaseClient.close();
+    return Futures.immediateVoidFuture();
   }
 }

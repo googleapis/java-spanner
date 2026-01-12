@@ -41,7 +41,6 @@ import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.ReadOption;
-import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -180,9 +179,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     AsyncTransactionManager manager = client().transactionManagerAsync();
     TransactionContext txn = manager.beginAsync().get();
     txn.executeUpdateAsync(UPDATE_STATEMENT).get();
-    if (txn instanceof SessionPoolTransactionContext) {
-      txn = ((SessionPoolTransactionContext) txn).delegate;
-    }
     TransactionContextImpl impl = (TransactionContextImpl) txn;
     final TransactionSelector selector = impl.getTransactionSelector();
 
@@ -1243,44 +1239,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       gotException = true;
     }
     assertTrue(gotException);
-  }
-
-  @Test
-  public void testRollbackAndCloseEmptyTransaction() throws Exception {
-    assumeFalse(
-        spannerWithEmptySessionPool
-            .getOptions()
-            .getSessionPoolOptions()
-            .getUseMultiplexedSessionForRW());
-
-    DatabaseClientImpl client = (DatabaseClientImpl) clientWithEmptySessionPool();
-
-    // Create a transaction manager and start a transaction. This should create a session and
-    // check it out of the pool.
-    AsyncTransactionManager manager = client.transactionManagerAsync();
-    manager.beginAsync().get();
-    assertEquals(0, client.pool.numSessionsInPool());
-    assertEquals(1, client.pool.totalSessions());
-
-    // Rolling back an empty transaction will return the session to the pool.
-    manager.rollbackAsync().get();
-    assertEquals(1, client.pool.numSessionsInPool());
-    // Closing the transaction manager should not cause the session to be added to the pool again.
-    manager.close();
-    // The total number of sessions does not change.
-    assertEquals(1, client.pool.numSessionsInPool());
-
-    // Check out 2 sessions. Make sure that the pool really created a new session, and did not
-    // return the same session twice.
-    AsyncTransactionManager manager1 = client.transactionManagerAsync();
-    AsyncTransactionManager manager2 = client.transactionManagerAsync();
-    manager1.beginAsync().get();
-    manager2.beginAsync().get();
-    assertEquals(2, client.pool.totalSessions());
-    assertEquals(0, client.pool.numSessionsInPool());
-    manager1.close();
-    manager2.close();
-    assertEquals(2, client.pool.numSessionsInPool());
   }
 
   private boolean isMultiplexedSessionsEnabled() {

@@ -545,9 +545,6 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     final SettableApiFuture<Boolean> finished = SettableApiFuture.create();
     DatabaseClientImpl clientImpl = (DatabaseClientImpl) client();
 
-    // There should currently not be any sessions checked out of the pool.
-    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
-
     AsyncRunner runner = clientImpl.runAsync();
     final CountDownLatch dataReceived = new CountDownLatch(1);
     final CountDownLatch dataChecked = new CountDownLatch(1);
@@ -589,12 +586,8 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               }
             },
             executor);
-    // Wait until at least one row has been fetched. At that moment there should be one session
-    // checked out.
+    // Wait until at least one row has been fetched.
     dataReceived.await();
-    if (!isMultiplexedSessionsEnabledForRW()) {
-      assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
-    }
     assertThat(res.isDone()).isFalse();
     dataChecked.countDown();
     // Get the data from the transaction.
@@ -605,7 +598,6 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     assertThat(finished.get()).isTrue();
     assertThat(resultList).containsExactly("k1", "k2", "k3");
     assertThat(res.get()).isNull();
-    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
   }
 
   @Test

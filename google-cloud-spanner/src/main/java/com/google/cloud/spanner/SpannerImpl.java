@@ -34,14 +34,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
-import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -51,7 +48,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -183,13 +179,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     if (options.getSessionPoolOptions() != null) {
       logger.log(
           Level.INFO,
-          "Session pool options: "
-              + "\nSession pool min sessions: "
-              + options.getSessionPoolOptions().getMinSessions()
-              + "\nSession pool max sessions: "
-              + options.getSessionPoolOptions().getMaxSessions()
-              + "\nMultiplexed sessions enabled: "
-              + options.getSessionPoolOptions().getUseMultiplexedSession()
+          "Multiplexed session options: "
               + "\nMultiplexed sessions enabled for RW: "
               + options.getSessionPoolOptions().getUseMultiplexedSessionForRW()
               + "\nMultiplexed sessions enabled for blind write: "
@@ -313,54 +303,22 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         if (clientId == null) {
           clientId = nextDatabaseClientId(db);
         }
-        List<LabelValue> labelValues =
-            ImmutableList.of(
-                LabelValue.create(clientId),
-                LabelValue.create(db.getDatabase()),
-                LabelValue.create(db.getInstanceId().getName()),
-                LabelValue.create(GaxProperties.getLibraryVersion(getOptions().getClass())));
 
-        AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesBuilder.put("client_id", clientId);
-        attributesBuilder.put("database", db.getDatabase());
-        attributesBuilder.put("instance_id", db.getInstanceId().getName());
-
-        boolean useMultiplexedSession =
-            getOptions().getSessionPoolOptions().getUseMultiplexedSession();
         boolean useMultiplexedSessionForRW =
             getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
 
         MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
-            useMultiplexedSession
-                ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
-                : null;
-        AtomicLong numMultiplexedSessionsAcquired =
-            useMultiplexedSession
-                ? multiplexedSessionDatabaseClient.getNumSessionsAcquired()
-                : new AtomicLong();
-        AtomicLong numMultiplexedSessionsReleased =
-            useMultiplexedSession
-                ? multiplexedSessionDatabaseClient.getNumSessionsReleased()
-                : new AtomicLong();
-        SessionPool pool =
-            SessionPool.createPool(
-                getOptions(),
-                SpannerImpl.this.getSessionClient(db),
-                this.tracer,
-                labelValues,
-                attributesBuilder.build(),
-                numMultiplexedSessionsAcquired,
-                numMultiplexedSessionsReleased);
-        pool.maybeWaitOnMinSessions();
+            new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db));
+
         DatabaseClientImpl dbClient =
             createDatabaseClient(
                 clientId,
-                pool,
-                getOptions().getSessionPoolOptions().getUseMultiplexedSessionBlindWrite(),
                 multiplexedSessionDatabaseClient,
+                getOptions().getSessionPoolOptions().getUseMultiplexedSessionBlindWrite(),
                 getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps(),
                 useMultiplexedSessionForRW,
-                this.tracer.createDatabaseAttributes(db));
+                this.tracer.createDatabaseAttributes(db),
+                getOptions().getDatabaseRole());
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -370,48 +328,36 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   @VisibleForTesting
   DatabaseClientImpl createDatabaseClient(
       String clientId,
-      SessionPool pool,
+      MultiplexedSessionDatabaseClient multiplexedSessionClient,
       boolean useMultiplexedSessionBlindWrite,
-      @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient,
       boolean useMultiplexedSessionPartitionedOps,
       boolean useMultiplexedSessionForRW,
-      Attributes databaseAttributes) {
-    if (multiplexedSessionClient != null) {
-      // Set the session pool in the multiplexed session client.
-      // This is required to handle fallback to regular sessions for in-progress transactions that
-      // use multiplexed sessions but fail with UNIMPLEMENTED errors.
-      multiplexedSessionClient.setPool(pool);
-    }
+      Attributes databaseAttributes,
+      String databaseRole) {
     return new DatabaseClientImpl(
         clientId,
-        pool,
-        useMultiplexedSessionBlindWrite,
         multiplexedSessionClient,
+        useMultiplexedSessionBlindWrite,
         useMultiplexedSessionPartitionedOps,
         tracer,
         useMultiplexedSessionForRW,
-        databaseAttributes);
+        databaseAttributes,
+        databaseRole);
   }
 
   @Override
   public BatchClient getBatchClient(DatabaseId db) {
-    if (getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps()) {
-      this.dbBatchClientLock.lock();
-      try {
-        if (this.dbBatchClients.containsKey(db)) {
-          return this.dbBatchClients.get(db);
-        }
-        BatchClientImpl batchClient =
-            new BatchClientImpl(
-                getSessionClient(db), /* useMultiplexedSessionPartitionedOps= */ true);
-        this.dbBatchClients.put(db, batchClient);
-        return batchClient;
-      } finally {
-        this.dbBatchClientLock.unlock();
+    this.dbBatchClientLock.lock();
+    try {
+      if (this.dbBatchClients.containsKey(db)) {
+        return this.dbBatchClients.get(db);
       }
+      BatchClientImpl batchClient = new BatchClientImpl(getSessionClient(db));
+      this.dbBatchClients.put(db, batchClient);
+      return batchClient;
+    } finally {
+      this.dbBatchClientLock.unlock();
     }
-    return new BatchClientImpl(
-        getSessionClient(db), /* useMultiplexedSessionPartitionedOps= */ false);
   }
 
   @Override

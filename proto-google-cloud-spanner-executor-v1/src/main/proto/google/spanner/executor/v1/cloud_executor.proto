@@ -1508,13 +1508,18 @@ message HeartbeatRecord {
 
 // Options for Cloud Spanner Service.
 message SpannerOptions {
-  // Options for configuring the session pool
-  SessionPoolOptions session_pool_options = 1;
+  // DEPRECATED: Options for configuring the session pool.
+  // The Java client now uses multiplexed sessions exclusively.
+  SessionPoolOptions session_pool_options = 1 [deprecated = true];
 }
 
-// Options for the session pool used by the DatabaseClient.
+// DEPRECATED: Options for the session pool used by the DatabaseClient.
+// The Java client now uses multiplexed sessions exclusively.
+// This message is kept for backward compatibility only.
 message SessionPoolOptions {
-  // passing this as true, will make applicable RPCs use multiplexed sessions
-  // instead of regular sessions
-  bool use_multiplexed = 1;
+  option deprecated = true;
+
+  // DEPRECATED: This field is no longer used.
+  // Multiplexed sessions are now always enabled.
+  bool use_multiplexed = 1 [deprecated = true];
 }

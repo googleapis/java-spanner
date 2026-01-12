@@ -21,15 +21,42 @@ import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
 
 import com.google.api.core.InternalApi;
 import com.google.api.core.ObsoleteApi;
-import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
 
-/** Options for the session pool used by {@code DatabaseClient}. */
+/**
+ * Options for session management used by {@code DatabaseClient}.
+ *
+ * @deprecated This class is deprecated. The Java Spanner client now uses multiplexed sessions
+ *     exclusively. Session pool related options (minSessions, maxSessions, etc.) are no longer
+ *     used. Only multiplexed session configuration options remain functional:
+ *     <ul>
+ *       <li>{@link #getUseMultiplexedSession()}
+ *       <li>{@link #getUseMultiplexedSessionForRW()}
+ *       <li>{@link #getUseMultiplexedSessionPartitionedOps()}
+ *       <li>{@link #getMultiplexedSessionMaintenanceDuration()}
+ *       <li>{@link #getMultiplexedSessionMaintenanceLoopFrequency()}
+ *       <li>{@link #getWaitForMinSessions()}
+ *       <li>{@link #isAutoDetectDialect()}
+ *     </ul>
+ */
+@Deprecated
 public class SessionPoolOptions {
+
+  /**
+   * Position in the session pool where sessions are released to.
+   *
+   * @deprecated This enum is deprecated as the session pool is no longer used.
+   */
+  @Deprecated
+  public enum Position {
+    FIRST,
+    RANDOM
+  }
+
   // Default number of channels * 100.
   private static final int DEFAULT_MAX_SESSIONS = 400;
   private static final int DEFAULT_MIN_SESSIONS = 100;
