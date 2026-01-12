@@ -741,4 +741,34 @@ public class SpannerPoolTest {
                 .setCredentials(NoCredentials.getInstance())
                 .build()));
   }
+
+  @Test
+  public void testExplicitlyDisabledDynamicChannelPool() {
+    SpannerPoolKey keyWithoutDcpSetting =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithDcpExplicitlyDisabled =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=false")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+
+    // Keys should be different because one has explicit false and one has null (default)
+    assertNotEquals(keyWithoutDcpSetting, keyWithDcpExplicitlyDisabled);
+
+    // Verify the explicit false setting is preserved
+    assertEquals(
+        keyWithDcpExplicitlyDisabled,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=false")
+                .setCredentials(NoCredentials.getInstance())
+                .build()));
+  }
 }

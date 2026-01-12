@@ -421,40 +421,48 @@ public class SpannerPool {
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);
     }
-    // Configure Dynamic Channel Pooling (DCP) if enabled.
+    // Configure Dynamic Channel Pooling (DCP) based on explicit user setting.
     // Note: Setting numChannels disables DCP even if enableDynamicChannelPool is true.
-    if (Boolean.TRUE.equals(key.enableDynamicChannelPool) && key.numChannels == null) {
-      builder.enableDynamicChannelPool();
-      // Build custom GcpChannelPoolOptions if any DCP-specific options are set.
-      if (key.dcpMinChannels != null
-          || key.dcpMaxChannels != null
-          || key.dcpInitialChannels != null) {
-        // Build GcpChannelPoolOptions from scratch with custom values or Spanner defaults.
-        int minChannels =
-            key.dcpMinChannels != null
-                ? key.dcpMinChannels
-                : SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_CHANNELS;
-        int maxChannels =
-            key.dcpMaxChannels != null
-                ? key.dcpMaxChannels
-                : SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_CHANNELS;
-        int initChannels =
-            key.dcpInitialChannels != null
-                ? key.dcpInitialChannels
-                : SpannerOptions.DEFAULT_DYNAMIC_POOL_INITIAL_SIZE;
-        GcpChannelPoolOptions poolOptions =
-            GcpChannelPoolOptions.newBuilder()
-                .setMinSize(minChannels)
-                .setMaxSize(maxChannels)
-                .setInitSize(initChannels)
-                .setDynamicScaling(
-                    SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_RPC,
-                    SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_RPC,
-                    SpannerOptions.DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL)
-                .setAffinityKeyLifetime(SpannerOptions.DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME)
-                .setCleanupInterval(SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL)
-                .build();
-        builder.setGcpChannelPoolOptions(poolOptions);
+    if (key.enableDynamicChannelPool != null && key.numChannels == null) {
+      if (Boolean.TRUE.equals(key.enableDynamicChannelPool)) {
+        builder.enableDynamicChannelPool();
+        // Build custom GcpChannelPoolOptions if any DCP-specific options are set.
+        if (key.dcpMinChannels != null
+            || key.dcpMaxChannels != null
+            || key.dcpInitialChannels != null) {
+          // Build GcpChannelPoolOptions from scratch with custom values or Spanner defaults.
+          // Note: GcpChannelPoolOptions does not have a toBuilder() method, so we must
+          // construct from scratch using SpannerOptions defaults for unspecified values.
+          int minChannels =
+              key.dcpMinChannels != null
+                  ? key.dcpMinChannels
+                  : SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_CHANNELS;
+          int maxChannels =
+              key.dcpMaxChannels != null
+                  ? key.dcpMaxChannels
+                  : SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_CHANNELS;
+          int initChannels =
+              key.dcpInitialChannels != null
+                  ? key.dcpInitialChannels
+                  : SpannerOptions.DEFAULT_DYNAMIC_POOL_INITIAL_SIZE;
+          GcpChannelPoolOptions poolOptions =
+              GcpChannelPoolOptions.newBuilder()
+                  .setMinSize(minChannels)
+                  .setMaxSize(maxChannels)
+                  .setInitSize(initChannels)
+                  .setDynamicScaling(
+                      SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_RPC,
+                      SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_RPC,
+                      SpannerOptions.DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL)
+                  .setAffinityKeyLifetime(SpannerOptions.DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME)
+                  .setCleanupInterval(SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL)
+                  .build();
+          builder.setGcpChannelPoolOptions(poolOptions);
+        }
+      } else {
+        // Explicitly disable DCP when enableDynamicChannelPool=false.
+        // This ensures consistent behavior even if the default changes in the future.
+        builder.disableDynamicChannelPool();
       }
     }
     if (options.getChannelProvider() != null) {

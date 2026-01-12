@@ -456,7 +456,9 @@ public class ConnectionProperties {
           ENABLE_DYNAMIC_CHANNEL_POOL_PROPERTY_NAME,
           "Enable dynamic channel pooling for automatic gRPC channel scaling. When enabled, the "
               + "client will automatically scale the number of channels based on load. Setting "
-              + "numChannels will disable dynamic channel pooling even if this is set to true.",
+              + "numChannels will disable dynamic channel pooling even if this is set to true. "
+              + "The default is currently false (disabled), but this may change to true in a "
+              + "future version. Set this property explicitly to ensure consistent behavior.",
           DEFAULT_ENABLE_DYNAMIC_CHANNEL_POOL,
           BOOLEANS,
           BooleanConverter.INSTANCE,

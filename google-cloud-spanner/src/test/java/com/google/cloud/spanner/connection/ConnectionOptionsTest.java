@@ -1437,7 +1437,10 @@ public class ConnectionOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .build()
             .isEnableDynamicChannelPool());
-    // Disabled
+  }
+
+  @Test
+  public void testDisableDynamicChannelPool() {
     assertFalse(
         ConnectionOptions.newBuilder()
             .setUri(
