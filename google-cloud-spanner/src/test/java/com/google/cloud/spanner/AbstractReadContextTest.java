@@ -138,6 +138,10 @@ public class AbstractReadContextTest {
   public void setup() {
     SessionImpl session = mock(SessionImpl.class);
     when(session.getName()).thenReturn("session-1");
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions spannerOptions = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(spannerOptions);
+    when(session.getSpanner()).thenReturn(spanner);
     TestReadContextBuilder builder = new TestReadContextBuilder();
     context =
         builder
@@ -322,6 +326,10 @@ public class AbstractReadContextTest {
   public void executeSqlRequestBuilderWithRequestOptionsWithTxnTag() {
     SessionImpl session = mock(SessionImpl.class);
     when(session.getName()).thenReturn("session-1");
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions spannerOptions = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(spannerOptions);
+    when(session.getSpanner()).thenReturn(spanner);
     TestReadContextWithTagBuilder builder = new TestReadContextWithTagBuilder();
     TestReadContextWithTag contextWithTag =
         builder
@@ -343,6 +351,18 @@ public class AbstractReadContextTest {
     assertThat(request.getRequestOptions().getRequestTag())
         .isEqualTo("app=spanner,env=test,action=query");
     assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
+  }
+
+  @Test
+  public void testBuildRequestOptionsWithClientContext() {
+    RequestOptions.ClientContext clientContext =
+        RequestOptions.ClientContext.newBuilder()
+            .putSecureContext(
+                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
+            .build();
+    RequestOptions requestOptions =
+        context.buildRequestOptions(Options.fromQueryOptions(Options.clientContext(clientContext)));
+    assertEquals(clientContext, requestOptions.getClientContext());
   }
 
   @Test

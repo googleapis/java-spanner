@@ -67,6 +67,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
@@ -257,6 +258,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
   private final TransactionOptions defaultTransactionOptions;
+  private final RequestOptions.ClientContext clientContext;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -922,11 +924,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
+    clientContext = builder.clientContext;
   }
 
   private String getResolvedUniverseDomain() {
     String universeDomain = getUniverseDomain();
     return Strings.isNullOrEmpty(universeDomain) ? GOOGLE_DEFAULT_UNIVERSE : universeDomain;
+  }
+
+  /** Returns the default {@link RequestOptions.ClientContext} for this {@link SpannerOptions}. */
+  public RequestOptions.ClientContext getClientContext() {
+    return clientContext;
   }
 
   /**
@@ -1142,6 +1150,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String experimentalHost = null;
     private boolean usePlainText = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
+    private RequestOptions.ClientContext clientContext;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1243,6 +1252,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
       this.defaultTransactionOptions = options.defaultTransactionOptions;
+      this.clientContext = options.clientContext;
     }
 
     @Override
@@ -1974,6 +1984,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       Preconditions.checkNotNull(
           defaultReadWriteTransactionOptions, "DefaultReadWriteTransactionOptions cannot be null");
       this.defaultTransactionOptions = defaultReadWriteTransactionOptions.defaultTransactionOptions;
+      return this;
+    }
+
+    /** Sets the default {@link RequestOptions.ClientContext} for all requests. */
+    public Builder setClientContext(RequestOptions.ClientContext clientContext) {
+      this.clientContext = clientContext;
       return this;
     }
 
