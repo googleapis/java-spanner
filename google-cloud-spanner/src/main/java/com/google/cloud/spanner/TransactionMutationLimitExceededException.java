@@ -28,25 +28,31 @@ public class TransactionMutationLimitExceededException extends SpannerException 
 
   private static final String ERROR_MESSAGE = "The transaction contains too many mutations.";
 
+  private static final String TRANSACTION_RESOURCE_LIMIT_EXCEEDED_MESSAGE =
+      "Transaction resource limits exceeded";
+
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   TransactionMutationLimitExceededException(
       DoNotConstructDirectly token,
       ErrorCode errorCode,
       String message,
       Throwable cause,
-      @Nullable ApiException apiException,
-      @Nullable XGoogSpannerRequestId reqId) {
-    super(token, errorCode, /* retryable= */ false, message, cause, apiException, reqId);
+      @Nullable ApiException apiException) {
+    super(token, errorCode, /* retryable= */ false, message, cause, apiException);
   }
 
   static boolean isTransactionMutationLimitException(ErrorCode code, String message) {
-    return code == ErrorCode.INVALID_ARGUMENT && message != null && message.contains(ERROR_MESSAGE);
+    return code == ErrorCode.INVALID_ARGUMENT
+        && message != null
+        && (message.contains(ERROR_MESSAGE)
+            || message.contains(TRANSACTION_RESOURCE_LIMIT_EXCEEDED_MESSAGE));
   }
 
   static boolean isTransactionMutationLimitException(Throwable cause, ApiException apiException) {
     if (cause == null
         || cause.getMessage() == null
-        || !cause.getMessage().contains(ERROR_MESSAGE)) {
+        || !(cause.getMessage().contains(ERROR_MESSAGE)
+            || cause.getMessage().contains(TRANSACTION_RESOURCE_LIMIT_EXCEEDED_MESSAGE))) {
       return false;
     }
     // Spanner includes a hint that points to the Spanner limits documentation page when the error
@@ -66,6 +72,9 @@ public class TransactionMutationLimitExceededException extends SpannerException 
               .getLinks(0)
               .getUrl()
               .equals("https://cloud.google.com/spanner/docs/limits");
+    } else if (cause.getMessage().contains(TRANSACTION_RESOURCE_LIMIT_EXCEEDED_MESSAGE)) {
+      // This more generic error does not contain any additional details.
+      return true;
     }
     return false;
   }

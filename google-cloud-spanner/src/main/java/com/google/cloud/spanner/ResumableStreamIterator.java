@@ -69,10 +69,10 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
   private final ISpan span;
   private final TraceWrapper tracer;
   private CloseableIterator<PartialResultSet> stream;
+  private int attempts;
   private ByteString resumeToken;
   private boolean finished;
-  public XGoogSpannerRequestId xGoogRequestId;
-  private XGoogSpannerRequestId.RequestIdCreator xGoogRequestIdCreator;
+  private final XGoogSpannerRequestId requestId;
 
   /**
    * Indicates whether it is currently safe to retry RPCs. This will be {@code false} if we have
@@ -119,7 +119,8 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
     this.errorHandler = errorHandler;
     this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
     this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
-    this.xGoogRequestIdCreator = xGoogRequestIdCreator;
+    // The channel is automatically updated by the gRPC client when the request is actually sent.
+    this.requestId = xGoogRequestIdCreator.nextRequestId(0);
   }
 
   private ExponentialBackOff newBackOff() {
@@ -187,25 +188,13 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       }
       if (latch.await(backoffMillis, TimeUnit.MILLISECONDS)) {
         // Woken by context cancellation.
-        throw newSpannerExceptionForCancellation(context, null, this.xGoogRequestId);
+        throw newSpannerExceptionForCancellation(context, null);
       }
     } catch (InterruptedException interruptExcept) {
-      throw newSpannerExceptionForCancellation(context, interruptExcept, this.xGoogRequestId);
+      throw newSpannerExceptionForCancellation(context, interruptExcept);
     } finally {
       context.removeListener(listener);
     }
-  }
-
-  public void ensureNonNullXGoogRequestId() {
-    if (this.xGoogRequestId == null) {
-      this.xGoogRequestId =
-          this.xGoogRequestIdCreator.nextRequestId(1 /*TODO: infer channelId*/, 1 /*attempt*/);
-    }
-  }
-
-  public void incrementXGoogRequestIdAttempt() {
-    this.ensureNonNullXGoogRequestId();
-    this.xGoogRequestId.incrementAttempt();
   }
 
   private enum DirectExecutor implements Executor {
@@ -218,7 +207,9 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
   }
 
   abstract CloseableIterator<PartialResultSet> startStream(
-      @Nullable ByteString resumeToken, AsyncResultSet.StreamMessageListener streamMessageListener);
+      @Nullable ByteString resumeToken,
+      AsyncResultSet.StreamMessageListener streamMessageListener,
+      XGoogSpannerRequestId requestId);
 
   /**
    * Prepares the iterator for a retry on a different gRPC channel. Returns true if that is
@@ -304,7 +295,6 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
           }
           assert buffer.isEmpty() || buffer.getLast().getResumeToken().equals(resumeToken);
           stream = null;
-          incrementXGoogRequestIdAttempt();
           try (IScope s = tracer.withSpan(span)) {
             long delay = spannerException.getRetryDelayInMillis();
             if (delay != -1) {
@@ -326,14 +316,12 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
             if (++numAttemptsOnOtherChannel < errorHandler.getMaxAttempts()
                 && prepareIteratorForRetryOnDifferentGrpcChannel()) {
               stream = null;
-              xGoogRequestId = null;
               continue;
             }
           }
         }
         span.addAnnotation("Stream broken. Not safe to retry", spannerException);
         span.setStatus(spannerException);
-        spannerException.setRequestId(this.xGoogRequestId);
         throw spannerException;
       } catch (RuntimeException e) {
         span.addAnnotation("Stream broken. Not safe to retry", e);
@@ -352,13 +340,8 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       try (IScope scope = tracer.withSpan(span)) {
         // When start a new stream set the Span as current to make the gRPC Span a child of
         // this Span.
-        stream = checkNotNull(startStream(resumeToken, streamMessageListener));
+        stream = checkNotNull(startStream(resumeToken, streamMessageListener, requestId));
         stream.requestPrefetchChunks();
-        if (this.xGoogRequestId == null) {
-          this.xGoogRequestId =
-              this.xGoogRequestIdCreator.nextRequestId(
-                  1 /* channelId shall be replaced by the instantiated class. */, 0);
-        }
       }
     }
   }

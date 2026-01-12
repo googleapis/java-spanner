@@ -64,6 +64,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATA_BOOST_ENABLED;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DIRECTED_READ;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
@@ -647,7 +648,19 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementShowTransactionIsolationLevel() {
-    return resultSet("transaction_isolation", "serializable", SHOW_TRANSACTION_ISOLATION_LEVEL);
+    TransactionOptions.IsolationLevel isolationLevel =
+        getConnection().isInTransaction()
+            ? getConnection().getTransactionIsolationLevel()
+            : getConnection().getDefaultIsolationLevel();
+    return resultSet("transaction_isolation", isolationLevel, SHOW_TRANSACTION_ISOLATION_LEVEL);
+  }
+
+  @Override
+  public StatementResult statementShowDefaultTransactionIsolation() {
+    return resultSet(
+        "default_transaction_isolation",
+        getConnection().getDefaultIsolationLevel(),
+        SHOW_DEFAULT_TRANSACTION_ISOLATION);
   }
 
   @Override

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -34,6 +35,7 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.spanner.XGoogSpannerRequestId.NoopRequestIdCreator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.ByteString;
@@ -144,8 +146,8 @@ public class SessionImplTest {
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
     when(rpc.getCommitRetrySettings())
         .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
+    when(rpc.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     session = spanner.getSessionClient(db).createSession();
-    ((SessionImpl) session).setRequestIdCreator(new XGoogSpannerRequestId.NoopRequestIdCreator());
     Span oTspan = mock(Span.class);
     ISpan span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
@@ -446,7 +448,7 @@ public class SessionImplTest {
   private void mockRead(final PartialResultSet myResultSet) {
     final ArgumentCaptor<SpannerRpc.ResultStreamConsumer> consumer =
         ArgumentCaptor.forClass(SpannerRpc.ResultStreamConsumer.class);
-    Mockito.when(rpc.read(Mockito.any(), consumer.capture(), anyMap(), eq(false)))
+    Mockito.when(rpc.read(Mockito.any(), consumer.capture(), anyMap(), any(), eq(false)))
         .then(
             invocation -> {
               consumer.getValue().onPartialResultSet(myResultSet);

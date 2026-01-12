@@ -54,3 +54,8 @@ branches:
     bumpMinorPreMajor: true
     handleGHRelease: true
     branch: 6.95.x
+  - releaseType: java-yoshi
+    bumpMinorPreMajor: true
+    handleGHRelease: true
+    branch: protobuf-4.x-rc
+    manifest: true

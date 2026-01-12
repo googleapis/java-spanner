@@ -152,6 +152,8 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowTransactionIsolationLevel();
 
+  StatementResult statementShowDefaultTransactionIsolation();
+
   StatementResult statementSetProtoDescriptors(byte[] protoDescriptors);
 
   StatementResult statementSetProtoDescriptorsFilePath(String filePath);

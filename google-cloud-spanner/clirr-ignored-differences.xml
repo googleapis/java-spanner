@@ -1062,4 +1062,81 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>java.lang.Object getConnectionPropertyValue(com.google.cloud.spanner.connection.ConnectionProperty)</method>
   </difference>
+  <!-- (Remove since these methods has no usage. CompositeTracer interface is annotated as internal API) -->
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordAFELatency(java.lang.Long)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordAFELatency(java.lang.Float)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordAfeHeaderMissingCount(java.lang.Long)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordGFELatency(java.lang.Long)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordGFELatency(java.lang.Float)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/CompositeTracer</className>
+    <method>void recordGfeHeaderMissingCount(java.lang.Long)</method>
+  </difference>
+
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerException</className>
+    <method>void setRequestId(com.google.cloud.spanner.XGoogSpannerRequestId)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerExceptionFactory</className>
+    <method>com.google.cloud.spanner.SpannerBatchUpdateException newSpannerBatchUpdateException(com.google.cloud.spanner.ErrorCode, java.lang.String, long[], com.google.cloud.spanner.XGoogSpannerRequestId)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerExceptionFactory</className>
+    <method>com.google.cloud.spanner.SpannerException newSpannerException(com.google.cloud.spanner.ErrorCode, java.lang.String, java.lang.Throwable, com.google.cloud.spanner.XGoogSpannerRequestId)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerExceptionFactory</className>
+    <method>com.google.cloud.spanner.SpannerException newSpannerException(com.google.cloud.spanner.ErrorCode, java.lang.String, com.google.cloud.spanner.XGoogSpannerRequestId)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerExceptionFactory</className>
+    <method>com.google.cloud.spanner.SpannerException newSpannerException(java.lang.Throwable, com.google.cloud.spanner.XGoogSpannerRequestId)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerExceptionFactory</className>
+    <method>com.google.cloud.spanner.SpannerException newSpannerException(io.grpc.Context, java.lang.Throwable, com.google.cloud.spanner.XGoogSpannerRequestId)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerExceptionFactory</className>
+    <method>com.google.cloud.spanner.SpannerException propagateInterrupt(java.lang.InterruptedException, com.google.cloud.spanner.XGoogSpannerRequestId)</method>
+  </difference>
+  <difference>
+    <differenceType>6001</differenceType>
+    <className>com/google/cloud/spanner/XGoogSpannerRequestId</className>
+    <field>REQUEST_HEADER_KEY</field>
+  </difference>
+  <difference>
+    <differenceType>6001</differenceType>
+    <className>com/google/cloud/spanner/XGoogSpannerRequestId</className>
+    <field>REQUEST_ID</field>
+  </difference>
 </differences>

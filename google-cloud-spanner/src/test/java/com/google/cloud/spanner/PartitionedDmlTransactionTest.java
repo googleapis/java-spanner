@@ -33,6 +33,7 @@ import com.google.api.gax.rpc.InternalException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.XGoogSpannerRequestId.NoopRequestIdCreator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableList;
@@ -96,11 +97,9 @@ public class PartitionedDmlTransactionTest {
   public void setup() {
     MockitoAnnotations.initMocks(this);
     when(session.getName()).thenReturn(sessionId);
-    when(session.getRequestIdCreator())
-        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     when(session.getOptions()).thenReturn(Collections.EMPTY_MAP);
-    when(session.getRequestIdCreator())
-        .thenReturn(new XGoogSpannerRequestId.NoopRequestIdCreator());
+    when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     when(rpc.beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true)))
         .thenReturn(Transaction.newBuilder().setId(txId).build());
 
@@ -115,7 +114,7 @@ public class PartitionedDmlTransactionTest {
     ServerStream<PartialResultSet> stream = mock(ServerStream.class);
     when(stream.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream);
 
     long count = tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
@@ -124,7 +123,7 @@ public class PartitionedDmlTransactionTest {
     verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -135,7 +134,7 @@ public class PartitionedDmlTransactionTest {
     ServerStream<PartialResultSet> stream = mock(ServerStream.class);
     when(stream.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithRequestOptions), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithRequestOptions), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream);
 
     long count =
@@ -146,7 +145,7 @@ public class PartitionedDmlTransactionTest {
     verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithRequestOptions), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithRequestOptions), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -166,7 +165,7 @@ public class PartitionedDmlTransactionTest {
     ServerStream<PartialResultSet> stream2 = mock(ServerStream.class);
     when(stream2.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
     when(rpc.executeStreamingPartitionedDml(
-            any(ExecuteSqlRequest.class), anyMap(), any(Duration.class)))
+            any(ExecuteSqlRequest.class), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream1, stream2);
 
     long count = tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
@@ -175,7 +174,7 @@ public class PartitionedDmlTransactionTest {
     verify(rpc, times(2)).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc, times(2))
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -195,10 +194,10 @@ public class PartitionedDmlTransactionTest {
     ServerStream<PartialResultSet> stream2 = mock(ServerStream.class);
     when(stream2.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream1);
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream2);
 
     long count = tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
@@ -207,10 +206,10 @@ public class PartitionedDmlTransactionTest {
     verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -226,7 +225,7 @@ public class PartitionedDmlTransactionTest {
                 "temporary unavailable", null, GrpcStatusCode.of(Code.UNAVAILABLE), true));
     when(stream1.iterator()).thenReturn(iterator);
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream1);
     when(ticker.read()).thenReturn(0L, 1L, TimeUnit.NANOSECONDS.convert(10L, TimeUnit.MINUTES));
 
@@ -238,7 +237,7 @@ public class PartitionedDmlTransactionTest {
     verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -254,7 +253,7 @@ public class PartitionedDmlTransactionTest {
                 "transaction aborted", null, GrpcStatusCode.of(Code.ABORTED), true));
     when(stream1.iterator()).thenReturn(iterator);
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream1);
     when(ticker.read()).thenReturn(0L, 1L, TimeUnit.NANOSECONDS.convert(10L, TimeUnit.MINUTES));
 
@@ -266,7 +265,7 @@ public class PartitionedDmlTransactionTest {
     verify(rpc, times(2)).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -282,7 +281,7 @@ public class PartitionedDmlTransactionTest {
                 "transaction aborted", null, GrpcStatusCode.of(Code.ABORTED), true));
     when(stream1.iterator()).thenReturn(iterator);
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream1);
     when(ticker.read())
         .thenAnswer(
@@ -306,7 +305,7 @@ public class PartitionedDmlTransactionTest {
     // means that the execute method is only executed 9 times.
     verify(rpc, times(9))
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -329,10 +328,10 @@ public class PartitionedDmlTransactionTest {
     ServerStream<PartialResultSet> stream2 = mock(ServerStream.class);
     when(stream2.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream1);
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream2);
 
     PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
@@ -342,10 +341,10 @@ public class PartitionedDmlTransactionTest {
     verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -368,10 +367,10 @@ public class PartitionedDmlTransactionTest {
     ServerStream<PartialResultSet> stream2 = mock(ServerStream.class);
     when(stream2.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream1);
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream2);
 
     PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
@@ -381,10 +380,10 @@ public class PartitionedDmlTransactionTest {
     verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test
@@ -400,7 +399,7 @@ public class PartitionedDmlTransactionTest {
                 "INTERNAL: Error", null, GrpcStatusCode.of(Code.INTERNAL), false));
     when(stream1.iterator()).thenReturn(iterator);
     when(rpc.executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class)))
         .thenReturn(stream1);
 
     PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
@@ -412,7 +411,7 @@ public class PartitionedDmlTransactionTest {
     verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
-            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(), any(Duration.class));
   }
 
   @Test

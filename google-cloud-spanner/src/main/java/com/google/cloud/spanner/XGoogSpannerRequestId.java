@@ -17,13 +17,11 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.InternalApi;
-import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import io.grpc.CallOptions;
 import io.grpc.Metadata;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -31,13 +29,15 @@ import java.util.regex.Pattern;
 
 @InternalApi
 public class XGoogSpannerRequestId {
-  // 1. Generate the random process Id singleton.
+  // 1. Generate the random process ID singleton.
   @VisibleForTesting
   static final String RAND_PROCESS_ID = XGoogSpannerRequestId.generateRandProcessId();
 
-  public static String REQUEST_ID = "x-goog-spanner-request-id";
-  public static final Metadata.Key<String> REQUEST_HEADER_KEY =
-      Metadata.Key.of(REQUEST_ID, Metadata.ASCII_STRING_MARSHALLER);
+  public static String REQUEST_ID_HEADER_NAME = "x-goog-spanner-request-id";
+  public static final Metadata.Key<String> REQUEST_ID_HEADER_KEY =
+      Metadata.Key.of(REQUEST_ID_HEADER_NAME, Metadata.ASCII_STRING_MARSHALLER);
+  public static final CallOptions.Key<XGoogSpannerRequestId> REQUEST_ID_CALL_OPTIONS_KEY =
+      CallOptions.Key.create("XGoogSpannerRequestId");
 
   @VisibleForTesting
   static final long VERSION = 1; // The version of the specification being implemented.
@@ -57,6 +57,20 @@ public class XGoogSpannerRequestId {
   public static XGoogSpannerRequestId of(
       long nthClientId, long nthChannelId, long nthRequest, long attempt) {
     return new XGoogSpannerRequestId(nthClientId, nthChannelId, nthRequest, attempt);
+  }
+
+  @VisibleForTesting
+  long getNthClientId() {
+    return nthClientId;
+  }
+
+  @VisibleForTesting
+  long getNthChannelId() {
+    return nthChannelId;
+  }
+
+  boolean hasChannelId() {
+    return nthChannelId > 0;
   }
 
   @VisibleForTesting
@@ -95,14 +109,26 @@ public class XGoogSpannerRequestId {
     return String.format("%016x", bigInt);
   }
 
-  @Override
-  public String toString() {
+  /** Returns the string representation of this RequestId as it should be sent to Spanner. */
+  public String getHeaderValue() {
     return String.format(
         "%d.%s.%d.%d.%d.%d",
         XGoogSpannerRequestId.VERSION,
         XGoogSpannerRequestId.RAND_PROCESS_ID,
         this.nthClientId,
         this.nthChannelId,
+        this.nthRequest,
+        this.attempt);
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "%d.%s.%d.%s.%d.%d",
+        XGoogSpannerRequestId.VERSION,
+        XGoogSpannerRequestId.RAND_PROCESS_ID,
+        this.nthClientId,
+        this.nthChannelId < 0 ? "x" : String.valueOf(this.nthChannelId),
         this.nthRequest,
         this.attempt);
   }
@@ -151,31 +177,38 @@ public class XGoogSpannerRequestId {
     this.attempt++;
   }
 
-  Map<SpannerRpc.Option, ?> withOptions(Map<SpannerRpc.Option, ?> options) {
-    Map copyOptions = new HashMap<>();
-    if (options != null) {
-      copyOptions.putAll(options);
-    }
-    copyOptions.put(SpannerRpc.Option.REQUEST_ID, this);
-    return copyOptions;
-  }
-
   @Override
   public int hashCode() {
     return Objects.hash(this.nthClientId, this.nthChannelId, this.nthRequest, this.attempt);
   }
 
-  interface RequestIdCreator {
-    XGoogSpannerRequestId nextRequestId(long channelId, int attempt);
+  @InternalApi
+  public interface RequestIdCreator {
+    long getClientId();
+
+    XGoogSpannerRequestId nextRequestId(long channelId);
+
+    void reset();
   }
 
-  static class NoopRequestIdCreator implements RequestIdCreator {
-    NoopRequestIdCreator() {}
+  // TODO: Move this class into test code.
+  static final class NoopRequestIdCreator implements RequestIdCreator {
+    static final NoopRequestIdCreator INSTANCE = new NoopRequestIdCreator();
+
+    private NoopRequestIdCreator() {}
 
     @Override
-    public XGoogSpannerRequestId nextRequestId(long channelId, int attempt) {
-      return XGoogSpannerRequestId.of(1, 1, 1, 0);
+    public long getClientId() {
+      return 1L;
     }
+
+    @Override
+    public XGoogSpannerRequestId nextRequestId(long channelId) {
+      return XGoogSpannerRequestId.of(1, channelId, 1, 0);
+    }
+
+    @Override
+    public void reset() {}
   }
 
   public void setChannelId(long channelId) {

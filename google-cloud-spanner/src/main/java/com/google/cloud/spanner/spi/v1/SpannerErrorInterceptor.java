@@ -17,6 +17,8 @@
 package com.google.cloud.spanner.spi.v1;
 
 import com.google.cloud.spanner.IsRetryableInternalError;
+import com.google.cloud.spanner.XGoogSpannerRequestId;
+import com.google.common.base.Strings;
 import com.google.rpc.BadRequest;
 import com.google.rpc.Help;
 import com.google.rpc.LocalizedMessage;
@@ -35,6 +37,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.protobuf.ProtoUtils;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,7 +73,23 @@ public final class SpannerErrorInterceptor implements ClientInterceptor {
             new SimpleForwardingClientCallListener<RespT>(responseListener) {
               @Override
               public void onClose(Status status, Metadata trailers) {
+                // Return quickly if there is no error.
+                if (status.isOk()) {
+                  super.onClose(status, trailers);
+                  return;
+                }
                 try {
+                  if (headers.containsKey(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY)) {
+                    String requestId = headers.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY);
+                    if (!Strings.isNullOrEmpty(requestId)) {
+                      if (!trailers.containsKey(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY)) {
+                        trailers.put(
+                            XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY,
+                            Objects.requireNonNull(
+                                headers.get(XGoogSpannerRequestId.REQUEST_ID_HEADER_KEY)));
+                      }
+                    }
+                  }
                   // Translate INTERNAL errors that should be retried to a retryable error code.
                   if (IsRetryableInternalError.INSTANCE.isRetryableInternalError(status)) {
                     status =
