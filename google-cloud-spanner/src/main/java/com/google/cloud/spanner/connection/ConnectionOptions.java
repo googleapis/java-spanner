@@ -26,9 +26,13 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIA
 import static com.google.cloud.spanner.connection.ConnectionProperties.CREDENTIALS_URL;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATABASE_ROLE;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DATA_BOOST_ENABLED;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DCP_INITIAL_CHANNELS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DCP_MAX_CHANNELS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.DCP_MIN_CHANNELS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.DIALECT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_API_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_DIRECT_ACCESS;
+import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_DYNAMIC_CHANNEL_POOL;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_END_TO_END_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENABLE_EXTENDED_TRACING;
 import static com.google.cloud.spanner.connection.ConnectionProperties.ENCODED_CREDENTIALS;
@@ -155,6 +159,10 @@ public class ConnectionOptions {
   static final Integer DEFAULT_MIN_SESSIONS = null;
   static final Integer DEFAULT_MAX_SESSIONS = null;
   static final Integer DEFAULT_NUM_CHANNELS = null;
+  static final Boolean DEFAULT_ENABLE_DYNAMIC_CHANNEL_POOL = null;
+  static final Integer DEFAULT_DCP_MIN_CHANNELS = null;
+  static final Integer DEFAULT_DCP_MAX_CHANNELS = null;
+  static final Integer DEFAULT_DCP_INITIAL_CHANNELS = null;
   static final String DEFAULT_ENDPOINT = null;
   static final String DEFAULT_CHANNEL_PROVIDER = null;
   static final String DEFAULT_DATABASE_ROLE = null;
@@ -251,6 +259,18 @@ public class ConnectionOptions {
 
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
+
+  /** Name of the 'enableDynamicChannelPool' connection property. */
+  public static final String ENABLE_DYNAMIC_CHANNEL_POOL_PROPERTY_NAME = "enableDynamicChannelPool";
+
+  /** Name of the 'dcpMinChannels' connection property. */
+  public static final String DCP_MIN_CHANNELS_PROPERTY_NAME = "dcpMinChannels";
+
+  /** Name of the 'dcpMaxChannels' connection property. */
+  public static final String DCP_MAX_CHANNELS_PROPERTY_NAME = "dcpMaxChannels";
+
+  /** Name of the 'dcpInitialChannels' connection property. */
+  public static final String DCP_INITIAL_CHANNELS_PROPERTY_NAME = "dcpInitialChannels";
 
   /** Name of the 'endpoint' connection property. */
   public static final String ENDPOINT_PROPERTY_NAME = "endpoint";
@@ -989,6 +1009,26 @@ public class ConnectionOptions {
   /** The number of channels to use for the connection. */
   public Integer getNumChannels() {
     return getInitialConnectionPropertyValue(NUM_CHANNELS);
+  }
+
+  /** Whether dynamic channel pooling is enabled for this connection. */
+  public Boolean isEnableDynamicChannelPool() {
+    return getInitialConnectionPropertyValue(ENABLE_DYNAMIC_CHANNEL_POOL);
+  }
+
+  /** The minimum number of channels in the dynamic channel pool. */
+  public Integer getDcpMinChannels() {
+    return getInitialConnectionPropertyValue(DCP_MIN_CHANNELS);
+  }
+
+  /** The maximum number of channels in the dynamic channel pool. */
+  public Integer getDcpMaxChannels() {
+    return getInitialConnectionPropertyValue(DCP_MAX_CHANNELS);
+  }
+
+  /** The initial number of channels in the dynamic channel pool. */
+  public Integer getDcpInitialChannels() {
+    return getInitialConnectionPropertyValue(DCP_INITIAL_CHANNELS);
   }
 
   /** Calls the getChannelProvider() method from the supplied class. */
