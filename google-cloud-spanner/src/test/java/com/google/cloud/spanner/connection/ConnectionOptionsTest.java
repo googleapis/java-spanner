@@ -1418,4 +1418,110 @@ public class ConnectionOptionsTest {
 
     connection.close();
   }
+
+  @Test
+  public void testEnableDynamicChannelPool() {
+    // Default value
+    assertNull(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isEnableDynamicChannelPool());
+    // Enabled
+    assertTrue(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?enableDynamicChannelPool=true")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isEnableDynamicChannelPool());
+    // Disabled
+    assertFalse(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?enableDynamicChannelPool=false")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isEnableDynamicChannelPool());
+  }
+
+  @Test
+  public void testDcpMinChannels() {
+    // Default value
+    assertNull(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getDcpMinChannels());
+    // Custom value
+    assertEquals(
+        Integer.valueOf(3),
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dcpMinChannels=3")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getDcpMinChannels());
+  }
+
+  @Test
+  public void testDcpMaxChannels() {
+    // Default value
+    assertNull(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getDcpMaxChannels());
+    // Custom value
+    assertEquals(
+        Integer.valueOf(15),
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dcpMaxChannels=15")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getDcpMaxChannels());
+  }
+
+  @Test
+  public void testDcpInitialChannels() {
+    // Default value
+    assertNull(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getDcpInitialChannels());
+    // Custom value
+    assertEquals(
+        Integer.valueOf(5),
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dcpInitialChannels=5")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getDcpInitialChannels());
+  }
+
+  @Test
+  public void testDcpWithAllOptions() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database"
+                    + "?enableDynamicChannelPool=true;dcpMinChannels=3;dcpMaxChannels=15;dcpInitialChannels=5")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    assertTrue(options.isEnableDynamicChannelPool());
+    assertEquals(Integer.valueOf(3), options.getDcpMinChannels());
+    assertEquals(Integer.valueOf(15), options.getDcpMaxChannels());
+    assertEquals(Integer.valueOf(5), options.getDcpInitialChannels());
+  }
 }
