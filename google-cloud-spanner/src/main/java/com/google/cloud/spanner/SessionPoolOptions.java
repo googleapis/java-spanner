@@ -988,15 +988,10 @@ public class SessionPoolOptions {
     }
 
     /**
-     * Sets whether the session pool should capture the call stack trace when a session is checked
-     * out of the pool. This will internally prepare a {@link
-     * com.google.cloud.spanner.SessionPool.LeakedSessionException} that will only be thrown if the
-     * session is actually leaked. This makes it easier to debug session leaks, as the stack trace
-     * of the thread that checked out the session will be available in the exception.
-     *
-     * <p>Some monitoring tools might log these exceptions even though they are not thrown. This
-     * option can be used to suppress the creation and logging of these exceptions.
+     * @deprecated This option is no longer used as the session pool has been removed. Multiplexed
+     *     sessions are now used for all operations.
      */
+    @Deprecated
     public Builder setTrackStackTraceOfSessionCheckout(boolean trackStackTraceOfSessionCheckout) {
       this.trackStackTraceOfSessionCheckout = trackStackTraceOfSessionCheckout;
       return this;
@@ -1042,9 +1037,10 @@ public class SessionPoolOptions {
     }
 
     /**
-     * If greater than zero, we wait for said duration when no sessions are available in the {@link
-     * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
+     * @deprecated This option is no longer used as the session pool has been removed. Multiplexed
+     *     sessions are now used for all operations.
      */
+    @Deprecated
     public Builder setAcquireSessionTimeoutDuration(Duration acquireSessionTimeout) {
       try {
         if (acquireSessionTimeout != null) {
