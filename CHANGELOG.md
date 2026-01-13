@@ -1,5 +1,52 @@
 # Changelog
 
+## [6.106.0](https://github.com/googleapis/java-spanner/compare/v6.105.0...v6.106.0) (2026-01-07)
+
+
+### Features
+
+* Support SHOW DEFAULT_TRANSACTION_ISOLATION for PG databases ([#4285](https://github.com/googleapis/java-spanner/issues/4285)) ([aec0515](https://github.com/googleapis/java-spanner/commit/aec051514dd3d122a7231eb6d25d1aaec8d90bda))
+
+
+### Bug Fixes
+
+* Adjust the initial polling delay for ddl operations ([#4275](https://github.com/googleapis/java-spanner/issues/4275)) ([8d36967](https://github.com/googleapis/java-spanner/commit/8d36967d010bed8f5a4a0c32f9ec1b5fe7d33e1d))
+* Retry creation of multiplexed session ([#4288](https://github.com/googleapis/java-spanner/issues/4288)) ([735e29e](https://github.com/googleapis/java-spanner/commit/735e29ed394faea9f5e697b5934a1f4895055d56))
+
+## [6.105.0](https://github.com/googleapis/java-spanner/compare/v6.104.0...v6.105.0) (2025-12-16)
+
+
+### Features
+
+* Add support of dynamic channel pooling ([#4265](https://github.com/googleapis/java-spanner/issues/4265)) ([923a14a](https://github.com/googleapis/java-spanner/commit/923a14aad99ff6fc91868f02d657145dd0f31c18))
+* Include RequestID in requests and errors ([#4263](https://github.com/googleapis/java-spanner/issues/4263)) ([afd7d6b](https://github.com/googleapis/java-spanner/commit/afd7d6b008f13d7a4d1a3b7f924122bd41d14b59))
+* Make grpc-gcp default enabled ([#4239](https://github.com/googleapis/java-spanner/issues/4239)) ([bb82f9e](https://github.com/googleapis/java-spanner/commit/bb82f9e55c40cac29b090e54be780c2e42545ee1))
+
+
+### Bug Fixes
+
+* Refine connecitivity metrics to capture RPCs with no response he… ([#4252](https://github.com/googleapis/java-spanner/issues/4252)) ([7b49412](https://github.com/googleapis/java-spanner/commit/7b4941221969f48d077ff459214c7d1e65ef843c))
+* Retry as PDML dit not retry Resource limit exceeded ([#4258](https://github.com/googleapis/java-spanner/issues/4258)) ([c735d42](https://github.com/googleapis/java-spanner/commit/c735d42875092b0d1482fe641b99645f288cdf4f)), closes [#4253](https://github.com/googleapis/java-spanner/issues/4253)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.54.2 ([#4261](https://github.com/googleapis/java-spanner/issues/4261)) ([61dfd62](https://github.com/googleapis/java-spanner/commit/61dfd620637da6ef76b699edbad1095c26b81950))
+* Update googleapis/sdk-platform-java action to v2.64.2 ([#4262](https://github.com/googleapis/java-spanner/issues/4262)) ([f9505a9](https://github.com/googleapis/java-spanner/commit/f9505a97bdd9f6da7dd5ab1b60b47f7ed0a70402))
+
+## [6.104.0](https://github.com/googleapis/java-spanner/compare/v6.103.0...v6.104.0) (2025-12-03)
+
+
+### Features
+
+* Include PostgreSQL error code in exceptions ([#4236](https://github.com/googleapis/java-spanner/issues/4236)) ([5874f8b](https://github.com/googleapis/java-spanner/commit/5874f8b3e65adc3e78832866ebe667cd746e2d7f))
+
+
+### Bug Fixes
+
+* Backslash at end of string literal was misinterpreted ([#4246](https://github.com/googleapis/java-spanner/issues/4246)) ([477ca51](https://github.com/googleapis/java-spanner/commit/477ca51baf6cd1a0a5773bd53677f64195100ae2))
+* Fix transaction tag issue with the blind-write ([#4243](https://github.com/googleapis/java-spanner/issues/4243)) ([cf2ba69](https://github.com/googleapis/java-spanner/commit/cf2ba695cdb4038dc8e3ca3e9859231a2203da60))
+
 ## [6.103.0](https://github.com/googleapis/java-spanner/compare/v6.102.1...v6.103.0) (2025-11-17)
 
 

@@ -210,6 +210,296 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   }
 
   @Test
+  public void testRetryWithTheSessionCreationWaitTime() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofExceptions(
+            Arrays.asList(
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException(),
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException())));
+
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setUseMultiplexedSessionPartitionedOps(true)
+                    .setWaitForMinSessionsDuration(Duration.ofSeconds(1))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {
+        // ignore
+      }
+    }
+
+    List<CreateSessionRequest> createSessionRequests =
+        mockSpanner.getRequestsOfType(CreateSessionRequest.class);
+    assertEquals(3, createSessionRequests.size());
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1, requests.size());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+
+    testSpanner.close();
+  }
+
+  @Test
+  public void testRetryWithTheDatabaseNotFoundExceptionWithSessionCreationWaitTime() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofExceptions(
+            Collections.singletonList(
+                Status.NOT_FOUND.withDescription("Database not found.").asRuntimeException())));
+
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setUseMultiplexedSessionPartitionedOps(true)
+                    .setWaitForMinSessionsDuration(Duration.ofMillis(200))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    assertThrows(
+        SpannerException.class, () -> testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d")));
+
+    List<CreateSessionRequest> createSessionRequests =
+        mockSpanner.getRequestsOfType(CreateSessionRequest.class);
+    assertEquals(1, createSessionRequests.size());
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(0, requests.size());
+
+    testSpanner.close();
+  }
+
+  @Test
+  public void testRetryWithNoSessionCreationWaitTime() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofExceptions(
+            Collections.singletonList(
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException())));
+
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setUseMultiplexedSessionPartitionedOps(true)
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            () -> {
+              try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+                //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {
+                  // ignore
+                }
+              }
+            });
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, spannerException.getErrorCode());
+
+    List<CreateSessionRequest> createSessionRequests =
+        mockSpanner.getRequestsOfType(CreateSessionRequest.class);
+    assertEquals(1, createSessionRequests.size());
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(0, requests.size());
+
+    testSpanner.close();
+  }
+
+  @Test
+  public void testRetryWithDelayedInResponseExceedsSessionCreationWaitTime() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTimeAndExceptions(
+            150,
+            0,
+            Arrays.asList(
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException(),
+                Status.UNAVAILABLE
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException())));
+
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setUseMultiplexedSessionPartitionedOps(true)
+                    .setWaitForMinSessionsDuration(Duration.ofMillis(200))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            () -> {
+              DatabaseClientImpl client =
+                  (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+              try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+                //noinspection StatementWithEmptyBody
+                while (resultSet.next()) {
+                  // ignore
+                }
+              }
+            });
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, spannerException.getErrorCode());
+
+    List<CreateSessionRequest> createSessionRequests =
+        mockSpanner.getRequestsOfType(CreateSessionRequest.class);
+    assertEquals(2, createSessionRequests.size());
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(0, requests.size());
+
+    testSpanner.close();
+  }
+
+  @Test
+  public void testRetryWithDelayInExceptionWithInSessionCreationWaitTime() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTimeAndExceptions(
+            50,
+            0,
+            Arrays.asList(
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException(),
+                Status.DEADLINE_EXCEEDED
+                    .withDescription(
+                        "CallOptions deadline exceeded after 22.986872393s. "
+                            + "Name resolution delay 6.911918521 seconds. [closed=[], "
+                            + "open=[[connecting_and_lb_delay=32445014148ns, was_still_waiting]]]")
+                    .asRuntimeException())));
+
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionForRW(true)
+                    .setUseMultiplexedSessionPartitionedOps(true)
+                    .setWaitForMinSessionsDuration(Duration.ofMillis(200))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {
+        // ignore
+      }
+    }
+
+    List<CreateSessionRequest> createSessionRequests =
+        mockSpanner.getRequestsOfType(CreateSessionRequest.class);
+    assertEquals(3, createSessionRequests.size());
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1, requests.size());
+
+    testSpanner.close();
+  }
+
+  @Test
+  public void testUnimplementedErrorOnCreationIsPropagated() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription("Multiplexed sessions are not implemented")
+                .asRuntimeException()));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    // Get the current session reference. This will block until the CreateSession RPC has failed.
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            client.multiplexedSessionDatabaseClient::getCurrentSessionReference);
+    assertEquals(ErrorCode.UNIMPLEMENTED, spannerException.getErrorCode());
+
+    spannerException =
+        assertThrows(SpannerException.class, () -> client.singleUse().executeQuery(STATEMENT));
+    assertEquals(ErrorCode.UNIMPLEMENTED, spannerException.getErrorCode());
+
+    // Verify that we received no ExecuteSqlRequests.
+    assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+  }
+
+  @Test
   public void testWriteAtLeastOnceAborted() {
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));

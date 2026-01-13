@@ -35,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ServerStream;
@@ -92,14 +91,16 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Server;
 import io.grpc.ServerInterceptors;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -113,7 +114,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -143,7 +143,6 @@ public class DatabaseClientImplTest {
   private static XGoogSpannerRequestIdTest.ServerHeaderEnforcer xGoogReqIdInterceptor;
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
-  private static LocalChannelProvider channelProvider;
   private static final Statement UPDATE_STATEMENT =
       Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
   private static final Statement INVALID_UPDATE_STATEMENT =
@@ -231,15 +230,12 @@ public class DatabaseClientImplTest {
                 "google.spanner.v1.Spanner/StreamingRead"));
     xGoogReqIdInterceptor = new XGoogSpannerRequestIdTest.ServerHeaderEnforcer(checkMethods);
     executor = Executors.newSingleThreadExecutor();
-    String uniqueName = InProcessServerBuilder.generateName();
+    InetSocketAddress address = new InetSocketAddress("localhost", 0);
     server =
-        InProcessServerBuilder.forName(uniqueName)
-            // We need to use a real executor for timeouts to occur.
-            .scheduledExecutorService(new ScheduledThreadPoolExecutor(1))
+        NettyServerBuilder.forAddress(address)
             .addService(ServerInterceptors.intercept(mockSpanner, xGoogReqIdInterceptor))
             .build()
             .start();
-    channelProvider = LocalChannelProvider.create(uniqueName);
   }
 
   @AfterClass
@@ -251,11 +247,13 @@ public class DatabaseClientImplTest {
 
   @Before
   public void setUp() {
+    String endpoint = "localhost:" + server.getPort();
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://" + endpoint)
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
             .build()
@@ -808,6 +806,29 @@ public class DatabaseClientImplTest {
         .isEqualTo("app=spanner,env=test,action=query");
     assertThat(request.getRequestOptions().getTransactionTag())
         .isEqualTo("app=spanner,env=test,action=txn");
+  }
+
+  @Test
+  public void testBlindWriteWithTransactionTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    String transactionTag = "app=spanner,env=test,action=txn";
+    TransactionRunner runner = client.readWriteTransaction(Options.tag(transactionTag));
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.newInsertBuilder("abc").set("id").to(1L).build());
+          return null;
+        });
+
+    List<BeginTransactionRequest> beginTransactionRequests =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactionRequests).hasSize(1);
+    assertThat(beginTransactionRequests.get(0).getRequestOptions().getTransactionTag())
+        .isEqualTo(transactionTag);
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    assertThat(commitRequests.get(0).getRequestOptions().getTransactionTag())
+        .isEqualTo(transactionTag);
   }
 
   @Test
@@ -1786,7 +1807,8 @@ public class DatabaseClientImplTest {
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance());
     // Set normal DML timeout value.
     builder.getSpannerStubSettingsBuilder().executeSqlSettings().setRetrySettings(retrySettings);
@@ -1849,7 +1871,8 @@ public class DatabaseClientImplTest {
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value.
     builder.setPartitionedDmlTimeoutDuration(Duration.ofMillis(10L));
@@ -1883,7 +1906,8 @@ public class DatabaseClientImplTest {
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value to a value that should allow the statement to be executed.
     builder.setPartitionedDmlTimeoutDuration(Duration.ofMillis(5000L));
@@ -1957,7 +1981,8 @@ public class DatabaseClientImplTest {
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance());
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
@@ -1980,7 +2005,8 @@ public class DatabaseClientImplTest {
       try (Spanner spanner =
           SpannerOptions.newBuilder()
               .setProjectId(TEST_PROJECT)
-              .setChannelProvider(channelProvider)
+              .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+              .setHost("http://localhost:" + server.getPort())
               .setCredentials(NoCredentials.getInstance())
               .build()
               .getService()) {
@@ -2024,7 +2050,8 @@ public class DatabaseClientImplTest {
         try (Spanner spanner =
             SpannerOptions.newBuilder()
                 .setProjectId(TEST_PROJECT)
-                .setChannelProvider(channelProvider)
+                .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+                .setHost("http://localhost:" + server.getPort())
                 .setCredentials(NoCredentials.getInstance())
                 .setSessionPoolOption(
                     SessionPoolOptions.newBuilder()
@@ -2100,7 +2127,8 @@ public class DatabaseClientImplTest {
       try (Spanner spanner =
           SpannerOptions.newBuilder()
               .setProjectId(TEST_PROJECT)
-              .setChannelProvider(channelProvider)
+              .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+              .setHost("http://localhost:" + server.getPort())
               .setCredentials(NoCredentials.getInstance())
               .build()
               .getService()) {
@@ -2187,7 +2215,8 @@ public class DatabaseClientImplTest {
       try (Spanner spanner =
           SpannerOptions.newBuilder()
               .setProjectId(TEST_PROJECT)
-              .setChannelProvider(channelProvider)
+              .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+              .setHost("http://localhost:" + server.getPort())
               .setCredentials(NoCredentials.getInstance())
               .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
               .build()
@@ -2293,7 +2322,8 @@ public class DatabaseClientImplTest {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .build()
@@ -2334,7 +2364,8 @@ public class DatabaseClientImplTest {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .build()
@@ -2377,7 +2408,8 @@ public class DatabaseClientImplTest {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
@@ -2427,7 +2459,8 @@ public class DatabaseClientImplTest {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
@@ -2475,7 +2508,8 @@ public class DatabaseClientImplTest {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
@@ -2517,7 +2551,8 @@ public class DatabaseClientImplTest {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
@@ -2608,7 +2643,8 @@ public class DatabaseClientImplTest {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("my-project")
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance())
             .build()
             .getService()) {
@@ -2644,7 +2680,8 @@ public class DatabaseClientImplTest {
       try (Spanner spanner =
           SpannerOptions.newBuilder()
               .setProjectId("my-project")
-              .setChannelProvider(channelProvider)
+              .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+              .setHost("http://localhost:" + server.getPort())
               .setCredentials(NoCredentials.getInstance())
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
@@ -3873,7 +3910,8 @@ public class DatabaseClientImplTest {
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + server.getPort())
             .setCredentials(NoCredentials.getInstance());
     RetryInfo retryInfo =
         RetryInfo.newBuilder()

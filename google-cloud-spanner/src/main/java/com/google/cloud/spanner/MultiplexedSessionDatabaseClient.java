@@ -34,6 +34,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.BitSet;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -153,6 +154,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    */
   private static final Map<SpannerImpl, BitSet> CHANNEL_USAGE = new HashMap<>();
 
+  private static final EnumSet<ErrorCode> RETRYABLE_ERROR_CODES =
+      EnumSet.of(ErrorCode.DEADLINE_EXCEEDED, ErrorCode.RESOURCE_EXHAUSTED, ErrorCode.UNAVAILABLE);
+
   private final BitSet channelUsage;
 
   private final int numChannels;
@@ -222,11 +226,19 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     final SettableApiFuture<SessionReference> initialSessionReferenceFuture =
         SettableApiFuture.create();
     this.multiplexedSessionReference = new AtomicReference<>(initialSessionReferenceFuture);
+    asyncCreateMultiplexedSession(initialSessionReferenceFuture);
+    maybeWaitForSessionCreation(
+        sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
+        initialSessionReferenceFuture);
+  }
+
+  private void asyncCreateMultiplexedSession(
+      SettableApiFuture<SessionReference> sessionReferenceFuture) {
     this.sessionClient.asyncCreateMultiplexedSession(
         new SessionConsumer() {
           @Override
           public void onSessionReady(SessionImpl session) {
-            initialSessionReferenceFuture.set(session.getSessionReference());
+            sessionReferenceFuture.set(session.getSessionReference());
             // only start the maintainer if we actually managed to create a session in the first
             // place.
             maintainer.start();
@@ -251,29 +263,58 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
               MultiplexedSessionDatabaseClient.this.resourceNotFoundException.set(
                   (ResourceNotFoundException) spannerException);
             }
-            initialSessionReferenceFuture.setException(t);
+            sessionReferenceFuture.setException(t);
           }
         });
-    maybeWaitForSessionCreation(
-        sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
-        initialSessionReferenceFuture);
   }
 
-  private static void maybeWaitForSessionCreation(
-      SessionPoolOptions sessionPoolOptions, ApiFuture<SessionReference> future) {
+  private void maybeWaitForSessionCreation(
+      SessionPoolOptions sessionPoolOptions,
+      SettableApiFuture<SessionReference> initialSessionReferenceFuture) {
     Duration waitDuration = sessionPoolOptions.getWaitForMinSessions();
     if (waitDuration != null && !waitDuration.isZero()) {
-      long timeoutMillis = waitDuration.toMillis();
-      try {
-        future.get(timeoutMillis, TimeUnit.MILLISECONDS);
-      } catch (ExecutionException executionException) {
-        throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
-      } catch (InterruptedException interruptedException) {
-        throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-      } catch (TimeoutException timeoutException) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.DEADLINE_EXCEEDED,
-            "Timed out after waiting " + timeoutMillis + "ms for multiplexed session creation");
+
+      SpannerException lastException = null;
+      SettableApiFuture<SessionReference> sessionReferenceFuture = initialSessionReferenceFuture;
+      Duration remainingTime;
+
+      Instant endTime = Instant.now().plus(waitDuration);
+      while ((remainingTime = Duration.between(Instant.now(), endTime)).toMillis() > 0) {
+        // If any exception is thrown, then retry the multiplexed session creation
+        if (sessionReferenceFuture == null) {
+          sessionReferenceFuture = SettableApiFuture.create();
+          asyncCreateMultiplexedSession(sessionReferenceFuture);
+          this.multiplexedSessionReference.set(sessionReferenceFuture);
+        }
+        try {
+          sessionReferenceFuture.get(remainingTime.toMillis(), TimeUnit.MILLISECONDS);
+          lastException = null;
+          break;
+        } catch (ExecutionException executionException) {
+          lastException = SpannerExceptionFactory.asSpannerException(executionException.getCause());
+        } catch (InterruptedException interruptedException) {
+          lastException = SpannerExceptionFactory.propagateInterrupt(interruptedException);
+        } catch (TimeoutException timeoutException) {
+          lastException =
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.DEADLINE_EXCEEDED,
+                  "Timed out after waiting "
+                      + waitDuration.toMillis()
+                      + "ms for multiplexed session creation");
+        }
+        // if any exception is thrown, then set the session reference to null to retry the
+        // multiplexed session creation only if the error code is DEADLINE EXCEEDED, UNAVAILABLE or
+        // RESOURCE_EXHAUSTED
+        if (RETRYABLE_ERROR_CODES.contains(lastException.getErrorCode())) {
+          sessionReferenceFuture = null;
+        } else {
+          break;
+        }
+      }
+      // if the wait time elapsed and multiplexed session fetch failed then throw the last exception
+      // that we have received
+      if (lastException != null) {
+        throw lastException;
       }
     }
   }
@@ -495,7 +536,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   @Override
   public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
-    return createMultiplexedSessionTransaction(/* singleUse= */ true)
+    return createMultiplexedSessionTransaction(/* singleUse= */ false)
         .executePartitionedUpdate(stmt, options);
   }
 

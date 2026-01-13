@@ -250,29 +250,16 @@ public class BatchClientImpl implements BatchClient {
       }
       builder.setPartitionOptions(pbuilder.build());
 
-      XGoogSpannerRequestId reqId =
-          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       final PartitionReadRequest request = builder.build();
-      try {
-        PartitionResponse response = rpc.partitionRead(request, reqId.withOptions(options));
-        ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
-        for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
-          Partition partition =
-              Partition.createReadPartition(
-                  p.getPartitionToken(),
-                  partitionOptions,
-                  table,
-                  index,
-                  keys,
-                  columns,
-                  readOptions);
-          partitions.add(partition);
-        }
-        return partitions.build();
-      } catch (SpannerException e) {
-        e.setRequestId(reqId);
-        throw e;
+      PartitionResponse response = rpc.partitionRead(request, options);
+      ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
+      for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
+        Partition partition =
+            Partition.createReadPartition(
+                p.getPartitionToken(), partitionOptions, table, index, keys, columns, readOptions);
+        partitions.add(partition);
       }
+      return partitions.build();
     }
 
     @Override
@@ -312,23 +299,16 @@ public class BatchClientImpl implements BatchClient {
       }
       builder.setPartitionOptions(pbuilder.build());
 
-      XGoogSpannerRequestId reqId =
-          session.getRequestIdCreator().nextRequestId(session.getChannel(), 1);
       final PartitionQueryRequest request = builder.build();
-      try {
-        PartitionResponse response = rpc.partitionQuery(request, reqId.withOptions(options));
-        ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
-        for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
-          Partition partition =
-              Partition.createQueryPartition(
-                  p.getPartitionToken(), partitionOptions, statement, queryOptions);
-          partitions.add(partition);
-        }
-        return partitions.build();
-      } catch (SpannerException e) {
-        e.setRequestId(reqId);
-        throw e;
+      PartitionResponse response = rpc.partitionQuery(request, options);
+      ImmutableList.Builder<Partition> partitions = ImmutableList.builder();
+      for (com.google.spanner.v1.Partition p : response.getPartitionsList()) {
+        Partition partition =
+            Partition.createQueryPartition(
+                p.getPartitionToken(), partitionOptions, statement, queryOptions);
+        partitions.add(partition);
       }
+      return partitions.build();
     }
 
     @Override

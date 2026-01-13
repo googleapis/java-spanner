@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1023,10 +1023,8 @@ public final class RoutingHint extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * If present, the client's current location. In the Spanner managed service,
-   * this should be the name of a Google Cloud zone or region, such as
-   * "us-central1". In Spanner Omni, this should correspond to a previously
-   * created location.
+   * If present, the client's current location. This should be the name of a
+   * Google Cloud zone or region, such as "us-central1".
    *
    * If absent, the client's location will be assumed to be the same as the
    * location of the server the client ends up connected to.
@@ -1056,10 +1054,8 @@ public final class RoutingHint extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * If present, the client's current location. In the Spanner managed service,
-   * this should be the name of a Google Cloud zone or region, such as
-   * "us-central1". In Spanner Omni, this should correspond to a previously
-   * created location.
+   * If present, the client's current location. This should be the name of a
+   * Google Cloud zone or region, such as "us-central1".
    *
    * If absent, the client's location will be assumed to be the same as the
    * location of the server the client ends up connected to.
@@ -2661,10 +2657,8 @@ public final class RoutingHint extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If present, the client's current location. In the Spanner managed service,
-     * this should be the name of a Google Cloud zone or region, such as
-     * "us-central1". In Spanner Omni, this should correspond to a previously
-     * created location.
+     * If present, the client's current location. This should be the name of a
+     * Google Cloud zone or region, such as "us-central1".
      *
      * If absent, the client's location will be assumed to be the same as the
      * location of the server the client ends up connected to.
@@ -2693,10 +2687,8 @@ public final class RoutingHint extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If present, the client's current location. In the Spanner managed service,
-     * this should be the name of a Google Cloud zone or region, such as
-     * "us-central1". In Spanner Omni, this should correspond to a previously
-     * created location.
+     * If present, the client's current location. This should be the name of a
+     * Google Cloud zone or region, such as "us-central1".
      *
      * If absent, the client's location will be assumed to be the same as the
      * location of the server the client ends up connected to.
@@ -2725,10 +2717,8 @@ public final class RoutingHint extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If present, the client's current location. In the Spanner managed service,
-     * this should be the name of a Google Cloud zone or region, such as
-     * "us-central1". In Spanner Omni, this should correspond to a previously
-     * created location.
+     * If present, the client's current location. This should be the name of a
+     * Google Cloud zone or region, such as "us-central1".
      *
      * If absent, the client's location will be assumed to be the same as the
      * location of the server the client ends up connected to.
@@ -2756,10 +2746,8 @@ public final class RoutingHint extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If present, the client's current location. In the Spanner managed service,
-     * this should be the name of a Google Cloud zone or region, such as
-     * "us-central1". In Spanner Omni, this should correspond to a previously
-     * created location.
+     * If present, the client's current location. This should be the name of a
+     * Google Cloud zone or region, such as "us-central1".
      *
      * If absent, the client's location will be assumed to be the same as the
      * location of the server the client ends up connected to.
@@ -2783,10 +2771,8 @@ public final class RoutingHint extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If present, the client's current location. In the Spanner managed service,
-     * this should be the name of a Google Cloud zone or region, such as
-     * "us-central1". In Spanner Omni, this should correspond to a previously
-     * created location.
+     * If present, the client's current location. This should be the name of a
+     * Google Cloud zone or region, such as "us-central1".
      *
      * If absent, the client's location will be assumed to be the same as the
      * location of the server the client ends up connected to.

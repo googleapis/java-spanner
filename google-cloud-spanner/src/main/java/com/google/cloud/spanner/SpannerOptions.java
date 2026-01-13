@@ -43,6 +43,7 @@ import com.google.cloud.ServiceOptions;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.DirectedReadOption;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -134,6 +135,72 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   // is enabled, to make sure there are sufficient channels available to move the sessions to a
   // different channel if a network connection in a particular channel fails.
   @VisibleForTesting static final int GRPC_GCP_ENABLED_DEFAULT_CHANNELS = 8;
+
+  // Dynamic Channel Pool (DCP) default values and bounds
+  /** Default max concurrent RPCs per channel before triggering scale up. */
+  public static final int DEFAULT_DYNAMIC_POOL_MAX_RPC = 25;
+
+  /** Default min concurrent RPCs per channel for scale down check. */
+  public static final int DEFAULT_DYNAMIC_POOL_MIN_RPC = 15;
+
+  /** Default scale down check interval. */
+  public static final Duration DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL = Duration.ofMinutes(3);
+
+  /** Default initial number of channels for dynamic pool. */
+  public static final int DEFAULT_DYNAMIC_POOL_INITIAL_SIZE = 4;
+
+  /** Default max number of channels for dynamic pool. */
+  public static final int DEFAULT_DYNAMIC_POOL_MAX_CHANNELS = 10;
+
+  /** Default min number of channels for dynamic pool. */
+  public static final int DEFAULT_DYNAMIC_POOL_MIN_CHANNELS = 2;
+
+  /**
+   * Default affinity key lifetime for dynamic channel pool. This is how long to keep an affinity
+   * key after its last use. Zero means keeping keys forever. Default is 10 minutes, which is
+   * sufficient to ensure that requests within a single transaction use the same channel.
+   */
+  public static final Duration DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME = Duration.ofMinutes(10);
+
+  /**
+   * Default cleanup interval for dynamic channel pool affinity keys. This is how frequently the
+   * affinity key cleanup process runs. Default is 1 minute (1/10 of default affinity key lifetime).
+   */
+  public static final Duration DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL = Duration.ofMinutes(1);
+
+  /**
+   * Creates a {@link GcpChannelPoolOptions} instance with Spanner-specific defaults for dynamic
+   * channel pooling. These defaults are optimized for typical Spanner workloads.
+   *
+   * <p>Default values:
+   *
+   * <ul>
+   *   <li>Max size: {@value #DEFAULT_DYNAMIC_POOL_MAX_CHANNELS}
+   *   <li>Min size: {@value #DEFAULT_DYNAMIC_POOL_MIN_CHANNELS}
+   *   <li>Initial size: {@value #DEFAULT_DYNAMIC_POOL_INITIAL_SIZE}
+   *   <li>Max RPC per channel: {@value #DEFAULT_DYNAMIC_POOL_MAX_RPC}
+   *   <li>Min RPC per channel: {@value #DEFAULT_DYNAMIC_POOL_MIN_RPC}
+   *   <li>Scale down interval: 3 minutes
+   *   <li>Affinity key lifetime: 10 minutes
+   *   <li>Cleanup interval: 1 minute
+   * </ul>
+   *
+   * @return a new {@link GcpChannelPoolOptions} instance with Spanner defaults
+   */
+  public static GcpChannelPoolOptions createDefaultDynamicChannelPoolOptions() {
+    return GcpChannelPoolOptions.newBuilder()
+        .setMaxSize(DEFAULT_DYNAMIC_POOL_MAX_CHANNELS)
+        .setMinSize(DEFAULT_DYNAMIC_POOL_MIN_CHANNELS)
+        .setInitSize(DEFAULT_DYNAMIC_POOL_INITIAL_SIZE)
+        .setDynamicScaling(
+            DEFAULT_DYNAMIC_POOL_MIN_RPC,
+            DEFAULT_DYNAMIC_POOL_MAX_RPC,
+            DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL)
+        .setAffinityKeyLifetime(DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME)
+        .setCleanupInterval(DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL)
+        .build();
+  }
+
   private final TransportChannelProvider channelProvider;
 
   @SuppressWarnings("rawtypes")
@@ -153,6 +220,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final Duration partitionedDmlTimeout;
   private final boolean grpcGcpExtensionEnabled;
   private final GcpManagedChannelOptions grpcGcpOptions;
+  private final boolean dynamicChannelPoolEnabled;
+  private final GcpChannelPoolOptions gcpChannelPoolOptions;
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
@@ -800,6 +869,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
     grpcGcpExtensionEnabled = builder.grpcGcpExtensionEnabled;
     grpcGcpOptions = builder.grpcGcpOptions;
+
+    // Dynamic channel pooling is disabled by default.
+    // It is only enabled when:
+    // 1. enableDynamicChannelPool() was explicitly called, AND
+    // 2. grpc-gcp extension is enabled, AND
+    // 3. numChannels was not explicitly set
+    if (builder.dynamicChannelPoolEnabled != null && builder.dynamicChannelPoolEnabled) {
+      // DCP was explicitly enabled, but respect numChannels if set
+      dynamicChannelPoolEnabled = grpcGcpExtensionEnabled && !builder.numChannelsExplicitlySet;
+    } else {
+      // DCP is disabled by default, or was explicitly disabled
+      dynamicChannelPoolEnabled = false;
+    }
+
+    // Use user-provided GcpChannelPoolOptions or create Spanner-specific defaults
+    gcpChannelPoolOptions =
+        builder.gcpChannelPoolOptions != null
+            ? builder.gcpChannelPoolOptions
+            : createDefaultDynamicChannelPoolOptions();
+
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
@@ -825,7 +914,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     openTelemetry = builder.openTelemetry;
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
-    if (builder.isExperimentalHost) {
+    if (builder.experimentalHost != null) {
       enableBuiltInMetrics = false;
     } else {
       enableBuiltInMetrics = builder.enableBuiltInMetrics;
@@ -1010,6 +1099,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private GrpcInterceptorProvider interceptorProvider;
 
     private Integer numChannels;
+    private boolean numChannelsExplicitlySet = false;
 
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
@@ -1025,8 +1115,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
-    private boolean grpcGcpExtensionEnabled = false;
+    private boolean grpcGcpExtensionEnabled = true;
     private GcpManagedChannelOptions grpcGcpOptions;
+    private Boolean dynamicChannelPoolEnabled;
+    private GcpChannelPoolOptions gcpChannelPoolOptions;
     private RetrySettings retryAdministrativeRequestsSettings =
         DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
@@ -1047,7 +1139,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
-    private boolean isExperimentalHost = false;
+    private String experimentalHost = null;
+    private boolean usePlainText = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
 
     private static String createCustomClientLibToken(String token) {
@@ -1056,26 +1149,56 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     protected Builder() {
       // Manually set retry and polling settings that work.
-      OperationTimedPollAlgorithm longRunningPollingAlgorithm =
+      RetrySettings baseRetrySettings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
+              .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
+              .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
+              .setRetryDelayMultiplier(1.5)
+              .setRpcTimeoutMultiplier(1.5)
+              .setTotalTimeoutDuration(Duration.ofHours(48L))
+              .build();
+
+      // The polling setting with a short initial delay as we expect
+      // it to return soon.
+      OperationTimedPollAlgorithm shortInitialPollingDelayAlgorithm =
           OperationTimedPollAlgorithm.create(
-              RetrySettings.newBuilder()
-                  .setInitialRpcTimeoutDuration(Duration.ofSeconds(60L))
-                  .setMaxRpcTimeoutDuration(Duration.ofSeconds(600L))
-                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
-                  .setMaxRetryDelayDuration(Duration.ofSeconds(45L))
-                  .setRetryDelayMultiplier(1.5)
-                  .setRpcTimeoutMultiplier(1.5)
-                  .setTotalTimeoutDuration(Duration.ofHours(48L))
+              baseRetrySettings.toBuilder()
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(1L))
                   .build());
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
+          .setPollingAlgorithm(shortInitialPollingDelayAlgorithm);
+
+      // The polling setting with a long initial delay as we expect
+      // the operation to take a bit long time to return.
+      OperationTimedPollAlgorithm longInitialPollingDelayAlgorithm =
+          OperationTimedPollAlgorithm.create(
+              baseRetrySettings.toBuilder()
+                  .setInitialRetryDelayDuration(Duration.ofSeconds(20L))
+                  .build());
       databaseAdminStubSettingsBuilder
           .createBackupOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
+          .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
       databaseAdminStubSettingsBuilder
           .restoreDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm);
+          .setPollingAlgorithm(longInitialPollingDelayAlgorithm);
+
+      // updateDatabaseDdl requires a separate setting because
+      // it has no existing overrides on RPC timeouts for LRO polling.
+      databaseAdminStubSettingsBuilder
+          .updateDatabaseDdlOperationSettings()
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelayDuration(Duration.ofMillis(1000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelayDuration(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeoutDuration(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeoutDuration(Duration.ZERO)
+                      .setTotalTimeoutDuration(Duration.ofHours(48L))
+                      .build()));
     }
 
     Builder(SpannerOptions options) {
@@ -1099,6 +1222,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
       this.grpcGcpExtensionEnabled = options.grpcGcpExtensionEnabled;
       this.grpcGcpOptions = options.grpcGcpOptions;
+      this.dynamicChannelPoolEnabled = options.dynamicChannelPoolEnabled;
+      this.gcpChannelPoolOptions = options.gcpChannelPoolOptions;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
@@ -1189,6 +1314,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setNumChannels(int numChannels) {
       this.numChannels = numChannels;
+      this.numChannelsExplicitlySet = true;
       return this;
     }
 
@@ -1550,27 +1676,30 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/3676")
     public Builder setExperimentalHost(String host) {
+      if (this.usePlainText) {
+        Preconditions.checkArgument(
+            !host.startsWith("https:"),
+            "Please remove the 'https:' protocol prefix from the host string when using plain text"
+                + " communication");
+        if (!host.startsWith("http")) {
+          host = "http://" + host;
+        }
+      }
       super.setHost(host);
       super.setProjectId(EXPERIMENTAL_HOST_PROJECT_ID);
       setSessionPoolOption(SessionPoolOptions.newBuilder().setExperimentalHost().build());
-      this.isExperimentalHost = true;
+      this.experimentalHost = host;
       return this;
     }
 
-    /**
-     * Enables gRPC-GCP extension with the default settings. Do not set
-     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
-     * Multiplexed sessions are not supported for gRPC-GCP.
-     */
+    /** Enables gRPC-GCP extension with the default settings. This option is enabled by default. */
     public Builder enableGrpcGcpExtension() {
       return this.enableGrpcGcpExtension(null);
     }
 
     /**
      * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
-     * and default Spanner metric labels will be added automatically. Do not set
-     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
-     * Multiplexed sessions are not supported for gRPC-GCP.
+     * and default Spanner metric labels will be added automatically.
      */
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
@@ -1578,9 +1707,65 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /** Disables gRPC-GCP extension. */
+    /** Disables gRPC-GCP extension and uses GAX channel pool instead. */
     public Builder disableGrpcGcpExtension() {
       this.grpcGcpExtensionEnabled = false;
+      return this;
+    }
+
+    /**
+     * Enables dynamic channel pooling. When enabled, the client will automatically scale the number
+     * of channels based on load. This requires the gRPC-GCP extension to be enabled.
+     *
+     * <p>Dynamic channel pooling is disabled by default. Use this method to explicitly enable it.
+     * Note that calling {@link #setNumChannels(int)} will disable dynamic channel pooling even if
+     * this method was called.
+     */
+    public Builder enableDynamicChannelPool() {
+      this.dynamicChannelPoolEnabled = true;
+      return this;
+    }
+
+    /**
+     * Disables dynamic channel pooling. When disabled, the client will use a static number of
+     * channels as configured by {@link #setNumChannels(int)}.
+     *
+     * <p>Dynamic channel pooling is disabled by default, so this method is typically not needed
+     * unless you want to explicitly disable it after enabling it.
+     */
+    public Builder disableDynamicChannelPool() {
+      this.dynamicChannelPoolEnabled = false;
+      return this;
+    }
+
+    /**
+     * Sets the channel pool options for dynamic channel pooling. Use this to configure the dynamic
+     * channel pool behavior when {@link #enableDynamicChannelPool()} is enabled.
+     *
+     * <p>If not set, Spanner-specific defaults will be used (see {@link
+     * #createDefaultDynamicChannelPoolOptions()}).
+     *
+     * <p>Example usage:
+     *
+     * <pre>{@code
+     * SpannerOptions options = SpannerOptions.newBuilder()
+     *     .setProjectId("my-project")
+     *     .enableDynamicChannelPool()
+     *     .setGcpChannelPoolOptions(
+     *         GcpChannelPoolOptions.newBuilder()
+     *             .setMaxSize(15)
+     *             .setMinSize(3)
+     *             .setInitSize(5)
+     *             .setDynamicScaling(10, 30, Duration.ofMinutes(5))
+     *             .build())
+     *     .build();
+     * }</pre>
+     *
+     * @param gcpChannelPoolOptions the channel pool options to use
+     * @return this builder for chaining
+     */
+    public Builder setGcpChannelPoolOptions(GcpChannelPoolOptions gcpChannelPoolOptions) {
+      this.gcpChannelPoolOptions = Preconditions.checkNotNull(gcpChannelPoolOptions);
       return this;
     }
 
@@ -1610,6 +1795,23 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
                 .build();
       } catch (Exception e) {
         throw SpannerExceptionFactory.asSpannerException(e);
+      }
+      return this;
+    }
+
+    /**
+     * {@code usePlainText} will configure the transport to use plaintext (no TLS) and will set
+     * credentials to {@link com.google.cloud.NoCredentials} to avoid sending authentication over an
+     * unsecured channel.
+     */
+    @ExperimentalApi("https://github.com/googleapis/java-spanner/pull/4264")
+    public Builder usePlainText() {
+      this.usePlainText = true;
+      this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+          .setCredentials(NoCredentials.getInstance());
+      if (this.experimentalHost != null) {
+        // Re-apply host settings to ensure http:// is prepended.
+        setExperimentalHost(this.experimentalHost);
       }
       return this;
     }
@@ -1779,7 +1981,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
-      if (emulatorHost != null) {
+      if (emulatorHost != null && experimentalHost == null) {
         if (!emulatorHost.startsWith("http")) {
           emulatorHost = "http://" + emulatorHost;
         }
@@ -1789,7 +1991,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-      } else if (isExperimentalHost && credentials == null) {
+      } else if (experimentalHost != null && credentials == null) {
         credentials = environment.getDefaultExperimentalHostCredentials();
       }
       if (this.numChannels == null) {
@@ -1994,6 +2196,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public GcpManagedChannelOptions getGrpcGcpOptions() {
     return grpcGcpOptions;
+  }
+
+  /**
+   * Returns whether dynamic channel pooling is enabled. Dynamic channel pooling is disabled by
+   * default. Use {@link Builder#enableDynamicChannelPool()} to explicitly enable it. Note that
+   * calling {@link Builder#setNumChannels(int)} will disable dynamic channel pooling even if it was
+   * explicitly enabled.
+   */
+  public boolean isDynamicChannelPoolEnabled() {
+    return dynamicChannelPoolEnabled;
+  }
+
+  /**
+   * Returns the channel pool options for dynamic channel pooling. If no options were explicitly
+   * set, returns the Spanner-specific defaults.
+   *
+   * @see #createDefaultDynamicChannelPoolOptions()
+   */
+  public GcpChannelPoolOptions getGcpChannelPoolOptions() {
+    return gcpChannelPoolOptions;
   }
 
   public boolean isAutoThrottleAdministrativeRequests() {

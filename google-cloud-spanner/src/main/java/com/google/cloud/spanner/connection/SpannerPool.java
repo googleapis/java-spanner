@@ -17,12 +17,14 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.NoCredentials;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.spanner.DecodeMode;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -152,6 +154,10 @@ public class SpannerPool {
     private final CredentialsKey credentialsKey;
     private final SessionPoolOptions sessionPoolOptions;
     private final Integer numChannels;
+    private final Boolean enableDynamicChannelPool;
+    private final Integer dcpMinChannels;
+    private final Integer dcpMaxChannels;
+    private final Integer dcpInitialChannels;
     private final boolean usePlainText;
     private final String userAgent;
     private final String databaseRole;
@@ -190,6 +196,10 @@ public class SpannerPool {
               ? SessionPoolOptions.newBuilder().build()
               : options.getSessionPoolOptions();
       this.numChannels = options.getNumChannels();
+      this.enableDynamicChannelPool = options.isEnableDynamicChannelPool();
+      this.dcpMinChannels = options.getDcpMinChannels();
+      this.dcpMaxChannels = options.getDcpMaxChannels();
+      this.dcpInitialChannels = options.getDcpInitialChannels();
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();
       this.routeToLeader = options.isRouteToLeader();
@@ -217,6 +227,10 @@ public class SpannerPool {
           && Objects.equals(this.credentialsKey, other.credentialsKey)
           && Objects.equals(this.sessionPoolOptions, other.sessionPoolOptions)
           && Objects.equals(this.numChannels, other.numChannels)
+          && Objects.equals(this.enableDynamicChannelPool, other.enableDynamicChannelPool)
+          && Objects.equals(this.dcpMinChannels, other.dcpMinChannels)
+          && Objects.equals(this.dcpMaxChannels, other.dcpMaxChannels)
+          && Objects.equals(this.dcpInitialChannels, other.dcpInitialChannels)
           && Objects.equals(this.databaseRole, other.databaseRole)
           && Objects.equals(this.usePlainText, other.usePlainText)
           && Objects.equals(this.userAgent, other.userAgent)
@@ -243,6 +257,10 @@ public class SpannerPool {
           this.credentialsKey,
           this.sessionPoolOptions,
           this.numChannels,
+          this.enableDynamicChannelPool,
+          this.dcpMinChannels,
+          this.dcpMaxChannels,
+          this.dcpInitialChannels,
           this.usePlainText,
           this.databaseRole,
           this.userAgent,
@@ -402,6 +420,50 @@ public class SpannerPool {
     }
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);
+    }
+    // Configure Dynamic Channel Pooling (DCP) based on explicit user setting.
+    // Note: Setting numChannels disables DCP even if enableDynamicChannelPool is true.
+    if (key.enableDynamicChannelPool != null && key.numChannels == null) {
+      if (Boolean.TRUE.equals(key.enableDynamicChannelPool)) {
+        builder.enableDynamicChannelPool();
+        // Build custom GcpChannelPoolOptions if any DCP-specific options are set.
+        if (key.dcpMinChannels != null
+            || key.dcpMaxChannels != null
+            || key.dcpInitialChannels != null) {
+          // Build GcpChannelPoolOptions from scratch with custom values or Spanner defaults.
+          // Note: GcpChannelPoolOptions does not have a toBuilder() method, so we must
+          // construct from scratch using SpannerOptions defaults for unspecified values.
+          int minChannels =
+              key.dcpMinChannels != null
+                  ? key.dcpMinChannels
+                  : SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_CHANNELS;
+          int maxChannels =
+              key.dcpMaxChannels != null
+                  ? key.dcpMaxChannels
+                  : SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_CHANNELS;
+          int initChannels =
+              key.dcpInitialChannels != null
+                  ? key.dcpInitialChannels
+                  : SpannerOptions.DEFAULT_DYNAMIC_POOL_INITIAL_SIZE;
+          GcpChannelPoolOptions poolOptions =
+              GcpChannelPoolOptions.newBuilder()
+                  .setMinSize(minChannels)
+                  .setMaxSize(maxChannels)
+                  .setInitSize(initChannels)
+                  .setDynamicScaling(
+                      SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_RPC,
+                      SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_RPC,
+                      SpannerOptions.DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL)
+                  .setAffinityKeyLifetime(SpannerOptions.DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME)
+                  .setCleanupInterval(SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL)
+                  .build();
+          builder.setGcpChannelPoolOptions(poolOptions);
+        }
+      } else {
+        // Explicitly disable DCP when enableDynamicChannelPool=false.
+        // This ensures consistent behavior even if the default changes in the future.
+        builder.disableDynamicChannelPool();
+      }
     }
     if (options.getChannelProvider() != null) {
       builder.setChannelProvider(options.getChannelProvider());
