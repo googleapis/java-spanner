@@ -23,8 +23,6 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -36,8 +34,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.connection.ConnectionOptions.Builder;
-import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DirectedReadOptions;

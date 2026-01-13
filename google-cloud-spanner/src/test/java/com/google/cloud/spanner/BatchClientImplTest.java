@@ -100,8 +100,7 @@ public final class BatchClientImplTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testBatchReadOnlyTxnWithBound() throws Exception {
-    Session sessionProto =
-        Session.newBuilder().setName(SESSION_NAME).setMultiplexed(true).build();
+    Session sessionProto = Session.newBuilder().setName(SESSION_NAME).setMultiplexed(true).build();
     when(gapicRpc.createSession(
             eq(DB_NAME), anyString(), anyMap(), optionsCaptor.capture(), eq(true)))
         .thenReturn(sessionProto);
