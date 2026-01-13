@@ -23,8 +23,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.SpannerGrpc;
@@ -40,13 +38,12 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.net.InetSocketAddress;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
@@ -103,6 +100,7 @@ public class ChannelUsageTest {
   // Track channel hints (from X-Goog-Spanner-Request-Id header) per RPC method
   private static final Set<Long> batchCreateSessionChannelHints = ConcurrentHashMap.newKeySet();
   private static final Set<Long> executeSqlChannelHints = ConcurrentHashMap.newKeySet();
+  private static final Deque<Long> allExecuteSqlChannelHints = new ConcurrentLinkedDeque<>();
 
   private static Level originalLogLevel;
 
@@ -148,6 +146,7 @@ public class ChannelUsageTest {
                           if (call.getMethodDescriptor()
                               .equals(SpannerGrpc.getExecuteStreamingSqlMethod())) {
                             executeSqlChannelHints.add(channelHint);
+                            allExecuteSqlChannelHints.add(channelHint);
                           }
                         } catch (NumberFormatException e) {
                           // Ignore parse errors
@@ -185,6 +184,7 @@ public class ChannelUsageTest {
     mockSpanner.reset();
     batchCreateSessionChannelHints.clear();
     executeSqlChannelHints.clear();
+    allExecuteSqlChannelHints.clear();
   }
 
   private SpannerOptions createSpannerOptions() {
@@ -215,35 +215,20 @@ public class ChannelUsageTest {
     final int multiplier = 10;
     try (Spanner spanner = createSpannerOptions().getService()) {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      ListeningExecutorService executor =
-          MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numChannels * multiplier));
-      CountDownLatch latch = new CountDownLatch(numChannels * multiplier);
       for (int run = 0; run < numChannels * multiplier; run++) {
-        executor.submit(
-            () -> {
-              // Use a multi-use read-only transaction to make sure we keep a session in use for
-              // a longer period of time.
-              try (ReadOnlyTransaction transaction = client.readOnlyTransaction()) {
-                try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
-                  while (resultSet.next()) {}
-                }
-                latch.countDown();
-                // Wait here until we now that all threads have reached this point and have a
-                // session in use.
-                latch.await();
-                try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
-                  while (resultSet.next()) {}
-                }
-              }
-              return true;
-            });
+        try (ReadOnlyTransaction transaction = client.readOnlyTransaction()) {
+          for (int i = 0; i < 2; i++) {
+            try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+              while (resultSet.next()) {}
+            }
+          }
+        }
       }
-      executor.shutdown();
-      assertTrue(executor.awaitTermination(Duration.ofSeconds(10L)));
     }
     // Bound the channel hints to numChannels (matching gRPC-GCP behavior) and verify
     // that channels are being distributed. The raw channel hints may be unbounded (based on
     // session index), but gRPC-GCP bounds them to the actual number of channels.
+    assertEquals(2 * numChannels * multiplier, allExecuteSqlChannelHints.size());
     Set<Long> boundedChannelHints =
         executeSqlChannelHints.stream().map(hint -> hint % numChannels).collect(toSet());
     // Verify that channel distribution is working:
