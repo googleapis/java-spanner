@@ -23,20 +23,20 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
-import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class RetryableInternalErrorTest extends AbstractMockServerTest {
   @Test
   public void testTranslateInternalException() {
-    mockSpanner.setBatchCreateSessionsExecutionTime(
+    // With multiplexed sessions, we use CreateSession instead of BatchCreateSessions
+    mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.ofException(
             Status.INTERNAL
                 .withDescription("Authentication backend internal server error. Please retry.")
@@ -53,25 +53,18 @@ public class RetryableInternalErrorTest extends AbstractMockServerTest {
             .setHost(String.format("http://localhost:%d", getPort()))
             .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(1)
-                    .setMaxSessions(1)
-                    .setWaitForMinSessions(Duration.ofSeconds(5))
-                    .build())
             .build()
             .getService()) {
 
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      // Execute a query. This will block until a BatchCreateSessions call has finished and then
+      // Execute a query. This will wait for multiplexed session creation and then
       // invoke ExecuteStreamingSql. Both of these RPCs should be retried.
       try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1_STATEMENT)) {
         assertTrue(resultSet.next());
         assertFalse(resultSet.next());
       }
-      // Verify that both the BatchCreateSessions call and the ExecuteStreamingSql call were
-      // retried.
-      assertEquals(2, mockSpanner.countRequestsOfType(BatchCreateSessionsRequest.class));
+      // Verify that both the CreateSession call and the ExecuteStreamingSql call were retried.
+      assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
       // Clear the requests before the next test.
       mockSpanner.clearRequests();

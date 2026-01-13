@@ -39,7 +39,6 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.ConnectionOptions.Builder;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementExecutorType;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
@@ -50,11 +49,8 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.RequestOptions;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
@@ -382,82 +378,6 @@ public class ConnectionTest {
       assertEquals(alternativeValue, getter.get());
       connection.reset();
       assertEquals(defaultValue, getter.get());
-    }
-  }
-
-  public static class ConnectionMinSessionsTest extends AbstractMockServerTest {
-
-    @AfterClass
-    public static void reset() {
-      mockSpanner.reset();
-    }
-
-    protected String getBaseUrl() {
-      return super.getBaseUrl() + ";minSessions=1";
-    }
-
-    @Test
-    public void testMinSessions() throws InterruptedException, TimeoutException {
-      try (Connection connection = createConnection()) {
-        mockSpanner.waitForRequestsToContain(
-            input ->
-                input instanceof BatchCreateSessionsRequest
-                    && ((BatchCreateSessionsRequest) input).getSessionCount() == 1,
-            5000L);
-      }
-    }
-  }
-
-  public static class ConnectionMaxSessionsTest extends AbstractMockServerTest {
-
-    @AfterClass
-    public static void reset() {
-      mockSpanner.reset();
-    }
-
-    protected String getBaseUrl() {
-      return super.getBaseUrl() + ";maxSessions=1";
-    }
-
-    @Override
-    protected Builder configureConnectionOptions(Builder builder) {
-      return builder.setStatementExecutorType(StatementExecutorType.PLATFORM_THREAD);
-    }
-
-    @Test
-    public void testMaxSessions()
-        throws InterruptedException, TimeoutException, ExecutionException {
-      try (Connection connection1 = createConnection();
-          Connection connection2 = createConnection()) {
-        connection1.beginTransactionAsync();
-        connection2.beginTransactionAsync();
-
-        ApiFuture<Long> count1 = connection1.executeUpdateAsync(INSERT_STATEMENT);
-        ApiFuture<Long> count2 = connection2.executeUpdateAsync(INSERT_STATEMENT);
-
-        // Commit the transactions. Both should be able to finish, but both used the same session.
-        ApiFuture<Void> commit1 = connection1.commitAsync();
-        ApiFuture<Void> commit2 = connection2.commitAsync();
-
-        // At least one transaction must wait until the other has finished before it can get a
-        // session.
-        assertThat(count1.isDone() && count2.isDone()).isFalse();
-        assertThat(commit1.isDone() && commit2.isDone()).isFalse();
-
-        // Wait until both finishes.
-        ApiFutures.allAsList(Arrays.asList(commit1, commit2)).get(5L, TimeUnit.SECONDS);
-
-        assertThat(count1.isDone()).isTrue();
-        assertThat(count2.isDone()).isTrue();
-        if (isMultiplexedSessionsEnabled(connection1.getSpanner())) {
-          // We don't use the multiplexed session, so we don't know whether the server had time to
-          // create it or not. That means that we have between 1 and 2 sessions on the server.
-          assertThat(mockSpanner.numSessionsCreated()).isAtLeast(1);
-          assertThat(mockSpanner.numSessionsCreated()).isAtMost(2);
-        } else {
-          assertThat(mockSpanner.numSessionsCreated()).isEqualTo(1);
-        }
-      }
     }
   }
 
