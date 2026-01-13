@@ -27,9 +27,15 @@ import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
 
-/** Options for the session pool used by {@code DatabaseClient}. */
+/**
+ * Options for the session pool used by {@code DatabaseClient}.
+ *
+ * @deprecated The Spanner Java client uses a single multiplexed session. All options related to the
+ *     session pool are no longer functional and will be removed in a future version.
+ */
 @Deprecated
 public class SessionPoolOptions {
+  @Deprecated
   enum Position {
     FIRST,
     LAST,
@@ -228,10 +234,12 @@ public class SessionPoolOptions {
     return new Builder(this);
   }
 
+  @Deprecated
   public int getMinSessions() {
     return minSessions;
   }
 
+  @Deprecated
   public int getMaxSessions() {
     return maxSessions;
   }
@@ -268,6 +276,7 @@ public class SessionPoolOptions {
     return this.multiplexedSessionMaintenanceLoopFrequency;
   }
 
+  @Deprecated
   public int getKeepAliveIntervalMinutes() {
     return keepAliveIntervalMinutes;
   }
@@ -278,14 +287,17 @@ public class SessionPoolOptions {
     return toThreetenDuration(getRemoveInactiveSessionAfterDuration());
   }
 
+  @Deprecated
   public Duration getRemoveInactiveSessionAfterDuration() {
     return removeInactiveSessionAfter;
   }
 
+  @Deprecated
   public boolean isFailIfPoolExhausted() {
     return actionOnExhaustion == ActionOnExhaustion.FAIL;
   }
 
+  @Deprecated
   public boolean isBlockIfPoolExhausted() {
     return actionOnExhaustion == ActionOnExhaustion.BLOCK;
   }
@@ -333,6 +345,7 @@ public class SessionPoolOptions {
     return poolMaintainerClock;
   }
 
+  @Deprecated
   public boolean isTrackStackTraceOfSessionCheckout() {
     return trackStackTraceOfSessionCheckout;
   }
@@ -687,6 +700,7 @@ public class SessionPoolOptions {
      * Minimum number of sessions that this pool will always maintain. These will be created eagerly
      * in parallel. Defaults to 100.
      */
+    @Deprecated
     public Builder setMinSessions(int minSessions) {
       Preconditions.checkArgument(minSessions >= 0, "minSessions must be >= 0");
       this.minSessionsSet = true;
@@ -700,6 +714,7 @@ public class SessionPoolOptions {
      * operation. If current number of in use sessions is same as this and a new request comes, pool
      * can either block or fail. Defaults to 400.
      */
+    @Deprecated
     public Builder setMaxSessions(int maxSessions) {
       Preconditions.checkArgument(maxSessions > 0, "maxSessions must be > 0");
       this.maxSessions = maxSessions;
@@ -753,10 +768,12 @@ public class SessionPoolOptions {
      * instead.
      */
     @ObsoleteApi("Use setRemoveInactiveSessionAfterDuration(Duration) instead")
+    @Deprecated
     public Builder setRemoveInactiveSessionAfter(org.threeten.bp.Duration duration) {
       return setRemoveInactiveSessionAfterDuration(toJavaTimeDuration(duration));
     }
 
+    @Deprecated
     public Builder setRemoveInactiveSessionAfterDuration(Duration duration) {
       this.removeInactiveSessionAfter = duration;
       return this;
@@ -767,16 +784,18 @@ public class SessionPoolOptions {
      * is automatically closed after 60 minutes. Sessions will be kept alive by sending a dummy
      * query "Select 1". Default value is 30 minutes.
      */
+    @Deprecated
     public Builder setKeepAliveIntervalMinutes(int intervalMinutes) {
       this.keepAliveIntervalMinutes = intervalMinutes;
       return this;
     }
 
     /**
-     * If all sessions are in use and and {@code maxSessions} has been reached, fail the request by
+     * If all sessions are in use and {@code maxSessions} has been reached, fail the request by
      * throwing a {@link SpannerException} with the error code {@code RESOURCE_EXHAUSTED}. Default
      * behavior is to block the request.
      */
+    @Deprecated
     public Builder setFailIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.FAIL;
       return this;
@@ -791,6 +810,7 @@ public class SessionPoolOptions {
      * different period use the option {@link Builder#setAcquireSessionTimeoutDuration(Duration)}
      * ()}
      */
+    @Deprecated
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
       return this;
@@ -806,6 +826,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
+    @Deprecated
     public Builder setWarnIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
@@ -825,6 +846,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
+    @Deprecated
     public Builder setWarnAndCloseIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
@@ -976,6 +998,7 @@ public class SessionPoolOptions {
      * <p>Some monitoring tools might log these exceptions even though they are not thrown. This
      * option can be used to suppress the creation and logging of these exceptions.
      */
+    @Deprecated
     public Builder setTrackStackTraceOfSessionCheckout(boolean trackStackTraceOfSessionCheckout) {
       this.trackStackTraceOfSessionCheckout = trackStackTraceOfSessionCheckout;
       return this;
@@ -988,6 +1011,7 @@ public class SessionPoolOptions {
      *     BeginTransaction option with that statement.
      *     <p>This method may be removed in a future release.
      */
+    @Deprecated
     public Builder setWriteSessionsFraction(float writeSessionsFraction) {
       this.writeSessionsFraction = writeSessionsFraction;
       return this;
@@ -1016,6 +1040,7 @@ public class SessionPoolOptions {
 
     /** This method is obsolete. Use {@link #setAcquireSessionTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use setAcquireSessionTimeoutDuration(Duration) instead")
+    @Deprecated
     public Builder setAcquireSessionTimeout(org.threeten.bp.Duration acquireSessionTimeout) {
       return setAcquireSessionTimeoutDuration(toJavaTimeDuration(acquireSessionTimeout));
     }
@@ -1024,6 +1049,7 @@ public class SessionPoolOptions {
      * If greater than zero, we wait for said duration when no sessions are available in the
      * SessionPool. The default is a 60s timeout. Set the value to null to disable the timeout.
      */
+    @Deprecated
     public Builder setAcquireSessionTimeoutDuration(Duration acquireSessionTimeout) {
       try {
         if (acquireSessionTimeout != null) {

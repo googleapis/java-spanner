@@ -34,14 +34,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
-import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -51,7 +48,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -183,7 +179,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     if (options.getSessionPoolOptions() != null) {
       logger.log(
           Level.INFO,
-          "Session pool options: "
+          "Session pool options (deprecated, no longer used): "
               + "\nSession pool min sessions: "
               + options.getSessionPoolOptions().getMinSessions()
               + "\nSession pool max sessions: "
@@ -313,35 +309,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         if (clientId == null) {
           clientId = nextDatabaseClientId(db);
         }
-        List<LabelValue> labelValues =
-            ImmutableList.of(
-                LabelValue.create(clientId),
-                LabelValue.create(db.getDatabase()),
-                LabelValue.create(db.getInstanceId().getName()),
-                LabelValue.create(GaxProperties.getLibraryVersion(getOptions().getClass())));
-
-        AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesBuilder.put("client_id", clientId);
-        attributesBuilder.put("database", db.getDatabase());
-        attributesBuilder.put("instance_id", db.getInstanceId().getName());
-
-        boolean useMultiplexedSession =
-            getOptions().getSessionPoolOptions().getUseMultiplexedSession();
-        boolean useMultiplexedSessionForRW =
-            getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
-
         MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
-            useMultiplexedSession
-                ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
-                : null;
-        AtomicLong numMultiplexedSessionsAcquired =
-            useMultiplexedSession
-                ? multiplexedSessionDatabaseClient.getNumSessionsAcquired()
-                : new AtomicLong();
-        AtomicLong numMultiplexedSessionsReleased =
-            useMultiplexedSession
-                ? multiplexedSessionDatabaseClient.getNumSessionsReleased()
-                : new AtomicLong();
+            new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db));
         DatabaseClientImpl dbClient =
             createDatabaseClient(
                 clientId,
@@ -363,23 +332,17 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public BatchClient getBatchClient(DatabaseId db) {
-    if (getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps()) {
-      this.dbBatchClientLock.lock();
-      try {
-        if (this.dbBatchClients.containsKey(db)) {
-          return this.dbBatchClients.get(db);
-        }
-        BatchClientImpl batchClient =
-            new BatchClientImpl(
-                getSessionClient(db), /* useMultiplexedSessionPartitionedOps= */ true);
-        this.dbBatchClients.put(db, batchClient);
-        return batchClient;
-      } finally {
-        this.dbBatchClientLock.unlock();
+    this.dbBatchClientLock.lock();
+    try {
+      if (this.dbBatchClients.containsKey(db)) {
+        return this.dbBatchClients.get(db);
       }
+      BatchClientImpl batchClient = new BatchClientImpl(getSessionClient(db));
+      this.dbBatchClients.put(db, batchClient);
+      return batchClient;
+    } finally {
+      this.dbBatchClientLock.unlock();
     }
-    return new BatchClientImpl(
-        getSessionClient(db), /* useMultiplexedSessionPartitionedOps= */ false);
   }
 
   @Override

@@ -153,15 +153,6 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
-  private int nextNthRequest() {
-    return this.nthRequest.incrementAndGet();
-  }
-
-  @VisibleForTesting
-  int getNthRequest() {
-    return this.nthRequest.get();
-  }
-
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       final Iterable<MutationGroup> mutationGroups, final TransactionOption... options)
@@ -306,34 +297,6 @@ class DatabaseClientImpl implements DatabaseClient {
     return multiplexedSessionDatabaseClient.getDialectAsync();
   }
 
-  private UpdateOption[] withReqId(
-      final XGoogSpannerRequestId reqId, final UpdateOption... options) {
-    if (reqId == null) {
-      return options;
-    }
-    if (options == null || options.length == 0) {
-      return new UpdateOption[] {new Options.RequestIdOption(reqId)};
-    }
-    UpdateOption[] allOptions = new UpdateOption[options.length + 1];
-    System.arraycopy(options, 0, allOptions, 0, options.length);
-    allOptions[options.length] = new Options.RequestIdOption(reqId);
-    return allOptions;
-  }
-
-  private TransactionOption[] withReqId(
-      final XGoogSpannerRequestId reqId, final TransactionOption... options) {
-    if (reqId == null) {
-      return options;
-    }
-    if (options == null || options.length == 0) {
-      return new TransactionOption[] {new Options.RequestIdOption(reqId)};
-    }
-    TransactionOption[] allOptions = new TransactionOption[options.length + 1];
-    System.arraycopy(options, 0, allOptions, 0, options.length);
-    allOptions[options.length] = new Options.RequestIdOption(reqId);
-    return allOptions;
-  }
-
   boolean isValid() {
     return multiplexedSessionDatabaseClient.isValid();
   }
@@ -341,6 +304,6 @@ class DatabaseClientImpl implements DatabaseClient {
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
     // This method is non-blocking.
     this.multiplexedSessionDatabaseClient.close();
-    return Futures.immediateFuture(null);
+    return Futures.immediateVoidFuture();
   }
 }

@@ -22,7 +22,6 @@ import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Struct;
@@ -36,7 +35,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
@@ -45,8 +43,6 @@ import javax.annotation.concurrent.GuardedBy;
 /** Default implementation for Batch Client interface. */
 public class BatchClientImpl implements BatchClient {
   private final SessionClient sessionClient;
-
-  private final boolean isMultiplexedSessionEnabled;
 
   /** Lock to protect the multiplexed session. */
   private final ReentrantLock multiplexedSessionLock = new ReentrantLock();
@@ -61,16 +57,8 @@ public class BatchClientImpl implements BatchClient {
   @GuardedBy("multiplexedSessionLock")
   private final AtomicReference<SessionImpl> multiplexedSessionReference;
 
-  /**
-   * This flag is set to true if the server return UNIMPLEMENTED when partitioned transaction is
-   * executed on a multiplexed session. TODO: Remove once this is guaranteed to be available.
-   */
-  @VisibleForTesting
-  static final AtomicBoolean unimplementedForPartitionedOps = new AtomicBoolean(false);
-
-  BatchClientImpl(SessionClient sessionClient, boolean isMultiplexedSessionEnabled) {
+  BatchClientImpl(SessionClient sessionClient) {
     this.sessionClient = checkNotNull(sessionClient);
-    this.isMultiplexedSessionEnabled = isMultiplexedSessionEnabled;
     this.sessionExpirationDuration =
         Duration.ofMillis(
             sessionClient
@@ -93,12 +81,7 @@ public class BatchClientImpl implements BatchClient {
 
   @Override
   public BatchReadOnlyTransaction batchReadOnlyTransaction(TimestampBound bound) {
-    SessionImpl session;
-    if (canUseMultiplexedSession()) {
-      session = getMultiplexedSession();
-    } else {
-      session = sessionClient.createSession();
-    }
+    SessionImpl session = getMultiplexedSession();
     return new BatchReadOnlyTransactionImpl(
         MultiUseReadOnlyTransaction.newBuilder()
             .setSession(session)
@@ -114,8 +97,7 @@ public class BatchClientImpl implements BatchClient {
                 sessionClient.getSpanner().getOptions().getDirectedReadOptions())
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
-        checkNotNull(bound),
-        sessionClient);
+        checkNotNull(bound));
   }
 
   @Override
@@ -138,12 +120,7 @@ public class BatchClientImpl implements BatchClient {
                 sessionClient.getSpanner().getOptions().getDirectedReadOptions())
             .setSpan(sessionClient.getSpanner().getTracer().getCurrentSpan())
             .setTracer(sessionClient.getSpanner().getTracer()),
-        batchTransactionId,
-        sessionClient);
-  }
-
-  private boolean canUseMultiplexedSession() {
-    return isMultiplexedSessionEnabled && !unimplementedForPartitionedOps.get();
+        batchTransactionId);
   }
 
   private SessionImpl getMultiplexedSession() {
@@ -162,28 +139,20 @@ public class BatchClientImpl implements BatchClient {
 
   private static class BatchReadOnlyTransactionImpl extends MultiUseReadOnlyTransaction
       implements BatchReadOnlyTransaction {
-    private String sessionName;
+    private final String sessionName;
     private final Map<SpannerRpc.Option, ?> options;
-    private final SessionClient sessionClient;
-    private final AtomicBoolean fallbackInitiated = new AtomicBoolean(false);
 
     BatchReadOnlyTransactionImpl(
-        MultiUseReadOnlyTransaction.Builder builder,
-        TimestampBound bound,
-        SessionClient sessionClient) {
+        MultiUseReadOnlyTransaction.Builder builder, TimestampBound bound) {
       super(builder.setTimestampBound(bound));
-      this.sessionClient = sessionClient;
       this.sessionName = session.getName();
       this.options = session.getOptions();
       initTransaction();
     }
 
     BatchReadOnlyTransactionImpl(
-        MultiUseReadOnlyTransaction.Builder builder,
-        BatchTransactionId batchTransactionId,
-        SessionClient sessionClient) {
+        MultiUseReadOnlyTransaction.Builder builder, BatchTransactionId batchTransactionId) {
       super(builder.setTransactionId(batchTransactionId.getTransactionId()));
-      this.sessionClient = sessionClient;
       this.sessionName = session.getName();
       this.options = session.getOptions();
     }
@@ -212,18 +181,6 @@ public class BatchClientImpl implements BatchClient {
         String index,
         KeySet keys,
         Iterable<String> columns,
-        ReadOption... option)
-        throws SpannerException {
-      return partitionReadUsingIndex(partitionOptions, table, index, keys, columns, false, option);
-    }
-
-    private List<Partition> partitionReadUsingIndex(
-        PartitionOptions partitionOptions,
-        String table,
-        String index,
-        KeySet keys,
-        Iterable<String> columns,
-        boolean isFallback,
         ReadOption... option)
         throws SpannerException {
       Options readOptions = Options.fromReadOptions(option);

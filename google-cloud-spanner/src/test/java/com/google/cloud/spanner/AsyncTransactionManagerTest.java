@@ -261,7 +261,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         "DelayedAsyncTransactionManager is currently blocking with multiplexed sessions.",
         spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     mockSpanner.freeze();
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -303,7 +303,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   public void asyncTransactionManagerCommitAborted() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
     CountDownLatch abortedLatch = new CountDownLatch(1);
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -336,7 +336,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerFireAndForgetInvalidUpdate() throws Exception {
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -484,7 +484,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -552,7 +552,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerWaitsUntilAsyncUpdateHasFinished() throws Exception {
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
       TransactionContextFuture txn = mgr.beginAsync();
       while (true) {
         try {
@@ -607,7 +607,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         "DelayedAsyncTransactionManager is currently blocking with multiplexed sessions.",
         spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW());
     mockSpanner.freeze();
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -651,7 +651,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerFireAndForgetInvalidBatchUpdate() throws Exception {
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -696,7 +696,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerBatchUpdateAborted() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -744,7 +744,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerBatchUpdateAbortedBeforeFirstStatement() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -792,7 +792,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerWithBatchUpdateCommitAborted() throws Exception {
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       // Temporarily set the result of the update to 2 rows.
       mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT + 1L));
       final AtomicInteger attempt = new AtomicInteger();
@@ -859,7 +859,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerBatchUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
@@ -919,7 +919,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             Status.INVALID_ARGUMENT
                 .withDescription("mutation limit exceeded")
                 .asRuntimeException()));
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       SpannerException e =
           assertThrows(
@@ -948,7 +948,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerWaitsUntilAsyncBatchUpdateHasFinished() throws Exception {
-    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {

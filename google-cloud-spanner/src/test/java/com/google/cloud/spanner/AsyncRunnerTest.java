@@ -118,7 +118,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerIsNonBlocking() throws Exception {
     mockSpanner.freeze();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             txn -> {
@@ -216,7 +216,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> result =
         runner.runAsync(
             txn -> {
@@ -295,7 +295,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncRunnerWaitsUntilAsyncUpdateHasFinished() throws Exception {
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             txn -> {
@@ -334,7 +334,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerIsNonBlockingWithBatchUpdate() throws Exception {
     mockSpanner.freeze();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             txn -> {
@@ -428,7 +428,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerBatchUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> result =
         runner.runAsync(
             txn -> {
@@ -512,7 +512,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncRunnerWaitsUntilAsyncBatchUpdateHasFinished() throws Exception {
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             txn -> {

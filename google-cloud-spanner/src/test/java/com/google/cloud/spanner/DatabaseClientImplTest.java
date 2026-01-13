@@ -188,7 +188,6 @@ public class DatabaseClientImplTest {
                       ReplicaSelection.newBuilder().setLocation("us-east1").build()))
           .build();
   private Spanner spanner;
-  private Spanner spannerWithEmptySessionPool;
   private static ExecutorService executor;
 
   @BeforeClass
@@ -258,19 +257,12 @@ public class DatabaseClientImplTest {
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
             .build()
             .getService();
-    spannerWithEmptySessionPool =
-        spanner.getOptions().toBuilder()
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder().setMinSessions(0).setFailOnSessionLeak().build())
-            .build()
-            .getService();
   }
 
   @After
   public void tearDown() {
     mockSpanner.unfreeze();
     spanner.close();
-    spannerWithEmptySessionPool.close();
     mockSpanner.reset();
     xGoogReqIdInterceptor.reset();
     mockSpanner.removeAllExecutionTimes();
@@ -1307,8 +1299,7 @@ public class DatabaseClientImplTest {
     // from the pool and then preparing a query is non-blocking (i.e. does not wait on a reply from
     // the server).
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       mockSpanner.unfreeze();
       assertThat(rs.next()).isTrue();
@@ -1376,8 +1367,7 @@ public class DatabaseClientImplTest {
   public void singleUseBoundIsNonBlocking() {
     mockSpanner.freeze();
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet rs =
         client
             .singleUse(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
@@ -1435,8 +1425,7 @@ public class DatabaseClientImplTest {
   public void singleUseTransactionIsNonBlocking() {
     mockSpanner.freeze();
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet rs = client.singleUseReadOnlyTransaction().executeQuery(SELECT1)) {
       mockSpanner.unfreeze();
       assertThat(rs.next()).isTrue();
@@ -1463,8 +1452,7 @@ public class DatabaseClientImplTest {
   public void singleUseTransactionBoundIsNonBlocking() {
     mockSpanner.freeze();
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet rs =
         client
             .singleUseReadOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
@@ -1493,8 +1481,7 @@ public class DatabaseClientImplTest {
   public void readOnlyTransactionIsNonBlocking() {
     mockSpanner.freeze();
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (ResultSet rs = tx.executeQuery(SELECT1)) {
         mockSpanner.unfreeze();
@@ -1523,8 +1510,7 @@ public class DatabaseClientImplTest {
   public void readOnlyTransactionBoundIsNonBlocking() {
     mockSpanner.freeze();
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ReadOnlyTransaction tx =
         client.readOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))) {
       try (ResultSet rs = tx.executeQuery(SELECT1)) {
@@ -1568,8 +1554,7 @@ public class DatabaseClientImplTest {
   public void readWriteTransactionIsNonBlocking() {
     mockSpanner.freeze();
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     // The runner.run(...) method cannot be made non-blocking, as it returns the result of the
     // transaction.
@@ -1619,8 +1604,7 @@ public class DatabaseClientImplTest {
   public void runAsyncIsNonBlocking() throws Exception {
     mockSpanner.freeze();
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ExecutorService executor = Executors.newSingleThreadExecutor();
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> fut =
@@ -1694,8 +1678,7 @@ public class DatabaseClientImplTest {
   public void transactionManagerIsNonBlocking() throws Exception {
     mockSpanner.freeze();
     DatabaseClient client =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager txManager = client.transactionManager()) {
       mockSpanner.unfreeze();
       TransactionContext transaction = txManager.begin();
@@ -2060,10 +2043,8 @@ public class DatabaseClientImplTest {
                         .build())
                 .build()
                 .getService()) {
-          boolean useMultiplexedSession =
-              spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
           DatabaseId databaseId = DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE);
-          if (useMultiplexedSession && !waitForMinSessions.isZero()) {
+          if (!waitForMinSessions.isZero()) {
             assertThrows(
                 ResourceNotFoundException.class, () -> spanner.getDatabaseClient(databaseId));
           } else {
@@ -2087,20 +2068,7 @@ public class DatabaseClientImplTest {
                         .readWriteTransaction()
                         .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
             // No additional requests should have been sent by the client.
-            if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()
-                && !spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
-              // Note that in case of the use of multiplexed sessions for read-only alone, then we
-              // have 2 requests:
-              // 1. BatchCreateSessions for the session pool.
-              // 2. CreateSession for the multiplexed session.
-              assertThat(mockSpanner.getRequests()).hasSize(2);
-            } else {
-              // Note that in case of the use of regular sessions, then we have 1 request:
-              // BatchCreateSessions for the session pool.
-              // Note that in case of the use of multiplexed sessions for read-write, then we have 1
-              // request: CreateSession for the multiplexed session.
-              assertThat(mockSpanner.getRequests()).hasSize(1);
-            }
+            assertThat(mockSpanner.getRequests()).hasSize(1);
           }
         }
         mockSpanner.reset();
@@ -2160,25 +2128,6 @@ public class DatabaseClientImplTest {
         // receive any new requests.
         mockSpanner.reset();
         // All subsequent calls should fail with a DatabaseNotFoundException.
-
-        if (!spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
-          // We only verify this for read-only transactions if we are not using multiplexed
-          // sessions. For multiplexed sessions, we don't need any special handling, as deleting the
-          // database will also invalidate the multiplexed session, and trying to continue to use it
-          // will continue to return an error.
-          assertThrows(
-              ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
-        }
-
-        if (!spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW()) {
-          // We only verify this for read-write transactions if we are not using multiplexed
-          // sessions. For multiplexed sessions, we don't need any special handling, as deleting the
-          // database will also invalidate the multiplexed session, and trying to continue to use it
-          // will continue to return an error.
-          assertThrows(
-              ResourceNotFoundException.class,
-              () -> dbClient.readWriteTransaction().run(transaction -> null));
-        }
 
         assertThat(mockSpanner.getRequests()).isEmpty();
         // Now get a new database client. Normally multiple calls to Spanner#getDatabaseClient will
@@ -2700,17 +2649,8 @@ public class DatabaseClientImplTest {
           spannerException = assertThrows(SpannerException.class, resultSet::next);
         } else {
           // This is blocking when we should wait for min sessions, and will therefore fail.
-          if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
-            spannerException =
-                assertThrows(SpannerException.class, () -> spanner.getDatabaseClient(databaseId));
-          } else {
-            // TODO: Fix the session pool implementation for waiting for min sessions, so this also
-            //       propagates the error directly when session creation fails.
-            DatabaseClient client = spanner.getDatabaseClient(databaseId);
-            spannerException =
-                assertThrows(
-                    SpannerException.class, () -> client.singleUse().executeQuery(SELECT1).next());
-          }
+          spannerException =
+              assertThrows(SpannerException.class, () -> spanner.getDatabaseClient(databaseId));
         }
         assertEquals(ErrorCode.PERMISSION_DENIED, spannerException.getErrorCode());
       } finally {
@@ -2810,8 +2750,7 @@ public class DatabaseClientImplTest {
       // non-blocking, and any exceptions will be delayed until actual query execution.
       mockSpanner.freeze();
       DatabaseClient client =
-          spannerWithEmptySessionPool.getDatabaseClient(
-              DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
         mockSpanner.unfreeze();
         SpannerException exception = assertThrows(SpannerException.class, rs::next);
