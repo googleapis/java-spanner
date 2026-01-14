@@ -520,6 +520,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         != ReadLockMode.READ_LOCK_MODE_UNSPECIFIED) {
       numOptions++;
     }
+    if (this.clientContext != null) {
+      numOptions++;
+    }
     if (numOptions == 0) {
       return dbClient.readWriteTransaction();
     }
@@ -546,6 +549,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     if (connectionState.getValue(READ_LOCK_MODE).getValue()
         != ReadLockMode.READ_LOCK_MODE_UNSPECIFIED) {
       options[index++] = Options.readLockMode(connectionState.getValue(READ_LOCK_MODE).getValue());
+    }
+    if (this.clientContext != null) {
+      options[index++] = Options.clientContext(this.clientContext);
     }
     return dbClient.readWriteTransaction(options);
   }

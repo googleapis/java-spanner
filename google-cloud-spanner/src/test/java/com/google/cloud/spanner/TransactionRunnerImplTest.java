@@ -108,28 +108,28 @@ public class TransactionRunnerImplTest {
             .putSecureContext(
                 "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
             .build();
-    Options options =
-        Options.fromTransactionOptions(
+    when(session.getName()).thenReturn("projects/p/instances/i/databases/d/sessions/s");
+    when(session.newTransaction(any(Options.class), any())).thenReturn(txn);
+    Mockito.clearInvocations(session);
+    transactionRunner =
+        new TransactionRunnerImpl(
+            session,
             Options.priority(Options.RpcPriority.HIGH),
             Options.tag("tag"),
             Options.clientContext(clientContext));
-    transactionRunner = new TransactionRunnerImpl(session, options);
-    when(session.getName()).thenReturn("projects/p/instances/i/databases/d/sessions/s");
-    when(session.newTransaction(any(Options.class), any())).thenReturn(txn);
+    transactionRunner.setSpan(span);
 
     transactionRunner.run(
         transaction -> {
           return null;
         });
 
-    ArgumentCaptor<CommitRequest> commitRequestCaptor =
-        ArgumentCaptor.forClass(CommitRequest.class);
-    verify(rpc).commitAsync(commitRequestCaptor.capture(), anyMap());
-    CommitRequest request = commitRequestCaptor.getValue();
-    RequestOptions requestOptions = request.getRequestOptions();
-    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, requestOptions.getPriority());
-    assertEquals("tag", requestOptions.getTransactionTag());
-    assertEquals(clientContext, requestOptions.getClientContext());
+    ArgumentCaptor<Options> optionsCaptor = ArgumentCaptor.forClass(Options.class);
+    verify(session).newTransaction(optionsCaptor.capture(), any());
+    Options capturedOptions = optionsCaptor.getValue();
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, capturedOptions.priority());
+    assertEquals("tag", capturedOptions.tag());
+    assertEquals(clientContext, capturedOptions.clientContext());
   }
 
   @Mock private SpannerRpc rpc;

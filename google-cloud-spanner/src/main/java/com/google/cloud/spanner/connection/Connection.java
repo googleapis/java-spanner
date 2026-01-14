@@ -450,6 +450,25 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
+   * Sets the client context to use for the statements that are executed. The client context
+   * persists until it is changed or cleared.
+   *
+   * @param clientContext The client context to use with the statements that will be executed on
+   *     this connection.
+   */
+  default void setClientContext(com.google.spanner.v1.RequestOptions.ClientContext clientContext) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @return The client context that will be used with the statements that are executed on this
+   *     connection.
+   */
+  default com.google.spanner.v1.RequestOptions.ClientContext getClientContext() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * Sets whether the next transaction should be excluded from all change streams with the DDL
    * option `allow_txn_exclusion=true`
    */
