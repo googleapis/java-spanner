@@ -27,13 +27,13 @@ import java.util.Arrays;
  * operations where synchronization is not required.
  */
 @InternalApi
-public final class GrowableByteArrayOutputStream {
+public final class UnsynchronizedByteArrayOutputStream {
 
   private byte[] buf;
   private int count;
 
   /** Creates a new output stream with a default initial capacity of 32 bytes. */
-  public GrowableByteArrayOutputStream() {
+  public UnsynchronizedByteArrayOutputStream() {
     this(32);
   }
 
@@ -43,7 +43,7 @@ public final class GrowableByteArrayOutputStream {
    * @param initialCapacity the initial buffer size
    * @throws IllegalArgumentException if initialCapacity is negative
    */
-  public GrowableByteArrayOutputStream(int initialCapacity) {
+  public UnsynchronizedByteArrayOutputStream(int initialCapacity) {
     if (initialCapacity < 0) {
       throw new IllegalArgumentException("Negative initial capacity: " + initialCapacity);
     }

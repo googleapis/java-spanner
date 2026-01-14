@@ -93,7 +93,7 @@ public final class SsFormat {
   // Offset to make negative timestamp seconds sort correctly
   private static final long TIMESTAMP_SECONDS_OFFSET = 1L << 63;
 
-  public static void appendCompositeTag(GrowableByteArrayOutputStream out, int tag) {
+  public static void appendCompositeTag(UnsynchronizedByteArrayOutputStream out, int tag) {
     if (tag == K_OBJECT_EXISTENCE_TAG || tag <= 0 || tag > K_MAX_FIELD_TAG) {
       throw new IllegalArgumentException("Invalid tag value: " + tag);
     }
@@ -121,21 +121,21 @@ public final class SsFormat {
     }
   }
 
-  public static void appendNullOrderedFirst(GrowableByteArrayOutputStream out) {
+  public static void appendNullOrderedFirst(UnsynchronizedByteArrayOutputStream out) {
     out.write((byte) (IS_KEY | TYPE_NULL_ORDERED_FIRST));
     out.write((byte) 0);
   }
 
-  public static void appendNullOrderedLast(GrowableByteArrayOutputStream out) {
+  public static void appendNullOrderedLast(UnsynchronizedByteArrayOutputStream out) {
     out.write((byte) (IS_KEY | TYPE_NULL_ORDERED_LAST));
     out.write((byte) 0);
   }
 
-  public static void appendNotNullMarkerNullOrderedFirst(GrowableByteArrayOutputStream out) {
+  public static void appendNotNullMarkerNullOrderedFirst(UnsynchronizedByteArrayOutputStream out) {
     out.write((byte) (IS_KEY | TYPE_NULLABLE_NOT_NULL_NULL_ORDERED_FIRST));
   }
 
-  public static void appendNotNullMarkerNullOrderedLast(GrowableByteArrayOutputStream out) {
+  public static void appendNotNullMarkerNullOrderedLast(UnsynchronizedByteArrayOutputStream out) {
     out.write((byte) (IS_KEY | TYPE_NULLABLE_NOT_NULL_NULL_ORDERED_LAST));
   }
 
@@ -148,7 +148,7 @@ public final class SsFormat {
    * @param out the output stream to append to
    * @param value the boolean value to encode
    */
-  public static void appendBoolIncreasing(GrowableByteArrayOutputStream out, boolean value) {
+  public static void appendBoolIncreasing(UnsynchronizedByteArrayOutputStream out, boolean value) {
     // BOOL uses unsigned int encoding: false=0, true=1
     // For values 0 and 1, payload is always 1 byte
     int encoded = value ? 1 : 0;
@@ -166,7 +166,7 @@ public final class SsFormat {
    * @param out the output stream to append to
    * @param value the boolean value to encode
    */
-  public static void appendBoolDecreasing(GrowableByteArrayOutputStream out, boolean value) {
+  public static void appendBoolDecreasing(UnsynchronizedByteArrayOutputStream out, boolean value) {
     // BOOL uses decreasing unsigned int encoding: false=0, true=1, then inverted
     // For values 0 and 1, payload is always 1 byte
     int encoded = value ? 1 : 0;
@@ -175,8 +175,8 @@ public final class SsFormat {
     out.write((byte) ((~encoded & 0x7F) << 1)); // Inverted payload
   }
 
-  private static void appendIntInternal(
-      GrowableByteArrayOutputStream out, long val, boolean decreasing, boolean isDouble) {
+  private static void appendInt64Internal(
+      UnsynchronizedByteArrayOutputStream out, long val, boolean decreasing, boolean isDouble) {
     if (decreasing) {
       val = ~val;
     }
@@ -237,33 +237,33 @@ public final class SsFormat {
     out.write(buf, 8 - len, len);
   }
 
-  public static void appendIntIncreasing(GrowableByteArrayOutputStream out, long value) {
-    appendIntInternal(out, value, false, false);
+  public static void appendInt64Increasing(UnsynchronizedByteArrayOutputStream out, long value) {
+    appendInt64Internal(out, value, false, false);
   }
 
-  public static void appendIntDecreasing(GrowableByteArrayOutputStream out, long value) {
-    appendIntInternal(out, value, true, false);
+  public static void appendInt64Decreasing(UnsynchronizedByteArrayOutputStream out, long value) {
+    appendInt64Internal(out, value, true, false);
   }
 
-  public static void appendDoubleIncreasing(GrowableByteArrayOutputStream out, double value) {
+  public static void appendDoubleIncreasing(UnsynchronizedByteArrayOutputStream out, double value) {
     long enc = Double.doubleToRawLongBits(value);
     if (enc < 0) {
       // Transform negative doubles to maintain lexicographic sort order
       enc = Long.MIN_VALUE - enc;
     }
-    appendIntInternal(out, enc, false, true);
+    appendInt64Internal(out, enc, false, true);
   }
 
-  public static void appendDoubleDecreasing(GrowableByteArrayOutputStream out, double value) {
+  public static void appendDoubleDecreasing(UnsynchronizedByteArrayOutputStream out, double value) {
     long enc = Double.doubleToRawLongBits(value);
     if (enc < 0) {
       enc = Long.MIN_VALUE - enc;
     }
-    appendIntInternal(out, enc, true, true);
+    appendInt64Internal(out, enc, true, true);
   }
 
   private static void appendByteSequence(
-      GrowableByteArrayOutputStream out, byte[] bytes, boolean decreasing) {
+      UnsynchronizedByteArrayOutputStream out, byte[] bytes, boolean decreasing) {
     out.write((byte) (IS_KEY | (decreasing ? TYPE_DECREASING_STRING : TYPE_STRING)));
 
     for (byte b : bytes) {
@@ -286,19 +286,19 @@ public final class SsFormat {
     out.write(SEP);
   }
 
-  public static void appendStringIncreasing(GrowableByteArrayOutputStream out, String value) {
+  public static void appendStringIncreasing(UnsynchronizedByteArrayOutputStream out, String value) {
     appendByteSequence(out, value.getBytes(StandardCharsets.UTF_8), false);
   }
 
-  public static void appendStringDecreasing(GrowableByteArrayOutputStream out, String value) {
+  public static void appendStringDecreasing(UnsynchronizedByteArrayOutputStream out, String value) {
     appendByteSequence(out, value.getBytes(StandardCharsets.UTF_8), true);
   }
 
-  public static void appendBytesIncreasing(GrowableByteArrayOutputStream out, byte[] value) {
+  public static void appendBytesIncreasing(UnsynchronizedByteArrayOutputStream out, byte[] value) {
     appendByteSequence(out, value, false);
   }
 
-  public static void appendBytesDecreasing(GrowableByteArrayOutputStream out, byte[] value) {
+  public static void appendBytesDecreasing(UnsynchronizedByteArrayOutputStream out, byte[] value) {
     appendByteSequence(out, value, true);
   }
 

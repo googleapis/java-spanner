@@ -229,7 +229,7 @@ public class SsFormatTest {
   public void appendCompositeTag_shortTag_encodesInOneByte() {
     // Tags 1-15 should fit in 1 byte
     for (int tag = 1; tag <= 15; tag++) {
-      GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
       SsFormat.appendCompositeTag(out, tag);
       byte[] result = out.toByteArray();
 
@@ -243,7 +243,7 @@ public class SsFormatTest {
     // Tags 16-4095 should fit in 2 bytes
     int[] testTags = {16, 100, 1000, 4095};
     for (int tag : testTags) {
-      GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
       SsFormat.appendCompositeTag(out, tag);
       byte[] result = out.toByteArray();
 
@@ -256,7 +256,7 @@ public class SsFormatTest {
     // Tags 4096-65535 should fit in 3 bytes
     int[] testTags = {4096, 10000, 65535};
     for (int tag : testTags) {
-      GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
       SsFormat.appendCompositeTag(out, tag);
       byte[] result = out.toByteArray();
 
@@ -266,7 +266,7 @@ public class SsFormatTest {
 
   @Test
   public void appendCompositeTag_invalidTag_throws() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     assertThrows(IllegalArgumentException.class, () -> SsFormat.appendCompositeTag(out, 0));
     assertThrows(IllegalArgumentException.class, () -> SsFormat.appendCompositeTag(out, -1));
     assertThrows(IllegalArgumentException.class, () -> SsFormat.appendCompositeTag(out, 65536));
@@ -277,8 +277,8 @@ public class SsFormatTest {
     // Verify smaller tags encode to lexicographically smaller byte sequences
     for (int tag1 = 1; tag1 <= 100; tag1++) {
       for (int tag2 = tag1 + 1; tag2 <= 101 && tag2 <= tag1 + 10; tag2++) {
-        GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-        GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+        UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+        UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
         SsFormat.appendCompositeTag(out1, tag1);
         SsFormat.appendCompositeTag(out2, tag2);
@@ -293,17 +293,17 @@ public class SsFormatTest {
   // ==================== Signed Integer Tests ====================
 
   @Test
-  public void appendIntIncreasing_preservesOrdering() {
+  public void appendInt64Increasing_preservesOrdering() {
     // Verify that encoded integers maintain their natural ordering
     for (int i = 0; i < signedIntTestValues.size() - 1; i++) {
       long v1 = signedIntTestValues.get(i);
       long v2 = signedIntTestValues.get(i + 1);
 
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
-      SsFormat.appendIntIncreasing(out1, v1);
-      SsFormat.appendIntIncreasing(out2, v2);
+      SsFormat.appendInt64Increasing(out1, v1);
+      SsFormat.appendInt64Increasing(out2, v2);
 
       assertTrue(
           "Encoded " + v1 + " should be less than encoded " + v2,
@@ -312,17 +312,17 @@ public class SsFormatTest {
   }
 
   @Test
-  public void appendIntDecreasing_reversesOrdering() {
+  public void appendInt64Decreasing_reversesOrdering() {
     // Verify that decreasing encoding reverses the ordering
     for (int i = 0; i < signedIntTestValues.size() - 1; i++) {
       long v1 = signedIntTestValues.get(i);
       long v2 = signedIntTestValues.get(i + 1);
 
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
-      SsFormat.appendIntDecreasing(out1, v1);
-      SsFormat.appendIntDecreasing(out2, v2);
+      SsFormat.appendInt64Decreasing(out1, v1);
+      SsFormat.appendInt64Decreasing(out2, v2);
 
       assertTrue(
           "Decreasing encoded " + v1 + " should be greater than encoded " + v2,
@@ -331,21 +331,21 @@ public class SsFormatTest {
   }
 
   @Test
-  public void appendIntIncreasing_hasIsKeyBitSet() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
-    SsFormat.appendIntIncreasing(out, 42);
+  public void appendInt64Increasing_hasIsKeyBitSet() {
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
+    SsFormat.appendInt64Increasing(out, 42);
     byte[] result = out.toByteArray();
 
     assertTrue("IS_KEY bit (0x80) should be set", (result[0] & 0x80) != 0);
   }
 
   @Test
-  public void appendIntIncreasing_edgeCases() {
+  public void appendInt64Increasing_edgeCases() {
     long[] edgeCases = {Long.MIN_VALUE, -1, 0, 1, Long.MAX_VALUE};
 
     for (long value : edgeCases) {
-      GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
-      SsFormat.appendIntIncreasing(out, value);
+      UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
+      SsFormat.appendInt64Increasing(out, value);
       byte[] result = out.toByteArray();
 
       assertTrue("Result should have at least 2 bytes for value " + value, result.length >= 2);
@@ -357,8 +357,8 @@ public class SsFormatTest {
 
   @Test
   public void appendBoolIncreasing_preservesOrdering() {
-    GrowableByteArrayOutputStream outFalse = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream outTrue = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outFalse = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outTrue = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendBoolIncreasing(outFalse, false);
     SsFormat.appendBoolIncreasing(outTrue, true);
@@ -370,8 +370,8 @@ public class SsFormatTest {
 
   @Test
   public void appendBoolIncreasing_encodesCorrectly() {
-    GrowableByteArrayOutputStream outFalse = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream outTrue = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outFalse = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outTrue = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendBoolIncreasing(outFalse, false);
     SsFormat.appendBoolIncreasing(outTrue, true);
@@ -384,8 +384,8 @@ public class SsFormatTest {
 
   @Test
   public void appendBoolDecreasing_reversesOrdering() {
-    GrowableByteArrayOutputStream outFalse = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream outTrue = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outFalse = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outTrue = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendBoolDecreasing(outFalse, false);
     SsFormat.appendBoolDecreasing(outTrue, true);
@@ -397,8 +397,8 @@ public class SsFormatTest {
 
   @Test
   public void appendBoolDecreasing_encodesCorrectly() {
-    GrowableByteArrayOutputStream outFalse = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream outTrue = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outFalse = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outTrue = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendBoolDecreasing(outFalse, false);
     SsFormat.appendBoolDecreasing(outTrue, true);
@@ -418,8 +418,8 @@ public class SsFormatTest {
     Arrays.sort(strings);
 
     for (int i = 0; i < strings.length - 1; i++) {
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
       SsFormat.appendStringIncreasing(out1, strings[i]);
       SsFormat.appendStringIncreasing(out2, strings[i + 1]);
@@ -435,8 +435,8 @@ public class SsFormatTest {
     String[] strings = {"", "a", "b", "hello"};
 
     for (int i = 0; i < strings.length - 1; i++) {
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
       SsFormat.appendStringDecreasing(out1, strings[i]);
       SsFormat.appendStringDecreasing(out2, strings[i + 1]);
@@ -450,7 +450,7 @@ public class SsFormatTest {
   @Test
   public void appendStringIncreasing_escapesSpecialBytes() {
     // Test that 0x00 and 0xFF bytes are properly escaped
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendBytesIncreasing(out, new byte[] {0x00, (byte) 0xFF, 0x42});
     byte[] result = out.toByteArray();
 
@@ -461,7 +461,7 @@ public class SsFormatTest {
 
   @Test
   public void appendStringIncreasing_emptyString() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendStringIncreasing(out, "");
     byte[] result = out.toByteArray();
 
@@ -483,8 +483,8 @@ public class SsFormatTest {
     };
 
     for (int i = 0; i < testBytes.length - 1; i++) {
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
       SsFormat.appendBytesIncreasing(out1, testBytes[i]);
       SsFormat.appendBytesIncreasing(out2, testBytes[i + 1]);
@@ -506,8 +506,8 @@ public class SsFormatTest {
     };
 
     for (int i = 0; i < testBytes.length - 1; i++) {
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
       SsFormat.appendBytesDecreasing(out1, testBytes[i]);
       SsFormat.appendBytesDecreasing(out2, testBytes[i + 1]);
@@ -521,7 +521,7 @@ public class SsFormatTest {
   @Test
   public void appendBytesDecreasing_escapesSpecialBytes() {
     // Test that 0x00 and 0xFF bytes are properly escaped in decreasing mode
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendBytesDecreasing(out, new byte[] {0x00, (byte) 0xFF, 0x42});
     byte[] result = out.toByteArray();
 
@@ -535,7 +535,7 @@ public class SsFormatTest {
 
   @Test
   public void appendBytesDecreasing_emptyArray() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendBytesDecreasing(out, new byte[] {});
     byte[] result = out.toByteArray();
 
@@ -548,8 +548,8 @@ public class SsFormatTest {
   public void appendBytesIncreasing_vs_Decreasing_sameInput_differentOutput() {
     byte[] input = new byte[] {0x01, 0x02, 0x03};
 
-    GrowableByteArrayOutputStream outInc = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream outDec = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outInc = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outDec = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendBytesIncreasing(outInc, input);
     SsFormat.appendBytesDecreasing(outDec, input);
@@ -577,8 +577,8 @@ public class SsFormatTest {
       double v1 = sortedDoubles.get(i);
       double v2 = sortedDoubles.get(i + 1);
 
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
       SsFormat.appendDoubleIncreasing(out1, v1);
       SsFormat.appendDoubleIncreasing(out2, v2);
@@ -595,8 +595,8 @@ public class SsFormatTest {
     double[] values = {-Double.MAX_VALUE, -1.0, 0.0, 1.0, Double.MAX_VALUE};
 
     for (int i = 0; i < values.length - 1; i++) {
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
       SsFormat.appendDoubleDecreasing(out1, values[i]);
       SsFormat.appendDoubleDecreasing(out2, values[i + 1]);
@@ -626,8 +626,8 @@ public class SsFormatTest {
 
     // Verify ordering is preserved
     for (int i = 0; i < specialValues.length - 1; i++) {
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
       SsFormat.appendDoubleIncreasing(out1, specialValues[i]);
       SsFormat.appendDoubleIncreasing(out2, specialValues[i + 1]);
@@ -642,8 +642,8 @@ public class SsFormatTest {
   public void appendDoubleIncreasing_negativeZeroEqualsPositiveZero() {
     // Verify that -0.0 and 0.0 encode identically
     // This is correct behavior: both map to internal representation 0
-    GrowableByteArrayOutputStream outNegZero = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream outPosZero = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outNegZero = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream outPosZero = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendDoubleIncreasing(outNegZero, -0.0);
     SsFormat.appendDoubleIncreasing(outPosZero, 0.0);
@@ -656,7 +656,7 @@ public class SsFormatTest {
 
   @Test
   public void appendDoubleIncreasing_nan() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendDoubleIncreasing(out, Double.NaN);
     byte[] result = out.toByteArray();
 
@@ -668,7 +668,7 @@ public class SsFormatTest {
 
   @Test
   public void appendNullOrderedFirst_encoding() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendNullOrderedFirst(out);
     byte[] result = out.toByteArray();
 
@@ -678,7 +678,7 @@ public class SsFormatTest {
 
   @Test
   public void appendNullOrderedLast_encoding() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendNullOrderedLast(out);
     byte[] result = out.toByteArray();
 
@@ -688,7 +688,7 @@ public class SsFormatTest {
 
   @Test
   public void appendNotNullMarkerNullOrderedFirst_encoding() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendNotNullMarkerNullOrderedFirst(out);
     byte[] result = out.toByteArray();
 
@@ -697,7 +697,7 @@ public class SsFormatTest {
 
   @Test
   public void appendNotNullMarkerNullOrderedLast_encoding() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
     SsFormat.appendNotNullMarkerNullOrderedLast(out);
     byte[] result = out.toByteArray();
 
@@ -706,12 +706,12 @@ public class SsFormatTest {
 
   @Test
   public void nullOrderedFirst_sortsBeforeValues() {
-    GrowableByteArrayOutputStream nullOut = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream valueOut = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream nullOut = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream valueOut = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendNullOrderedFirst(nullOut);
     SsFormat.appendNotNullMarkerNullOrderedFirst(valueOut);
-    SsFormat.appendIntIncreasing(valueOut, Long.MIN_VALUE);
+    SsFormat.appendInt64Increasing(valueOut, Long.MIN_VALUE);
 
     assertTrue(
         "Null (ordered first) should sort before any value",
@@ -720,12 +720,12 @@ public class SsFormatTest {
 
   @Test
   public void nullOrderedLast_sortsAfterValues() {
-    GrowableByteArrayOutputStream nullOut = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream valueOut = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream nullOut = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream valueOut = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendNullOrderedLast(nullOut);
     SsFormat.appendNotNullMarkerNullOrderedLast(valueOut);
-    SsFormat.appendIntIncreasing(valueOut, Long.MAX_VALUE);
+    SsFormat.appendInt64Increasing(valueOut, Long.MAX_VALUE);
 
     assertTrue(
         "Null (ordered last) should sort after any value",
@@ -820,14 +820,14 @@ public class SsFormatTest {
     long[] values = {Long.MIN_VALUE, -1, 0, 1, Long.MAX_VALUE};
 
     for (int i = 0; i < values.length - 1; i++) {
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+      UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
       SsFormat.appendCompositeTag(out1, tag);
-      SsFormat.appendIntIncreasing(out1, values[i]);
+      SsFormat.appendInt64Increasing(out1, values[i]);
 
       SsFormat.appendCompositeTag(out2, tag);
-      SsFormat.appendIntIncreasing(out2, values[i + 1]);
+      SsFormat.appendInt64Increasing(out2, values[i + 1]);
 
       assertTrue(
           "Composite key with " + values[i] + " should be less than with " + values[i + 1],
@@ -839,14 +839,14 @@ public class SsFormatTest {
   public void compositeKey_differentTagsSortByTag() {
     long value = 100;
 
-    GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendCompositeTag(out1, 5);
-    SsFormat.appendIntIncreasing(out1, value);
+    SsFormat.appendInt64Increasing(out1, value);
 
     SsFormat.appendCompositeTag(out2, 10);
-    SsFormat.appendIntIncreasing(out2, value);
+    SsFormat.appendInt64Increasing(out2, value);
 
     assertTrue(
         "Key with smaller tag should sort first",
@@ -856,15 +856,15 @@ public class SsFormatTest {
   @Test
   public void compositeKey_multipleKeyParts() {
     // Simulate encoding a composite key with multiple parts: tag + int + string
-    GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-    GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out1 = new UnsynchronizedByteArrayOutputStream();
+    UnsynchronizedByteArrayOutputStream out2 = new UnsynchronizedByteArrayOutputStream();
 
     SsFormat.appendCompositeTag(out1, 1);
-    SsFormat.appendIntIncreasing(out1, 100);
+    SsFormat.appendInt64Increasing(out1, 100);
     SsFormat.appendStringIncreasing(out1, "alice");
 
     SsFormat.appendCompositeTag(out2, 1);
-    SsFormat.appendIntIncreasing(out2, 100);
+    SsFormat.appendInt64Increasing(out2, 100);
     SsFormat.appendStringIncreasing(out2, "bob");
 
     assertTrue(
@@ -886,8 +886,8 @@ public class SsFormatTest {
     // Encode all values
     List<byte[]> encoded = new ArrayList<>();
     for (long v : sample) {
-      GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
-      SsFormat.appendIntIncreasing(out, v);
+      UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream();
+      SsFormat.appendInt64Increasing(out, v);
       encoded.add(out.toByteArray());
     }
 
