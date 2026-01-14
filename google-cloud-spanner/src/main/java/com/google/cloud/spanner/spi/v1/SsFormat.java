@@ -140,73 +140,39 @@ public final class SsFormat {
   }
 
   /**
-   * Appends an unsigned long value in ascending (increasing) sort order.
+   * Appends a boolean value in ascending (increasing) sort order.
    *
-   * <p>This encodes a non-negative long value using variable-length encoding that preserves
-   * lexicographic ordering. The encoding uses 1-9 bytes depending on the magnitude of the value.
+   * <p>Boolean values are encoded using unsigned integer encoding where false=0 and true=1. This
+   * preserves the natural ordering where false < true.
    *
    * @param out the output stream to append to
-   * @param val the unsigned value to encode, must be in range [0, Long.MAX_VALUE]
-   * @throws IllegalArgumentException if val is negative
+   * @param value the boolean value to encode
    */
-  public static void appendUnsignedLongIncreasing(GrowableByteArrayOutputStream out, long val) {
-    if (val < 0) {
-      throw new IllegalArgumentException(
-          "Unsigned long value must be non-negative: "
-              + val
-              + ". Values requiring the upper half of unsigned 64-bit range are not supported.");
-    }
-    byte[] buf = new byte[9]; // Max 9 bytes for value payload
-    int len = 0;
-
-    long tempVal = val;
-    buf[8 - len] = (byte) ((tempVal & 0x7F) << 1); // LSB is prefix-successor bit (0)
-    tempVal >>= 7;
-    len++;
-
-    while (tempVal > 0) {
-      buf[8 - len] = (byte) (tempVal & 0xFF);
-      tempVal >>= 8;
-      len++;
-    }
-
-    out.write((byte) (IS_KEY | (TYPE_UINT_1 + len - 1)));
-    out.write(buf, 9 - len, len);
+  public static void appendBoolIncreasing(GrowableByteArrayOutputStream out, boolean value) {
+    // BOOL uses unsigned int encoding: false=0, true=1
+    // For values 0 and 1, payload is always 1 byte
+    int encoded = value ? 1 : 0;
+    out.write((byte) (IS_KEY | TYPE_UINT_1)); // Header for 1-byte unsigned int
+    out.write(
+        (byte) (encoded << 1)); // Payload: value shifted left by 1 (LSB is prefix-successor bit)
   }
 
   /**
-   * Appends an unsigned long value in descending (decreasing) sort order.
+   * Appends a boolean value in descending (decreasing) sort order.
    *
-   * <p>This encodes a non-negative long value using variable-length encoding that preserves reverse
-   * lexicographic ordering. The encoding uses 1-9 bytes depending on the magnitude of the value.
+   * <p>Boolean values are encoded using unsigned integer encoding where false=0 and true=1, then
+   * inverted for descending order. This preserves reverse ordering where true < false.
    *
    * @param out the output stream to append to
-   * @param val the unsigned value to encode, must be in range [0, Long.MAX_VALUE]
-   * @throws IllegalArgumentException if val is negative
+   * @param value the boolean value to encode
    */
-  public static void appendUnsignedLongDecreasing(GrowableByteArrayOutputStream out, long val) {
-    if (val < 0) {
-      throw new IllegalArgumentException(
-          "Unsigned long value must be non-negative: "
-              + val
-              + ". Values requiring the upper half of unsigned 64-bit range are not supported.");
-    }
-    byte[] buf = new byte[9];
-    int len = 0;
-    long tempVal = val;
-
-    buf[8 - len] = (byte) ((~(tempVal & 0x7F) & 0x7F) << 1);
-    tempVal >>= 7;
-    len++;
-
-    while (tempVal > 0) {
-      buf[8 - len] = (byte) (~(tempVal & 0xFF));
-      tempVal >>= 8;
-      len++;
-    }
-
-    out.write((byte) (IS_KEY | (TYPE_DECREASING_UINT_1 - len + 1)));
-    out.write(buf, 9 - len, len);
+  public static void appendBoolDecreasing(GrowableByteArrayOutputStream out, boolean value) {
+    // BOOL uses decreasing unsigned int encoding: false=0, true=1, then inverted
+    // For values 0 and 1, payload is always 1 byte
+    int encoded = value ? 1 : 0;
+    out.write(
+        (byte) (IS_KEY | TYPE_DECREASING_UINT_1)); // Header for 1-byte decreasing unsigned int
+    out.write((byte) ((~encoded & 0x7F) << 1)); // Inverted payload
   }
 
   private static void appendIntInternal(

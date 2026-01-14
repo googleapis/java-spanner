@@ -353,58 +353,61 @@ public class SsFormatTest {
     }
   }
 
-  // ==================== Unsigned Integer Tests ====================
+  // ==================== Boolean Tests ====================
 
   @Test
-  public void appendUnsignedLongIncreasing_preservesOrdering() {
-    // Filter to only non-negative values for unsigned comparison
-    List<Long> positiveValues = new ArrayList<>();
-    for (long v : unsignedIntTestValues) {
-      if (v >= 0) positiveValues.add(v);
-    }
-    positiveValues.sort(Long::compareUnsigned);
+  public void appendBoolIncreasing_preservesOrdering() {
+    GrowableByteArrayOutputStream outFalse = new GrowableByteArrayOutputStream();
+    GrowableByteArrayOutputStream outTrue = new GrowableByteArrayOutputStream();
 
-    for (int i = 0; i < positiveValues.size() - 1; i++) {
-      long v1 = positiveValues.get(i);
-      long v2 = positiveValues.get(i + 1);
+    SsFormat.appendBoolIncreasing(outFalse, false);
+    SsFormat.appendBoolIncreasing(outTrue, true);
 
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
-
-      SsFormat.appendUnsignedLongIncreasing(out1, v1);
-      SsFormat.appendUnsignedLongIncreasing(out2, v2);
-
-      assertTrue(
-          "Unsigned encoded "
-              + Long.toUnsignedString(v1)
-              + " should be less than "
-              + Long.toUnsignedString(v2),
-          UNSIGNED_BYTE_COMPARATOR.compare(out1.toByteArray(), out2.toByteArray()) < 0);
-    }
+    assertTrue(
+        "Encoded false should be less than encoded true",
+        UNSIGNED_BYTE_COMPARATOR.compare(outFalse.toByteArray(), outTrue.toByteArray()) < 0);
   }
 
   @Test
-  public void appendUnsignedLongIncreasing_rejectsNegativeValues() {
-    GrowableByteArrayOutputStream out = new GrowableByteArrayOutputStream();
-    assertThrows(
-        IllegalArgumentException.class, () -> SsFormat.appendUnsignedLongIncreasing(out, -1));
+  public void appendBoolIncreasing_encodesCorrectly() {
+    GrowableByteArrayOutputStream outFalse = new GrowableByteArrayOutputStream();
+    GrowableByteArrayOutputStream outTrue = new GrowableByteArrayOutputStream();
+
+    SsFormat.appendBoolIncreasing(outFalse, false);
+    SsFormat.appendBoolIncreasing(outTrue, true);
+
+    // false=0: header 0x80 (IS_KEY | TYPE_UINT_1), payload 0x00
+    assertArrayEquals(new byte[] {(byte) 0x80, 0x00}, outFalse.toByteArray());
+    // true=1: header 0x80, payload 0x02 (1 << 1)
+    assertArrayEquals(new byte[] {(byte) 0x80, 0x02}, outTrue.toByteArray());
   }
 
   @Test
-  public void appendUnsignedLongDecreasing_reversesOrdering() {
-    long[] values = {0, 1, 100, 1000, Long.MAX_VALUE};
+  public void appendBoolDecreasing_reversesOrdering() {
+    GrowableByteArrayOutputStream outFalse = new GrowableByteArrayOutputStream();
+    GrowableByteArrayOutputStream outTrue = new GrowableByteArrayOutputStream();
 
-    for (int i = 0; i < values.length - 1; i++) {
-      GrowableByteArrayOutputStream out1 = new GrowableByteArrayOutputStream();
-      GrowableByteArrayOutputStream out2 = new GrowableByteArrayOutputStream();
+    SsFormat.appendBoolDecreasing(outFalse, false);
+    SsFormat.appendBoolDecreasing(outTrue, true);
 
-      SsFormat.appendUnsignedLongDecreasing(out1, values[i]);
-      SsFormat.appendUnsignedLongDecreasing(out2, values[i + 1]);
+    assertTrue(
+        "Decreasing encoded false should be greater than encoded true",
+        UNSIGNED_BYTE_COMPARATOR.compare(outFalse.toByteArray(), outTrue.toByteArray()) > 0);
+  }
 
-      assertTrue(
-          "Decreasing unsigned encoded " + values[i] + " should be greater than " + values[i + 1],
-          UNSIGNED_BYTE_COMPARATOR.compare(out1.toByteArray(), out2.toByteArray()) > 0);
-    }
+  @Test
+  public void appendBoolDecreasing_encodesCorrectly() {
+    GrowableByteArrayOutputStream outFalse = new GrowableByteArrayOutputStream();
+    GrowableByteArrayOutputStream outTrue = new GrowableByteArrayOutputStream();
+
+    SsFormat.appendBoolDecreasing(outFalse, false);
+    SsFormat.appendBoolDecreasing(outTrue, true);
+
+    // false=0 inverted: header 0xA8 (IS_KEY | TYPE_DECREASING_UINT_1), payload 0xFE (~0 & 0x7F) <<
+    // 1
+    assertArrayEquals(new byte[] {(byte) 0xA8, (byte) 0xFE}, outFalse.toByteArray());
+    // true=1 inverted: header 0xA8, payload 0xFC (~1 & 0x7F) << 1
+    assertArrayEquals(new byte[] {(byte) 0xA8, (byte) 0xFC}, outTrue.toByteArray());
   }
 
   // ==================== String Tests ====================
