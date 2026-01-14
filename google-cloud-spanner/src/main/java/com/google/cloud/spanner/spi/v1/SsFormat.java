@@ -143,7 +143,7 @@ public final class SsFormat {
    * Appends a boolean value in ascending (increasing) sort order.
    *
    * <p>Boolean values are encoded using unsigned integer encoding where false=0 and true=1. This
-   * preserves the natural ordering where false < true.
+   * preserves the natural ordering where false &lt; true.
    *
    * @param out the output stream to append to
    * @param value the boolean value to encode
@@ -161,7 +161,7 @@ public final class SsFormat {
    * Appends a boolean value in descending (decreasing) sort order.
    *
    * <p>Boolean values are encoded using unsigned integer encoding where false=0 and true=1, then
-   * inverted for descending order. This preserves reverse ordering where true < false.
+   * inverted for descending order. This preserves reverse ordering where true &lt; false.
    *
    * @param out the output stream to append to
    * @param value the boolean value to encode
