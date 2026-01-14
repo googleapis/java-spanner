@@ -268,7 +268,7 @@ public final class Options implements Serializable {
 
   /**
    * Specifying this will add the given client context to the request. The client context is used to
-   * pass opaque side-channel information to the backend, such as a user ID for a parameterized
+   * pass side-channel or configuration information to the backend, such as a user ID for a parameterized
    * secure view.
    */
   public static ReadQueryUpdateTransactionOption clientContext(

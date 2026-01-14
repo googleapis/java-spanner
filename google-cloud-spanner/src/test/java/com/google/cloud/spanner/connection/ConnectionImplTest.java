@@ -1949,6 +1949,35 @@ public class ConnectionImplTest {
   }
 
   @Test
+  public void testSetAndGetClientContext() {
+    try (Connection connection = createConnection(ConnectionOptions.newBuilder().setUri(URI).build())) {
+      com.google.spanner.v1.RequestOptions.ClientContext context =
+          com.google.spanner.v1.RequestOptions.ClientContext.newBuilder()
+              .putSecureContext(
+                  "key", com.google.protobuf.Value.newBuilder().setStringValue("test").build())
+              .build();
+      connection.setClientContext(context);
+      assertEquals(context, connection.getClientContext());
+    }
+  }
+
+  @Test
+  public void testResetClearsClientContext() {
+    try (Connection connection = createConnection(ConnectionOptions.newBuilder().setUri(URI).build())) {
+      com.google.spanner.v1.RequestOptions.ClientContext context =
+          com.google.spanner.v1.RequestOptions.ClientContext.newBuilder()
+              .putSecureContext(
+                  "key", com.google.protobuf.Value.newBuilder().setStringValue("test").build())
+              .build();
+      connection.setClientContext(context);
+      assertEquals(context, connection.getClientContext());
+
+      connection.reset();
+      assertNull(connection.getClientContext());
+    }
+  }
+
+  @Test
   public void testProtoDescriptorsAlwaysAllowed() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(true);
