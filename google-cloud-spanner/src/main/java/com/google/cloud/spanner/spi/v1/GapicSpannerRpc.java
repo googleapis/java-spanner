@@ -438,7 +438,7 @@ public class GapicSpannerRpc implements SpannerRpc {
               return new FallbackChannelBuilder(
                   primaryGcpBuilder,
                   fallbackGcpBuilder,
-                  createFallbackChannelOptions(fallbackTelemetry));
+                  createFallbackChannelOptions(fallbackTelemetry, 1));
             });
       }
 
@@ -613,11 +613,11 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @VisibleForTesting
   GcpFallbackChannelOptions createFallbackChannelOptions(
-      GcpFallbackOpenTelemetry fallbackTelemetry) {
+      GcpFallbackOpenTelemetry fallbackTelemetry, int minFailedCalls) {
     return GcpFallbackChannelOptions.newBuilder()
         .setPrimaryChannelName("directpath")
         .setFallbackChannelName("cloudpath")
-        .setMinFailedCalls(1)
+        .setMinFailedCalls(minFailedCalls)
         .setGcpFallbackOpenTelemetry(fallbackTelemetry)
         .build();
   }

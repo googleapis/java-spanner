@@ -905,11 +905,12 @@ public class GapicSpannerRpcTest {
 
     @Override
     GcpFallbackChannelOptions createFallbackChannelOptions(
-        GcpFallbackOpenTelemetry fallbackTelemetry) {
+        GcpFallbackOpenTelemetry fallbackTelemetry, int minFailedCalls) {
       // Override default 1-minute period to 10ms for instant testing
       return GcpFallbackChannelOptions.newBuilder()
           .setPrimaryChannelName("directpath")
           .setFallbackChannelName("cloudpath")
+          .setMinFailedCalls(10)
           .setPeriod(Duration.ofMillis(10))
           .setGcpFallbackOpenTelemetry(fallbackTelemetry)
           .build();
@@ -973,7 +974,7 @@ public class GapicSpannerRpcTest {
 
     @Override
     GcpFallbackChannelOptions createFallbackChannelOptions(
-        GcpFallbackOpenTelemetry fallbackTelemetry) {
+        GcpFallbackOpenTelemetry fallbackTelemetry, int minFailedCalls) {
       // Override default 1-minute period to 10ms for instant testing
       return GcpFallbackChannelOptions.newBuilder()
           .setPrimaryChannelName("directpath")
