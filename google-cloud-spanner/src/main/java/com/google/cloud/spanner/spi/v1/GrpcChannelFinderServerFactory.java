@@ -147,7 +147,12 @@ class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
      */
     GrpcChannelFinderServer(String address, TransportChannelProvider provider) throws IOException {
       this.address = address;
-      GrpcTransportChannel transportChannel = (GrpcTransportChannel) provider.getTransportChannel();
+      TransportChannelProvider readyProvider = provider;
+      if (provider.needsHeaders()) {
+        readyProvider = provider.withHeaders(java.util.Collections.emptyMap());
+      }
+      GrpcTransportChannel transportChannel =
+          (GrpcTransportChannel) readyProvider.getTransportChannel();
       this.channel = (ManagedChannel) transportChannel.getChannel();
     }
 
@@ -173,9 +178,15 @@ class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
       if (channel.isShutdown() || channel.isTerminated()) {
         return false;
       }
-      // Check connectivity state without triggering a connection attempt
-      ConnectivityState state = channel.getState(false);
-      return state != ConnectivityState.SHUTDOWN && state != ConnectivityState.TRANSIENT_FAILURE;
+      // Check connectivity state without triggering a connection attempt.
+      // Some channel implementations don't support getState(), in which case
+      // we assume the channel is healthy if it's not shutdown/terminated.
+      try {
+        ConnectivityState state = channel.getState(false);
+        return state != ConnectivityState.SHUTDOWN && state != ConnectivityState.TRANSIENT_FAILURE;
+      } catch (UnsupportedOperationException e) {
+        return true;
+      }
     }
 
     @Override

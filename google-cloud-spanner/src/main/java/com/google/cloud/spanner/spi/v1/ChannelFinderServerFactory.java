@@ -22,8 +22,8 @@ import com.google.api.core.InternalApi;
  * Factory for creating and caching server connections for location-aware routing.
  *
  * <p>Implementations are expected to cache {@link ChannelFinderServer} instances such that repeated
- * calls with the same address return the same instance. This allows the {@link
- * com.google.cloud.spanner.spi.v1.KeyRangeCache} to efficiently manage server references.
+ * calls with the same address return the same instance. This allows routing components to
+ * efficiently manage server references.
  *
  * <p>Implementations must be thread-safe. Multiple threads may concurrently call {@link
  * #create(String)} with different addresses.
