@@ -32,7 +32,6 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
@@ -40,7 +39,6 @@ import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.SpannerOptions.Builder.DefaultReadWriteTransactionOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
@@ -73,7 +71,6 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreInfo;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
-import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -1555,47 +1552,6 @@ public class SpannerSample {
   }
   // [END spanner_query_with_query_options]
 
-  // [START spanner_isolation_level]
-  static void isolationLevelSetting(DatabaseId db) {
-    // The isolation level specified at the client-level will be applied to all
-    // RW transactions.
-    DefaultReadWriteTransactionOptions transactionOptions =
-        DefaultReadWriteTransactionOptions.newBuilder()
-            .setIsolationLevel(IsolationLevel.SERIALIZABLE)
-            .build();
-    SpannerOptions options =
-        SpannerOptions.newBuilder()
-            .setDefaultTransactionOptions(transactionOptions)
-            .build();
-    Spanner spanner = options.getService();
-    DatabaseClient dbClient = spanner.getDatabaseClient(db);
-    dbClient
-        // The isolation level specified at the transaction-level takes precedence
-        // over the isolation level configured at the client-level.
-        .readWriteTransaction(Options.isolationLevel(IsolationLevel.REPEATABLE_READ))
-        .run(transaction -> {
-          // Read an AlbumTitle.
-          String selectSql =
-              "SELECT AlbumTitle from Albums WHERE SingerId = 1 and AlbumId = 1";
-          ResultSet resultSet = transaction.executeQuery(Statement.of(selectSql));
-          String title = null;
-          while (resultSet.next()) {
-            title = resultSet.getString("AlbumTitle");
-          }
-          System.out.printf("Current album title: %s\n", title);
-
-          // Update the title.
-          String updateSql =
-              "UPDATE Albums "
-                  + "SET AlbumTitle = 'New Album Title' "
-                  + "WHERE SingerId = 1 and AlbumId = 1";
-          long rowCount = transaction.executeUpdate(Statement.of(updateSql));
-          System.out.printf("%d record updated.\n", rowCount);
-          return null;
-        });
-  }
-  // [END spanner_isolation_level]
-
   // [START spanner_create_backup]
   static void createBackup(DatabaseAdminClient dbAdminClient, String projectId, String instanceId,
       String databaseId, String backupId, Timestamp versionTime) {
@@ -2152,9 +2108,6 @@ public class SpannerSample {
       case "querywithqueryoptions":
         queryWithQueryOptions(dbClient);
         break;
-      case "isolationlevelsettings":
-        isolationLevelSetting(database);
-        break;
       case "createbackup":
         createBackup(dbAdminClient, database.getInstanceId().getProject(),
             database.getInstanceId().getInstance(), database.getDatabase(),
@@ -2265,7 +2218,6 @@ public class SpannerSample {
     System.err.println("    SpannerExample querywithtimestampparameter my-instance example-db");
     System.err.println("    SpannerExample clientwithqueryoptions my-instance example-db");
     System.err.println("    SpannerExample querywithqueryoptions my-instance example-db");
-    System.err.println("    SpannerExample isolationlevelsettings my-instance example-db");
     System.err.println("    SpannerExample createbackup my-instance example-db");
     System.err.println("    SpannerExample listbackups my-instance example-db");
     System.err.println("    SpannerExample listbackupoperations my-instance example-db backup-id");
