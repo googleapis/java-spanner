@@ -16,13 +16,51 @@
 
 package com.google.cloud.spanner.spi.v1;
 
+import com.google.api.core.InternalApi;
 import io.grpc.ManagedChannel;
 
-/** Represents a Spanner server endpoint for location-aware routing. */
+/**
+ * Represents a Spanner server endpoint for location-aware routing.
+ *
+ * <p>Each instance wraps a gRPC {@link ManagedChannel} connected to a specific Spanner server. The
+ * {@link ChannelFinderServerFactory} creates and caches these instances.
+ *
+ * <p>Implementations must be thread-safe as instances may be shared across multiple concurrent
+ * operations.
+ *
+ * @see ChannelFinderServerFactory
+ */
+@InternalApi
 public interface ChannelFinderServer {
+
+  /**
+   * Returns the network address of this server.
+   *
+   * @return the server address in "host:port" format
+   */
   String getAddress();
 
+  /**
+   * Returns whether this server is ready to accept RPCs.
+   *
+   * <p>A server is considered unhealthy if:
+   *
+   * <ul>
+   *   <li>The underlying channel is shutdown or terminated
+   *   <li>The channel is in a transient failure state
+   * </ul>
+   *
+   * @return true if the server is healthy and ready to accept RPCs
+   */
   boolean isHealthy();
 
-  ManagedChannel getChannel(); // Added to get the underlying channel for RPC calls
+  /**
+   * Returns the gRPC channel for making RPCs to this server.
+   *
+   * <p>The returned channel is managed by the {@link ChannelFinderServerFactory} and should not be
+   * shut down directly by callers.
+   *
+   * @return the managed channel for this server
+   */
+  ManagedChannel getChannel();
 }
