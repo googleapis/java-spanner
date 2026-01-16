@@ -165,6 +165,8 @@ public class DatabaseTest {
     assertEquals(Dialect.GOOGLE_STANDARD_SQL, database.getDialect());
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("SetUnrecognized")
   @Test
   public void testUnrecognizedDialectThrowsException() {
     assertThrows(

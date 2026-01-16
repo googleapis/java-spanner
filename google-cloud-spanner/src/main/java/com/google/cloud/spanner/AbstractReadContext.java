@@ -212,6 +212,8 @@ abstract class AbstractReadContext
       return false;
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     @GuardedBy("lock")
     @Override
     void beforeReadOrQueryLocked() {
@@ -456,6 +458,8 @@ abstract class AbstractReadContext
       }
     }
 
+    // Suppressed for initial Error Prone rollout.
+    @SuppressWarnings("GuardedBy")
     private void initTransactionInternal(BeginTransactionRequest request) {
       try {
         Transaction transaction =
