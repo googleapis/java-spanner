@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-executor</artifactId>
-  <version>6.104.0</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
+  <version>6.106.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Executor</name>
 
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.104.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.106.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -58,6 +58,10 @@
           <artifactId>opentelemetry-semconv</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>grpc-gcp</artifactId>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry.semconv</groupId>
@@ -296,7 +300,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <ignoredDependencies> com.google.api:gax,org.apache.maven.surefire:surefire-junit4,io.opentelemetry.semconv:opentelemetry-semconv,com.google.cloud.opentelemetry:shared-resourcemapping </ignoredDependencies>
+            <ignoredDependencies> com.google.api:gax,org.apache.maven.surefire:surefire-junit4,io.opentelemetry.semconv:opentelemetry-semconv,com.google.cloud.opentelemetry:shared-resourcemapping,com.google.cloud:grpc-gcp </ignoredDependencies>
           </configuration>
         </plugin>
       </plugins>

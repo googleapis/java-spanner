@@ -37,6 +37,7 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.spanner.SpannerOptions.Builder.DefaultReadWriteTransactionOptions;
 import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
@@ -1100,6 +1101,7 @@ public class SpannerOptionsTest {
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setCredentials(NoCredentials.getInstance())
+            .disableGrpcGcpExtension()
             .build();
 
     assertEquals(SpannerOptions.DEFAULT_CHANNELS, options.getNumChannels());
@@ -1135,7 +1137,8 @@ public class SpannerOptionsTest {
 
   @Test
   public void checkCreatedInstanceWhenGrpcGcpExtensionDisabled() {
-    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("test-project").disableGrpcGcpExtension().build();
     SpannerOptions options1 = options.toBuilder().build();
     assertEquals(false, options.isGrpcGcpExtensionEnabled());
     assertEquals(options.isGrpcGcpExtensionEnabled(), options1.isGrpcGcpExtensionEnabled());
@@ -1198,5 +1201,186 @@ public class SpannerOptionsTest {
     assertTrue(options.getSessionPoolOptions().getUseMultiplexedSession());
     assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionForRW());
     assertTrue(options.getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());
+  }
+
+  @Test
+  public void testDynamicChannelPoolingDisabledByDefault() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    assertFalse(options.isDynamicChannelPoolEnabled());
+  }
+
+  @Test
+  public void testDynamicChannelPoolingEnabledExplicitly() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableDynamicChannelPool()
+            .build();
+    assertTrue(options.isDynamicChannelPoolEnabled());
+
+    // Verify Spanner-specific defaults are applied
+    GcpChannelPoolOptions poolOptions = options.getGcpChannelPoolOptions();
+    assertNotNull(poolOptions);
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_INITIAL_SIZE, poolOptions.getInitSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_CHANNELS, poolOptions.getMaxSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_CHANNELS, poolOptions.getMinSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_RPC, poolOptions.getMaxRpcPerChannel());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_RPC, poolOptions.getMinRpcPerChannel());
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL,
+        poolOptions.getScaleDownInterval());
+  }
+
+  @Test
+  public void testDynamicChannelPoolingDisabledWhenNumChannelsSet() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableDynamicChannelPool()
+            .setNumChannels(5) // Explicitly setting numChannels should disable DCP.
+            .build();
+    assertFalse(options.isDynamicChannelPoolEnabled());
+    assertEquals(5, options.getNumChannels());
+  }
+
+  @Test
+  public void testDynamicChannelPoolingDisabledExplicitly() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableDynamicChannelPool()
+            .disableDynamicChannelPool()
+            .build();
+    assertFalse(options.isDynamicChannelPoolEnabled());
+  }
+
+  @Test
+  public void testDynamicChannelPoolingCustomSettings() {
+    Duration scaleDownInterval = Duration.ofMinutes(5);
+    GcpChannelPoolOptions customPoolOptions =
+        GcpChannelPoolOptions.newBuilder()
+            .setInitSize(6)
+            .setMaxSize(15)
+            .setMinSize(3)
+            .setDynamicScaling(10, 50, scaleDownInterval)
+            .build();
+
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableDynamicChannelPool()
+            .setGcpChannelPoolOptions(customPoolOptions)
+            .build();
+
+    assertTrue(options.isDynamicChannelPoolEnabled());
+    GcpChannelPoolOptions poolOptions = options.getGcpChannelPoolOptions();
+    assertEquals(6, poolOptions.getInitSize());
+    assertEquals(15, poolOptions.getMaxSize());
+    assertEquals(3, poolOptions.getMinSize());
+    assertEquals(50, poolOptions.getMaxRpcPerChannel());
+    assertEquals(10, poolOptions.getMinRpcPerChannel());
+    assertEquals(scaleDownInterval, poolOptions.getScaleDownInterval());
+  }
+
+  @Test
+  public void testAffinityKeySettings() {
+    Duration affinityKeyLifetime = Duration.ofMinutes(10);
+    Duration cleanupInterval = Duration.ofMinutes(5);
+    GcpChannelPoolOptions poolOptions =
+        GcpChannelPoolOptions.newBuilder()
+            .setAffinityKeyLifetime(affinityKeyLifetime)
+            .setCleanupInterval(cleanupInterval)
+            .build();
+
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableGrpcGcpExtension()
+            .setGcpChannelPoolOptions(poolOptions)
+            .build();
+
+    assertEquals(affinityKeyLifetime, options.getGcpChannelPoolOptions().getAffinityKeyLifetime());
+    assertEquals(cleanupInterval, options.getGcpChannelPoolOptions().getCleanupInterval());
+  }
+
+  @Test
+  public void testAffinityKeySettingsDefaults() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableGrpcGcpExtension()
+            .build();
+
+    // Verify default affinity key settings from Spanner defaults
+    GcpChannelPoolOptions poolOptions = options.getGcpChannelPoolOptions();
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME,
+        poolOptions.getAffinityKeyLifetime());
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL, poolOptions.getCleanupInterval());
+  }
+
+  @Test
+  public void testDynamicChannelPoolingDisabledWhenGrpcGcpDisabled() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .disableGrpcGcpExtension()
+            .build();
+    // DCP should be disabled when grpc-gcp is disabled.
+    assertFalse(options.isDynamicChannelPoolEnabled());
+  }
+
+  @Test
+  public void testCreateDefaultDynamicChannelPoolOptions() {
+    // Test the static factory method for creating default options
+    GcpChannelPoolOptions defaults = SpannerOptions.createDefaultDynamicChannelPoolOptions();
+    assertNotNull(defaults);
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_CHANNELS, defaults.getMaxSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_CHANNELS, defaults.getMinSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_INITIAL_SIZE, defaults.getInitSize());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MAX_RPC, defaults.getMaxRpcPerChannel());
+    assertEquals(SpannerOptions.DEFAULT_DYNAMIC_POOL_MIN_RPC, defaults.getMinRpcPerChannel());
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_SCALE_DOWN_INTERVAL, defaults.getScaleDownInterval());
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_AFFINITY_KEY_LIFETIME,
+        defaults.getAffinityKeyLifetime());
+    assertEquals(
+        SpannerOptions.DEFAULT_DYNAMIC_POOL_CLEANUP_INTERVAL, defaults.getCleanupInterval());
+  }
+
+  @Test
+  public void testPlainTextOptions() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setExperimentalHost("localhost:8080").usePlainText().build();
+    assertEquals("http://localhost:8080", options.getHost());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    options =
+        SpannerOptions.newBuilder()
+            .setExperimentalHost("http://localhost:8080")
+            .usePlainText()
+            .build();
+    assertEquals("http://localhost:8080", options.getHost());
+    options =
+        SpannerOptions.newBuilder().usePlainText().setExperimentalHost("localhost:8080").build();
+    assertEquals("http://localhost:8080", options.getHost());
+    options =
+        SpannerOptions.newBuilder()
+            .usePlainText()
+            .setExperimentalHost("http://localhost:8080")
+            .build();
+    assertEquals("http://localhost:8080", options.getHost());
   }
 }
