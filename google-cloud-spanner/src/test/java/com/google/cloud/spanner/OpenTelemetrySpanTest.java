@@ -912,6 +912,9 @@ public class OpenTelemetrySpanTest {
     assertEquals(
         span.getAttributes().get(AttributeKey.stringKey("gcp.client.version")),
         GaxProperties.getLibraryVersion(TraceWrapper.class));
+    assertEquals(
+        span.getAttributes().get(AttributeKey.stringKey("gcp.resource.name")),
+        "//spanner.googleapis.com/projects/my-project/instances/my-instance/databases/my-database");
   }
 
   private static void verifyTableAttributes(SpanData span) {

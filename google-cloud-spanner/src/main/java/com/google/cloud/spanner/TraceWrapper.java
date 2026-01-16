@@ -55,6 +55,8 @@ class TraceWrapper {
       AttributeKey.stringKey("gcp.client.version");
   private static final AttributeKey<String> GCP_CLIENT_REPO_KEY =
       AttributeKey.stringKey("gcp.client.repo");
+  private static final AttributeKey<String> GCP_RESOURCE_NAME_KEY =
+      AttributeKey.stringKey("gcp.resource.name");
   private static final AttributeKey<String> THREAD_NAME_KEY = AttributeKey.stringKey("thread.name");
 
   private final Tracer openCensusTracer;
@@ -219,6 +221,7 @@ class TraceWrapper {
     AttributesBuilder builder = Attributes.builder();
     builder.put(DB_NAME_KEY, db.getDatabase());
     builder.put(INSTANCE_NAME_KEY, db.getInstanceId().getInstance());
+    builder.put(GCP_RESOURCE_NAME_KEY, "//spanner.googleapis.com/" + db.getName());
     return builder.build();
   }
 
