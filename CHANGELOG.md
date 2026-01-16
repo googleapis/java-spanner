@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.107.0](https://github.com/googleapis/java-spanner/compare/v6.106.0...v6.107.0) (2026-01-16)
+
+
+### Features
+
+* Add Dynamic Channel Pooling (DCP) support to Connection API ([#4299](https://github.com/googleapis/java-spanner/issues/4299)) ([bba03a4](https://github.com/googleapis/java-spanner/commit/bba03a44dbfbd59288ecd33e3e53276809ad69b1))
+* Add SsFormat encoding library ([#4292](https://github.com/googleapis/java-spanner/issues/4292)) ([338a9b1](https://github.com/googleapis/java-spanner/commit/338a9b1409cafedcdef674bdff09a72c3f2cd772))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-trace-v1 to v2.82.0 ([#4227](https://github.com/googleapis/java-spanner/issues/4227)) ([22bc6cf](https://github.com/googleapis/java-spanner/commit/22bc6cf3431f6e507d384f6e86a36503f1175ee7))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.83.0 ([#4169](https://github.com/googleapis/java-spanner/issues/4169)) ([61ae915](https://github.com/googleapis/java-spanner/commit/61ae915242a3c8a0aa1385bc1367f67df2c209d6))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.55.1 ([#4302](https://github.com/googleapis/java-spanner/issues/4302)) ([52acc0c](https://github.com/googleapis/java-spanner/commit/52acc0c620fec0aa67ecd81d634eec271fe4e429))
+* Update dependency net.bytebuddy:byte-buddy to v1.18.4 ([#4244](https://github.com/googleapis/java-spanner/issues/4244)) ([c8e4d91](https://github.com/googleapis/java-spanner/commit/c8e4d912155ab6829498822dcf0783fac5fe2747))
+* Update google.cloud.monitoring.version to v3.83.0 ([#4270](https://github.com/googleapis/java-spanner/issues/4270)) ([7ae68c8](https://github.com/googleapis/java-spanner/commit/7ae68c8e889f44f1057310bc45b70c086af9c385))
+* Update googleapis/sdk-platform-java action to v2.65.1 ([#4301](https://github.com/googleapis/java-spanner/issues/4301)) ([7d98f4e](https://github.com/googleapis/java-spanner/commit/7d98f4e12843826c18cbb8e0998c8687c94fc3d2))
+
 ## [6.106.0](https://github.com/googleapis/java-spanner/compare/v6.105.0...v6.106.0) (2026-01-07)
 
 
