@@ -17,7 +17,63 @@
     <method>boolean has*(*)</method>
   </difference>
 
-  <!-- The following 7006 exemptions are related to Protobuf 4.27.4+ runtime upgrade -->
+  <!-- The following exemptions are related to Protobuf 4.27.4+ runtime upgrade -->
+  <!-- 5001: Removed GeneratedMessage/GeneratedMessage$Builder from superclass hierarchy -->
+  <difference>
+    <differenceType>5001</differenceType>
+    <className>com/google/spanner/v1/*</className>
+    <to>com/google/protobuf/GeneratedMessage</to>
+  </difference>
+  <difference>
+    <differenceType>5001</differenceType>
+    <className>com/google/spanner/v1/*$Builder</className>
+    <to>com/google/protobuf/GeneratedMessage$Builder</to>
+  </difference>
+  <difference>
+    <differenceType>5001</differenceType>
+    <className>com/google/spanner/v1/*$*</className>
+    <to>com/google/protobuf/GeneratedMessage</to>
+  </difference>
+  <difference>
+    <differenceType>5001</differenceType>
+    <className>com/google/spanner/v1/*$*$Builder</className>
+    <to>com/google/protobuf/GeneratedMessage$Builder</to>
+  </difference>
+  <difference>
+    <differenceType>5001</differenceType>
+    <className>com/google/spanner/v1/*$*$*</className>
+    <to>com/google/protobuf/GeneratedMessage</to>
+  </difference>
+  <difference>
+    <differenceType>5001</differenceType>
+    <className>com/google/spanner/v1/*$*$*$Builder</className>
+    <to>com/google/protobuf/GeneratedMessage$Builder</to>
+  </difference>
+  <difference>
+    <differenceType>5001</differenceType>
+    <className>com/google/spanner/v1/*Proto</className>
+    <to>com/google/protobuf/GeneratedFile</to>
+  </difference>
+  <!-- 7005: Parameter type changes (BuilderParent) -->
+  <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/spanner/v1/**</className>
+    <method>* newBuilderForType(*)</method>
+    <to>**</to>
+  </difference>
+  <!-- 7006: Return type changes for internalGetFieldAccessorTable -->
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/spanner/v1/**</className>
+    <method>* internalGetFieldAccessorTable()</method>
+    <to>**</to>
+  </difference>
+  <!-- 7014: Method made final -->
+  <difference>
+    <differenceType>7014</differenceType>
+    <className>com/google/spanner/v1/**</className>
+    <method>* getDescriptor()</method>
+  </difference>
   <difference>
     <differenceType>7006</differenceType>
     <className>com/google/spanner/v1/**</className>
