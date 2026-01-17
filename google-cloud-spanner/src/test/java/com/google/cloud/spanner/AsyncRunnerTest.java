@@ -118,7 +118,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerIsNonBlocking() throws Exception {
     mockSpanner.freeze();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             txn -> {
@@ -216,7 +216,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> result =
         runner.runAsync(
             txn -> {
@@ -295,7 +295,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncRunnerWaitsUntilAsyncUpdateHasFinished() throws Exception {
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             txn -> {
@@ -334,7 +334,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerIsNonBlockingWithBatchUpdate() throws Exception {
     mockSpanner.freeze();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             txn -> {
@@ -428,7 +428,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerBatchUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> result =
         runner.runAsync(
             txn -> {
@@ -512,7 +512,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncRunnerWaitsUntilAsyncBatchUpdateHasFinished() throws Exception {
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             txn -> {
@@ -544,9 +544,6 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     final BlockingQueue<String> results = new SynchronousQueue<>();
     final SettableApiFuture<Boolean> finished = SettableApiFuture.create();
     DatabaseClientImpl clientImpl = (DatabaseClientImpl) client();
-
-    // There should currently not be any sessions checked out of the pool.
-    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
 
     AsyncRunner runner = clientImpl.runAsync();
     final CountDownLatch dataReceived = new CountDownLatch(1);
@@ -592,9 +589,6 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     // Wait until at least one row has been fetched. At that moment there should be one session
     // checked out.
     dataReceived.await();
-    if (!isMultiplexedSessionsEnabledForRW()) {
-      assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
-    }
     assertThat(res.isDone()).isFalse();
     dataChecked.countDown();
     // Get the data from the transaction.
@@ -605,7 +599,6 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     assertThat(finished.get()).isTrue();
     assertThat(resultList).containsExactly("k1", "k2", "k3");
     assertThat(res.get()).isNull();
-    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
   }
 
   @Test

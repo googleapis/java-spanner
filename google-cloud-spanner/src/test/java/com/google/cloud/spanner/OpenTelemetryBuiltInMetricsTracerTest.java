@@ -278,8 +278,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractNettyMockServ
               // This tells the Spanner client to fail directly if it gets an UNAVAILABLE exception.
               // The 10-second deadline is chosen to ensure that:
               // 1. The test fails within a reasonable amount of time if retries for whatever reason
-              // has
-              //    been re-enabled.
+              // has been re-enabled.
               // 2. The timeout is long enough to never be triggered during normal tests.
               input.setSimpleTimeoutNoRetriesDuration(Duration.ofSeconds(10L));
               return null;

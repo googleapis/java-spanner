@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.common.base.Stopwatch;
@@ -103,8 +101,7 @@ public class InlineBeginBenchmark {
               spanner.getDatabaseClient(DatabaseId.of(options.getProjectId(), instance, database));
       Stopwatch watch = Stopwatch.createStarted();
       // Wait until the session pool has initialized.
-      while (client.pool.getNumberOfSessionsInPool()
-          < spanner.getOptions().getSessionPoolOptions().getMinSessions()) {
+      while (client.multiplexedSessionDatabaseClient.getCurrentSessionReference() == null) {
         Thread.sleep(1L);
         if (watch.elapsed(TimeUnit.SECONDS) > 10L) {
           break;
@@ -143,9 +140,6 @@ public class InlineBeginBenchmark {
   public void burstRead(final BenchmarkState server) throws Exception {
     int totalQueries = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 8;
     int parallelThreads = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 2;
-    SessionPool pool = server.client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -173,9 +167,6 @@ public class InlineBeginBenchmark {
   public void burstWrite(final BenchmarkState server) throws Exception {
     int totalWrites = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 8;
     int parallelThreads = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 2;
-    SessionPool pool = server.client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -201,9 +192,6 @@ public class InlineBeginBenchmark {
     int totalWrites = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 4;
     int totalReads = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 4;
     int parallelThreads = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 2;
-    SessionPool pool = server.client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));

@@ -36,41 +36,6 @@ jobs:
     - run: .kokoro/build.sh
       env:
         JOB_TYPE: test
-  units-with-multiplexed-session:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        java: [ 11, 17, 21 ]
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-java@v3
-      with:
-        distribution: temurin
-        java-version: ${{matrix.java}}
-    - run: java -version
-    - run: .kokoro/build.sh
-      env:
-        JOB_TYPE: test
-        GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS: true
-        GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW: true
-  units-with-regular-session:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        java: [ 11, 17, 21 ]
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-java@v3
-      with:
-        distribution: temurin
-        java-version: ${{matrix.java}}
-    - run: java -version
-    - run: .kokoro/build.sh
-      env:
-        JOB_TYPE: test
-        GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS: false
   units-java8:
     # Building using Java 17 and run the tests with Java 8 runtime
     name: "units (8)"
@@ -90,48 +55,6 @@ jobs:
     - run: .kokoro/build.sh
       env:
         JOB_TYPE: test
-  units-with-multiplexed-session8:
-    # Building using Java 17 and run the tests with Java 8 runtime
-    name: "units-with-multiplexed-session (8)"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
-        with:
-          java-version: 8
-          distribution: temurin
-      - run: echo "SUREFIRE_JVM_OPT=-Djvm=${JAVA_HOME}/bin/java" >> $GITHUB_ENV
-        shell: bash
-      - uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: temurin
-      - run: .kokoro/build.sh
-        env:
-          JOB_TYPE: test
-          GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS: true
-          GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS: true
-          GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW: true
-  units-with-regular-session8:
-    # Building using Java 17 and run the tests with Java 8 runtime
-    name: "units-with-regular-session (8)"
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-java@v3
-      with:
-        java-version: 8
-        distribution: temurin
-    - run: echo "SUREFIRE_JVM_OPT=-Djvm=${JAVA_HOME}/bin/java" >> $GITHUB_ENV
-      shell: bash
-    - uses: actions/setup-java@v3
-      with:
-        java-version: 17
-        distribution: temurin
-    - run: .kokoro/build.sh
-      env:
-        JOB_TYPE: test
-        GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS: false
   windows:
     runs-on: windows-latest
     steps:

@@ -161,6 +161,11 @@ class SessionImpl implements Session {
     return sessionReference.getName();
   }
 
+  @Override
+  public String getDatabaseRole() {
+    return sessionReference.getDatabaseRole();
+  }
+
   /**
    * Updates the session reference with the fallback session. This should only be used for updating
    * session reference with regular session in case of unimplemented error in multiplexed session.

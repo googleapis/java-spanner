@@ -21,15 +21,27 @@ import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
 
 import com.google.api.core.InternalApi;
 import com.google.api.core.ObsoleteApi;
-import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
 
-/** Options for the session pool used by {@code DatabaseClient}. */
+/**
+ * Options for the session pool used by {@code DatabaseClient}.
+ *
+ * @deprecated The Spanner Java client uses a single multiplexed session. All options related to the
+ *     session pool are no longer functional and will be removed in a future version.
+ */
+@Deprecated
 public class SessionPoolOptions {
+  @Deprecated
+  enum Position {
+    FIRST,
+    LAST,
+    RANDOM
+  }
+
   // Default number of channels * 100.
   private static final int DEFAULT_MAX_SESSIONS = 400;
   private static final int DEFAULT_MIN_SESSIONS = 100;
@@ -222,10 +234,12 @@ public class SessionPoolOptions {
     return new Builder(this);
   }
 
+  @Deprecated
   public int getMinSessions() {
     return minSessions;
   }
 
+  @Deprecated
   public int getMaxSessions() {
     return maxSessions;
   }
@@ -262,6 +276,7 @@ public class SessionPoolOptions {
     return this.multiplexedSessionMaintenanceLoopFrequency;
   }
 
+  @Deprecated
   public int getKeepAliveIntervalMinutes() {
     return keepAliveIntervalMinutes;
   }
@@ -272,14 +287,17 @@ public class SessionPoolOptions {
     return toThreetenDuration(getRemoveInactiveSessionAfterDuration());
   }
 
+  @Deprecated
   public Duration getRemoveInactiveSessionAfterDuration() {
     return removeInactiveSessionAfter;
   }
 
+  @Deprecated
   public boolean isFailIfPoolExhausted() {
     return actionOnExhaustion == ActionOnExhaustion.FAIL;
   }
 
+  @Deprecated
   public boolean isBlockIfPoolExhausted() {
     return actionOnExhaustion == ActionOnExhaustion.BLOCK;
   }
@@ -327,6 +345,7 @@ public class SessionPoolOptions {
     return poolMaintainerClock;
   }
 
+  @Deprecated
   public boolean isTrackStackTraceOfSessionCheckout() {
     return trackStackTraceOfSessionCheckout;
   }
@@ -583,10 +602,10 @@ public class SessionPoolOptions {
 
     /**
      * Capture the call stack of the thread that checked out a session of the pool. This will
-     * pre-create a {@link com.google.cloud.spanner.SessionPool.LeakedSessionException} already when
-     * a session is checked out. This can be disabled by users, for example if their monitoring
-     * systems log the pre-created exception. If disabled, the {@link
-     * com.google.cloud.spanner.SessionPool.LeakedSessionException} will only be created when an
+     * pre-create a com.google.cloud.spanner.SessionPool.LeakedSessionException already when a
+     * session is checked out. This can be disabled by users, for example if their monitoring
+     * systems log the pre-created exception. If disabled, the
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException will only be created when an
      * actual session leak is detected. The stack trace of the exception will in that case not
      * contain the call stack of when the session was checked out.
      */
@@ -681,6 +700,7 @@ public class SessionPoolOptions {
      * Minimum number of sessions that this pool will always maintain. These will be created eagerly
      * in parallel. Defaults to 100.
      */
+    @Deprecated
     public Builder setMinSessions(int minSessions) {
       Preconditions.checkArgument(minSessions >= 0, "minSessions must be >= 0");
       this.minSessionsSet = true;
@@ -694,6 +714,7 @@ public class SessionPoolOptions {
      * operation. If current number of in use sessions is same as this and a new request comes, pool
      * can either block or fail. Defaults to 400.
      */
+    @Deprecated
     public Builder setMaxSessions(int maxSessions) {
       Preconditions.checkArgument(maxSessions > 0, "maxSessions must be > 0");
       this.maxSessions = maxSessions;
@@ -747,10 +768,12 @@ public class SessionPoolOptions {
      * instead.
      */
     @ObsoleteApi("Use setRemoveInactiveSessionAfterDuration(Duration) instead")
+    @Deprecated
     public Builder setRemoveInactiveSessionAfter(org.threeten.bp.Duration duration) {
       return setRemoveInactiveSessionAfterDuration(toJavaTimeDuration(duration));
     }
 
+    @Deprecated
     public Builder setRemoveInactiveSessionAfterDuration(Duration duration) {
       this.removeInactiveSessionAfter = duration;
       return this;
@@ -761,16 +784,18 @@ public class SessionPoolOptions {
      * is automatically closed after 60 minutes. Sessions will be kept alive by sending a dummy
      * query "Select 1". Default value is 30 minutes.
      */
+    @Deprecated
     public Builder setKeepAliveIntervalMinutes(int intervalMinutes) {
       this.keepAliveIntervalMinutes = intervalMinutes;
       return this;
     }
 
     /**
-     * If all sessions are in use and and {@code maxSessions} has been reached, fail the request by
+     * If all sessions are in use and {@code maxSessions} has been reached, fail the request by
      * throwing a {@link SpannerException} with the error code {@code RESOURCE_EXHAUSTED}. Default
      * behavior is to block the request.
      */
+    @Deprecated
     public Builder setFailIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.FAIL;
       return this;
@@ -785,6 +810,7 @@ public class SessionPoolOptions {
      * different period use the option {@link Builder#setAcquireSessionTimeoutDuration(Duration)}
      * ()}
      */
+    @Deprecated
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
       return this;
@@ -800,6 +826,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
+    @Deprecated
     public Builder setWarnIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
@@ -819,6 +846,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
+    @Deprecated
     public Builder setWarnAndCloseIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
@@ -945,8 +973,8 @@ public class SessionPoolOptions {
     }
 
     /**
-     * If a session has been invalidated by the server, the {@link SessionPool} will by default
-     * retry the session. Set this option to throw an exception instead of retrying.
+     * If a session has been invalidated by the server, the SessionPool will by default retry the
+     * session. Set this option to throw an exception instead of retrying.
      */
     @VisibleForTesting
     Builder setFailIfSessionNotFound() {
@@ -962,14 +990,15 @@ public class SessionPoolOptions {
 
     /**
      * Sets whether the session pool should capture the call stack trace when a session is checked
-     * out of the pool. This will internally prepare a {@link
-     * com.google.cloud.spanner.SessionPool.LeakedSessionException} that will only be thrown if the
+     * out of the pool. This will internally prepare a
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException that will only be thrown if the
      * session is actually leaked. This makes it easier to debug session leaks, as the stack trace
      * of the thread that checked out the session will be available in the exception.
      *
      * <p>Some monitoring tools might log these exceptions even though they are not thrown. This
      * option can be used to suppress the creation and logging of these exceptions.
      */
+    @Deprecated
     public Builder setTrackStackTraceOfSessionCheckout(boolean trackStackTraceOfSessionCheckout) {
       this.trackStackTraceOfSessionCheckout = trackStackTraceOfSessionCheckout;
       return this;
@@ -982,6 +1011,7 @@ public class SessionPoolOptions {
      *     BeginTransaction option with that statement.
      *     <p>This method may be removed in a future release.
      */
+    @Deprecated
     public Builder setWriteSessionsFraction(float writeSessionsFraction) {
       this.writeSessionsFraction = writeSessionsFraction;
       return this;
@@ -1010,14 +1040,16 @@ public class SessionPoolOptions {
 
     /** This method is obsolete. Use {@link #setAcquireSessionTimeoutDuration(Duration)} instead. */
     @ObsoleteApi("Use setAcquireSessionTimeoutDuration(Duration) instead")
+    @Deprecated
     public Builder setAcquireSessionTimeout(org.threeten.bp.Duration acquireSessionTimeout) {
       return setAcquireSessionTimeoutDuration(toJavaTimeDuration(acquireSessionTimeout));
     }
 
     /**
-     * If greater than zero, we wait for said duration when no sessions are available in the {@link
-     * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
+     * If greater than zero, we wait for said duration when no sessions are available in the
+     * SessionPool. The default is a 60s timeout. Set the value to null to disable the timeout.
      */
+    @Deprecated
     public Builder setAcquireSessionTimeoutDuration(Duration acquireSessionTimeout) {
       try {
         if (acquireSessionTimeout != null) {

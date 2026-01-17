@@ -28,7 +28,6 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
-import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
@@ -45,7 +44,6 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -220,63 +218,6 @@ public class SpannerImplTest {
     assertThat(rpc4 == rpc5, is(true));
     spanner3.close();
     spanner4.close();
-  }
-
-  @Test
-  public void testClientId() {
-    // Create a unique database id to be sure it has not yet been used in the lifetime of this JVM.
-    String dbName =
-        String.format("projects/p1/instances/i1/databases/%s", UUID.randomUUID().toString());
-    DatabaseId db = DatabaseId.of(dbName);
-
-    Mockito.when(spannerOptions.getTransportOptions())
-        .thenReturn(GrpcTransportOptions.newBuilder().build());
-    Mockito.when(spannerOptions.getSessionPoolOptions())
-        .thenReturn(SessionPoolOptions.newBuilder().setMinSessions(0).build());
-    Mockito.when(spannerOptions.getDatabaseRole()).thenReturn("role");
-
-    DatabaseClientImpl databaseClient = (DatabaseClientImpl) impl.getDatabaseClient(db);
-    assertThat(databaseClient.clientId).isEqualTo("client-1");
-
-    // Get same db client again.
-    DatabaseClientImpl databaseClient1 = (DatabaseClientImpl) impl.getDatabaseClient(db);
-    assertThat(databaseClient1.clientId).isEqualTo(databaseClient.clientId);
-
-    // Get a db client for a different database.
-    String dbName2 =
-        String.format("projects/p1/instances/i1/databases/%s", UUID.randomUUID().toString());
-    DatabaseId db2 = DatabaseId.of(dbName2);
-    DatabaseClientImpl databaseClient2 = (DatabaseClientImpl) impl.getDatabaseClient(db2);
-    assertThat(databaseClient2.clientId).isEqualTo("client-1");
-
-    // Getting a new database client for an invalidated database should use the same client id.
-    databaseClient.pool.setResourceNotFoundException(
-        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
-    DatabaseClientImpl revalidated = (DatabaseClientImpl) impl.getDatabaseClient(db);
-    assertThat(revalidated).isNotSameInstanceAs(databaseClient);
-    assertThat(revalidated.clientId).isEqualTo(databaseClient.clientId);
-
-    // Now invalidate the second client and request a new one.
-    revalidated.pool.setResourceNotFoundException(
-        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
-    DatabaseClientImpl revalidated2 = (DatabaseClientImpl) impl.getDatabaseClient(db);
-    assertThat(revalidated2).isNotSameInstanceAs(revalidated);
-    assertThat(revalidated2.clientId).isEqualTo(revalidated.clientId);
-
-    // Create a new Spanner instance. This will generate new database clients with new ids.
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("p1")
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-
-      // Get a database client for the same database as the first database. As this goes through a
-      // different Spanner instance with potentially different options, it will get a different
-      // client id.
-      DatabaseClientImpl databaseClient3 = (DatabaseClientImpl) spanner.getDatabaseClient(db);
-      assertThat(databaseClient3.clientId).isEqualTo("client-2");
-    }
   }
 
   @Test
