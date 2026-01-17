@@ -24,7 +24,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.106.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.107.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -35,7 +35,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <junixsocket.version>2.10.1</junixsocket.version>
     <opentelemetry.version>1.56.0</opentelemetry.version>
-    <google.cloud.monitoring.version>3.81.0</google.cloud.monitoring.version>
+    <google.cloud.monitoring.version>3.83.0</google.cloud.monitoring.version>
   </properties>
 
   <dependencies>
