@@ -1406,19 +1406,42 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Required. The target high priority cpu utilization percentage that the
+     * Optional. The target high priority cpu utilization percentage that the
      * autoscaler should be trying to achieve for the instance. This number is
      * on a scale from 0 (no utilization) to 100 (full utilization). The valid
-     * range is [10, 90] inclusive.
+     * range is [10, 90] inclusive. If not specified or set to 0, the autoscaler
+     * skips scaling based on high priority CPU utilization.
      * </pre>
      *
      * <code>
-     * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = REQUIRED];
+     * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = OPTIONAL];
      * </code>
      *
      * @return The highPriorityCpuUtilizationPercent.
      */
     int getHighPriorityCpuUtilizationPercent();
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The target total CPU utilization percentage that the autoscaler
+     * should be trying to achieve for the instance. This number is on a scale
+     * from 0 (no utilization) to 100 (full utilization). The valid range is
+     * [10, 90] inclusive. If not specified or set to 0, the autoscaler skips
+     * scaling based on total CPU utilization. If both
+     * `high_priority_cpu_utilization_percent` and
+     * `total_cpu_utilization_percent` are specified, the autoscaler provisions
+     * the larger of the two required compute capacities to satisfy both
+     * targets.
+     * </pre>
+     *
+     * <code>int32 total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The totalCpuUtilizationPercent.
+     */
+    int getTotalCpuUtilizationPercent();
 
     /**
      *
@@ -1488,14 +1511,15 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Required. The target high priority cpu utilization percentage that the
+     * Optional. The target high priority cpu utilization percentage that the
      * autoscaler should be trying to achieve for the instance. This number is
      * on a scale from 0 (no utilization) to 100 (full utilization). The valid
-     * range is [10, 90] inclusive.
+     * range is [10, 90] inclusive. If not specified or set to 0, the autoscaler
+     * skips scaling based on high priority CPU utilization.
      * </pre>
      *
      * <code>
-     * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = REQUIRED];
+     * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = OPTIONAL];
      * </code>
      *
      * @return The highPriorityCpuUtilizationPercent.
@@ -1503,6 +1527,34 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
     @java.lang.Override
     public int getHighPriorityCpuUtilizationPercent() {
       return highPriorityCpuUtilizationPercent_;
+    }
+
+    public static final int TOTAL_CPU_UTILIZATION_PERCENT_FIELD_NUMBER = 4;
+    private int totalCpuUtilizationPercent_ = 0;
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The target total CPU utilization percentage that the autoscaler
+     * should be trying to achieve for the instance. This number is on a scale
+     * from 0 (no utilization) to 100 (full utilization). The valid range is
+     * [10, 90] inclusive. If not specified or set to 0, the autoscaler skips
+     * scaling based on total CPU utilization. If both
+     * `high_priority_cpu_utilization_percent` and
+     * `total_cpu_utilization_percent` are specified, the autoscaler provisions
+     * the larger of the two required compute capacities to satisfy both
+     * targets.
+     * </pre>
+     *
+     * <code>int32 total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The totalCpuUtilizationPercent.
+     */
+    @java.lang.Override
+    public int getTotalCpuUtilizationPercent() {
+      return totalCpuUtilizationPercent_;
     }
 
     public static final int STORAGE_UTILIZATION_PERCENT_FIELD_NUMBER = 2;
@@ -1547,6 +1599,9 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       if (storageUtilizationPercent_ != 0) {
         output.writeInt32(2, storageUtilizationPercent_);
       }
+      if (totalCpuUtilizationPercent_ != 0) {
+        output.writeInt32(4, totalCpuUtilizationPercent_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1564,6 +1619,10 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       if (storageUtilizationPercent_ != 0) {
         size +=
             com.google.protobuf.CodedOutputStream.computeInt32Size(2, storageUtilizationPercent_);
+      }
+      if (totalCpuUtilizationPercent_ != 0) {
+        size +=
+            com.google.protobuf.CodedOutputStream.computeInt32Size(4, totalCpuUtilizationPercent_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -1584,6 +1643,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
 
       if (getHighPriorityCpuUtilizationPercent() != other.getHighPriorityCpuUtilizationPercent())
         return false;
+      if (getTotalCpuUtilizationPercent() != other.getTotalCpuUtilizationPercent()) return false;
       if (getStorageUtilizationPercent() != other.getStorageUtilizationPercent()) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
@@ -1598,6 +1658,8 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + HIGH_PRIORITY_CPU_UTILIZATION_PERCENT_FIELD_NUMBER;
       hash = (53 * hash) + getHighPriorityCpuUtilizationPercent();
+      hash = (37 * hash) + TOTAL_CPU_UTILIZATION_PERCENT_FIELD_NUMBER;
+      hash = (53 * hash) + getTotalCpuUtilizationPercent();
       hash = (37 * hash) + STORAGE_UTILIZATION_PERCENT_FIELD_NUMBER;
       hash = (53 * hash) + getStorageUtilizationPercent();
       hash = (29 * hash) + getUnknownFields().hashCode();
@@ -1752,6 +1814,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         super.clear();
         bitField0_ = 0;
         highPriorityCpuUtilizationPercent_ = 0;
+        totalCpuUtilizationPercent_ = 0;
         storageUtilizationPercent_ = 0;
         return this;
       }
@@ -1798,6 +1861,9 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           result.highPriorityCpuUtilizationPercent_ = highPriorityCpuUtilizationPercent_;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.totalCpuUtilizationPercent_ = totalCpuUtilizationPercent_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           result.storageUtilizationPercent_ = storageUtilizationPercent_;
         }
       }
@@ -1857,6 +1923,9 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         if (other.getHighPriorityCpuUtilizationPercent() != 0) {
           setHighPriorityCpuUtilizationPercent(other.getHighPriorityCpuUtilizationPercent());
         }
+        if (other.getTotalCpuUtilizationPercent() != 0) {
+          setTotalCpuUtilizationPercent(other.getTotalCpuUtilizationPercent());
+        }
         if (other.getStorageUtilizationPercent() != 0) {
           setStorageUtilizationPercent(other.getStorageUtilizationPercent());
         }
@@ -1895,9 +1964,15 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
               case 16:
                 {
                   storageUtilizationPercent_ = input.readInt32();
-                  bitField0_ |= 0x00000002;
+                  bitField0_ |= 0x00000004;
                   break;
                 } // case 16
+              case 32:
+                {
+                  totalCpuUtilizationPercent_ = input.readInt32();
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 32
               default:
                 {
                   if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1923,14 +1998,15 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        *
        *
        * <pre>
-       * Required. The target high priority cpu utilization percentage that the
+       * Optional. The target high priority cpu utilization percentage that the
        * autoscaler should be trying to achieve for the instance. This number is
        * on a scale from 0 (no utilization) to 100 (full utilization). The valid
-       * range is [10, 90] inclusive.
+       * range is [10, 90] inclusive. If not specified or set to 0, the autoscaler
+       * skips scaling based on high priority CPU utilization.
        * </pre>
        *
        * <code>
-       * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = REQUIRED];
+       * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = OPTIONAL];
        * </code>
        *
        * @return The highPriorityCpuUtilizationPercent.
@@ -1944,14 +2020,15 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        *
        *
        * <pre>
-       * Required. The target high priority cpu utilization percentage that the
+       * Optional. The target high priority cpu utilization percentage that the
        * autoscaler should be trying to achieve for the instance. This number is
        * on a scale from 0 (no utilization) to 100 (full utilization). The valid
-       * range is [10, 90] inclusive.
+       * range is [10, 90] inclusive. If not specified or set to 0, the autoscaler
+       * skips scaling based on high priority CPU utilization.
        * </pre>
        *
        * <code>
-       * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = REQUIRED];
+       * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = OPTIONAL];
        * </code>
        *
        * @param value The highPriorityCpuUtilizationPercent to set.
@@ -1969,14 +2046,15 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        *
        *
        * <pre>
-       * Required. The target high priority cpu utilization percentage that the
+       * Optional. The target high priority cpu utilization percentage that the
        * autoscaler should be trying to achieve for the instance. This number is
        * on a scale from 0 (no utilization) to 100 (full utilization). The valid
-       * range is [10, 90] inclusive.
+       * range is [10, 90] inclusive. If not specified or set to 0, the autoscaler
+       * skips scaling based on high priority CPU utilization.
        * </pre>
        *
        * <code>
-       * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = REQUIRED];
+       * int32 high_priority_cpu_utilization_percent = 1 [(.google.api.field_behavior) = OPTIONAL];
        * </code>
        *
        * @return This builder for chaining.
@@ -1984,6 +2062,89 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public Builder clearHighPriorityCpuUtilizationPercent() {
         bitField0_ = (bitField0_ & ~0x00000001);
         highPriorityCpuUtilizationPercent_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int totalCpuUtilizationPercent_;
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. The target total CPU utilization percentage that the autoscaler
+       * should be trying to achieve for the instance. This number is on a scale
+       * from 0 (no utilization) to 100 (full utilization). The valid range is
+       * [10, 90] inclusive. If not specified or set to 0, the autoscaler skips
+       * scaling based on total CPU utilization. If both
+       * `high_priority_cpu_utilization_percent` and
+       * `total_cpu_utilization_percent` are specified, the autoscaler provisions
+       * the larger of the two required compute capacities to satisfy both
+       * targets.
+       * </pre>
+       *
+       * <code>int32 total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The totalCpuUtilizationPercent.
+       */
+      @java.lang.Override
+      public int getTotalCpuUtilizationPercent() {
+        return totalCpuUtilizationPercent_;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. The target total CPU utilization percentage that the autoscaler
+       * should be trying to achieve for the instance. This number is on a scale
+       * from 0 (no utilization) to 100 (full utilization). The valid range is
+       * [10, 90] inclusive. If not specified or set to 0, the autoscaler skips
+       * scaling based on total CPU utilization. If both
+       * `high_priority_cpu_utilization_percent` and
+       * `total_cpu_utilization_percent` are specified, the autoscaler provisions
+       * the larger of the two required compute capacities to satisfy both
+       * targets.
+       * </pre>
+       *
+       * <code>int32 total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @param value The totalCpuUtilizationPercent to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTotalCpuUtilizationPercent(int value) {
+
+        totalCpuUtilizationPercent_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. The target total CPU utilization percentage that the autoscaler
+       * should be trying to achieve for the instance. This number is on a scale
+       * from 0 (no utilization) to 100 (full utilization). The valid range is
+       * [10, 90] inclusive. If not specified or set to 0, the autoscaler skips
+       * scaling based on total CPU utilization. If both
+       * `high_priority_cpu_utilization_percent` and
+       * `total_cpu_utilization_percent` are specified, the autoscaler provisions
+       * the larger of the two required compute capacities to satisfy both
+       * targets.
+       * </pre>
+       *
+       * <code>int32 total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearTotalCpuUtilizationPercent() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        totalCpuUtilizationPercent_ = 0;
         onChanged();
         return this;
       }
@@ -2029,7 +2190,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
       public Builder setStorageUtilizationPercent(int value) {
 
         storageUtilizationPercent_ = value;
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -2050,7 +2211,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        * @return This builder for chaining.
        */
       public Builder clearStorageUtilizationPercent() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         storageUtilizationPercent_ = 0;
         onChanged();
         return this;
@@ -2343,6 +2504,92 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
        * @return The autoscalingTargetHighPriorityCpuUtilizationPercent.
        */
       int getAutoscalingTargetHighPriorityCpuUtilizationPercent();
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the
+       * autoscaling target `total_cpu_utilization_percent`
+       * in the top-level autoscaling configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * int32 autoscaling_target_total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The autoscalingTargetTotalCpuUtilizationPercent.
+       */
+      int getAutoscalingTargetTotalCpuUtilizationPercent();
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If true, disables high priority CPU autoscaling for the
+       * selected replicas and ignores
+       * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+       * in the top-level autoscaling configuration.
+       *
+       * When setting this field to true, setting
+       * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+       * field to a non-zero value for the same replica is not supported.
+       *
+       * If false, the
+       * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+       * field in the replica will be used if set to a non-zero value.
+       * Otherwise, the
+       * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+       * field in the top-level autoscaling configuration will be used.
+       *
+       * Setting both
+       * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+       * and
+       * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+       * to true for the same replica is not supported.
+       * </pre>
+       *
+       * <code>
+       * bool disable_high_priority_cpu_autoscaling = 5 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The disableHighPriorityCpuAutoscaling.
+       */
+      boolean getDisableHighPriorityCpuAutoscaling();
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If true, disables total CPU autoscaling for the selected
+       * replicas and ignores
+       * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+       * in the top-level autoscaling configuration.
+       *
+       * When setting this field to true, setting
+       * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+       * field to a non-zero value for the same replica is not supported.
+       *
+       * If false, the
+       * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+       * field in the replica will be used if set to a non-zero value.
+       * Otherwise, the
+       * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+       * field in the top-level autoscaling configuration will be used.
+       *
+       * Setting both
+       * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+       * and
+       * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+       * to true for the same replica is not supported.
+       * </pre>
+       *
+       * <code>bool disable_total_cpu_autoscaling = 6 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The disableTotalCpuAutoscaling.
+       */
+      boolean getDisableTotalCpuAutoscaling();
     }
 
     /**
@@ -2488,6 +2735,110 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         return autoscalingTargetHighPriorityCpuUtilizationPercent_;
       }
 
+      public static final int AUTOSCALING_TARGET_TOTAL_CPU_UTILIZATION_PERCENT_FIELD_NUMBER = 4;
+      private int autoscalingTargetTotalCpuUtilizationPercent_ = 0;
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If specified, overrides the
+       * autoscaling target `total_cpu_utilization_percent`
+       * in the top-level autoscaling configuration for the selected replicas.
+       * </pre>
+       *
+       * <code>
+       * int32 autoscaling_target_total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The autoscalingTargetTotalCpuUtilizationPercent.
+       */
+      @java.lang.Override
+      public int getAutoscalingTargetTotalCpuUtilizationPercent() {
+        return autoscalingTargetTotalCpuUtilizationPercent_;
+      }
+
+      public static final int DISABLE_HIGH_PRIORITY_CPU_AUTOSCALING_FIELD_NUMBER = 5;
+      private boolean disableHighPriorityCpuAutoscaling_ = false;
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If true, disables high priority CPU autoscaling for the
+       * selected replicas and ignores
+       * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+       * in the top-level autoscaling configuration.
+       *
+       * When setting this field to true, setting
+       * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+       * field to a non-zero value for the same replica is not supported.
+       *
+       * If false, the
+       * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+       * field in the replica will be used if set to a non-zero value.
+       * Otherwise, the
+       * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+       * field in the top-level autoscaling configuration will be used.
+       *
+       * Setting both
+       * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+       * and
+       * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+       * to true for the same replica is not supported.
+       * </pre>
+       *
+       * <code>
+       * bool disable_high_priority_cpu_autoscaling = 5 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The disableHighPriorityCpuAutoscaling.
+       */
+      @java.lang.Override
+      public boolean getDisableHighPriorityCpuAutoscaling() {
+        return disableHighPriorityCpuAutoscaling_;
+      }
+
+      public static final int DISABLE_TOTAL_CPU_AUTOSCALING_FIELD_NUMBER = 6;
+      private boolean disableTotalCpuAutoscaling_ = false;
+
+      /**
+       *
+       *
+       * <pre>
+       * Optional. If true, disables total CPU autoscaling for the selected
+       * replicas and ignores
+       * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+       * in the top-level autoscaling configuration.
+       *
+       * When setting this field to true, setting
+       * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+       * field to a non-zero value for the same replica is not supported.
+       *
+       * If false, the
+       * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+       * field in the replica will be used if set to a non-zero value.
+       * Otherwise, the
+       * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+       * field in the top-level autoscaling configuration will be used.
+       *
+       * Setting both
+       * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+       * and
+       * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+       * to true for the same replica is not supported.
+       * </pre>
+       *
+       * <code>bool disable_total_cpu_autoscaling = 6 [(.google.api.field_behavior) = OPTIONAL];
+       * </code>
+       *
+       * @return The disableTotalCpuAutoscaling.
+       */
+      @java.lang.Override
+      public boolean getDisableTotalCpuAutoscaling() {
+        return disableTotalCpuAutoscaling_;
+      }
+
       private byte memoizedIsInitialized = -1;
 
       @java.lang.Override
@@ -2508,6 +2859,15 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         if (autoscalingTargetHighPriorityCpuUtilizationPercent_ != 0) {
           output.writeInt32(2, autoscalingTargetHighPriorityCpuUtilizationPercent_);
         }
+        if (autoscalingTargetTotalCpuUtilizationPercent_ != 0) {
+          output.writeInt32(4, autoscalingTargetTotalCpuUtilizationPercent_);
+        }
+        if (disableHighPriorityCpuAutoscaling_ != false) {
+          output.writeBool(5, disableHighPriorityCpuAutoscaling_);
+        }
+        if (disableTotalCpuAutoscaling_ != false) {
+          output.writeBool(6, disableTotalCpuAutoscaling_);
+        }
         getUnknownFields().writeTo(output);
       }
 
@@ -2525,6 +2885,20 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           size +=
               com.google.protobuf.CodedOutputStream.computeInt32Size(
                   2, autoscalingTargetHighPriorityCpuUtilizationPercent_);
+        }
+        if (autoscalingTargetTotalCpuUtilizationPercent_ != 0) {
+          size +=
+              com.google.protobuf.CodedOutputStream.computeInt32Size(
+                  4, autoscalingTargetTotalCpuUtilizationPercent_);
+        }
+        if (disableHighPriorityCpuAutoscaling_ != false) {
+          size +=
+              com.google.protobuf.CodedOutputStream.computeBoolSize(
+                  5, disableHighPriorityCpuAutoscaling_);
+        }
+        if (disableTotalCpuAutoscaling_ != false) {
+          size +=
+              com.google.protobuf.CodedOutputStream.computeBoolSize(6, disableTotalCpuAutoscaling_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
@@ -2555,6 +2929,11 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
         if (getAutoscalingTargetHighPriorityCpuUtilizationPercent()
             != other.getAutoscalingTargetHighPriorityCpuUtilizationPercent()) return false;
+        if (getAutoscalingTargetTotalCpuUtilizationPercent()
+            != other.getAutoscalingTargetTotalCpuUtilizationPercent()) return false;
+        if (getDisableHighPriorityCpuAutoscaling() != other.getDisableHighPriorityCpuAutoscaling())
+          return false;
+        if (getDisableTotalCpuAutoscaling() != other.getDisableTotalCpuAutoscaling()) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
@@ -2572,6 +2951,15 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         }
         hash = (37 * hash) + AUTOSCALING_TARGET_HIGH_PRIORITY_CPU_UTILIZATION_PERCENT_FIELD_NUMBER;
         hash = (53 * hash) + getAutoscalingTargetHighPriorityCpuUtilizationPercent();
+        hash = (37 * hash) + AUTOSCALING_TARGET_TOTAL_CPU_UTILIZATION_PERCENT_FIELD_NUMBER;
+        hash = (53 * hash) + getAutoscalingTargetTotalCpuUtilizationPercent();
+        hash = (37 * hash) + DISABLE_HIGH_PRIORITY_CPU_AUTOSCALING_FIELD_NUMBER;
+        hash =
+            (53 * hash)
+                + com.google.protobuf.Internal.hashBoolean(getDisableHighPriorityCpuAutoscaling());
+        hash = (37 * hash) + DISABLE_TOTAL_CPU_AUTOSCALING_FIELD_NUMBER;
+        hash =
+            (53 * hash) + com.google.protobuf.Internal.hashBoolean(getDisableTotalCpuAutoscaling());
         hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
@@ -2760,6 +3148,9 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             autoscalingLimitsBuilder_ = null;
           }
           autoscalingTargetHighPriorityCpuUtilizationPercent_ = 0;
+          autoscalingTargetTotalCpuUtilizationPercent_ = 0;
+          disableHighPriorityCpuAutoscaling_ = false;
+          disableTotalCpuAutoscaling_ = false;
           return this;
         }
 
@@ -2822,6 +3213,16 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
           if (((from_bitField0_ & 0x00000002) != 0)) {
             result.autoscalingTargetHighPriorityCpuUtilizationPercent_ =
                 autoscalingTargetHighPriorityCpuUtilizationPercent_;
+          }
+          if (((from_bitField0_ & 0x00000004) != 0)) {
+            result.autoscalingTargetTotalCpuUtilizationPercent_ =
+                autoscalingTargetTotalCpuUtilizationPercent_;
+          }
+          if (((from_bitField0_ & 0x00000008) != 0)) {
+            result.disableHighPriorityCpuAutoscaling_ = disableHighPriorityCpuAutoscaling_;
+          }
+          if (((from_bitField0_ & 0x00000010) != 0)) {
+            result.disableTotalCpuAutoscaling_ = disableTotalCpuAutoscaling_;
           }
           result.bitField0_ |= to_bitField0_;
         }
@@ -2891,6 +3292,16 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
             setAutoscalingTargetHighPriorityCpuUtilizationPercent(
                 other.getAutoscalingTargetHighPriorityCpuUtilizationPercent());
           }
+          if (other.getAutoscalingTargetTotalCpuUtilizationPercent() != 0) {
+            setAutoscalingTargetTotalCpuUtilizationPercent(
+                other.getAutoscalingTargetTotalCpuUtilizationPercent());
+          }
+          if (other.getDisableHighPriorityCpuAutoscaling() != false) {
+            setDisableHighPriorityCpuAutoscaling(other.getDisableHighPriorityCpuAutoscaling());
+          }
+          if (other.getDisableTotalCpuAutoscaling() != false) {
+            setDisableTotalCpuAutoscaling(other.getDisableTotalCpuAutoscaling());
+          }
           this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
@@ -2930,6 +3341,24 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
                     bitField0_ |= 0x00000002;
                     break;
                   } // case 16
+                case 32:
+                  {
+                    autoscalingTargetTotalCpuUtilizationPercent_ = input.readInt32();
+                    bitField0_ |= 0x00000004;
+                    break;
+                  } // case 32
+                case 40:
+                  {
+                    disableHighPriorityCpuAutoscaling_ = input.readBool();
+                    bitField0_ |= 0x00000008;
+                    break;
+                  } // case 40
+                case 48:
+                  {
+                    disableTotalCpuAutoscaling_ = input.readBool();
+                    bitField0_ |= 0x00000010;
+                    break;
+                  } // case 48
                 default:
                   {
                     if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -3248,6 +3677,315 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
         public Builder clearAutoscalingTargetHighPriorityCpuUtilizationPercent() {
           bitField0_ = (bitField0_ & ~0x00000002);
           autoscalingTargetHighPriorityCpuUtilizationPercent_ = 0;
+          onChanged();
+          return this;
+        }
+
+        private int autoscalingTargetTotalCpuUtilizationPercent_;
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the
+         * autoscaling target `total_cpu_utilization_percent`
+         * in the top-level autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * int32 autoscaling_target_total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return The autoscalingTargetTotalCpuUtilizationPercent.
+         */
+        @java.lang.Override
+        public int getAutoscalingTargetTotalCpuUtilizationPercent() {
+          return autoscalingTargetTotalCpuUtilizationPercent_;
+        }
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the
+         * autoscaling target `total_cpu_utilization_percent`
+         * in the top-level autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * int32 autoscaling_target_total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @param value The autoscalingTargetTotalCpuUtilizationPercent to set.
+         * @return This builder for chaining.
+         */
+        public Builder setAutoscalingTargetTotalCpuUtilizationPercent(int value) {
+
+          autoscalingTargetTotalCpuUtilizationPercent_ = value;
+          bitField0_ |= 0x00000004;
+          onChanged();
+          return this;
+        }
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If specified, overrides the
+         * autoscaling target `total_cpu_utilization_percent`
+         * in the top-level autoscaling configuration for the selected replicas.
+         * </pre>
+         *
+         * <code>
+         * int32 autoscaling_target_total_cpu_utilization_percent = 4 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return This builder for chaining.
+         */
+        public Builder clearAutoscalingTargetTotalCpuUtilizationPercent() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          autoscalingTargetTotalCpuUtilizationPercent_ = 0;
+          onChanged();
+          return this;
+        }
+
+        private boolean disableHighPriorityCpuAutoscaling_;
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If true, disables high priority CPU autoscaling for the
+         * selected replicas and ignores
+         * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+         * in the top-level autoscaling configuration.
+         *
+         * When setting this field to true, setting
+         * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+         * field to a non-zero value for the same replica is not supported.
+         *
+         * If false, the
+         * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+         * field in the replica will be used if set to a non-zero value.
+         * Otherwise, the
+         * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+         * field in the top-level autoscaling configuration will be used.
+         *
+         * Setting both
+         * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+         * and
+         * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+         * to true for the same replica is not supported.
+         * </pre>
+         *
+         * <code>
+         * bool disable_high_priority_cpu_autoscaling = 5 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return The disableHighPriorityCpuAutoscaling.
+         */
+        @java.lang.Override
+        public boolean getDisableHighPriorityCpuAutoscaling() {
+          return disableHighPriorityCpuAutoscaling_;
+        }
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If true, disables high priority CPU autoscaling for the
+         * selected replicas and ignores
+         * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+         * in the top-level autoscaling configuration.
+         *
+         * When setting this field to true, setting
+         * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+         * field to a non-zero value for the same replica is not supported.
+         *
+         * If false, the
+         * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+         * field in the replica will be used if set to a non-zero value.
+         * Otherwise, the
+         * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+         * field in the top-level autoscaling configuration will be used.
+         *
+         * Setting both
+         * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+         * and
+         * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+         * to true for the same replica is not supported.
+         * </pre>
+         *
+         * <code>
+         * bool disable_high_priority_cpu_autoscaling = 5 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @param value The disableHighPriorityCpuAutoscaling to set.
+         * @return This builder for chaining.
+         */
+        public Builder setDisableHighPriorityCpuAutoscaling(boolean value) {
+
+          disableHighPriorityCpuAutoscaling_ = value;
+          bitField0_ |= 0x00000008;
+          onChanged();
+          return this;
+        }
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If true, disables high priority CPU autoscaling for the
+         * selected replicas and ignores
+         * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+         * in the top-level autoscaling configuration.
+         *
+         * When setting this field to true, setting
+         * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+         * field to a non-zero value for the same replica is not supported.
+         *
+         * If false, the
+         * [autoscaling_target_high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_high_priority_cpu_utilization_percent]
+         * field in the replica will be used if set to a non-zero value.
+         * Otherwise, the
+         * [high_priority_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.high_priority_cpu_utilization_percent]
+         * field in the top-level autoscaling configuration will be used.
+         *
+         * Setting both
+         * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+         * and
+         * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+         * to true for the same replica is not supported.
+         * </pre>
+         *
+         * <code>
+         * bool disable_high_priority_cpu_autoscaling = 5 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return This builder for chaining.
+         */
+        public Builder clearDisableHighPriorityCpuAutoscaling() {
+          bitField0_ = (bitField0_ & ~0x00000008);
+          disableHighPriorityCpuAutoscaling_ = false;
+          onChanged();
+          return this;
+        }
+
+        private boolean disableTotalCpuAutoscaling_;
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If true, disables total CPU autoscaling for the selected
+         * replicas and ignores
+         * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+         * in the top-level autoscaling configuration.
+         *
+         * When setting this field to true, setting
+         * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+         * field to a non-zero value for the same replica is not supported.
+         *
+         * If false, the
+         * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+         * field in the replica will be used if set to a non-zero value.
+         * Otherwise, the
+         * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+         * field in the top-level autoscaling configuration will be used.
+         *
+         * Setting both
+         * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+         * and
+         * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+         * to true for the same replica is not supported.
+         * </pre>
+         *
+         * <code>bool disable_total_cpu_autoscaling = 6 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return The disableTotalCpuAutoscaling.
+         */
+        @java.lang.Override
+        public boolean getDisableTotalCpuAutoscaling() {
+          return disableTotalCpuAutoscaling_;
+        }
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If true, disables total CPU autoscaling for the selected
+         * replicas and ignores
+         * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+         * in the top-level autoscaling configuration.
+         *
+         * When setting this field to true, setting
+         * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+         * field to a non-zero value for the same replica is not supported.
+         *
+         * If false, the
+         * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+         * field in the replica will be used if set to a non-zero value.
+         * Otherwise, the
+         * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+         * field in the top-level autoscaling configuration will be used.
+         *
+         * Setting both
+         * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+         * and
+         * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+         * to true for the same replica is not supported.
+         * </pre>
+         *
+         * <code>bool disable_total_cpu_autoscaling = 6 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @param value The disableTotalCpuAutoscaling to set.
+         * @return This builder for chaining.
+         */
+        public Builder setDisableTotalCpuAutoscaling(boolean value) {
+
+          disableTotalCpuAutoscaling_ = value;
+          bitField0_ |= 0x00000010;
+          onChanged();
+          return this;
+        }
+
+        /**
+         *
+         *
+         * <pre>
+         * Optional. If true, disables total CPU autoscaling for the selected
+         * replicas and ignores
+         * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+         * in the top-level autoscaling configuration.
+         *
+         * When setting this field to true, setting
+         * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+         * field to a non-zero value for the same replica is not supported.
+         *
+         * If false, the
+         * [autoscaling_target_total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.autoscaling_target_total_cpu_utilization_percent]
+         * field in the replica will be used if set to a non-zero value.
+         * Otherwise, the
+         * [total_cpu_utilization_percent][google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.total_cpu_utilization_percent]
+         * field in the top-level autoscaling configuration will be used.
+         *
+         * Setting both
+         * [disable_high_priority_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_high_priority_cpu_autoscaling]
+         * and
+         * [disable_total_cpu_autoscaling][google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.disable_total_cpu_autoscaling]
+         * to true for the same replica is not supported.
+         * </pre>
+         *
+         * <code>bool disable_total_cpu_autoscaling = 6 [(.google.api.field_behavior) = OPTIONAL];
+         * </code>
+         *
+         * @return This builder for chaining.
+         */
+        public Builder clearDisableTotalCpuAutoscaling() {
+          bitField0_ = (bitField0_ & ~0x00000010);
+          disableTotalCpuAutoscaling_ = false;
           onChanged();
           return this;
         }
