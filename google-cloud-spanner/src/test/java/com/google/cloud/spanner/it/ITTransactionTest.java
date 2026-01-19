@@ -41,7 +41,10 @@ import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.SpannerOptions.Builder.DefaultReadWriteTransactionOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
@@ -52,6 +55,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.spanner.v1.TransactionOptions.IsolationLevel;
+import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -211,6 +216,54 @@ public class ITTransactionTest {
           assertThat(resultSet.next()).isFalse();
           return row;
         });
+  }
+
+  @Test
+  public void isolationLevelAndReadLockModeSetAtClientLevelTest() {
+    SpannerOptions options =
+        env.getTestHelper().getOptions().toBuilder()
+            .setDefaultTransactionOptions(
+                DefaultReadWriteTransactionOptions.newBuilder()
+                    .setIsolationLevel(IsolationLevel.REPEATABLE_READ)
+                    .setReadLockMode(ReadLockMode.OPTIMISTIC)
+                    .build())
+            .build();
+    try (Spanner spanner = options.getService()) {
+      DatabaseClient client = spanner.getDatabaseClient(db.getId());
+      Long updatedRows =
+          client
+              .readWriteTransaction()
+              .run(
+                  transaction ->
+                      transaction.executeUpdate(
+                          Statement.of("INSERT INTO T (K, V) VALUES ('test1', 2)")));
+      assertThat(updatedRows).isEqualTo(1L);
+    }
+  }
+
+  @Test
+  public void isolationLevelAndReadLockModeSetAtClientAndTxnLevelTest() {
+    SpannerOptions options =
+        env.getTestHelper().getOptions().toBuilder()
+            .setDefaultTransactionOptions(
+                DefaultReadWriteTransactionOptions.newBuilder()
+                    .setIsolationLevel(IsolationLevel.REPEATABLE_READ)
+                    .setReadLockMode(ReadLockMode.OPTIMISTIC)
+                    .build())
+            .build();
+    try (Spanner spanner = options.getService()) {
+      DatabaseClient client = spanner.getDatabaseClient(db.getId());
+      Long updatedRows =
+          client
+              .readWriteTransaction(
+                  Options.isolationLevel(IsolationLevel.SERIALIZABLE),
+                  Options.readLockMode(ReadLockMode.PESSIMISTIC))
+              .run(
+                  transaction ->
+                      transaction.executeUpdate(
+                          Statement.of("INSERT INTO T (K, V) VALUES ('test1', 2)")));
+      assertThat(updatedRows).isEqualTo(1L);
+    }
   }
 
   @Test
