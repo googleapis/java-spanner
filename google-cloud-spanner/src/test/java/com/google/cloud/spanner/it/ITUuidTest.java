@@ -61,14 +61,6 @@ public class ITUuidTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
-  private static boolean isUsingCloudDevel() {
-    String jobType = System.getenv("JOB_TYPE");
-
-    // Assumes that the jobType contains the string "cloud-devel" to signal that
-    // the environment is cloud-devel.
-    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
-  }
-
   @Parameterized.Parameters(name = "Dialect = {0}")
   public static List<DialectTestParameter> data() {
       return Arrays.asList(
