@@ -71,13 +71,9 @@ public class ITUuidTest {
 
   @Parameterized.Parameters(name = "Dialect = {0}")
   public static List<DialectTestParameter> data() {
-    // TODO: Remove once it is enabled in production universe.
-    if (isUsingCloudDevel()) {
       return Arrays.asList(
           new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL),
           new DialectTestParameter(Dialect.POSTGRESQL));
-    }
-    return Collections.emptyList();
   }
 
   @Parameterized.Parameter() public DialectTestParameter dialect;
