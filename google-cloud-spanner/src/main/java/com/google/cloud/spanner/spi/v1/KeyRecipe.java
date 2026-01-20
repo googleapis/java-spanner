@@ -279,9 +279,9 @@ public final class KeyRecipe {
     switch (part.type.getCode()) {
       case BOOL:
         if (isAscending) {
-          SsFormat.appendInt64Increasing(out, value.getBoolValue() ? 1 : 0);
+          SsFormat.appendBoolIncreasing(out, value.getBoolValue());
         } else {
-          SsFormat.appendInt64Decreasing(out, value.getBoolValue() ? 1 : 0);
+          SsFormat.appendBoolDecreasing(out, value.getBoolValue());
         }
         break;
       case INT64:

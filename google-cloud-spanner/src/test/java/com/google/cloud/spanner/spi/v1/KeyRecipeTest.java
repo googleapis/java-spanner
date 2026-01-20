@@ -31,23 +31,24 @@ public class KeyRecipeTest {
 
   @Test
   public void queryParamsUsesStructIdentifiers() throws Exception {
-    com.google.spanner.v1.KeyRecipe recipeProto = createRecipe(
-        "part { tag: 1 }\n"
-            + "part {\n"
-            + "  order: ASCENDING\n"
-            + "  null_order: NULLS_FIRST\n"
-            + "  type { code: STRING }\n"
-            + "  identifier: \"p0\"\n"
-            + "  struct_identifiers: 1\n"
-            + "}\n");
-
+    com.google.spanner.v1.KeyRecipe recipeProto =
+        createRecipe(
+            "part { tag: 1 }\n"
+                + "part {\n"
+                + "  order: ASCENDING\n"
+                + "  null_order: NULLS_FIRST\n"
+                + "  type { code: STRING }\n"
+                + "  identifier: \"p0\"\n"
+                + "  struct_identifiers: 1\n"
+                + "}\n");
 
     Struct params =
         parseStruct(
             "fields {\n"
                 + "  key: \"p0\"\n"
                 + "  value {\n"
-                + "    list_value { values { string_value: \"a\" } values { string_value: \"b\" } }\n"
+                + "    list_value { values { string_value: \"a\" } values { string_value: \"b\" }"
+                + " }\n"
                 + "  }\n"
                 + "}\n");
 
@@ -59,14 +60,15 @@ public class KeyRecipeTest {
 
   @Test
   public void queryParamsUsesConstantValue() throws Exception {
-    com.google.spanner.v1.KeyRecipe recipeProto = createRecipe(
-        "part { tag: 1 }\n"
-            + "part {\n"
-            + "  order: ASCENDING\n"
-            + "  null_order: NULLS_FIRST\n"
-            + "  type { code: STRING }\n"
-            + "  value { string_value: \"const\" }\n"
-            + "}\n");
+    com.google.spanner.v1.KeyRecipe recipeProto =
+        createRecipe(
+            "part { tag: 1 }\n"
+                + "part {\n"
+                + "  order: ASCENDING\n"
+                + "  null_order: NULLS_FIRST\n"
+                + "  type { code: STRING }\n"
+                + "  value { string_value: \"const\" }\n"
+                + "}\n");
 
     KeyRecipe recipe = KeyRecipe.create(recipeProto);
     TargetRange target = recipe.queryParamsToTargetRange(Struct.getDefaultInstance());
@@ -76,8 +78,7 @@ public class KeyRecipeTest {
 
   private static com.google.spanner.v1.KeyRecipe createRecipe(String text)
       throws TextFormat.ParseException {
-    com.google.spanner.v1.KeyRecipe.Builder builder =
-        com.google.spanner.v1.KeyRecipe.newBuilder();
+    com.google.spanner.v1.KeyRecipe.Builder builder = com.google.spanner.v1.KeyRecipe.newBuilder();
     TextFormat.merge(text, builder);
     return builder.build();
   }

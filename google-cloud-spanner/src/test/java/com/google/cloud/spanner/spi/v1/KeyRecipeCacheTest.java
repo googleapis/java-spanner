@@ -108,15 +108,11 @@ public class KeyRecipeCacheTest {
     assertNotEquals(fp, KeyRecipeCache.fingerprint(addParam));
 
     ExecuteSqlRequest changeType =
-        ExecuteSqlRequest.newBuilder(req)
-            .putParamTypes("p1", parseType("code: BYTES"))
-            .build();
+        ExecuteSqlRequest.newBuilder(req).putParamTypes("p1", parseType("code: BYTES")).build();
     assertNotEquals(fp, KeyRecipeCache.fingerprint(changeType));
 
     ExecuteSqlRequest.Builder changeParamValueBuilder = ExecuteSqlRequest.newBuilder(req);
-    changeParamValueBuilder
-        .getParamsBuilder()
-        .putFields("p1", parseValue("string_value: \"bar\""));
+    changeParamValueBuilder.getParamsBuilder().putFields("p1", parseValue("string_value: \"bar\""));
     ExecuteSqlRequest changeParamValue = changeParamValueBuilder.build();
     assertEquals(fp, KeyRecipeCache.fingerprint(changeParamValue));
 
