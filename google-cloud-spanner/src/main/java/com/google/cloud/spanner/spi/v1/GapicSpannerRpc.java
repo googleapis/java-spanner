@@ -206,6 +206,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -433,7 +434,11 @@ public class GapicSpannerRpc implements SpannerRpc {
                       .withOptions(gcpOptions);
 
               GcpFallbackOpenTelemetry fallbackTelemetry =
-                  GcpFallbackOpenTelemetry.newBuilder().withSdk(options.getOpenTelemetry()).build();
+                  GcpFallbackOpenTelemetry.newBuilder()
+                      .withSdk(options.getOpenTelemetry())
+                      .disableAllMetrics()
+                      .enableMetrics(Arrays.asList("fallback_count", "call_status"))
+                      .build();
 
               return new FallbackChannelBuilder(
                   primaryGcpBuilder,
