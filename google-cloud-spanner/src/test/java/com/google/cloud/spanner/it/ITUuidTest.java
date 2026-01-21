@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -61,23 +60,11 @@ public class ITUuidTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
-  private static boolean isUsingCloudDevel() {
-    String jobType = System.getenv("JOB_TYPE");
-
-    // Assumes that the jobType contains the string "cloud-devel" to signal that
-    // the environment is cloud-devel.
-    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
-  }
-
   @Parameterized.Parameters(name = "Dialect = {0}")
   public static List<DialectTestParameter> data() {
-    // TODO: Remove once it is enabled in production universe.
-    if (isUsingCloudDevel()) {
-      return Arrays.asList(
-          new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL),
-          new DialectTestParameter(Dialect.POSTGRESQL));
-    }
-    return Collections.emptyList();
+    return Arrays.asList(
+        new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL),
+        new DialectTestParameter(Dialect.POSTGRESQL));
   }
 
   @Parameterized.Parameter() public DialectTestParameter dialect;
