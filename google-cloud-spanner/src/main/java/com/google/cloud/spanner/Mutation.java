@@ -119,11 +119,11 @@ public final class Mutation implements Serializable {
       @Nullable ImmutableList<String> columns,
       @Nullable ImmutableList<Value> values,
       @Nullable KeySet keySet) {
-    this(table, operation, columns, values, keySet, null, null, null, null, null);
+    this(table, operation, columns, values, keySet, null, null, null, null, false);
   }
 
   private Mutation(
-      String table,
+      @Nullable String table,
       Op operation,
       @Nullable ImmutableList<String> columns,
       @Nullable ImmutableList<Value> values,
@@ -132,7 +132,7 @@ public final class Mutation implements Serializable {
       @Nullable Key key,
       @Nullable Value payload,
       @Nullable Instant deliveryTime,
-      @Nullable Boolean ignoreNotFound) {
+      boolean ignoreNotFound) {
     this.table = table;
     this.operation = operation;
     this.columns = columns;
@@ -142,7 +142,7 @@ public final class Mutation implements Serializable {
     this.key = key;
     this.payload = payload;
     this.deliveryTime = deliveryTime;
-    this.ignoreNotFound = ignoreNotFound != null && ignoreNotFound;
+    this.ignoreNotFound = ignoreNotFound;
   }
 
   /**
@@ -311,7 +311,7 @@ public final class Mutation implements Serializable {
     public Mutation build() {
       checkState(key != null, "Key must be set for Send mutation");
       checkState(payload != null, "Payload must be set for Send mutation");
-      return new Mutation(null, Op.SEND, null, null, null, queue, key, payload, deliveryTime, null);
+      return new Mutation(null, Op.SEND, null, null, null, queue, key, payload, deliveryTime, false);
     }
   }
 
