@@ -191,7 +191,8 @@ public class MutationTest {
     Key key = Key.of(123);
     Value payload = Value.bytes(ByteArray.copyFrom("payload"));
     Instant deliverAt = Instant.now().plusSeconds(3600);
-    Mutation m = Mutation.newSendBuilder("TestQueue")
+    Mutation m =
+        Mutation.newSendBuilder("TestQueue")
             .setKey(key)
             .setPayload(payload)
             .setDeliveryTime(deliverAt)
@@ -202,13 +203,15 @@ public class MutationTest {
     assertThat(m.getPayload()).isEqualTo(payload);
     assertThat(m.getDeliveryTime()).isEqualTo(deliverAt);
     assertThat(m.toString())
-        .isEqualTo("send(TestQueue{key=[123], payload=" + payload + ", deliveryTime=" + deliverAt + "})");
+        .isEqualTo(
+            "send(TestQueue{key=[123], payload=" + payload + ", deliveryTime=" + deliverAt + "})");
   }
 
   @Test
   public void sendMissingKey() {
     IllegalStateException e =
-        assertThrows(IllegalStateException.class,
+        assertThrows(
+            IllegalStateException.class,
             () -> Mutation.newSendBuilder("TestQueue").setPayload(Value.string("payload")).build());
     assertThat(e.getMessage()).contains("Key must be set");
   }
@@ -216,7 +219,8 @@ public class MutationTest {
   @Test
   public void sendMissingPayload() {
     IllegalStateException e =
-        assertThrows(IllegalStateException.class,
+        assertThrows(
+            IllegalStateException.class,
             () -> Mutation.newSendBuilder("TestQueue").setKey(Key.of("k1")).build());
     assertThat(e.getMessage()).contains("Payload must be set");
   }
@@ -235,7 +239,8 @@ public class MutationTest {
   @Test
   public void ackMissingKey() {
     IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> Mutation.newAckBuilder("TestQueue").build());
+        assertThrows(
+            IllegalStateException.class, () -> Mutation.newAckBuilder("TestQueue").build());
     assertThat(e.getMessage()).contains("Key must be set");
   }
 
@@ -375,17 +380,32 @@ public class MutationTest {
         Mutation.newSendBuilder("TestQueue").setKey(key1).setPayload(payload1).build(),
         Mutation.newSendBuilder("TestQueue").setKey(key1).setPayload(payload1).build());
     // Different key
-    tester.addEqualityGroup(Mutation.newSendBuilder("TestQueue").setKey(key2).setPayload(payload1).build());
+    tester.addEqualityGroup(
+        Mutation.newSendBuilder("TestQueue").setKey(key2).setPayload(payload1).build());
     // Different payload
-    tester.addEqualityGroup(Mutation.newSendBuilder("TestQueue").setKey(key1).setPayload(payload2).build());
+    tester.addEqualityGroup(
+        Mutation.newSendBuilder("TestQueue").setKey(key1).setPayload(payload2).build());
     // Different queue
-    tester.addEqualityGroup(Mutation.newSendBuilder("TestQueue2").setKey(key1).setPayload(payload1).build());
+    tester.addEqualityGroup(
+        Mutation.newSendBuilder("TestQueue2").setKey(key1).setPayload(payload1).build());
     // Different time
     tester.addEqualityGroup(
-        Mutation.newSendBuilder("TestQueue").setKey(key1).setPayload(payload1).setDeliveryTime(time1).build(),
-        Mutation.newSendBuilder("TestQueue").setKey(key1).setPayload(payload1).setDeliveryTime(time1).build());
+        Mutation.newSendBuilder("TestQueue")
+            .setKey(key1)
+            .setPayload(payload1)
+            .setDeliveryTime(time1)
+            .build(),
+        Mutation.newSendBuilder("TestQueue")
+            .setKey(key1)
+            .setPayload(payload1)
+            .setDeliveryTime(time1)
+            .build());
     tester.addEqualityGroup(
-        Mutation.newSendBuilder("TestQueue").setKey(key1).setPayload(payload1).setDeliveryTime(time2).build());
+        Mutation.newSendBuilder("TestQueue")
+            .setKey(key1)
+            .setPayload(payload1)
+            .setDeliveryTime(time2)
+            .build());
 
     // ACK
     tester.addEqualityGroup(
@@ -408,7 +428,7 @@ public class MutationTest {
 
   @Test
   public void serializationBasic() {
-    Instant time =  Instant.now();
+    Instant time = Instant.now();
     List<Mutation> mutations =
         Arrays.asList(
             Mutation.newInsertBuilder("T").set("C").to("V").build(),
@@ -416,8 +436,11 @@ public class MutationTest {
             Mutation.newInsertOrUpdateBuilder("T").set("C").to("V").build(),
             Mutation.newReplaceBuilder("T").set("C").to("V").build(),
             Mutation.delete("T", KeySet.singleKey(Key.of("k"))),
-            Mutation.newSendBuilder("Q").setKey(Key.of("k")).setPayload(Value.string("p"))
-                .setDeliveryTime(time).build(),
+            Mutation.newSendBuilder("Q")
+                .setKey(Key.of("k"))
+                .setPayload(Value.string("p"))
+                .setDeliveryTime(time)
+                .build(),
             Mutation.newAckBuilder("Q").setKey(Key.of("k")).setIgnoreNotFound(true).build());
 
     List<com.google.spanner.v1.Mutation> proto = new ArrayList<>();
@@ -454,11 +477,16 @@ public class MutationTest {
         matchesProto("delete { table: 'T' key_set { keys { values { string_value: 'k' } } } }"));
     MatcherAssert.assertThat(
         proto.get(5),
-        matchesProto("send { queue: 'Q' key { values { string_value: 'k' } } deliver_time { seconds: " +
-            time.getEpochSecond() + " nanos: " + time.getNano() + " } payload { string_value: 'p' } }"));
+        matchesProto(
+            "send { queue: 'Q' key { values { string_value: 'k' } } deliver_time { seconds: "
+                + time.getEpochSecond()
+                + " nanos: "
+                + time.getNano()
+                + " } payload { string_value: 'p' } }"));
     MatcherAssert.assertThat(
         proto.get(6),
-        matchesProto("ack { queue: 'Q' key { values { string_value: 'k' } } ignore_not_found: true }"));
+        matchesProto(
+            "ack { queue: 'Q' key { values { string_value: 'k' } } ignore_not_found: true }"));
   }
 
   @Test

@@ -90,14 +90,10 @@ public final class Mutation implements Serializable {
     /** Deletes rows from a table. Succeeds whether or not the named rows were present. */
     DELETE,
 
-    /**
-     * Send a message to a queue, optionally with specified delivery time.
-     */
+    /** Send a message to a queue, optionally with specified delivery time. */
     SEND,
 
-    /**
-     * Acknowledge a message in a queue. Ack only succeeds if the message still exists.
-     */
+    /** Acknowledge a message in a queue. Ack only succeeds if the message still exists. */
     ACK,
   }
 
@@ -191,16 +187,16 @@ public final class Mutation implements Serializable {
   }
 
   /**
-   * Returns a builder that can be used to construct an {@link Op#SEND} mutation against {@code queue}; see the
-   * {@code SEND} documentation for mutation semantics.
+   * Returns a builder that can be used to construct an {@link Op#SEND} mutation against {@code
+   * queue}; see the {@code SEND} documentation for mutation semantics.
    */
   public static SendBuilder newSendBuilder(String queue) {
     return new SendBuilder(queue);
   }
 
   /**
-   * Returns a builder that can be used to construct an {@link Op#ACK} mutation against {@code queue}; see the
-   * {@code ACK} documentation for mutation semantics.
+   * Returns a builder that can be used to construct an {@link Op#ACK} mutation against {@code
+   * queue}; see the {@code ACK} documentation for mutation semantics.
    */
   public static AckBuilder newAckBuilder(String queue) {
     return new AckBuilder(queue);
@@ -280,9 +276,7 @@ public final class Mutation implements Serializable {
     }
   }
 
-  /**
-   * Builder for {@link Op#SEND} mutation.
-   */
+  /** Builder for {@link Op#SEND} mutation. */
   public static class SendBuilder {
     private final String queue;
     private Key key;
@@ -311,13 +305,12 @@ public final class Mutation implements Serializable {
     public Mutation build() {
       checkState(key != null, "Key must be set for Send mutation");
       checkState(payload != null, "Payload must be set for Send mutation");
-      return new Mutation(null, Op.SEND, null, null, null, queue, key, payload, deliveryTime, false);
+      return new Mutation(
+          null, Op.SEND, null, null, null, queue, key, payload, deliveryTime, false);
     }
   }
 
-  /**
-   * Builder for {@link Op#ACK} mutation.
-   */
+  /** Builder for {@link Op#ACK} mutation. */
   public static class AckBuilder {
     private final String queue;
     private Key key;
@@ -364,30 +357,34 @@ public final class Mutation implements Serializable {
   }
 
   /**
-   * For all types except {@link Op#DELETE}, {@link Op#SEND}, and {@link Op#ACK}, returns the values that this mutation
-   * will write. The number of elements returned is always the same as the number returned by {@link #getColumns()},
-   * and the {@code i}th value corresponds to the {@code i}th column.
+   * For all types except {@link Op#DELETE}, {@link Op#SEND}, and {@link Op#ACK}, returns the values
+   * that this mutation will write. The number of elements returned is always the same as the number
+   * returned by {@link #getColumns()}, and the {@code i}th value corresponds to the {@code i}th
+   * column.
    *
-   * @throws IllegalStateException
-   * if {@code operation() == Op.DELETE or operation() == Op.SEND or operation() == Op.ACK}
+   * @throws IllegalStateException if {@code operation() == Op.DELETE or operation() == Op.SEND or
+   *     operation() == Op.ACK}
    */
   public Iterable<Value> getValues() {
-    checkState(operation != Op.DELETE && operation != Op.SEND && operation != Op.ACK,
+    checkState(
+        operation != Op.DELETE && operation != Op.SEND && operation != Op.ACK,
         "values() cannot be called for a DELETE/SEND/ACK mutation");
     return values;
   }
 
   /** Returns the name of the queue that this mutation will affect. */
   public String getQueue() {
-    checkState(operation == Op.SEND || operation == Op.ACK, "getQueue() can only be called " +
-        "for SEND or ACK mutations");
+    checkState(
+        operation == Op.SEND || operation == Op.ACK,
+        "getQueue() can only be called " + "for SEND or ACK mutations");
     return queue;
   }
 
   /** Returns the key of the message to the queue that this mutation will affect. */
   public Key getKey() {
-    checkState(operation == Op.SEND || operation == Op.ACK, "getKey() can only be called for " +
-        "SEND or ACK mutations");
+    checkState(
+        operation == Op.SEND || operation == Op.ACK,
+        "getKey() can only be called for " + "SEND or ACK mutations");
     return key;
   }
 
@@ -404,22 +401,27 @@ public final class Mutation implements Serializable {
     return deliveryTime;
   }
 
-  /** Returns whether an error will be ignored for an ACK mutation that affects a message that does not exist */
+  /**
+   * Returns whether an error will be ignored for an ACK mutation that affects a message that does
+   * not exist
+   */
   public boolean getIgnoreNotFound() {
     checkState(operation == Op.ACK, "getIgnoreNotFound() can only be called for an ACK mutation");
     return ignoreNotFound;
   }
 
   /**
-   * For all types except {@link Op#DELETE}, {@link Op#SEND}, and {@link Op#ACK}, constructs a map from column name to
-   * value. This is mainly intended as a convenience for testing; direct access via {@link #getColumns()} and
-   * {@link #getValues()} is more efficient.
+   * For all types except {@link Op#DELETE}, {@link Op#SEND}, and {@link Op#ACK}, constructs a map
+   * from column name to value. This is mainly intended as a convenience for testing; direct access
+   * via {@link #getColumns()} and {@link #getValues()} is more efficient.
    *
-   * @throws IllegalStateException if {@code operation() == Op.DELETE or operation() == Op.SEND or operation() ==
-   * Op.ACK}, or if any duplicate columns are present. Detection of duplicates does not consider case.
+   * @throws IllegalStateException if {@code operation() == Op.DELETE or operation() == Op.SEND or
+   *     operation() == Op.ACK}, or if any duplicate columns are present. Detection of duplicates
+   *     does not consider case.
    */
   public Map<String, Value> asMap() {
-    checkState(operation != Op.DELETE && operation != Op.SEND && operation != Op.ACK,
+    checkState(
+        operation != Op.DELETE && operation != Op.SEND && operation != Op.ACK,
         "asMap() cannot be called for a DELETE/SEND/ACK mutation");
     LinkedHashMap<String, Value> map = new LinkedHashMap<>();
     for (int i = 0; i < columns.size(); ++i) {
@@ -544,7 +546,8 @@ public final class Mutation implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(operation, table, columns, values, keySet, key, payload, deliveryTime, ignoreNotFound);
+    return Objects.hash(
+        operation, table, columns, values, keySet, key, payload, deliveryTime, ignoreNotFound);
   }
 
   /**
@@ -622,7 +625,8 @@ public final class Mutation implements Serializable {
         if (last != null && last.operation == Op.DELETE && mutation.table.equals(last.table)) {
           mutation.keySet.appendToProto(keySet);
         } else {
-          largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+          largestInsertMutation =
+              flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
           proto = com.google.spanner.v1.Mutation.newBuilder();
           com.google.spanner.v1.Mutation.Delete.Builder delete =
               proto.getDeleteBuilder().setTable(mutation.table);
@@ -631,23 +635,29 @@ public final class Mutation implements Serializable {
         }
         write = null;
       } else if (mutation.operation == Op.SEND) {
-        largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+        largestInsertMutation =
+            flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
         proto = com.google.spanner.v1.Mutation.newBuilder();
-        com.google.spanner.v1.Mutation.Send.Builder send = proto.getSendBuilder()
-            .setQueue(mutation.queue)
-            .setKey(mutation.key.toProto())
-            .setPayload(mutation.payload.toProto());
+        com.google.spanner.v1.Mutation.Send.Builder send =
+            proto
+                .getSendBuilder()
+                .setQueue(mutation.queue)
+                .setKey(mutation.key.toProto())
+                .setPayload(mutation.payload.toProto());
         if (mutation.getDeliveryTime() != null) {
           Instant deliveryTime = mutation.getDeliveryTime();
-          Timestamp.Builder timeBuilder = send.getDeliverTimeBuilder()
-              .setSeconds(deliveryTime.getEpochSecond())
-              .setNanos(deliveryTime.getNano());
+          Timestamp.Builder timeBuilder =
+              send.getDeliverTimeBuilder()
+                  .setSeconds(deliveryTime.getEpochSecond())
+                  .setNanos(deliveryTime.getNano());
           send.setDeliverTime(timeBuilder);
         }
       } else if (mutation.operation == Op.ACK) {
-        largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+        largestInsertMutation =
+            flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
         proto = com.google.spanner.v1.Mutation.newBuilder();
-        proto.getAckBuilder()
+        proto
+            .getAckBuilder()
             .setQueue(mutation.queue)
             .setKey(mutation.getKey().toProto())
             .setIgnoreNotFound(mutation.ignoreNotFound);
@@ -663,7 +673,8 @@ public final class Mutation implements Serializable {
           // Same as previous mutation: coalesce values to reduce request size.
           write.addValues(values);
         } else {
-          largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+          largestInsertMutation =
+              flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
           proto = com.google.spanner.v1.Mutation.newBuilder();
           switch (mutation.operation) {
             case INSERT:
@@ -688,7 +699,8 @@ public final class Mutation implements Serializable {
       last = mutation;
     }
     // Flush last item.
-    largestInsertMutation = flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
+    largestInsertMutation =
+        flushMutation(out, proto, allMutationsExcludingInsert, largestInsertMutation);
 
     // Select a random mutation based on the heuristic.
     if (!allMutationsExcludingInsert.isEmpty()) {
@@ -699,10 +711,11 @@ public final class Mutation implements Serializable {
     }
   }
 
-  private static com.google.spanner.v1.Mutation flushMutation(List<com.google.spanner.v1.Mutation> out,
-                                                              com.google.spanner.v1.Mutation.Builder proto,
-                                                              List<com.google.spanner.v1.Mutation> allMutationsExcludingInsert,
-                                                              com.google.spanner.v1.Mutation largestInsertMutation) {
+  private static com.google.spanner.v1.Mutation flushMutation(
+      List<com.google.spanner.v1.Mutation> out,
+      com.google.spanner.v1.Mutation.Builder proto,
+      List<com.google.spanner.v1.Mutation> allMutationsExcludingInsert,
+      com.google.spanner.v1.Mutation largestInsertMutation) {
     if (proto != null) {
       com.google.spanner.v1.Mutation builtMutation = proto.build();
       out.add(builtMutation);
