@@ -414,6 +414,8 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       }
       future.addListener(
           new Runnable() {
+            // Suppressed for initial Error Prone rollout.
+            @SuppressWarnings("GuardedBy")
             @Override
             public void run() {
               synchronized (this) {

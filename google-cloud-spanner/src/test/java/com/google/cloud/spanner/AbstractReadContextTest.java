@@ -303,6 +303,8 @@ public class AbstractReadContextTest {
             .getLastStatements());
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("JUnit4TestNotRun")
   public void executeSqlRequestBuilderWithRequestOptions() {
     ExecuteSqlRequest request =
         context

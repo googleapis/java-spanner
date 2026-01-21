@@ -139,6 +139,8 @@ class TraceWrapper {
     }
   }
 
+  // Suppressed for initial Error Prone rollout.
+  @SuppressWarnings("MustBeClosedChecker")
   IScope withSpan(ISpan span) {
     if (SpannerOptions.getActiveTracingFramework().equals(TracingFramework.OPEN_TELEMETRY)) {
       OpenTelemetrySpan openTelemetrySpan;
