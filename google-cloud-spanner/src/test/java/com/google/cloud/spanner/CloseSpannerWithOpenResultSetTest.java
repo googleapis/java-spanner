@@ -20,14 +20,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
-import com.google.spanner.v1.DeleteSessionRequest;
-import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import java.time.Duration;
@@ -38,7 +35,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -77,72 +73,6 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
   public void cleanup() {
     mockSpanner.unfreeze();
     mockSpanner.clearRequests();
-  }
-
-  @Test
-  public void testBatchClient_closedSpannerWithOpenResultSet_streamsAreCancelled() {
-    Spanner spanner = createSpanner();
-    assumeFalse(spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
-
-    BatchClient client = spanner.getBatchClient(DatabaseId.of("p", "i", "d"));
-    try (BatchReadOnlyTransaction transaction =
-            client.batchReadOnlyTransaction(TimestampBound.strong());
-        ResultSet resultSet = transaction.executeQuery(SELECT_RANDOM_STATEMENT)) {
-      mockSpanner.freezeAfterReturningNumRows(1);
-      // This can sometimes fail, as the mock server may not always actually return the first row.
-      try {
-        assertTrue(resultSet.next());
-      } catch (SpannerException exception) {
-        assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
-        return;
-      }
-      ((SpannerImpl) spanner).close(1, TimeUnit.MILLISECONDS);
-      // This should return an error as the stream is cancelled.
-      SpannerException exception =
-          assertThrows(
-              SpannerException.class,
-              () -> { //noinspection StatementWithEmptyBody
-                while (resultSet.next()) {}
-              });
-      assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
-    }
-  }
-
-  @Test
-  public void testNormalDatabaseClient_closedSpannerWithOpenResultSet_sessionsAreDeleted()
-      throws Exception {
-    Spanner spanner = createSpanner();
-    assumeFalse(spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
-
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-    try (ReadOnlyTransaction transaction = client.readOnlyTransaction(TimestampBound.strong());
-        ResultSet resultSet = transaction.executeQuery(SELECT_RANDOM_STATEMENT)) {
-      mockSpanner.freezeAfterReturningNumRows(1);
-      // This can sometimes fail, as the mock server may not always actually return the first row.
-      try {
-        assertTrue(resultSet.next());
-      } catch (SpannerException exception) {
-        assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
-        return;
-      }
-      List<ExecuteSqlRequest> executeSqlRequests =
-          mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
-              .filter(request -> request.getSql().equals(SELECT_RANDOM_STATEMENT.getSql()))
-              .collect(Collectors.toList());
-      assertEquals(1, executeSqlRequests.size());
-      ExecutorService service = Executors.newSingleThreadExecutor();
-      service.submit(spanner::close);
-      // Verify that the session that is used by this transaction is deleted.
-      // That will automatically cancel the query.
-      mockSpanner.waitForRequestsToContain(
-          request ->
-              request instanceof DeleteSessionRequest
-                  && ((DeleteSessionRequest) request)
-                      .getName()
-                      .equals(executeSqlRequests.get(0).getSession()),
-          /* timeoutMillis= */ 1000L);
-      service.shutdownNow();
-    }
   }
 
   @Test
