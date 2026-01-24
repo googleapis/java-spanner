@@ -44,17 +44,19 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
   private final ISpan span;
 
   private final ApiFuture<SessionReference> sessionFuture;
-  private final SessionPool sessionPool;
 
   DelayedMultiplexedSessionTransaction(
       MultiplexedSessionDatabaseClient client,
       ISpan span,
-      ApiFuture<SessionReference> sessionFuture,
-      SessionPool sessionPool) {
+      ApiFuture<SessionReference> sessionFuture) {
     this.client = client;
     this.span = span;
     this.sessionFuture = sessionFuture;
-    this.sessionPool = sessionPool;
+  }
+
+  @Override
+  public String getDatabaseRole() {
+    return this.client.getDatabaseRole();
   }
 
   @Override
@@ -192,12 +194,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             this.sessionFuture,
             sessionReference ->
                 new MultiplexedSessionTransaction(
-                        client,
-                        span,
-                        sessionReference,
-                        NO_CHANNEL_HINT,
-                        /* singleUse= */ false,
-                        this.sessionPool)
+                        client, span, sessionReference, NO_CHANNEL_HINT, /* singleUse= */ false)
                     .readWriteTransaction(options),
             MoreExecutors.directExecutor()));
   }
