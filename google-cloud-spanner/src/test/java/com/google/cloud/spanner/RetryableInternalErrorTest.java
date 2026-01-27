@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
-import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -36,7 +36,7 @@ import org.threeten.bp.Duration;
 public class RetryableInternalErrorTest extends AbstractMockServerTest {
   @Test
   public void testTranslateInternalException() {
-    mockSpanner.setBatchCreateSessionsExecutionTime(
+    mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.ofException(
             Status.INTERNAL
                 .withDescription("Authentication backend internal server error. Please retry.")
@@ -69,9 +69,9 @@ public class RetryableInternalErrorTest extends AbstractMockServerTest {
         assertTrue(resultSet.next());
         assertFalse(resultSet.next());
       }
-      // Verify that both the BatchCreateSessions call and the ExecuteStreamingSql call were
+      // Verify that both the CreateSession call and the ExecuteStreamingSql call were
       // retried.
-      assertEquals(2, mockSpanner.countRequestsOfType(BatchCreateSessionsRequest.class));
+      assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
       assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
       // Clear the requests before the next test.
       mockSpanner.clearRequests();

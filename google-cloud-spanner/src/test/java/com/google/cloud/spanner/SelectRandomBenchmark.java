@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.common.util.concurrent.Futures;
@@ -99,8 +97,7 @@ public class SelectRandomBenchmark {
           (DatabaseClientImpl)
               spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       // Wait until the session pool has initialized.
-      while (client.pool.getNumberOfSessionsInPool()
-          < spanner.getOptions().getSessionPoolOptions().getMinSessions()) {
+      while (client.multiplexedSessionDatabaseClient.getCurrentSessionReference() == null) {
         Thread.sleep(1L);
       }
     }
@@ -119,8 +116,6 @@ public class SelectRandomBenchmark {
     int parallelThreads = server.maxSessions * 2;
     final DatabaseClient client =
         server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.minSessions);
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
