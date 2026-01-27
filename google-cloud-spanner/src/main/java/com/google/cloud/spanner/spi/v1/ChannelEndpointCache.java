@@ -43,19 +43,19 @@ public interface ChannelEndpointCache {
   ChannelEndpoint defaultChannel();
 
   /**
-   * Returns a cached server for the given address, creating it if needed.
+   * Returns a cached channel for the given address, creating it if needed.
    *
-   * <p>If a server for this address already exists in the cache, the cached instance is returned.
+   * <p>If a channel for this address already exists in the cache, the cached instance is returned.
    * Otherwise, a new server connection is created and cached.
    *
    * @param address the server address in "host:port" format
-   * @return a server instance for the address, never null
+   * @return a channel instance for the address, never null
    * @throws com.google.cloud.spanner.SpannerException if the channel cannot be created
    */
   ChannelEndpoint get(String address);
 
   /**
-   * Evicts a server from the cache and gracefully shuts down its channel.
+   * Evicts a server connection from the cache and gracefully shuts down its channel.
    *
    * <p>This method should be called when a server becomes unhealthy or is no longer needed. The
    * channel shutdown is graceful: existing RPCs are allowed to complete, but new RPCs will not be
