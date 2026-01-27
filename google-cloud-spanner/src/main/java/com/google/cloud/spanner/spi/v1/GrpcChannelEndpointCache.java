@@ -29,50 +29,51 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * gRPC implementation of {@link ChannelFinderServerFactory}.
+ * gRPC implementation of {@link ChannelEndpointCache}.
  *
- * <p>This factory creates and caches gRPC channels per address. It uses {@link
+ * <p>This cache creates and caches gRPC channels per address. It uses {@link
  * InstantiatingGrpcChannelProvider#withEndpoint(String)} to create new channels with the same
  * configuration but different endpoints, avoiding race conditions.
  */
 @InternalApi
-class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
+class GrpcChannelEndpointCache implements ChannelEndpointCache {
 
   /** Timeout for graceful channel shutdown. */
   private static final long SHUTDOWN_TIMEOUT_SECONDS = 5;
 
   private final InstantiatingGrpcChannelProvider baseProvider;
-  private final Map<String, GrpcChannelFinderServer> servers = new ConcurrentHashMap<>();
-  private final GrpcChannelFinderServer defaultServer;
-  private volatile boolean isShutdown = false;
+  private final Map<String, GrpcChannelEndpoint> servers = new ConcurrentHashMap<>();
+  private final GrpcChannelEndpoint defaultEndpoint;
+  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
-   * Creates a new factory with the given channel provider.
+   * Creates a new cache with the given channel provider.
    *
    * @param channelProvider the base provider used to create channels. New channels for different
    *     endpoints are created using {@link InstantiatingGrpcChannelProvider#withEndpoint(String)}.
    * @throws IOException if the default channel cannot be created
    */
-  public GrpcChannelFinderServerFactory(InstantiatingGrpcChannelProvider channelProvider)
+  public GrpcChannelEndpointCache(InstantiatingGrpcChannelProvider channelProvider)
       throws IOException {
     this.baseProvider = channelProvider;
     String defaultEndpoint = channelProvider.getEndpoint();
-    this.defaultServer = new GrpcChannelFinderServer(defaultEndpoint, channelProvider);
-    this.servers.put(defaultEndpoint, this.defaultServer);
+    this.defaultEndpoint = new GrpcChannelEndpoint(defaultEndpoint, channelProvider);
+    this.servers.put(defaultEndpoint, this.defaultEndpoint);
   }
 
   @Override
-  public ChannelFinderServer defaultServer() {
-    return defaultServer;
+  public ChannelEndpoint defaultChannel() {
+    return defaultEndpoint;
   }
 
   @Override
-  public ChannelFinderServer create(String address) {
-    if (isShutdown) {
+  public ChannelEndpoint get(String address) {
+    if (isShutdown.get()) {
       throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.FAILED_PRECONDITION, "ChannelFinderServerFactory has been shut down");
+          ErrorCode.FAILED_PRECONDITION, "ChannelEndpointCache has been shut down");
     }
 
     return servers.computeIfAbsent(
@@ -82,7 +83,7 @@ class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
             // Create a new provider with the same config but different endpoint.
             // This is thread-safe as withEndpoint() returns a new provider instance.
             TransportChannelProvider newProvider = baseProvider.withEndpoint(addr);
-            return new GrpcChannelFinderServer(addr, newProvider);
+            return new GrpcChannelEndpoint(addr, newProvider);
           } catch (IOException e) {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INTERNAL, "Failed to create channel for address: " + addr, e);
@@ -92,37 +93,42 @@ class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
 
   @Override
   public void evict(String address) {
-    if (defaultServer.getAddress().equals(address)) {
+    if (defaultEndpoint.getAddress().equals(address)) {
       return;
     }
-    GrpcChannelFinderServer server = servers.remove(address);
+    GrpcChannelEndpoint server = servers.remove(address);
     if (server != null) {
-      shutdownServerGracefully(server);
+      shutdownChannel(server, false);
     }
   }
 
   @Override
   public void shutdown() {
-    isShutdown = true;
-    for (GrpcChannelFinderServer server : servers.values()) {
-      shutdownServerGracefully(server);
+    if (!isShutdown.compareAndSet(false, true)) {
+      return;
+    }
+    for (GrpcChannelEndpoint server : servers.values()) {
+      shutdownChannel(server, true);
     }
     servers.clear();
   }
 
   /**
-   * Gracefully shuts down a server's channel.
+   * Shuts down a server's channel.
    *
-   * <p>First attempts a graceful shutdown, waiting for in-flight RPCs to complete. If the timeout
-   * is exceeded, forces immediate shutdown.
+   * <p>First attempts a graceful shutdown. When awaitTermination is true, waits for in-flight RPCs
+   * to complete and forces shutdown on timeout.
    */
-  private void shutdownServerGracefully(GrpcChannelFinderServer server) {
+  private void shutdownChannel(GrpcChannelEndpoint server, boolean awaitTermination) {
     ManagedChannel channel = server.getChannel();
     if (channel.isShutdown()) {
       return;
     }
 
     channel.shutdown();
+    if (!awaitTermination) {
+      return;
+    }
     try {
       if (!channel.awaitTermination(SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
         channel.shutdownNow();
@@ -133,8 +139,8 @@ class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
     }
   }
 
-  /** gRPC implementation of {@link ChannelFinderServer}. */
-  static class GrpcChannelFinderServer implements ChannelFinderServer {
+  /** gRPC implementation of {@link ChannelEndpoint}. */
+  static class GrpcChannelEndpoint implements ChannelEndpoint {
     private final String address;
     private final ManagedChannel channel;
 
@@ -145,7 +151,7 @@ class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
      * @param provider the channel provider (must be a gRPC provider)
      * @throws IOException if the channel cannot be created
      */
-    GrpcChannelFinderServer(String address, TransportChannelProvider provider) throws IOException {
+    GrpcChannelEndpoint(String address, TransportChannelProvider provider) throws IOException {
       this.address = address;
       TransportChannelProvider readyProvider = provider;
       if (provider.needsHeaders()) {
@@ -163,7 +169,7 @@ class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
      * @param channel the managed channel
      */
     @VisibleForTesting
-    GrpcChannelFinderServer(String address, ManagedChannel channel) {
+    GrpcChannelEndpoint(String address, ManagedChannel channel) {
       this.address = address;
       this.channel = channel;
     }
@@ -184,7 +190,7 @@ class GrpcChannelFinderServerFactory implements ChannelFinderServerFactory {
       try {
         ConnectivityState state = channel.getState(false);
         return state != ConnectivityState.SHUTDOWN && state != ConnectivityState.TRANSIENT_FAILURE;
-      } catch (UnsupportedOperationException e) {
+      } catch (UnsupportedOperationException ignore) {
         return true;
       }
     }

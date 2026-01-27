@@ -19,31 +19,31 @@ package com.google.cloud.spanner.spi.v1;
 import com.google.api.core.InternalApi;
 
 /**
- * Factory for creating and caching server connections for location-aware routing.
+ * Cache for server connections used in location-aware routing.
  *
- * <p>Implementations are expected to cache {@link ChannelFinderServer} instances such that repeated
+ * <p>Implementations are expected to cache {@link ChannelEndpoint} instances such that repeated
  * calls with the same address return the same instance. This allows routing components to
  * efficiently manage server references.
  *
  * <p>Implementations must be thread-safe. Multiple threads may concurrently call {@link
- * #create(String)} with different addresses.
+ * #get(String)} with different addresses.
  */
 @InternalApi
-public interface ChannelFinderServerFactory {
+public interface ChannelEndpointCache {
 
   /**
-   * Returns the default server endpoint.
+   * Returns the default channel endpoint.
    *
-   * <p>The default server is the original endpoint configured in {@link
+   * <p>The default channel is the original endpoint configured in {@link
    * com.google.cloud.spanner.SpannerOptions}. It is used as a fallback when the location cache does
    * not have routing information for a request.
    *
-   * @return the default server, never null
+   * @return the default channel, never null
    */
-  ChannelFinderServer defaultServer();
+  ChannelEndpoint defaultChannel();
 
   /**
-   * Creates or retrieves a cached server for the given address.
+   * Returns a cached server for the given address, creating it if needed.
    *
    * <p>If a server for this address already exists in the cache, the cached instance is returned.
    * Otherwise, a new server connection is created and cached.
@@ -52,7 +52,7 @@ public interface ChannelFinderServerFactory {
    * @return a server instance for the address, never null
    * @throws com.google.cloud.spanner.SpannerException if the channel cannot be created
    */
-  ChannelFinderServer create(String address);
+  ChannelEndpoint get(String address);
 
   /**
    * Evicts a server from the cache and gracefully shuts down its channel.
@@ -73,7 +73,7 @@ public interface ChannelFinderServerFactory {
    * <p>This method should be called when the Spanner client is closed to release all resources.
    * Each channel is shut down gracefully, allowing in-flight RPCs to complete.
    *
-   * <p>After calling this method, the factory should not be used to create new connections.
+   * <p>After calling this method, the cache should not be used to create new connections.
    */
   void shutdown();
 }

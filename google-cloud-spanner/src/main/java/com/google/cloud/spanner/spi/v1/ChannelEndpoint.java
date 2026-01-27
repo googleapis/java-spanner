@@ -23,15 +23,15 @@ import io.grpc.ManagedChannel;
  * Represents a Spanner server endpoint for location-aware routing.
  *
  * <p>Each instance wraps a gRPC {@link ManagedChannel} connected to a specific Spanner server. The
- * {@link ChannelFinderServerFactory} creates and caches these instances.
+ * {@link ChannelEndpointCache} creates and caches these instances.
  *
  * <p>Implementations must be thread-safe as instances may be shared across multiple concurrent
  * operations.
  *
- * @see ChannelFinderServerFactory
+ * @see ChannelEndpointCache
  */
 @InternalApi
-public interface ChannelFinderServer {
+public interface ChannelEndpoint {
 
   /**
    * Returns the network address of this server.
@@ -57,8 +57,8 @@ public interface ChannelFinderServer {
   /**
    * Returns the gRPC channel for making RPCs to this server.
    *
-   * <p>The returned channel is managed by the {@link ChannelFinderServerFactory} and should not be
-   * shut down directly by callers.
+   * <p>The returned channel is managed by the {@link ChannelEndpointCache} and should not be shut
+   * down directly by callers.
    *
    * @return the managed channel for this server
    */
