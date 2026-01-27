@@ -24,13 +24,16 @@ import com.google.protobuf.Value;
 import com.google.spanner.v1.KeyRange;
 import com.google.spanner.v1.KeySet;
 import com.google.spanner.v1.Mutation;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @InternalApi
 public final class KeyRecipe {
@@ -109,13 +112,15 @@ public final class KeyRecipe {
         return ResolvedValue.ofValue(value);
       }
       Value current = value;
-      for (int fieldIndex : structIdentifiers) {
+      // structIdentifiers is a path of list indices into nested STRUCT values.
+      // STRUCT values are represented as ListValue in field order.
+      for (int structIndex : structIdentifiers) {
         if (current.getKindCase() != Value.KindCase.LIST_VALUE
-            || fieldIndex < 0
-            || fieldIndex >= current.getListValue().getValuesCount()) {
+            || structIndex < 0
+            || structIndex >= current.getListValue().getValuesCount()) {
           return ResolvedValue.failed();
         }
-        current = current.getListValue().getValues(fieldIndex);
+        current = current.getListValue().getValues(structIndex);
       }
       return ResolvedValue.ofValue(current);
     }
@@ -125,7 +130,10 @@ public final class KeyRecipe {
     }
 
     static Part fromProto(com.google.spanner.v1.KeyRecipe.Part partProto) {
-      if (partProto.getTag() > 0) {
+      if (partProto.getTag() != 0) {
+        if (partProto.getTag() < 0) {
+          return new Part(Kind.INVALID, 0, null, null, null, null, null, null, false);
+        }
         return new Part(Kind.TAG, partProto.getTag(), null, null, null, null, null, null, false);
       }
       if (!partProto.hasType()) {
@@ -146,10 +154,7 @@ public final class KeyRecipe {
       }
 
       String identifier = partProto.hasIdentifier() ? partProto.getIdentifier() : null;
-      List<Integer> structIdentifiers = new ArrayList<>();
-      for (int fieldIndex : partProto.getStructIdentifiersList()) {
-        structIdentifiers.add(fieldIndex);
-      }
+      List<Integer> structIdentifiers = new ArrayList<>(partProto.getStructIdentifiersList());
 
       Value constantValue = partProto.hasValue() ? partProto.getValue() : null;
 
@@ -201,33 +206,24 @@ public final class KeyRecipe {
   }
 
   private final List<Part> parts;
-  private final int numValueParts;
   private final boolean isIndex;
 
-  private KeyRecipe(List<Part> parts, int numValueParts, boolean isIndex) {
+  private KeyRecipe(List<Part> parts, boolean isIndex) {
     this.parts = parts;
-    this.numValueParts = numValueParts;
     this.isIndex = isIndex;
   }
 
   public static KeyRecipe create(com.google.spanner.v1.KeyRecipe in) {
-    List<Part> partsList = new ArrayList<>();
-    int valuePartsCount = 0;
-    boolean isIndex = in.hasIndexName();
-    for (com.google.spanner.v1.KeyRecipe.Part partProto : in.getPartList()) {
-      Part part = Part.fromProto(partProto);
-      partsList.add(part);
-      if (part.kind == Kind.VALUE) {
-        valuePartsCount++;
-      }
-    }
-    if (partsList.isEmpty()) {
+    if (in.getPartCount() == 0) {
       throw new IllegalArgumentException("KeyRecipe must have at least one part.");
     }
+    boolean isIndex = in.hasIndexName();
+    List<Part> partsList =
+        in.getPartList().stream().map(Part::fromProto).collect(Collectors.toList());
     if (partsList.get(0).kind != Kind.TAG) {
       throw new IllegalArgumentException("KeyRecipe must start with a tag.");
     }
-    return new KeyRecipe(partsList, valuePartsCount, isIndex);
+    return new KeyRecipe(partsList, isIndex);
   }
 
   private static void encodeNull(Part part, UnsynchronizedByteArrayOutputStream out) {
@@ -293,10 +289,10 @@ public final class KeyRecipe {
         }
         break;
       case FLOAT64:
+        double dblVal;
         if (value.getKindCase() == Value.KindCase.STRING_VALUE) {
           // Handle special float values like Infinity, -Infinity, NaN
           String strVal = value.getStringValue();
-          double dblVal;
           if ("Infinity".equals(strVal)) {
             dblVal = Double.POSITIVE_INFINITY;
           } else if ("-Infinity".equals(strVal)) {
@@ -306,17 +302,13 @@ public final class KeyRecipe {
           } else {
             throw new IllegalArgumentException("Invalid FLOAT64 string: " + strVal);
           }
-          if (isAscending) {
-            SsFormat.appendDoubleIncreasing(out, dblVal);
-          } else {
-            SsFormat.appendDoubleDecreasing(out, dblVal);
-          }
         } else {
-          if (isAscending) {
-            SsFormat.appendDoubleIncreasing(out, value.getNumberValue());
-          } else {
-            SsFormat.appendDoubleDecreasing(out, value.getNumberValue());
-          }
+          dblVal = value.getNumberValue();
+        }
+        if (isAscending) {
+          SsFormat.appendDoubleIncreasing(out, dblVal);
+        } else {
+          SsFormat.appendDoubleDecreasing(out, dblVal);
         }
         break;
       case STRING:
@@ -335,38 +327,32 @@ public final class KeyRecipe {
         }
         break;
       case TIMESTAMP:
-        {
-          String tsStr = value.getStringValue();
-          long[] parsed = parseTimestamp(tsStr);
-          byte[] encoded = SsFormat.encodeTimestamp(parsed[0], (int) parsed[1]);
-          if (isAscending) {
-            SsFormat.appendBytesIncreasing(out, encoded);
-          } else {
-            SsFormat.appendBytesDecreasing(out, encoded);
-          }
+        String tsStr = value.getStringValue();
+        long[] parsed = parseTimestamp(tsStr);
+        byte[] encoded = SsFormat.encodeTimestamp(parsed[0], (int) parsed[1]);
+        if (isAscending) {
+          SsFormat.appendBytesIncreasing(out, encoded);
+        } else {
+          SsFormat.appendBytesDecreasing(out, encoded);
         }
         break;
       case DATE:
-        {
-          String dateStr = value.getStringValue();
-          int daysSinceEpoch = parseDate(dateStr);
-          if (isAscending) {
-            SsFormat.appendInt64Increasing(out, daysSinceEpoch);
-          } else {
-            SsFormat.appendInt64Decreasing(out, daysSinceEpoch);
-          }
+        String dateStr = value.getStringValue();
+        int daysSinceEpoch = parseDate(dateStr);
+        if (isAscending) {
+          SsFormat.appendInt64Increasing(out, daysSinceEpoch);
+        } else {
+          SsFormat.appendInt64Decreasing(out, daysSinceEpoch);
         }
         break;
       case UUID:
-        {
-          String uuidStr = value.getStringValue();
-          long[] parsed = parseUuid(uuidStr);
-          byte[] encoded = SsFormat.encodeUuid(parsed[0], parsed[1]);
-          if (isAscending) {
-            SsFormat.appendBytesIncreasing(out, encoded);
-          } else {
-            SsFormat.appendBytesDecreasing(out, encoded);
-          }
+        String uuidStr = value.getStringValue();
+        long[] parsedUuid = parseUuid(uuidStr);
+        byte[] encodedUuid = SsFormat.encodeUuid(parsedUuid[0], parsedUuid[1]);
+        if (isAscending) {
+          SsFormat.appendBytesIncreasing(out, encodedUuid);
+        } else {
+          SsFormat.appendBytesDecreasing(out, encodedUuid);
         }
         break;
       case ENUM:
@@ -481,146 +467,95 @@ public final class KeyRecipe {
     }
   }
 
-  // RFC3339 timestamp pattern: YYYY-MM-DDTHH:MM:SS[.nnnnnnnnn]Z
-  // Allow any number of decimal places (will be truncated to 9)
-  private static final Pattern TIMESTAMP_PATTERN =
-      Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.\\d+)?Z$");
-
   private static void validateTimestamp(String ts) {
-    if (!ts.endsWith("Z")) {
-      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
-    }
-    Matcher m = TIMESTAMP_PATTERN.matcher(ts);
-    if (!m.matches()) {
-      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
-    }
-    // Validate ranges
-    int year = Integer.parseInt(m.group(1));
-    int month = Integer.parseInt(m.group(2));
-    int day = Integer.parseInt(m.group(3));
-    int hour = Integer.parseInt(m.group(4));
-    int minute = Integer.parseInt(m.group(5));
-    int second = Integer.parseInt(m.group(6));
-    if (month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59 || second > 59) {
-      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
-    }
-    // Year must be 0000-9999 (year 0 is allowed)
-    if (year < 0 || year > 9999) {
-      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
-    }
+    parseTimestamp(ts);
   }
 
   private static long[] parseTimestamp(String ts) {
-    // Parse RFC3339 timestamp using Java time library
-    // Remove trailing Z and parse
+    if (!ts.endsWith("Z")) {
+      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
+    }
     String withoutZ = ts.substring(0, ts.length() - 1);
+    int tIndex = withoutZ.indexOf('T');
+    if (tIndex <= 0 || tIndex == withoutZ.length() - 1) {
+      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
+    }
 
-    // Parse date-time parts
-    int dotIdx = withoutZ.indexOf('.');
-    String dateTimePart;
+    String datePart = withoutZ.substring(0, tIndex);
+    String timePart = withoutZ.substring(tIndex + 1);
+    LocalDate date;
+    try {
+      date = LocalDate.parse(datePart, DATE_FORMATTER);
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts, e);
+    }
+
     int nanos = 0;
-    if (dotIdx >= 0) {
-      dateTimePart = withoutZ.substring(0, dotIdx);
-      String fracStr = withoutZ.substring(dotIdx + 1);
-      // Pad to 9 digits
+    String timeMain = timePart;
+    int dotIndex = timePart.indexOf('.');
+    if (dotIndex >= 0) {
+      timeMain = timePart.substring(0, dotIndex);
+      String fracStr = timePart.substring(dotIndex + 1);
+      if (fracStr.isEmpty()) {
+        throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
+      }
+      for (int i = 0; i < fracStr.length(); i++) {
+        char c = fracStr.charAt(i);
+        if (c < '0' || c > '9') {
+          throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
+        }
+      }
       while (fracStr.length() < 9) {
         fracStr = fracStr + "0";
       }
-      // Truncate to 9 digits
       if (fracStr.length() > 9) {
         fracStr = fracStr.substring(0, 9);
       }
       nanos = Integer.parseInt(fracStr);
-    } else {
-      dateTimePart = withoutZ;
     }
 
-    // Parse date and time components
-    // Format: YYYY-MM-DDTHH:MM:SS
-    String[] dateTime = dateTimePart.split("T");
-    String[] dateParts = dateTime[0].split("-");
-    String[] timeParts = dateTime[1].split(":");
+    String[] timeParts = timeMain.split(":");
+    if (timeParts.length != 3) {
+      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
+    }
+    int hour;
+    int minute;
+    int second;
+    try {
+      hour = Integer.parseInt(timeParts[0]);
+      minute = Integer.parseInt(timeParts[1]);
+      second = Integer.parseInt(timeParts[2]);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts, e);
+    }
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
+      throw new IllegalArgumentException("Invalid TIMESTAMP string: " + ts);
+    }
 
-    int year = Integer.parseInt(dateParts[0]);
-    int month = Integer.parseInt(dateParts[1]);
-    int day = Integer.parseInt(dateParts[2]);
-    int hour = Integer.parseInt(timeParts[0]);
-    int minute = Integer.parseInt(timeParts[1]);
-    int second = Integer.parseInt(timeParts[2]);
-
-    // Compute days since epoch using proleptic Gregorian calendar
-    long days = civilDayNumber(year, month, day);
-    long seconds = days * 86400L + hour * 3600L + minute * 60L + second;
-
+    long seconds = date.toEpochDay() * 86400L + hour * 3600L + minute * 60L + second;
     return new long[] {seconds, nanos};
   }
 
-  // Compute the civil day number (days since Unix epoch 1970-01-01)
-  // This matches absl::CivilDay calculation
-  private static long civilDayNumber(int year, int month, int day) {
-    // Algorithm from http://howardhinnant.github.io/date_algorithms.html
-    // This produces the same results as absl::CivilDay
-    int y = year;
-    int m = month;
-    int d = day;
-
-    // Adjust year and month (March = month 1 in this algorithm)
-    if (m <= 2) {
-      y -= 1;
-      m += 12;
-    }
-    m -= 3;
-
-    // Days from era 0 (year 0 March 1) to given date
-    int era = (y >= 0 ? y : y - 399) / 400;
-    int yoe = y - era * 400; // year of era [0, 399]
-    int doy = (153 * m + 2) / 5 + d - 1; // day of year [0, 365]
-    int doe = yoe * 365 + yoe / 4 - yoe / 100 + doy; // day of era [0, 146096]
-    long dayNumber =
-        (long) era * 146097 + doe - 719468; // shift epoch from 0000-03-01 to 1970-01-01
-
-    return dayNumber;
-  }
-
-  private static final Pattern DATE_PATTERN = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})$");
+  private static final DateTimeFormatter DATE_FORMATTER =
+      DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
 
   private static void validateDate(String dateStr) {
-    if (dateStr.length() != 10) {
-      throw new IllegalArgumentException("Invalid DATE string: " + dateStr);
-    }
-    Matcher m = DATE_PATTERN.matcher(dateStr);
-    if (!m.matches()) {
-      throw new IllegalArgumentException("Invalid DATE string: " + dateStr);
-    }
-    int year = Integer.parseInt(m.group(1));
-    int month = Integer.parseInt(m.group(2));
-    int day = Integer.parseInt(m.group(3));
-    if (month < 1 || month > 12 || day < 1 || day > 31) {
-      throw new IllegalArgumentException("Invalid DATE string: " + dateStr);
-    }
-    // Year can be 0000-9999 for DATE
-    if (year < 0 || year > 9999) {
-      throw new IllegalArgumentException("Invalid DATE string: " + dateStr);
-    }
+    parseDate(dateStr);
   }
 
   private static int parseDate(String dateStr) {
-    Matcher m = DATE_PATTERN.matcher(dateStr);
-    if (!m.matches()) {
-      throw new IllegalArgumentException("Invalid DATE string: " + dateStr);
+    try {
+      LocalDate date = LocalDate.parse(dateStr, DATE_FORMATTER);
+      return (int) date.toEpochDay();
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Invalid DATE string: " + dateStr, e);
     }
-    int year = Integer.parseInt(m.group(1));
-    int month = Integer.parseInt(m.group(2));
-    int day = Integer.parseInt(m.group(3));
-    return (int) civilDayNumber(year, month, day);
   }
 
   private static void validateUuid(String uuid) {
-    long[] result = parseUuid(uuid);
+    parseUuid(uuid);
     // parseUuid throws if invalid
   }
-
-  private static final int K_UUID_LENGTH = 36;
 
   private static long[] parseUuid(String uuid) {
     String originalUuid = uuid;
@@ -634,7 +569,7 @@ public final class KeyRecipe {
     }
 
     // Minimum 36 characters required (standard UUID format: 8-4-4-4-12)
-    if (uuid.length() < K_UUID_LENGTH) {
+    if (uuid.length() < 36) {
       throw new IllegalArgumentException("Invalid UUID string: " + originalUuid);
     }
 
@@ -671,7 +606,7 @@ public final class KeyRecipe {
 
     // After parsing, verify there are no trailing characters
     // (uuid must be exactly consumed)
-    if (uuid.length() > K_UUID_LENGTH) {
+    if (uuid.length() > 36) {
       throw new IllegalArgumentException("Invalid UUID string: " + originalUuid);
     }
 
@@ -761,7 +696,9 @@ public final class KeyRecipe {
         start =
             encodeKeyInternal(
                 (index, id) -> {
-                  if (index < 0 || index >= in.getStartClosed().getValuesCount()) return null;
+                  if (index < 0 || index >= in.getStartClosed().getValuesCount()) {
+                    return null;
+                  }
                   return in.getStartClosed().getValues(index);
                 },
                 KeyType.PREFIX);
@@ -770,21 +707,15 @@ public final class KeyRecipe {
         start =
             encodeKeyInternal(
                 (index, id) -> {
-                  if (index < 0 || index >= in.getStartOpen().getValuesCount()) return null;
+                  if (index < 0 || index >= in.getStartOpen().getValuesCount()) {
+                    return null;
+                  }
                   return in.getStartOpen().getValues(index);
                 },
                 KeyType.PREFIX_SUCCESSOR);
         break;
       default:
-        start =
-            encodeKeyInternal(
-                (index, id) -> {
-                  if (index < 0 || index >= ListValue.getDefaultInstance().getValuesCount()) {
-                    return null;
-                  }
-                  return ListValue.getDefaultInstance().getValues(index);
-                },
-                KeyType.PREFIX);
+        start = encodeKeyInternal((index, id) -> null, KeyType.PREFIX);
         start.approximate = true;
         break;
     }
@@ -795,7 +726,9 @@ public final class KeyRecipe {
         limit =
             encodeKeyInternal(
                 (index, id) -> {
-                  if (index < 0 || index >= in.getEndClosed().getValuesCount()) return null;
+                  if (index < 0 || index >= in.getEndClosed().getValuesCount()) {
+                    return null;
+                  }
                   return in.getEndClosed().getValues(index);
                 },
                 KeyType.PREFIX_SUCCESSOR);
@@ -804,21 +737,15 @@ public final class KeyRecipe {
         limit =
             encodeKeyInternal(
                 (index, id) -> {
-                  if (index < 0 || index >= in.getEndOpen().getValuesCount()) return null;
+                  if (index < 0 || index >= in.getEndOpen().getValuesCount()) {
+                    return null;
+                  }
                   return in.getEndOpen().getValues(index);
                 },
                 KeyType.PREFIX);
         break;
       default:
-        limit =
-            encodeKeyInternal(
-                (index, id) -> {
-                  if (index < 0 || index >= ListValue.getDefaultInstance().getValuesCount()) {
-                    return null;
-                  }
-                  return ListValue.getDefaultInstance().getValues(index);
-                },
-                KeyType.PREFIX_SUCCESSOR);
+        limit = encodeKeyInternal((index, id) -> null, KeyType.PREFIX_SUCCESSOR);
         limit.approximate = true;
         break;
     }
@@ -855,9 +782,6 @@ public final class KeyRecipe {
   public TargetRange queryParamsToTargetRange(Struct in) {
     return encodeKeyInternal(
         (index, identifier) -> {
-          if (!in.getFieldsMap().containsKey(identifier)) {
-            return null;
-          }
           return in.getFieldsMap().get(identifier);
         },
         KeyType.FULL_KEY);

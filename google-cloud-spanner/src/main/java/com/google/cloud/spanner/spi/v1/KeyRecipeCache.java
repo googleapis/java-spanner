@@ -107,6 +107,12 @@ public final class KeyRecipeCache {
     return (int) cache.preparedQueries.size();
   }
 
+  /**
+   * Applies recipes from a server CacheUpdate.
+   *
+   * <p>This is expected to be called only when responses include new recipes, not on every request.
+   * It is synchronized to atomically update schema generation and cache contents.
+   */
   public synchronized void addRecipes(RecipeList recipeList) {
     int cmp =
         ByteString.unsignedLexicographicalComparator()

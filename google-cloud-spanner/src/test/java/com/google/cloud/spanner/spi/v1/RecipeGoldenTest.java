@@ -59,13 +59,17 @@ public class RecipeGoldenTest {
 
       // Skip test cases with invalid recipes that couldn't be parsed
       if (testCase.invalidRecipe) {
-        System.out.println("  Skipped (invalid recipe)");
+        for (TestInstance test : testCase.tests) {
+          assertEquals(
+              "Invalid recipe should result in approximate=true in test case: " + testCase.name,
+              true,
+              test.expectedApproximate);
+        }
         continue;
       }
 
       // Skip random tests due to PRNG differences
       if (testCase.name.contains("Random")) {
-        System.out.println("  Skipped (random PRNG mismatch)");
         continue;
       }
 
@@ -74,7 +78,6 @@ public class RecipeGoldenTest {
         recipe = KeyRecipe.create(testCase.recipes.getRecipe(0));
       } catch (IllegalArgumentException e) {
         // Invalid recipe - verify all tests expect approximate: true
-        System.out.println("  Invalid recipe (caught in KeyRecipe.create): " + e.getMessage());
         for (TestInstance test : testCase.tests) {
           assertEquals(
               "Invalid recipe should result in approximate=true in test case: " + testCase.name,
@@ -87,15 +90,10 @@ public class RecipeGoldenTest {
       int testNum = 0;
       for (TestInstance test : testCase.tests) {
         testNum++;
-        System.out.println("  Test #" + testNum + ": type=" + test.operationType);
-        System.out.println("    Expected start: " + bytesToHex(test.expectedStart));
-        System.out.println("    Expected limit: " + bytesToHex(test.expectedLimit));
-        System.out.println("    Expected approx: " + test.expectedApproximate);
 
         TargetRange target = null;
         switch (test.operationType) {
           case "key":
-            System.out.println("    Key: " + test.key);
             target = recipe.keyToTargetRange(test.key);
             break;
           case "key_range":
@@ -113,10 +111,6 @@ public class RecipeGoldenTest {
           default:
             throw new UnsupportedOperationException("Unsupported operation: " + test.operationType);
         }
-
-        System.out.println("    Actual start: " + bytesToHex(target.start));
-        System.out.println("    Actual limit: " + bytesToHex(target.limit));
-        System.out.println("    Actual approx: " + target.approximate);
 
         assertEquals(
             "Start mismatch in test case: " + testCase.name + " test #" + testNum,
