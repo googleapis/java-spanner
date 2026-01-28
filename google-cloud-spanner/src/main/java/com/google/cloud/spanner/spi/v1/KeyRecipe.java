@@ -68,16 +68,7 @@ public final class KeyRecipe {
     private final com.google.spanner.v1.KeyRecipe.Part.NullOrder nullOrder; // if kind == VALUE
     private final String identifier; // if kind == VALUE
     private final List<Integer> structIdentifiers; // if kind == VALUE
-    private final Value constantValue; // if kind == VALUE and value is set
     private final boolean random; // if kind == VALUE and random: true
-
-    private Value constantValue() {
-      return constantValue;
-    }
-
-    private boolean hasConstantValue() {
-      return constantValue != null;
-    }
 
     private Part(
         Kind kind,
@@ -87,7 +78,6 @@ public final class KeyRecipe {
         com.google.spanner.v1.KeyRecipe.Part.NullOrder nullOrder,
         String identifier,
         List<Integer> structIdentifiers,
-        Value constantValue,
         boolean random) {
       this.kind = kind;
       this.tag = tag;
@@ -96,14 +86,10 @@ public final class KeyRecipe {
       this.nullOrder = nullOrder;
       this.identifier = identifier;
       this.structIdentifiers = structIdentifiers;
-      this.constantValue = constantValue;
       this.random = random;
     }
 
     private ResolvedValue resolveValue(BiFunction<Integer, String, Value> valueFinder, int index) {
-      if (hasConstantValue()) {
-        return ResolvedValue.ofValue(constantValue());
-      }
       Value value = valueFinder.apply(index, identifier == null ? "" : identifier);
       if (value == null) {
         return ResolvedValue.missing();
@@ -126,37 +112,35 @@ public final class KeyRecipe {
     }
 
     private boolean shouldConsumeValueIndex() {
-      return !hasConstantValue() && !random;
+      return !random;
     }
 
     static Part fromProto(com.google.spanner.v1.KeyRecipe.Part partProto) {
       if (partProto.getTag() != 0) {
         if (partProto.getTag() < 0) {
-          return new Part(Kind.INVALID, 0, null, null, null, null, null, null, false);
+          return new Part(Kind.INVALID, 0, null, null, null, null, null, false);
         }
-        return new Part(Kind.TAG, partProto.getTag(), null, null, null, null, null, null, false);
+        return new Part(Kind.TAG, partProto.getTag(), null, null, null, null, null, false);
       }
       if (!partProto.hasType()) {
-        return new Part(Kind.INVALID, 0, null, null, null, null, null, null, false);
+        return new Part(Kind.INVALID, 0, null, null, null, null, null, false);
       }
       if (partProto.getOrder() != com.google.spanner.v1.KeyRecipe.Part.Order.ASCENDING
           && partProto.getOrder() != com.google.spanner.v1.KeyRecipe.Part.Order.DESCENDING) {
-        return new Part(Kind.INVALID, 0, null, null, null, null, null, null, false);
+        return new Part(Kind.INVALID, 0, null, null, null, null, null, false);
       }
       if (partProto.getNullOrder() != com.google.spanner.v1.KeyRecipe.Part.NullOrder.NULLS_FIRST
           && partProto.getNullOrder() != com.google.spanner.v1.KeyRecipe.Part.NullOrder.NULLS_LAST
           && partProto.getNullOrder() != com.google.spanner.v1.KeyRecipe.Part.NullOrder.NOT_NULL) {
-        return new Part(Kind.INVALID, 0, null, null, null, null, null, null, false);
+        return new Part(Kind.INVALID, 0, null, null, null, null, null, false);
       }
       if (partProto.hasRandom()
           && partProto.getType().getCode() != com.google.spanner.v1.TypeCode.INT64) {
-        return new Part(Kind.INVALID, 0, null, null, null, null, null, null, false);
+        return new Part(Kind.INVALID, 0, null, null, null, null, null, false);
       }
 
       String identifier = partProto.hasIdentifier() ? partProto.getIdentifier() : null;
       List<Integer> structIdentifiers = new ArrayList<>(partProto.getStructIdentifiersList());
-
-      Value constantValue = partProto.hasValue() ? partProto.getValue() : null;
 
       return new Part(
           Kind.VALUE,
@@ -166,7 +150,6 @@ public final class KeyRecipe {
           partProto.getNullOrder(),
           identifier,
           structIdentifiers,
-          constantValue,
           partProto.hasRandom());
     }
   }

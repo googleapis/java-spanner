@@ -20,10 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.TextFormat;
 import com.google.spanner.v1.CacheUpdate;
-import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RoutingHint;
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;
@@ -34,26 +34,26 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class KeyRangeCacheGoldenTest {
-
-  private static final int DEFAULT_MIN_ENTRIES_FOR_RANDOM_PICK = 1000;
+public class ChannelFinderGoldenTest {
 
   @Test
   public void goldenTest() throws Exception {
     String content;
     try (InputStream inputStream =
-        getClass().getClassLoader().getResourceAsStream("range_cache_test.textproto")) {
+        getClass().getClassLoader().getResourceAsStream("finder_test.textproto")) {
       content =
           new BufferedReader(
                   new InputStreamReader(
@@ -66,71 +66,57 @@ public class KeyRangeCacheGoldenTest {
 
     for (TestCase testCase : testCases) {
       FakeEndpointCache endpointCache = new FakeEndpointCache();
-      KeyRangeCache cache = new KeyRangeCache(endpointCache);
-      cache.useDeterministicRandom();
+      ChannelFinder finder = new ChannelFinder(endpointCache, "instances/default/databases/db");
+      finder.useDeterministicRandom();
 
-      for (Step step : testCase.steps) {
-        if (step.update != null) {
-          cache.addRanges(step.update);
+      for (Event event : testCase.events) {
+        if (event.cacheUpdate != null) {
+          finder.update(event.cacheUpdate);
         }
-        for (TestInstance test : step.tests) {
-          cache.setMinCacheEntriesForRandomPick(DEFAULT_MIN_ENTRIES_FOR_RANDOM_PICK);
-          if (test.minCacheEntriesForRandomPick.isPresent()) {
-            cache.setMinCacheEntriesForRandomPick(test.minCacheEntriesForRandomPick.get());
-          }
 
-          RoutingHint.Builder hintBuilder = RoutingHint.newBuilder();
-          if (test.key.isPresent()) {
-            hintBuilder.setKey(test.key.get());
-          }
-          if (test.limitKey.isPresent()) {
-            hintBuilder.setLimitKey(test.limitKey.get());
-          }
+        if (event.read != null) {
+          endpointCache.setUnhealthyServers(event.unhealthyServers);
+          ReadRequest.Builder builder = event.read.toBuilder();
+          ChannelEndpoint endpoint = finder.findServer(builder);
+          assertHintAndServer(testCase.name, event, builder.getRoutingHint(), endpoint);
+        }
 
-          DirectedReadOptions directedReadOptions =
-              test.directedReadOptions.orElse(DirectedReadOptions.getDefaultInstance());
-          ChannelEndpoint server =
-              cache.fillRoutingHint(test.leader, test.rangeMode, directedReadOptions, hintBuilder);
-
-          assertEquals(
-              "RoutingHint mismatch for test case: " + testCase.name,
-              test.expectedResult,
-              hintBuilder.build());
-          if (test.serverAddress.isPresent()) {
-            assertNotNull("Expected server for test case: " + testCase.name, server);
-            assertEquals(test.serverAddress.get(), server.getAddress());
-          } else {
-            assertNull("Expected no server for test case: " + testCase.name, server);
-          }
+        if (event.sql != null) {
+          endpointCache.setUnhealthyServers(event.unhealthyServers);
+          ExecuteSqlRequest.Builder builder = event.sql.toBuilder();
+          ChannelEndpoint endpoint = finder.findServer(builder);
+          assertHintAndServer(testCase.name, event, builder.getRoutingHint(), endpoint);
         }
       }
+    }
+  }
 
-      cache.clear();
+  private static void assertHintAndServer(
+      String testCaseName, Event event, RoutingHint actualHint, ChannelEndpoint endpoint) {
+    assertEquals("RoutingHint mismatch for test case: " + testCaseName, event.hint, actualHint);
+    if (event.serverAddress != null) {
+      assertNotNull("Expected server for test case: " + testCaseName, endpoint);
+      assertEquals(event.serverAddress, endpoint.getAddress());
+    } else {
+      assertNull("Expected no server for test case: " + testCaseName, endpoint);
     }
   }
 
   private static class TestCase {
     String name;
-    List<Step> steps = new ArrayList<>();
+    List<Event> events = new ArrayList<>();
   }
 
-  private static class Step {
-    CacheUpdate update;
-    List<TestInstance> tests = new ArrayList<>();
+  private static class Event {
+    CacheUpdate cacheUpdate;
+    ReadRequest read;
+    ExecuteSqlRequest sql;
+    RoutingHint hint = RoutingHint.getDefaultInstance();
+    String serverAddress;
+    Set<String> unhealthyServers = Collections.emptySet();
   }
 
-  private static class TestInstance {
-    boolean leader = false;
-    Optional<ByteString> key = Optional.empty();
-    Optional<ByteString> limitKey = Optional.empty();
-    KeyRangeCache.RangeMode rangeMode = KeyRangeCache.RangeMode.COVERING_SPLIT;
-    Optional<Integer> minCacheEntriesForRandomPick = Optional.empty();
-    Optional<DirectedReadOptions> directedReadOptions = Optional.empty();
-    RoutingHint expectedResult = RoutingHint.getDefaultInstance();
-    Optional<String> serverAddress = Optional.empty();
-  }
-
-  private List<TestCase> parseTestCases(String content) throws Exception {
+  private List<TestCase> parseTestCases(String content) throws TextFormat.ParseException {
     List<TestCase> testCases = new ArrayList<>();
     int pos = 0;
     while (pos < content.length()) {
@@ -150,81 +136,60 @@ public class KeyRangeCacheGoldenTest {
     return testCases;
   }
 
-  private TestCase parseTestCase(String content) throws Exception {
+  private TestCase parseTestCase(String content) throws TextFormat.ParseException {
     TestCase testCase = new TestCase();
     String name = parseTopLevelFieldValue(content, "name");
     if (name != null) {
       testCase.name = unquote(name);
     }
-    for (String stepContent : extractTopLevelBlocks(content, "step")) {
-      testCase.steps.add(parseStep(stepContent));
+    for (String eventContent : extractTopLevelBlocks(content, "event")) {
+      testCase.events.add(parseEvent(eventContent));
     }
     return testCase;
   }
 
-  private Step parseStep(String content) throws Exception {
-    Step step = new Step();
-    List<String> updates = extractTopLevelBlocks(content, "update");
-    if (!updates.isEmpty()) {
+  private Event parseEvent(String content) throws TextFormat.ParseException {
+    Event event = new Event();
+
+    List<String> updateBlocks = extractTopLevelBlocks(content, "cache_update");
+    if (!updateBlocks.isEmpty()) {
       CacheUpdate.Builder builder = CacheUpdate.newBuilder();
-      TextFormat.merge(updates.get(0), builder);
-      step.update = builder.build();
+      TextFormat.merge(updateBlocks.get(0), builder);
+      event.cacheUpdate = builder.build();
     }
 
-    for (String testContent : extractTopLevelBlocks(content, "test")) {
-      step.tests.add(parseTest(testContent));
-    }
-    return step;
-  }
-
-  private TestInstance parseTest(String content) throws Exception {
-    TestInstance test = new TestInstance();
-
-    String leader = parseTopLevelFieldValue(content, "leader");
-    if (leader != null) {
-      test.leader = Boolean.parseBoolean(leader);
+    List<String> readBlocks = extractTopLevelBlocks(content, "read");
+    if (!readBlocks.isEmpty()) {
+      ReadRequest.Builder builder = ReadRequest.newBuilder();
+      TextFormat.merge(readBlocks.get(0), builder);
+      event.read = builder.build();
     }
 
-    String keyValue = parseTopLevelFieldValue(content, "key");
-    if (keyValue != null) {
-      test.key = Optional.of(parseBytes(keyValue));
+    List<String> sqlBlocks = extractTopLevelBlocks(content, "sql");
+    if (!sqlBlocks.isEmpty()) {
+      ExecuteSqlRequest.Builder builder = ExecuteSqlRequest.newBuilder();
+      TextFormat.merge(sqlBlocks.get(0), builder);
+      event.sql = builder.build();
     }
 
-    String limitKeyValue = parseTopLevelFieldValue(content, "limit_key");
-    if (limitKeyValue != null) {
-      test.limitKey = Optional.of(parseBytes(limitKeyValue));
-    }
-
-    String rangeMode = parseTopLevelFieldValue(content, "range_mode");
-    if (rangeMode != null && rangeMode.contains("PICK_RANDOM")) {
-      test.rangeMode = KeyRangeCache.RangeMode.PICK_RANDOM;
-    }
-
-    String minEntries = parseTopLevelFieldValue(content, "min_cache_entries_for_random_pick");
-    if (minEntries != null) {
-      test.minCacheEntriesForRandomPick = Optional.of(Integer.parseInt(minEntries));
-    }
-
-    List<String> directedOptionsBlocks = extractTopLevelBlocks(content, "directed_read_options");
-    if (!directedOptionsBlocks.isEmpty()) {
-      DirectedReadOptions.Builder builder = DirectedReadOptions.newBuilder();
-      TextFormat.merge(directedOptionsBlocks.get(0), builder);
-      test.directedReadOptions = Optional.of(builder.build());
-    }
-
-    List<String> resultBlocks = extractTopLevelBlocks(content, "result");
-    if (!resultBlocks.isEmpty()) {
+    List<String> hintBlocks = extractTopLevelBlocks(content, "hint");
+    if (!hintBlocks.isEmpty()) {
       RoutingHint.Builder builder = RoutingHint.newBuilder();
-      TextFormat.merge(resultBlocks.get(0), builder);
-      test.expectedResult = builder.build();
+      TextFormat.merge(hintBlocks.get(0), builder);
+      event.hint = builder.build();
     }
 
     String server = parseTopLevelFieldValue(content, "server");
     if (server != null) {
-      test.serverAddress = Optional.of(unquote(server));
+      event.serverAddress = unquote(server);
     }
 
-    return test;
+    Set<String> unhealthyServers = parseTopLevelStringList(content, "unhealthy_servers");
+    if (!unhealthyServers.isEmpty()) {
+      event.unhealthyServers = unhealthyServers;
+    }
+
+    return event;
   }
 
   private static List<String> extractTopLevelBlocks(String content, String name) {
@@ -331,6 +296,29 @@ public class KeyRangeCacheGoldenTest {
     return null;
   }
 
+  private static Set<String> parseTopLevelStringList(String content, String fieldName) {
+    Set<String> values = new HashSet<>();
+    int depth = 0;
+    String[] lines = content.split("\n");
+    for (String rawLine : lines) {
+      String line = rawLine.trim();
+      if (line.isEmpty()) {
+        depth += countBraces(rawLine);
+        continue;
+      }
+      if (line.startsWith("#")) {
+        depth += countBraces(rawLine);
+        continue;
+      }
+      if (depth == 0 && line.startsWith(fieldName + ":")) {
+        String value = line.substring(fieldName.length() + 1).trim();
+        values.add(unquote(stripInlineComment(value)));
+      }
+      depth += countBraces(rawLine);
+    }
+    return values;
+  }
+
   private static int countBraces(String line) {
     int count = 0;
     boolean inQuotes = false;
@@ -384,15 +372,6 @@ public class KeyRangeCacheGoldenTest {
     return value.trim();
   }
 
-  private static ByteString parseBytes(String value) throws TextFormat.ParseException {
-    String unquoted = unquote(value);
-    try {
-      return TextFormat.unescapeBytes(unquoted);
-    } catch (TextFormat.InvalidEscapeSequenceException e) {
-      throw new TextFormat.ParseException(e.getMessage());
-    }
-  }
-
   private static String unquote(String value) {
     String trimmed = value.trim();
     if (trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
@@ -404,6 +383,11 @@ public class KeyRangeCacheGoldenTest {
   private static final class FakeEndpointCache implements ChannelEndpointCache {
     private final Map<String, FakeEndpoint> endpoints = new HashMap<>();
     private final FakeEndpoint defaultEndpoint = new FakeEndpoint("default");
+    private volatile Set<String> unhealthyServers = Collections.emptySet();
+
+    void setUnhealthyServers(Set<String> unhealthyServers) {
+      this.unhealthyServers = unhealthyServers;
+    }
 
     @Override
     public ChannelEndpoint defaultChannel() {
@@ -424,71 +408,64 @@ public class KeyRangeCacheGoldenTest {
     public void shutdown() {
       endpoints.clear();
     }
-  }
 
-  private static final class FakeEndpoint implements ChannelEndpoint {
-    private final String address;
-    private final ManagedChannel channel = new FakeManagedChannel();
+    private final class FakeEndpoint implements ChannelEndpoint {
+      private final String address;
 
-    FakeEndpoint(String address) {
-      this.address = address;
-    }
+      private FakeEndpoint(String address) {
+        this.address = address;
+      }
 
-    @Override
-    public String getAddress() {
-      return address;
-    }
+      @Override
+      public String getAddress() {
+        return address;
+      }
 
-    @Override
-    public boolean isHealthy() {
-      return true;
-    }
+      @Override
+      public boolean isHealthy() {
+        return !unhealthyServers.contains(address);
+      }
 
-    @Override
-    public ManagedChannel getChannel() {
-      return channel;
-    }
-  }
+      @Override
+      public ManagedChannel getChannel() {
+        return new ManagedChannel() {
+          @Override
+          public ManagedChannel shutdown() {
+            return this;
+          }
 
-  private static final class FakeManagedChannel extends ManagedChannel {
-    private boolean shutdown = false;
+          @Override
+          public ManagedChannel shutdownNow() {
+            return this;
+          }
 
-    @Override
-    public ManagedChannel shutdown() {
-      shutdown = true;
-      return this;
-    }
+          @Override
+          public boolean isShutdown() {
+            return false;
+          }
 
-    @Override
-    public boolean isShutdown() {
-      return shutdown;
-    }
+          @Override
+          public boolean isTerminated() {
+            return false;
+          }
 
-    @Override
-    public boolean isTerminated() {
-      return shutdown;
-    }
+          @Override
+          public boolean awaitTermination(long timeout, TimeUnit unit) {
+            return true;
+          }
 
-    @Override
-    public ManagedChannel shutdownNow() {
-      shutdown = true;
-      return this;
-    }
+          @Override
+          public <RequestT, ResponseT> ClientCall<RequestT, ResponseT> newCall(
+              MethodDescriptor<RequestT, ResponseT> methodDescriptor, CallOptions callOptions) {
+            throw new UnsupportedOperationException();
+          }
 
-    @Override
-    public boolean awaitTermination(long timeout, TimeUnit unit) {
-      return shutdown;
-    }
-
-    @Override
-    public <RequestT, ResponseT> ClientCall<RequestT, ResponseT> newCall(
-        MethodDescriptor<RequestT, ResponseT> methodDescriptor, CallOptions callOptions) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String authority() {
-      return "fake";
+          @Override
+          public String authority() {
+            return address;
+          }
+        };
+      }
     }
   }
 }

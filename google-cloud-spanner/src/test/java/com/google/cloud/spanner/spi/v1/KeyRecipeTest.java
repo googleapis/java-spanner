@@ -47,32 +47,13 @@ public class KeyRecipeTest {
             "fields {\n"
                 + "  key: \"p0\"\n"
                 + "  value {\n"
-                + "    list_value { values { string_value: \"a\" } values { string_value: \"b\" }"
-                + " }\n"
+                + "    list_value { values { string_value: \"a\" } values { string_value: \"b\" } }\n"
                 + "  }\n"
                 + "}\n");
 
     KeyRecipe recipe = KeyRecipe.create(recipeProto);
     TargetRange target = recipe.queryParamsToTargetRange(params);
     assertEquals(expectedKey("b"), target.start);
-    assertTrue(target.limit.isEmpty());
-  }
-
-  @Test
-  public void queryParamsUsesConstantValue() throws Exception {
-    com.google.spanner.v1.KeyRecipe recipeProto =
-        createRecipe(
-            "part { tag: 1 }\n"
-                + "part {\n"
-                + "  order: ASCENDING\n"
-                + "  null_order: NULLS_FIRST\n"
-                + "  type { code: STRING }\n"
-                + "  value { string_value: \"const\" }\n"
-                + "}\n");
-
-    KeyRecipe recipe = KeyRecipe.create(recipeProto);
-    TargetRange target = recipe.queryParamsToTargetRange(Struct.getDefaultInstance());
-    assertEquals(expectedKey("const"), target.start);
     assertTrue(target.limit.isEmpty());
   }
 
