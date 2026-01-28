@@ -47,7 +47,8 @@ public class KeyRecipeTest {
             "fields {\n"
                 + "  key: \"p0\"\n"
                 + "  value {\n"
-                + "    list_value { values { string_value: \"a\" } values { string_value: \"b\" } }\n"
+                + "    list_value { values { string_value: \"a\" } values { string_value: \"b\" }"
+                + " }\n"
                 + "  }\n"
                 + "}\n");
 
