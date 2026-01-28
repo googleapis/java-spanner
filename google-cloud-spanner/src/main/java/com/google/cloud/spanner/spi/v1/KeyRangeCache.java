@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
 
 /** Cache for routing information used by location-aware routing. */
 @InternalApi
@@ -272,10 +273,7 @@ public final class KeyRangeCache {
   }
 
   private int[] sampleWithoutReplacement(int populationSize, int sampleSize) {
-    int[] indexes = new int[populationSize];
-    for (int i = 0; i < populationSize; i++) {
-      indexes[i] = i;
-    }
+    int[] indexes = IntStream.range(0, populationSize).toArray();
     for (int i = 0; i < sampleSize; i++) {
       int j = i + ThreadLocalRandom.current().nextInt(populationSize - i);
       int tmp = indexes[i];
