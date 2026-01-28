@@ -53,7 +53,6 @@ public abstract class AbstractAsyncTransactionTest {
   static ExecutorService executor;
 
   Spanner spanner;
-  Spanner spannerWithEmptySessionPool;
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -101,32 +100,16 @@ public abstract class AbstractAsyncTransactionTest {
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
             .build()
             .getService();
-    spannerWithEmptySessionPool =
-        spanner.getOptions().toBuilder()
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setFailOnSessionLeak()
-                    .setMinSessions(0)
-                    .setIncStep(1)
-                    .build())
-            .build()
-            .getService();
   }
 
   @After
   public void after() {
     spanner.close();
-    spannerWithEmptySessionPool.close();
     mockSpanner.removeAllExecutionTimes();
     mockSpanner.reset();
   }
 
   DatabaseClient client() {
     return spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-  }
-
-  DatabaseClient clientWithEmptySessionPool() {
-    return spannerWithEmptySessionPool.getDatabaseClient(
-        DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
   }
 }
