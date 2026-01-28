@@ -253,10 +253,6 @@ public final class KeyRangeCache {
       foundGap = true;
     }
 
-    if (sampled == null) {
-      return null;
-    }
-
     if (!foundGap || total >= minCacheEntriesForRandomPick) {
       CachedRange selected = sampled.getValue();
       selected.lastAccess = accessTimeNow();
@@ -548,7 +544,7 @@ public final class KeyRangeCache {
         }
       }
 
-      Map<Long, CachedTablet> tabletsByUid = new HashMap<>();
+      Map<Long, CachedTablet> tabletsByUid = new HashMap<>(tablets.size());
       for (CachedTablet tablet : tablets) {
         tabletsByUid.put(tablet.tabletUid, tablet);
       }
