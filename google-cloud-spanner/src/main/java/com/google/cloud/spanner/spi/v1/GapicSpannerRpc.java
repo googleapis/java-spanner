@@ -291,19 +291,26 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private static final class KeyAwareTransportChannelProvider implements TransportChannelProvider {
     private final InstantiatingGrpcChannelProvider baseProvider;
+    @Nullable private final ChannelEndpointCacheFactory endpointCacheFactory;
 
-    private KeyAwareTransportChannelProvider(InstantiatingGrpcChannelProvider.Builder builder) {
+    private KeyAwareTransportChannelProvider(
+        InstantiatingGrpcChannelProvider.Builder builder,
+        @Nullable ChannelEndpointCacheFactory endpointCacheFactory) {
       this.baseProvider = builder.build();
+      this.endpointCacheFactory = endpointCacheFactory;
     }
 
-    private KeyAwareTransportChannelProvider(InstantiatingGrpcChannelProvider baseProvider) {
+    private KeyAwareTransportChannelProvider(
+        InstantiatingGrpcChannelProvider baseProvider,
+        @Nullable ChannelEndpointCacheFactory endpointCacheFactory) {
       this.baseProvider = baseProvider;
+      this.endpointCacheFactory = endpointCacheFactory;
     }
 
     @Override
     public GrpcTransportChannel getTransportChannel() throws IOException {
       return GrpcTransportChannel.newBuilder()
-          .setManagedChannel(KeyAwareChannel.create(baseProvider))
+          .setManagedChannel(KeyAwareChannel.create(baseProvider, endpointCacheFactory))
           .build();
     }
 
@@ -340,37 +347,43 @@ public class GapicSpannerRpc implements SpannerRpc {
     @Override
     public TransportChannelProvider withEndpoint(String endpoint) {
       return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withEndpoint(endpoint));
+          (InstantiatingGrpcChannelProvider) baseProvider.withEndpoint(endpoint),
+          endpointCacheFactory);
     }
 
     @Override
     public TransportChannelProvider withCredentials(Credentials credentials) {
       return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withCredentials(credentials));
+          (InstantiatingGrpcChannelProvider) baseProvider.withCredentials(credentials),
+          endpointCacheFactory);
     }
 
     @Override
     public TransportChannelProvider withHeaders(Map<String, String> headers) {
       return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withHeaders(headers));
+          (InstantiatingGrpcChannelProvider) baseProvider.withHeaders(headers),
+          endpointCacheFactory);
     }
 
     @Override
     public TransportChannelProvider withPoolSize(int poolSize) {
       return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withPoolSize(poolSize));
+          (InstantiatingGrpcChannelProvider) baseProvider.withPoolSize(poolSize),
+          endpointCacheFactory);
     }
 
     @Override
     public TransportChannelProvider withExecutor(ScheduledExecutorService executor) {
       return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withExecutor(executor));
+          (InstantiatingGrpcChannelProvider) baseProvider.withExecutor(executor),
+          endpointCacheFactory);
     }
 
     @Override
     public TransportChannelProvider withExecutor(Executor executor) {
       return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withExecutor(executor));
+          (InstantiatingGrpcChannelProvider) baseProvider.withExecutor(executor),
+          endpointCacheFactory);
     }
 
     @Override
@@ -491,7 +504,8 @@ public class GapicSpannerRpc implements SpannerRpc {
           Boolean.parseBoolean(System.getenv(EXPERIMENTAL_LOCATION_API_ENV_VAR));
       TransportChannelProvider channelProvider =
           enableLocationApi
-              ? new KeyAwareTransportChannelProvider(defaultChannelProviderBuilder)
+              ? new KeyAwareTransportChannelProvider(
+                  defaultChannelProviderBuilder, options.getChannelEndpointCacheFactory())
               : MoreObjects.firstNonNull(
                   options.getChannelProvider(), defaultChannelProviderBuilder.build());
 

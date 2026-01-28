@@ -39,6 +39,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.JavaVersionUtil;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -90,6 +91,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -874,6 +876,42 @@ public class GapicSpannerRpcTest {
     rpc.shutdown();
   }
 
+  @Test
+  public void testChannelEndpointCacheFactoryUsedWhenLocationApiEnabled() throws Exception {
+    assumeTrue(isJava8() && !isWindows());
+    String envVar = "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
+
+    Class<?> classOfMap = System.getenv().getClass();
+    java.lang.reflect.Field field = classOfMap.getDeclaredField("m");
+    field.setAccessible(true);
+    @SuppressWarnings("unchecked")
+    Map<String, String> writeableEnvironmentVariables =
+        (Map<String, String>) field.get(System.getenv());
+    String originalValue = writeableEnvironmentVariables.get(envVar);
+
+    AtomicBoolean factoryCalled = new AtomicBoolean(false);
+    ChannelEndpointCacheFactory factory =
+        baseProvider -> {
+          factoryCalled.set(true);
+          return new GrpcChannelEndpointCache(baseProvider);
+        };
+
+    try {
+      writeableEnvironmentVariables.put(envVar, "true");
+      SpannerOptions options =
+          createSpannerOptions().toBuilder().setChannelEndpointCacheFactory(factory).build();
+      GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+      rpc.shutdown();
+      assertTrue(factoryCalled.get());
+    } finally {
+      if (originalValue == null) {
+        writeableEnvironmentVariables.remove(envVar);
+      } else {
+        writeableEnvironmentVariables.put(envVar, originalValue);
+      }
+    }
+  }
+
   private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
@@ -888,5 +926,13 @@ public class GapicSpannerRpcTest {
         // the static credentials.
         .setCallCredentialsProvider(() -> MoreCallCredentials.from(VARIABLE_CREDENTIALS))
         .build();
+  }
+
+  private boolean isJava8() {
+    return JavaVersionUtil.getJavaMajorVersion() == 8;
+  }
+
+  private boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase().contains("windows");
   }
 }

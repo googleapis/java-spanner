@@ -63,8 +63,15 @@ final class KeyAwareChannel extends ManagedChannel {
       new ConcurrentHashMap<>();
   private final Map<ByteString, String> transactionAffinities = new ConcurrentHashMap<>();
 
-  private KeyAwareChannel(InstantiatingGrpcChannelProvider channelProvider) throws IOException {
-    this.endpointCache = new GrpcChannelEndpointCache(channelProvider);
+  private KeyAwareChannel(
+      InstantiatingGrpcChannelProvider channelProvider,
+      @Nullable ChannelEndpointCacheFactory endpointCacheFactory)
+      throws IOException {
+    if (endpointCacheFactory == null) {
+      this.endpointCache = new GrpcChannelEndpointCache(channelProvider);
+    } else {
+      this.endpointCache = endpointCacheFactory.create(channelProvider);
+    }
     this.defaultChannel = endpointCache.defaultChannel().getChannel();
     this.defaultEndpointAddress = endpointCache.defaultChannel().getAddress();
     this.authority = this.defaultChannel.authority();
@@ -72,7 +79,14 @@ final class KeyAwareChannel extends ManagedChannel {
 
   static KeyAwareChannel create(InstantiatingGrpcChannelProvider channelProvider)
       throws IOException {
-    return new KeyAwareChannel(channelProvider);
+    return new KeyAwareChannel(channelProvider, null);
+  }
+
+  static KeyAwareChannel create(
+      InstantiatingGrpcChannelProvider channelProvider,
+      @Nullable ChannelEndpointCacheFactory endpointCacheFactory)
+      throws IOException {
+    return new KeyAwareChannel(channelProvider, endpointCacheFactory);
   }
 
   private String extractDatabaseIdFromSession(String session) {
