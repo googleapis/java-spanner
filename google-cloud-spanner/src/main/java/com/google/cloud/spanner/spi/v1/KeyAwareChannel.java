@@ -19,6 +19,7 @@ package com.google.cloud.spanner.spi.v1;
 import com.google.api.core.InternalApi;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.protobuf.ByteString;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.PartialResultSet;
@@ -52,6 +53,8 @@ final class KeyAwareChannel extends ManagedChannel {
   private static final String STREAMING_SQL_METHOD =
       "google.spanner.v1.Spanner/ExecuteStreamingSql";
   private static final String UNARY_SQL_METHOD = "google.spanner.v1.Spanner/ExecuteSql";
+  private static final String BEGIN_TRANSACTION_METHOD =
+      "google.spanner.v1.Spanner/BeginTransaction";
   private static final String COMMIT_METHOD = "google.spanner.v1.Spanner/Commit";
   private static final String ROLLBACK_METHOD = "google.spanner.v1.Spanner/Rollback";
 
@@ -162,6 +165,7 @@ final class KeyAwareChannel extends ManagedChannel {
     return STREAMING_READ_METHOD.equals(method)
         || STREAMING_SQL_METHOD.equals(method)
         || UNARY_SQL_METHOD.equals(method)
+        || BEGIN_TRANSACTION_METHOD.equals(method)
         || COMMIT_METHOD.equals(method)
         || ROLLBACK_METHOD.equals(method);
   }
@@ -185,12 +189,17 @@ final class KeyAwareChannel extends ManagedChannel {
     transactionAffinities.remove(transactionId);
   }
 
-  private void recordAffinity(ByteString transactionId, @Nullable ChannelEndpoint endpoint) {
+  void clearTransactionAffinity(ByteString transactionId) {
+    clearAffinity(transactionId);
+  }
+
+  private void recordAffinity(
+      ByteString transactionId, @Nullable ChannelEndpoint endpoint, boolean allowDefault) {
     if (transactionId == null || transactionId.isEmpty() || endpoint == null) {
       return;
     }
     String address = endpoint.getAddress();
-    if (defaultEndpointAddress.equals(address)) {
+    if (!allowDefault && defaultEndpointAddress.equals(address)) {
       return;
     }
     transactionAffinities.put(transactionId, address);
@@ -238,6 +247,7 @@ final class KeyAwareChannel extends ManagedChannel {
     private ChannelFinder channelFinder;
     @Nullable private ChannelEndpoint selectedEndpoint;
     @Nullable private ByteString transactionIdToClear;
+    private boolean allowDefaultAffinity;
 
     KeyAwareClientCall(
         KeyAwareChannel parentChannel,
@@ -295,6 +305,8 @@ final class KeyAwareChannel extends ManagedChannel {
           }
         }
         message = (RequestT) reqBuilder.build();
+      } else if (message instanceof BeginTransactionRequest) {
+        allowDefaultAffinity = true;
       } else if (message instanceof CommitRequest) {
         CommitRequest request = (CommitRequest) message;
         if (!request.getTransactionId().isEmpty()) {
@@ -309,7 +321,8 @@ final class KeyAwareChannel extends ManagedChannel {
         }
       } else {
         throw new IllegalStateException(
-            "Only read, query, commit, and rollback requests are supported for key-aware calls.");
+            "Only read, query, begin transaction, commit, and rollback requests are supported for"
+                + " key-aware calls.");
       }
 
       if (endpoint == null) {
@@ -343,7 +356,7 @@ final class KeyAwareChannel extends ManagedChannel {
     }
 
     void maybeRecordAffinity(ByteString transactionId) {
-      parentChannel.recordAffinity(transactionId, selectedEndpoint);
+      parentChannel.recordAffinity(transactionId, selectedEndpoint, allowDefaultAffinity);
     }
 
     void maybeClearAffinity() {
@@ -375,6 +388,12 @@ final class KeyAwareChannel extends ManagedChannel {
       } else if (message instanceof ResultSet) {
         ResultSet response = (ResultSet) message;
         ByteString transactionId = transactionIdFromMetadata(response);
+        if (transactionId != null) {
+          call.maybeRecordAffinity(transactionId);
+        }
+      } else if (message instanceof Transaction) {
+        Transaction response = (Transaction) message;
+        ByteString transactionId = transactionIdFromTransaction(response);
         if (transactionId != null) {
           call.maybeRecordAffinity(transactionId);
         }

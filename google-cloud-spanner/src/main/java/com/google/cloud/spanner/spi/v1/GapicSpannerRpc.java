@@ -51,6 +51,7 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.api.gax.rpc.StreamController;
+import com.google.api.gax.rpc.TransportChannel;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.api.gax.rpc.UnaryCallable;
@@ -105,6 +106,7 @@ import com.google.longrunning.CancelOperationRequest;
 import com.google.longrunning.GetOperationRequest;
 import com.google.longrunning.Operation;
 import com.google.longrunning.OperationsGrpc;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -187,6 +189,7 @@ import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
 import io.grpc.Context;
+import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import java.io.IOException;
@@ -286,6 +289,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
   private final boolean isDynamicChannelPoolEnabled;
+  @Nullable private final KeyAwareChannel keyAwareChannel;
 
   private final GrpcCallContext baseGrpcCallContext;
 
@@ -539,6 +543,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                         /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         ClientContext clientContext = ClientContext.create(spannerStubSettings);
+        this.keyAwareChannel = extractKeyAwareChannel(clientContext.getTransportChannel());
         this.spannerStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(
                 spannerStubSettings, clientContext);
@@ -658,6 +663,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         throw asSpannerException(e);
       }
     } else {
+      this.keyAwareChannel = null;
       this.databaseAdminStub = null;
       this.instanceAdminStub = null;
       this.spannerStub = null;
@@ -672,6 +678,23 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.instanceAdminStubSettings = null;
       this.spannerWatchdog = null;
       this.partitionedDmlRetrySettings = null;
+    }
+  }
+
+  private static KeyAwareChannel extractKeyAwareChannel(TransportChannel transportChannel) {
+    if (transportChannel instanceof GrpcTransportChannel) {
+      ManagedChannel channel = ((GrpcTransportChannel) transportChannel).getChannel();
+      if (channel instanceof KeyAwareChannel) {
+        return (KeyAwareChannel) channel;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void clearTransactionAffinity(ByteString transactionId) {
+    if (keyAwareChannel != null) {
+      keyAwareChannel.clearTransactionAffinity(transactionId);
     }
   }
 
