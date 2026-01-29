@@ -58,7 +58,6 @@ import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
-import com.google.auth.Credentials;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannel;
@@ -213,7 +212,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -292,109 +290,6 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Nullable private final KeyAwareChannel keyAwareChannel;
 
   private final GrpcCallContext baseGrpcCallContext;
-
-  private static final class KeyAwareTransportChannelProvider implements TransportChannelProvider {
-    private final InstantiatingGrpcChannelProvider baseProvider;
-    @Nullable private final ChannelEndpointCacheFactory endpointCacheFactory;
-
-    private KeyAwareTransportChannelProvider(
-        InstantiatingGrpcChannelProvider.Builder builder,
-        @Nullable ChannelEndpointCacheFactory endpointCacheFactory) {
-      this.baseProvider = builder.build();
-      this.endpointCacheFactory = endpointCacheFactory;
-    }
-
-    private KeyAwareTransportChannelProvider(
-        InstantiatingGrpcChannelProvider baseProvider,
-        @Nullable ChannelEndpointCacheFactory endpointCacheFactory) {
-      this.baseProvider = baseProvider;
-      this.endpointCacheFactory = endpointCacheFactory;
-    }
-
-    @Override
-    public GrpcTransportChannel getTransportChannel() throws IOException {
-      return GrpcTransportChannel.newBuilder()
-          .setManagedChannel(KeyAwareChannel.create(baseProvider, endpointCacheFactory))
-          .build();
-    }
-
-    @Override
-    public String getTransportName() {
-      return baseProvider.getTransportName();
-    }
-
-    @Override
-    public boolean needsEndpoint() {
-      return baseProvider.needsEndpoint();
-    }
-
-    @Override
-    public boolean needsCredentials() {
-      return baseProvider.needsCredentials();
-    }
-
-    @Override
-    public boolean needsExecutor() {
-      return baseProvider.needsExecutor();
-    }
-
-    @Override
-    public boolean needsHeaders() {
-      return baseProvider.needsHeaders();
-    }
-
-    @Override
-    public boolean shouldAutoClose() {
-      return baseProvider.shouldAutoClose();
-    }
-
-    @Override
-    public TransportChannelProvider withEndpoint(String endpoint) {
-      return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withEndpoint(endpoint),
-          endpointCacheFactory);
-    }
-
-    @Override
-    public TransportChannelProvider withCredentials(Credentials credentials) {
-      return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withCredentials(credentials),
-          endpointCacheFactory);
-    }
-
-    @Override
-    public TransportChannelProvider withHeaders(Map<String, String> headers) {
-      return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withHeaders(headers),
-          endpointCacheFactory);
-    }
-
-    @Override
-    public TransportChannelProvider withPoolSize(int poolSize) {
-      return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withPoolSize(poolSize),
-          endpointCacheFactory);
-    }
-
-    @Override
-    public TransportChannelProvider withExecutor(ScheduledExecutorService executor) {
-      return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withExecutor(executor),
-          endpointCacheFactory);
-    }
-
-    @Override
-    public TransportChannelProvider withExecutor(Executor executor) {
-      return new KeyAwareTransportChannelProvider(
-          (InstantiatingGrpcChannelProvider) baseProvider.withExecutor(executor),
-          endpointCacheFactory);
-    }
-
-    @Override
-    public boolean acceptsPoolSize() {
-      return baseProvider.acceptsPoolSize();
-    }
-  }
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -506,12 +401,15 @@ public class GapicSpannerRpc implements SpannerRpc {
 
       boolean enableLocationApi =
           Boolean.parseBoolean(System.getenv(EXPERIMENTAL_LOCATION_API_ENV_VAR));
+      TransportChannelProvider baseChannelProvider =
+          MoreObjects.firstNonNull(
+              options.getChannelProvider(), defaultChannelProviderBuilder.build());
       TransportChannelProvider channelProvider =
-          enableLocationApi
+          enableLocationApi && baseChannelProvider instanceof InstantiatingGrpcChannelProvider
               ? new KeyAwareTransportChannelProvider(
-                  defaultChannelProviderBuilder, options.getChannelEndpointCacheFactory())
-              : MoreObjects.firstNonNull(
-                  options.getChannelProvider(), defaultChannelProviderBuilder.build());
+                  (InstantiatingGrpcChannelProvider) baseChannelProvider,
+                  options.getChannelEndpointCacheFactory())
+              : baseChannelProvider;
 
       CredentialsProvider credentialsProvider =
           GrpcTransportOptions.setUpCredentialsProvider(options);

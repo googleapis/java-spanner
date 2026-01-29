@@ -61,7 +61,7 @@ public class ChannelFinderGoldenTest {
 
     for (FinderTestCase testCase : testCases.getTestCaseList()) {
       FakeEndpointCache endpointCache = new FakeEndpointCache();
-      ChannelFinder finder = new ChannelFinder(endpointCache, "instances/default/databases/db");
+      ChannelFinder finder = new ChannelFinder(endpointCache);
       finder.useDeterministicRandom();
 
       for (FinderTestCase.Event event : testCase.getEventList()) {

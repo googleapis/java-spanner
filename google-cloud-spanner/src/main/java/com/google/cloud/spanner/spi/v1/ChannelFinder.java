@@ -17,11 +17,13 @@
 package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.core.InternalApi;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CacheUpdate;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RoutingHint;
+import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,11 +39,9 @@ public final class ChannelFinder {
   private final AtomicLong databaseId = new AtomicLong();
   private final KeyRecipeCache recipeCache = new KeyRecipeCache();
   private final KeyRangeCache rangeCache;
-  private final String databaseUri;
 
-  public ChannelFinder(ChannelEndpointCache endpointCache, String databaseUri) {
+  public ChannelFinder(ChannelEndpointCache endpointCache) {
     this.rangeCache = new KeyRangeCache(Objects.requireNonNull(endpointCache));
-    this.databaseUri = Objects.requireNonNull(databaseUri);
   }
 
   void useDeterministicRandom() {
@@ -83,18 +83,46 @@ public final class ChannelFinder {
         reqBuilder.getRoutingHintBuilder());
   }
 
+  public ChannelEndpoint findServer(BeginTransactionRequest.Builder reqBuilder) {
+    if (!reqBuilder.hasMutationKey()) {
+      return null;
+    }
+    TargetRange target = recipeCache.mutationToTargetRange(reqBuilder.getMutationKey());
+    if (target == null) {
+      return null;
+    }
+    RoutingHint.Builder hintBuilder = RoutingHint.newBuilder();
+    hintBuilder.setKey(target.start);
+    if (!target.limit.isEmpty()) {
+      hintBuilder.setLimitKey(target.limit);
+    }
+    return fillRoutingHint(
+        preferLeader(reqBuilder.getOptions()),
+        KeyRangeCache.RangeMode.COVERING_SPLIT,
+        DirectedReadOptions.getDefaultInstance(),
+        hintBuilder);
+  }
+
   private ChannelEndpoint fillRoutingHint(
       TransactionSelector transactionSelector,
       DirectedReadOptions directedReadOptions,
       KeyRangeCache.RangeMode rangeMode,
+      RoutingHint.Builder hintBuilder) {
+    return fillRoutingHint(
+        preferLeader(transactionSelector), rangeMode, directedReadOptions, hintBuilder);
+  }
+
+  private ChannelEndpoint fillRoutingHint(
+      boolean preferLeader,
+      KeyRangeCache.RangeMode rangeMode,
+      DirectedReadOptions directedReadOptions,
       RoutingHint.Builder hintBuilder) {
     long id = databaseId.get();
     if (id == 0) {
       return null;
     }
     hintBuilder.setDatabaseId(id);
-    return rangeCache.fillRoutingHint(
-        preferLeader(transactionSelector), rangeMode, directedReadOptions, hintBuilder);
+    return rangeCache.fillRoutingHint(preferLeader, rangeMode, directedReadOptions, hintBuilder);
   }
 
   private static boolean preferLeader(TransactionSelector selector) {
@@ -111,5 +139,12 @@ public final class ChannelFinder {
       default:
         return true;
     }
+  }
+
+  private static boolean preferLeader(TransactionOptions options) {
+    if (options == null || !options.hasReadOnly()) {
+      return true;
+    }
+    return options.getReadOnly().getStrong();
   }
 }

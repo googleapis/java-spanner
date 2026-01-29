@@ -111,7 +111,7 @@ final class KeyAwareChannel extends ManagedChannel {
         ref = channelFinders.get(databaseId);
         finder = (ref != null) ? ref.get() : null;
         if (finder == null) {
-          finder = new ChannelFinder(endpointCache, databaseId);
+          finder = new ChannelFinder(endpointCache);
           channelFinders.put(databaseId, new SoftReference<>(finder));
         }
       }
@@ -306,7 +306,18 @@ final class KeyAwareChannel extends ManagedChannel {
         }
         message = (RequestT) reqBuilder.build();
       } else if (message instanceof BeginTransactionRequest) {
+        BeginTransactionRequest.Builder reqBuilder =
+            ((BeginTransactionRequest) message).toBuilder();
+        String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
+        if (databaseId != null && reqBuilder.hasMutationKey()) {
+          finder = parentChannel.getOrCreateChannelFinder(databaseId);
+          ChannelEndpoint routed = finder.findServer(reqBuilder);
+          if (endpoint == null) {
+            endpoint = routed;
+          }
+        }
         allowDefaultAffinity = true;
+        message = (RequestT) reqBuilder.build();
       } else if (message instanceof CommitRequest) {
         CommitRequest request = (CommitRequest) message;
         if (!request.getTransactionId().isEmpty()) {

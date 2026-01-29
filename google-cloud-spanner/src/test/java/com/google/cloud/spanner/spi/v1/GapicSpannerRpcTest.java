@@ -29,9 +29,12 @@ import static org.junit.Assume.assumeTrue;
 
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.ServiceOptions;
@@ -85,11 +88,14 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
@@ -909,6 +915,136 @@ public class GapicSpannerRpcTest {
       } else {
         writeableEnvironmentVariables.put(envVar, originalValue);
       }
+    }
+  }
+
+  @Test
+  public void testLocationApiDoesNotOverrideExplicitChannelProvider() throws Exception {
+    assumeTrue(isJava8() && !isWindows());
+    String envVar = "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
+
+    Class<?> classOfMap = System.getenv().getClass();
+    java.lang.reflect.Field field = classOfMap.getDeclaredField("m");
+    field.setAccessible(true);
+    @SuppressWarnings("unchecked")
+    Map<String, String> writeableEnvironmentVariables =
+        (Map<String, String>) field.get(System.getenv());
+    String originalValue = writeableEnvironmentVariables.get(envVar);
+
+    AtomicBoolean factoryCalled = new AtomicBoolean(false);
+    ChannelEndpointCacheFactory factory =
+        baseProvider -> {
+          factoryCalled.set(true);
+          return new GrpcChannelEndpointCache(baseProvider);
+        };
+
+    AtomicBoolean providerUsed = new AtomicBoolean(false);
+    TransportChannelProvider channelProvider =
+        new RecordingTransportChannelProvider(
+            address.getHostString(), server.getPort(), providerUsed);
+
+    try {
+      writeableEnvironmentVariables.put(envVar, "true");
+      SpannerOptions options =
+          createSpannerOptions().toBuilder()
+              .setChannelProvider(channelProvider)
+              .setChannelEndpointCacheFactory(factory)
+              .build();
+      GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+      rpc.shutdown();
+      assertTrue(providerUsed.get());
+      assertFalse(factoryCalled.get());
+    } finally {
+      if (originalValue == null) {
+        writeableEnvironmentVariables.remove(envVar);
+      } else {
+        writeableEnvironmentVariables.put(envVar, originalValue);
+      }
+    }
+  }
+
+  private static final class RecordingTransportChannelProvider implements TransportChannelProvider {
+    private final String host;
+    private final int port;
+    private final AtomicBoolean used;
+
+    private RecordingTransportChannelProvider(String host, int port, AtomicBoolean used) {
+      this.host = host;
+      this.port = port;
+      this.used = used;
+    }
+
+    @Override
+    public GrpcTransportChannel getTransportChannel() throws IOException {
+      used.set(true);
+      return GrpcTransportChannel.newBuilder()
+          .setManagedChannel(ManagedChannelBuilder.forAddress(host, port).usePlaintext().build())
+          .build();
+    }
+
+    @Override
+    public String getTransportName() {
+      return GrpcTransportChannel.getGrpcTransportName();
+    }
+
+    @Override
+    public boolean needsEndpoint() {
+      return false;
+    }
+
+    @Override
+    public boolean needsCredentials() {
+      return false;
+    }
+
+    @Override
+    public boolean needsExecutor() {
+      return false;
+    }
+
+    @Override
+    public boolean needsHeaders() {
+      return false;
+    }
+
+    @Override
+    public boolean shouldAutoClose() {
+      return true;
+    }
+
+    @Override
+    public TransportChannelProvider withEndpoint(String endpoint) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withCredentials(Credentials credentials) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withHeaders(Map<String, String> headers) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withPoolSize(int poolSize) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withExecutor(ScheduledExecutorService executor) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withExecutor(Executor executor) {
+      return this;
+    }
+
+    @Override
+    public boolean acceptsPoolSize() {
+      return false;
     }
   }
 
