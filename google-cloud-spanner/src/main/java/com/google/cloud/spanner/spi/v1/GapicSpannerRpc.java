@@ -189,8 +189,8 @@ import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
 import io.grpc.Context;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -683,7 +683,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private static KeyAwareChannel extractKeyAwareChannel(TransportChannel transportChannel) {
     if (transportChannel instanceof GrpcTransportChannel) {
-      ManagedChannel channel = ((GrpcTransportChannel) transportChannel).getChannel();
+      Channel channel = ((GrpcTransportChannel) transportChannel).getChannel();
       if (channel instanceof KeyAwareChannel) {
         return (KeyAwareChannel) channel;
       }
