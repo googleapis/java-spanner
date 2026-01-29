@@ -410,27 +410,22 @@ final class KeyAwareChannel extends ManagedChannel {
 
     @Override
     public void onMessage(ResponseT message) {
+      ByteString transactionId = null;
       if (message instanceof PartialResultSet) {
         PartialResultSet response = (PartialResultSet) message;
         if (response.hasCacheUpdate() && call.channelFinder != null) {
           call.channelFinder.update(response.getCacheUpdate());
         }
-        ByteString transactionId = transactionIdFromMetadata(response);
-        if (transactionId != null) {
-          call.maybeRecordAffinity(transactionId);
-        }
+        transactionId = transactionIdFromMetadata(response);
       } else if (message instanceof ResultSet) {
         ResultSet response = (ResultSet) message;
-        ByteString transactionId = transactionIdFromMetadata(response);
-        if (transactionId != null) {
-          call.maybeRecordAffinity(transactionId);
-        }
+        transactionId = transactionIdFromMetadata(response);
       } else if (message instanceof Transaction) {
         Transaction response = (Transaction) message;
-        ByteString transactionId = transactionIdFromTransaction(response);
-        if (transactionId != null) {
-          call.maybeRecordAffinity(transactionId);
-        }
+        transactionId = transactionIdFromTransaction(response);
+      }
+      if (transactionId != null) {
+        call.maybeRecordAffinity(transactionId);
       }
       super.onMessage(message);
     }
