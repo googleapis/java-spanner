@@ -4560,8 +4560,7 @@ test_case {
       operation_uid: 1
       database_id: 1099549376513
       schema_generation: "\001\001"
-      key: "A\206\310\002"
-      limit_key: "A\206\310\003"
+      key: "A\206\310\002\234\2310\000x"
     }
   }
   event {
@@ -5327,8 +5326,7 @@ test_case {
       operation_uid: 1
       database_id: 1099548327937
       schema_generation: "\001\001"
-      key: "A\206\310\002"
-      limit_key: "A\206\310\003"
+      key: "A\206\310\002\234\2310\000x"
     }
   }
   event {
@@ -8751,8 +8749,7 @@ test_case {
       operation_uid: 1
       database_id: 1099550425089
       schema_generation: "\001\001"
-      key: "A\206\300\002"
-      limit_key: "A\206\300\003"
+      key: "A\206\300\002\221\000"
     }
   }
   event {
@@ -10079,5 +10076,3 @@ test_case {
     }
   }
 }
-
-
