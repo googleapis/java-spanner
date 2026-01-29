@@ -45,7 +45,9 @@ import javax.annotation.Nullable;
 /**
  * ManagedChannel that routes eligible requests using location-aware routing hints.
  *
- * <p>Routing is applied only to streaming read and streaming query methods.
+ * <p>Routing hints are applied to streaming read/query and unary ExecuteSql. Commit/Rollback use
+ * transaction affinity when available. BeginTransaction is routed only when a mutation key is
+ * provided.
  */
 @InternalApi
 final class KeyAwareChannel extends ManagedChannel {
@@ -78,11 +80,6 @@ final class KeyAwareChannel extends ManagedChannel {
     this.defaultChannel = endpointCache.defaultChannel().getChannel();
     this.defaultEndpointAddress = endpointCache.defaultChannel().getAddress();
     this.authority = this.defaultChannel.authority();
-  }
-
-  static KeyAwareChannel create(InstantiatingGrpcChannelProvider channelProvider)
-      throws IOException {
-    return new KeyAwareChannel(channelProvider, null);
   }
 
   static KeyAwareChannel create(
@@ -281,29 +278,15 @@ final class KeyAwareChannel extends ManagedChannel {
 
       if (message instanceof ReadRequest) {
         ReadRequest.Builder reqBuilder = ((ReadRequest) message).toBuilder();
-        String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
-        ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
-        endpoint = parentChannel.affinityEndpoint(transactionId);
-        if (databaseId != null) {
-          finder = parentChannel.getOrCreateChannelFinder(databaseId);
-          ChannelEndpoint routed = finder.findServer(reqBuilder);
-          if (endpoint == null) {
-            endpoint = routed;
-          }
-        }
+        RoutingDecision routing = routeFromRequest(reqBuilder);
+        finder = routing.finder;
+        endpoint = routing.endpoint;
         message = (RequestT) reqBuilder.build();
       } else if (message instanceof ExecuteSqlRequest) {
         ExecuteSqlRequest.Builder reqBuilder = ((ExecuteSqlRequest) message).toBuilder();
-        String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
-        ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
-        endpoint = parentChannel.affinityEndpoint(transactionId);
-        if (databaseId != null) {
-          finder = parentChannel.getOrCreateChannelFinder(databaseId);
-          ChannelEndpoint routed = finder.findServer(reqBuilder);
-          if (endpoint == null) {
-            endpoint = routed;
-          }
-        }
+        RoutingDecision routing = routeFromRequest(reqBuilder);
+        finder = routing.finder;
+        endpoint = routing.endpoint;
         message = (RequestT) reqBuilder.build();
       } else if (message instanceof BeginTransactionRequest) {
         BeginTransactionRequest.Builder reqBuilder =
@@ -372,6 +355,46 @@ final class KeyAwareChannel extends ManagedChannel {
 
     void maybeClearAffinity() {
       parentChannel.clearAffinity(transactionIdToClear);
+    }
+
+    private RoutingDecision routeFromRequest(ReadRequest.Builder reqBuilder) {
+      String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
+      ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
+      ChannelEndpoint endpoint = parentChannel.affinityEndpoint(transactionId);
+      ChannelFinder finder = null;
+      if (databaseId != null) {
+        finder = parentChannel.getOrCreateChannelFinder(databaseId);
+        ChannelEndpoint routed = finder.findServer(reqBuilder);
+        if (endpoint == null) {
+          endpoint = routed;
+        }
+      }
+      return new RoutingDecision(finder, endpoint);
+    }
+
+    private RoutingDecision routeFromRequest(ExecuteSqlRequest.Builder reqBuilder) {
+      String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
+      ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
+      ChannelEndpoint endpoint = parentChannel.affinityEndpoint(transactionId);
+      ChannelFinder finder = null;
+      if (databaseId != null) {
+        finder = parentChannel.getOrCreateChannelFinder(databaseId);
+        ChannelEndpoint routed = finder.findServer(reqBuilder);
+        if (endpoint == null) {
+          endpoint = routed;
+        }
+      }
+      return new RoutingDecision(finder, endpoint);
+    }
+  }
+
+  private static final class RoutingDecision {
+    @Nullable private final ChannelFinder finder;
+    @Nullable private final ChannelEndpoint endpoint;
+
+    private RoutingDecision(@Nullable ChannelFinder finder, @Nullable ChannelEndpoint endpoint) {
+      this.finder = finder;
+      this.endpoint = endpoint;
     }
   }
 
