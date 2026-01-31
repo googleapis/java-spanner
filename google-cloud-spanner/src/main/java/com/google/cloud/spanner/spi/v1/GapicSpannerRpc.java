@@ -51,6 +51,7 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.api.gax.rpc.StreamController;
+import com.google.api.gax.rpc.TransportChannel;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.api.gax.rpc.UnaryCallable;
@@ -104,6 +105,7 @@ import com.google.longrunning.CancelOperationRequest;
 import com.google.longrunning.GetOperationRequest;
 import com.google.longrunning.Operation;
 import com.google.longrunning.OperationsGrpc;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -185,6 +187,7 @@ import com.google.spanner.v1.Session;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
+import io.grpc.Channel;
 import io.grpc.Context;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
@@ -223,6 +226,8 @@ import javax.annotation.Nullable;
 public class GapicSpannerRpc implements SpannerRpc {
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
+  private static final String EXPERIMENTAL_LOCATION_API_ENV_VAR =
+      "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
       PathTemplate.create("{database=projects/*/instances/*/databases/*}/operations/{operation}");
   private static final int MAX_MESSAGE_SIZE = 256 * 1024 * 1024;
@@ -282,6 +287,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
   private final boolean isDynamicChannelPoolEnabled;
+  @Nullable private final KeyAwareChannel keyAwareChannel;
 
   private final GrpcCallContext baseGrpcCallContext;
 
@@ -393,9 +399,17 @@ public class GapicSpannerRpc implements SpannerRpc {
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
-      TransportChannelProvider channelProvider =
+      boolean enableLocationApi =
+          Boolean.parseBoolean(System.getenv(EXPERIMENTAL_LOCATION_API_ENV_VAR));
+      TransportChannelProvider baseChannelProvider =
           MoreObjects.firstNonNull(
               options.getChannelProvider(), defaultChannelProviderBuilder.build());
+      TransportChannelProvider channelProvider =
+          enableLocationApi && baseChannelProvider instanceof InstantiatingGrpcChannelProvider
+              ? new KeyAwareTransportChannelProvider(
+                  (InstantiatingGrpcChannelProvider) baseChannelProvider,
+                  options.getChannelEndpointCacheFactory())
+              : baseChannelProvider;
 
       CredentialsProvider credentialsProvider =
           GrpcTransportOptions.setUpCredentialsProvider(options);
@@ -427,6 +441,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                         /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         ClientContext clientContext = ClientContext.create(spannerStubSettings);
+        this.keyAwareChannel = extractKeyAwareChannel(clientContext.getTransportChannel());
         this.spannerStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(
                 spannerStubSettings, clientContext);
@@ -546,6 +561,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         throw asSpannerException(e);
       }
     } else {
+      this.keyAwareChannel = null;
       this.databaseAdminStub = null;
       this.instanceAdminStub = null;
       this.spannerStub = null;
@@ -560,6 +576,23 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.instanceAdminStubSettings = null;
       this.spannerWatchdog = null;
       this.partitionedDmlRetrySettings = null;
+    }
+  }
+
+  private static KeyAwareChannel extractKeyAwareChannel(TransportChannel transportChannel) {
+    if (transportChannel instanceof GrpcTransportChannel) {
+      Channel channel = ((GrpcTransportChannel) transportChannel).getChannel();
+      if (channel instanceof KeyAwareChannel) {
+        return (KeyAwareChannel) channel;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void clearTransactionAffinity(ByteString transactionId) {
+    if (keyAwareChannel != null) {
+      keyAwareChannel.clearTransactionAffinity(transactionId);
     }
   }
 

@@ -404,6 +404,15 @@ abstract class AbstractReadContext
       }
     }
 
+    @Override
+    public void close() {
+      ByteString id = getTransactionId();
+      if (id != null && !id.isEmpty()) {
+        rpc.clearTransactionAffinity(id);
+      }
+      super.close();
+    }
+
     /**
      * Initializes the transaction with the timestamp specified within MultiUseReadOnlyTransaction.
      * This is used only for fallback of PartitionQueryRequest and PartitionReadRequest with

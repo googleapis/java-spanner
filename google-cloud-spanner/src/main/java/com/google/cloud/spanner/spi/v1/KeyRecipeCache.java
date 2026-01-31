@@ -26,6 +26,7 @@ import com.google.common.hash.Hashing;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.Mutation;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RecipeList;
 import com.google.spanner.v1.RoutingHint;
@@ -41,6 +42,8 @@ import java.util.logging.Logger;
 
 @InternalApi
 public final class KeyRecipeCache {
+  // Best-effort routing cache; compute calls are intentionally unsynchronized and may race with
+  // updates. Requests still succeed without routing hints when data is stale.
   private static final Logger logger = Logger.getLogger(KeyRecipeCache.class.getName());
   private static final long DEFAULT_SCHEMA_RECIPE_CACHE_SIZE = 1000;
   private static final long DEFAULT_PREPARED_QUERY_CACHE_SIZE = 1000;
@@ -80,7 +83,7 @@ public final class KeyRecipeCache {
   }
 
   private final AtomicLong nextOperationUid = new AtomicLong(1);
-  private ByteString schemaGeneration = ByteString.EMPTY;
+  private volatile ByteString schemaGeneration = ByteString.EMPTY;
 
   private final Cache<String, KeyRecipe> schemaRecipes =
       CacheBuilder.newBuilder().maximumSize(DEFAULT_SCHEMA_RECIPE_CACHE_SIZE).build();
@@ -224,6 +227,46 @@ public final class KeyRecipeCache {
       }
     } catch (IllegalArgumentException e) {
       logger.fine("Failed query param encoding: " + e.getMessage());
+    }
+  }
+
+  public TargetRange mutationToTargetRange(Mutation mutation) {
+    if (mutation == null) {
+      return null;
+    }
+    String tableName = tableNameFromMutation(mutation);
+    if (tableName == null || tableName.isEmpty()) {
+      return null;
+    }
+
+    KeyRecipe recipe = getIfPresent(schemaRecipes, tableName);
+    if (recipe == null) {
+      logger.fine("Schema recipe not found for mutation table: " + tableName);
+      return null;
+    }
+
+    try {
+      return recipe.mutationToTargetRange(mutation);
+    } catch (IllegalArgumentException e) {
+      logger.fine("Failed mutation key encoding: " + e.getMessage());
+      return null;
+    }
+  }
+
+  private static String tableNameFromMutation(Mutation mutation) {
+    switch (mutation.getOperationCase()) {
+      case INSERT:
+        return mutation.getInsert().getTable();
+      case UPDATE:
+        return mutation.getUpdate().getTable();
+      case INSERT_OR_UPDATE:
+        return mutation.getInsertOrUpdate().getTable();
+      case REPLACE:
+        return mutation.getReplace().getTable();
+      case DELETE:
+        return mutation.getDelete().getTable();
+      default:
+        return null;
     }
   }
 
