@@ -53,6 +53,7 @@ import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.SpannerRpcFactory;
+import com.google.cloud.spanner.spi.v1.ChannelEndpointCacheFactory;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.SpannerSettings;
@@ -202,6 +203,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private final TransportChannelProvider channelProvider;
+  private final ChannelEndpointCacheFactory channelEndpointCacheFactory;
 
   @SuppressWarnings("rawtypes")
   private final ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator;
@@ -826,6 +828,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
+    channelEndpointCacheFactory = builder.channelEndpointCacheFactory;
     if (builder.mTLSContext != null) {
       channelConfigurator =
           channelBuilder -> {
@@ -1092,6 +1095,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             createCustomClientLibToken(LIQUIBASE_API_CLIENT_LIB_TOKEN),
             createCustomClientLibToken(PG_ADAPTER_CLIENT_LIB_TOKEN));
     private TransportChannelProvider channelProvider;
+    private ChannelEndpointCacheFactory channelEndpointCacheFactory;
 
     @SuppressWarnings("rawtypes")
     private ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator;
@@ -1232,6 +1236,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.asyncExecutorProvider = options.asyncExecutorProvider;
       this.compressorName = options.compressorName;
       this.channelProvider = options.channelProvider;
+      this.channelEndpointCacheFactory = options.channelEndpointCacheFactory;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
       this.enableDirectAccess = options.enableDirectAccess;
@@ -1285,6 +1290,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setChannelProvider(TransportChannelProvider channelProvider) {
       this.channelProvider = channelProvider;
+      return this;
+    }
+
+    @InternalApi
+    public Builder setChannelEndpointCacheFactory(
+        ChannelEndpointCacheFactory channelEndpointCacheFactory) {
+      this.channelEndpointCacheFactory = channelEndpointCacheFactory;
       return this;
     }
 
@@ -2139,6 +2151,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public TransportChannelProvider getChannelProvider() {
     return channelProvider;
+  }
+
+  @InternalApi
+  public ChannelEndpointCacheFactory getChannelEndpointCacheFactory() {
+    return channelEndpointCacheFactory;
   }
 
   @SuppressWarnings("rawtypes")
