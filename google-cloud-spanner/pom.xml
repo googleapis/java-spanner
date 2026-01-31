@@ -25,6 +25,13 @@
 
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.7.1</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <groupId>org.jacoco</groupId>
@@ -146,6 +153,25 @@
           <!-- Exclude (public) classes in this internal package -->
           <excludes>com/google/cloud/spanner/spi/v1/**</excludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>0.6.1</version>
+        <configuration>
+          <protocArtifact>com.google.protobuf:protoc:4.33.2:exe:${os.detected.classifier}</protocArtifact>
+          <additionalProtoPathElements>
+            <additionalProtoPathElement>${project.basedir}/../proto-google-cloud-spanner-v1/src/main/proto</additionalProtoPathElement>
+          </additionalProtoPathElements>
+        </configuration>
+        <executions>
+          <execution>
+            <id>test-compile</id>
+            <goals>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
     <pluginManagement>
