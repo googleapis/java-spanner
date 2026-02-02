@@ -109,6 +109,7 @@ import com.google.longrunning.CancelOperationRequest;
 import com.google.longrunning.GetOperationRequest;
 import com.google.longrunning.Operation;
 import com.google.longrunning.OperationsGrpc;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -237,6 +238,8 @@ import javax.annotation.Nullable;
 public class GapicSpannerRpc implements SpannerRpc {
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
+  private static final String EXPERIMENTAL_LOCATION_API_ENV_VAR =
+      "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
       PathTemplate.create("{database=projects/*/instances/*/databases/*}/operations/{operation}");
   private static final int MAX_MESSAGE_SIZE = 256 * 1024 * 1024;
@@ -296,6 +299,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
   private final boolean isDynamicChannelPoolEnabled;
+  @Nullable private final KeyAwareChannel keyAwareChannel;
 
   private final GrpcCallContext baseGrpcCallContext;
 
@@ -449,9 +453,17 @@ public class GapicSpannerRpc implements SpannerRpc {
 
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
       // with information gathered from SpannerOptions if none is provided
-      TransportChannelProvider channelProvider =
+      TransportChannelProvider baseChannelProvider =
           MoreObjects.firstNonNull(
               options.getChannelProvider(), defaultChannelProviderBuilder.build());
+      boolean enableLocationApi =
+          Boolean.parseBoolean(System.getenv(EXPERIMENTAL_LOCATION_API_ENV_VAR));
+      TransportChannelProvider channelProvider =
+          enableLocationApi && baseChannelProvider instanceof InstantiatingGrpcChannelProvider
+              ? new KeyAwareTransportChannelProvider(
+                  (InstantiatingGrpcChannelProvider) baseChannelProvider,
+                  options.getChannelEndpointCacheFactory())
+              : baseChannelProvider;
 
       spannerWatchdog =
           Executors.newSingleThreadScheduledExecutor(
@@ -480,6 +492,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                         /* isAdminClient= */ false, isEmulatorEnabled(options, emulatorHost)))
                 .build();
         ClientContext clientContext = ClientContext.create(spannerStubSettings);
+        this.keyAwareChannel = extractKeyAwareChannel(clientContext.getTransportChannel());
         this.spannerStub =
             GrpcSpannerStubWithStubSettingsAndClientContext.create(
                 spannerStubSettings, clientContext);
@@ -599,6 +612,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         throw asSpannerException(e);
       }
     } else {
+      this.keyAwareChannel = null;
       this.databaseAdminStub = null;
       this.instanceAdminStub = null;
       this.spannerStub = null;
@@ -625,6 +639,23 @@ public class GapicSpannerRpc implements SpannerRpc {
         .setMinFailedCalls(minFailedCalls)
         .setGcpFallbackOpenTelemetry(fallbackTelemetry)
         .build();
+  }
+
+  private static KeyAwareChannel extractKeyAwareChannel(TransportChannel transportChannel) {
+    if (transportChannel instanceof GrpcTransportChannel) {
+      Channel channel = ((GrpcTransportChannel) transportChannel).getChannel();
+      if (channel instanceof KeyAwareChannel) {
+        return (KeyAwareChannel) channel;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void clearTransactionAffinity(ByteString transactionId) {
+    if (keyAwareChannel != null) {
+      keyAwareChannel.clearTransactionAffinity(transactionId);
+    }
   }
 
   private static String parseGrpcGcpApiConfig() {

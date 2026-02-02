@@ -5,4 +5,4 @@
 # https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners#codeowners-syntax
 
 # The @googleapis/spanner-client-libraries-java is the default owner for changes in this repo
-*                       @googleapis/yoshi-java @googleapis/spanner-client-libraries-java
+*                       @googleapis/cloud-sdk-java-team @googleapis/spanner-client-libraries-java
