@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.109.0](https://github.com/googleapis/java-spanner/compare/v6.108.0...v6.109.0) (2026-02-02)
+
+
+### Features
+
+* Adding Send and Ack Mutation Support for Cloud Spanner Queue ([#4298](https://github.com/googleapis/java-spanner/issues/4298)) ([4b637ac](https://github.com/googleapis/java-spanner/commit/4b637ac0e4d6d696f3da8ae7fbac31c877aceba9))
+
+
+### Documentation
+
+* Add snippet for ReadLockMode configuration at client and transaction ([#4305](https://github.com/googleapis/java-spanner/issues/4305)) ([0fd4098](https://github.com/googleapis/java-spanner/commit/0fd40983b3bbb2f753e07036cedea9e7b9e26132))
+
 ## [6.108.0](https://github.com/googleapis/java-spanner/compare/v6.107.0...v6.108.0) (2026-01-28)
 
 
