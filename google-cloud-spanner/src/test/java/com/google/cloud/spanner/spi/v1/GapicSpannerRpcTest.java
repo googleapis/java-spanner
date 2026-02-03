@@ -1071,7 +1071,7 @@ public class GapicSpannerRpcTest {
         .setCallCredentialsProvider(() -> MoreCallCredentials.from(VARIABLE_CREDENTIALS))
         .build();
   }
-    
+
   private boolean isJava8() {
     return JavaVersionUtil.getJavaMajorVersion() == 8;
   }
