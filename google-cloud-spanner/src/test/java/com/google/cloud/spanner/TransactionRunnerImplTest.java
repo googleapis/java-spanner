@@ -23,7 +23,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -101,37 +100,6 @@ public class TransactionRunnerImplTest {
     }
   }
 
-  @Test
-  public void testCommitWithClientContext() {
-    RequestOptions.ClientContext clientContext =
-        RequestOptions.ClientContext.newBuilder()
-            .putSecureContext(
-                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
-            .build();
-    when(session.getName()).thenReturn("projects/p/instances/i/databases/d/sessions/s");
-    when(session.newTransaction(any(Options.class), any())).thenReturn(txn);
-    Mockito.clearInvocations(session);
-    transactionRunner =
-        new TransactionRunnerImpl(
-            session,
-            Options.priority(Options.RpcPriority.HIGH),
-            Options.tag("tag"),
-            Options.clientContext(clientContext));
-    transactionRunner.setSpan(span);
-
-    transactionRunner.run(
-        transaction -> {
-          return null;
-        });
-
-    ArgumentCaptor<Options> optionsCaptor = ArgumentCaptor.forClass(Options.class);
-    verify(session).newTransaction(optionsCaptor.capture(), any());
-    Options capturedOptions = optionsCaptor.getValue();
-    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, capturedOptions.priority());
-    assertEquals("tag", capturedOptions.tag());
-    assertEquals(clientContext, capturedOptions.clientContext());
-  }
-
   @Mock private SpannerRpc rpc;
   @Mock private SessionImpl session;
   @Mock private TransactionRunnerImpl.TransactionContextImpl txn;
@@ -194,6 +162,37 @@ public class TransactionRunnerImplTest {
     span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
     transactionRunner.setSpan(span);
+  }
+
+  @Test
+  public void testCommitWithClientContext() {
+    RequestOptions.ClientContext clientContext =
+        RequestOptions.ClientContext.newBuilder()
+            .putSecureContext(
+                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
+            .build();
+    when(session.getName()).thenReturn("projects/p/instances/i/databases/d/sessions/s");
+    when(session.newTransaction(any(Options.class), any())).thenReturn(txn);
+    Mockito.clearInvocations(session);
+    transactionRunner =
+        new TransactionRunnerImpl(
+            session,
+            Options.priority(Options.RpcPriority.HIGH),
+            Options.tag("tag"),
+            Options.clientContext(clientContext));
+    transactionRunner.setSpan(span);
+
+    transactionRunner.run(
+        transaction -> {
+          return null;
+        });
+
+    ArgumentCaptor<Options> optionsCaptor = ArgumentCaptor.forClass(Options.class);
+    verify(session).newTransaction(optionsCaptor.capture(), any());
+    Options capturedOptions = optionsCaptor.getValue();
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, capturedOptions.priority());
+    assertEquals("tag", capturedOptions.tag());
+    assertEquals(clientContext, capturedOptions.clientContext());
   }
 
   @SuppressWarnings("unchecked")

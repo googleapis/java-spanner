@@ -489,18 +489,20 @@ class SessionImpl implements Session {
     if (sessionReference.getIsMultiplexed() && mutation != null) {
       requestBuilder.setMutationKey(mutation);
     }
-    RequestOptions requestOptions = transactionOptions.toRequestOptionsProto(true);
+    RequestOptions.Builder optionsBuilder =
+        transactionOptions.toRequestOptionsProto(true).toBuilder();
     RequestOptions.ClientContext defaultClientContext = spanner.getOptions().getClientContext();
     if (defaultClientContext != null) {
       RequestOptions.ClientContext.Builder builder = defaultClientContext.toBuilder();
-      if (requestOptions.hasClientContext()) {
-        builder.mergeFrom(requestOptions.getClientContext());
+      if (optionsBuilder.hasClientContext()) {
+        builder.mergeFrom(optionsBuilder.getClientContext());
       }
-      requestOptions = requestOptions.toBuilder().setClientContext(builder.build()).build();
+      optionsBuilder.setClientContext(builder.build());
     }
     if (!sessionReference.getIsMultiplexed()) {
-      requestOptions = requestOptions.toBuilder().clearTransactionTag().build();
+      optionsBuilder.clearTransactionTag();
     }
+    RequestOptions requestOptions = optionsBuilder.build();
     if (!requestOptions.equals(RequestOptions.getDefaultInstance())) {
       requestBuilder.setRequestOptions(requestOptions);
     }

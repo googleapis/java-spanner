@@ -1988,7 +1988,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /** Sets the default {@link RequestOptions.ClientContext} for all requests. */
-    public Builder setClientContext(RequestOptions.ClientContext clientContext) {
+    public Builder setDefaultClientContext(RequestOptions.ClientContext clientContext) {
       this.clientContext = clientContext;
       return this;
     }

@@ -78,42 +78,6 @@ import org.mockito.MockitoAnnotations;
 /** Unit tests for {@link com.google.cloud.spanner.SessionImpl}. */
 @RunWith(JUnit4.class)
 public class SessionImplTest {
-  @Test
-  public void testBeginTransactionWithClientContext() {
-    RequestOptions.ClientContext clientContext =
-        RequestOptions.ClientContext.newBuilder()
-            .putSecureContext(
-                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
-            .build();
-    Mockito.when(
-            rpc.beginTransactionAsync(
-                Mockito.any(BeginTransactionRequest.class), anyMap(), eq(true)))
-        .thenReturn(
-            ApiFutures.immediateFuture(
-                Transaction.newBuilder().setId(ByteString.copyFromUtf8("tx")).build()));
-
-    ((SessionImpl) session)
-        .beginTransactionAsync(
-            Options.fromTransactionOptions(
-                Options.priority(Options.RpcPriority.HIGH),
-                Options.tag("tag"),
-                Options.clientContext(clientContext)),
-            true,
-            Collections.emptyMap(),
-            null,
-            null);
-
-    ArgumentCaptor<BeginTransactionRequest> requestCaptor =
-        ArgumentCaptor.forClass(BeginTransactionRequest.class);
-    Mockito.verify(rpc).beginTransactionAsync(requestCaptor.capture(), anyMap(), eq(true));
-    BeginTransactionRequest request = requestCaptor.getValue();
-    RequestOptions requestOptions = request.getRequestOptions();
-    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, requestOptions.getPriority());
-    // TransactionTag should NOT be set because session is not multiplexed.
-    assertEquals("", requestOptions.getTransactionTag());
-    assertEquals(clientContext, requestOptions.getClientContext());
-  }
-
   @Mock private SpannerRpc rpc;
   @Mock private SpannerOptions spannerOptions;
   private com.google.cloud.spanner.Session session;
@@ -202,6 +166,42 @@ public class SessionImplTest {
 
               return null;
             });
+  }
+
+  @Test
+  public void testBeginTransactionWithClientContext() {
+    RequestOptions.ClientContext clientContext =
+        RequestOptions.ClientContext.newBuilder()
+            .putSecureContext(
+                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
+            .build();
+    Mockito.when(
+            rpc.beginTransactionAsync(
+                Mockito.any(BeginTransactionRequest.class), anyMap(), eq(true)))
+        .thenReturn(
+            ApiFutures.immediateFuture(
+                Transaction.newBuilder().setId(ByteString.copyFromUtf8("tx")).build()));
+
+    ((SessionImpl) session)
+        .beginTransactionAsync(
+            Options.fromTransactionOptions(
+                Options.priority(Options.RpcPriority.HIGH),
+                Options.tag("tag"),
+                Options.clientContext(clientContext)),
+            true,
+            Collections.emptyMap(),
+            null,
+            null);
+
+    ArgumentCaptor<BeginTransactionRequest> requestCaptor =
+        ArgumentCaptor.forClass(BeginTransactionRequest.class);
+    Mockito.verify(rpc).beginTransactionAsync(requestCaptor.capture(), anyMap(), eq(true));
+    BeginTransactionRequest request = requestCaptor.getValue();
+    RequestOptions requestOptions = request.getRequestOptions();
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, requestOptions.getPriority());
+    // TransactionTag should NOT be set because session is not multiplexed.
+    assertEquals("", requestOptions.getTransactionTag());
+    assertEquals(clientContext, requestOptions.getClientContext());
   }
 
   @Test

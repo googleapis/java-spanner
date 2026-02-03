@@ -684,20 +684,20 @@ abstract class AbstractReadContext
   }
 
   RequestOptions buildRequestOptions(Options options) {
-    RequestOptions requestOptions = options.toRequestOptionsProto(false);
+    RequestOptions.Builder builder = options.toRequestOptionsProto(false).toBuilder();
     RequestOptions.ClientContext defaultClientContext =
         session.getSpanner().getOptions().getClientContext();
     if (defaultClientContext != null) {
-      RequestOptions.ClientContext.Builder builder = defaultClientContext.toBuilder();
-      if (requestOptions.hasClientContext()) {
-        builder.mergeFrom(requestOptions.getClientContext());
+      RequestOptions.ClientContext.Builder clientContextBuilder = defaultClientContext.toBuilder();
+      if (builder.hasClientContext()) {
+        clientContextBuilder.mergeFrom(builder.getClientContext());
       }
-      requestOptions = requestOptions.toBuilder().setClientContext(builder.build()).build();
+      builder.setClientContext(clientContextBuilder.build());
     }
     if (getTransactionTag() != null) {
-      return requestOptions.toBuilder().setTransactionTag(getTransactionTag()).build();
+      builder.setTransactionTag(getTransactionTag());
     }
-    return requestOptions;
+    return builder.build();
   }
 
   ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(

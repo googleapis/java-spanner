@@ -23,6 +23,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
@@ -144,8 +145,7 @@ public class ClientContextMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testBeginTransaction_PropagatesClientContext() {
-    // 1. Test lazy transaction start (default).
+  public void testBeginTransaction_PropagatesClientContextWithLazyStart() {
     // The BeginTransaction option is inlined with the first statement.
     try (Connection connection = createConnection()) {
       connection.setClientContext(CLIENT_CONTEXT);
@@ -157,8 +157,10 @@ public class ClientContextMockServerTest extends AbstractMockServerTest {
       assertEquals(CLIENT_CONTEXT, request.getRequestOptions().getClientContext());
       assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     }
+  }
 
-    // 2. Test eager transaction start.
+  @Test
+  public void testBeginTransaction_PropagatesClientContextWithEagerStartAborted() {
     // We can force an explicit BeginTransaction RPC by failing the first statement with an ABORTED
     // error. If the statement fails before returning a transaction ID, the retry will use an
     // explicit BeginTransaction RPC.
@@ -178,12 +180,11 @@ public class ClientContextMockServerTest extends AbstractMockServerTest {
       connection.beginTransaction();
       connection.executeUpdate(INSERT_STATEMENT);
 
-      // We expect multiple ExecuteSqlRequests.
+      // We expect two ExecuteSqlRequests.
       // 1. The first one fails with ABORTED. This request includes the BeginTransaction option.
       // 2. The retry.
-      // Note: precise count depends on Gax retry logic vs Spanner retry logic interaction.
       int executeSqlCount = mockSpanner.countRequestsOfType(ExecuteSqlRequest.class);
-      assertFalse(executeSqlCount < 2);
+      assertEquals(2, executeSqlCount);
 
       for (ExecuteSqlRequest req : mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)) {
         assertEquals(CLIENT_CONTEXT, req.getRequestOptions().getClientContext());
@@ -194,6 +195,28 @@ public class ClientContextMockServerTest extends AbstractMockServerTest {
       BeginTransactionRequest beginRequest =
           mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
       assertEquals(CLIENT_CONTEXT, beginRequest.getRequestOptions().getClientContext());
+    }
+  }
+
+  @Test
+  public void testBeginTransaction_PropagatesClientContextWithEagerStartMutations() {
+    // We can also force an explicit BeginTransaction RPC by constructing a transaction
+    // that only issues mutations.  Mutation RPCs cannot start a transaction, so
+    // if they are the only RPCs in the transaction, then an explicit BeginTransaction
+    // must be issued.
+    try (Connection connection = createConnection()) {
+      connection.setClientContext(CLIENT_CONTEXT);
+      connection.beginTransaction();
+      connection.bufferedWrite(Mutation.newInsertBuilder("my-table").set("my-col").to(1L).build());
+      connection.commit();
+
+      assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      BeginTransactionRequest request =
+          mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
+      assertEquals(CLIENT_CONTEXT, request.getRequestOptions().getClientContext());
+      assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+      CommitRequest commitRequest = mockSpanner.getRequestsOfType(CommitRequest.class).get(0);
+      assertEquals(CLIENT_CONTEXT, commitRequest.getRequestOptions().getClientContext());
     }
   }
 
@@ -215,7 +238,7 @@ public class ClientContextMockServerTest extends AbstractMockServerTest {
             .setProjectId(projectId)
             .setHost("http://localhost:" + getPort())
             .usePlainText()
-            .setClientContext(defaultContext)
+            .setDefaultClientContext(defaultContext)
             .build();
 
     try (Spanner spanner = options.getService()) {

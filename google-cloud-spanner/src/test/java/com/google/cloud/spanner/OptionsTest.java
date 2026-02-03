@@ -46,6 +46,14 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link Options}. */
 @RunWith(JUnit4.class)
 public class OptionsTest {
+  private static final DirectedReadOptions DIRECTED_READ_OPTIONS =
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder().setLocation("us-west1").build()))
+          .build();
+
   @Test
   public void testToRequestOptionsProto() {
     RequestOptions.ClientContext clientContext =
@@ -71,14 +79,6 @@ public class OptionsTest {
     assertEquals("tag", protoForTransaction.getTransactionTag());
     assertEquals(clientContext, protoForTransaction.getClientContext());
   }
-
-  private static final DirectedReadOptions DIRECTED_READ_OPTIONS =
-      DirectedReadOptions.newBuilder()
-          .setIncludeReplicas(
-              IncludeReplicas.newBuilder()
-                  .addReplicaSelections(
-                      ReplicaSelection.newBuilder().setLocation("us-west1").build()))
-          .build();
 
   @Test
   public void negativeLimitsNotAllowed() {
