@@ -635,4 +635,140 @@ public class SpannerPoolTest {
     spanner2 = pool.getSpanner(optionsOpenTelemetry3, connection2);
     assertNotEquals(spanner1, spanner2);
   }
+
+  @Test
+  public void testDynamicChannelPoolSettings() {
+    SpannerPoolKey keyWithoutDcp =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithDcpEnabled =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=true")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithDcpDisabled =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=false")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithDcpAndMinChannels =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=true;dcpMinChannels=3")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithDcpAndMaxChannels =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=true;dcpMaxChannels=15")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithDcpAndInitialChannels =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=true;dcpInitialChannels=5")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+
+    // DCP settings should affect the SpannerPoolKey
+    assertNotEquals(keyWithoutDcp, keyWithDcpEnabled);
+    assertNotEquals(keyWithoutDcp, keyWithDcpDisabled);
+    assertNotEquals(keyWithDcpEnabled, keyWithDcpDisabled);
+
+    // Different channel settings should create different keys
+    assertNotEquals(keyWithDcpEnabled, keyWithDcpAndMinChannels);
+    assertNotEquals(keyWithDcpEnabled, keyWithDcpAndMaxChannels);
+    assertNotEquals(keyWithDcpEnabled, keyWithDcpAndInitialChannels);
+
+    // Same configuration should create equal keys
+    assertEquals(
+        keyWithDcpEnabled,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=true")
+                .setCredentials(NoCredentials.getInstance())
+                .build()));
+    assertEquals(
+        keyWithDcpAndMinChannels,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=true;dcpMinChannels=3")
+                .setCredentials(NoCredentials.getInstance())
+                .build()));
+  }
+
+  @Test
+  public void testDynamicChannelPoolWithAllSettings() {
+    SpannerPoolKey keyWithAllDcpSettings =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d"
+                        + "?enableDynamicChannelPool=true;dcpMinChannels=3;dcpMaxChannels=15;dcpInitialChannels=5")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithDifferentMaxChannels =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d"
+                        + "?enableDynamicChannelPool=true;dcpMinChannels=3;dcpMaxChannels=20;dcpInitialChannels=5")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+
+    assertNotEquals(keyWithAllDcpSettings, keyWithDifferentMaxChannels);
+
+    // Same configuration should be equal
+    assertEquals(
+        keyWithAllDcpSettings,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d"
+                        + "?enableDynamicChannelPool=true;dcpMinChannels=3;dcpMaxChannels=15;dcpInitialChannels=5")
+                .setCredentials(NoCredentials.getInstance())
+                .build()));
+  }
+
+  @Test
+  public void testExplicitlyDisabledDynamicChannelPool() {
+    SpannerPoolKey keyWithoutDcpSetting =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+    SpannerPoolKey keyWithDcpExplicitlyDisabled =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=false")
+                .setCredentials(NoCredentials.getInstance())
+                .build());
+
+    // Keys should be different because one has explicit false and one has null (default)
+    assertNotEquals(keyWithoutDcpSetting, keyWithDcpExplicitlyDisabled);
+
+    // Verify the explicit false setting is preserved
+    assertEquals(
+        keyWithDcpExplicitlyDisabled,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/p/instances/i/databases/d?enableDynamicChannelPool=false")
+                .setCredentials(NoCredentials.getInstance())
+                .build()));
+  }
 }

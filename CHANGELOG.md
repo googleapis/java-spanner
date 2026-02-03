@@ -1,5 +1,57 @@
 # Changelog
 
+## [6.107.0](https://github.com/googleapis/java-spanner/compare/v6.106.0...v6.107.0) (2026-01-16)
+
+
+### Features
+
+* Add Dynamic Channel Pooling (DCP) support to Connection API ([#4299](https://github.com/googleapis/java-spanner/issues/4299)) ([bba03a4](https://github.com/googleapis/java-spanner/commit/bba03a44dbfbd59288ecd33e3e53276809ad69b1))
+* Add SsFormat encoding library ([#4292](https://github.com/googleapis/java-spanner/issues/4292)) ([338a9b1](https://github.com/googleapis/java-spanner/commit/338a9b1409cafedcdef674bdff09a72c3f2cd772))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-trace-v1 to v2.82.0 ([#4227](https://github.com/googleapis/java-spanner/issues/4227)) ([22bc6cf](https://github.com/googleapis/java-spanner/commit/22bc6cf3431f6e507d384f6e86a36503f1175ee7))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.83.0 ([#4169](https://github.com/googleapis/java-spanner/issues/4169)) ([61ae915](https://github.com/googleapis/java-spanner/commit/61ae915242a3c8a0aa1385bc1367f67df2c209d6))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.55.1 ([#4302](https://github.com/googleapis/java-spanner/issues/4302)) ([52acc0c](https://github.com/googleapis/java-spanner/commit/52acc0c620fec0aa67ecd81d634eec271fe4e429))
+* Update dependency net.bytebuddy:byte-buddy to v1.18.4 ([#4244](https://github.com/googleapis/java-spanner/issues/4244)) ([c8e4d91](https://github.com/googleapis/java-spanner/commit/c8e4d912155ab6829498822dcf0783fac5fe2747))
+* Update google.cloud.monitoring.version to v3.83.0 ([#4270](https://github.com/googleapis/java-spanner/issues/4270)) ([7ae68c8](https://github.com/googleapis/java-spanner/commit/7ae68c8e889f44f1057310bc45b70c086af9c385))
+* Update googleapis/sdk-platform-java action to v2.65.1 ([#4301](https://github.com/googleapis/java-spanner/issues/4301)) ([7d98f4e](https://github.com/googleapis/java-spanner/commit/7d98f4e12843826c18cbb8e0998c8687c94fc3d2))
+
+## [6.106.0](https://github.com/googleapis/java-spanner/compare/v6.105.0...v6.106.0) (2026-01-07)
+
+
+### Features
+
+* Support SHOW DEFAULT_TRANSACTION_ISOLATION for PG databases ([#4285](https://github.com/googleapis/java-spanner/issues/4285)) ([aec0515](https://github.com/googleapis/java-spanner/commit/aec051514dd3d122a7231eb6d25d1aaec8d90bda))
+
+
+### Bug Fixes
+
+* Adjust the initial polling delay for ddl operations ([#4275](https://github.com/googleapis/java-spanner/issues/4275)) ([8d36967](https://github.com/googleapis/java-spanner/commit/8d36967d010bed8f5a4a0c32f9ec1b5fe7d33e1d))
+* Retry creation of multiplexed session ([#4288](https://github.com/googleapis/java-spanner/issues/4288)) ([735e29e](https://github.com/googleapis/java-spanner/commit/735e29ed394faea9f5e697b5934a1f4895055d56))
+
+## [6.105.0](https://github.com/googleapis/java-spanner/compare/v6.104.0...v6.105.0) (2025-12-16)
+
+
+### Features
+
+* Add support of dynamic channel pooling ([#4265](https://github.com/googleapis/java-spanner/issues/4265)) ([923a14a](https://github.com/googleapis/java-spanner/commit/923a14aad99ff6fc91868f02d657145dd0f31c18))
+* Include RequestID in requests and errors ([#4263](https://github.com/googleapis/java-spanner/issues/4263)) ([afd7d6b](https://github.com/googleapis/java-spanner/commit/afd7d6b008f13d7a4d1a3b7f924122bd41d14b59))
+* Make grpc-gcp default enabled ([#4239](https://github.com/googleapis/java-spanner/issues/4239)) ([bb82f9e](https://github.com/googleapis/java-spanner/commit/bb82f9e55c40cac29b090e54be780c2e42545ee1))
+
+
+### Bug Fixes
+
+* Refine connecitivity metrics to capture RPCs with no response he… ([#4252](https://github.com/googleapis/java-spanner/issues/4252)) ([7b49412](https://github.com/googleapis/java-spanner/commit/7b4941221969f48d077ff459214c7d1e65ef843c))
+* Retry as PDML dit not retry Resource limit exceeded ([#4258](https://github.com/googleapis/java-spanner/issues/4258)) ([c735d42](https://github.com/googleapis/java-spanner/commit/c735d42875092b0d1482fe641b99645f288cdf4f)), closes [#4253](https://github.com/googleapis/java-spanner/issues/4253)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.54.2 ([#4261](https://github.com/googleapis/java-spanner/issues/4261)) ([61dfd62](https://github.com/googleapis/java-spanner/commit/61dfd620637da6ef76b699edbad1095c26b81950))
+* Update googleapis/sdk-platform-java action to v2.64.2 ([#4262](https://github.com/googleapis/java-spanner/issues/4262)) ([f9505a9](https://github.com/googleapis/java-spanner/commit/f9505a97bdd9f6da7dd5ab1b60b47f7ed0a70402))
+
 ## [6.104.0](https://github.com/googleapis/java-spanner/compare/v6.103.0...v6.104.0) (2025-12-03)
 
 
