@@ -34,6 +34,7 @@ import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.TransactionOptions.ReadWrite;
@@ -52,6 +53,32 @@ public class OptionsTest {
                   .addReplicaSelections(
                       ReplicaSelection.newBuilder().setLocation("us-west1").build()))
           .build();
+
+  @Test
+  public void testToRequestOptionsProto() {
+    RequestOptions.ClientContext clientContext =
+        RequestOptions.ClientContext.newBuilder()
+            .putSecureContext(
+                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
+            .build();
+    Options options =
+        Options.fromQueryOptions(
+            Options.priority(RpcPriority.HIGH),
+            Options.tag("tag"),
+            Options.clientContext(clientContext));
+
+    RequestOptions protoForStatement = options.toRequestOptionsProto(false);
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, protoForStatement.getPriority());
+    assertEquals("tag", protoForStatement.getRequestTag());
+    assertEquals("", protoForStatement.getTransactionTag());
+    assertEquals(clientContext, protoForStatement.getClientContext());
+
+    RequestOptions protoForTransaction = options.toRequestOptionsProto(true);
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, protoForTransaction.getPriority());
+    assertEquals("", protoForTransaction.getRequestTag());
+    assertEquals("tag", protoForTransaction.getTransactionTag());
+    assertEquals(clientContext, protoForTransaction.getClientContext());
+  }
 
   @Test
   public void negativeLimitsNotAllowed() {
