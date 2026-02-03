@@ -350,6 +350,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (this.readLockMode != ReadLockMode.READ_LOCK_MODE_UNSPECIFIED) {
       numOptions++;
     }
+    if (this.clientContext != null) {
+      numOptions++;
+    }
     TransactionOption[] options = new TransactionOption[numOptions];
     int index = 0;
     if (builder.returnCommitStats) {
@@ -372,6 +375,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
     if (this.readLockMode != ReadLockMode.READ_LOCK_MODE_UNSPECIFIED) {
       options[index++] = Options.readLockMode(this.readLockMode);
+    }
+    if (this.clientContext != null) {
+      options[index++] = Options.clientContext(this.clientContext);
     }
     return options;
   }

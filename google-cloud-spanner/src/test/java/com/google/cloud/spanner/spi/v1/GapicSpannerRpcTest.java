@@ -27,9 +27,11 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
@@ -41,6 +43,8 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.grpc.fallback.GcpFallbackChannelOptions;
 import com.google.cloud.grpc.fallback.GcpFallbackOpenTelemetry;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
@@ -83,6 +87,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.grpc.auth.MoreCallCredentials;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import io.opentelemetry.api.OpenTelemetry;
@@ -969,6 +974,55 @@ public class GapicSpannerRpcTest {
         writeableEnvironmentVariables.put(envVar, originalValue);
       }
     }
+  }
+
+  @Test
+  public void testGrpcGcpExtensionPreservesChannelConfigurator() throws Exception {
+    InstantiatingGrpcChannelProvider.Builder channelProviderBuilder =
+        InstantiatingGrpcChannelProvider.newBuilder();
+    AtomicBoolean baseConfiguratorCalled = new AtomicBoolean(false);
+    channelProviderBuilder.setChannelConfigurator(
+        builder -> {
+          baseConfiguratorCalled.set(true);
+          return builder;
+        });
+
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("[PROJECT]").enableGrpcGcpExtension().build();
+
+    java.lang.reflect.Method method =
+        GapicSpannerRpc.class.getDeclaredMethod(
+            "maybeEnableGrpcGcpExtension",
+            InstantiatingGrpcChannelProvider.Builder.class,
+            SpannerOptions.class);
+    method.setAccessible(true);
+    method.invoke(null, channelProviderBuilder, options);
+
+    ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> chainedConfigurator =
+        channelProviderBuilder.getChannelConfigurator();
+    chainedConfigurator.apply(NettyChannelBuilder.forAddress("localhost", 1));
+
+    assertTrue(baseConfiguratorCalled.get());
+  }
+
+  @Test
+  public void testGrpcGcpOtelMetricsDisabledSkipsMeterInjection() throws Exception {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setGrpcGcpOtelMetricsEnabled(false)
+            .build();
+
+    java.lang.reflect.Method method =
+        GapicSpannerRpc.class.getDeclaredMethod(
+            "grpcGcpOptionsWithMetricsAndDcp", SpannerOptions.class);
+    method.setAccessible(true);
+    GcpManagedChannelOptions grpcGcpOptions =
+        (GcpManagedChannelOptions) method.invoke(null, options);
+    GcpMetricsOptions metricsOptions = grpcGcpOptions.getMetricsOptions();
+
+    assertNotNull(metricsOptions);
+    assertNull(metricsOptions.getOpenTelemetryMeter());
   }
 
   private static final class RecordingTransportChannelProvider implements TransportChannelProvider {

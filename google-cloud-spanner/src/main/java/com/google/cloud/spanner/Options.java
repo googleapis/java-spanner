@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ReadRequest.LockHint;
 import com.google.spanner.v1.ReadRequest.OrderBy;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
@@ -265,6 +266,37 @@ public final class Options implements Serializable {
     return new PriorityOption(priority);
   }
 
+  /**
+   * Specifying this will add the given client context to the request. The client context is used to
+   * pass side-channel or configuration information to the backend, such as a user ID for a
+   * parameterized secure view.
+   */
+  public static ReadQueryUpdateTransactionOption clientContext(
+      RequestOptions.ClientContext clientContext) {
+    return new ClientContextOption(clientContext);
+  }
+
+  RequestOptions toRequestOptionsProto(boolean isTransactionOption) {
+    if (!hasPriority() && !hasTag() && !hasClientContext()) {
+      return RequestOptions.getDefaultInstance();
+    }
+    RequestOptions.Builder builder = RequestOptions.newBuilder();
+    if (hasPriority()) {
+      builder.setPriority(priority());
+    }
+    if (hasTag()) {
+      if (isTransactionOption) {
+        builder.setTransactionTag(tag());
+      } else {
+        builder.setRequestTag(tag());
+      }
+    }
+    if (hasClientContext()) {
+      builder.setClientContext(clientContext());
+    }
+    return builder.build();
+  }
+
   public static TransactionOption maxCommitDelay(Duration maxCommitDelay) {
     Preconditions.checkArgument(!maxCommitDelay.isNegative(), "maxCommitDelay should be positive");
     return new MaxCommitDelayOption(maxCommitDelay);
@@ -462,6 +494,20 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class ClientContextOption extends InternalOption
+      implements ReadQueryUpdateTransactionOption {
+    private final RequestOptions.ClientContext clientContext;
+
+    ClientContextOption(RequestOptions.ClientContext clientContext) {
+      this.clientContext = clientContext;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.clientContext = clientContext;
+    }
+  }
+
   static final class TagOption extends InternalOption implements ReadQueryUpdateTransactionOption {
     private final String tag;
 
@@ -574,6 +620,7 @@ public final class Options implements Serializable {
   private String filter;
   private RpcPriority priority;
   private String tag;
+  private RequestOptions.ClientContext clientContext;
   private String etag;
   private Boolean validateOnly;
   private Boolean withExcludeTxnFromChangeStreams;
@@ -664,6 +711,14 @@ public final class Options implements Serializable {
 
   Priority priority() {
     return priority == null ? null : priority.proto;
+  }
+
+  boolean hasClientContext() {
+    return clientContext != null;
+  }
+
+  RequestOptions.ClientContext clientContext() {
+    return clientContext;
   }
 
   boolean hasTag() {
@@ -777,6 +832,9 @@ public final class Options implements Serializable {
     if (priority != null) {
       b.append("priority: ").append(priority).append(' ');
     }
+    if (clientContext != null) {
+      b.append("clientContext: ").append(clientContext).append(' ');
+    }
     if (tag != null) {
       b.append("tag: ").append(tag).append(' ');
     }
@@ -850,6 +908,7 @@ public final class Options implements Serializable {
         && Objects.equals(pageToken(), that.pageToken())
         && Objects.equals(filter(), that.filter())
         && Objects.equals(priority(), that.priority())
+        && Objects.equals(clientContext(), that.clientContext())
         && Objects.equals(tag(), that.tag())
         && Objects.equals(etag(), that.etag())
         && Objects.equals(validateOnly(), that.validateOnly())
@@ -893,6 +952,9 @@ public final class Options implements Serializable {
     }
     if (priority != null) {
       result = 31 * result + priority.hashCode();
+    }
+    if (clientContext != null) {
+      result = 31 * result + clientContext.hashCode();
     }
     if (tag != null) {
       result = 31 * result + tag.hashCode();
