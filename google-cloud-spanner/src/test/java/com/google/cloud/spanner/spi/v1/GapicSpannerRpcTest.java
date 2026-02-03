@@ -1227,6 +1227,5 @@ public class GapicSpannerRpcTest {
       if (point.getValue() > 0) return true;
     }
     return false;
-  } 
-  
+  }
 }
