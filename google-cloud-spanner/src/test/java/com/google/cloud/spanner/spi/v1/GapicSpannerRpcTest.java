@@ -1054,7 +1054,7 @@ public class GapicSpannerRpcTest {
     public boolean acceptsPoolSize() {
       return false;
     }
-    
+  }
 
   private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
@@ -1101,28 +1101,28 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testFallbackIntegration_doesNotSwitchWhenThresholdNotMet() throws Exception {
+    GapicSpannerRpc.enableGcpFallbackEnv = true;
+
+    // Setup OpenTelemetry to capture metrics
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
+
+    // Setup Options with invalid host to force error
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setEnableDirectAccess(true)
+            .setHost("http://localhost:1") // Closed port
+            .setCredentials(NoCredentials.getInstance())
+            .setOpenTelemetry(openTelemetry)
+            .build();
+
+    TestableGapicSpannerRpc rpc = new TestableGapicSpannerRpc(options);
+
     try {
-      GapicSpannerRpc.enableGcpFallbackEnv = true;
-
-      // Setup OpenTelemetry to capture metrics
-      InMemoryMetricReader metricReader = InMemoryMetricReader.create();
-      SdkMeterProvider meterProvider =
-          SdkMeterProvider.builder().registerMetricReader(metricReader).build();
-      OpenTelemetrySdk openTelemetry =
-          OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
-
-      // Setup Options with invalid host to force error
-      SpannerOptions options =
-          SpannerOptions.newBuilder()
-              .setProjectId("test-project")
-              .setEnableDirectAccess(true)
-              .setHost("http://localhost:1") // Closed port
-              .setCredentials(NoCredentials.getInstance())
-              .setOpenTelemetry(openTelemetry)
-              .build();
-
-      TestableGapicSpannerRpc rpc = new TestableGapicSpannerRpc(options);
-
       // Make a call that is expected to fail
       try {
         rpc.executeBatchDml(
@@ -1171,29 +1171,28 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testFallbackIntegration_switchesToFallbackOnFailure() throws Exception {
+    GapicSpannerRpc.enableGcpFallbackEnv = true;
+    // Setup OpenTelemetry to capture metrics
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
+
+    // Setup Options with invalid host to force error
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setEnableDirectAccess(true)
+            .setHost("http://localhost:1") // Closed port
+            .setCredentials(NoCredentials.getInstance())
+            .setOpenTelemetry(openTelemetry)
+            .build();
+
+    TestableGapicSpannerRpcWithLowerMinFailedCalls rpc =
+        new TestableGapicSpannerRpcWithLowerMinFailedCalls(options);
+
     try {
-      GapicSpannerRpc.enableGcpFallbackEnv = true;
-
-      // Setup OpenTelemetry to capture metrics
-      InMemoryMetricReader metricReader = InMemoryMetricReader.create();
-      SdkMeterProvider meterProvider =
-          SdkMeterProvider.builder().registerMetricReader(metricReader).build();
-      OpenTelemetrySdk openTelemetry =
-          OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
-
-      // Setup Options with invalid host to force error
-      SpannerOptions options =
-          SpannerOptions.newBuilder()
-              .setProjectId("test-project")
-              .setEnableDirectAccess(true)
-              .setHost("http://localhost:1") // Closed port
-              .setCredentials(NoCredentials.getInstance())
-              .setOpenTelemetry(openTelemetry)
-              .build();
-
-      TestableGapicSpannerRpcWithLowerMinFailedCalls rpc =
-          new TestableGapicSpannerRpcWithLowerMinFailedCalls(options);
-
       // Make a call that is expected to fail
       try {
         rpc.executeBatchDml(
