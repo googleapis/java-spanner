@@ -622,7 +622,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
     }
     // Pass OpenTelemetry meter to grpc-gcp for channel pool metrics
-    if (metricsOptions.getOpenTelemetryMeter() == null) {
+    if (metricsOptions.getOpenTelemetryMeter() == null && options.isGrpcGcpOtelMetricsEnabled()) {
       metricsOptionsBuilder.withOpenTelemetryMeter(
           options.getOpenTelemetry().getMeter("com.google.cloud.spanner"));
     }
@@ -653,10 +653,12 @@ public class GapicSpannerRpc implements SpannerRpc {
     // When disabled, use the explicitly configured numChannels.
     final int poolSize = options.isDynamicChannelPoolEnabled() ? 0 : options.getNumChannels();
 
+    ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> baseConfigurator =
+        defaultChannelProviderBuilder.getChannelConfigurator();
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
         channelBuilder -> {
-          if (options.getChannelConfigurator() != null) {
-            channelBuilder = options.getChannelConfigurator().apply(channelBuilder);
+          if (baseConfigurator != null) {
+            channelBuilder = baseConfigurator.apply(channelBuilder);
           }
           return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
               .withApiConfigJsonString(jsonApiConfig)

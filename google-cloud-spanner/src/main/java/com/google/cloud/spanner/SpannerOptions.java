@@ -68,6 +68,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
@@ -227,6 +228,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
+  private final boolean enableGrpcGcpOtelMetrics;
   private final BuiltInMetricsProvider builtInMetricsProvider = BuiltInMetricsProvider.INSTANCE;
 
   /**
@@ -259,6 +261,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
   private final TransactionOptions defaultTransactionOptions;
+  private final RequestOptions.ClientContext clientContext;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -895,6 +898,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
+    enableGrpcGcpOtelMetrics = builder.enableGrpcGcpOtelMetrics;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
     if (envQueryOptions.equals(QueryOptions.getDefaultInstance())) {
@@ -925,11 +929,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
+    clientContext = builder.clientContext;
   }
 
   private String getResolvedUniverseDomain() {
     String universeDomain = getUniverseDomain();
     return Strings.isNullOrEmpty(universeDomain) ? GOOGLE_DEFAULT_UNIVERSE : universeDomain;
+  }
+
+  /** Returns the default {@link RequestOptions.ClientContext} for this {@link SpannerOptions}. */
+  public RequestOptions.ClientContext getClientContext() {
+    return clientContext;
   }
 
   /**
@@ -975,6 +985,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
+    default boolean isEnableGrpcGcpOtelMetrics() {
+      return true;
+    }
+
     default boolean isEnableEndToEndTracing() {
       return false;
     }
@@ -1013,6 +1027,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
     private static final String SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS =
         "SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS";
+    private static final String SPANNER_DISABLE_GRPC_GCP_OTEL_METRICS =
+        "SPANNER_DISABLE_GRPC_GCP_OTEL_METRICS";
     private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
 
     private SpannerEnvironmentImpl() {}
@@ -1056,6 +1072,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       // disabled via env.
       return !Boolean.parseBoolean(
           System.getenv(SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS));
+    }
+
+    @Override
+    public boolean isEnableGrpcGcpOtelMetrics() {
+      return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_GRPC_GCP_OTEL_METRICS));
     }
 
     @Override
@@ -1128,6 +1149,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean autoThrottleAdministrativeRequests = false;
     private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
+    private boolean enableGrpcGcpOtelMetrics =
+        SpannerOptions.environment.isEnableGrpcGcpOtelMetrics();
     private CallCredentialsProvider callCredentialsProvider;
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
@@ -1146,6 +1169,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String experimentalHost = null;
     private boolean usePlainText = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
+    private RequestOptions.ClientContext clientContext;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1231,6 +1255,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
+      this.enableGrpcGcpOtelMetrics = options.enableGrpcGcpOtelMetrics;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
       this.asyncExecutorProvider = options.asyncExecutorProvider;
@@ -1248,6 +1273,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
       this.defaultTransactionOptions = options.defaultTransactionOptions;
+      this.clientContext = options.clientContext;
     }
 
     @Override
@@ -1751,6 +1777,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets whether to enable or disable grpc-gcp OpenTelemetry metrics injection. When disabled,
+     * Spanner will not automatically inject an OpenTelemetry {@link
+     * io.opentelemetry.api.metrics.Meter} into grpc-gcp. If a Meter or MetricRegistry is explicitly
+     * provided via {@link GcpManagedChannelOptions}, those settings will still be honored.
+     */
+    public Builder setGrpcGcpOtelMetricsEnabled(boolean enableGrpcGcpOtelMetrics) {
+      this.enableGrpcGcpOtelMetrics = enableGrpcGcpOtelMetrics;
+      return this;
+    }
+
+    /**
      * Sets the channel pool options for dynamic channel pooling. Use this to configure the dynamic
      * channel pool behavior when {@link #enableDynamicChannelPool()} is enabled.
      *
@@ -1989,6 +2026,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Sets the default {@link RequestOptions.ClientContext} for all requests. */
+    public Builder setDefaultClientContext(RequestOptions.ClientContext clientContext) {
+      this.clientContext = clientContext;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -2209,6 +2252,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isGrpcGcpExtensionEnabled() {
     return grpcGcpExtensionEnabled;
+  }
+
+  public boolean isGrpcGcpOtelMetricsEnabled() {
+    return enableGrpcGcpOtelMetrics;
   }
 
   public GcpManagedChannelOptions getGrpcGcpOptions() {
