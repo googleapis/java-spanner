@@ -32,7 +32,6 @@ import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionOption;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
-import com.google.common.base.Strings;
 import com.google.common.base.Ticker;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -180,6 +179,10 @@ class SessionImpl implements Session {
 
   ErrorHandler getErrorHandler() {
     return this.errorHandler;
+  }
+
+  SpannerImpl getSpanner() {
+    return spanner;
   }
 
   void setCurrentSpan(ISpan span) {
@@ -486,9 +489,22 @@ class SessionImpl implements Session {
     if (sessionReference.getIsMultiplexed() && mutation != null) {
       requestBuilder.setMutationKey(mutation);
     }
-    if (sessionReference.getIsMultiplexed() && !Strings.isNullOrEmpty(transactionOptions.tag())) {
-      requestBuilder.setRequestOptions(
-          RequestOptions.newBuilder().setTransactionTag(transactionOptions.tag()).build());
+    RequestOptions.Builder optionsBuilder =
+        transactionOptions.toRequestOptionsProto(true).toBuilder();
+    RequestOptions.ClientContext defaultClientContext = spanner.getOptions().getClientContext();
+    if (defaultClientContext != null) {
+      RequestOptions.ClientContext.Builder builder = defaultClientContext.toBuilder();
+      if (optionsBuilder.hasClientContext()) {
+        builder.mergeFrom(optionsBuilder.getClientContext());
+      }
+      optionsBuilder.setClientContext(builder.build());
+    }
+    if (!sessionReference.getIsMultiplexed()) {
+      optionsBuilder.clearTransactionTag();
+    }
+    RequestOptions requestOptions = optionsBuilder.build();
+    if (!requestOptions.equals(RequestOptions.getDefaultInstance())) {
+      requestBuilder.setRequestOptions(requestOptions);
     }
     final BeginTransactionRequest request = requestBuilder.build();
     final ApiFuture<Transaction> requestFuture;

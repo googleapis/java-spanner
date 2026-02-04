@@ -94,6 +94,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
 import com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
@@ -299,6 +300,7 @@ class ConnectionImpl implements Connection {
   private IsolationLevel transactionIsolationLevel;
   private String transactionTag;
   private String statementTag;
+  private RequestOptions.ClientContext clientContext;
   private boolean excludeTxnFromChangeStreams;
   private byte[] protoDescriptors;
   private String protoDescriptorsFilePath;
@@ -536,6 +538,7 @@ class ConnectionImpl implements Connection {
     this.connectionState.resetValue(SAVEPOINT_SUPPORT, context, inTransaction);
     this.protoDescriptors = null;
     this.protoDescriptorsFilePath = null;
+    this.clientContext = null;
 
     if (!isTransactionStarted()) {
       setDefaultTransactionOptions(getDefaultIsolationLevel());
@@ -953,6 +956,18 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(!isDdlBatchActive(), "This connection is in a DDL batch");
     return transactionTag;
+  }
+
+  @Override
+  public void setClientContext(RequestOptions.ClientContext clientContext) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.clientContext = clientContext;
+  }
+
+  @Override
+  public RequestOptions.ClientContext getClientContext() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return clientContext;
   }
 
   @Override
@@ -2026,6 +2041,9 @@ class ConnectionImpl implements Connection {
       options =
           appendQueryOption(options, Options.priority(getConnectionPropertyValue(RPC_PRIORITY)));
     }
+    if (clientContext != null) {
+      options = appendQueryOption(options, Options.clientContext(clientContext));
+    }
     if (currentUnitOfWork != null
         && currentUnitOfWork.supportsDirectedReads(parsedStatement)
         && getConnectionPropertyValue(DIRECTED_READ) != null) {
@@ -2068,6 +2086,14 @@ class ConnectionImpl implements Connection {
       } else {
         options = Arrays.copyOf(options, options.length + 1);
         options[options.length - 1] = Options.priority(getConnectionPropertyValue(RPC_PRIORITY));
+      }
+    }
+    if (clientContext != null) {
+      if (options == null || options.length == 0) {
+        options = new UpdateOption[] {Options.clientContext(clientContext)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.clientContext(clientContext);
       }
     }
     return options;
@@ -2299,6 +2325,7 @@ class ConnectionImpl implements Connection {
                   createSpanForUnitOfWork(
                       statementType == StatementType.DDL ? DDL_STATEMENT : SINGLE_USE_TRANSACTION))
               .setProtoDescriptors(getProtoDescriptors())
+              .setClientContext(clientContext)
               .build();
       if (!isInternalMetadataQuery && !forceSingleUse) {
         // Reset the transaction options after starting a single-use transaction.
@@ -2317,6 +2344,7 @@ class ConnectionImpl implements Connection {
               .setTransactionTag(transactionTag)
               .setRpcPriority(getConnectionPropertyValue(RPC_PRIORITY))
               .setSpan(createSpanForUnitOfWork(READ_ONLY_TRANSACTION))
+              .setClientContext(clientContext)
               .build();
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
@@ -2340,6 +2368,7 @@ class ConnectionImpl implements Connection {
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
               .setRpcPriority(getConnectionPropertyValue(RPC_PRIORITY))
               .setSpan(createSpanForUnitOfWork(READ_WRITE_TRANSACTION))
+              .setClientContext(clientContext)
               .build();
         case DML_BATCH:
           // A DML batch can run inside the current transaction. It should therefore only
@@ -2359,6 +2388,7 @@ class ConnectionImpl implements Connection {
               .setRpcPriority(getConnectionPropertyValue(RPC_PRIORITY))
               // Use the transaction Span for the DML batch.
               .setSpan(transactionStack.peek().getSpan())
+              .setClientContext(clientContext)
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()
@@ -2369,6 +2399,7 @@ class ConnectionImpl implements Connection {
               .setSpan(createSpanForUnitOfWork(DDL_BATCH))
               .setProtoDescriptors(getProtoDescriptors())
               .setConnectionState(connectionState)
+              .setClientContext(clientContext)
               .build();
         default:
       }
