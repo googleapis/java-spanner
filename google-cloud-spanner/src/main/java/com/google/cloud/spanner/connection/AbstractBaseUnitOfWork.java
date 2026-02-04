@@ -80,6 +80,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   protected final List<TransactionRetryListener> transactionRetryListeners;
   protected final boolean excludeTxnFromChangeStreams;
   protected final RpcPriority rpcPriority;
+  protected final com.google.spanner.v1.RequestOptions.ClientContext clientContext;
   protected final Span span;
 
   /** Class for keeping track of the stacktrace of the caller of an async statement. */
@@ -117,6 +118,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
 
     private boolean excludeTxnFromChangeStreams;
     private RpcPriority rpcPriority;
+    private com.google.spanner.v1.RequestOptions.ClientContext clientContext;
     private Span span;
 
     Builder() {}
@@ -163,6 +165,11 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       return self();
     }
 
+    B setClientContext(@Nullable com.google.spanner.v1.RequestOptions.ClientContext clientContext) {
+      this.clientContext = clientContext;
+      return self();
+    }
+
     B setSpan(@Nullable Span span) {
       this.span = span;
       return self();
@@ -179,6 +186,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.transactionRetryListeners = builder.transactionRetryListeners;
     this.excludeTxnFromChangeStreams = builder.excludeTxnFromChangeStreams;
     this.rpcPriority = builder.rpcPriority;
+    this.clientContext = builder.clientContext;
     this.span = Preconditions.checkNotNull(builder.span);
   }
 

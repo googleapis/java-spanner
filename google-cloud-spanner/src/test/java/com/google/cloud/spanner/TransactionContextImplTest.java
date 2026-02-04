@@ -70,6 +70,10 @@ public class TransactionContextImplTest {
     when(rpc.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     when(session.getName()).thenReturn("test");
     when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions spannerOptions = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(spannerOptions);
+    when(session.getSpanner()).thenReturn(spanner);
     doNothing().when(span).setStatus(any(Throwable.class));
     doNothing().when(span).end();
     doNothing().when(span).addAnnotation("Starting Commit");
@@ -214,6 +218,10 @@ public class TransactionContextImplTest {
     SessionImpl session = mock(SessionImpl.class);
     when(session.getName()).thenReturn("test");
     when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions spannerOptions = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(spannerOptions);
+    when(session.getSpanner()).thenReturn(spanner);
     SpannerRpc rpc = mock(SpannerRpc.class);
     ExecuteBatchDmlResponse response =
         ExecuteBatchDmlResponse.newBuilder()
