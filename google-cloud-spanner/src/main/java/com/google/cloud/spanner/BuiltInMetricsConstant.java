@@ -68,6 +68,34 @@ public class BuiltInMetricsConstant {
           .map(m -> METER_NAME + '/' + m)
           .collect(Collectors.toSet());
 
+  static final Set<String> GRPC_LB_RLS_ATTRIBUTES =
+      ImmutableSet.of("grpc.lb.rls.data_plane_target", "grpc.lb.pick_result");
+  static final Set<String> GRPC_CLIENT_ATTEMPT_STARTED_ATTRIBUTES =
+      ImmutableSet.of("grpc.method", "grpc.target");
+  static final Set<String> GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES =
+      ImmutableSet.of("grpc.target", "grpc.lb.locality", "grpc.lb.backend_service");
+  static final Set<String> GRPC_SUBCHANNEL_DISCONNECTION_ATTRIBUTES =
+      ImmutableSet.of(
+          "grpc.target", "grpc.lb.locality", "grpc.lb.backend_service", "grpc.disconnect_error");
+  static final Set<String> GRPC_XDS_CLIENT_RESOURCE_UPDATE_ATTRIBUTES =
+      ImmutableSet.of("grpc.xds.resource_type");
+
+  // Additional gRPC attributes to enable.
+  static final Map<String, Set<String>> GRPC_METRIC_ADDITIONAL_ATTRIBUTES =
+      ImmutableMap.<String, Set<String>>builder()
+          .put("grpc.client.attempt.started", GRPC_CLIENT_ATTEMPT_STARTED_ATTRIBUTES)
+          .put("grpc.subchannel.open_connections", GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES)
+          .put("grpc.subchannel.disconnections", GRPC_SUBCHANNEL_DISCONNECTION_ATTRIBUTES)
+          .put("grpc.subchannel.connection_attempts_succeeded", GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES)
+          .put("grpc.subchannel.connection_attempts_failed", GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES)
+          .put("grpc.lb.rls.default_target_picks", GRPC_LB_RLS_ATTRIBUTES)
+          .put("grpc.lb.rls.target_picks", GRPC_LB_RLS_ATTRIBUTES)
+          .put(
+              "grpc.xds_client.resource_updates_invalid",
+              GRPC_XDS_CLIENT_RESOURCE_UPDATE_ATTRIBUTES)
+          .put("grpc.xds_client.resource_updates_valid", GRPC_XDS_CLIENT_RESOURCE_UPDATE_ATTRIBUTES)
+          .build();
+
   static final Collection<String> GRPC_METRICS_TO_ENABLE =
       ImmutableList.of(
           "grpc.client.attempt.started",
@@ -126,17 +154,6 @@ public class BuiltInMetricsConstant {
           CLIENT_NAME_KEY,
           DIRECT_PATH_ENABLED_KEY,
           DIRECT_PATH_USED_KEY);
-
-  static final Set<String> GRPC_ATTRIBUTES =
-      ImmutableSet.of(
-          "grpc.disconnect_error",
-          "grpc.method",
-          "grpc.target",
-          "grpc.lb.backend_service",
-          "grpc.lb.locality",
-          "grpc.lb.pick_result",
-          "grpc.lb.rls.data_plane_target",
-          "grpc.xds.resource_type");
 
   static List<Double> BUCKET_BOUNDARIES =
       ImmutableList.of(
@@ -245,7 +262,8 @@ public class BuiltInMetricsConstant {
           BuiltInMetricsConstant.COMMON_ATTRIBUTES.stream()
               .map(AttributeKey::getKey)
               .collect(Collectors.toSet());
-      attributesFilter.addAll(BuiltInMetricsConstant.GRPC_ATTRIBUTES);
+      attributesFilter.addAll(
+          GRPC_METRIC_ADDITIONAL_ATTRIBUTES.getOrDefault(metric, ImmutableSet.of()));
 
       View view =
           View.builder()
