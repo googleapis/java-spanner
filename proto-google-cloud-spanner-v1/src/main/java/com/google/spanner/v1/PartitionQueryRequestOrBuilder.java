@@ -150,7 +150,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * Parameter names and values that bind to placeholders in the SQL string.
+   * Optional. Parameter names and values that bind to placeholders in the SQL
+   * string.
    *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -164,7 +165,7 @@ public interface PartitionQueryRequestOrBuilder
    * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4;</code>
+   * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
    *
    * @return Whether the params field is set.
    */
@@ -174,7 +175,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * Parameter names and values that bind to placeholders in the SQL string.
+   * Optional. Parameter names and values that bind to placeholders in the SQL
+   * string.
    *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -188,7 +190,7 @@ public interface PartitionQueryRequestOrBuilder
    * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4;</code>
+   * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
    *
    * @return The params.
    */
@@ -198,7 +200,8 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * Parameter names and values that bind to placeholders in the SQL string.
+   * Optional. Parameter names and values that bind to placeholders in the SQL
+   * string.
    *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -212,7 +215,7 @@ public interface PartitionQueryRequestOrBuilder
    * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4;</code>
+   * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
    */
   com.google.protobuf.StructOrBuilder getParamsOrBuilder();
 
@@ -220,9 +223,9 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -231,7 +234,9 @@ public interface PartitionQueryRequestOrBuilder
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   int getParamTypesCount();
 
@@ -239,9 +244,9 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -250,7 +255,9 @@ public interface PartitionQueryRequestOrBuilder
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   boolean containsParamTypes(java.lang.String key);
 
@@ -262,9 +269,9 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -273,7 +280,9 @@ public interface PartitionQueryRequestOrBuilder
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap();
 
@@ -281,9 +290,9 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -292,7 +301,9 @@ public interface PartitionQueryRequestOrBuilder
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   /* nullable */
   com.google.spanner.v1.Type getParamTypesOrDefault(
@@ -304,9 +315,9 @@ public interface PartitionQueryRequestOrBuilder
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -315,7 +326,9 @@ public interface PartitionQueryRequestOrBuilder
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key);
 
