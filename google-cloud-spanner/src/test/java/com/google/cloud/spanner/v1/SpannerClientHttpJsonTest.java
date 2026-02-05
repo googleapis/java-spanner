@@ -36,6 +36,7 @@ import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.rpc.Status;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.CacheUpdate;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.DatabaseName;
 import com.google.spanner.v1.DirectedReadOptions;
@@ -590,6 +591,7 @@ public class SpannerClientHttpJsonTest {
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -746,6 +748,7 @@ public class SpannerClientHttpJsonTest {
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 

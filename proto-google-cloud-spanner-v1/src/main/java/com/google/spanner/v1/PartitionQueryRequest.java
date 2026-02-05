@@ -281,7 +281,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * Parameter names and values that bind to placeholders in the SQL string.
+   * Optional. Parameter names and values that bind to placeholders in the SQL
+   * string.
    *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -295,7 +296,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4;</code>
+   * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
    *
    * @return Whether the params field is set.
    */
@@ -308,7 +309,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * Parameter names and values that bind to placeholders in the SQL string.
+   * Optional. Parameter names and values that bind to placeholders in the SQL
+   * string.
    *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -322,7 +324,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4;</code>
+   * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
    *
    * @return The params.
    */
@@ -335,7 +337,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * Parameter names and values that bind to placeholders in the SQL string.
+   * Optional. Parameter names and values that bind to placeholders in the SQL
+   * string.
    *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -349,7 +352,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    * It's an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4;</code>
+   * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
@@ -390,9 +393,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -401,7 +404,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   @java.lang.Override
   public boolean containsParamTypes(java.lang.String key) {
@@ -422,9 +427,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -433,7 +438,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   @java.lang.Override
   public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
@@ -444,9 +451,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -455,7 +462,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   @java.lang.Override
   public /* nullable */ com.google.spanner.v1.Type getParamTypesOrDefault(
@@ -474,9 +483,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * It isn't always possible for Cloud Spanner to infer the right SQL type
-   * from a JSON value. For example, values of type `BYTES` and values
-   * of type `STRING` both appear in
+   * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   * type from a JSON value. For example, values of type `BYTES` and values of
+   * type `STRING` both appear in
    * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
    *
    * In these cases, `param_types` can be used to specify the exact
@@ -485,7 +494,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    * about SQL types.
    * </pre>
    *
-   * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+   * <code>
+   * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    */
   @java.lang.Override
   public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
@@ -1565,7 +1576,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1579,7 +1591,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      *
      * @return Whether the params field is set.
      */
@@ -1591,7 +1603,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1605,7 +1618,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      *
      * @return The params.
      */
@@ -1621,7 +1634,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1635,7 +1649,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      */
     public Builder setParams(com.google.protobuf.Struct value) {
       if (paramsBuilder_ == null) {
@@ -1655,7 +1669,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1669,7 +1684,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      */
     public Builder setParams(com.google.protobuf.Struct.Builder builderForValue) {
       if (paramsBuilder_ == null) {
@@ -1686,7 +1701,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1700,7 +1716,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      */
     public Builder mergeParams(com.google.protobuf.Struct value) {
       if (paramsBuilder_ == null) {
@@ -1725,7 +1741,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1739,7 +1756,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      */
     public Builder clearParams() {
       bitField0_ = (bitField0_ & ~0x00000008);
@@ -1756,7 +1773,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1770,7 +1788,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      */
     public com.google.protobuf.Struct.Builder getParamsBuilder() {
       bitField0_ |= 0x00000008;
@@ -1782,7 +1800,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1796,7 +1815,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      */
     public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
       if (paramsBuilder_ != null) {
@@ -1810,7 +1829,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * Parameter names and values that bind to placeholders in the SQL string.
+     * Optional. Parameter names and values that bind to placeholders in the SQL
+     * string.
      *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
@@ -1824,7 +1844,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * It's an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4;</code>
+     * <code>.google.protobuf.Struct params = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
             com.google.protobuf.Struct,
@@ -1905,9 +1925,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * It isn't always possible for Cloud Spanner to infer the right SQL type
-     * from a JSON value. For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
+     * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+     * type from a JSON value. For example, values of type `BYTES` and values of
+     * type `STRING` both appear in
      * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
      *
      * In these cases, `param_types` can be used to specify the exact
@@ -1916,7 +1936,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * about SQL types.
      * </pre>
      *
-     * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+     * <code>
+     * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      */
     @java.lang.Override
     public boolean containsParamTypes(java.lang.String key) {
@@ -1937,9 +1959,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * It isn't always possible for Cloud Spanner to infer the right SQL type
-     * from a JSON value. For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
+     * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+     * type from a JSON value. For example, values of type `BYTES` and values of
+     * type `STRING` both appear in
      * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
      *
      * In these cases, `param_types` can be used to specify the exact
@@ -1948,7 +1970,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * about SQL types.
      * </pre>
      *
-     * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+     * <code>
+     * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      */
     @java.lang.Override
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
@@ -1959,9 +1983,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * It isn't always possible for Cloud Spanner to infer the right SQL type
-     * from a JSON value. For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
+     * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+     * type from a JSON value. For example, values of type `BYTES` and values of
+     * type `STRING` both appear in
      * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
      *
      * In these cases, `param_types` can be used to specify the exact
@@ -1970,7 +1994,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * about SQL types.
      * </pre>
      *
-     * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+     * <code>
+     * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      */
     @java.lang.Override
     public /* nullable */ com.google.spanner.v1.Type getParamTypesOrDefault(
@@ -1989,9 +2015,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * It isn't always possible for Cloud Spanner to infer the right SQL type
-     * from a JSON value. For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
+     * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+     * type from a JSON value. For example, values of type `BYTES` and values of
+     * type `STRING` both appear in
      * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
      *
      * In these cases, `param_types` can be used to specify the exact
@@ -2000,7 +2026,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * about SQL types.
      * </pre>
      *
-     * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+     * <code>
+     * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      */
     @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
@@ -2025,9 +2053,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * It isn't always possible for Cloud Spanner to infer the right SQL type
-     * from a JSON value. For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
+     * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+     * type from a JSON value. For example, values of type `BYTES` and values of
+     * type `STRING` both appear in
      * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
      *
      * In these cases, `param_types` can be used to specify the exact
@@ -2036,7 +2064,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * about SQL types.
      * </pre>
      *
-     * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+     * <code>
+     * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      */
     public Builder removeParamTypes(java.lang.String key) {
       if (key == null) {
@@ -2057,9 +2087,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * It isn't always possible for Cloud Spanner to infer the right SQL type
-     * from a JSON value. For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
+     * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+     * type from a JSON value. For example, values of type `BYTES` and values of
+     * type `STRING` both appear in
      * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
      *
      * In these cases, `param_types` can be used to specify the exact
@@ -2068,7 +2098,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * about SQL types.
      * </pre>
      *
-     * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+     * <code>
+     * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      */
     public Builder putParamTypes(java.lang.String key, com.google.spanner.v1.Type value) {
       if (key == null) {
@@ -2086,9 +2118,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * It isn't always possible for Cloud Spanner to infer the right SQL type
-     * from a JSON value. For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
+     * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+     * type from a JSON value. For example, values of type `BYTES` and values of
+     * type `STRING` both appear in
      * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
      *
      * In these cases, `param_types` can be used to specify the exact
@@ -2097,7 +2129,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * about SQL types.
      * </pre>
      *
-     * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+     * <code>
+     * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      */
     public Builder putAllParamTypes(
         java.util.Map<java.lang.String, com.google.spanner.v1.Type> values) {
@@ -2116,9 +2150,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * It isn't always possible for Cloud Spanner to infer the right SQL type
-     * from a JSON value. For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
+     * Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+     * type from a JSON value. For example, values of type `BYTES` and values of
+     * type `STRING` both appear in
      * [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
      *
      * In these cases, `param_types` can be used to specify the exact
@@ -2127,7 +2161,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * about SQL types.
      * </pre>
      *
-     * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
+     * <code>
+     * map&lt;string, .google.spanner.v1.Type&gt; param_types = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      */
     public com.google.spanner.v1.Type.Builder putParamTypesBuilderIfAbsent(java.lang.String key) {
       java.util.Map<java.lang.String, com.google.spanner.v1.TypeOrBuilder> builderMap =

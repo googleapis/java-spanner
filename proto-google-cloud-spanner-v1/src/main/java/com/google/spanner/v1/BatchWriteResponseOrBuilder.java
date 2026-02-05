@@ -111,7 +111,12 @@ public interface BatchWriteResponseOrBuilder
    *
    * <pre>
    * The commit timestamp of the transaction that applied this batch.
-   * Present if `status` is `OK`, absent otherwise.
+   * Present if status is OK and the mutation groups were applied, absent
+   * otherwise.
+   *
+   * For mutation groups with conditions, a status=OK and missing
+   * commit_timestamp means that the mutation groups were not applied due to the
+   * condition not being satisfied after evaluation.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp commit_timestamp = 3;</code>
@@ -125,7 +130,12 @@ public interface BatchWriteResponseOrBuilder
    *
    * <pre>
    * The commit timestamp of the transaction that applied this batch.
-   * Present if `status` is `OK`, absent otherwise.
+   * Present if status is OK and the mutation groups were applied, absent
+   * otherwise.
+   *
+   * For mutation groups with conditions, a status=OK and missing
+   * commit_timestamp means that the mutation groups were not applied due to the
+   * condition not being satisfied after evaluation.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp commit_timestamp = 3;</code>
@@ -139,7 +149,12 @@ public interface BatchWriteResponseOrBuilder
    *
    * <pre>
    * The commit timestamp of the transaction that applied this batch.
-   * Present if `status` is `OK`, absent otherwise.
+   * Present if status is OK and the mutation groups were applied, absent
+   * otherwise.
+   *
+   * For mutation groups with conditions, a status=OK and missing
+   * commit_timestamp means that the mutation groups were not applied due to the
+   * condition not being satisfied after evaluation.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp commit_timestamp = 3;</code>

@@ -1346,8 +1346,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
    * A tag used for statistics collection about this transaction.
    * Both `request_tag` and `transaction_tag` can be specified for a read or
    * query that belongs to a transaction.
-   * The value of transaction_tag should be the same for all requests belonging
-   * to the same transaction.
+   * To enable tagging on a transaction, `transaction_tag` must be set to the
+   * same value for all requests belonging to the same transaction, including
+   * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
    * If this request doesn't belong to any transaction, `transaction_tag` is
    * ignored.
    * Legal characters for `transaction_tag` values are all printable characters
@@ -1380,8 +1381,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
    * A tag used for statistics collection about this transaction.
    * Both `request_tag` and `transaction_tag` can be specified for a read or
    * query that belongs to a transaction.
-   * The value of transaction_tag should be the same for all requests belonging
-   * to the same transaction.
+   * To enable tagging on a transaction, `transaction_tag` must be set to the
+   * same value for all requests belonging to the same transaction, including
+   * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
    * If this request doesn't belong to any transaction, `transaction_tag` is
    * ignored.
    * Legal characters for `transaction_tag` values are all printable characters
@@ -2125,8 +2127,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
      * A tag used for statistics collection about this transaction.
      * Both `request_tag` and `transaction_tag` can be specified for a read or
      * query that belongs to a transaction.
-     * The value of transaction_tag should be the same for all requests belonging
-     * to the same transaction.
+     * To enable tagging on a transaction, `transaction_tag` must be set to the
+     * same value for all requests belonging to the same transaction, including
+     * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
      * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
@@ -2158,8 +2161,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
      * A tag used for statistics collection about this transaction.
      * Both `request_tag` and `transaction_tag` can be specified for a read or
      * query that belongs to a transaction.
-     * The value of transaction_tag should be the same for all requests belonging
-     * to the same transaction.
+     * To enable tagging on a transaction, `transaction_tag` must be set to the
+     * same value for all requests belonging to the same transaction, including
+     * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
      * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
@@ -2191,8 +2195,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
      * A tag used for statistics collection about this transaction.
      * Both `request_tag` and `transaction_tag` can be specified for a read or
      * query that belongs to a transaction.
-     * The value of transaction_tag should be the same for all requests belonging
-     * to the same transaction.
+     * To enable tagging on a transaction, `transaction_tag` must be set to the
+     * same value for all requests belonging to the same transaction, including
+     * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
      * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
@@ -2223,8 +2228,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
      * A tag used for statistics collection about this transaction.
      * Both `request_tag` and `transaction_tag` can be specified for a read or
      * query that belongs to a transaction.
-     * The value of transaction_tag should be the same for all requests belonging
-     * to the same transaction.
+     * To enable tagging on a transaction, `transaction_tag` must be set to the
+     * same value for all requests belonging to the same transaction, including
+     * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
      * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
@@ -2251,8 +2257,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessage
      * A tag used for statistics collection about this transaction.
      * Both `request_tag` and `transaction_tag` can be specified for a read or
      * query that belongs to a transaction.
-     * The value of transaction_tag should be the same for all requests belonging
-     * to the same transaction.
+     * To enable tagging on a transaction, `transaction_tag` must be set to the
+     * same value for all requests belonging to the same transaction, including
+     * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
      * If this request doesn't belong to any transaction, `transaction_tag` is
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
