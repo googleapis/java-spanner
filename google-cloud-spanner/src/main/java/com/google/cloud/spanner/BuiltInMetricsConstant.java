@@ -68,15 +68,23 @@ public class BuiltInMetricsConstant {
           .map(m -> METER_NAME + '/' + m)
           .collect(Collectors.toSet());
 
+  // The following attributes are optional and need to be enabled explicitly.
+  public static final String GRPC_LB_BACKEND_SERVICE_ATTRIBUTE = "grpc.lb.backend_service";
+  public static final String GRPC_LB_LOCALITY_ATTRIBUTE = "grpc.lb.locality";
+  public static final String GRPC_DISCONNECT_ERROR_ATTRIBUTE = "grpc.disconnect_error";
+
   static final Set<String> GRPC_LB_RLS_ATTRIBUTES =
       ImmutableSet.of("grpc.lb.rls.data_plane_target", "grpc.lb.pick_result");
   static final Set<String> GRPC_CLIENT_ATTEMPT_STARTED_ATTRIBUTES =
       ImmutableSet.of("grpc.method", "grpc.target");
   static final Set<String> GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES =
-      ImmutableSet.of("grpc.target", "grpc.lb.locality", "grpc.lb.backend_service");
+      ImmutableSet.of("grpc.target", GRPC_LB_BACKEND_SERVICE_ATTRIBUTE, GRPC_LB_LOCALITY_ATTRIBUTE);
   static final Set<String> GRPC_SUBCHANNEL_DISCONNECTION_ATTRIBUTES =
       ImmutableSet.of(
-          "grpc.target", "grpc.lb.locality", "grpc.lb.backend_service", "grpc.disconnect_error");
+          "grpc.target",
+          GRPC_LB_BACKEND_SERVICE_ATTRIBUTE,
+          GRPC_LB_LOCALITY_ATTRIBUTE,
+          GRPC_DISCONNECT_ERROR_ATTRIBUTE);
   static final Set<String> GRPC_XDS_CLIENT_RESOURCE_UPDATE_ATTRIBUTES =
       ImmutableSet.of("grpc.xds.resource_type");
 
