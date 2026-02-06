@@ -562,7 +562,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       this.clock = clock;
     }
 
-    void start() {
+    private synchronized void start() {
       // Schedule the maintainer to run once every ten minutes (by default).
       long loopFrequencyMillis =
           MultiplexedSessionDatabaseClient.this
@@ -577,7 +577,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
               this::maintain, loopFrequencyMillis, loopFrequencyMillis, TimeUnit.MILLISECONDS);
     }
 
-    void stop() {
+    private synchronized void stop() {
       if (this.scheduledFuture != null) {
         this.scheduledFuture.cancel(false);
       }
