@@ -361,6 +361,80 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
         : precommitToken_;
   }
 
+  public static final int CACHE_UPDATE_FIELD_NUMBER = 6;
+  private com.google.spanner.v1.CacheUpdate cacheUpdate_;
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A cache update expresses a set of changes the client should
+   * incorporate into its location cache. The client should discard the changes
+   * if they are older than the data it already has. This data can be obtained
+   * in response to requests that included a `RoutingHint` field, but may also
+   * be obtained by explicit location-fetching RPCs which may be added in the
+   * future.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the cacheUpdate field is set.
+   */
+  @java.lang.Override
+  public boolean hasCacheUpdate() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A cache update expresses a set of changes the client should
+   * incorporate into its location cache. The client should discard the changes
+   * if they are older than the data it already has. This data can be obtained
+   * in response to requests that included a `RoutingHint` field, but may also
+   * be obtained by explicit location-fetching RPCs which may be added in the
+   * future.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The cacheUpdate.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.CacheUpdate getCacheUpdate() {
+    return cacheUpdate_ == null
+        ? com.google.spanner.v1.CacheUpdate.getDefaultInstance()
+        : cacheUpdate_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. A cache update expresses a set of changes the client should
+   * incorporate into its location cache. The client should discard the changes
+   * if they are older than the data it already has. This data can be obtained
+   * in response to requests that included a `RoutingHint` field, but may also
+   * be obtained by explicit location-fetching RPCs which may be added in the
+   * future.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.CacheUpdateOrBuilder getCacheUpdateOrBuilder() {
+    return cacheUpdate_ == null
+        ? com.google.spanner.v1.CacheUpdate.getDefaultInstance()
+        : cacheUpdate_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -387,6 +461,9 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
     if (((bitField0_ & 0x00000004) != 0)) {
       output.writeMessage(5, getPrecommitToken());
     }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      output.writeMessage(6, getCacheUpdate());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -407,6 +484,9 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
     }
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, getPrecommitToken());
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(6, getCacheUpdate());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -436,6 +516,10 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
     if (hasPrecommitToken()) {
       if (!getPrecommitToken().equals(other.getPrecommitToken())) return false;
     }
+    if (hasCacheUpdate() != other.hasCacheUpdate()) return false;
+    if (hasCacheUpdate()) {
+      if (!getCacheUpdate().equals(other.getCacheUpdate())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -462,6 +546,10 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
     if (hasPrecommitToken()) {
       hash = (37 * hash) + PRECOMMIT_TOKEN_FIELD_NUMBER;
       hash = (53 * hash) + getPrecommitToken().hashCode();
+    }
+    if (hasCacheUpdate()) {
+      hash = (37 * hash) + CACHE_UPDATE_FIELD_NUMBER;
+      hash = (53 * hash) + getCacheUpdate().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -607,6 +695,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
         internalGetRowsFieldBuilder();
         internalGetStatsFieldBuilder();
         internalGetPrecommitTokenFieldBuilder();
+        internalGetCacheUpdateFieldBuilder();
       }
     }
 
@@ -635,6 +724,11 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
       if (precommitTokenBuilder_ != null) {
         precommitTokenBuilder_.dispose();
         precommitTokenBuilder_ = null;
+      }
+      cacheUpdate_ = null;
+      if (cacheUpdateBuilder_ != null) {
+        cacheUpdateBuilder_.dispose();
+        cacheUpdateBuilder_ = null;
       }
       return this;
     }
@@ -698,6 +792,11 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
             precommitTokenBuilder_ == null ? precommitToken_ : precommitTokenBuilder_.build();
         to_bitField0_ |= 0x00000004;
       }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.cacheUpdate_ =
+            cacheUpdateBuilder_ == null ? cacheUpdate_ : cacheUpdateBuilder_.build();
+        to_bitField0_ |= 0x00000008;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -748,6 +847,9 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
       }
       if (other.hasPrecommitToken()) {
         mergePrecommitToken(other.getPrecommitToken());
+      }
+      if (other.hasCacheUpdate()) {
+        mergeCacheUpdate(other.getCacheUpdate());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -807,6 +909,13 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
                 bitField0_ |= 0x00000008;
                 break;
               } // case 42
+            case 50:
+              {
+                input.readMessage(
+                    internalGetCacheUpdateFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 50
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1956,6 +2065,263 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessage
         precommitToken_ = null;
       }
       return precommitTokenBuilder_;
+    }
+
+    private com.google.spanner.v1.CacheUpdate cacheUpdate_;
+    private com.google.protobuf.SingleFieldBuilder<
+            com.google.spanner.v1.CacheUpdate,
+            com.google.spanner.v1.CacheUpdate.Builder,
+            com.google.spanner.v1.CacheUpdateOrBuilder>
+        cacheUpdateBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the cacheUpdate field is set.
+     */
+    public boolean hasCacheUpdate() {
+      return ((bitField0_ & 0x00000010) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The cacheUpdate.
+     */
+    public com.google.spanner.v1.CacheUpdate getCacheUpdate() {
+      if (cacheUpdateBuilder_ == null) {
+        return cacheUpdate_ == null
+            ? com.google.spanner.v1.CacheUpdate.getDefaultInstance()
+            : cacheUpdate_;
+      } else {
+        return cacheUpdateBuilder_.getMessage();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setCacheUpdate(com.google.spanner.v1.CacheUpdate value) {
+      if (cacheUpdateBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        cacheUpdate_ = value;
+      } else {
+        cacheUpdateBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setCacheUpdate(com.google.spanner.v1.CacheUpdate.Builder builderForValue) {
+      if (cacheUpdateBuilder_ == null) {
+        cacheUpdate_ = builderForValue.build();
+      } else {
+        cacheUpdateBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeCacheUpdate(com.google.spanner.v1.CacheUpdate value) {
+      if (cacheUpdateBuilder_ == null) {
+        if (((bitField0_ & 0x00000010) != 0)
+            && cacheUpdate_ != null
+            && cacheUpdate_ != com.google.spanner.v1.CacheUpdate.getDefaultInstance()) {
+          getCacheUpdateBuilder().mergeFrom(value);
+        } else {
+          cacheUpdate_ = value;
+        }
+      } else {
+        cacheUpdateBuilder_.mergeFrom(value);
+      }
+      if (cacheUpdate_ != null) {
+        bitField0_ |= 0x00000010;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearCacheUpdate() {
+      bitField0_ = (bitField0_ & ~0x00000010);
+      cacheUpdate_ = null;
+      if (cacheUpdateBuilder_ != null) {
+        cacheUpdateBuilder_.dispose();
+        cacheUpdateBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.CacheUpdate.Builder getCacheUpdateBuilder() {
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return internalGetCacheUpdateFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.v1.CacheUpdateOrBuilder getCacheUpdateOrBuilder() {
+      if (cacheUpdateBuilder_ != null) {
+        return cacheUpdateBuilder_.getMessageOrBuilder();
+      } else {
+        return cacheUpdate_ == null
+            ? com.google.spanner.v1.CacheUpdate.getDefaultInstance()
+            : cacheUpdate_;
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Optional. A cache update expresses a set of changes the client should
+     * incorporate into its location cache. The client should discard the changes
+     * if they are older than the data it already has. This data can be obtained
+     * in response to requests that included a `RoutingHint` field, but may also
+     * be obtained by explicit location-fetching RPCs which may be added in the
+     * future.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.CacheUpdate cache_update = 6 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+            com.google.spanner.v1.CacheUpdate,
+            com.google.spanner.v1.CacheUpdate.Builder,
+            com.google.spanner.v1.CacheUpdateOrBuilder>
+        internalGetCacheUpdateFieldBuilder() {
+      if (cacheUpdateBuilder_ == null) {
+        cacheUpdateBuilder_ =
+            new com.google.protobuf.SingleFieldBuilder<
+                com.google.spanner.v1.CacheUpdate,
+                com.google.spanner.v1.CacheUpdate.Builder,
+                com.google.spanner.v1.CacheUpdateOrBuilder>(
+                getCacheUpdate(), getParentForChildren(), isClean());
+        cacheUpdate_ = null;
+      }
+      return cacheUpdateBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:google.spanner.v1.ResultSet)
