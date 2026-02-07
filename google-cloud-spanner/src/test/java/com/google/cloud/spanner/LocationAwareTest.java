@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class SpanFEBypassTest extends AbstractMockServerTest {
+public class LocationAwareTest extends AbstractMockServerTest {
   private static final Statement SELECT_RANDOM_STATEMENT = Statement.of("select * from random");
   private static final int RANDOM_RESULT_ROW_COUNT = 20;
   private static Spanner spanner;

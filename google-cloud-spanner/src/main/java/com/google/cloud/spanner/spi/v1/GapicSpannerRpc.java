@@ -399,7 +399,9 @@ public class GapicSpannerRpc implements SpannerRpc {
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
-      boolean enableLocationApi = options.isEnableLocationApi();
+      boolean enableLocationApi =
+          options.isEnableLocationApi()
+              || Boolean.parseBoolean(System.getenv(EXPERIMENTAL_LOCATION_API_ENV_VAR));
       TransportChannelProvider baseChannelProvider =
           MoreObjects.firstNonNull(
               options.getChannelProvider(), defaultChannelProviderBuilder.build());
