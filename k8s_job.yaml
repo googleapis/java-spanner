@@ -12,8 +12,12 @@ spec:
           imagePullPolicy: Always
           env:
             - name: BYPASS_HOST
-              value: "http://spanner-a-1.pod.spanner-ns:15000"
+              value: "http://10.128.1.67:15000"
             - name: GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API
+              value: "true"
+            - name: SPANNER_BYPASS_DEBUG
+              value: "true"
+            - name: SPANNER_BYPASS_DEBUG_VERBOSE
               value: "true"
       restartPolicy: Never
   backoffLimit: 1

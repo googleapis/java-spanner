@@ -20,13 +20,17 @@ import com.google.api.core.InternalApi;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.CacheUpdate;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.Group;
 import com.google.spanner.v1.PartialResultSet;
+import com.google.spanner.v1.Range;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.RoutingHint;
+import com.google.spanner.v1.Tablet;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionSelector;
 import io.grpc.CallOptions;
@@ -64,6 +68,15 @@ final class KeyAwareChannel extends ManagedChannel {
   private static final String COMMIT_METHOD = "google.spanner.v1.Spanner/Commit";
   private static final String ROLLBACK_METHOD = "google.spanner.v1.Spanner/Rollback";
   private static final String BYPASS_DEBUG_ENV = "SPANNER_BYPASS_DEBUG";
+  private static final String BYPASS_DEBUG_VERBOSE_ENV = "SPANNER_BYPASS_DEBUG_VERBOSE";
+
+  private static boolean isBypassDebugEnabled() {
+    return Boolean.parseBoolean(System.getenv(BYPASS_DEBUG_ENV));
+  }
+
+  private static boolean isBypassDebugVerboseEnabled() {
+    return Boolean.parseBoolean(System.getenv(BYPASS_DEBUG_VERBOSE_ENV));
+  }
 
   private final ManagedChannel defaultChannel;
   private final ChannelEndpointCache endpointCache;
@@ -250,6 +263,15 @@ final class KeyAwareChannel extends ManagedChannel {
     @Nullable private ChannelEndpoint selectedEndpoint;
     @Nullable private ByteString transactionIdToClear;
     private boolean allowDefaultAffinity;
+    @Nullable private String routingReason;
+    @Nullable private ByteString routingTransactionId;
+    private boolean routingHadMutationKey;
+    private long pendingRequests;
+    private boolean pendingHalfClose;
+    @Nullable private Boolean pendingMessageCompression;
+    private boolean cancelled;
+    @Nullable private String cancelMessage;
+    @Nullable private Throwable cancelCause;
 
     KeyAwareClientCall(
         KeyAwareChannel parentChannel,
@@ -273,11 +295,25 @@ final class KeyAwareChannel extends ManagedChannel {
     public void start(Listener<ResponseT> responseListener, Metadata headers) {
       this.responseListener = new KeyAwareClientCallListener<>(responseListener, this);
       this.headers = headers;
+      if (cancelled) {
+        this.responseListener.onClose(
+            io.grpc.Status.CANCELLED.withDescription(cancelMessage).withCause(cancelCause),
+            new Metadata());
+      }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void sendMessage(RequestT message) {
+      if (cancelled) {
+        return;
+      }
+      if (responseListener == null || headers == null) {
+        throw new IllegalStateException("start must be called before sendMessage");
+      }
+      routingReason = null;
+      routingTransactionId = null;
+      routingHadMutationKey = false;
       ChannelEndpoint endpoint = null;
       ChannelFinder finder = null;
 
@@ -298,6 +334,7 @@ final class KeyAwareChannel extends ManagedChannel {
             ((BeginTransactionRequest) message).toBuilder();
         String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
         if (databaseId != null && reqBuilder.hasMutationKey()) {
+          routingHadMutationKey = true;
           finder = parentChannel.getOrCreateChannelFinder(databaseId);
           ChannelEndpoint routed = finder.findServer(reqBuilder);
           if (endpoint == null) {
@@ -309,12 +346,14 @@ final class KeyAwareChannel extends ManagedChannel {
       } else if (message instanceof CommitRequest) {
         CommitRequest request = (CommitRequest) message;
         if (!request.getTransactionId().isEmpty()) {
+          routingTransactionId = request.getTransactionId();
           endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
           transactionIdToClear = request.getTransactionId();
         }
       } else if (message instanceof RollbackRequest) {
         RollbackRequest request = (RollbackRequest) message;
         if (!request.getTransactionId().isEmpty()) {
+          routingTransactionId = request.getTransactionId();
           endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
           transactionIdToClear = request.getTransactionId();
         }
@@ -324,17 +363,26 @@ final class KeyAwareChannel extends ManagedChannel {
                 + " key-aware calls.");
       }
 
+      boolean usedDefault = false;
       if (endpoint == null) {
+        usedDefault = true;
         endpoint = parentChannel.endpointCache.defaultChannel();
       }
       selectedEndpoint = endpoint;
       this.channelFinder = finder;
 
-      logRoutingDecision(message, endpoint);
+      logRoutingDecision(message, endpoint, usedDefault);
 
       delegate = endpoint.getChannel().newCall(methodDescriptor, callOptions);
+      if (pendingMessageCompression != null) {
+        delegate.setMessageCompression(pendingMessageCompression);
+      }
       delegate.start(responseListener, headers);
+      drainPendingRequests();
       delegate.sendMessage(message);
+      if (pendingHalfClose) {
+        delegate.halfClose();
+      }
     }
 
     @Override
@@ -342,7 +390,7 @@ final class KeyAwareChannel extends ManagedChannel {
       if (delegate != null) {
         delegate.halfClose();
       } else {
-        throw new IllegalStateException("halfClose called before sendMessage");
+        pendingHalfClose = true;
       }
     }
 
@@ -353,6 +401,56 @@ final class KeyAwareChannel extends ManagedChannel {
       } else if (responseListener != null) {
         responseListener.onClose(
             io.grpc.Status.CANCELLED.withDescription(message).withCause(cause), new Metadata());
+        cancelled = true;
+        cancelMessage = message;
+        cancelCause = cause;
+      } else {
+        cancelled = true;
+        cancelMessage = message;
+        cancelCause = cause;
+      }
+    }
+
+    @Override
+    public void request(int numMessages) {
+      if (delegate != null) {
+        delegate.request(numMessages);
+        return;
+      }
+      if (numMessages <= 0) {
+        return;
+      }
+      long updated = pendingRequests + numMessages;
+      if (updated < 0L) {
+        updated = Long.MAX_VALUE;
+      }
+      pendingRequests = updated;
+    }
+
+    @Override
+    public boolean isReady() {
+      if (delegate == null) {
+        return false;
+      }
+      return delegate.isReady();
+    }
+
+    @Override
+    public void setMessageCompression(boolean enabled) {
+      if (delegate != null) {
+        delegate.setMessageCompression(enabled);
+      } else {
+        pendingMessageCompression = enabled;
+      }
+    }
+
+    private void drainPendingRequests() {
+      long requests = pendingRequests;
+      pendingRequests = 0L;
+      while (requests > 0) {
+        int batch = requests > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) requests;
+        delegate.request(batch);
+        requests -= batch;
       }
     }
 
@@ -367,6 +465,7 @@ final class KeyAwareChannel extends ManagedChannel {
     private RoutingDecision routeFromRequest(ReadRequest.Builder reqBuilder) {
       String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
       ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
+      routingTransactionId = transactionId;
       ChannelEndpoint endpoint = parentChannel.affinityEndpoint(transactionId);
       ChannelFinder finder = null;
       if (databaseId != null) {
@@ -382,6 +481,7 @@ final class KeyAwareChannel extends ManagedChannel {
     private RoutingDecision routeFromRequest(ExecuteSqlRequest.Builder reqBuilder) {
       String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
       ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
+      routingTransactionId = transactionId;
       ChannelEndpoint endpoint = parentChannel.affinityEndpoint(transactionId);
       ChannelFinder finder = null;
       if (databaseId != null) {
@@ -394,7 +494,8 @@ final class KeyAwareChannel extends ManagedChannel {
       return new RoutingDecision(finder, endpoint);
     }
 
-    private void logRoutingDecision(RequestT message, ChannelEndpoint endpoint) {
+    private void logRoutingDecision(
+        RequestT message, ChannelEndpoint endpoint, boolean usedDefault) {
       if (!isBypassDebugEnabled() || endpoint == null) {
         return;
       }
@@ -403,14 +504,11 @@ final class KeyAwareChannel extends ManagedChannel {
       String method = methodDescriptor.getFullMethodName();
       String session = extractSession(message);
       String details = buildDetails(message);
+      String reason = computeRoutingReason(message, isBypass, usedDefault);
       LOGGER.log(
           Level.INFO,
-          "SpanFE bypass routing: method={0}, bypass={1}, endpoint={2}, session={3}{4}",
-          new Object[] {method, isBypass, endpointAddress, session, details});
-    }
-
-    private static boolean isBypassDebugEnabled() {
-      return Boolean.parseBoolean(System.getenv(BYPASS_DEBUG_ENV));
+          "SpanFE bypass routing: method={0}, bypass={1}, endpoint={2}, session={3}, reason={4}{5}",
+          new Object[] {method, isBypass, endpointAddress, session, reason, details});
     }
 
     private static String extractSession(Object message) {
@@ -461,6 +559,34 @@ final class KeyAwareChannel extends ManagedChannel {
       return "";
     }
 
+    private String computeRoutingReason(Object message, boolean isBypass, boolean usedDefault) {
+      if (!usedDefault && routingReason != null) {
+        return routingReason;
+      }
+      if (message instanceof BeginTransactionRequest) {
+        if (!routingHadMutationKey) {
+          return "default_no_mutation_key";
+        }
+        return isBypass ? "bypass_routing_hint" : "default_no_cache";
+      }
+      if (message instanceof CommitRequest || message instanceof RollbackRequest) {
+        if (routingTransactionId == null || routingTransactionId.isEmpty()) {
+          return "default_missing_transaction_id";
+        }
+        if (isBypass) {
+          return "bypass_affinity_hit";
+        }
+        return "default_affinity_miss";
+      }
+      if (message instanceof ReadRequest || message instanceof ExecuteSqlRequest) {
+        if (routingTransactionId != null && !routingTransactionId.isEmpty()) {
+          return isBypass ? "bypass_affinity_hit" : "default_affinity_miss";
+        }
+        return isBypass ? "bypass_routing_hint" : "default_no_cache";
+      }
+      return isBypass ? "bypass_routing_hint" : "default_no_cache";
+    }
+
     private static String routingHintSummary(RoutingHint hint) {
       if (hint == null) {
         return "";
@@ -471,9 +597,33 @@ final class KeyAwareChannel extends ManagedChannel {
           && hint.getTabletUid() == 0) {
         return "";
       }
-      return String.format(
-          ", routingHint={db=%s,group=%s,split=%s,tablet=%s}",
-          hint.getDatabaseId(), hint.getGroupUid(), hint.getSplitId(), hint.getTabletUid());
+      String reason = "";
+      if (isBypassDebugVerboseEnabled()) {
+        if (hint.getDatabaseId() == 0) {
+          reason = ", hintReason=missing_database_id";
+        } else if (hint.getGroupUid() == 0 || hint.getSplitId() == 0 || hint.getTabletUid() == 0) {
+          reason = ", hintReason=missing_target";
+        } else {
+          reason = ", hintReason=complete";
+        }
+      }
+      StringBuilder summary = new StringBuilder();
+      summary.append(
+          String.format(
+              ", routingHint={db=%s,group=%s,split=%s,tablet=%s,opUid=%s%s",
+              hint.getDatabaseId(),
+              hint.getGroupUid(),
+              hint.getSplitId(),
+              hint.getTabletUid(),
+              hint.getOperationUid(),
+              reason));
+      if (isBypassDebugVerboseEnabled()) {
+        summary.append(", schemaGenBytes=").append(hint.getSchemaGeneration().size());
+        summary.append(", key=").append(formatBytes(hint.getKey()));
+        summary.append(", limitKey=").append(formatBytes(hint.getLimitKey()));
+      }
+      summary.append("}");
+      return summary.toString();
     }
   }
 
@@ -504,6 +654,7 @@ final class KeyAwareChannel extends ManagedChannel {
         PartialResultSet response = (PartialResultSet) message;
         if (response.hasCacheUpdate() && call.channelFinder != null) {
           call.channelFinder.update(response.getCacheUpdate());
+          logCacheUpdate(response.getCacheUpdate());
         }
         transactionId = transactionIdFromMetadata(response);
       } else if (message instanceof ResultSet) {
@@ -524,5 +675,86 @@ final class KeyAwareChannel extends ManagedChannel {
       call.maybeClearAffinity();
       super.onClose(status, trailers);
     }
+  }
+
+  private static void logCacheUpdate(CacheUpdate update) {
+    if (!isBypassDebugVerboseEnabled()) {
+      return;
+    }
+    StringBuilder sb = new StringBuilder(256);
+    int recipes = update.hasKeyRecipes() ? update.getKeyRecipes().getRecipeCount() : 0;
+    int schemaGenBytes =
+        update.hasKeyRecipes() ? update.getKeyRecipes().getSchemaGeneration().size() : 0;
+    sb.append("SpanFE bypass cache update: db=")
+        .append(update.getDatabaseId())
+        .append(", recipes=")
+        .append(recipes)
+        .append(", schemaGenBytes=")
+        .append(schemaGenBytes)
+        .append(", groups=")
+        .append(update.getGroupCount())
+        .append(", ranges=")
+        .append(update.getRangeCount());
+
+    for (Group group : update.getGroupList()) {
+      sb.append("\n  Group uid=")
+          .append(group.getGroupUid())
+          .append(" leaderIndex=")
+          .append(group.getLeaderIndex())
+          .append(" tablets=");
+      if (group.getTabletsCount() == 0) {
+        sb.append("[]");
+      } else {
+        sb.append("[");
+        for (int i = 0; i < group.getTabletsCount(); i++) {
+          Tablet tablet = group.getTablets(i);
+          if (i > 0) {
+            sb.append(", ");
+          }
+          sb.append(tablet.getTabletUid())
+              .append("@")
+              .append(tablet.getServerAddress())
+              .append("(role=")
+              .append(tablet.getRole().name())
+              .append(",distance=")
+              .append(tablet.getDistance())
+              .append(",skip=")
+              .append(tablet.getSkip())
+              .append(")");
+        }
+        sb.append("]");
+      }
+    }
+
+    for (Range range : update.getRangeList()) {
+      sb.append("\n  Range groupUid=")
+          .append(range.getGroupUid())
+          .append(" splitId=")
+          .append(range.getSplitId())
+          .append(" start=")
+          .append(formatBytes(range.getStartKey()))
+          .append(" limit=")
+          .append(formatBytes(range.getLimitKey()));
+    }
+
+    LOGGER.log(Level.INFO, sb.toString());
+  }
+
+  private static String formatBytes(ByteString bytes) {
+    if (bytes == null || bytes.isEmpty()) {
+      return "";
+    }
+    int limit = Math.min(bytes.size(), 16);
+    StringBuilder sb = new StringBuilder(limit * 2 + 3);
+    sb.append("0x");
+    for (int i = 0; i < limit; i++) {
+      int v = bytes.byteAt(i) & 0xff;
+      sb.append(Character.forDigit((v >>> 4) & 0xf, 16));
+      sb.append(Character.forDigit(v & 0xf, 16));
+    }
+    if (bytes.size() > limit) {
+      sb.append("…");
+    }
+    return sb.toString();
   }
 }
