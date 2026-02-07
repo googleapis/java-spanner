@@ -367,16 +367,14 @@ final class KeyAwareChannel extends ManagedChannel {
     public void cancel(@Nullable String message, @Nullable Throwable cause) {
       if (delegate != null) {
         delegate.cancel(message, cause);
-      } else if (responseListener != null) {
-        responseListener.onClose(
-            io.grpc.Status.CANCELLED.withDescription(message).withCause(cause), new Metadata());
-        cancelled = true;
-        cancelMessage = message;
-        cancelCause = cause;
       } else {
         cancelled = true;
         cancelMessage = message;
         cancelCause = cause;
+        if (responseListener != null) {
+          responseListener.onClose(
+              io.grpc.Status.CANCELLED.withDescription(message).withCause(cause), new Metadata());
+        }
       }
     }
 
@@ -493,6 +491,9 @@ final class KeyAwareChannel extends ManagedChannel {
         transactionId = transactionIdFromMetadata(response);
       } else if (message instanceof ResultSet) {
         ResultSet response = (ResultSet) message;
+        if (response.hasCacheUpdate() && call.channelFinder != null) {
+          call.channelFinder.update(response.getCacheUpdate());
+        }
         transactionId = transactionIdFromMetadata(response);
       } else if (message instanceof Transaction) {
         Transaction response = (Transaction) message;
