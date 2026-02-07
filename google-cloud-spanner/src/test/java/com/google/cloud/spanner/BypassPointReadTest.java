@@ -59,6 +59,7 @@ public class BypassPointReadTest {
     String querySql = envOrDefault("BYPASS_QUERY", "");
     String dmlSql = envOrDefault("BYPASS_DML_STATEMENT", "");
     String mutationValueRaw = envOrDefault("BYPASS_MUTATION_VALUE", "");
+    int repeatOperation = envInt("BYPASS_REPEAT", 2);
 
     KeyValue keyValue = parseKeyValue(envOrDefault("BYPASS_KEY_VALUE", "1"));
     KeyValue mutationValue = parseOptionalValue(mutationValueRaw);
@@ -87,26 +88,31 @@ public class BypassPointReadTest {
       testMultiplePointReads(dbClient, tableName, keyColumn, keyValue);
 
       System.out.println("\n--- Test 3: Read Using Index (StreamingRead) ---");
-      testReadUsingIndex(dbClient, tableName, indexName, keyColumn, keyValue);
+      testReadUsingIndex(dbClient, tableName, indexName, keyColumn, keyValue, repeatOperation);
 
       System.out.println("\n--- Test 4: Execute Query (ExecuteStreamingSql) ---");
-      testExecuteQuery(dbClient, tableName, keyColumn, valueColumn, keyValue, querySql);
+      testExecuteQuery(
+          dbClient, tableName, keyColumn, valueColumn, keyValue, querySql, repeatOperation);
 
       System.out.println("\n--- Test 5: Single-Use Read-Only Transaction (Streaming) ---");
-      testSingleUseReadOnlyTransaction(dbClient, tableName, keyColumn, valueColumn, keyValue);
+      testSingleUseReadOnlyTransaction(
+          dbClient, tableName, keyColumn, valueColumn, keyValue, repeatOperation);
 
       System.out.println("\n--- Test 6: Read-Only Transaction (BeginTransaction + Streaming) ---");
-      testReadOnlyTransaction(dbClient, tableName, keyColumn, valueColumn, keyValue);
+      testReadOnlyTransaction(
+          dbClient, tableName, keyColumn, valueColumn, keyValue, repeatOperation);
 
       System.out.println(
           "\n--- Test 7: Read-Write Transaction (BeginTransaction + ExecuteSql + Commit) ---");
-      testReadWriteTransactionDml(dbClient, tableName, keyColumn, valueColumn, keyValue, dmlSql);
+      testReadWriteTransactionDml(
+          dbClient, tableName, keyColumn, valueColumn, keyValue, dmlSql, repeatOperation);
 
       System.out.println("\n--- Test 8: Explicit Rollback (BeginTransaction + Rollback) ---");
-      testExplicitRollback(dbClient);
+      testExplicitRollback(dbClient, repeatOperation);
 
       System.out.println("\n--- Test 9: Mutation Write (BeginTransaction + Commit) ---");
-      testMutationWrite(dbClient, tableName, keyColumn, valueColumn, keyValue, mutationValue);
+      testMutationWrite(
+          dbClient, tableName, keyColumn, valueColumn, keyValue, mutationValue, repeatOperation);
 
       System.out.println("\n=== All tests completed successfully! ===");
 
@@ -206,25 +212,28 @@ public class BypassPointReadTest {
       String tableName,
       String indexName,
       String keyColumn,
-      KeyValue keyValue) {
+      KeyValue keyValue,
+      int repeat) {
+
     if (indexName.isEmpty()) {
       System.out.println("Skipping: set BYPASS_INDEX_NAME to run readUsingIndex.");
       return;
     }
-
-    try (ResultSet resultSet =
-        dbClient
-            .singleUse()
-            .readUsingIndex(
-                tableName,
-                indexName,
-                KeySet.singleKey(keyValue.asKey()),
-                Arrays.asList(keyColumn))) {
-      int rowCount = 0;
-      while (resultSet.next()) {
-        rowCount++;
+    for (int i = 1; i <= Math.max(1, repeat); i++) {
+      try (ResultSet resultSet =
+          dbClient
+              .singleUse()
+              .readUsingIndex(
+                  tableName,
+                  indexName,
+                  KeySet.singleKey(keyValue.asKey()),
+                  Arrays.asList(keyColumn))) {
+        int rowCount = 0;
+        while (resultSet.next()) {
+          rowCount++;
+        }
+        System.out.println("Index read rows returned: " + rowCount);
       }
-      System.out.println("Index read rows returned: " + rowCount);
     }
   }
 
@@ -234,16 +243,19 @@ public class BypassPointReadTest {
       String keyColumn,
       String valueColumn,
       KeyValue keyValue,
-      String querySql) {
+      String querySql,
+      int repeat) {
     Statement statement =
         buildSelectStatement(tableName, keyColumn, valueColumn, keyValue, querySql);
 
-    try (ResultSet resultSet = dbClient.singleUse().executeQuery(statement)) {
-      int rowCount = 0;
-      while (resultSet.next()) {
-        rowCount++;
+    for (int i = 1; i <= Math.max(1, repeat); i++) {
+      try (ResultSet resultSet = dbClient.singleUse().executeQuery(statement)) {
+        int rowCount = 0;
+        while (resultSet.next()) {
+          rowCount++;
+        }
+        System.out.println("Query run #" + i + " rows returned: " + rowCount);
       }
-      System.out.println("Query rows returned: " + rowCount);
     }
   }
 
@@ -252,15 +264,18 @@ public class BypassPointReadTest {
       String tableName,
       String keyColumn,
       String valueColumn,
-      KeyValue keyValue) {
-    try (ReadOnlyTransaction transaction = dbClient.singleUseReadOnlyTransaction()) {
-      Statement statement = buildSelectStatement(tableName, keyColumn, valueColumn, keyValue, "");
-      try (ResultSet resultSet = transaction.executeQuery(statement)) {
-        int rowCount = 0;
-        while (resultSet.next()) {
-          rowCount++;
+      KeyValue keyValue,
+      int repeat) {
+    for (int i = 1; i <= Math.max(1, repeat); i++) {
+      try (ReadOnlyTransaction transaction = dbClient.singleUseReadOnlyTransaction()) {
+        Statement statement = buildSelectStatement(tableName, keyColumn, valueColumn, keyValue, "");
+        try (ResultSet resultSet = transaction.executeQuery(statement)) {
+          int rowCount = 0;
+          while (resultSet.next()) {
+            rowCount++;
+          }
+          System.out.println("Single-use RO run #" + i + " rows returned: " + rowCount);
         }
-        System.out.println("Read-only transaction rows returned: " + rowCount);
       }
     }
   }
@@ -270,15 +285,18 @@ public class BypassPointReadTest {
       String tableName,
       String keyColumn,
       String valueColumn,
-      KeyValue keyValue) {
-    try (ReadOnlyTransaction transaction = dbClient.readOnlyTransaction()) {
-      Statement statement = buildSelectStatement(tableName, keyColumn, valueColumn, keyValue, "");
-      try (ResultSet resultSet = transaction.executeQuery(statement)) {
-        int rowCount = 0;
-        while (resultSet.next()) {
-          rowCount++;
+      KeyValue keyValue,
+      int repeat) {
+    for (int i = 1; i <= Math.max(1, repeat); i++) {
+      try (ReadOnlyTransaction transaction = dbClient.readOnlyTransaction()) {
+        Statement statement = buildSelectStatement(tableName, keyColumn, valueColumn, keyValue, "");
+        try (ResultSet resultSet = transaction.executeQuery(statement)) {
+          int rowCount = 0;
+          while (resultSet.next()) {
+            rowCount++;
+          }
+          System.out.println("Read-only txn run #" + i + " rows returned: " + rowCount);
         }
-        System.out.println("Read-only transaction rows returned: " + rowCount);
       }
     }
   }
@@ -289,23 +307,28 @@ public class BypassPointReadTest {
       String keyColumn,
       String valueColumn,
       KeyValue keyValue,
-      String dmlSql) {
+      String dmlSql,
+      int repeat) {
     Statement dmlStatement = buildDmlStatement(tableName, keyColumn, valueColumn, keyValue, dmlSql);
     if (dmlStatement == null) {
       System.out.println("Skipping: set BYPASS_VALUE_COLUMN or BYPASS_DML_STATEMENT to run DML.");
       return;
     }
 
-    TransactionRunner runner = dbClient.readWriteTransaction();
-    long updateCount = runner.run(transaction -> transaction.executeUpdate(dmlStatement));
-    System.out.println("DML update count: " + updateCount);
+    for (int i = 1; i <= Math.max(1, repeat); i++) {
+      TransactionRunner runner = dbClient.readWriteTransaction();
+      long updateCount = runner.run(transaction -> transaction.executeUpdate(dmlStatement));
+      System.out.println("DML run #" + i + " update count: " + updateCount);
+    }
   }
 
-  private static void testExplicitRollback(DatabaseClient dbClient) {
-    try (TransactionManager manager = dbClient.transactionManager()) {
-      manager.begin();
-      manager.rollback();
-      System.out.println("Rollback completed.");
+  private static void testExplicitRollback(DatabaseClient dbClient, int repeat) {
+    for (int i = 1; i <= Math.max(1, repeat); i++) {
+      try (TransactionManager manager = dbClient.transactionManager()) {
+        manager.begin();
+        manager.rollback();
+        System.out.println("Rollback run #" + i + " completed.");
+      }
     }
   }
 
@@ -315,7 +338,8 @@ public class BypassPointReadTest {
       String keyColumn,
       String valueColumn,
       KeyValue keyValue,
-      @Nullable KeyValue mutationValue) {
+      @Nullable KeyValue mutationValue,
+      int repeat) {
     if (mutationValue == null) {
       System.out.println("Skipping: set BYPASS_MUTATION_VALUE to run mutation write.");
       return;
@@ -325,11 +349,13 @@ public class BypassPointReadTest {
       return;
     }
 
-    Mutation.WriteBuilder builder = Mutation.newUpdateBuilder(tableName);
-    keyValue.setMutationValue(builder, keyColumn);
-    mutationValue.setMutationValue(builder, valueColumn);
-    dbClient.write(Arrays.asList(builder.build()));
-    System.out.println("Mutation write committed.");
+    for (int i = 1; i <= Math.max(1, repeat); i++) {
+      Mutation.WriteBuilder builder = Mutation.newUpdateBuilder(tableName);
+      keyValue.setMutationValue(builder, keyColumn);
+      mutationValue.setMutationValue(builder, valueColumn);
+      dbClient.write(Arrays.asList(builder.build()));
+      System.out.println("Mutation write run #" + i + " committed.");
+    }
   }
 
   private static Statement buildSelectStatement(
@@ -373,6 +399,18 @@ public class BypassPointReadTest {
   private static String envOrDefault(String name, String defaultValue) {
     String value = System.getenv(name);
     return (value == null || value.isEmpty()) ? defaultValue : value;
+  }
+
+  private static int envInt(String name, int defaultValue) {
+    String value = System.getenv(name);
+    if (value == null || value.isEmpty()) {
+      return defaultValue;
+    }
+    try {
+      return Integer.parseInt(value);
+    } catch (NumberFormatException e) {
+      return defaultValue;
+    }
   }
 
   private static KeyValue parseKeyValue(String raw) {
