@@ -26,6 +26,7 @@ import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.RoutingHint;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionSelector;
 import io.grpc.CallOptions;
@@ -40,6 +41,8 @@ import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -51,6 +54,7 @@ import javax.annotation.Nullable;
  */
 @InternalApi
 final class KeyAwareChannel extends ManagedChannel {
+  private static final Logger LOGGER = Logger.getLogger(KeyAwareChannel.class.getName());
   private static final String STREAMING_READ_METHOD = "google.spanner.v1.Spanner/StreamingRead";
   private static final String STREAMING_SQL_METHOD =
       "google.spanner.v1.Spanner/ExecuteStreamingSql";
@@ -59,6 +63,7 @@ final class KeyAwareChannel extends ManagedChannel {
       "google.spanner.v1.Spanner/BeginTransaction";
   private static final String COMMIT_METHOD = "google.spanner.v1.Spanner/Commit";
   private static final String ROLLBACK_METHOD = "google.spanner.v1.Spanner/Rollback";
+  private static final String BYPASS_DEBUG_ENV = "SPANNER_BYPASS_DEBUG";
 
   private final ManagedChannel defaultChannel;
   private final ChannelEndpointCache endpointCache;
@@ -325,6 +330,8 @@ final class KeyAwareChannel extends ManagedChannel {
       selectedEndpoint = endpoint;
       this.channelFinder = finder;
 
+      logRoutingDecision(message, endpoint);
+
       delegate = endpoint.getChannel().newCall(methodDescriptor, callOptions);
       delegate.start(responseListener, headers);
       delegate.sendMessage(message);
@@ -385,6 +392,88 @@ final class KeyAwareChannel extends ManagedChannel {
         }
       }
       return new RoutingDecision(finder, endpoint);
+    }
+
+    private void logRoutingDecision(RequestT message, ChannelEndpoint endpoint) {
+      if (!isBypassDebugEnabled() || endpoint == null) {
+        return;
+      }
+      String endpointAddress = endpoint.getAddress();
+      boolean isBypass = !parentChannel.defaultEndpointAddress.equals(endpointAddress);
+      String method = methodDescriptor.getFullMethodName();
+      String session = extractSession(message);
+      String details = buildDetails(message);
+      LOGGER.log(
+          Level.INFO,
+          "SpanFE bypass routing: method={0}, bypass={1}, endpoint={2}, session={3}{4}",
+          new Object[] {method, isBypass, endpointAddress, session, details});
+    }
+
+    private static boolean isBypassDebugEnabled() {
+      return Boolean.parseBoolean(System.getenv(BYPASS_DEBUG_ENV));
+    }
+
+    private static String extractSession(Object message) {
+      if (message instanceof ReadRequest) {
+        return ((ReadRequest) message).getSession();
+      }
+      if (message instanceof ExecuteSqlRequest) {
+        return ((ExecuteSqlRequest) message).getSession();
+      }
+      if (message instanceof BeginTransactionRequest) {
+        return ((BeginTransactionRequest) message).getSession();
+      }
+      if (message instanceof CommitRequest) {
+        return ((CommitRequest) message).getSession();
+      }
+      if (message instanceof RollbackRequest) {
+        return ((RollbackRequest) message).getSession();
+      }
+      return "";
+    }
+
+    private String buildDetails(Object message) {
+      if (message instanceof ReadRequest) {
+        ReadRequest request = (ReadRequest) message;
+        return String.format(
+            ", op=read, table=%s, index=%s%s",
+            request.getTable(), request.getIndex(), routingHintSummary(request.getRoutingHint()));
+      }
+      if (message instanceof ExecuteSqlRequest) {
+        ExecuteSqlRequest request = (ExecuteSqlRequest) message;
+        return String.format(
+            ", op=executeSql, hasSeqno=%s%s",
+            request.getSeqno() != 0L, routingHintSummary(request.getRoutingHint()));
+      }
+      if (message instanceof BeginTransactionRequest) {
+        BeginTransactionRequest request = (BeginTransactionRequest) message;
+        return String.format(", op=beginTransaction, hasMutationKey=%s", request.hasMutationKey());
+      }
+      if (message instanceof CommitRequest) {
+        CommitRequest request = (CommitRequest) message;
+        return String.format(", op=commit, txnIdPresent=%s", !request.getTransactionId().isEmpty());
+      }
+      if (message instanceof RollbackRequest) {
+        RollbackRequest request = (RollbackRequest) message;
+        return String.format(
+            ", op=rollback, txnIdPresent=%s", !request.getTransactionId().isEmpty());
+      }
+      return "";
+    }
+
+    private static String routingHintSummary(RoutingHint hint) {
+      if (hint == null) {
+        return "";
+      }
+      if (hint.getDatabaseId() == 0
+          && hint.getGroupUid() == 0
+          && hint.getSplitId() == 0
+          && hint.getTabletUid() == 0) {
+        return "";
+      }
+      return String.format(
+          ", routingHint={db=%s,group=%s,split=%s,tablet=%s}",
+          hint.getDatabaseId(), hint.getGroupUid(), hint.getSplitId(), hint.getTabletUid());
     }
   }
 
