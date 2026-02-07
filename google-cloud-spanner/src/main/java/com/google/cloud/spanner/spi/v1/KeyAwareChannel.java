@@ -245,6 +245,12 @@ final class KeyAwareChannel extends ManagedChannel {
     @Nullable private ChannelEndpoint selectedEndpoint;
     @Nullable private ByteString transactionIdToClear;
     private boolean allowDefaultAffinity;
+    private long pendingRequests;
+    private boolean pendingHalfClose;
+    @Nullable private Boolean pendingMessageCompression;
+    private boolean cancelled;
+    @Nullable private String cancelMessage;
+    @Nullable private Throwable cancelCause;
 
     KeyAwareClientCall(
         KeyAwareChannel parentChannel,
@@ -268,11 +274,22 @@ final class KeyAwareChannel extends ManagedChannel {
     public void start(Listener<ResponseT> responseListener, Metadata headers) {
       this.responseListener = new KeyAwareClientCallListener<>(responseListener, this);
       this.headers = headers;
+      if (cancelled) {
+        this.responseListener.onClose(
+            io.grpc.Status.CANCELLED.withDescription(cancelMessage).withCause(cancelCause),
+            new Metadata());
+      }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void sendMessage(RequestT message) {
+      if (cancelled) {
+        return;
+      }
+      if (responseListener == null || headers == null) {
+        throw new IllegalStateException("start must be called before sendMessage");
+      }
       ChannelEndpoint endpoint = null;
       ChannelFinder finder = null;
 
@@ -326,8 +343,15 @@ final class KeyAwareChannel extends ManagedChannel {
       this.channelFinder = finder;
 
       delegate = endpoint.getChannel().newCall(methodDescriptor, callOptions);
+      if (pendingMessageCompression != null) {
+        delegate.setMessageCompression(pendingMessageCompression);
+      }
       delegate.start(responseListener, headers);
+      drainPendingRequests();
       delegate.sendMessage(message);
+      if (pendingHalfClose) {
+        delegate.halfClose();
+      }
     }
 
     @Override
@@ -335,7 +359,7 @@ final class KeyAwareChannel extends ManagedChannel {
       if (delegate != null) {
         delegate.halfClose();
       } else {
-        throw new IllegalStateException("halfClose called before sendMessage");
+        pendingHalfClose = true;
       }
     }
 
@@ -346,6 +370,56 @@ final class KeyAwareChannel extends ManagedChannel {
       } else if (responseListener != null) {
         responseListener.onClose(
             io.grpc.Status.CANCELLED.withDescription(message).withCause(cause), new Metadata());
+        cancelled = true;
+        cancelMessage = message;
+        cancelCause = cause;
+      } else {
+        cancelled = true;
+        cancelMessage = message;
+        cancelCause = cause;
+      }
+    }
+
+    @Override
+    public void request(int numMessages) {
+      if (delegate != null) {
+        delegate.request(numMessages);
+        return;
+      }
+      if (numMessages <= 0) {
+        return;
+      }
+      long updated = pendingRequests + numMessages;
+      if (updated < 0L) {
+        updated = Long.MAX_VALUE;
+      }
+      pendingRequests = updated;
+    }
+
+    @Override
+    public boolean isReady() {
+      if (delegate == null) {
+        return false;
+      }
+      return delegate.isReady();
+    }
+
+    @Override
+    public void setMessageCompression(boolean enabled) {
+      if (delegate != null) {
+        delegate.setMessageCompression(enabled);
+      } else {
+        pendingMessageCompression = enabled;
+      }
+    }
+
+    private void drainPendingRequests() {
+      long requests = pendingRequests;
+      pendingRequests = 0L;
+      while (requests > 0) {
+        int batch = requests > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) requests;
+        delegate.request(batch);
+        requests -= batch;
       }
     }
 
