@@ -23,12 +23,17 @@ import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.CacheUpdate;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.Group;
+import com.google.spanner.v1.Range;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.RoutingHint;
 import com.google.spanner.v1.SpannerGrpc;
+import com.google.spanner.v1.Tablet;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;
@@ -195,6 +200,75 @@ public class KeyAwareChannelTest {
     assertThat(harness.endpointCache.getCount(DEFAULT_ADDRESS)).isEqualTo(1);
   }
 
+  @Test
+  public void requestAfterCancelBeforeSendIsIgnored() throws Exception {
+    TestHarness harness = createHarness();
+    ClientCall<ExecuteSqlRequest, ResultSet> call =
+        harness.channel.newCall(SpannerGrpc.getExecuteSqlMethod(), CallOptions.DEFAULT);
+
+    CapturingListener<ResultSet> listener = new CapturingListener<>();
+    call.start(listener, new Metadata());
+    call.cancel("cancel", null);
+    call.request(10);
+    call.sendMessage(ExecuteSqlRequest.newBuilder().setSession(SESSION).build());
+
+    assertThat(harness.defaultManagedChannel.callCount()).isEqualTo(0);
+    assertThat(listener.closeCount).isEqualTo(1);
+    assertThat(listener.closedStatus.getCode()).isEqualTo(Status.Code.CANCELLED);
+  }
+
+  @Test
+  public void resultSetCacheUpdateRoutesSubsequentRequest() throws Exception {
+    TestHarness harness = createHarness();
+    ExecuteSqlRequest request =
+        ExecuteSqlRequest.newBuilder()
+            .setSession(SESSION)
+            .setRoutingHint(RoutingHint.newBuilder().setKey(bytes("a")).build())
+            .build();
+
+    ClientCall<ExecuteSqlRequest, ResultSet> firstCall =
+        harness.channel.newCall(SpannerGrpc.getExecuteSqlMethod(), CallOptions.DEFAULT);
+    firstCall.start(new CapturingListener<ResultSet>(), new Metadata());
+    firstCall.sendMessage(request);
+
+    @SuppressWarnings("unchecked")
+    RecordingClientCall<ExecuteSqlRequest, ResultSet> firstDelegate =
+        (RecordingClientCall<ExecuteSqlRequest, ResultSet>)
+            harness.defaultManagedChannel.latestCall();
+
+    CacheUpdate cacheUpdate =
+        CacheUpdate.newBuilder()
+            .setDatabaseId(7L)
+            .addRange(
+                Range.newBuilder()
+                    .setStartKey(bytes("a"))
+                    .setLimitKey(bytes("z"))
+                    .setGroupUid(9L)
+                    .setSplitId(1L)
+                    .setGeneration(bytes("1")))
+            .addGroup(
+                Group.newBuilder()
+                    .setGroupUid(9L)
+                    .setGeneration(bytes("1"))
+                    .addTablets(
+                        Tablet.newBuilder()
+                            .setTabletUid(3L)
+                            .setServerAddress("routed:1234")
+                            .setIncarnation(bytes("1"))
+                            .setDistance(0)))
+            .build();
+
+    firstDelegate.emitOnMessage(ResultSet.newBuilder().setCacheUpdate(cacheUpdate).build());
+
+    ClientCall<ExecuteSqlRequest, ResultSet> secondCall =
+        harness.channel.newCall(SpannerGrpc.getExecuteSqlMethod(), CallOptions.DEFAULT);
+    secondCall.start(new CapturingListener<ResultSet>(), new Metadata());
+    secondCall.sendMessage(request);
+
+    assertThat(harness.endpointCache.callCountForAddress(DEFAULT_ADDRESS)).isEqualTo(1);
+    assertThat(harness.endpointCache.callCountForAddress("routed:1234")).isEqualTo(1);
+  }
+
   private static TestHarness createHarness() throws IOException {
     FakeEndpointCache endpointCache = new FakeEndpointCache(DEFAULT_ADDRESS);
     InstantiatingGrpcChannelProvider provider =
@@ -276,6 +350,14 @@ public class KeyAwareChannelTest {
 
     FakeManagedChannel defaultManagedChannel() {
       return defaultEndpoint.channel;
+    }
+
+    int callCountForAddress(String address) {
+      if (defaultAddress.equals(address)) {
+        return defaultEndpoint.channel.callCount();
+      }
+      FakeEndpoint endpoint = endpoints.get(address);
+      return endpoint == null ? 0 : endpoint.channel.callCount();
     }
   }
 
@@ -401,5 +483,9 @@ public class KeyAwareChannelTest {
         listener.onClose(status, trailers);
       }
     }
+  }
+
+  private static ByteString bytes(String value) {
+    return ByteString.copyFromUtf8(value);
   }
 }

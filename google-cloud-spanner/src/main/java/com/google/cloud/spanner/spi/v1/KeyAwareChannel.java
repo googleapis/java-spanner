@@ -250,6 +250,7 @@ final class KeyAwareChannel extends ManagedChannel {
     @Nullable private Boolean pendingMessageCompression;
     @Nullable private io.grpc.Status cancelledStatus;
     @Nullable private Metadata cancelledTrailers;
+    private final Object lock = new Object();
 
     KeyAwareClientCall(
         KeyAwareChannel parentChannel,
@@ -262,158 +263,214 @@ final class KeyAwareChannel extends ManagedChannel {
 
     @Override
     protected ClientCall<RequestT, ResponseT> delegate() {
-      if (delegate == null) {
-        throw new IllegalStateException(
-            "Delegate call not initialized before use. sendMessage was likely not called.");
+      synchronized (lock) {
+        if (delegate == null) {
+          throw new IllegalStateException(
+              "Delegate call not initialized before use. sendMessage was likely not called.");
+        }
+        return delegate;
       }
-      return delegate;
     }
 
     @Override
     public void start(Listener<ResponseT> responseListener, Metadata headers) {
-      this.responseListener = new KeyAwareClientCallListener<>(responseListener, this);
-      this.headers = headers;
-      if (this.cancelledStatus != null) {
-        this.responseListener.onClose(
-            this.cancelledStatus,
-            this.cancelledTrailers == null ? new Metadata() : this.cancelledTrailers);
+      Listener<ResponseT> listenerToClose = null;
+      io.grpc.Status statusToClose = null;
+      Metadata trailersToClose = null;
+      synchronized (lock) {
+        this.responseListener = new KeyAwareClientCallListener<>(responseListener, this);
+        this.headers = headers;
+        if (this.cancelledStatus != null) {
+          listenerToClose = this.responseListener;
+          statusToClose = this.cancelledStatus;
+          trailersToClose =
+              this.cancelledTrailers == null ? new Metadata() : this.cancelledTrailers;
+        }
+      }
+      if (listenerToClose != null) {
+        listenerToClose.onClose(statusToClose, trailersToClose);
       }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void sendMessage(RequestT message) {
-      if (this.cancelledStatus != null) {
-        return;
-      }
-      if (responseListener == null || headers == null) {
-        throw new IllegalStateException("start must be called before sendMessage");
-      }
-      ChannelEndpoint endpoint = null;
-      ChannelFinder finder = null;
-
-      if (message instanceof ReadRequest) {
-        ReadRequest.Builder reqBuilder = ((ReadRequest) message).toBuilder();
-        RoutingDecision routing = routeFromRequest(reqBuilder);
-        finder = routing.finder;
-        endpoint = routing.endpoint;
-        message = (RequestT) reqBuilder.build();
-      } else if (message instanceof ExecuteSqlRequest) {
-        ExecuteSqlRequest.Builder reqBuilder = ((ExecuteSqlRequest) message).toBuilder();
-        RoutingDecision routing = routeFromRequest(reqBuilder);
-        finder = routing.finder;
-        endpoint = routing.endpoint;
-        message = (RequestT) reqBuilder.build();
-      } else if (message instanceof BeginTransactionRequest) {
-        BeginTransactionRequest.Builder reqBuilder =
-            ((BeginTransactionRequest) message).toBuilder();
-        String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
-        if (databaseId != null && reqBuilder.hasMutationKey()) {
-          finder = parentChannel.getOrCreateChannelFinder(databaseId);
-          endpoint = finder.findServer(reqBuilder);
+      synchronized (lock) {
+        if (this.cancelledStatus != null) {
+          return;
         }
-        allowDefaultAffinity = true;
-        message = (RequestT) reqBuilder.build();
-      } else if (message instanceof CommitRequest) {
-        CommitRequest request = (CommitRequest) message;
-        if (!request.getTransactionId().isEmpty()) {
-          endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
-          transactionIdToClear = request.getTransactionId();
+        if (responseListener == null || headers == null) {
+          throw new IllegalStateException("start must be called before sendMessage");
         }
-      } else if (message instanceof RollbackRequest) {
-        RollbackRequest request = (RollbackRequest) message;
-        if (!request.getTransactionId().isEmpty()) {
-          endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
-          transactionIdToClear = request.getTransactionId();
+        ChannelEndpoint endpoint = null;
+        ChannelFinder finder = null;
+
+        if (message instanceof ReadRequest) {
+          ReadRequest.Builder reqBuilder = ((ReadRequest) message).toBuilder();
+          RoutingDecision routing = routeFromRequest(reqBuilder);
+          finder = routing.finder;
+          endpoint = routing.endpoint;
+          message = (RequestT) reqBuilder.build();
+        } else if (message instanceof ExecuteSqlRequest) {
+          ExecuteSqlRequest.Builder reqBuilder = ((ExecuteSqlRequest) message).toBuilder();
+          RoutingDecision routing = routeFromRequest(reqBuilder);
+          finder = routing.finder;
+          endpoint = routing.endpoint;
+          message = (RequestT) reqBuilder.build();
+        } else if (message instanceof BeginTransactionRequest) {
+          BeginTransactionRequest.Builder reqBuilder =
+              ((BeginTransactionRequest) message).toBuilder();
+          String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
+          if (databaseId != null && reqBuilder.hasMutationKey()) {
+            finder = parentChannel.getOrCreateChannelFinder(databaseId);
+            endpoint = finder.findServer(reqBuilder);
+          }
+          allowDefaultAffinity = true;
+          message = (RequestT) reqBuilder.build();
+        } else if (message instanceof CommitRequest) {
+          CommitRequest request = (CommitRequest) message;
+          if (!request.getTransactionId().isEmpty()) {
+            endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
+            transactionIdToClear = request.getTransactionId();
+          }
+        } else if (message instanceof RollbackRequest) {
+          RollbackRequest request = (RollbackRequest) message;
+          if (!request.getTransactionId().isEmpty()) {
+            endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
+            transactionIdToClear = request.getTransactionId();
+          }
+        } else {
+          throw new IllegalStateException(
+              "Only read, query, begin transaction, commit, and rollback requests are supported for"
+                  + " key-aware calls.");
         }
-      } else {
-        throw new IllegalStateException(
-            "Only read, query, begin transaction, commit, and rollback requests are supported for"
-                + " key-aware calls.");
-      }
 
-      if (endpoint == null) {
-        endpoint = parentChannel.endpointCache.defaultChannel();
-      }
-      selectedEndpoint = endpoint;
-      this.channelFinder = finder;
+        if (endpoint == null) {
+          endpoint = parentChannel.endpointCache.defaultChannel();
+        }
+        selectedEndpoint = endpoint;
+        this.channelFinder = finder;
 
-      delegate = endpoint.getChannel().newCall(methodDescriptor, callOptions);
-      if (pendingMessageCompression != null) {
-        delegate.setMessageCompression(pendingMessageCompression);
-        pendingMessageCompression = null;
-      }
-      delegate.start(responseListener, headers);
-      drainPendingRequests();
-      delegate.sendMessage(message);
-      if (pendingHalfClose) {
-        delegate.halfClose();
+        delegate = endpoint.getChannel().newCall(methodDescriptor, callOptions);
+        if (pendingMessageCompression != null) {
+          delegate.setMessageCompression(pendingMessageCompression);
+          pendingMessageCompression = null;
+        }
+        delegate.start(responseListener, headers);
+        drainPendingRequests();
+        delegate.sendMessage(message);
+        if (pendingHalfClose) {
+          delegate.halfClose();
+        }
       }
     }
 
     @Override
     public void halfClose() {
-      if (delegate != null) {
-        delegate.halfClose();
-      } else {
-        pendingHalfClose = true;
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      synchronized (lock) {
+        if (this.cancelledStatus != null) {
+          return;
+        }
+        if (delegate == null) {
+          pendingHalfClose = true;
+          return;
+        }
+        currentDelegate = delegate;
       }
+      currentDelegate.halfClose();
     }
 
     @Override
     public void cancel(@Nullable String message, @Nullable Throwable cause) {
-      if (delegate != null) {
-        delegate.cancel(message, cause);
-      } else {
-        cancelledStatus = io.grpc.Status.CANCELLED.withDescription(message).withCause(cause);
-        Metadata trailers =
-            cause == null ? new Metadata() : io.grpc.Status.trailersFromThrowable(cause);
-        cancelledTrailers = trailers == null ? new Metadata() : trailers;
-        if (responseListener != null) {
-          responseListener.onClose(cancelledStatus, cancelledTrailers);
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      Listener<ResponseT> listenerToClose = null;
+      io.grpc.Status statusToClose = null;
+      Metadata trailersToClose = null;
+      synchronized (lock) {
+        currentDelegate = delegate;
+        if (currentDelegate == null) {
+          cancelledStatus = io.grpc.Status.CANCELLED.withDescription(message).withCause(cause);
+          Metadata trailers =
+              cause == null ? new Metadata() : io.grpc.Status.trailersFromThrowable(cause);
+          cancelledTrailers = trailers == null ? new Metadata() : trailers;
+          if (responseListener != null) {
+            listenerToClose = responseListener;
+            statusToClose = cancelledStatus;
+            trailersToClose = cancelledTrailers;
+          }
         }
+      }
+      if (currentDelegate != null) {
+        currentDelegate.cancel(message, cause);
+      } else if (listenerToClose != null) {
+        listenerToClose.onClose(statusToClose, trailersToClose);
       }
     }
 
     @Override
     public void request(int numMessages) {
-      if (delegate != null) {
-        delegate.request(numMessages);
-        return;
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      synchronized (lock) {
+        if (cancelledStatus != null) {
+          return;
+        }
+        if (delegate != null) {
+          currentDelegate = delegate;
+        } else {
+          if (numMessages <= 0) {
+            return;
+          }
+          long updated = pendingRequests + numMessages;
+          if (updated < 0L) {
+            updated = Long.MAX_VALUE;
+          }
+          pendingRequests = updated;
+          return;
+        }
       }
-      if (numMessages <= 0) {
-        return;
-      }
-      long updated = pendingRequests + numMessages;
-      if (updated < 0L) {
-        updated = Long.MAX_VALUE;
-      }
-      pendingRequests = updated;
+      currentDelegate.request(numMessages);
     }
 
     @Override
     public boolean isReady() {
-      if (delegate == null) {
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      synchronized (lock) {
+        currentDelegate = delegate;
+      }
+      if (currentDelegate == null) {
         return false;
       }
-      return delegate.isReady();
+      return currentDelegate.isReady();
     }
 
     @Override
     public void setMessageCompression(boolean enabled) {
-      if (delegate != null) {
-        delegate.setMessageCompression(enabled);
-      } else {
-        pendingMessageCompression = enabled;
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      synchronized (lock) {
+        if (cancelledStatus != null) {
+          return;
+        }
+        if (delegate != null) {
+          currentDelegate = delegate;
+        } else {
+          pendingMessageCompression = enabled;
+          return;
+        }
       }
+      currentDelegate.setMessageCompression(enabled);
     }
 
     private void drainPendingRequests() {
+      ClientCall<RequestT, ResponseT> currentDelegate = delegate;
+      if (currentDelegate == null) {
+        return;
+      }
       long requests = pendingRequests;
       pendingRequests = 0L;
       while (requests > 0) {
         int batch = requests > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) requests;
-        delegate.request(batch);
+        currentDelegate.request(batch);
         requests -= batch;
       }
     }
