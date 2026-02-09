@@ -248,9 +248,8 @@ final class KeyAwareChannel extends ManagedChannel {
     private long pendingRequests;
     private boolean pendingHalfClose;
     @Nullable private Boolean pendingMessageCompression;
-    private boolean cancelled;
-    @Nullable private String cancelMessage;
-    @Nullable private Throwable cancelCause;
+    @Nullable private io.grpc.Status cancelledStatus;
+    @Nullable private Metadata cancelledTrailers;
 
     KeyAwareClientCall(
         KeyAwareChannel parentChannel,
@@ -274,17 +273,17 @@ final class KeyAwareChannel extends ManagedChannel {
     public void start(Listener<ResponseT> responseListener, Metadata headers) {
       this.responseListener = new KeyAwareClientCallListener<>(responseListener, this);
       this.headers = headers;
-      if (cancelled) {
+      if (this.cancelledStatus != null) {
         this.responseListener.onClose(
-            io.grpc.Status.CANCELLED.withDescription(cancelMessage).withCause(cancelCause),
-            new Metadata());
+            this.cancelledStatus,
+            this.cancelledTrailers == null ? new Metadata() : this.cancelledTrailers);
       }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void sendMessage(RequestT message) {
-      if (cancelled) {
+      if (this.cancelledStatus != null) {
         return;
       }
       if (responseListener == null || headers == null) {
@@ -311,10 +310,7 @@ final class KeyAwareChannel extends ManagedChannel {
         String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
         if (databaseId != null && reqBuilder.hasMutationKey()) {
           finder = parentChannel.getOrCreateChannelFinder(databaseId);
-          ChannelEndpoint routed = finder.findServer(reqBuilder);
-          if (endpoint == null) {
-            endpoint = routed;
-          }
+          endpoint = finder.findServer(reqBuilder);
         }
         allowDefaultAffinity = true;
         message = (RequestT) reqBuilder.build();
@@ -345,6 +341,7 @@ final class KeyAwareChannel extends ManagedChannel {
       delegate = endpoint.getChannel().newCall(methodDescriptor, callOptions);
       if (pendingMessageCompression != null) {
         delegate.setMessageCompression(pendingMessageCompression);
+        pendingMessageCompression = null;
       }
       delegate.start(responseListener, headers);
       drainPendingRequests();
@@ -368,12 +365,12 @@ final class KeyAwareChannel extends ManagedChannel {
       if (delegate != null) {
         delegate.cancel(message, cause);
       } else {
-        cancelled = true;
-        cancelMessage = message;
-        cancelCause = cause;
+        cancelledStatus = io.grpc.Status.CANCELLED.withDescription(message).withCause(cause);
+        Metadata trailers =
+            cause == null ? new Metadata() : io.grpc.Status.trailersFromThrowable(cause);
+        cancelledTrailers = trailers == null ? new Metadata() : trailers;
         if (responseListener != null) {
-          responseListener.onClose(
-              io.grpc.Status.CANCELLED.withDescription(message).withCause(cause), new Metadata());
+          responseListener.onClose(cancelledStatus, cancelledTrailers);
         }
       }
     }
