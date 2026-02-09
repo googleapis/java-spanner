@@ -238,7 +238,7 @@ import javax.annotation.Nullable;
 public class GapicSpannerRpc implements SpannerRpc {
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
-  private static final String EXPERIMENTAL_LOCATION_API_ENV_VAR =
+  public static final String EXPERIMENTAL_LOCATION_API_ENV_VAR =
       "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
       PathTemplate.create("{database=projects/*/instances/*/databases/*}/operations/{operation}");
@@ -451,6 +451,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             });
       }
 
+      boolean enableLocationApi = options.isEnableLocationApi();
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
       // with information gathered from SpannerOptions if none is provided
       TransportChannelProvider baseChannelProvider =

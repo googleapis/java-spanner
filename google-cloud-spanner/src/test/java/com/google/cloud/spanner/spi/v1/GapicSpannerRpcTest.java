@@ -49,7 +49,6 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.JavaVersionUtil;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -896,18 +895,7 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
-  public void testChannelEndpointCacheFactoryUsedWhenLocationApiEnabled() throws Exception {
-    assumeTrue(isJava8() && !isWindows());
-    String envVar = "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
-
-    Class<?> classOfMap = System.getenv().getClass();
-    java.lang.reflect.Field field = classOfMap.getDeclaredField("m");
-    field.setAccessible(true);
-    @SuppressWarnings("unchecked")
-    Map<String, String> writeableEnvironmentVariables =
-        (Map<String, String>) field.get(System.getenv());
-    String originalValue = writeableEnvironmentVariables.get(envVar);
-
+  public void testChannelEndpointCacheFactoryUsedWhenLocationApiEnabled() {
     AtomicBoolean factoryCalled = new AtomicBoolean(false);
     ChannelEndpointCacheFactory factory =
         baseProvider -> {
@@ -916,34 +904,25 @@ public class GapicSpannerRpcTest {
         };
 
     try {
-      writeableEnvironmentVariables.put(envVar, "true");
+      SpannerOptions.useEnvironment(
+          new SpannerOptions.SpannerEnvironment() {
+            @Override
+            public boolean isEnableLocationApi() {
+              return true;
+            }
+          });
       SpannerOptions options =
           createSpannerOptions().toBuilder().setChannelEndpointCacheFactory(factory).build();
       GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
       rpc.shutdown();
       assertTrue(factoryCalled.get());
     } finally {
-      if (originalValue == null) {
-        writeableEnvironmentVariables.remove(envVar);
-      } else {
-        writeableEnvironmentVariables.put(envVar, originalValue);
-      }
+      SpannerOptions.useDefaultEnvironment();
     }
   }
 
   @Test
-  public void testLocationApiDoesNotOverrideExplicitChannelProvider() throws Exception {
-    assumeTrue(isJava8() && !isWindows());
-    String envVar = "GOOGLE_SPANNER_EXPERIMENTAL_LOCATION_API";
-
-    Class<?> classOfMap = System.getenv().getClass();
-    java.lang.reflect.Field field = classOfMap.getDeclaredField("m");
-    field.setAccessible(true);
-    @SuppressWarnings("unchecked")
-    Map<String, String> writeableEnvironmentVariables =
-        (Map<String, String>) field.get(System.getenv());
-    String originalValue = writeableEnvironmentVariables.get(envVar);
-
+  public void testLocationApiDoesNotOverrideExplicitChannelProvider() {
     AtomicBoolean factoryCalled = new AtomicBoolean(false);
     ChannelEndpointCacheFactory factory =
         baseProvider -> {
@@ -957,7 +936,13 @@ public class GapicSpannerRpcTest {
             address.getHostString(), server.getPort(), providerUsed);
 
     try {
-      writeableEnvironmentVariables.put(envVar, "true");
+      SpannerOptions.useEnvironment(
+          new SpannerOptions.SpannerEnvironment() {
+            @Override
+            public boolean isEnableLocationApi() {
+              return true;
+            }
+          });
       SpannerOptions options =
           createSpannerOptions().toBuilder()
               .setChannelProvider(channelProvider)
@@ -968,11 +953,34 @@ public class GapicSpannerRpcTest {
       assertTrue(providerUsed.get());
       assertFalse(factoryCalled.get());
     } finally {
-      if (originalValue == null) {
-        writeableEnvironmentVariables.remove(envVar);
-      } else {
-        writeableEnvironmentVariables.put(envVar, originalValue);
-      }
+      SpannerOptions.useDefaultEnvironment();
+    }
+  }
+
+  @Test
+  public void testLocationApiDisabledInOptionsDoesNotCreateKeyAwareChannelProvider() {
+    AtomicBoolean factoryCalled = new AtomicBoolean(false);
+    ChannelEndpointCacheFactory factory =
+        baseProvider -> {
+          factoryCalled.set(true);
+          return new GrpcChannelEndpointCache(baseProvider);
+        };
+
+    try {
+      SpannerOptions.useEnvironment(
+          new SpannerOptions.SpannerEnvironment() {
+            @Override
+            public boolean isEnableLocationApi() {
+              return false;
+            }
+          });
+      SpannerOptions options =
+          createSpannerOptions().toBuilder().setChannelEndpointCacheFactory(factory).build();
+      GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+      rpc.shutdown();
+      assertFalse(factoryCalled.get());
+    } finally {
+      SpannerOptions.useDefaultEnvironment();
     }
   }
 
