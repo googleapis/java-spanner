@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
 import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+import static com.google.cloud.spanner.spi.v1.GapicSpannerRpc.EXPERIMENTAL_LOCATION_API_ENV_VAR;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
@@ -53,6 +54,7 @@ import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.SpannerRpcFactory;
+import com.google.cloud.spanner.spi.v1.ChannelEndpointCacheFactory;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.SpannerSettings;
@@ -67,6 +69,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
@@ -202,6 +205,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private final TransportChannelProvider channelProvider;
+  private final ChannelEndpointCacheFactory channelEndpointCacheFactory;
 
   @SuppressWarnings("rawtypes")
   private final ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator;
@@ -225,6 +229,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
+  private final boolean enableGrpcGcpOtelMetrics;
   private final BuiltInMetricsProvider builtInMetricsProvider = BuiltInMetricsProvider.INSTANCE;
 
   /**
@@ -253,10 +258,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final OpenTelemetry openTelemetry;
   private final boolean enableApiTracing;
   private final boolean enableBuiltInMetrics;
+  private final boolean enableLocationApi;
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
   private final TransactionOptions defaultTransactionOptions;
+  private final RequestOptions.ClientContext clientContext;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -826,6 +833,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
+    channelEndpointCacheFactory = builder.channelEndpointCacheFactory;
     if (builder.mTLSContext != null) {
       channelConfigurator =
           channelBuilder -> {
@@ -892,6 +900,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
+    enableGrpcGcpOtelMetrics = builder.enableGrpcGcpOtelMetrics;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
     if (envQueryOptions.equals(QueryOptions.getDefaultInstance())) {
@@ -919,14 +928,21 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     } else {
       enableBuiltInMetrics = builder.enableBuiltInMetrics;
     }
+    enableLocationApi = builder.enableLocationApi;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
+    clientContext = builder.clientContext;
   }
 
   private String getResolvedUniverseDomain() {
     String universeDomain = getUniverseDomain();
     return Strings.isNullOrEmpty(universeDomain) ? GOOGLE_DEFAULT_UNIVERSE : universeDomain;
+  }
+
+  /** Returns the default {@link RequestOptions.ClientContext} for this {@link SpannerOptions}. */
+  public RequestOptions.ClientContext getClientContext() {
+    return clientContext;
   }
 
   /**
@@ -972,7 +988,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
+    default boolean isEnableGrpcGcpOtelMetrics() {
+      return true;
+    }
+
     default boolean isEnableEndToEndTracing() {
+      return false;
+    }
+
+    default boolean isEnableLocationApi() {
       return false;
     }
 
@@ -1010,6 +1034,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
     private static final String SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS =
         "SPANNER_DISABLE_DIRECT_ACCESS_GRPC_BUILTIN_METRICS";
+    private static final String SPANNER_DISABLE_GRPC_GCP_OTEL_METRICS =
+        "SPANNER_DISABLE_GRPC_GCP_OTEL_METRICS";
     private static final String SPANNER_MONITORING_HOST = "SPANNER_MONITORING_HOST";
 
     private SpannerEnvironmentImpl() {}
@@ -1056,8 +1082,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
+    public boolean isEnableGrpcGcpOtelMetrics() {
+      return !Boolean.parseBoolean(System.getenv(SPANNER_DISABLE_GRPC_GCP_OTEL_METRICS));
+    }
+
+    @Override
     public boolean isEnableEndToEndTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_END_TO_END_TRACING));
+    }
+
+    @Override
+    public boolean isEnableLocationApi() {
+      return Boolean.parseBoolean(System.getenv(EXPERIMENTAL_LOCATION_API_ENV_VAR));
     }
 
     @Override
@@ -1092,6 +1128,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             createCustomClientLibToken(LIQUIBASE_API_CLIENT_LIB_TOKEN),
             createCustomClientLibToken(PG_ADAPTER_CLIENT_LIB_TOKEN));
     private TransportChannelProvider channelProvider;
+    private ChannelEndpointCacheFactory channelEndpointCacheFactory;
 
     @SuppressWarnings("rawtypes")
     private ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator;
@@ -1124,6 +1161,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean autoThrottleAdministrativeRequests = false;
     private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
+    private boolean enableGrpcGcpOtelMetrics =
+        SpannerOptions.environment.isEnableGrpcGcpOtelMetrics();
     private CallCredentialsProvider callCredentialsProvider;
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
@@ -1137,11 +1176,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
+    private boolean enableLocationApi = SpannerOptions.environment.isEnableLocationApi();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
     private String experimentalHost = null;
     private boolean usePlainText = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
+    private RequestOptions.ClientContext clientContext;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1227,11 +1268,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
+      this.enableGrpcGcpOtelMetrics = options.enableGrpcGcpOtelMetrics;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
       this.asyncExecutorProvider = options.asyncExecutorProvider;
       this.compressorName = options.compressorName;
       this.channelProvider = options.channelProvider;
+      this.channelEndpointCacheFactory = options.channelEndpointCacheFactory;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
       this.enableDirectAccess = options.enableDirectAccess;
@@ -1240,9 +1283,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableApiTracing = options.enableApiTracing;
       this.enableExtendedTracing = options.enableExtendedTracing;
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
+      this.enableLocationApi = options.enableLocationApi;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
       this.defaultTransactionOptions = options.defaultTransactionOptions;
+      this.clientContext = options.clientContext;
     }
 
     @Override
@@ -1285,6 +1330,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setChannelProvider(TransportChannelProvider channelProvider) {
       this.channelProvider = channelProvider;
+      return this;
+    }
+
+    @InternalApi
+    public Builder setChannelEndpointCacheFactory(
+        ChannelEndpointCacheFactory channelEndpointCacheFactory) {
+      this.channelEndpointCacheFactory = channelEndpointCacheFactory;
       return this;
     }
 
@@ -1739,6 +1791,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets whether to enable or disable grpc-gcp OpenTelemetry metrics injection. When disabled,
+     * Spanner will not automatically inject an OpenTelemetry {@link
+     * io.opentelemetry.api.metrics.Meter} into grpc-gcp. If a Meter or MetricRegistry is explicitly
+     * provided via {@link GcpManagedChannelOptions}, those settings will still be honored.
+     */
+    public Builder setGrpcGcpOtelMetricsEnabled(boolean enableGrpcGcpOtelMetrics) {
+      this.enableGrpcGcpOtelMetrics = enableGrpcGcpOtelMetrics;
+      return this;
+    }
+
+    /**
      * Sets the channel pool options for dynamic channel pooling. Use this to configure the dynamic
      * channel pool behavior when {@link #enableDynamicChannelPool()} is enabled.
      *
@@ -1977,6 +2040,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Sets the default {@link RequestOptions.ClientContext} for all requests. */
+    public Builder setDefaultClientContext(RequestOptions.ClientContext clientContext) {
+      this.clientContext = clientContext;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -2141,6 +2210,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return channelProvider;
   }
 
+  @InternalApi
+  public ChannelEndpointCacheFactory getChannelEndpointCacheFactory() {
+    return channelEndpointCacheFactory;
+  }
+
   @SuppressWarnings("rawtypes")
   public ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> getChannelConfigurator() {
     return channelConfigurator;
@@ -2192,6 +2266,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isGrpcGcpExtensionEnabled() {
     return grpcGcpExtensionEnabled;
+  }
+
+  public boolean isGrpcGcpOtelMetricsEnabled() {
+    return enableGrpcGcpOtelMetrics;
   }
 
   public GcpManagedChannelOptions getGrpcGcpOptions() {
@@ -2368,6 +2446,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public boolean isEnableBuiltInMetrics() {
     return enableBuiltInMetrics;
+  }
+
+  @InternalApi
+  public boolean isEnableLocationApi() {
+    return enableLocationApi;
   }
 
   /** Returns the override metrics Host. */

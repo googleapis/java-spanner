@@ -1,5 +1,37 @@
 # Changelog
 
+## [6.109.0](https://github.com/googleapis/java-spanner/compare/v6.108.0...v6.109.0) (2026-02-02)
+
+
+### Features
+
+* Adding Send and Ack Mutation Support for Cloud Spanner Queue ([#4298](https://github.com/googleapis/java-spanner/issues/4298)) ([4b637ac](https://github.com/googleapis/java-spanner/commit/4b637ac0e4d6d696f3da8ae7fbac31c877aceba9))
+
+
+### Documentation
+
+* Add snippet for ReadLockMode configuration at client and transaction ([#4305](https://github.com/googleapis/java-spanner/issues/4305)) ([0fd4098](https://github.com/googleapis/java-spanner/commit/0fd40983b3bbb2f753e07036cedea9e7b9e26132))
+
+## [6.108.0](https://github.com/googleapis/java-spanner/compare/v6.107.0...v6.108.0) (2026-01-28)
+
+
+### Features
+
+* Add a ClientContext field to Spanner requests ([da6880e](https://github.com/googleapis/java-spanner/commit/da6880e425b7be55b11ba400046692e7af09bccb))
+* Add ChannelFinder server interfaces ([#4293](https://github.com/googleapis/java-spanner/issues/4293)) ([0b7a32e](https://github.com/googleapis/java-spanner/commit/0b7a32e7a24c027387a768a75632022a29562ef6))
+* Exposing total CPU related fields in AutoscalingConfig ([da6880e](https://github.com/googleapis/java-spanner/commit/da6880e425b7be55b11ba400046692e7af09bccb))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.66.0 ([da6880e](https://github.com/googleapis/java-spanner/commit/da6880e425b7be55b11ba400046692e7af09bccb))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.56.0 ([#4313](https://github.com/googleapis/java-spanner/issues/4313)) ([f7d0abc](https://github.com/googleapis/java-spanner/commit/f7d0abc241acb4c58d0ac3c60a7b18f5512275df))
+* Update googleapis/sdk-platform-java action to v2.66.0 ([#4314](https://github.com/googleapis/java-spanner/issues/4314)) ([d09a900](https://github.com/googleapis/java-spanner/commit/d09a900e26223eb9d646e33d29fc5692b8aba36a))
+
 ## [6.107.0](https://github.com/googleapis/java-spanner/compare/v6.106.0...v6.107.0) (2026-01-16)
 
 

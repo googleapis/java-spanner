@@ -404,6 +404,15 @@ abstract class AbstractReadContext
       }
     }
 
+    @Override
+    public void close() {
+      ByteString id = getTransactionId();
+      if (id != null && !id.isEmpty()) {
+        rpc.clearTransactionAffinity(id);
+      }
+      super.close();
+    }
+
     /**
      * Initializes the transaction with the timestamp specified within MultiUseReadOnlyTransaction.
      * This is used only for fallback of PartitionQueryRequest and PartitionReadRequest with
@@ -684,17 +693,15 @@ abstract class AbstractReadContext
   }
 
   RequestOptions buildRequestOptions(Options options) {
-    // Shortcut for the most common return value.
-    if (!(options.hasPriority() || options.hasTag() || getTransactionTag() != null)) {
-      return RequestOptions.getDefaultInstance();
-    }
-
-    RequestOptions.Builder builder = RequestOptions.newBuilder();
-    if (options.hasPriority()) {
-      builder.setPriority(options.priority());
-    }
-    if (options.hasTag()) {
-      builder.setRequestTag(options.tag());
+    RequestOptions.Builder builder = options.toRequestOptionsProto(false).toBuilder();
+    RequestOptions.ClientContext defaultClientContext =
+        session.getSpanner().getOptions().getClientContext();
+    if (defaultClientContext != null) {
+      RequestOptions.ClientContext.Builder clientContextBuilder = defaultClientContext.toBuilder();
+      if (builder.hasClientContext()) {
+        clientContextBuilder.mergeFrom(builder.getClientContext());
+      }
+      builder.setClientContext(clientContextBuilder.build());
     }
     if (getTransactionTag() != null) {
       builder.setTransactionTag(getTransactionTag());

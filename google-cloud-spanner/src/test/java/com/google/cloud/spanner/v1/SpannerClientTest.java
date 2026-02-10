@@ -549,6 +549,7 @@ public class SpannerClientTest {
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -784,6 +785,7 @@ public class SpannerClientTest {
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 

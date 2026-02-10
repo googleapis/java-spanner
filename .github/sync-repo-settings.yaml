@@ -14,13 +14,10 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
       - compile (11)
-      - units-with-multiplexed-session (8)
-      - units-with-multiplexed-session (11)
       - unmanaged_dependency_check
       - library_generation
   - pattern: 3.3.x
@@ -154,7 +151,6 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
@@ -173,7 +169,6 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
@@ -194,7 +189,6 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
@@ -215,13 +209,30 @@ branchProtectionRules:
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
-      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
       - compile (11)
       - units-with-multiplexed-session (8)
       - units-with-multiplexed-session (11)
+      - unmanaged_dependency_check
+      - library_generation
+  - pattern: 6.109.x
+    isAdminEnforced: true
+    requiredApprovingReviewCount: 1
+    requiresCodeOwnerReviews: true
+    requiresStrictStatusChecks: false
+    requiredStatusCheckContexts:
+      - dependencies (17)
+      - lint
+      - javadoc
+      - units (8)
+      - units (11)
+      - 'Kokoro - Test: Integration'
+      - cla/google
+      - checkstyle
+      - compile (8)
+      - compile (11)
       - unmanaged_dependency_check
       - library_generation
 permissionRules:

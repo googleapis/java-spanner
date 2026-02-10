@@ -23,7 +23,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -53,6 +52,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -79,6 +79,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -124,6 +125,10 @@ public class TransactionRunnerImplTest {
     when(session.getTracer()).thenReturn(tracer);
     when(session.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
     when(rpc.getRequestIdCreator()).thenReturn(NoopRequestIdCreator.INSTANCE);
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions spannerOptions = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(spannerOptions);
+    when(session.getSpanner()).thenReturn(spanner);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation -> {
@@ -157,6 +162,37 @@ public class TransactionRunnerImplTest {
     span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
     transactionRunner.setSpan(span);
+  }
+
+  @Test
+  public void testCommitWithClientContext() {
+    RequestOptions.ClientContext clientContext =
+        RequestOptions.ClientContext.newBuilder()
+            .putSecureContext(
+                "key", com.google.protobuf.Value.newBuilder().setStringValue("value").build())
+            .build();
+    when(session.getName()).thenReturn("projects/p/instances/i/databases/d/sessions/s");
+    when(session.newTransaction(any(Options.class), any())).thenReturn(txn);
+    Mockito.clearInvocations(session);
+    transactionRunner =
+        new TransactionRunnerImpl(
+            session,
+            Options.priority(Options.RpcPriority.HIGH),
+            Options.tag("tag"),
+            Options.clientContext(clientContext));
+    transactionRunner.setSpan(span);
+
+    transactionRunner.run(
+        transaction -> {
+          return null;
+        });
+
+    ArgumentCaptor<Options> optionsCaptor = ArgumentCaptor.forClass(Options.class);
+    verify(session).newTransaction(optionsCaptor.capture(), any());
+    Options capturedOptions = optionsCaptor.getValue();
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, capturedOptions.priority());
+    assertEquals("tag", capturedOptions.tag());
+    assertEquals(clientContext, capturedOptions.clientContext());
   }
 
   @SuppressWarnings("unchecked")
@@ -336,7 +372,7 @@ public class TransactionRunnerImplTest {
         new SessionImpl(
             spanner,
             new SessionReference(
-                "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP)) {};
+                "projects/p/instances/i/databases/d/sessions/s", null, Collections.EMPTY_MAP)) {};
     session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(span);

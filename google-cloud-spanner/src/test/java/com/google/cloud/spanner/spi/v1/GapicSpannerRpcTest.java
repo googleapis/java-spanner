@@ -27,14 +27,21 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.ServiceOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
@@ -76,6 +83,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.grpc.auth.MoreCallCredentials;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import io.opentelemetry.api.OpenTelemetry;
@@ -84,12 +92,16 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -872,6 +884,230 @@ public class GapicSpannerRpcTest {
     assertNotNull(session.getCreateTime());
     assertEquals(false, session.getMultiplexed());
     rpc.shutdown();
+  }
+
+  @Test
+  public void testChannelEndpointCacheFactoryUsedWhenLocationApiEnabled() {
+    AtomicBoolean factoryCalled = new AtomicBoolean(false);
+    ChannelEndpointCacheFactory factory =
+        baseProvider -> {
+          factoryCalled.set(true);
+          return new GrpcChannelEndpointCache(baseProvider);
+        };
+
+    try {
+      SpannerOptions.useEnvironment(
+          new SpannerOptions.SpannerEnvironment() {
+            @Override
+            public boolean isEnableLocationApi() {
+              return true;
+            }
+          });
+      SpannerOptions options =
+          createSpannerOptions().toBuilder().setChannelEndpointCacheFactory(factory).build();
+      GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+      rpc.shutdown();
+      assertTrue(factoryCalled.get());
+    } finally {
+      SpannerOptions.useDefaultEnvironment();
+    }
+  }
+
+  @Test
+  public void testLocationApiDoesNotOverrideExplicitChannelProvider() {
+    AtomicBoolean factoryCalled = new AtomicBoolean(false);
+    ChannelEndpointCacheFactory factory =
+        baseProvider -> {
+          factoryCalled.set(true);
+          return new GrpcChannelEndpointCache(baseProvider);
+        };
+
+    AtomicBoolean providerUsed = new AtomicBoolean(false);
+    TransportChannelProvider channelProvider =
+        new RecordingTransportChannelProvider(
+            address.getHostString(), server.getPort(), providerUsed);
+
+    try {
+      SpannerOptions.useEnvironment(
+          new SpannerOptions.SpannerEnvironment() {
+            @Override
+            public boolean isEnableLocationApi() {
+              return true;
+            }
+          });
+      SpannerOptions options =
+          createSpannerOptions().toBuilder()
+              .setChannelProvider(channelProvider)
+              .setChannelEndpointCacheFactory(factory)
+              .build();
+      GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+      rpc.shutdown();
+      assertTrue(providerUsed.get());
+      assertFalse(factoryCalled.get());
+    } finally {
+      SpannerOptions.useDefaultEnvironment();
+    }
+  }
+
+  @Test
+  public void testLocationApiDisabledInOptionsDoesNotCreateKeyAwareChannelProvider() {
+    AtomicBoolean factoryCalled = new AtomicBoolean(false);
+    ChannelEndpointCacheFactory factory =
+        baseProvider -> {
+          factoryCalled.set(true);
+          return new GrpcChannelEndpointCache(baseProvider);
+        };
+
+    try {
+      SpannerOptions.useEnvironment(
+          new SpannerOptions.SpannerEnvironment() {
+            @Override
+            public boolean isEnableLocationApi() {
+              return false;
+            }
+          });
+      SpannerOptions options =
+          createSpannerOptions().toBuilder().setChannelEndpointCacheFactory(factory).build();
+      GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+      rpc.shutdown();
+      assertFalse(factoryCalled.get());
+    } finally {
+      SpannerOptions.useDefaultEnvironment();
+    }
+  }
+
+  @Test
+  public void testGrpcGcpExtensionPreservesChannelConfigurator() throws Exception {
+    InstantiatingGrpcChannelProvider.Builder channelProviderBuilder =
+        InstantiatingGrpcChannelProvider.newBuilder();
+    AtomicBoolean baseConfiguratorCalled = new AtomicBoolean(false);
+    channelProviderBuilder.setChannelConfigurator(
+        builder -> {
+          baseConfiguratorCalled.set(true);
+          return builder;
+        });
+
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("[PROJECT]").enableGrpcGcpExtension().build();
+
+    java.lang.reflect.Method method =
+        GapicSpannerRpc.class.getDeclaredMethod(
+            "maybeEnableGrpcGcpExtension",
+            InstantiatingGrpcChannelProvider.Builder.class,
+            SpannerOptions.class);
+    method.setAccessible(true);
+    method.invoke(null, channelProviderBuilder, options);
+
+    ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> chainedConfigurator =
+        channelProviderBuilder.getChannelConfigurator();
+    chainedConfigurator.apply(NettyChannelBuilder.forAddress("localhost", 1));
+
+    assertTrue(baseConfiguratorCalled.get());
+  }
+
+  @Test
+  public void testGrpcGcpOtelMetricsDisabledSkipsMeterInjection() throws Exception {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setGrpcGcpOtelMetricsEnabled(false)
+            .build();
+
+    java.lang.reflect.Method method =
+        GapicSpannerRpc.class.getDeclaredMethod(
+            "grpcGcpOptionsWithMetricsAndDcp", SpannerOptions.class);
+    method.setAccessible(true);
+    GcpManagedChannelOptions grpcGcpOptions =
+        (GcpManagedChannelOptions) method.invoke(null, options);
+    GcpMetricsOptions metricsOptions = grpcGcpOptions.getMetricsOptions();
+
+    assertNotNull(metricsOptions);
+    assertNull(metricsOptions.getOpenTelemetryMeter());
+  }
+
+  private static final class RecordingTransportChannelProvider implements TransportChannelProvider {
+    private final String host;
+    private final int port;
+    private final AtomicBoolean used;
+
+    private RecordingTransportChannelProvider(String host, int port, AtomicBoolean used) {
+      this.host = host;
+      this.port = port;
+      this.used = used;
+    }
+
+    @Override
+    public GrpcTransportChannel getTransportChannel() throws IOException {
+      used.set(true);
+      return GrpcTransportChannel.newBuilder()
+          .setManagedChannel(ManagedChannelBuilder.forAddress(host, port).usePlaintext().build())
+          .build();
+    }
+
+    @Override
+    public String getTransportName() {
+      return GrpcTransportChannel.getGrpcTransportName();
+    }
+
+    @Override
+    public boolean needsEndpoint() {
+      return false;
+    }
+
+    @Override
+    public boolean needsCredentials() {
+      return false;
+    }
+
+    @Override
+    public boolean needsExecutor() {
+      return false;
+    }
+
+    @Override
+    public boolean needsHeaders() {
+      return false;
+    }
+
+    @Override
+    public boolean shouldAutoClose() {
+      return true;
+    }
+
+    @Override
+    public TransportChannelProvider withEndpoint(String endpoint) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withCredentials(Credentials credentials) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withHeaders(Map<String, String> headers) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withPoolSize(int poolSize) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withExecutor(ScheduledExecutorService executor) {
+      return this;
+    }
+
+    @Override
+    public TransportChannelProvider withExecutor(Executor executor) {
+      return this;
+    }
+
+    @Override
+    public boolean acceptsPoolSize() {
+      return false;
+    }
   }
 
   private SpannerOptions createSpannerOptions() {

@@ -464,15 +464,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                         waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS)
                     : transactionId);
           }
-          if (options.hasPriority() || getTransactionTag() != null) {
-            RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
-            if (options.hasPriority()) {
-              requestOptionsBuilder.setPriority(options.priority());
-            }
-            if (getTransactionTag() != null) {
-              requestOptionsBuilder.setTransactionTag(getTransactionTag());
-            }
-            requestBuilder.setRequestOptions(requestOptionsBuilder.build());
+          RequestOptions requestOptions = options.toRequestOptionsProto(true);
+          if (!requestOptions.equals(RequestOptions.getDefaultInstance())) {
+            requestBuilder.setRequestOptions(requestOptions);
           }
           if (session.getIsMultiplexed() && getLatestPrecommitToken() != null) {
             // Set the precommit token in the CommitRequest for multiplexed sessions.
