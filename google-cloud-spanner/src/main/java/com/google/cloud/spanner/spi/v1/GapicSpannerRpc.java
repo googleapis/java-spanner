@@ -457,8 +457,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       TransportChannelProvider baseChannelProvider =
           MoreObjects.firstNonNull(
               options.getChannelProvider(), defaultChannelProviderBuilder.build());
-      boolean enableLocationApi =
-          Boolean.parseBoolean(System.getenv(EXPERIMENTAL_LOCATION_API_ENV_VAR));
       TransportChannelProvider channelProvider =
           enableLocationApi && baseChannelProvider instanceof InstantiatingGrpcChannelProvider
               ? new KeyAwareTransportChannelProvider(
@@ -699,13 +697,13 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setAllowNonDefaultServiceAccount(true);
     if (isEnableDirectAccess) {
       defaultChannelProviderBuilder.setAttemptDirectPath(true);
-      defaultChannelProviderBuilder.setAttemptDirectPathXds();
       if (isEnableDirectPathBoundToken()) {
         // This will let the credentials try to fetch a hard-bound access token if the runtime
         // environment supports it.
         defaultChannelProviderBuilder.setAllowHardBoundTokenTypes(
             Collections.singletonList(InstantiatingGrpcChannelProvider.HardBoundTokenTypes.ALTS));
       }
+      defaultChannelProviderBuilder.setAttemptDirectPathXds();
     }
 
     options.enablegRPCMetrics(defaultChannelProviderBuilder);

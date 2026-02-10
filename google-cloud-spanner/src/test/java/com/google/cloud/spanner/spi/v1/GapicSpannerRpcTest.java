@@ -1134,14 +1134,6 @@ public class GapicSpannerRpcTest {
         .build();
   }
 
-  private boolean isJava8() {
-    return JavaVersionUtil.getJavaMajorVersion() == 8;
-  }
-
-  private boolean isWindows() {
-    return System.getProperty("os.name").toLowerCase().contains("windows");
-  }
-
   static class TestableGapicSpannerRpc extends GapicSpannerRpc {
     public TestableGapicSpannerRpc(SpannerOptions options) {
       super(options);
