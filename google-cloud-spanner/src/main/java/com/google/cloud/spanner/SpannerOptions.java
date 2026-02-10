@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
 import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+import static com.google.cloud.spanner.spi.v1.GapicSpannerRpc.EXPERIMENTAL_LOCATION_API_ENV_VAR;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
@@ -257,6 +258,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final OpenTelemetry openTelemetry;
   private final boolean enableApiTracing;
   private final boolean enableBuiltInMetrics;
+  private final boolean enableLocationApi;
   private final boolean enableExtendedTracing;
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
@@ -926,6 +928,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     } else {
       enableBuiltInMetrics = builder.enableBuiltInMetrics;
     }
+    enableLocationApi = builder.enableLocationApi;
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
@@ -990,6 +993,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     default boolean isEnableEndToEndTracing() {
+      return false;
+    }
+
+    default boolean isEnableLocationApi() {
       return false;
     }
 
@@ -1085,6 +1092,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     @Override
+    public boolean isEnableLocationApi() {
+      return Boolean.parseBoolean(System.getenv(EXPERIMENTAL_LOCATION_API_ENV_VAR));
+    }
+
+    @Override
     public String getMonitoringHost() {
       return System.getenv(SPANNER_MONITORING_HOST);
     }
@@ -1164,6 +1176,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
     private boolean enableEndToEndTracing = SpannerOptions.environment.isEnableEndToEndTracing();
     private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
+    private boolean enableLocationApi = SpannerOptions.environment.isEnableLocationApi();
     private String monitoringHost = SpannerOptions.environment.getMonitoringHost();
     private SslContext mTLSContext = null;
     private String experimentalHost = null;
@@ -1270,6 +1283,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableApiTracing = options.enableApiTracing;
       this.enableExtendedTracing = options.enableExtendedTracing;
       this.enableBuiltInMetrics = options.enableBuiltInMetrics;
+      this.enableLocationApi = options.enableLocationApi;
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
       this.defaultTransactionOptions = options.defaultTransactionOptions;
@@ -2432,6 +2446,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public boolean isEnableBuiltInMetrics() {
     return enableBuiltInMetrics;
+  }
+
+  @InternalApi
+  public boolean isEnableLocationApi() {
+    return enableLocationApi;
   }
 
   /** Returns the override metrics Host. */
