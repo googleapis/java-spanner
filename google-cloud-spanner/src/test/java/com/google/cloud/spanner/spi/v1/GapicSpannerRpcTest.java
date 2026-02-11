@@ -94,7 +94,6 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -1147,7 +1146,7 @@ public class GapicSpannerRpcTest {
           .setPrimaryChannelName("directpath")
           .setFallbackChannelName("cloudpath")
           .setMinFailedCalls(10)
-          .setPeriod(Duration.ofMillis(10))
+          .setPeriod(Duration.ofMillis(5))
           .setGcpFallbackOpenTelemetry(fallbackTelemetry)
           .build();
     }
@@ -1155,8 +1154,6 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testFallbackIntegration_doesNotSwitchWhenThresholdNotMet() throws Exception {
-    GapicSpannerRpc.enableGcpFallbackEnv = true;
-
     // Setup OpenTelemetry to capture metrics
     InMemoryMetricReader metricReader = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
@@ -1164,43 +1161,54 @@ public class GapicSpannerRpcTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
 
-    // Setup Options with invalid host to force error
-    SpannerOptions options =
-        SpannerOptions.newBuilder()
-            .setProjectId("test-project")
-            .setEnableDirectAccess(true)
-            .setHost("http://localhost:1") // Closed port
-            .setCredentials(NoCredentials.getInstance())
-            .setOpenTelemetry(openTelemetry)
-            .build();
-
-    TestableGapicSpannerRpc rpc = new TestableGapicSpannerRpc(options);
-
+    SpannerOptions.useEnvironment(
+        new SpannerOptions.SpannerEnvironment() {
+          @Override
+          public boolean isEnableGcpFallback() {
+            return true;
+          }
+        });
     try {
-      // Make a call that is expected to fail
+      // Setup Options with invalid host to force error
+      SpannerOptions options =
+          SpannerOptions.newBuilder()
+              .setProjectId("test-project")
+              .setEnableDirectAccess(true)
+              .setHost("http://localhost:1") // Closed port
+              .setCredentials(NoCredentials.getInstance())
+              .setOpenTelemetry(openTelemetry)
+              .build();
+
+      TestableGapicSpannerRpc rpc = new TestableGapicSpannerRpc(options);
       try {
-        rpc.executeBatchDml(
-            com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
-                .setSession("projects/p/instances/i/databases/d/sessions/s")
-                .build(),
-            null);
-      } catch (Exception expected) {
-        // Expect a connection error
+        // Make a call that is expected to fail
+        try {
+          rpc.executeBatchDml(
+              com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
+                  .setSession("projects/p/instances/i/databases/d/sessions/s")
+                  .build(),
+              null);
+        } catch (SpannerException e) {
+          // Expect a connection error.
+          assertEquals(ErrorCode.UNAVAILABLE, e.getErrorCode());
+        }
+
+        // Wait briefly for the 10ms period to trigger the fallback check
+        Thread.sleep(10);
+
+        // Verify Fallback via Metrics
+        Collection<MetricData> metrics = metricReader.collectAllMetrics();
+        boolean fallbackOccurred =
+            metrics.stream()
+                .anyMatch(md -> md.getName().contains("fallback_count") && hasValue(md));
+
+        assertFalse("Fallback metric should not be present", fallbackOccurred);
+
+      } finally {
+        rpc.shutdown();
       }
-
-      // Wait briefly for the 10ms period to trigger the fallback check
-      Thread.sleep(100);
-
-      // Verify Fallback via Metrics
-      Collection<MetricData> metrics = metricReader.collectAllMetrics();
-      boolean fallbackOccurred =
-          metrics.stream().anyMatch(md -> md.getName().contains("fallback_count") && hasValue(md));
-
-      assertFalse("Fallback metric should not be present", fallbackOccurred);
-
     } finally {
-      GapicSpannerRpc.enableGcpFallbackEnv = false;
-      rpc.shutdown();
+      SpannerOptions.useDefaultEnvironment();
     }
   }
 
@@ -1217,7 +1225,7 @@ public class GapicSpannerRpcTest {
           .setPrimaryChannelName("directpath")
           .setFallbackChannelName("cloudpath")
           .setMinFailedCalls(1)
-          .setPeriod(Duration.ofMillis(10))
+          .setPeriod(Duration.ofMillis(5))
           .setGcpFallbackOpenTelemetry(fallbackTelemetry)
           .build();
     }
@@ -1225,7 +1233,6 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testFallbackIntegration_switchesToFallbackOnFailure() throws Exception {
-    GapicSpannerRpc.enableGcpFallbackEnv = true;
     // Setup OpenTelemetry to capture metrics
     InMemoryMetricReader metricReader = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
@@ -1233,53 +1240,61 @@ public class GapicSpannerRpcTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
 
-    // Setup Options with invalid host to force error
-    SpannerOptions options =
-        SpannerOptions.newBuilder()
-            .setProjectId("test-project")
-            .setEnableDirectAccess(true)
-            .setHost("http://localhost:1") // Closed port
-            .setCredentials(NoCredentials.getInstance())
-            .setOpenTelemetry(openTelemetry)
-            .build();
-
-    TestableGapicSpannerRpcWithLowerMinFailedCalls rpc =
-        new TestableGapicSpannerRpcWithLowerMinFailedCalls(options);
-
+    SpannerOptions.useEnvironment(
+        new SpannerOptions.SpannerEnvironment() {
+          @Override
+          public boolean isEnableGcpFallback() {
+            return true;
+          }
+        });
     try {
-      // Make a call that is expected to fail
+      // Setup Options with invalid host to force error
+      SpannerOptions options =
+          SpannerOptions.newBuilder()
+              .setProjectId("test-project")
+              .setEnableDirectAccess(true)
+              .setHost("http://localhost:1") // Closed port
+              .setCredentials(NoCredentials.getInstance())
+              .setOpenTelemetry(openTelemetry)
+              .build();
+
+      TestableGapicSpannerRpcWithLowerMinFailedCalls rpc =
+          new TestableGapicSpannerRpcWithLowerMinFailedCalls(options);
       try {
-        rpc.executeBatchDml(
-            com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
-                .setSession("projects/p/instances/i/databases/d/sessions/s")
-                .build(),
-            null);
-      } catch (Exception expected) {
-        // Expect a connection error
+        // Make a call that is expected to fail
+        try {
+          rpc.executeBatchDml(
+              com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
+                  .setSession("projects/p/instances/i/databases/d/sessions/s")
+                  .build(),
+              null);
+        } catch (SpannerException e) {
+          // Expect a connection error.
+          assertEquals(ErrorCode.UNAVAILABLE, e.getErrorCode());
+        }
+
+        // Wait briefly for the 10ms period to trigger the fallback check
+        Thread.sleep(10);
+
+        // Verify Fallback via Metrics
+        Collection<MetricData> metrics = metricReader.collectAllMetrics();
+        boolean fallbackOccurred =
+            metrics.stream()
+                .anyMatch(md -> md.getName().contains("fallback_count") && hasValue(md));
+
+        assertTrue(
+            "Fallback metric should be present, indicating GcpFallbackChannel is active",
+            fallbackOccurred);
+
+      } finally {
+        rpc.shutdown();
       }
-
-      // Wait briefly for the 10ms period to trigger the fallback check
-      Thread.sleep(100);
-
-      // Verify Fallback via Metrics
-      Collection<MetricData> metrics = metricReader.collectAllMetrics();
-      boolean fallbackOccurred =
-          metrics.stream().anyMatch(md -> md.getName().contains("fallback_count") && hasValue(md));
-
-      assertTrue(
-          "Fallback metric should be present, indicating GcpFallbackChannel is active",
-          fallbackOccurred);
-
     } finally {
-      GapicSpannerRpc.enableGcpFallbackEnv = false;
-      rpc.shutdown();
+      SpannerOptions.useDefaultEnvironment();
     }
   }
 
   private boolean hasValue(MetricData metricData) {
-    for (LongPointData point : metricData.getLongSumData().getPoints()) {
-      if (point.getValue() > 0) return true;
-    }
-    return false;
+    return metricData.getLongSumData().getPoints().stream().anyMatch(point -> point.getValue() > 0);
   }
 }

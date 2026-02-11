@@ -370,85 +370,12 @@ public class GapicSpannerRpc implements SpannerRpc {
 
       if (options.getChannelProvider() == null
           && isEnableDirectAccess
-          && isEnableGcpFallbackEnv()) {
-        InstantiatingGrpcChannelProvider.Builder cloudPathProviderBuilder =
-            createChannelProviderBuilder(
-                options, headerProviderWithUserAgent, /* isEnableDirectAccess= */ false);
-
-        final AtomicReference<ManagedChannelBuilder> cloudPathBuilderRef = new AtomicReference<>();
-        cloudPathProviderBuilder.setChannelConfigurator(
-            builder -> {
-              if (options.getChannelConfigurator() != null) {
-                builder = options.getChannelConfigurator().apply(builder);
-              }
-              cloudPathBuilderRef.set(builder);
-              return builder;
-            });
-
-        // Build the cloudPathProvider to extract the builder which will be provided to
-        // FallbackChannelBuilder.
-        try (TransportChannel ignored = cloudPathProviderBuilder.build().getTransportChannel()) {
-        } catch (Exception e) {
-          throw asSpannerException(e);
-        }
-
-        ManagedChannelBuilder cloudPathBuilder = cloudPathBuilderRef.get();
-        if (cloudPathBuilder == null) {
-          throw new IllegalStateException("CloudPath builder was not captured.");
-        }
-
-        try {
-          Credentials credentials = credentialsProvider.getCredentials();
-          if (credentials != null) {
-            cloudPathBuilder.intercept(
-                new ClientInterceptor() {
-                  @Override
-                  public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
-                      MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
-                    return next.newCall(
-                        method,
-                        callOptions.withCallCredentials(MoreCallCredentials.from(credentials)));
-                  }
-                });
-          }
-        } catch (Exception e) {
-          throw asSpannerException(e);
-        }
-
-        defaultChannelProviderBuilder.setChannelConfigurator(
-            directPathBuilder -> {
-              if (options.getChannelConfigurator() != null) {
-                directPathBuilder = options.getChannelConfigurator().apply(directPathBuilder);
-              }
-
-              String jsonApiConfig = parseGrpcGcpApiConfig();
-              GcpManagedChannelOptions gcpOptions = grpcGcpOptionsWithMetricsAndDcp(options);
-              if (gcpOptions == null) {
-                gcpOptions = GcpManagedChannelOptions.newBuilder().build();
-              }
-
-              GcpManagedChannelBuilder primaryGcpBuilder =
-                  GcpManagedChannelBuilder.forDelegateBuilder(directPathBuilder)
-                      .withApiConfigJsonString(jsonApiConfig)
-                      .withOptions(gcpOptions);
-
-              GcpManagedChannelBuilder fallbackGcpBuilder =
-                  GcpManagedChannelBuilder.forDelegateBuilder(cloudPathBuilder)
-                      .withApiConfigJsonString(jsonApiConfig)
-                      .withOptions(gcpOptions);
-
-              GcpFallbackOpenTelemetry fallbackTelemetry =
-                  GcpFallbackOpenTelemetry.newBuilder()
-                      .withSdk(options.getOpenTelemetry())
-                      .disableAllMetrics()
-                      .enableMetrics(Arrays.asList("fallback_count", "call_status"))
-                      .build();
-
-              return new FallbackChannelBuilder(
-                  primaryGcpBuilder,
-                  fallbackGcpBuilder,
-                  createFallbackChannelOptions(fallbackTelemetry, 1));
-            });
+          && options.isEnableGcpFallback()) {
+        setupGcpFallback(
+            defaultChannelProviderBuilder,
+            options,
+            headerProviderWithUserAgent,
+            credentialsProvider);
       }
 
       boolean enableLocationApi = options.isEnableLocationApi();
@@ -666,6 +593,96 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
+  private void setupGcpFallback(
+      InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder,
+      final SpannerOptions options,
+      final HeaderProvider headerProviderWithUserAgent,
+      final CredentialsProvider credentialsProvider) {
+    InstantiatingGrpcChannelProvider.Builder cloudPathProviderBuilder =
+        createChannelProviderBuilder(
+            options, headerProviderWithUserAgent, /* isEnableDirectAccess= */ false);
+
+    final ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> existingCloudPathConfigurator =
+        cloudPathProviderBuilder.getChannelConfigurator();
+    final AtomicReference<ManagedChannelBuilder> cloudPathBuilderRef = new AtomicReference<>();
+    cloudPathProviderBuilder.setChannelConfigurator(
+        builder -> {
+          ManagedChannelBuilder effectiveBuilder = builder;
+          if (existingCloudPathConfigurator != null) {
+            effectiveBuilder = existingCloudPathConfigurator.apply(effectiveBuilder);
+          }
+          cloudPathBuilderRef.set(effectiveBuilder);
+          return effectiveBuilder;
+        });
+
+    // Build the cloudPathProvider to extract the builder which will be provided to
+    // FallbackChannelBuilder.
+    try (TransportChannel ignored = cloudPathProviderBuilder.build().getTransportChannel()) {
+    } catch (Exception e) {
+      throw asSpannerException(e);
+    }
+
+    ManagedChannelBuilder cloudPathBuilder = cloudPathBuilderRef.get();
+    if (cloudPathBuilder == null) {
+      throw new IllegalStateException("CloudPath builder was not captured.");
+    }
+
+    try {
+      Credentials credentials = credentialsProvider.getCredentials();
+      if (credentials != null) {
+        cloudPathBuilder.intercept(
+            new ClientInterceptor() {
+              @Override
+              public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+                  MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+                return next.newCall(
+                    method, callOptions.withCallCredentials(MoreCallCredentials.from(credentials)));
+              }
+            });
+      }
+    } catch (Exception e) {
+      throw asSpannerException(e);
+    }
+
+    final ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> existingConfigurator =
+        defaultChannelProviderBuilder.getChannelConfigurator();
+    defaultChannelProviderBuilder.setChannelConfigurator(
+        directPathBuilder -> {
+          ManagedChannelBuilder builder = directPathBuilder;
+          if (existingConfigurator != null) {
+            builder = existingConfigurator.apply(builder);
+          }
+
+          String jsonApiConfig = parseGrpcGcpApiConfig();
+          GcpManagedChannelOptions gcpOptions = grpcGcpOptionsWithMetricsAndDcp(options);
+          if (gcpOptions == null) {
+            gcpOptions = GcpManagedChannelOptions.newBuilder().build();
+          }
+
+          GcpManagedChannelBuilder primaryGcpBuilder =
+              GcpManagedChannelBuilder.forDelegateBuilder(builder)
+                  .withApiConfigJsonString(jsonApiConfig)
+                  .withOptions(gcpOptions);
+
+          GcpManagedChannelBuilder fallbackGcpBuilder =
+              GcpManagedChannelBuilder.forDelegateBuilder(cloudPathBuilder)
+                  .withApiConfigJsonString(jsonApiConfig)
+                  .withOptions(gcpOptions);
+
+          GcpFallbackOpenTelemetry fallbackTelemetry =
+              GcpFallbackOpenTelemetry.newBuilder()
+                  .withSdk(options.getOpenTelemetry())
+                  .disableAllMetrics()
+                  .enableMetrics(Arrays.asList("fallback_count", "call_status"))
+                  .build();
+
+          return new FallbackChannelBuilder(
+              primaryGcpBuilder,
+              fallbackGcpBuilder,
+              createFallbackChannelOptions(fallbackTelemetry, 1));
+        });
+  }
+
   private InstantiatingGrpcChannelProvider.Builder createChannelProviderBuilder(
       final SpannerOptions options,
       final HeaderProvider headerProviderWithUserAgent,
@@ -863,15 +880,6 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   public static boolean isEnableDirectPathBoundToken() {
     return !Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_DISABLE_DIRECT_ACCESS_BOUND_TOKEN"));
-  }
-
-  @VisibleForTesting static Boolean enableGcpFallbackEnv = null;
-
-  public static boolean isEnableGcpFallbackEnv() {
-    if (enableGcpFallbackEnv != null) {
-      return enableGcpFallbackEnv;
-    }
-    return Boolean.parseBoolean(System.getenv("GOOGLE_SPANNER_ENABLE_GCP_FALLBACK"));
   }
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
