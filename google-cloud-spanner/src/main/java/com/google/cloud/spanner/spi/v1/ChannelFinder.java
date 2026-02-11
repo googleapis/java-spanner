@@ -66,20 +66,28 @@ public final class ChannelFinder {
   }
 
   public ChannelEndpoint findServer(ReadRequest.Builder reqBuilder) {
+    return findServer(reqBuilder, preferLeader(reqBuilder.getTransaction()));
+  }
+
+  public ChannelEndpoint findServer(ReadRequest.Builder reqBuilder, boolean preferLeader) {
     recipeCache.computeKeys(reqBuilder);
     return fillRoutingHint(
-        reqBuilder.getTransaction(),
-        reqBuilder.getDirectedReadOptions(),
+        preferLeader,
         KeyRangeCache.RangeMode.COVERING_SPLIT,
+        reqBuilder.getDirectedReadOptions(),
         reqBuilder.getRoutingHintBuilder());
   }
 
   public ChannelEndpoint findServer(ExecuteSqlRequest.Builder reqBuilder) {
+    return findServer(reqBuilder, preferLeader(reqBuilder.getTransaction()));
+  }
+
+  public ChannelEndpoint findServer(ExecuteSqlRequest.Builder reqBuilder, boolean preferLeader) {
     recipeCache.computeKeys(reqBuilder);
     return fillRoutingHint(
-        reqBuilder.getTransaction(),
-        reqBuilder.getDirectedReadOptions(),
+        preferLeader,
         KeyRangeCache.RangeMode.PICK_RANDOM,
+        reqBuilder.getDirectedReadOptions(),
         reqBuilder.getRoutingHintBuilder());
   }
 
