@@ -66,12 +66,7 @@ public final class ChannelFinder {
   }
 
   public ChannelEndpoint findServer(ReadRequest.Builder reqBuilder) {
-    recipeCache.computeKeys(reqBuilder);
-    return fillRoutingHint(
-        reqBuilder.getTransaction(),
-        reqBuilder.getDirectedReadOptions(),
-        KeyRangeCache.RangeMode.COVERING_SPLIT,
-        reqBuilder.getRoutingHintBuilder());
+    return findServer(reqBuilder, preferLeader(reqBuilder.getTransaction()));
   }
 
   public ChannelEndpoint findServer(ReadRequest.Builder reqBuilder, boolean preferLeader) {
@@ -84,12 +79,7 @@ public final class ChannelFinder {
   }
 
   public ChannelEndpoint findServer(ExecuteSqlRequest.Builder reqBuilder) {
-    recipeCache.computeKeys(reqBuilder);
-    return fillRoutingHint(
-        reqBuilder.getTransaction(),
-        reqBuilder.getDirectedReadOptions(),
-        KeyRangeCache.RangeMode.PICK_RANDOM,
-        reqBuilder.getRoutingHintBuilder());
+    return findServer(reqBuilder, preferLeader(reqBuilder.getTransaction()));
   }
 
   public ChannelEndpoint findServer(ExecuteSqlRequest.Builder reqBuilder, boolean preferLeader) {

@@ -392,6 +392,117 @@ public class KeyAwareChannelTest {
   }
 
   @Test
+  public void readOnlyInlinedBeginExecuteSqlRoutesSubsequentRequestsIndependently()
+      throws Exception {
+    TestHarness harness = createHarness();
+    ByteString transactionId = ByteString.copyFromUtf8("ro-inline-sql");
+
+    seedCache(harness, createTwoRangeCacheUpdate());
+
+    // First query begins a read-only transaction inline and routes to server-a.
+    ClientCall<ExecuteSqlRequest, ResultSet> firstCall =
+        harness.channel.newCall(SpannerGrpc.getExecuteSqlMethod(), CallOptions.DEFAULT);
+    firstCall.start(new CapturingListener<ResultSet>(), new Metadata());
+    firstCall.sendMessage(
+        ExecuteSqlRequest.newBuilder()
+            .setSession(SESSION)
+            .setTransaction(
+                TransactionSelector.newBuilder()
+                    .setBegin(
+                        TransactionOptions.newBuilder()
+                            .setReadOnly(
+                                TransactionOptions.ReadOnly.newBuilder()
+                                    .setReturnReadTimestamp(true)
+                                    .build())
+                            .build()))
+            .setRoutingHint(RoutingHint.newBuilder().setKey(bytes("b")).build())
+            .build());
+
+    assertThat(harness.endpointCache.callCountForAddress("server-a:1234")).isEqualTo(1);
+
+    @SuppressWarnings("unchecked")
+    RecordingClientCall<ExecuteSqlRequest, ResultSet> firstDelegate =
+        (RecordingClientCall<ExecuteSqlRequest, ResultSet>)
+            harness.endpointCache.latestCallForAddress("server-a:1234");
+    firstDelegate.emitOnMessage(
+        ResultSet.newBuilder()
+            .setMetadata(
+                ResultSetMetadata.newBuilder()
+                    .setTransaction(Transaction.newBuilder().setId(transactionId)))
+            .build());
+
+    // Second query in same txn should route by key to server-b, not affinity-pin to server-a.
+    ClientCall<ExecuteSqlRequest, ResultSet> secondCall =
+        harness.channel.newCall(SpannerGrpc.getExecuteSqlMethod(), CallOptions.DEFAULT);
+    secondCall.start(new CapturingListener<ResultSet>(), new Metadata());
+    secondCall.sendMessage(
+        ExecuteSqlRequest.newBuilder()
+            .setSession(SESSION)
+            .setTransaction(TransactionSelector.newBuilder().setId(transactionId))
+            .setRoutingHint(RoutingHint.newBuilder().setKey(bytes("n")).build())
+            .build());
+
+    assertThat(harness.endpointCache.callCountForAddress("server-a:1234")).isEqualTo(1);
+    assertThat(harness.endpointCache.callCountForAddress("server-b:1234")).isEqualTo(1);
+    assertThat(harness.defaultManagedChannel.callCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void readOnlyInlinedBeginReadRoutesSubsequentRequestsIndependently() throws Exception {
+    TestHarness harness = createHarness();
+    ByteString transactionId = ByteString.copyFromUtf8("ro-inline-read");
+
+    seedCache(harness, createTwoRangeCacheUpdate());
+
+    // First read begins a read-only transaction inline and routes to server-a.
+    ClientCall<ReadRequest, PartialResultSet> firstCall =
+        harness.channel.newCall(SpannerGrpc.getStreamingReadMethod(), CallOptions.DEFAULT);
+    firstCall.start(new CapturingListener<PartialResultSet>(), new Metadata());
+    firstCall.sendMessage(
+        ReadRequest.newBuilder()
+            .setSession(SESSION)
+            .setTransaction(
+                TransactionSelector.newBuilder()
+                    .setBegin(
+                        TransactionOptions.newBuilder()
+                            .setReadOnly(
+                                TransactionOptions.ReadOnly.newBuilder()
+                                    .setReturnReadTimestamp(true)
+                                    .build())
+                            .build()))
+            .setRoutingHint(RoutingHint.newBuilder().setKey(bytes("b")).build())
+            .build());
+
+    assertThat(harness.endpointCache.callCountForAddress("server-a:1234")).isEqualTo(1);
+
+    @SuppressWarnings("unchecked")
+    RecordingClientCall<ReadRequest, PartialResultSet> firstDelegate =
+        (RecordingClientCall<ReadRequest, PartialResultSet>)
+            harness.endpointCache.latestCallForAddress("server-a:1234");
+    firstDelegate.emitOnMessage(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                ResultSetMetadata.newBuilder()
+                    .setTransaction(Transaction.newBuilder().setId(transactionId)))
+            .build());
+
+    // Second read in same txn should route by key to server-b, not affinity-pin to server-a.
+    ClientCall<ReadRequest, PartialResultSet> secondCall =
+        harness.channel.newCall(SpannerGrpc.getStreamingReadMethod(), CallOptions.DEFAULT);
+    secondCall.start(new CapturingListener<PartialResultSet>(), new Metadata());
+    secondCall.sendMessage(
+        ReadRequest.newBuilder()
+            .setSession(SESSION)
+            .setTransaction(TransactionSelector.newBuilder().setId(transactionId))
+            .setRoutingHint(RoutingHint.newBuilder().setKey(bytes("n")).build())
+            .build());
+
+    assertThat(harness.endpointCache.callCountForAddress("server-a:1234")).isEqualTo(1);
+    assertThat(harness.endpointCache.callCountForAddress("server-b:1234")).isEqualTo(1);
+    assertThat(harness.defaultManagedChannel.callCount()).isEqualTo(1);
+  }
+
+  @Test
   public void readOnlyTransactionDoesNotRecordAffinity() throws Exception {
     TestHarness harness = createHarness();
     ByteString transactionId = ByteString.copyFromUtf8("ro-tx-2");
@@ -484,6 +595,63 @@ public class KeyAwareChannelTest {
     harness.channel.clearTransactionAffinity(transactionId);
   }
 
+  private static CacheUpdate createTwoRangeCacheUpdate() {
+    return CacheUpdate.newBuilder()
+        .setDatabaseId(7L)
+        .addRange(
+            Range.newBuilder()
+                .setStartKey(bytes("a"))
+                .setLimitKey(bytes("m"))
+                .setGroupUid(1L)
+                .setSplitId(1L)
+                .setGeneration(bytes("1")))
+        .addRange(
+            Range.newBuilder()
+                .setStartKey(bytes("m"))
+                .setLimitKey(bytes("z"))
+                .setGroupUid(2L)
+                .setSplitId(2L)
+                .setGeneration(bytes("1")))
+        .addGroup(
+            Group.newBuilder()
+                .setGroupUid(1L)
+                .setGeneration(bytes("1"))
+                .addTablets(
+                    Tablet.newBuilder()
+                        .setTabletUid(1L)
+                        .setServerAddress("server-a:1234")
+                        .setIncarnation(bytes("1"))
+                        .setDistance(0)))
+        .addGroup(
+            Group.newBuilder()
+                .setGroupUid(2L)
+                .setGeneration(bytes("1"))
+                .addTablets(
+                    Tablet.newBuilder()
+                        .setTabletUid(2L)
+                        .setServerAddress("server-b:1234")
+                        .setIncarnation(bytes("1"))
+                        .setDistance(0)))
+        .build();
+  }
+
+  private static void seedCache(TestHarness harness, CacheUpdate cacheUpdate) {
+    ClientCall<ExecuteSqlRequest, ResultSet> seedCall =
+        harness.channel.newCall(SpannerGrpc.getExecuteSqlMethod(), CallOptions.DEFAULT);
+    seedCall.start(new CapturingListener<ResultSet>(), new Metadata());
+    seedCall.sendMessage(
+        ExecuteSqlRequest.newBuilder()
+            .setSession(SESSION)
+            .setRoutingHint(RoutingHint.newBuilder().setKey(bytes("a")).build())
+            .build());
+
+    @SuppressWarnings("unchecked")
+    RecordingClientCall<ExecuteSqlRequest, ResultSet> seedDelegate =
+        (RecordingClientCall<ExecuteSqlRequest, ResultSet>)
+            harness.defaultManagedChannel.latestCall();
+    seedDelegate.emitOnMessage(ResultSet.newBuilder().setCacheUpdate(cacheUpdate).build());
+  }
+
   private static TestHarness createHarness() throws IOException {
     FakeEndpointCache endpointCache = new FakeEndpointCache(DEFAULT_ADDRESS);
     InstantiatingGrpcChannelProvider provider =
@@ -573,6 +741,17 @@ public class KeyAwareChannelTest {
       }
       FakeEndpoint endpoint = endpoints.get(address);
       return endpoint == null ? 0 : endpoint.channel.callCount();
+    }
+
+    RecordingClientCall<?, ?> latestCallForAddress(String address) {
+      if (defaultAddress.equals(address)) {
+        return defaultEndpoint.channel.latestCall();
+      }
+      FakeEndpoint endpoint = endpoints.get(address);
+      if (endpoint == null) {
+        throw new IllegalStateException("No endpoint for address: " + address);
+      }
+      return endpoint.channel.latestCall();
     }
   }
 

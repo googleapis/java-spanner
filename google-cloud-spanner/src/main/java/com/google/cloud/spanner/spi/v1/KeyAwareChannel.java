@@ -18,6 +18,8 @@ package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.core.InternalApi;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -51,6 +53,7 @@ import javax.annotation.Nullable;
  */
 @InternalApi
 final class KeyAwareChannel extends ManagedChannel {
+  private static final long MAX_TRACKED_READ_ONLY_TRANSACTIONS = 100_000L;
   private static final String STREAMING_READ_METHOD = "google.spanner.v1.Spanner/StreamingRead";
   private static final String STREAMING_SQL_METHOD =
       "google.spanner.v1.Spanner/ExecuteStreamingSql";
@@ -69,7 +72,9 @@ final class KeyAwareChannel extends ManagedChannel {
   private final Map<ByteString, String> transactionAffinities = new ConcurrentHashMap<>();
   // Maps read-only transaction IDs to their preferLeader value.
   // Strong reads → true (prefer leader), Stale reads → false (any replica).
-  private final Map<ByteString, Boolean> readOnlyTransactions = new ConcurrentHashMap<>();
+  // Bounded to prevent unbounded growth if application code does not close read-only transactions.
+  private final Cache<ByteString, Boolean> readOnlyTxPreferLeader =
+      CacheBuilder.newBuilder().maximumSize(MAX_TRACKED_READ_ONLY_TRANSACTIONS).build();
 
   private KeyAwareChannel(
       InstantiatingGrpcChannelProvider channelProvider,
@@ -187,7 +192,7 @@ final class KeyAwareChannel extends ManagedChannel {
       return;
     }
     transactionAffinities.remove(transactionId);
-    readOnlyTransactions.remove(transactionId);
+    readOnlyTxPreferLeader.invalidate(transactionId);
   }
 
   void clearTransactionAffinity(ByteString transactionId) {
@@ -197,7 +202,7 @@ final class KeyAwareChannel extends ManagedChannel {
   private boolean isReadOnlyTransaction(ByteString transactionId) {
     return transactionId != null
         && !transactionId.isEmpty()
-        && readOnlyTransactions.containsKey(transactionId);
+        && readOnlyTxPreferLeader.getIfPresent(transactionId) != null;
   }
 
   @Nullable
@@ -205,14 +210,14 @@ final class KeyAwareChannel extends ManagedChannel {
     if (transactionId == null || transactionId.isEmpty()) {
       return null;
     }
-    return readOnlyTransactions.get(transactionId);
+    return readOnlyTxPreferLeader.getIfPresent(transactionId);
   }
 
   private void trackReadOnlyTransaction(ByteString transactionId, boolean preferLeader) {
     if (transactionId == null || transactionId.isEmpty()) {
       return;
     }
-    readOnlyTransactions.put(transactionId, preferLeader);
+    readOnlyTxPreferLeader.put(transactionId, preferLeader);
   }
 
   private void recordAffinity(
@@ -334,12 +339,14 @@ final class KeyAwareChannel extends ManagedChannel {
 
         if (message instanceof ReadRequest) {
           ReadRequest.Builder reqBuilder = ((ReadRequest) message).toBuilder();
+          maybeTrackReadOnlyBegin(reqBuilder.getTransaction());
           RoutingDecision routing = routeFromRequest(reqBuilder);
           finder = routing.finder;
           endpoint = routing.endpoint;
           message = (RequestT) reqBuilder.build();
         } else if (message instanceof ExecuteSqlRequest) {
           ExecuteSqlRequest.Builder reqBuilder = ((ExecuteSqlRequest) message).toBuilder();
+          maybeTrackReadOnlyBegin(reqBuilder.getTransaction());
           RoutingDecision routing = routeFromRequest(reqBuilder);
           finder = routing.finder;
           endpoint = routing.endpoint;
@@ -515,6 +522,14 @@ final class KeyAwareChannel extends ManagedChannel {
       parentChannel.clearAffinity(transactionIdToClear);
     }
 
+    private void maybeTrackReadOnlyBegin(TransactionSelector selector) {
+      if (selector.getSelectorCase() == TransactionSelector.SelectorCase.BEGIN
+          && selector.getBegin().hasReadOnly()) {
+        isReadOnlyBegin = true;
+        readOnlyIsStrong = selector.getBegin().getReadOnly().getStrong();
+      }
+    }
+
     private RoutingDecision routeFromRequest(ReadRequest.Builder reqBuilder) {
       String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
       ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
@@ -524,14 +539,14 @@ final class KeyAwareChannel extends ManagedChannel {
       ChannelFinder finder = null;
       if (databaseId != null) {
         finder = parentChannel.getOrCreateChannelFinder(databaseId);
+      }
+      if (databaseId != null && endpoint == null) {
         Boolean preferLeaderOverride = parentChannel.readOnlyPreferLeader(transactionId);
         ChannelEndpoint routed =
             preferLeaderOverride != null
                 ? finder.findServer(reqBuilder, preferLeaderOverride)
                 : finder.findServer(reqBuilder);
-        if (endpoint == null) {
-          endpoint = routed;
-        }
+        endpoint = routed;
       }
       return new RoutingDecision(finder, endpoint);
     }
@@ -545,14 +560,14 @@ final class KeyAwareChannel extends ManagedChannel {
       ChannelFinder finder = null;
       if (databaseId != null) {
         finder = parentChannel.getOrCreateChannelFinder(databaseId);
+      }
+      if (databaseId != null && endpoint == null) {
         Boolean preferLeaderOverride = parentChannel.readOnlyPreferLeader(transactionId);
         ChannelEndpoint routed =
             preferLeaderOverride != null
                 ? finder.findServer(reqBuilder, preferLeaderOverride)
                 : finder.findServer(reqBuilder);
-        if (endpoint == null) {
-          endpoint = routed;
-        }
+        endpoint = routed;
       }
       return new RoutingDecision(finder, endpoint);
     }
