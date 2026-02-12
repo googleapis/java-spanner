@@ -18,6 +18,8 @@ package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.core.InternalApi;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -51,6 +53,7 @@ import javax.annotation.Nullable;
  */
 @InternalApi
 final class KeyAwareChannel extends ManagedChannel {
+  private static final long MAX_TRACKED_READ_ONLY_TRANSACTIONS = 100_000L;
   private static final String STREAMING_READ_METHOD = "google.spanner.v1.Spanner/StreamingRead";
   private static final String STREAMING_SQL_METHOD =
       "google.spanner.v1.Spanner/ExecuteStreamingSql";
@@ -67,6 +70,11 @@ final class KeyAwareChannel extends ManagedChannel {
   private final Map<String, SoftReference<ChannelFinder>> channelFinders =
       new ConcurrentHashMap<>();
   private final Map<ByteString, String> transactionAffinities = new ConcurrentHashMap<>();
+  // Maps read-only transaction IDs to their preferLeader value.
+  // Strong reads → true (prefer leader), Stale reads → false (any replica).
+  // Bounded to prevent unbounded growth if application code does not close read-only transactions.
+  private final Cache<ByteString, Boolean> readOnlyTxPreferLeader =
+      CacheBuilder.newBuilder().maximumSize(MAX_TRACKED_READ_ONLY_TRANSACTIONS).build();
 
   private KeyAwareChannel(
       InstantiatingGrpcChannelProvider channelProvider,
@@ -184,10 +192,32 @@ final class KeyAwareChannel extends ManagedChannel {
       return;
     }
     transactionAffinities.remove(transactionId);
+    readOnlyTxPreferLeader.invalidate(transactionId);
   }
 
   void clearTransactionAffinity(ByteString transactionId) {
     clearAffinity(transactionId);
+  }
+
+  private boolean isReadOnlyTransaction(ByteString transactionId) {
+    return transactionId != null
+        && !transactionId.isEmpty()
+        && readOnlyTxPreferLeader.getIfPresent(transactionId) != null;
+  }
+
+  @Nullable
+  private Boolean readOnlyPreferLeader(ByteString transactionId) {
+    if (transactionId == null || transactionId.isEmpty()) {
+      return null;
+    }
+    return readOnlyTxPreferLeader.getIfPresent(transactionId);
+  }
+
+  private void trackReadOnlyTransaction(ByteString transactionId, boolean preferLeader) {
+    if (transactionId == null || transactionId.isEmpty()) {
+      return;
+    }
+    readOnlyTxPreferLeader.put(transactionId, preferLeader);
   }
 
   private void recordAffinity(
@@ -245,6 +275,14 @@ final class KeyAwareChannel extends ManagedChannel {
     @Nullable private ChannelEndpoint selectedEndpoint;
     @Nullable private ByteString transactionIdToClear;
     private boolean allowDefaultAffinity;
+    private long pendingRequests;
+    private boolean pendingHalfClose;
+    @Nullable private Boolean pendingMessageCompression;
+    @Nullable private io.grpc.Status cancelledStatus;
+    @Nullable private Metadata cancelledTrailers;
+    private boolean isReadOnlyBegin;
+    private boolean readOnlyIsStrong;
+    private final Object lock = new Object();
 
     KeyAwareClientCall(
         KeyAwareChannel parentChannel,
@@ -257,95 +295,222 @@ final class KeyAwareChannel extends ManagedChannel {
 
     @Override
     protected ClientCall<RequestT, ResponseT> delegate() {
-      if (delegate == null) {
-        throw new IllegalStateException(
-            "Delegate call not initialized before use. sendMessage was likely not called.");
+      synchronized (lock) {
+        if (delegate == null) {
+          throw new IllegalStateException(
+              "Delegate call not initialized before use. sendMessage was likely not called.");
+        }
+        return delegate;
       }
-      return delegate;
     }
 
     @Override
     public void start(Listener<ResponseT> responseListener, Metadata headers) {
-      this.responseListener = new KeyAwareClientCallListener<>(responseListener, this);
-      this.headers = headers;
+      Listener<ResponseT> listenerToClose = null;
+      io.grpc.Status statusToClose = null;
+      Metadata trailersToClose = null;
+      synchronized (lock) {
+        this.responseListener = new KeyAwareClientCallListener<>(responseListener, this);
+        this.headers = headers;
+        if (this.cancelledStatus != null) {
+          listenerToClose = this.responseListener;
+          statusToClose = this.cancelledStatus;
+          trailersToClose =
+              this.cancelledTrailers == null ? new Metadata() : this.cancelledTrailers;
+        }
+      }
+      if (listenerToClose != null) {
+        listenerToClose.onClose(statusToClose, trailersToClose);
+      }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void sendMessage(RequestT message) {
-      ChannelEndpoint endpoint = null;
-      ChannelFinder finder = null;
+      synchronized (lock) {
+        if (this.cancelledStatus != null) {
+          return;
+        }
+        if (responseListener == null || headers == null) {
+          throw new IllegalStateException("start must be called before sendMessage");
+        }
+        ChannelEndpoint endpoint = null;
+        ChannelFinder finder = null;
 
-      if (message instanceof ReadRequest) {
-        ReadRequest.Builder reqBuilder = ((ReadRequest) message).toBuilder();
-        RoutingDecision routing = routeFromRequest(reqBuilder);
-        finder = routing.finder;
-        endpoint = routing.endpoint;
-        message = (RequestT) reqBuilder.build();
-      } else if (message instanceof ExecuteSqlRequest) {
-        ExecuteSqlRequest.Builder reqBuilder = ((ExecuteSqlRequest) message).toBuilder();
-        RoutingDecision routing = routeFromRequest(reqBuilder);
-        finder = routing.finder;
-        endpoint = routing.endpoint;
-        message = (RequestT) reqBuilder.build();
-      } else if (message instanceof BeginTransactionRequest) {
-        BeginTransactionRequest.Builder reqBuilder =
-            ((BeginTransactionRequest) message).toBuilder();
-        String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
-        if (databaseId != null && reqBuilder.hasMutationKey()) {
-          finder = parentChannel.getOrCreateChannelFinder(databaseId);
-          ChannelEndpoint routed = finder.findServer(reqBuilder);
-          if (endpoint == null) {
-            endpoint = routed;
+        if (message instanceof ReadRequest) {
+          ReadRequest.Builder reqBuilder = ((ReadRequest) message).toBuilder();
+          maybeTrackReadOnlyBegin(reqBuilder.getTransaction());
+          RoutingDecision routing = routeFromRequest(reqBuilder);
+          finder = routing.finder;
+          endpoint = routing.endpoint;
+          message = (RequestT) reqBuilder.build();
+        } else if (message instanceof ExecuteSqlRequest) {
+          ExecuteSqlRequest.Builder reqBuilder = ((ExecuteSqlRequest) message).toBuilder();
+          maybeTrackReadOnlyBegin(reqBuilder.getTransaction());
+          RoutingDecision routing = routeFromRequest(reqBuilder);
+          finder = routing.finder;
+          endpoint = routing.endpoint;
+          message = (RequestT) reqBuilder.build();
+        } else if (message instanceof BeginTransactionRequest) {
+          BeginTransactionRequest.Builder reqBuilder =
+              ((BeginTransactionRequest) message).toBuilder();
+          String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
+          if (databaseId != null && reqBuilder.hasMutationKey()) {
+            finder = parentChannel.getOrCreateChannelFinder(databaseId);
+            endpoint = finder.findServer(reqBuilder);
           }
+          if (reqBuilder.hasOptions() && reqBuilder.getOptions().hasReadOnly()) {
+            isReadOnlyBegin = true;
+            readOnlyIsStrong = reqBuilder.getOptions().getReadOnly().getStrong();
+          } else {
+            allowDefaultAffinity = true;
+          }
+          message = (RequestT) reqBuilder.build();
+        } else if (message instanceof CommitRequest) {
+          CommitRequest request = (CommitRequest) message;
+          if (!request.getTransactionId().isEmpty()) {
+            endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
+            transactionIdToClear = request.getTransactionId();
+          }
+        } else if (message instanceof RollbackRequest) {
+          RollbackRequest request = (RollbackRequest) message;
+          if (!request.getTransactionId().isEmpty()) {
+            endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
+            transactionIdToClear = request.getTransactionId();
+          }
+        } else {
+          throw new IllegalStateException(
+              "Only read, query, begin transaction, commit, and rollback requests are supported for"
+                  + " key-aware calls.");
         }
-        allowDefaultAffinity = true;
-        message = (RequestT) reqBuilder.build();
-      } else if (message instanceof CommitRequest) {
-        CommitRequest request = (CommitRequest) message;
-        if (!request.getTransactionId().isEmpty()) {
-          endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
-          transactionIdToClear = request.getTransactionId();
-        }
-      } else if (message instanceof RollbackRequest) {
-        RollbackRequest request = (RollbackRequest) message;
-        if (!request.getTransactionId().isEmpty()) {
-          endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
-          transactionIdToClear = request.getTransactionId();
-        }
-      } else {
-        throw new IllegalStateException(
-            "Only read, query, begin transaction, commit, and rollback requests are supported for"
-                + " key-aware calls.");
-      }
 
-      if (endpoint == null) {
-        endpoint = parentChannel.endpointCache.defaultChannel();
-      }
-      selectedEndpoint = endpoint;
-      this.channelFinder = finder;
+        if (endpoint == null) {
+          endpoint = parentChannel.endpointCache.defaultChannel();
+        }
+        selectedEndpoint = endpoint;
+        this.channelFinder = finder;
 
-      delegate = endpoint.getChannel().newCall(methodDescriptor, callOptions);
-      delegate.start(responseListener, headers);
-      delegate.sendMessage(message);
+        delegate = endpoint.getChannel().newCall(methodDescriptor, callOptions);
+        if (pendingMessageCompression != null) {
+          delegate.setMessageCompression(pendingMessageCompression);
+          pendingMessageCompression = null;
+        }
+        delegate.start(responseListener, headers);
+        drainPendingRequests();
+        delegate.sendMessage(message);
+        if (pendingHalfClose) {
+          delegate.halfClose();
+        }
+      }
     }
 
     @Override
     public void halfClose() {
-      if (delegate != null) {
-        delegate.halfClose();
-      } else {
-        throw new IllegalStateException("halfClose called before sendMessage");
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      synchronized (lock) {
+        if (this.cancelledStatus != null) {
+          return;
+        }
+        if (delegate == null) {
+          pendingHalfClose = true;
+          return;
+        }
+        currentDelegate = delegate;
       }
+      currentDelegate.halfClose();
     }
 
     @Override
     public void cancel(@Nullable String message, @Nullable Throwable cause) {
-      if (delegate != null) {
-        delegate.cancel(message, cause);
-      } else if (responseListener != null) {
-        responseListener.onClose(
-            io.grpc.Status.CANCELLED.withDescription(message).withCause(cause), new Metadata());
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      Listener<ResponseT> listenerToClose = null;
+      io.grpc.Status statusToClose = null;
+      Metadata trailersToClose = null;
+      synchronized (lock) {
+        currentDelegate = delegate;
+        if (currentDelegate == null) {
+          cancelledStatus = io.grpc.Status.CANCELLED.withDescription(message).withCause(cause);
+          Metadata trailers =
+              cause == null ? new Metadata() : io.grpc.Status.trailersFromThrowable(cause);
+          cancelledTrailers = trailers == null ? new Metadata() : trailers;
+          if (responseListener != null) {
+            listenerToClose = responseListener;
+            statusToClose = cancelledStatus;
+            trailersToClose = cancelledTrailers;
+          }
+        }
+      }
+      if (currentDelegate != null) {
+        currentDelegate.cancel(message, cause);
+      } else if (listenerToClose != null) {
+        listenerToClose.onClose(statusToClose, trailersToClose);
+      }
+    }
+
+    @Override
+    public void request(int numMessages) {
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      synchronized (lock) {
+        if (cancelledStatus != null) {
+          return;
+        }
+        if (delegate != null) {
+          currentDelegate = delegate;
+        } else {
+          if (numMessages <= 0) {
+            return;
+          }
+          long updated = pendingRequests + numMessages;
+          if (updated < 0L) {
+            updated = Long.MAX_VALUE;
+          }
+          pendingRequests = updated;
+          return;
+        }
+      }
+      currentDelegate.request(numMessages);
+    }
+
+    @Override
+    public boolean isReady() {
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      synchronized (lock) {
+        currentDelegate = delegate;
+      }
+      if (currentDelegate == null) {
+        return false;
+      }
+      return currentDelegate.isReady();
+    }
+
+    @Override
+    public void setMessageCompression(boolean enabled) {
+      ClientCall<RequestT, ResponseT> currentDelegate;
+      synchronized (lock) {
+        if (cancelledStatus != null) {
+          return;
+        }
+        if (delegate != null) {
+          currentDelegate = delegate;
+        } else {
+          pendingMessageCompression = enabled;
+          return;
+        }
+      }
+      currentDelegate.setMessageCompression(enabled);
+    }
+
+    private void drainPendingRequests() {
+      ClientCall<RequestT, ResponseT> currentDelegate = delegate;
+      if (currentDelegate == null) {
+        return;
+      }
+      long requests = pendingRequests;
+      pendingRequests = 0L;
+      while (requests > 0) {
+        int batch = requests > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) requests;
+        currentDelegate.request(batch);
+        requests -= batch;
       }
     }
 
@@ -357,17 +522,31 @@ final class KeyAwareChannel extends ManagedChannel {
       parentChannel.clearAffinity(transactionIdToClear);
     }
 
+    private void maybeTrackReadOnlyBegin(TransactionSelector selector) {
+      if (selector.getSelectorCase() == TransactionSelector.SelectorCase.BEGIN
+          && selector.getBegin().hasReadOnly()) {
+        isReadOnlyBegin = true;
+        readOnlyIsStrong = selector.getBegin().getReadOnly().getStrong();
+      }
+    }
+
     private RoutingDecision routeFromRequest(ReadRequest.Builder reqBuilder) {
       String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
       ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
-      ChannelEndpoint endpoint = parentChannel.affinityEndpoint(transactionId);
+      // Skip affinity for read-only transactions so each read routes independently.
+      boolean isReadOnly = parentChannel.isReadOnlyTransaction(transactionId);
+      ChannelEndpoint endpoint = isReadOnly ? null : parentChannel.affinityEndpoint(transactionId);
       ChannelFinder finder = null;
       if (databaseId != null) {
         finder = parentChannel.getOrCreateChannelFinder(databaseId);
-        ChannelEndpoint routed = finder.findServer(reqBuilder);
-        if (endpoint == null) {
-          endpoint = routed;
-        }
+      }
+      if (databaseId != null && endpoint == null) {
+        Boolean preferLeaderOverride = parentChannel.readOnlyPreferLeader(transactionId);
+        ChannelEndpoint routed =
+            preferLeaderOverride != null
+                ? finder.findServer(reqBuilder, preferLeaderOverride)
+                : finder.findServer(reqBuilder);
+        endpoint = routed;
       }
       return new RoutingDecision(finder, endpoint);
     }
@@ -375,14 +554,20 @@ final class KeyAwareChannel extends ManagedChannel {
     private RoutingDecision routeFromRequest(ExecuteSqlRequest.Builder reqBuilder) {
       String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
       ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
-      ChannelEndpoint endpoint = parentChannel.affinityEndpoint(transactionId);
+      // Skip affinity for read-only transactions so each query routes independently.
+      boolean isReadOnly = parentChannel.isReadOnlyTransaction(transactionId);
+      ChannelEndpoint endpoint = isReadOnly ? null : parentChannel.affinityEndpoint(transactionId);
       ChannelFinder finder = null;
       if (databaseId != null) {
         finder = parentChannel.getOrCreateChannelFinder(databaseId);
-        ChannelEndpoint routed = finder.findServer(reqBuilder);
-        if (endpoint == null) {
-          endpoint = routed;
-        }
+      }
+      if (databaseId != null && endpoint == null) {
+        Boolean preferLeaderOverride = parentChannel.readOnlyPreferLeader(transactionId);
+        ChannelEndpoint routed =
+            preferLeaderOverride != null
+                ? finder.findServer(reqBuilder, preferLeaderOverride)
+                : finder.findServer(reqBuilder);
+        endpoint = routed;
       }
       return new RoutingDecision(finder, endpoint);
     }
@@ -419,13 +604,22 @@ final class KeyAwareChannel extends ManagedChannel {
         transactionId = transactionIdFromMetadata(response);
       } else if (message instanceof ResultSet) {
         ResultSet response = (ResultSet) message;
+        if (response.hasCacheUpdate() && call.channelFinder != null) {
+          call.channelFinder.update(response.getCacheUpdate());
+        }
         transactionId = transactionIdFromMetadata(response);
       } else if (message instanceof Transaction) {
         Transaction response = (Transaction) message;
         transactionId = transactionIdFromTransaction(response);
       }
       if (transactionId != null) {
-        call.maybeRecordAffinity(transactionId);
+        if (call.isReadOnlyBegin) {
+          // Track the read-only transaction so subsequent reads skip affinity
+          // and route independently based on key-based routing.
+          call.parentChannel.trackReadOnlyTransaction(transactionId, call.readOnlyIsStrong);
+        } else if (!call.parentChannel.isReadOnlyTransaction(transactionId)) {
+          call.maybeRecordAffinity(transactionId);
+        }
       }
       super.onMessage(message);
     }

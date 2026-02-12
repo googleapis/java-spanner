@@ -2,26 +2,30 @@ releaseType: java-yoshi
 bumpMinorPreMajor: true
 handleGHRelease: true
 branches:
-    - branch: 3.3.x
-    - branch: 4.0.x
-    - branch: 5.2.x
-    - branch: 6.4.4-sp
-      releaseType: java-lts
-    - branch: 6.14.x
-      releaseType: java-backport
-    - branch: 6.23.x
-    - branch: 6.33.x
-    - branch: 6.55.x
-      releaseType: java-backport
-    - branch: 6.67.x
-      releaseType: java-backport
-    - branch: 6.66.x
-      releaseType: java-backport
-    - branch: 6.88.x
-      releaseType: java-backport
-    - branch: 6.96.x
-      releaseType: java-backport
-    - branch: 6.95.x
-      releaseType: java-backport
-    - branch: protobuf-4.x-rc
-      manifest: true
+  - branch: 3.3.x
+  - branch: 4.0.x
+  - branch: 5.2.x
+  - branch: 6.4.4-sp
+    releaseType: java-lts
+  - branch: 6.14.x
+    releaseType: java-backport
+  - branch: 6.23.x
+  - branch: 6.33.x
+  - branch: 6.55.x
+    releaseType: java-backport
+  - branch: 6.67.x
+    releaseType: java-backport
+  - branch: 6.66.x
+    releaseType: java-backport
+  - branch: 6.88.x
+    releaseType: java-backport
+  - branch: 6.96.x
+    releaseType: java-backport
+  - branch: 6.95.x
+    releaseType: java-backport
+  - branch: protobuf-4.x-rc
+    manifest: true
+  - releaseType: java-backport
+    bumpMinorPreMajor: true
+    handleGHRelease: true
+    branch: 6.109.x

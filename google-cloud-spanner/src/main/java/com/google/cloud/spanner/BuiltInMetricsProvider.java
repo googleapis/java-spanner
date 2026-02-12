@@ -150,6 +150,9 @@ final class BuiltInMetricsProvider {
             .enableMetrics(BuiltInMetricsConstant.GRPC_METRICS_TO_ENABLE)
             // Disable gRPCs default metrics as they are not needed for Spanner.
             .disableMetrics(BuiltInMetricsConstant.GRPC_METRICS_ENABLED_BY_DEFAULT)
+            .addOptionalLabel(BuiltInMetricsConstant.GRPC_LB_BACKEND_SERVICE_ATTRIBUTE)
+            .addOptionalLabel(BuiltInMetricsConstant.GRPC_LB_LOCALITY_ATTRIBUTE)
+            .addOptionalLabel(BuiltInMetricsConstant.GRPC_DISCONNECT_ERROR_ATTRIBUTE)
             .build();
     ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> channelConfigurator =
         channelProviderBuilder.getChannelConfigurator();

@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.110.0](https://github.com/googleapis/java-spanner/compare/v6.109.0...v6.110.0) (2026-02-11)
+
+
+### Features
+
+* Add gRPC A66/A94 metrics ([#4333](https://github.com/googleapis/java-spanner/issues/4333)) ([485c700](https://github.com/googleapis/java-spanner/commit/485c70046e3e67dac899011580f9c350bdb31a6d))
+* ClientContext and secure parameters support ([#4316](https://github.com/googleapis/java-spanner/issues/4316)) ([6356ef2](https://github.com/googleapis/java-spanner/commit/6356ef2ce1ef87898e7bc4a6bc11174f629a9b5b))
+* Next release from main branch is 6.110.0 ([#4338](https://github.com/googleapis/java-spanner/issues/4338)) ([95ac7a7](https://github.com/googleapis/java-spanner/commit/95ac7a71463bfca4bb22f2e4ae61da97b97169ce))
+* **spanner:** Include cache updates into the ResultSet response ([aa53a43](https://github.com/googleapis/java-spanner/commit/aa53a43bdce6f4215fea8695837ad2c538598896))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.66.1 ([aa53a43](https://github.com/googleapis/java-spanner/commit/aa53a43bdce6f4215fea8695837ad2c538598896))
+* Preserve channel configurator for grpc-gcp and add opt-out for gcp OTel metrics ([#4329](https://github.com/googleapis/java-spanner/issues/4329)) ([2565137](https://github.com/googleapis/java-spanner/commit/25651378831fcd98ef48802872fe82a42cfa4942))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.56.1 ([#4331](https://github.com/googleapis/java-spanner/issues/4331)) ([2fd403f](https://github.com/googleapis/java-spanner/commit/2fd403f3c994b1b038e876be6e58ecadf731d848))
+
 ## [6.109.0](https://github.com/googleapis/java-spanner/compare/v6.108.0...v6.109.0) (2026-02-02)
 
 

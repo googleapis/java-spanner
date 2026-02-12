@@ -614,6 +614,25 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 getTransactionChannelHint());
         session.markUsed(clock.instant());
         return apiFuture;
+      } else if (transactionIdFuture != null) {
+        ApiFuture<ByteString> transactionIdOrEmptyFuture =
+            ApiFutures.catching(
+                transactionIdFuture,
+                Throwable.class,
+                input -> ByteString.empty(),
+                MoreExecutors.directExecutor());
+        return ApiFutures.transformAsync(
+            transactionIdOrEmptyFuture,
+            transactionId ->
+                transactionId.isEmpty()
+                    ? ApiFutures.immediateFuture(Empty.getDefaultInstance())
+                    : rpc.rollbackAsync(
+                        RollbackRequest.newBuilder()
+                            .setSession(session.getName())
+                            .setTransactionId(transactionId)
+                            .build(),
+                        getTransactionChannelHint()),
+            MoreExecutors.directExecutor());
       } else {
         return ApiFutures.immediateFuture(Empty.getDefaultInstance());
       }

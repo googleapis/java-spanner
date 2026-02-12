@@ -314,7 +314,7 @@ public abstract class AbstractMockServerTest {
         server.getPort());
   }
 
-  protected int getPort() {
+  protected static int getPort() {
     return server.getPort();
   }
 
