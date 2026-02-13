@@ -18,6 +18,8 @@ package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.core.InternalApi;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -51,6 +53,7 @@ import javax.annotation.Nullable;
  */
 @InternalApi
 final class KeyAwareChannel extends ManagedChannel {
+  private static final long MAX_TRACKED_READ_ONLY_TRANSACTIONS = 100_000L;
   private static final String STREAMING_READ_METHOD = "google.spanner.v1.Spanner/StreamingRead";
   private static final String STREAMING_SQL_METHOD =
       "google.spanner.v1.Spanner/ExecuteStreamingSql";
@@ -67,6 +70,11 @@ final class KeyAwareChannel extends ManagedChannel {
   private final Map<String, SoftReference<ChannelFinder>> channelFinders =
       new ConcurrentHashMap<>();
   private final Map<ByteString, String> transactionAffinities = new ConcurrentHashMap<>();
+  // Maps read-only transaction IDs to their preferLeader value.
+  // Strong reads → true (prefer leader), Stale reads → false (any replica).
+  // Bounded to prevent unbounded growth if application code does not close read-only transactions.
+  private final Cache<ByteString, Boolean> readOnlyTxPreferLeader =
+      CacheBuilder.newBuilder().maximumSize(MAX_TRACKED_READ_ONLY_TRANSACTIONS).build();
 
   private KeyAwareChannel(
       InstantiatingGrpcChannelProvider channelProvider,
@@ -184,10 +192,32 @@ final class KeyAwareChannel extends ManagedChannel {
       return;
     }
     transactionAffinities.remove(transactionId);
+    readOnlyTxPreferLeader.invalidate(transactionId);
   }
 
   void clearTransactionAffinity(ByteString transactionId) {
     clearAffinity(transactionId);
+  }
+
+  private boolean isReadOnlyTransaction(ByteString transactionId) {
+    return transactionId != null
+        && !transactionId.isEmpty()
+        && readOnlyTxPreferLeader.getIfPresent(transactionId) != null;
+  }
+
+  @Nullable
+  private Boolean readOnlyPreferLeader(ByteString transactionId) {
+    if (transactionId == null || transactionId.isEmpty()) {
+      return null;
+    }
+    return readOnlyTxPreferLeader.getIfPresent(transactionId);
+  }
+
+  private void trackReadOnlyTransaction(ByteString transactionId, boolean preferLeader) {
+    if (transactionId == null || transactionId.isEmpty()) {
+      return;
+    }
+    readOnlyTxPreferLeader.put(transactionId, preferLeader);
   }
 
   private void recordAffinity(
@@ -250,6 +280,8 @@ final class KeyAwareChannel extends ManagedChannel {
     @Nullable private Boolean pendingMessageCompression;
     @Nullable private io.grpc.Status cancelledStatus;
     @Nullable private Metadata cancelledTrailers;
+    private boolean isReadOnlyBegin;
+    private boolean readOnlyIsStrong;
     private final Object lock = new Object();
 
     KeyAwareClientCall(
@@ -307,12 +339,14 @@ final class KeyAwareChannel extends ManagedChannel {
 
         if (message instanceof ReadRequest) {
           ReadRequest.Builder reqBuilder = ((ReadRequest) message).toBuilder();
+          maybeTrackReadOnlyBegin(reqBuilder.getTransaction());
           RoutingDecision routing = routeFromRequest(reqBuilder);
           finder = routing.finder;
           endpoint = routing.endpoint;
           message = (RequestT) reqBuilder.build();
         } else if (message instanceof ExecuteSqlRequest) {
           ExecuteSqlRequest.Builder reqBuilder = ((ExecuteSqlRequest) message).toBuilder();
+          maybeTrackReadOnlyBegin(reqBuilder.getTransaction());
           RoutingDecision routing = routeFromRequest(reqBuilder);
           finder = routing.finder;
           endpoint = routing.endpoint;
@@ -325,7 +359,12 @@ final class KeyAwareChannel extends ManagedChannel {
             finder = parentChannel.getOrCreateChannelFinder(databaseId);
             endpoint = finder.findServer(reqBuilder);
           }
-          allowDefaultAffinity = true;
+          if (reqBuilder.hasOptions() && reqBuilder.getOptions().hasReadOnly()) {
+            isReadOnlyBegin = true;
+            readOnlyIsStrong = reqBuilder.getOptions().getReadOnly().getStrong();
+          } else {
+            allowDefaultAffinity = true;
+          }
           message = (RequestT) reqBuilder.build();
         } else if (message instanceof CommitRequest) {
           CommitRequest request = (CommitRequest) message;
@@ -483,17 +522,31 @@ final class KeyAwareChannel extends ManagedChannel {
       parentChannel.clearAffinity(transactionIdToClear);
     }
 
+    private void maybeTrackReadOnlyBegin(TransactionSelector selector) {
+      if (selector.getSelectorCase() == TransactionSelector.SelectorCase.BEGIN
+          && selector.getBegin().hasReadOnly()) {
+        isReadOnlyBegin = true;
+        readOnlyIsStrong = selector.getBegin().getReadOnly().getStrong();
+      }
+    }
+
     private RoutingDecision routeFromRequest(ReadRequest.Builder reqBuilder) {
       String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
       ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
-      ChannelEndpoint endpoint = parentChannel.affinityEndpoint(transactionId);
+      // Skip affinity for read-only transactions so each read routes independently.
+      boolean isReadOnly = parentChannel.isReadOnlyTransaction(transactionId);
+      ChannelEndpoint endpoint = isReadOnly ? null : parentChannel.affinityEndpoint(transactionId);
       ChannelFinder finder = null;
       if (databaseId != null) {
         finder = parentChannel.getOrCreateChannelFinder(databaseId);
-        ChannelEndpoint routed = finder.findServer(reqBuilder);
-        if (endpoint == null) {
-          endpoint = routed;
-        }
+      }
+      if (databaseId != null && endpoint == null) {
+        Boolean preferLeaderOverride = parentChannel.readOnlyPreferLeader(transactionId);
+        ChannelEndpoint routed =
+            preferLeaderOverride != null
+                ? finder.findServer(reqBuilder, preferLeaderOverride)
+                : finder.findServer(reqBuilder);
+        endpoint = routed;
       }
       return new RoutingDecision(finder, endpoint);
     }
@@ -501,14 +554,20 @@ final class KeyAwareChannel extends ManagedChannel {
     private RoutingDecision routeFromRequest(ExecuteSqlRequest.Builder reqBuilder) {
       String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
       ByteString transactionId = transactionIdFromSelector(reqBuilder.getTransaction());
-      ChannelEndpoint endpoint = parentChannel.affinityEndpoint(transactionId);
+      // Skip affinity for read-only transactions so each query routes independently.
+      boolean isReadOnly = parentChannel.isReadOnlyTransaction(transactionId);
+      ChannelEndpoint endpoint = isReadOnly ? null : parentChannel.affinityEndpoint(transactionId);
       ChannelFinder finder = null;
       if (databaseId != null) {
         finder = parentChannel.getOrCreateChannelFinder(databaseId);
-        ChannelEndpoint routed = finder.findServer(reqBuilder);
-        if (endpoint == null) {
-          endpoint = routed;
-        }
+      }
+      if (databaseId != null && endpoint == null) {
+        Boolean preferLeaderOverride = parentChannel.readOnlyPreferLeader(transactionId);
+        ChannelEndpoint routed =
+            preferLeaderOverride != null
+                ? finder.findServer(reqBuilder, preferLeaderOverride)
+                : finder.findServer(reqBuilder);
+        endpoint = routed;
       }
       return new RoutingDecision(finder, endpoint);
     }
@@ -554,7 +613,13 @@ final class KeyAwareChannel extends ManagedChannel {
         transactionId = transactionIdFromTransaction(response);
       }
       if (transactionId != null) {
-        call.maybeRecordAffinity(transactionId);
+        if (call.isReadOnlyBegin) {
+          // Track the read-only transaction so subsequent reads skip affinity
+          // and route independently based on key-based routing.
+          call.parentChannel.trackReadOnlyTransaction(transactionId, call.readOnlyIsStrong);
+        } else if (!call.parentChannel.isReadOnlyTransaction(transactionId)) {
+          call.maybeRecordAffinity(transactionId);
+        }
       }
       super.onMessage(message);
     }

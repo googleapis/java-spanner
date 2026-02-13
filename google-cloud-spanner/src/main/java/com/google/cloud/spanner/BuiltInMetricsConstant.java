@@ -68,8 +68,49 @@ public class BuiltInMetricsConstant {
           .map(m -> METER_NAME + '/' + m)
           .collect(Collectors.toSet());
 
+  // The following attributes are optional and need to be enabled explicitly.
+  public static final String GRPC_LB_BACKEND_SERVICE_ATTRIBUTE = "grpc.lb.backend_service";
+  public static final String GRPC_LB_LOCALITY_ATTRIBUTE = "grpc.lb.locality";
+  public static final String GRPC_DISCONNECT_ERROR_ATTRIBUTE = "grpc.disconnect_error";
+
+  static final Set<String> GRPC_LB_RLS_ATTRIBUTES =
+      ImmutableSet.of("grpc.lb.rls.data_plane_target", "grpc.lb.pick_result");
+  static final Set<String> GRPC_CLIENT_ATTEMPT_STARTED_ATTRIBUTES =
+      ImmutableSet.of("grpc.method", "grpc.target");
+  static final Set<String> GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES =
+      ImmutableSet.of("grpc.target", GRPC_LB_BACKEND_SERVICE_ATTRIBUTE, GRPC_LB_LOCALITY_ATTRIBUTE);
+  static final Set<String> GRPC_SUBCHANNEL_DISCONNECTION_ATTRIBUTES =
+      ImmutableSet.of(
+          "grpc.target",
+          GRPC_LB_BACKEND_SERVICE_ATTRIBUTE,
+          GRPC_LB_LOCALITY_ATTRIBUTE,
+          GRPC_DISCONNECT_ERROR_ATTRIBUTE);
+  static final Set<String> GRPC_XDS_CLIENT_RESOURCE_UPDATE_ATTRIBUTES =
+      ImmutableSet.of("grpc.xds.resource_type");
+
+  // Additional gRPC attributes to enable.
+  static final Map<String, Set<String>> GRPC_METRIC_ADDITIONAL_ATTRIBUTES =
+      ImmutableMap.<String, Set<String>>builder()
+          .put("grpc.client.attempt.started", GRPC_CLIENT_ATTEMPT_STARTED_ATTRIBUTES)
+          .put("grpc.subchannel.open_connections", GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES)
+          .put("grpc.subchannel.disconnections", GRPC_SUBCHANNEL_DISCONNECTION_ATTRIBUTES)
+          .put("grpc.subchannel.connection_attempts_succeeded", GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES)
+          .put("grpc.subchannel.connection_attempts_failed", GRPC_SUBCHANNEL_DEFAULT_ATTRIBUTES)
+          .put("grpc.lb.rls.default_target_picks", GRPC_LB_RLS_ATTRIBUTES)
+          .put("grpc.lb.rls.target_picks", GRPC_LB_RLS_ATTRIBUTES)
+          .put(
+              "grpc.xds_client.resource_updates_invalid",
+              GRPC_XDS_CLIENT_RESOURCE_UPDATE_ATTRIBUTES)
+          .put("grpc.xds_client.resource_updates_valid", GRPC_XDS_CLIENT_RESOURCE_UPDATE_ATTRIBUTES)
+          .build();
+
   static final Collection<String> GRPC_METRICS_TO_ENABLE =
       ImmutableList.of(
+          "grpc.client.attempt.started",
+          "grpc.subchannel.open_connections",
+          "grpc.subchannel.disconnections",
+          "grpc.subchannel.connection_attempts_succeeded",
+          "grpc.subchannel.connection_attempts_failed",
           "grpc.lb.rls.default_target_picks",
           "grpc.lb.rls.target_picks",
           "grpc.xds_client.server_failure",
@@ -100,8 +141,6 @@ public class BuiltInMetricsConstant {
       AttributeKey.stringKey("directpath_used");
   public static final AttributeKey<String> REQUEST_ID_KEY =
       AttributeKey.stringKey(REQUEST_ID_HEADER_NAME);
-  public static final AttributeKey<String> GRPC_XDS_RESOURCE_TYPE_KEY =
-      AttributeKey.stringKey("grpc.xds.resource_type");
   public static Set<String> ALLOWED_EXEMPLARS_ATTRIBUTES =
       new HashSet<>(Arrays.asList(REQUEST_ID_HEADER_NAME));
 
@@ -124,9 +163,6 @@ public class BuiltInMetricsConstant {
           DIRECT_PATH_ENABLED_KEY,
           DIRECT_PATH_USED_KEY);
 
-  static final Set<String> GRPC_LB_RLS_ATTRIBUTES =
-      ImmutableSet.of("grpc.lb.rls.data_plane_target", "grpc.lb.pick_result");
-
   static List<Double> BUCKET_BOUNDARIES =
       ImmutableList.of(
           0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0,
@@ -140,7 +176,6 @@ public class BuiltInMetricsConstant {
       ImmutableList.of(
           "grpc.client.attempt.sent_total_compressed_message_size",
           "grpc.client.attempt.rcvd_total_compressed_message_size",
-          "grpc.client.attempt.started",
           "grpc.client.attempt.duration",
           "grpc.client.call.duration");
 
@@ -235,8 +270,8 @@ public class BuiltInMetricsConstant {
           BuiltInMetricsConstant.COMMON_ATTRIBUTES.stream()
               .map(AttributeKey::getKey)
               .collect(Collectors.toSet());
-      attributesFilter.addAll(BuiltInMetricsConstant.GRPC_LB_RLS_ATTRIBUTES);
-      attributesFilter.add(BuiltInMetricsConstant.GRPC_XDS_RESOURCE_TYPE_KEY.getKey());
+      attributesFilter.addAll(
+          GRPC_METRIC_ADDITIONAL_ATTRIBUTES.getOrDefault(metric, ImmutableSet.of()));
 
       View view =
           View.builder()

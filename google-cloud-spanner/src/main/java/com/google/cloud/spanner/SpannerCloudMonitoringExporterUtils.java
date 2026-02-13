@@ -116,9 +116,10 @@ class SpannerCloudMonitoringExporterUtils {
       PointData pointData,
       MonitoredResource.Builder monitoredResourceBuilder,
       String projectId) {
+    MetricKind metricKind = convertMetricKind(metricData);
     TimeSeries.Builder builder =
         TimeSeries.newBuilder()
-            .setMetricKind(convertMetricKind(metricData))
+            .setMetricKind(metricKind)
             .setValueType(convertValueType(metricData.getType()));
     Metric.Builder metricBuilder = Metric.newBuilder().setType(metricData.getName());
 
@@ -143,7 +144,11 @@ class SpannerCloudMonitoringExporterUtils {
 
     TimeInterval timeInterval =
         TimeInterval.newBuilder()
-            .setStartTime(Timestamps.fromNanos(pointData.getStartEpochNanos()))
+            .setStartTime(
+                // For gauge metrics, the start and end time should be the same.
+                metricKind == MetricKind.GAUGE
+                    ? Timestamps.fromNanos(pointData.getEpochNanos())
+                    : Timestamps.fromNanos(pointData.getStartEpochNanos()))
             .setEndTime(Timestamps.fromNanos(pointData.getEpochNanos()))
             .build();
 
