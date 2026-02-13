@@ -477,6 +477,63 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void withStatsResult() {
+    Map<String, com.google.protobuf.Value> statsMap =
+        ImmutableMap.of(
+            "f1", Value.string("").toProto(),
+            "f2", Value.string("").toProto());
+    ResultSetStats stats =
+        ResultSetStats.newBuilder()
+            .setQueryStats(com.google.protobuf.Struct.newBuilder().putAllFields(statsMap).build())
+            .build();
+    ArrayList<Type.StructField> dataType = new ArrayList<>();
+    dataType.add(Type.StructField.of("data", Type.string()));
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(dataType)))
+            .addValues(Value.string("d1").toProto())
+            .setChunkedValue(false)
+            .setStats(stats)
+            .build());
+    resultSet = resultSetWithMode(QueryMode.WITH_STATS);
+    consumer.onCompleted();
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.next()).isFalse();
+    ResultSetStats receivedStats = resultSet.getStats();
+    assertThat(receivedStats).isEqualTo(stats);
+    resultSet.close();
+  }
+
+  @Test
+  public void withPlanAndStatsResult() {
+    Map<String, com.google.protobuf.Value> statsMap =
+        ImmutableMap.of(
+            "f1", Value.string("").toProto(),
+            "f2", Value.string("").toProto());
+    ResultSetStats stats =
+        ResultSetStats.newBuilder()
+            .setQueryPlan(QueryPlan.newBuilder().build())
+            .setQueryStats(com.google.protobuf.Struct.newBuilder().putAllFields(statsMap).build())
+            .build();
+    ArrayList<Type.StructField> dataType = new ArrayList<>();
+    dataType.add(Type.StructField.of("data", Type.string()));
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(dataType)))
+            .addValues(Value.string("d1").toProto())
+            .setChunkedValue(false)
+            .setStats(stats)
+            .build());
+    resultSet = resultSetWithMode(QueryMode.WITH_PLAN_AND_STATS);
+    consumer.onCompleted();
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.next()).isFalse();
+    ResultSetStats receivedStats = resultSet.getStats();
+    assertThat(stats).isEqualTo(receivedStats);
+    resultSet.close();
+  }
+
+  @Test
   public void statsUnavailable() {
     ResultSetStats stats = ResultSetStats.newBuilder().build();
     consumer.onPartialResultSet(

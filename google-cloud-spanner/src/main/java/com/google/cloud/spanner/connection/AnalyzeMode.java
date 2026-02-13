@@ -19,14 +19,27 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 
 /**
- * {@link AnalyzeMode} indicates whether a query should be executed as a normal query (NONE),
- * whether only a query plan should be returned, or whether the query should be profiled while
- * executed.
+ * {@link AnalyzeMode} controls the execution and returned information for a query:
+ *
+ * <ul>
+ *   <li>{@code NONE}: The default mode. Only the statement results are returned.
+ *   <li>{@code PLAN}: Returns only the query plan, without any results or execution statistics
+ *       information.
+ *   <li>{@code PROFILE}: Returns the query plan, overall execution statistics, operator-level
+ *       execution statistics along with the results. This mode has a performance overhead and is
+ *       not recommended for production traffic.
+ *   <li>{@code WITH_STATS}: Returns the overall (but not operator-level) execution statistics along
+ *       with the results.
+ *   <li>{@code WITH_PLAN_AND_STATS}: Returns the query plan, overall (but not operator-level)
+ *       execution statistics along with the results.
+ * </ul>
  */
 enum AnalyzeMode {
   NONE(null),
   PLAN(QueryAnalyzeMode.PLAN),
-  PROFILE(QueryAnalyzeMode.PROFILE);
+  PROFILE(QueryAnalyzeMode.PROFILE),
+  WITH_STATS(QueryAnalyzeMode.WITH_STATS),
+  WITH_PLAN_AND_STATS(QueryAnalyzeMode.WITH_PLAN_AND_STATS);
 
   private final QueryAnalyzeMode mode;
 
@@ -45,6 +58,10 @@ enum AnalyzeMode {
         return AnalyzeMode.PLAN;
       case PROFILE:
         return AnalyzeMode.PROFILE;
+      case WITH_STATS:
+        return AnalyzeMode.WITH_STATS;
+      case WITH_PLAN_AND_STATS:
+        return AnalyzeMode.WITH_PLAN_AND_STATS;
       default:
         throw new IllegalArgumentException(mode + " is unknown");
     }

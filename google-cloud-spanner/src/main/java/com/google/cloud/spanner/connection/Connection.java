@@ -1400,9 +1400,13 @@ public interface Connection extends AutoCloseable {
    * Analyzes a DML statement and returns query plan and/or execution statistics information.
    *
    * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan for
-   * the statement. {@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes
-   * the DML statement, returns the modified row count and execution statistics, and the effects of
-   * the DML statement will be visible to subsequent operations in the transaction.
+   * the statement. {@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#WITH_STATS} returns
+   * the overall (but not operator-level) execution statistics. {@link
+   * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#WITH_PLAN_AND_STATS} returns the query
+   * plan and overall (but not operator-level) execution statistics. {@link
+   * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes the DML statement,
+   * returns the modified row count and execution statistics, and the effects of the DML statement
+   * will be visible to subsequent operations in the transaction.
    *
    * @deprecated Use {@link #analyzeUpdateStatement(Statement, QueryAnalyzeMode, UpdateOption...)}
    *     instead
@@ -1418,6 +1422,10 @@ public interface Connection extends AutoCloseable {
    *
    * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan and
    * undeclared parameters for the statement. {@link
+   * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#WITH_STATS} returns the overall (but not
+   * operator-level) execution statistics. {@link
+   * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#WITH_PLAN_AND_STATS} returns the query
+   * plan and overall (but not operator-level) execution statistics. {@link
    * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} also executes the DML statement,
    * returns the modified row count and execution statistics, and the effects of the DML statement
    * will be visible to subsequent operations in the transaction.
