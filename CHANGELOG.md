@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.111.0](https://github.com/googleapis/java-spanner/compare/v6.110.0...v6.111.0) (2026-02-13)
+
+
+### Features
+
+* Add E2E fallback to the spanner client. ([#4282](https://github.com/googleapis/java-spanner/issues/4282)) ([d36bd21](https://github.com/googleapis/java-spanner/commit/d36bd21a09cdd2006e53a43b6984d2a68ea24d3e))
+
+
+### Bug Fixes
+
+* Rollback transactions that are waiting for tx-id to be returned ([#4342](https://github.com/googleapis/java-spanner/issues/4342)) ([866a8c2](https://github.com/googleapis/java-spanner/commit/866a8c2d23f0d5edee1d98ead7d002b1981d5339))
+
 ## [6.110.0](https://github.com/googleapis/java-spanner/compare/v6.109.0...v6.110.0) (2026-02-11)
 
 
