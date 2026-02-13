@@ -34,8 +34,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <junixsocket.version>2.10.1</junixsocket.version>
-    <opentelemetry.version>1.56.0</opentelemetry.version>
-    <google.cloud.monitoring.version>3.83.0</google.cloud.monitoring.version>
+    <opentelemetry.version>1.59.0</opentelemetry.version>
+    <google.cloud.monitoring.version>3.85.0</google.cloud.monitoring.version>
   </properties>
 
   <dependencies>
@@ -91,7 +91,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.107.0</version>
+      <version>6.110.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.auto.value</groupId>
@@ -127,7 +127,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.6.3</version>
         <configuration>
           <mainClass>com.google.cloud.spanner.benchmark.LatencyBenchmark</mainClass>
           <cleanupDaemonThreads>false</cleanupDaemonThreads>
