@@ -253,6 +253,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
   private final boolean enableDirectAccess;
+  private final boolean enableGcpFallback;
   private final DirectedReadOptions directedReadOptions;
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
@@ -918,6 +919,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
     enableDirectAccess = builder.enableDirectAccess;
+    enableGcpFallback = builder.enableGcpFallback;
     directedReadOptions = builder.directedReadOptions;
     useVirtualThreads = builder.useVirtualThreads;
     openTelemetry = builder.openTelemetry;
@@ -980,6 +982,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return false;
     }
 
+    default boolean isEnableGcpFallback() {
+      return false;
+    }
+
     default boolean isEnableBuiltInMetrics() {
       return true;
     }
@@ -1029,6 +1035,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
     private static final String GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS =
         "GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS";
+    private static final String GOOGLE_SPANNER_ENABLE_GCP_FALLBACK =
+        "GOOGLE_SPANNER_ENABLE_GCP_FALLBACK";
     private static final String SPANNER_ENABLE_END_TO_END_TRACING =
         "SPANNER_ENABLE_END_TO_END_TRACING";
     private static final String SPANNER_DISABLE_BUILTIN_METRICS = "SPANNER_DISABLE_BUILTIN_METRICS";
@@ -1066,6 +1074,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableDirectAccess() {
       return Boolean.parseBoolean(System.getenv(GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS));
+    }
+
+    @Override
+    public boolean isEnableGcpFallback() {
+      return Boolean.parseBoolean(System.getenv(GOOGLE_SPANNER_ENABLE_GCP_FALLBACK));
     }
 
     @Override
@@ -1169,6 +1182,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
     private boolean enableDirectAccess = SpannerOptions.environment.isEnableDirectAccess();
+    private boolean enableGcpFallback = SpannerOptions.environment.isEnableGcpFallback();
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
     private OpenTelemetry openTelemetry;
@@ -1278,6 +1292,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
       this.enableDirectAccess = options.enableDirectAccess;
+      this.enableGcpFallback = options.enableGcpFallback;
       this.directedReadOptions = options.directedReadOptions;
       this.useVirtualThreads = options.useVirtualThreads;
       this.enableApiTracing = options.enableApiTracing;
@@ -2336,6 +2351,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @BetaApi
   public Boolean isEnableDirectAccess() {
     return enableDirectAccess;
+  }
+
+  public Boolean isEnableGcpFallback() {
+    return enableGcpFallback;
   }
 
   @ObsoleteApi("Use isEnableDirectAccess() instead")
