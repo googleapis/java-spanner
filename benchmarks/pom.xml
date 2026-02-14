@@ -35,7 +35,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <junixsocket.version>2.10.1</junixsocket.version>
     <opentelemetry.version>1.59.0</opentelemetry.version>
-    <google.cloud.monitoring.version>3.85.0</google.cloud.monitoring.version>
+    <google.cloud.monitoring.version>3.86.0</google.cloud.monitoring.version>
   </properties>
 
   <dependencies>
