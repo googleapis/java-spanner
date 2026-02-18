@@ -24,7 +24,7 @@ package com.google.spanner.executor.v1;
  *
  *
  * <pre>
- * Action that lists Cloud Spanner databases.
+ * Action that lists Cloud Spanner instances.
  * </pre>
  *
  * Protobuf type {@code google.spanner.executor.v1.ListCloudInstancesAction}
@@ -529,7 +529,7 @@ public final class ListCloudInstancesAction extends com.google.protobuf.Generate
    *
    *
    * <pre>
-   * Action that lists Cloud Spanner databases.
+   * Action that lists Cloud Spanner instances.
    * </pre>
    *
    * Protobuf type {@code google.spanner.executor.v1.ListCloudInstancesAction}

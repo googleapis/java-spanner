@@ -70,6 +70,7 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
             com.google.spanner.executor.v1.BatchDmlAction.Builder.class);
   }
 
+  private int bitField0_;
   public static final int UPDATES_FIELD_NUMBER = 1;
 
   @SuppressWarnings("serial")
@@ -146,6 +147,45 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
     return updates_.get(index);
   }
 
+  public static final int LAST_STATEMENTS_FIELD_NUMBER = 2;
+  private boolean lastStatements_ = false;
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to set this request with the last statement option in the
+   * transaction. The transaction should be committed after processing this
+   * request.
+   * </pre>
+   *
+   * <code>optional bool last_statements = 2;</code>
+   *
+   * @return Whether the lastStatements field is set.
+   */
+  @java.lang.Override
+  public boolean hasLastStatements() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to set this request with the last statement option in the
+   * transaction. The transaction should be committed after processing this
+   * request.
+   * </pre>
+   *
+   * <code>optional bool last_statements = 2;</code>
+   *
+   * @return The lastStatements.
+   */
+  @java.lang.Override
+  public boolean getLastStatements() {
+    return lastStatements_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -163,6 +203,9 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
     for (int i = 0; i < updates_.size(); i++) {
       output.writeMessage(1, updates_.get(i));
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeBool(2, lastStatements_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -174,6 +217,9 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
     size = 0;
     for (int i = 0; i < updates_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, updates_.get(i));
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(2, lastStatements_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -192,6 +238,10 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
         (com.google.spanner.executor.v1.BatchDmlAction) obj;
 
     if (!getUpdatesList().equals(other.getUpdatesList())) return false;
+    if (hasLastStatements() != other.hasLastStatements()) return false;
+    if (hasLastStatements()) {
+      if (getLastStatements() != other.getLastStatements()) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -206,6 +256,10 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
     if (getUpdatesCount() > 0) {
       hash = (37 * hash) + UPDATES_FIELD_NUMBER;
       hash = (53 * hash) + getUpdatesList().hashCode();
+    }
+    if (hasLastStatements()) {
+      hash = (37 * hash) + LAST_STATEMENTS_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getLastStatements());
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -354,6 +408,7 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
         updatesBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000001);
+      lastStatements_ = false;
       return this;
     }
 
@@ -403,6 +458,12 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
 
     private void buildPartial0(com.google.spanner.executor.v1.BatchDmlAction result) {
       int from_bitField0_ = bitField0_;
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.lastStatements_ = lastStatements_;
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ |= to_bitField0_;
     }
 
     @java.lang.Override
@@ -444,6 +505,9 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
           }
         }
       }
+      if (other.hasLastStatements()) {
+        setLastStatements(other.getLastStatements());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -483,6 +547,12 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
                 }
                 break;
               } // case 10
+            case 16:
+              {
+                lastStatements_ = input.readBool();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -866,6 +936,86 @@ public final class BatchDmlAction extends com.google.protobuf.GeneratedMessage
         updates_ = null;
       }
       return updatesBuilder_;
+    }
+
+    private boolean lastStatements_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to set this request with the last statement option in the
+     * transaction. The transaction should be committed after processing this
+     * request.
+     * </pre>
+     *
+     * <code>optional bool last_statements = 2;</code>
+     *
+     * @return Whether the lastStatements field is set.
+     */
+    @java.lang.Override
+    public boolean hasLastStatements() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to set this request with the last statement option in the
+     * transaction. The transaction should be committed after processing this
+     * request.
+     * </pre>
+     *
+     * <code>optional bool last_statements = 2;</code>
+     *
+     * @return The lastStatements.
+     */
+    @java.lang.Override
+    public boolean getLastStatements() {
+      return lastStatements_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to set this request with the last statement option in the
+     * transaction. The transaction should be committed after processing this
+     * request.
+     * </pre>
+     *
+     * <code>optional bool last_statements = 2;</code>
+     *
+     * @param value The lastStatements to set.
+     * @return This builder for chaining.
+     */
+    public Builder setLastStatements(boolean value) {
+
+      lastStatements_ = value;
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to set this request with the last statement option in the
+     * transaction. The transaction should be committed after processing this
+     * request.
+     * </pre>
+     *
+     * <code>optional bool last_statements = 2;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearLastStatements() {
+      bitField0_ = (bitField0_ & ~0x00000002);
+      lastStatements_ = false;
+      onChanged();
+      return this;
     }
 
     // @@protoc_insertion_point(builder_scope:google.spanner.executor.v1.BatchDmlAction)

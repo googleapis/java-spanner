@@ -159,6 +159,45 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
     return autocommitIfSupported_;
   }
 
+  public static final int LAST_STATEMENT_FIELD_NUMBER = 3;
+  private boolean lastStatement_ = false;
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to set this DML statement as the last statement in the
+   * transaction. The transaction should be committed after processing this DML
+   * statement.
+   * </pre>
+   *
+   * <code>optional bool last_statement = 3;</code>
+   *
+   * @return Whether the lastStatement field is set.
+   */
+  @java.lang.Override
+  public boolean hasLastStatement() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to set this DML statement as the last statement in the
+   * transaction. The transaction should be committed after processing this DML
+   * statement.
+   * </pre>
+   *
+   * <code>optional bool last_statement = 3;</code>
+   *
+   * @return The lastStatement.
+   */
+  @java.lang.Override
+  public boolean getLastStatement() {
+    return lastStatement_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -179,6 +218,9 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeBool(2, autocommitIfSupported_);
     }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      output.writeBool(3, lastStatement_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -193,6 +235,9 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(2, autocommitIfSupported_);
+    }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(3, lastStatement_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -217,6 +262,10 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
     if (hasAutocommitIfSupported()) {
       if (getAutocommitIfSupported() != other.getAutocommitIfSupported()) return false;
     }
+    if (hasLastStatement() != other.hasLastStatement()) return false;
+    if (hasLastStatement()) {
+      if (getLastStatement() != other.getLastStatement()) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -235,6 +284,10 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
     if (hasAutocommitIfSupported()) {
       hash = (37 * hash) + AUTOCOMMIT_IF_SUPPORTED_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getAutocommitIfSupported());
+    }
+    if (hasLastStatement()) {
+      hash = (37 * hash) + LAST_STATEMENT_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getLastStatement());
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -391,6 +444,7 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
         updateBuilder_ = null;
       }
       autocommitIfSupported_ = false;
+      lastStatement_ = false;
       return this;
     }
 
@@ -436,6 +490,10 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
         result.autocommitIfSupported_ = autocommitIfSupported_;
         to_bitField0_ |= 0x00000002;
       }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.lastStatement_ = lastStatement_;
+        to_bitField0_ |= 0x00000004;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -456,6 +514,9 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
       }
       if (other.hasAutocommitIfSupported()) {
         setAutocommitIfSupported(other.getAutocommitIfSupported());
+      }
+      if (other.hasLastStatement()) {
+        setLastStatement(other.getLastStatement());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -495,6 +556,12 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
                 bitField0_ |= 0x00000002;
                 break;
               } // case 16
+            case 24:
+              {
+                lastStatement_ = input.readBool();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -780,6 +847,86 @@ public final class DmlAction extends com.google.protobuf.GeneratedMessage
     public Builder clearAutocommitIfSupported() {
       bitField0_ = (bitField0_ & ~0x00000002);
       autocommitIfSupported_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean lastStatement_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to set this DML statement as the last statement in the
+     * transaction. The transaction should be committed after processing this DML
+     * statement.
+     * </pre>
+     *
+     * <code>optional bool last_statement = 3;</code>
+     *
+     * @return Whether the lastStatement field is set.
+     */
+    @java.lang.Override
+    public boolean hasLastStatement() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to set this DML statement as the last statement in the
+     * transaction. The transaction should be committed after processing this DML
+     * statement.
+     * </pre>
+     *
+     * <code>optional bool last_statement = 3;</code>
+     *
+     * @return The lastStatement.
+     */
+    @java.lang.Override
+    public boolean getLastStatement() {
+      return lastStatement_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to set this DML statement as the last statement in the
+     * transaction. The transaction should be committed after processing this DML
+     * statement.
+     * </pre>
+     *
+     * <code>optional bool last_statement = 3;</code>
+     *
+     * @param value The lastStatement to set.
+     * @return This builder for chaining.
+     */
+    public Builder setLastStatement(boolean value) {
+
+      lastStatement_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to set this DML statement as the last statement in the
+     * transaction. The transaction should be committed after processing this DML
+     * statement.
+     * </pre>
+     *
+     * <code>optional bool last_statement = 3;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearLastStatement() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      lastStatement_ = false;
       onChanged();
       return this;
     }

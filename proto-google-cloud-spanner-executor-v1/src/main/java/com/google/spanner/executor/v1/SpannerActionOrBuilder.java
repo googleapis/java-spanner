@@ -743,5 +743,42 @@ public interface SpannerActionOrBuilder
    */
   com.google.spanner.executor.v1.QueryCancellationActionOrBuilder getQueryCancellationOrBuilder();
 
+  /**
+   *
+   *
+   * <pre>
+   * Action to adapt a message.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+   *
+   * @return Whether the adaptMessage field is set.
+   */
+  boolean hasAdaptMessage();
+
+  /**
+   *
+   *
+   * <pre>
+   * Action to adapt a message.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+   *
+   * @return The adaptMessage.
+   */
+  com.google.spanner.executor.v1.AdaptMessageAction getAdaptMessage();
+
+  /**
+   *
+   *
+   * <pre>
+   * Action to adapt a message.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+   */
+  com.google.spanner.executor.v1.AdaptMessageActionOrBuilder getAdaptMessageOrBuilder();
+
   com.google.spanner.executor.v1.SpannerAction.ActionCase getActionCase();
 }
