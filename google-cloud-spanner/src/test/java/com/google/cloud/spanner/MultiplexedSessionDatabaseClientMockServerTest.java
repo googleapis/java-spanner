@@ -102,6 +102,37 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   }
 
   @Test
+  public void testCreateSessionDeadlineExceeded() {
+    // Simulate a problem with the CreateSession RPC making it slow.
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
+
+    Spanner testSpanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getService();
+    DatabaseClient client = testSpanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    // The first attempt should lead to a DEADLINE_EXCEEDED error being propagated from the
+    // CreateSession attempt.
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+    }
+
+    // Remove the simulated problem on the mock server.
+    // The next attempt should then succeed.
+    mockSpanner.removeAllExecutionTimes();
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {}
+    }
+  }
+
+  @Test
   public void testMultiUseReadOnlyTransactionUsesSameSession() {
     // Execute two queries using the same transaction. Both queries should use the same
     // session, also when the maintainer has executed in the meantime.

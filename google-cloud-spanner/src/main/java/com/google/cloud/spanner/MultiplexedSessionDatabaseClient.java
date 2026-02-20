@@ -226,14 +226,18 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     final SettableApiFuture<SessionReference> initialSessionReferenceFuture =
         SettableApiFuture.create();
     this.multiplexedSessionReference = new AtomicReference<>(initialSessionReferenceFuture);
-    asyncCreateMultiplexedSession(initialSessionReferenceFuture);
+
+    Duration waitDuration =
+        sessionClient.getSpanner().getOptions().getSessionPoolOptions().getWaitForMinSessions();
+    int initialAttempts = waitDuration == null || waitDuration.isZero() ? 10 : 1;
+    asyncCreateMultiplexedSession(initialSessionReferenceFuture, initialAttempts);
     maybeWaitForSessionCreation(
         sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
         initialSessionReferenceFuture);
   }
 
   private void asyncCreateMultiplexedSession(
-      SettableApiFuture<SessionReference> sessionReferenceFuture) {
+      SettableApiFuture<SessionReference> sessionReferenceFuture, int remainingAttempts) {
     this.sessionClient.asyncCreateMultiplexedSession(
         new SessionConsumer() {
           @Override
@@ -263,7 +267,15 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
               MultiplexedSessionDatabaseClient.this.resourceNotFoundException.set(
                   (ResourceNotFoundException) spannerException);
             }
+            // Set the exception to trigger an error for all waiters.
+            // Then retry the session creation if the error is (potentially) transient.
             sessionReferenceFuture.setException(t);
+            if (remainingAttempts > 1
+                && RETRYABLE_ERROR_CODES.contains(spannerException.getErrorCode())) {
+              final SettableApiFuture<SessionReference> future = SettableApiFuture.create();
+              MultiplexedSessionDatabaseClient.this.multiplexedSessionReference.set(future);
+              asyncCreateMultiplexedSession(future, remainingAttempts - 1);
+            }
           }
         });
   }
@@ -283,7 +295,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         // If any exception is thrown, then retry the multiplexed session creation
         if (sessionReferenceFuture == null) {
           sessionReferenceFuture = SettableApiFuture.create();
-          asyncCreateMultiplexedSession(sessionReferenceFuture);
+          asyncCreateMultiplexedSession(sessionReferenceFuture, 1);
           this.multiplexedSessionReference.set(sessionReferenceFuture);
         }
         try {
