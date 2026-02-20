@@ -53,6 +53,15 @@ import java.util.concurrent.atomic.AtomicReference;
  * transactions.
  */
 final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionDatabaseClient {
+  /**
+   * The maximum number of attempts that the client will try to execute CreateSession for the
+   * initial multiplexed session. This value is only used for the very first multiplexed session
+   * that is created, and it is only used if the application has not set a waitForMinSessions value.
+   * If waitForMinSessions has been set, then the client will retry until the duration in
+   * waitForMinSessions has been reached.
+   */
+  private static final int MAX_INITIAL_CREATE_SESSION_ATTEMPTS = 10;
+
   @VisibleForTesting
   static final Statement DETERMINE_DIALECT_STATEMENT =
       Statement.newBuilder(
@@ -229,7 +238,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
     Duration waitDuration =
         sessionClient.getSpanner().getOptions().getSessionPoolOptions().getWaitForMinSessions();
-    int initialAttempts = waitDuration == null || waitDuration.isZero() ? 10 : 1;
+    int initialAttempts =
+        waitDuration == null || waitDuration.isZero() ? MAX_INITIAL_CREATE_SESSION_ATTEMPTS : 1;
     asyncCreateMultiplexedSession(initialSessionReferenceFuture, initialAttempts);
     maybeWaitForSessionCreation(
         sessionClient.getSpanner().getOptions().getSessionPoolOptions(),

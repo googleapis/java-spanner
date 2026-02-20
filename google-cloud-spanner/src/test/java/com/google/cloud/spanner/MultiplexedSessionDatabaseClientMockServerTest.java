@@ -377,12 +377,21 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
             });
     assertEquals(ErrorCode.DEADLINE_EXCEEDED, spannerException.getErrorCode());
 
+    // The CreateSession RPC will be retried, and as the exception is removed by the first call,
+    // the second attempt will succeed.
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {
+        // ignore
+      }
+    }
+
     List<CreateSessionRequest> createSessionRequests =
         mockSpanner.getRequestsOfType(CreateSessionRequest.class);
-    assertEquals(1, createSessionRequests.size());
+    assertEquals(2, createSessionRequests.size());
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
-    assertEquals(0, requests.size());
+    assertEquals(1, requests.size());
 
     testSpanner.close();
   }
