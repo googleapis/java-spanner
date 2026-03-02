@@ -58,6 +58,7 @@ import com.google.cloud.spanner.spi.v1.ChannelEndpointCacheFactory;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.SpannerSettings;
+import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -70,6 +71,7 @@ import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionOptions.IsolationLevel;
@@ -204,6 +206,25 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         .build();
   }
 
+  /**
+   * Use the same {@link RetrySettings} for retrying an aborted transaction as for retrying a {@link
+   * RollbackRequest}. The {@link RollbackRequest} automatically uses the default retry settings
+   * defined for the {@link SpannerStub}. By referencing these settings, the retry settings for
+   * retrying aborted transactions will also automatically be updated if the default retry settings
+   * are updated.
+   *
+   * <p>A read/write transaction should not time out while retrying. The total timeout of the retry
+   * settings is therefore set to 24 hours and there is no max attempts value.
+   *
+   * <p>These default {@link RetrySettings} are only used if no retry information is returned by the
+   * {@link AbortedException}.
+   */
+  public static final RetrySettings DEFAULT_TRANSACTION_RETRY_SETTINGS =
+      SpannerStubSettings.newBuilder().rollbackSettings().getRetrySettings().toBuilder()
+          .setTotalTimeoutDuration(Duration.ofHours(24L))
+          .setMaxAttempts(0)
+          .build();
+
   private final TransportChannelProvider channelProvider;
   private final ChannelEndpointCacheFactory channelEndpointCacheFactory;
 
@@ -264,6 +285,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean enableEndToEndTracing;
   private final String monitoringHost;
   private final TransactionOptions defaultTransactionOptions;
+  private final RetrySettings defaultTransactionRetrySettings;
   private final RequestOptions.ClientContext clientContext;
 
   enum TracingFramework {
@@ -934,6 +956,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     enableEndToEndTracing = builder.enableEndToEndTracing;
     monitoringHost = builder.monitoringHost;
     defaultTransactionOptions = builder.defaultTransactionOptions;
+    defaultTransactionRetrySettings = builder.defaultTransactionRetrySettings;
     clientContext = builder.clientContext;
   }
 
@@ -1196,6 +1219,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String experimentalHost = null;
     private boolean usePlainText = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
+    private RetrySettings defaultTransactionRetrySettings = TransactionRetryHelper.DEFAULT_TRANSACTION_RETRY_SETTINGS;
     private RequestOptions.ClientContext clientContext;
 
     private static String createCustomClientLibToken(String token) {
@@ -1302,6 +1326,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.enableEndToEndTracing = options.enableEndToEndTracing;
       this.monitoringHost = options.monitoringHost;
       this.defaultTransactionOptions = options.defaultTransactionOptions;
+      this.defaultTransactionRetrySettings = options.defaultTransactionRetrySettings;
       this.clientContext = options.clientContext;
     }
 
@@ -2055,6 +2080,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Sets the default {@link RetrySettings} for all read/write transactions that are executed using this client. These settings are used when the client automatically retries an aborted read/write transaction. The default is to retry for up to 24 hours without a limit for the maximum number of attempts. */
+    public Builder setDefaultTransactionRetrySettings(RetrySettings retrySettings) {
+      Preconditions.checkNotNull(retrySettings, "RetrySettings cannot be null");
+      this.defaultTransactionRetrySettings = retrySettings;
+      return this;
+    }
+
     /** Sets the default {@link RequestOptions.ClientContext} for all requests. */
     public Builder setDefaultClientContext(RequestOptions.ClientContext clientContext) {
       this.clientContext = clientContext;
@@ -2479,6 +2511,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public TransactionOptions getDefaultTransactionOptions() {
     return defaultTransactionOptions;
+  }
+
+  public RetrySettings getDefaultTransactionRetrySettings() {
+    return this.defaultTransactionRetrySettings;
   }
 
   @BetaApi

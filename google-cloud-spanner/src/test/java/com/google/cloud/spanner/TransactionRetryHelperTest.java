@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class SpannerRetryHelperTest {
+public class TransactionRetryHelperTest {
   private static class FakeClock implements ApiClock {
     private long currentTime;
 
@@ -57,6 +57,8 @@ public class SpannerRetryHelperTest {
       return currentTime;
     }
   }
+
+  private final TransactionRetryHelper retryHelper = new TransactionRetryHelper(SpannerOptions.DEFAULT_TRANSACTION_RETRY_SETTINGS);
 
   @Test
   public void testRetryDoesNotTimeoutAfterTenMinutes() {
@@ -72,8 +74,8 @@ public class SpannerRetryHelperTest {
         };
     assertEquals(
         2,
-        SpannerRetryHelper.runTxWithRetriesOnAborted(
-                callable, SpannerRetryHelper.txRetrySettings, clock)
+        retryHelper.runTxWithRetriesOnAborted(
+                callable, SpannerOptions.DEFAULT_TRANSACTION_RETRY_SETTINGS, clock)
             .intValue());
   }
 
@@ -93,8 +95,8 @@ public class SpannerRetryHelperTest {
         assertThrows(
             SpannerException.class,
             () ->
-                SpannerRetryHelper.runTxWithRetriesOnAborted(
-                    callable, SpannerRetryHelper.txRetrySettings, clock));
+                retryHelper.runTxWithRetriesOnAborted(
+                    callable, SpannerOptions.DEFAULT_TRANSACTION_RETRY_SETTINGS, clock));
     assertEquals(ErrorCode.ABORTED, e.getErrorCode());
     assertEquals(1, attempts.get());
   }
@@ -119,7 +121,7 @@ public class SpannerRetryHelperTest {
         assertThrows(
             SpannerException.class,
             () ->
-                withCancellation.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable)));
+                withCancellation.run(() -> retryHelper.runTxWithRetriesOnAborted(callable)));
     assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
   }
 
@@ -135,14 +137,14 @@ public class SpannerRetryHelperTest {
     SpannerException e =
         assertThrows(
             SpannerException.class,
-            () -> withDeadline.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable)));
+            () -> withDeadline.run(() -> retryHelper.runTxWithRetriesOnAborted(callable)));
     assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
   }
 
   @Test
   public void noException() {
     Callable<Integer> callable = () -> 1 + 1;
-    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
+    assertThat(retryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -151,7 +153,7 @@ public class SpannerRetryHelperTest {
         () -> {
           throw new IllegalStateException("test");
         };
-    SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
+    retryHelper.runTxWithRetriesOnAborted(callable);
   }
 
   @Test
@@ -164,7 +166,7 @@ public class SpannerRetryHelperTest {
           }
           return 1 + 1;
         };
-    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
+    assertThat(retryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
 
   @Test
@@ -177,7 +179,7 @@ public class SpannerRetryHelperTest {
           }
           return 1 + 1;
         };
-    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
+    assertThat(retryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -190,7 +192,7 @@ public class SpannerRetryHelperTest {
           }
           throw new IllegalStateException("test");
         };
-    SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
+    retryHelper.runTxWithRetriesOnAborted(callable);
   }
 
   @Test
@@ -238,7 +240,7 @@ public class SpannerRetryHelperTest {
     // The following call should take at least 100ms, as that is the retry delay specified in the
     // retry info of the exception.
     Stopwatch watch = Stopwatch.createStarted();
-    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
+    assertThat(retryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
     long elapsed = watch.elapsed(TimeUnit.MILLISECONDS);
     // Allow 1ms difference as that should be the accuracy of the sleep method.
     assertThat(elapsed).isAtLeast(RETRY_DELAY_MILLIS - 1);

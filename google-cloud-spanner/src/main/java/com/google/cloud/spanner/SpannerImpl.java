@@ -116,6 +116,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   private final DatabaseAdminClient dbAdminClient;
   private final InstanceAdminClient instanceClient;
+  private final TransactionRetryHelper transactionRetryHelper;
 
   /**
    * Exception class used to track the stack trace at the point when a Spanner instance is closed.
@@ -145,6 +146,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
+    this.transactionRetryHelper = new TransactionRetryHelper(options.getDefaultTransactionRetrySettings());
     logSpannerOptions(options);
   }
 
@@ -198,6 +200,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   /** Returns the {@link SpannerRpc} of this {@link SpannerImpl} instance. */
   SpannerRpc getRpc() {
     return gapicRpc;
+  }
+
+  TransactionRetryHelper getTransactionRetryHelper() {
+    return transactionRetryHelper;
   }
 
   /** Returns the default setting for prefetchChunks of this {@link SpannerImpl} instance. */
