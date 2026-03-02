@@ -14,26 +14,30 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.connection;
+package com.google.cloud.spanner.connection.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SerialIntegrationTest;
-import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.cloud.spanner.connection.Connection;
+import com.google.cloud.spanner.connection.ConnectionOptions;
+import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
+import com.google.cloud.spanner.connection.MutableCredentials;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.InstanceName;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -44,13 +48,15 @@ import org.junit.runners.JUnit4;
 public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
   private static final String INVALID_KEY_FILE =
       ITMutableCredentialsTest.class.getResource("test-key.json").getPath();
+  /*private static final String VALID_KEY_FILE =
+          ITMutableCredentialsTest.class.getResource("test-key-cloud-storage.json").getPath();
+*/
 
   @Test
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
-    assumeTrue("This test requires a service account key file", hasValidKeyFile());
 
     GoogleCredentials credentialsFromFile;
-    try (InputStream stream = Files.newInputStream(Paths.get(getKeyFile()))) {
+    try (InputStream stream = Files.newInputStream(Paths.get(GceTestEnvConfig.GCE_CREDENTIALS_FILE))) {
       credentialsFromFile = GoogleCredentials.fromStream(stream);
     }
     assumeTrue(
@@ -66,23 +72,19 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
     List<String> scopes = new ArrayList<>(getTestEnv().getTestHelper().getOptions().getScopes());
     MutableCredentials mutableCredentials = new MutableCredentials(validCredentials, scopes);
 
-    StringBuilder uri =
-        extractConnectionUrl(getTestEnv().getTestHelper().getOptions(), getDatabase());
-    ConnectionOptions options =
-        ConnectionOptions.newBuilder()
-            .setUri(uri.toString())
+      SpannerOptions options =
+            SpannerOptions.newBuilder()
             .setCredentials(mutableCredentials)
             .build();
 
-    try (Connection connection = options.getConnection()) {
-      try (ResultSet rs = connection.executeQuery(Statement.of("SELECT 1"))) {
-        assertTrue(rs.next());
-      }
-
-      mutableCredentials.updateCredentials(invalidCredentials);
-
-      try (ResultSet rs = connection.executeQuery(Statement.of("SELECT 2"))) {
-        rs.next();
+    try (Spanner spanner = options.getService();
+         DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      String dbName = DatabaseName.of(GceTestEnvConfig.GCE_PROJECT_ID, getTestEnv().getTestHelper().getInstanceId().getInstance(), "TEST").toString();
+      Database database = databaseAdminClient.getDatabase(dbName);
+      assertNotNull(database);
+      try {
+        mutableCredentials.updateCredentials(invalidCredentials);
+        databaseAdminClient.getDatabase(dbName);
         fail("Expected UNAUTHENTICATED after switching to invalid credentials");
       } catch (SpannerException e) {
         assertEquals(ErrorCode.UNAUTHENTICATED, e.getErrorCode());
