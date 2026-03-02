@@ -22,22 +22,17 @@ import static org.junit.Assume.assumeTrue;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.spanner.*;
-
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
+import com.google.cloud.spanner.connection.MutableCredentials;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseName;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
-import com.google.cloud.spanner.connection.Connection;
-import com.google.cloud.spanner.connection.ConnectionOptions;
-import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
-import com.google.cloud.spanner.connection.MutableCredentials;
-import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.DatabaseName;
-import com.google.spanner.admin.database.v1.InstanceName;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -53,7 +48,8 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
 
     GoogleCredentials credentialsFromFile;
-    try (InputStream stream = Files.newInputStream(Paths.get(GceTestEnvConfig.GCE_CREDENTIALS_FILE))) {
+    try (InputStream stream =
+        Files.newInputStream(Paths.get(GceTestEnvConfig.GCE_CREDENTIALS_FILE))) {
       credentialsFromFile = GoogleCredentials.fromStream(stream);
     }
     assumeTrue(
@@ -69,14 +65,16 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
     List<String> scopes = new ArrayList<>(getTestEnv().getTestHelper().getOptions().getScopes());
     MutableCredentials mutableCredentials = new MutableCredentials(validCredentials, scopes);
 
-      SpannerOptions options =
-            SpannerOptions.newBuilder()
-            .setCredentials(mutableCredentials)
-            .build();
+    SpannerOptions options = SpannerOptions.newBuilder().setCredentials(mutableCredentials).build();
 
     try (Spanner spanner = options.getService();
-         DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
-      String dbName = DatabaseName.of(GceTestEnvConfig.GCE_PROJECT_ID, getTestEnv().getTestHelper().getInstanceId().getInstance(), "TEST").toString();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      String dbName =
+          DatabaseName.of(
+                  GceTestEnvConfig.GCE_PROJECT_ID,
+                  getTestEnv().getTestHelper().getInstanceId().getInstance(),
+                  "TEST")
+              .toString();
       Database database = databaseAdminClient.getDatabase(dbName);
       assertNotNull(database);
       try {
