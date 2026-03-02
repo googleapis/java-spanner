@@ -48,9 +48,6 @@ import org.junit.runners.JUnit4;
 public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
   private static final String INVALID_KEY_FILE =
       ITMutableCredentialsTest.class.getResource("test-key.json").getPath();
-  /*private static final String VALID_KEY_FILE =
-          ITMutableCredentialsTest.class.getResource("test-key-cloud-storage.json").getPath();
-*/
 
   @Test
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
