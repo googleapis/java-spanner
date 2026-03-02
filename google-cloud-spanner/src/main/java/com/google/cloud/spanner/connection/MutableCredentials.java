@@ -40,10 +40,10 @@ public class MutableCredentials extends Credentials {
   List<String> scopes;
 
   public MutableCredentials(ServiceAccountCredentials credentials, List<String> scopes) {
-    this.scopes = scopes;
-    delegate = (ServiceAccountCredentials) credentials.createScoped(scopes);
-  }
-
+    public MutableCredentials(ServiceAccountCredentials credentials, List<String> scopes) {
+        this.scopes = new java.util.ArrayList<>(scopes);
+        delegate = (ServiceAccountCredentials) credentials.createScoped(this.scopes);
+    }
   /**
    * Replaces the current delegate with a newly scoped credentials instance.
    *
