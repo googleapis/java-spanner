@@ -54,7 +54,7 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
       credentialsFromFile = GoogleCredentials.fromStream(stream);
     }
     assumeTrue(
-        "This test requires service account credentials", 
+        "This test requires service account credentials",
         credentialsFromFile instanceof ServiceAccountCredentials);
 
     ServiceAccountCredentials validCredentials = (ServiceAccountCredentials) credentialsFromFile;

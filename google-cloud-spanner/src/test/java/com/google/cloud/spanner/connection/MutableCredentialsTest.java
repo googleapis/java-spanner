@@ -45,9 +45,9 @@ public class MutableCredentialsTest {
   ServiceAccountCredentials updatedScopedCredentials = mock(ServiceAccountCredentials.class);
   List<String> scopes = Arrays.asList("scope-a", "scope-b");
   Map<String, List<String>> initialMetadata =
-          Collections.singletonMap("Authorization", Collections.singletonList("v1"));
+      Collections.singletonMap("Authorization", Collections.singletonList("v1"));
   Map<String, List<String>> updatedMetadata =
-          Collections.singletonMap("Authorization", Collections.singletonList("v2"));
+      Collections.singletonMap("Authorization", Collections.singletonList("v2"));
   String initialAuthType = "auth-1";
   String updatedAuthType = "auth-2";
 
@@ -61,7 +61,9 @@ public class MutableCredentialsTest {
     assertEquals(initialAuthType, credentials.getAuthenticationType());
     assertTrue(credentials.hasRequestMetadata());
     assertTrue(credentials.hasRequestMetadataOnly());
-    assertEquals(initialMetadata, credentials.getRequestMetadata(URI.create("https://spanner.googleapis.com")));
+    assertEquals(
+        initialMetadata,
+        credentials.getRequestMetadata(URI.create("https://spanner.googleapis.com")));
 
     credentials.refresh();
 
@@ -82,8 +84,7 @@ public class MutableCredentialsTest {
   private void setupInitialCredentials() throws IOException {
     when(initialCredentials.createScoped(scopes)).thenReturn(initialScopedCredentials);
     when(initialScopedCredentials.getAuthenticationType()).thenReturn(initialAuthType);
-    when(initialScopedCredentials.getRequestMetadata(any(URI.class)))
-            .thenReturn(initialMetadata);
+    when(initialScopedCredentials.getRequestMetadata(any(URI.class))).thenReturn(initialMetadata);
     when(initialScopedCredentials.hasRequestMetadata()).thenReturn(true);
     when(initialScopedCredentials.hasRequestMetadataOnly()).thenReturn(true);
   }

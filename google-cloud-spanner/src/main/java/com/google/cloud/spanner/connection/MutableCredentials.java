@@ -17,7 +17,6 @@ package com.google.cloud.spanner.connection;
 
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -31,56 +30,55 @@ import java.util.Map;
  * underlying service account credentials for a running Spanner Client.
  *
  * <p>All operations inherited from {@link Credentials} are forwarded to the current delegate,
- * including request metadata retrieval and token refresh. Calling
- * {@link #updateCredentials(ServiceAccountCredentials)} replaces the delegate with a newly scoped
+ * including request metadata retrieval and token refresh. Calling {@link
+ * #updateCredentials(ServiceAccountCredentials)} replaces the delegate with a newly scoped
  * credentials instance created from the same scopes that were provided when this object was
  * constructed.
  */
 public class MutableCredentials extends Credentials {
-    ServiceAccountCredentials delegate;
-    List<String> scopes;
+  ServiceAccountCredentials delegate;
+  List<String> scopes;
 
-    public MutableCredentials(ServiceAccountCredentials credentials, List<String> scopes) {
-        this. scopes = scopes;
-        delegate = (ServiceAccountCredentials) credentials.createScoped(scopes);
-    }
+  public MutableCredentials(ServiceAccountCredentials credentials, List<String> scopes) {
+    this.scopes = scopes;
+    delegate = (ServiceAccountCredentials) credentials.createScoped(scopes);
+  }
 
-    /**
-     * Replaces the current delegate with a newly scoped credentials instance.
-     *
-     * <p>The provided {@link ServiceAccountCredentials} is scoped using the same scopes that were
-     * supplied when this {@link MutableCredentials} instance was created.
-     *
-     * @param credentials the new base service account credentials to scope and use for client
-     * authorization.
-     */
-    public void updateCredentials(ServiceAccountCredentials credentials) {
-        delegate =(ServiceAccountCredentials) credentials.createScoped(scopes);
-    }
+  /**
+   * Replaces the current delegate with a newly scoped credentials instance.
+   *
+   * <p>The provided {@link ServiceAccountCredentials} is scoped using the same scopes that were
+   * supplied when this {@link MutableCredentials} instance was created.
+   *
+   * @param credentials the new base service account credentials to scope and use for client
+   *     authorization.
+   */
+  public void updateCredentials(ServiceAccountCredentials credentials) {
+    delegate = (ServiceAccountCredentials) credentials.createScoped(scopes);
+  }
 
-    @Override
-    public String getAuthenticationType() {
-        return delegate.getAuthenticationType();
-    }
+  @Override
+  public String getAuthenticationType() {
+    return delegate.getAuthenticationType();
+  }
 
-    @Override
-    public Map<String, List<String>> getRequestMetadata(URI uri) throws IOException {
-        return delegate.getRequestMetadata(uri);
-    }
+  @Override
+  public Map<String, List<String>> getRequestMetadata(URI uri) throws IOException {
+    return delegate.getRequestMetadata(uri);
+  }
 
-    @Override
-    public boolean hasRequestMetadata() {
-        return delegate.hasRequestMetadata();
-    }
+  @Override
+  public boolean hasRequestMetadata() {
+    return delegate.hasRequestMetadata();
+  }
 
-    @Override
-    public boolean hasRequestMetadataOnly() {
-        return delegate.hasRequestMetadataOnly();
-    }
+  @Override
+  public boolean hasRequestMetadataOnly() {
+    return delegate.hasRequestMetadataOnly();
+  }
 
-    @Override
-    public void refresh() throws IOException {
-        delegate.refresh();
-    }
+  @Override
+  public void refresh() throws IOException {
+    delegate.refresh();
+  }
 }
-
