@@ -92,3 +92,4 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
     }
   }
 }
+

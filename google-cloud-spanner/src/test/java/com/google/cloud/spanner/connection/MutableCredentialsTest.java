@@ -52,9 +52,8 @@ public class MutableCredentialsTest {
   String updatedAuthType = "auth-2";
 
   @Test
-  public void testCreateMutableCredentialsAndUpdate() throws IOException {
+  public void testCreateMutableCredentials() throws IOException {
     setupInitialCredentials();
-    setupUpdatedCredentials();
 
     MutableCredentials credentials = new MutableCredentials(initialCredentials, scopes);
 
@@ -68,6 +67,16 @@ public class MutableCredentialsTest {
     credentials.refresh();
 
     verify(initialScopedCredentials, times(1)).refresh();
+  }
+
+  @Test
+  public void testUpdateMutableCredentials() throws IOException {
+    setupInitialCredentials();
+    setupUpdatedCredentials();
+
+    MutableCredentials credentials = new MutableCredentials(initialCredentials, scopes);
+
+    assertEquals(initialAuthType, credentials.getAuthenticationType());
 
     credentials.updateCredentials(updatedCredentials);
 
@@ -97,3 +106,4 @@ public class MutableCredentialsTest {
     when(updatedScopedCredentials.hasRequestMetadataOnly()).thenReturn(false);
   }
 }
+

@@ -26,8 +26,8 @@ import java.util.Map;
  * A mutable {@link Credentials} implementation that delegates authentication behavior to a scoped
  * {@link ServiceAccountCredentials} instance.
  *
- * <p>This class is intended for scenarios where an application needs to rotate or replace the
- * underlying service account credentials for a running Spanner Client.
+ * <p>This class is intended for scenarios where an application needs to replace the underlying
+ * service account credentials for a long running Spanner Client.
  *
  * <p>All operations inherited from {@link Credentials} are forwarded to the current delegate,
  * including request metadata retrieval and token refresh. Calling {@link
@@ -36,8 +36,8 @@ import java.util.Map;
  * constructed.
  */
 public class MutableCredentials extends Credentials {
-  ServiceAccountCredentials delegate;
-  List<String> scopes;
+  private volatile ServiceAccountCredentials delegate;
+  private final List<String> scopes;
 
 
   public MutableCredentials(ServiceAccountCredentials credentials, List<String> scopes) {
