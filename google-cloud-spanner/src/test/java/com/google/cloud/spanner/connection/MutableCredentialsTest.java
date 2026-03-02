@@ -106,4 +106,3 @@ public class MutableCredentialsTest {
     when(updatedScopedCredentials.hasRequestMetadataOnly()).thenReturn(false);
   }
 }
-
