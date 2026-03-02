@@ -1219,7 +1219,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String experimentalHost = null;
     private boolean usePlainText = false;
     private TransactionOptions defaultTransactionOptions = TransactionOptions.getDefaultInstance();
-    private RetrySettings defaultTransactionRetrySettings = TransactionRetryHelper.DEFAULT_TRANSACTION_RETRY_SETTINGS;
+    private RetrySettings defaultTransactionRetrySettings =
+        TransactionRetryHelper.DEFAULT_TRANSACTION_RETRY_SETTINGS;
     private RequestOptions.ClientContext clientContext;
 
     private static String createCustomClientLibToken(String token) {
@@ -2080,7 +2081,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /** Sets the default {@link RetrySettings} for all read/write transactions that are executed using this client. These settings are used when the client automatically retries an aborted read/write transaction. The default is to retry for up to 24 hours without a limit for the maximum number of attempts. */
+    /**
+     * Sets the default {@link RetrySettings} for all read/write transactions that are executed
+     * using this client. These settings are used when the client automatically retries an aborted
+     * read/write transaction. The default is to retry for up to 24 hours without a limit for the
+     * maximum number of attempts.
+     */
     public Builder setDefaultTransactionRetrySettings(RetrySettings retrySettings) {
       Preconditions.checkNotNull(retrySettings, "RetrySettings cannot be null");
       this.defaultTransactionRetrySettings = retrySettings;

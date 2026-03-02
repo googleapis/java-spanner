@@ -1357,7 +1357,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             throw e;
           }
         };
-    return session.getSpanner().getTransactionRetryHelper().runTxWithRetriesOnAborted(retryCallable, session.getErrorHandler());
+    return session
+        .getSpanner()
+        .getTransactionRetryHelper()
+        .runTxWithRetriesOnAborted(retryCallable, session.getErrorHandler());
   }
 
   @Override

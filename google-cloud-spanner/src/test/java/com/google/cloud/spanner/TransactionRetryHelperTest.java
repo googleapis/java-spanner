@@ -58,7 +58,8 @@ public class TransactionRetryHelperTest {
     }
   }
 
-  private final TransactionRetryHelper retryHelper = new TransactionRetryHelper(SpannerOptions.DEFAULT_TRANSACTION_RETRY_SETTINGS);
+  private final TransactionRetryHelper retryHelper =
+      new TransactionRetryHelper(SpannerOptions.DEFAULT_TRANSACTION_RETRY_SETTINGS);
 
   @Test
   public void testRetryDoesNotTimeoutAfterTenMinutes() {
@@ -74,7 +75,8 @@ public class TransactionRetryHelperTest {
         };
     assertEquals(
         2,
-        retryHelper.runTxWithRetriesOnAborted(
+        retryHelper
+            .runTxWithRetriesOnAborted(
                 callable, SpannerOptions.DEFAULT_TRANSACTION_RETRY_SETTINGS, clock)
             .intValue());
   }
@@ -120,8 +122,7 @@ public class TransactionRetryHelperTest {
     SpannerException e =
         assertThrows(
             SpannerException.class,
-            () ->
-                withCancellation.run(() -> retryHelper.runTxWithRetriesOnAborted(callable)));
+            () -> withCancellation.run(() -> retryHelper.runTxWithRetriesOnAborted(callable)));
     assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
   }
 
