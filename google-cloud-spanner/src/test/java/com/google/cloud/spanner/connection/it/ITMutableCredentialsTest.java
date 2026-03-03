@@ -58,7 +58,8 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
 
     ServiceAccountCredentials validCredentials = (ServiceAccountCredentials) credentialsFromFile;
     ServiceAccountCredentials invalidCredentials;
-    try (InputStream stream = ITMutableCredentialsTest.class.getResourceAsStream(INVALID_KEY_RESOURCE)) {
+    try (InputStream stream =
+        ITMutableCredentialsTest.class.getResourceAsStream(INVALID_KEY_RESOURCE)) {
       assertNotNull("Missing test resource: " + INVALID_KEY_RESOURCE, stream);
       invalidCredentials = ServiceAccountCredentials.fromStream(stream);
     }
