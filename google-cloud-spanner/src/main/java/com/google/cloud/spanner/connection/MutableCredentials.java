@@ -15,12 +15,16 @@
  */
 package com.google.cloud.spanner.connection;
 
+import com.google.auth.CredentialTypeForMetrics;
 import com.google.auth.Credentials;
+import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * A mutable {@link Credentials} implementation that delegates authentication behavior to a scoped
@@ -40,7 +44,11 @@ public class MutableCredentials extends Credentials {
   private final List<String> scopes;
 
   public MutableCredentials(ServiceAccountCredentials credentials, List<String> scopes) {
-    this.scopes = new java.util.ArrayList<>(scopes);
+    if (scopes != null) {
+      this.scopes = new java.util.ArrayList<>(scopes);
+    } else {
+      this.scopes = Collections.emptyList();
+    }
     delegate = (ServiceAccountCredentials) credentials.createScoped(this.scopes);
   }
 
@@ -80,5 +88,20 @@ public class MutableCredentials extends Credentials {
   @Override
   public void refresh() throws IOException {
     delegate.refresh();
+  }
+
+  @Override
+  public void getRequestMetadata(URI uri, Executor executor, RequestMetadataCallback callback) {
+    delegate.getRequestMetadata(uri, executor, callback);
+  }
+
+  @Override
+  public String getUniverseDomain() throws IOException {
+    return delegate.getUniverseDomain();
+  }
+
+  @Override
+  public CredentialTypeForMetrics getMetricsCredentialType() {
+    return delegate.getMetricsCredentialType();
   }
 }

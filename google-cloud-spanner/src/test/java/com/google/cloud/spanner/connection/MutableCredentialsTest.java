@@ -26,6 +26,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.auth.CredentialTypeForMetrics;
+import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import java.io.IOException;
 import java.net.URI;
@@ -33,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -50,22 +53,29 @@ public class MutableCredentialsTest {
       Collections.singletonMap("Authorization", Collections.singletonList("v2"));
   String initialAuthType = "auth-1";
   String updatedAuthType = "auth-2";
+  String initialUniverseDomain = "googleapis.com";
+  String updatedUniverseDomain = "abc.goog";
+  CredentialTypeForMetrics initialMetricsCredentialType =
+      CredentialTypeForMetrics.SERVICE_ACCOUNT_CREDENTIALS_JWT;
+  CredentialTypeForMetrics updatedMetricsCredentialType =
+      CredentialTypeForMetrics.SERVICE_ACCOUNT_CREDENTIALS_AT;
 
   @Test
   public void testCreateMutableCredentials() throws IOException {
     setupInitialCredentials();
 
     MutableCredentials credentials = new MutableCredentials(initialCredentials, scopes);
+    URI testUri = URI.create("https://spanner.googleapis.com");
+    Executor executor = mock(Executor.class);
+    RequestMetadataCallback callback = mock(RequestMetadataCallback.class);
 
-    assertEquals(initialAuthType, credentials.getAuthenticationType());
-    assertTrue(credentials.hasRequestMetadata());
-    assertTrue(credentials.hasRequestMetadataOnly());
-    assertEquals(
-        initialMetadata,
-        credentials.getRequestMetadata(URI.create("https://spanner.googleapis.com")));
+    validateInitialDelegatedCredentialsAreSet(credentials, testUri);
+
+    credentials.getRequestMetadata(testUri, executor, callback);
 
     credentials.refresh();
 
+    verify(initialScopedCredentials, times(1)).getRequestMetadata(testUri, executor, callback);
     verify(initialScopedCredentials, times(1)).refresh();
   }
 
@@ -75,25 +85,58 @@ public class MutableCredentialsTest {
     setupUpdatedCredentials();
 
     MutableCredentials credentials = new MutableCredentials(initialCredentials, scopes);
+    URI testUri = URI.create("https://example.com");
+    Executor executor = mock(Executor.class);
+    RequestMetadataCallback callback = mock(RequestMetadataCallback.class);
 
-    assertEquals(initialAuthType, credentials.getAuthenticationType());
+    validateInitialDelegatedCredentialsAreSet(credentials, testUri);
 
     credentials.updateCredentials(updatedCredentials);
 
     assertEquals(updatedAuthType, credentials.getAuthenticationType());
     assertFalse(credentials.hasRequestMetadata());
     assertFalse(credentials.hasRequestMetadataOnly());
-    assertSame(updatedMetadata, credentials.getRequestMetadata(URI.create("https://example.com")));
+    assertSame(updatedMetadata, credentials.getRequestMetadata(testUri));
+    assertEquals(updatedUniverseDomain, credentials.getUniverseDomain());
+    assertEquals(updatedMetricsCredentialType, credentials.getMetricsCredentialType());
+
+    credentials.getRequestMetadata(testUri, executor, callback);
 
     credentials.refresh();
 
+    verify(updatedScopedCredentials, times(1)).getRequestMetadata(testUri, executor, callback);
     verify(updatedScopedCredentials, times(1)).refresh();
+  }
+
+  @Test
+  public void testCreateMutableCredentialsNullScopes() throws IOException {
+    setupInitialCredentials();
+
+    MutableCredentials credentials = new MutableCredentials(initialCredentials, null);
+    URI testUri = URI.create("https://spanner.googleapis.com");
+
+    validateInitialDelegatedCredentialsAreSet(credentials, testUri);
+  }
+
+  private void validateInitialDelegatedCredentialsAreSet(
+      MutableCredentials credentials, URI testUri) throws IOException {
+    assertEquals(initialAuthType, credentials.getAuthenticationType());
+    assertTrue(credentials.hasRequestMetadata());
+    assertTrue(credentials.hasRequestMetadataOnly());
+    assertEquals(initialMetadata, credentials.getRequestMetadata(testUri));
+    assertEquals(initialUniverseDomain, credentials.getUniverseDomain());
+    assertEquals(initialMetricsCredentialType, credentials.getMetricsCredentialType());
   }
 
   private void setupInitialCredentials() throws IOException {
     when(initialCredentials.createScoped(scopes)).thenReturn(initialScopedCredentials);
+    when(initialCredentials.createScoped(Collections.emptyList()))
+        .thenReturn(initialScopedCredentials);
     when(initialScopedCredentials.getAuthenticationType()).thenReturn(initialAuthType);
     when(initialScopedCredentials.getRequestMetadata(any(URI.class))).thenReturn(initialMetadata);
+    when(initialScopedCredentials.getUniverseDomain()).thenReturn(initialUniverseDomain);
+    when(initialScopedCredentials.getMetricsCredentialType())
+        .thenReturn(initialMetricsCredentialType);
     when(initialScopedCredentials.hasRequestMetadata()).thenReturn(true);
     when(initialScopedCredentials.hasRequestMetadataOnly()).thenReturn(true);
   }
@@ -102,6 +145,9 @@ public class MutableCredentialsTest {
     when(updatedCredentials.createScoped(scopes)).thenReturn(updatedScopedCredentials);
     when(updatedScopedCredentials.getAuthenticationType()).thenReturn(updatedAuthType);
     when(updatedScopedCredentials.getRequestMetadata(any(URI.class))).thenReturn(updatedMetadata);
+    when(updatedScopedCredentials.getUniverseDomain()).thenReturn(updatedUniverseDomain);
+    when(updatedScopedCredentials.getMetricsCredentialType())
+        .thenReturn(updatedMetricsCredentialType);
     when(updatedScopedCredentials.hasRequestMetadata()).thenReturn(false);
     when(updatedScopedCredentials.hasRequestMetadataOnly()).thenReturn(false);
   }
