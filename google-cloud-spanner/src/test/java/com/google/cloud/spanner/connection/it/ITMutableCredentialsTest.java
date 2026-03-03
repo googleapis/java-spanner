@@ -41,6 +41,9 @@ import org.junit.runners.JUnit4;
 @Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
+  private static final String VALID_KEY_RESOURCE =
+          "/com/google/cloud/spanner/connection/test-key-cloud-storage.json";
+
   private static final String INVALID_KEY_RESOURCE =
       "/com/google/cloud/spanner/connection/test-key.json";
 
@@ -48,7 +51,8 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
 
     GoogleCredentials credentialsFromFile;
-    try (InputStream stream = Files.newInputStream(Paths.get(getKeyFile()))) {
+    try (InputStream stream =
+        Files.newInputStream(Paths.get(VALID_KEY_RESOURCE))) {
       credentialsFromFile = GoogleCredentials.fromStream(stream);
     }
     assumeTrue(
@@ -57,8 +61,7 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
 
     ServiceAccountCredentials validCredentials = (ServiceAccountCredentials) credentialsFromFile;
     ServiceAccountCredentials invalidCredentials;
-    try (InputStream stream =
-        ITMutableCredentialsTest.class.getResourceAsStream(INVALID_KEY_RESOURCE)) {
+    try (InputStream stream =  Files.newInputStream(Paths.get(INVALID_KEY_RESOURCE))) {
       assertNotNull("Missing test resource: " + INVALID_KEY_RESOURCE, stream);
       invalidCredentials = ServiceAccountCredentials.fromStream(stream);
     }
