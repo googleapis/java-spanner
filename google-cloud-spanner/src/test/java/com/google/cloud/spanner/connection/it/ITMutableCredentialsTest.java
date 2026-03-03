@@ -48,8 +48,7 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
 
     GoogleCredentials credentialsFromFile;
-    try (InputStream stream =
-        Files.newInputStream(Paths.get(getKeyFile()))) {
+    try (InputStream stream = Files.newInputStream(Paths.get(getKeyFile()))) {
       credentialsFromFile = GoogleCredentials.fromStream(stream);
     }
     assumeTrue(
