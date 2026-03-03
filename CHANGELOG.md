@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.111.1](https://github.com/googleapis/java-spanner/compare/v6.111.0...v6.111.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* Retry CreateSession also when waitForMinSessions is zero ([#4360](https://github.com/googleapis/java-spanner/issues/4360)) ([9263972](https://github.com/googleapis/java-spanner/commit/92639722793a994032761155013e506c9693b464))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.57.0 ([#4358](https://github.com/googleapis/java-spanner/issues/4358)) ([1ce4b8e](https://github.com/googleapis/java-spanner/commit/1ce4b8e24bac44c89f742f0afb395ae4c711abfd))
+* Update googleapis/sdk-platform-java action to v2.67.0 ([#4359](https://github.com/googleapis/java-spanner/issues/4359)) ([23781d9](https://github.com/googleapis/java-spanner/commit/23781d9f05db66d033d4d9125707a9988e1697db))
+
 ## [6.111.0](https://github.com/googleapis/java-spanner/compare/v6.110.0...v6.111.0) (2026-02-13)
 
 
