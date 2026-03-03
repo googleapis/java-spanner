@@ -49,7 +49,7 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
 
     GoogleCredentials credentialsFromFile;
     try (InputStream stream =
-        Files.newInputStream(Paths.get(GceTestEnvConfig.GCE_CREDENTIALS_FILE))) {
+        Files.newInputStream(Paths.get(getKeyFile()))) {
       credentialsFromFile = GoogleCredentials.fromStream(stream);
     }
     assumeTrue(
