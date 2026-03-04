@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.spi.v1;
 
-import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -186,7 +185,6 @@ public class GapicSpannerRpcTest {
 
   @Before
   public void startServer() throws Exception {
-    disableDefaultMtlsProvider();
     // Enable OpenTelemetry tracing.
     SpannerOptionsHelper.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
@@ -1169,29 +1167,36 @@ public class GapicSpannerRpcTest {
           }
         });
     try {
-      // Setup Options with invalid host to force error
-      SpannerOptions options =
+      SpannerOptions.Builder builder =
           SpannerOptions.newBuilder()
               .setProjectId("test-project")
               .setEnableDirectAccess(true)
               .setHost("http://localhost:1") // Closed port
               .setCredentials(NoCredentials.getInstance())
-              .setOpenTelemetry(openTelemetry)
-              .build();
+              .setOpenTelemetry(openTelemetry);
+      // Make sure the ExecuteBatchDml RPC fails quickly to keep the test fast.
+      // Note that the timeout is actually not used. It is the fact that it does not retry that
+      // makes it fail fast.
+      builder
+          .getSpannerStubSettingsBuilder()
+          .executeBatchDmlSettings()
+          .setSimpleTimeoutNoRetriesDuration(Duration.ofSeconds(10));
+      // Setup Options with invalid host to force error
+      SpannerOptions options = builder.build();
 
       TestableGapicSpannerRpc rpc = new TestableGapicSpannerRpc(options);
       try {
         // Make a call that is expected to fail
-        try {
-          rpc.executeBatchDml(
-              com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
-                  .setSession("projects/p/instances/i/databases/d/sessions/s")
-                  .build(),
-              null);
-        } catch (SpannerException e) {
-          // Expect a connection error.
-          assertEquals(ErrorCode.UNAVAILABLE, e.getErrorCode());
-        }
+        SpannerException exception =
+            assertThrows(
+                SpannerException.class,
+                () ->
+                    rpc.executeBatchDml(
+                        com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
+                            .setSession("projects/p/instances/i/databases/d/sessions/s")
+                            .build(),
+                        null));
+        assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
 
         // Wait briefly for the 10ms period to trigger the fallback check
         Thread.sleep(10);
@@ -1248,30 +1253,37 @@ public class GapicSpannerRpcTest {
           }
         });
     try {
-      // Setup Options with invalid host to force error
-      SpannerOptions options =
+      SpannerOptions.Builder builder =
           SpannerOptions.newBuilder()
               .setProjectId("test-project")
               .setEnableDirectAccess(true)
               .setHost("http://localhost:1") // Closed port
               .setCredentials(NoCredentials.getInstance())
-              .setOpenTelemetry(openTelemetry)
-              .build();
+              .setOpenTelemetry(openTelemetry);
+      // Make sure the ExecuteBatchDml RPC fails quickly to keep the test fast.
+      // Note that the timeout is actually not used. It is the fact that it does not retry that
+      // makes it fail fast.
+      builder
+          .getSpannerStubSettingsBuilder()
+          .executeBatchDmlSettings()
+          .setSimpleTimeoutNoRetriesDuration(Duration.ofSeconds(10));
+      // Setup Options with invalid host to force error
+      SpannerOptions options = builder.build();
 
       TestableGapicSpannerRpcWithLowerMinFailedCalls rpc =
           new TestableGapicSpannerRpcWithLowerMinFailedCalls(options);
       try {
         // Make a call that is expected to fail
-        try {
-          rpc.executeBatchDml(
-              com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
-                  .setSession("projects/p/instances/i/databases/d/sessions/s")
-                  .build(),
-              null);
-        } catch (SpannerException e) {
-          // Expect a connection error.
-          assertEquals(ErrorCode.UNAVAILABLE, e.getErrorCode());
-        }
+        SpannerException exception =
+            assertThrows(
+                SpannerException.class,
+                () ->
+                    rpc.executeBatchDml(
+                        com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
+                            .setSession("projects/p/instances/i/databases/d/sessions/s")
+                            .build(),
+                        null));
+        assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
 
         // Wait briefly for the 10ms period to trigger the fallback check
         Thread.sleep(10);
