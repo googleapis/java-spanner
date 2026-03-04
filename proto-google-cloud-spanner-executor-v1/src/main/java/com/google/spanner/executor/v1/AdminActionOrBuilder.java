@@ -1125,5 +1125,42 @@ public interface AdminActionOrBuilder
   com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseActionOrBuilder
       getChangeQuorumCloudDatabaseOrBuilder();
 
+  /**
+   *
+   *
+   * <pre>
+   * Action that adds splits to a Cloud Spanner database.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+   *
+   * @return Whether the addSplitPoints field is set.
+   */
+  boolean hasAddSplitPoints();
+
+  /**
+   *
+   *
+   * <pre>
+   * Action that adds splits to a Cloud Spanner database.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+   *
+   * @return The addSplitPoints.
+   */
+  com.google.spanner.executor.v1.AddSplitPointsAction getAddSplitPoints();
+
+  /**
+   *
+   *
+   * <pre>
+   * Action that adds splits to a Cloud Spanner database.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+   */
+  com.google.spanner.executor.v1.AddSplitPointsActionOrBuilder getAddSplitPointsOrBuilder();
+
   com.google.spanner.executor.v1.AdminAction.ActionCase getActionCase();
 }

@@ -1654,6 +1654,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setOptions(TransactionOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setMutationKey(Mutation.newBuilder().build())
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   Transaction response = spannerClient.beginTransaction(request);
    * }
@@ -1688,6 +1689,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setOptions(TransactionOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setMutationKey(Mutation.newBuilder().build())
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ApiFuture<Transaction> future = spannerClient.beginTransactionCallable().futureCall(request);
    *   // Do something.
@@ -1938,6 +1940,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setMaxCommitDelay(Duration.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   CommitResponse response = spannerClient.commit(request);
    * }
@@ -1983,6 +1986,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setMaxCommitDelay(Duration.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+   *           .setRoutingHint(RoutingHint.newBuilder().build())
    *           .build();
    *   ApiFuture<CommitResponse> future = spannerClient.commitCallable().futureCall(request);
    *   // Do something.

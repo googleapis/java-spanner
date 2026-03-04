@@ -445,4 +445,32 @@ public interface SpannerActionOutcomeOrBuilder
    */
   com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder getChangeStreamRecordsOrBuilder(
       int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * If not zero, it indicates the read timestamp to use for validating
+   * the SnapshotIsolation transaction.
+   * </pre>
+   *
+   * <code>optional int64 snapshot_isolation_txn_read_timestamp = 11;</code>
+   *
+   * @return Whether the snapshotIsolationTxnReadTimestamp field is set.
+   */
+  boolean hasSnapshotIsolationTxnReadTimestamp();
+
+  /**
+   *
+   *
+   * <pre>
+   * If not zero, it indicates the read timestamp to use for validating
+   * the SnapshotIsolation transaction.
+   * </pre>
+   *
+   * <code>optional int64 snapshot_isolation_txn_read_timestamp = 11;</code>
+   *
+   * @return The snapshotIsolationTxnReadTimestamp.
+   */
+  long getSnapshotIsolationTxnReadTimestamp();
 }

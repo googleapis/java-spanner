@@ -401,17 +401,15 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Default value.
        *
        * * If isolation level is
+       * [SERIALIZABLE][google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE],
+       * locking semantics default to `PESSIMISTIC`.
+       * * If isolation level is
        * [REPEATABLE_READ][google.spanner.v1.TransactionOptions.IsolationLevel.REPEATABLE_READ],
-       * then it is an error to specify `read_lock_mode`. Locking semantics
-       * default to `OPTIMISTIC`. No validation checks are done for reads,
-       * except to validate that the data that was served at the snapshot time
-       * is unchanged at commit time in the following cases:
-       * 1. reads done as part of queries that use `SELECT FOR UPDATE`
-       * 2. reads done as part of statements with a `LOCK_SCANNED_RANGES`
-       * hint
-       * 3. reads done as part of DML statements
-       * * At all other isolation levels, if `read_lock_mode` is the default
-       * value, then pessimistic read locks are used.
+       * locking semantics default to `OPTIMISTIC`.
+       * * See
+       * [Concurrency
+       * control](https://cloud.google.com/spanner/docs/concurrency-control)
+       * for more details.
        * </pre>
        *
        * <code>READ_LOCK_MODE_UNSPECIFIED = 0;</code>
@@ -423,10 +421,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Pessimistic lock mode.
        *
-       * Read locks are acquired immediately on read.
-       * Semantics described only applies to
+       * Lock acquisition behavior depends on the isolation level in use. In
        * [SERIALIZABLE][google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE]
-       * isolation.
+       * isolation, reads and writes acquire necessary locks during transaction
+       * statement execution. In
+       * [REPEATABLE_READ][google.spanner.v1.TransactionOptions.IsolationLevel.REPEATABLE_READ]
+       * isolation, reads that explicitly request to be locked and writes
+       * acquire locks.
+       * See
+       * [Concurrency
+       * control](https://cloud.google.com/spanner/docs/concurrency-control) for
+       * details on the types of locks acquired at each transaction step.
        * </pre>
        *
        * <code>PESSIMISTIC = 1;</code>
@@ -438,12 +443,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Optimistic lock mode.
        *
-       * Locks for reads within the transaction are not acquired on read.
-       * Instead the locks are acquired on a commit to validate that
-       * read/queried data has not changed since the transaction started.
-       * Semantics described only applies to
+       * Lock acquisition behavior depends on the isolation level in use. In
+       * both
        * [SERIALIZABLE][google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE]
-       * isolation.
+       * and
+       * [REPEATABLE_READ][google.spanner.v1.TransactionOptions.IsolationLevel.REPEATABLE_READ]
+       * isolation, reads and writes do not acquire locks during transaction
+       * statement execution.
+       * See
+       * [Concurrency
+       * control](https://cloud.google.com/spanner/docs/concurrency-control) for
+       * details on how the guarantees of each isolation level are provided at
+       * commit time.
        * </pre>
        *
        * <code>OPTIMISTIC = 2;</code>
@@ -469,17 +480,15 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Default value.
        *
        * * If isolation level is
+       * [SERIALIZABLE][google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE],
+       * locking semantics default to `PESSIMISTIC`.
+       * * If isolation level is
        * [REPEATABLE_READ][google.spanner.v1.TransactionOptions.IsolationLevel.REPEATABLE_READ],
-       * then it is an error to specify `read_lock_mode`. Locking semantics
-       * default to `OPTIMISTIC`. No validation checks are done for reads,
-       * except to validate that the data that was served at the snapshot time
-       * is unchanged at commit time in the following cases:
-       * 1. reads done as part of queries that use `SELECT FOR UPDATE`
-       * 2. reads done as part of statements with a `LOCK_SCANNED_RANGES`
-       * hint
-       * 3. reads done as part of DML statements
-       * * At all other isolation levels, if `read_lock_mode` is the default
-       * value, then pessimistic read locks are used.
+       * locking semantics default to `OPTIMISTIC`.
+       * * See
+       * [Concurrency
+       * control](https://cloud.google.com/spanner/docs/concurrency-control)
+       * for more details.
        * </pre>
        *
        * <code>READ_LOCK_MODE_UNSPECIFIED = 0;</code>
@@ -492,10 +501,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Pessimistic lock mode.
        *
-       * Read locks are acquired immediately on read.
-       * Semantics described only applies to
+       * Lock acquisition behavior depends on the isolation level in use. In
        * [SERIALIZABLE][google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE]
-       * isolation.
+       * isolation, reads and writes acquire necessary locks during transaction
+       * statement execution. In
+       * [REPEATABLE_READ][google.spanner.v1.TransactionOptions.IsolationLevel.REPEATABLE_READ]
+       * isolation, reads that explicitly request to be locked and writes
+       * acquire locks.
+       * See
+       * [Concurrency
+       * control](https://cloud.google.com/spanner/docs/concurrency-control) for
+       * details on the types of locks acquired at each transaction step.
        * </pre>
        *
        * <code>PESSIMISTIC = 1;</code>
@@ -508,12 +524,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Optimistic lock mode.
        *
-       * Locks for reads within the transaction are not acquired on read.
-       * Instead the locks are acquired on a commit to validate that
-       * read/queried data has not changed since the transaction started.
-       * Semantics described only applies to
+       * Lock acquisition behavior depends on the isolation level in use. In
+       * both
        * [SERIALIZABLE][google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE]
-       * isolation.
+       * and
+       * [REPEATABLE_READ][google.spanner.v1.TransactionOptions.IsolationLevel.REPEATABLE_READ]
+       * isolation, reads and writes do not acquire locks during transaction
+       * statement execution.
+       * See
+       * [Concurrency
+       * control](https://cloud.google.com/spanner/docs/concurrency-control) for
+       * details on how the guarantees of each isolation level are provided at
+       * commit time.
        * </pre>
        *
        * <code>OPTIMISTIC = 2;</code>

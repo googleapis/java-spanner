@@ -99,6 +99,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
     EXECUTE_PARTITION(44),
     EXECUTE_CHANGE_STREAM_QUERY(50),
     QUERY_CANCELLATION(51),
+    ADAPT_MESSAGE(52),
     ACTION_NOT_SET(0);
     private final int value;
 
@@ -152,6 +153,8 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
           return EXECUTE_CHANGE_STREAM_QUERY;
         case 51:
           return QUERY_CANCELLATION;
+        case 52:
+          return ADAPT_MESSAGE;
         case 0:
           return ACTION_NOT_SET;
         default:
@@ -1224,6 +1227,60 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
     return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
   }
 
+  public static final int ADAPT_MESSAGE_FIELD_NUMBER = 52;
+
+  /**
+   *
+   *
+   * <pre>
+   * Action to adapt a message.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+   *
+   * @return Whether the adaptMessage field is set.
+   */
+  @java.lang.Override
+  public boolean hasAdaptMessage() {
+    return actionCase_ == 52;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Action to adapt a message.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+   *
+   * @return The adaptMessage.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.AdaptMessageAction getAdaptMessage() {
+    if (actionCase_ == 52) {
+      return (com.google.spanner.executor.v1.AdaptMessageAction) action_;
+    }
+    return com.google.spanner.executor.v1.AdaptMessageAction.getDefaultInstance();
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Action to adapt a message.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.AdaptMessageActionOrBuilder getAdaptMessageOrBuilder() {
+    if (actionCase_ == 52) {
+      return (com.google.spanner.executor.v1.AdaptMessageAction) action_;
+    }
+    return com.google.spanner.executor.v1.AdaptMessageAction.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1296,6 +1353,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
     }
     if (actionCase_ == 51) {
       output.writeMessage(51, (com.google.spanner.executor.v1.QueryCancellationAction) action_);
+    }
+    if (actionCase_ == 52) {
+      output.writeMessage(52, (com.google.spanner.executor.v1.AdaptMessageAction) action_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -1397,6 +1457,11 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               51, (com.google.spanner.executor.v1.QueryCancellationAction) action_);
     }
+    if (actionCase_ == 52) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              52, (com.google.spanner.executor.v1.AdaptMessageAction) action_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1473,6 +1538,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
         break;
       case 51:
         if (!getQueryCancellation().equals(other.getQueryCancellation())) return false;
+        break;
+      case 52:
+        if (!getAdaptMessage().equals(other.getAdaptMessage())) return false;
         break;
       case 0:
       default:
@@ -1562,6 +1630,10 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
       case 51:
         hash = (37 * hash) + QUERY_CANCELLATION_FIELD_NUMBER;
         hash = (53 * hash) + getQueryCancellation().hashCode();
+        break;
+      case 52:
+        hash = (37 * hash) + ADAPT_MESSAGE_FIELD_NUMBER;
+        hash = (53 * hash) + getAdaptMessage().hashCode();
         break;
       case 0:
       default:
@@ -1774,6 +1846,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
       if (queryCancellationBuilder_ != null) {
         queryCancellationBuilder_.clear();
       }
+      if (adaptMessageBuilder_ != null) {
+        adaptMessageBuilder_.clear();
+      }
       actionCase_ = 0;
       action_ = null;
       return this;
@@ -1878,6 +1953,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
       }
       if (actionCase_ == 51 && queryCancellationBuilder_ != null) {
         result.action_ = queryCancellationBuilder_.build();
+      }
+      if (actionCase_ == 52 && adaptMessageBuilder_ != null) {
+        result.action_ = adaptMessageBuilder_.build();
       }
     }
 
@@ -1985,6 +2063,11 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
         case QUERY_CANCELLATION:
           {
             mergeQueryCancellation(other.getQueryCancellation());
+            break;
+          }
+        case ADAPT_MESSAGE:
+          {
+            mergeAdaptMessage(other.getAdaptMessage());
             break;
           }
         case ACTION_NOT_SET:
@@ -2146,6 +2229,13 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
                 actionCase_ = 51;
                 break;
               } // case 410
+            case 418:
+              {
+                input.readMessage(
+                    internalGetAdaptMessageFieldBuilder().getBuilder(), extensionRegistry);
+                actionCase_ = 52;
+                break;
+              } // case 418
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -6308,6 +6398,224 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessage
       actionCase_ = 51;
       onChanged();
       return queryCancellationBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilder<
+            com.google.spanner.executor.v1.AdaptMessageAction,
+            com.google.spanner.executor.v1.AdaptMessageAction.Builder,
+            com.google.spanner.executor.v1.AdaptMessageActionOrBuilder>
+        adaptMessageBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     *
+     * @return Whether the adaptMessage field is set.
+     */
+    @java.lang.Override
+    public boolean hasAdaptMessage() {
+      return actionCase_ == 52;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     *
+     * @return The adaptMessage.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.AdaptMessageAction getAdaptMessage() {
+      if (adaptMessageBuilder_ == null) {
+        if (actionCase_ == 52) {
+          return (com.google.spanner.executor.v1.AdaptMessageAction) action_;
+        }
+        return com.google.spanner.executor.v1.AdaptMessageAction.getDefaultInstance();
+      } else {
+        if (actionCase_ == 52) {
+          return adaptMessageBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.AdaptMessageAction.getDefaultInstance();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     */
+    public Builder setAdaptMessage(com.google.spanner.executor.v1.AdaptMessageAction value) {
+      if (adaptMessageBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        adaptMessageBuilder_.setMessage(value);
+      }
+      actionCase_ = 52;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     */
+    public Builder setAdaptMessage(
+        com.google.spanner.executor.v1.AdaptMessageAction.Builder builderForValue) {
+      if (adaptMessageBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        adaptMessageBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 52;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     */
+    public Builder mergeAdaptMessage(com.google.spanner.executor.v1.AdaptMessageAction value) {
+      if (adaptMessageBuilder_ == null) {
+        if (actionCase_ == 52
+            && action_ != com.google.spanner.executor.v1.AdaptMessageAction.getDefaultInstance()) {
+          action_ =
+              com.google.spanner.executor.v1.AdaptMessageAction.newBuilder(
+                      (com.google.spanner.executor.v1.AdaptMessageAction) action_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 52) {
+          adaptMessageBuilder_.mergeFrom(value);
+        } else {
+          adaptMessageBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 52;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     */
+    public Builder clearAdaptMessage() {
+      if (adaptMessageBuilder_ == null) {
+        if (actionCase_ == 52) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 52) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        adaptMessageBuilder_.clear();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     */
+    public com.google.spanner.executor.v1.AdaptMessageAction.Builder getAdaptMessageBuilder() {
+      return internalGetAdaptMessageFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.AdaptMessageActionOrBuilder getAdaptMessageOrBuilder() {
+      if ((actionCase_ == 52) && (adaptMessageBuilder_ != null)) {
+        return adaptMessageBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 52) {
+          return (com.google.spanner.executor.v1.AdaptMessageAction) action_;
+        }
+        return com.google.spanner.executor.v1.AdaptMessageAction.getDefaultInstance();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action to adapt a message.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AdaptMessageAction adapt_message = 52;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+            com.google.spanner.executor.v1.AdaptMessageAction,
+            com.google.spanner.executor.v1.AdaptMessageAction.Builder,
+            com.google.spanner.executor.v1.AdaptMessageActionOrBuilder>
+        internalGetAdaptMessageFieldBuilder() {
+      if (adaptMessageBuilder_ == null) {
+        if (!(actionCase_ == 52)) {
+          action_ = com.google.spanner.executor.v1.AdaptMessageAction.getDefaultInstance();
+        }
+        adaptMessageBuilder_ =
+            new com.google.protobuf.SingleFieldBuilder<
+                com.google.spanner.executor.v1.AdaptMessageAction,
+                com.google.spanner.executor.v1.AdaptMessageAction.Builder,
+                com.google.spanner.executor.v1.AdaptMessageActionOrBuilder>(
+                (com.google.spanner.executor.v1.AdaptMessageAction) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 52;
+      onChanged();
+      return adaptMessageBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:google.spanner.executor.v1.SpannerAction)
