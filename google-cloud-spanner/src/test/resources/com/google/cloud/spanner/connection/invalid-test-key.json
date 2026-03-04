@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "ldetmer-sanbox",
+  "private_key_id": "b9dbcfe52414109d71f74ccd648c100638e58eec",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQClpESvZWwMZ4fD\ncfWpcnVek6diphOYyuSuHKZQgY+zMkUwYT01HI8RzLZbDPK6Xyo3sovc+wOD74y3\npGNM05S3FdIb8ObO4rsnP3lTZiLLIgXW8oh5V3PFHiSNtAMkVaDEiRUyo/ERk9hM\nlIMytMk/ydlGRgHJg3I2qTHb+R3BLSy8EFMgWcbwlfBjqPXIQoTTeJ0+YFbw9MA6\nZWsyx7Nk1StiYXnVdNIAO6hkK8ZSOhRbd8gGv9h1TnCFYOyFGanR6OgpMm5tqLyc\nqB2QNX+Tsad/hd8ZekOKyLtWTnohKV6Y5FiOliZPclvMWDY2M0id4I5prxbz7CpM\nyeB+ocyDAgMBAAECggEAQPSeCroXGPYwgzBZSc2cwS3d4g2GedB2xOBvR/rGw1rf\nTw2S1xUP9cb1a9c0CGnxQE5AErRMuJxj7lAEsMf39aQU9OgPWuoGwmldxpqy4j3B\nVH1fj1YADDi51OfWo5UAqpGnQmiPzHjRxZYnrObAVMdu8OPbJ47oZw8Kgly6klnn\nGmMfNdJnrkQ0oww6IYt73RIf3jqXEdgCRb9BiJ7wj/QFcFmLaIbKFZ/COcor9vVZ\nQkQEeR9JLaX8lbTrVMMVR/ImuAeM6LQ8w3dYxlHlkDOUM19T8CRGvR29o+j6XgQi\nkMiZBGx6n6Hl5E1IFSo69s3Gtwee+oy0Go7WGc+2AQKBgQDXUhRSSR3mIgAH92uH\nKLo95t6WXVMzODNyTmJthHHJzYEVagcsldCwRcyyAbR7XwYCOimIJagKUoXHnfeP\n4onGtqfRb5OLhct8s2+HJFg/TS9pPVzcMNyOGAlpek7nbgAT5y3nFrXUzB+VN2J4\nLv78iGI24ZCLQ7goT9i5OZQMwQKBgQDE73sNEEZh0Po1AtfROGYn/93VJlskUKal\nuK1K+vOayj5liR4POurovygUsNX8PwOeL9YNOcn3XZAEycCcVFLTQhF88ai383KS\nWhlY4pLnFTW87yEW1gvju8b7ddnlvtnBszwuzGk7rVqcIC8xrARxXjO896kGTr88\nxA4Is+H2QwKBgQDSx7PC9XaCYQg8xDUL44+lp0qAUa1vt3WNUTRDV2L4lObnKpsJ\nR0M6O6ntG4QtPVEpfvxHHe3I5Q224mmE/dO3pfjUKfB6pagUU6c62RZWKV3fHMW5\ne098/gTAr41sOh9zXFxwGqg3Pvcv4D7Rvde5KF1Usi0IV2uAcuGKONY4QQKBgA+7\nHXYuraCUo9fmMT0aJzbcvmiPVspw0s78EIOjxh/ANfnAWTFYQHl1A4ubkIxEsFJL\neeq2igaDZ8SqJQOXzMHpTiJP321KOgWswseR2bAxxoggBeGgGXUIg92ETXKHqzdI\nzO7kDyfgMhO0knCCUByKLNHUaqEBW09MTd6uF8enAoGBAKM932cIoApo/B+Q4xgy\nLFnW70nAfh8NZ2AV0uBg6365pLGTzbbV3bKa5XpQCUvbCBclcHnYuqmADNiL25f8\nrbX1NHgTvKLdDqgZAEElYIqG4wlkq4Vkx2VOEpPiH5dAbdqFwogZm+phvAsa5zVL\nmWiIecySQuV4Wz+typKuQphw\n-----END PRIVATE KEY-----\n",
+  "client_email": "test-spanner@ldetmer-sanbox.iam.gserviceaccount.com",
+  "client_id": "106624917120625257013",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-spanner%40ldetmer-sanbox.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

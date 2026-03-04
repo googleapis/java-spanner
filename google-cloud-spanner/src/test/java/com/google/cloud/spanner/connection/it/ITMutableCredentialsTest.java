@@ -40,10 +40,10 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
   private static final String VALID_KEY_RESOURCE =
-      "/com/google/cloud/spanner/connection/test-key-cloud-storage.json";
+      "/com/google/cloud/spanner/connection/test-key.json";
 
   private static final String INVALID_KEY_RESOURCE =
-      "/com/google/cloud/spanner/connection/test-key.json";
+      "/com/google/cloud/spanner/connection/invalid-test-key.json";
 
   @Test
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
@@ -97,7 +97,13 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
       assertTrue(databaseFound);
       try {
         mutableCredentials.updateCredentials(invalidCredentials);
-        databaseAdminClient.listDatabases(instanceName);
+        DatabaseAdminClient.ListDatabasesPagedResponse responseFailure =
+                databaseAdminClient.listDatabases(instanceName);
+        for (DatabaseAdminClient.ListDatabasesPage page : responseFailure.iteratePages()) {
+          for (Database database : page.iterateAll()) {
+            System.out.println("\t" + database.getName());
+          }
+        }
         fail("Expected UNAUTHENTICATED after switching to invalid credentials");
       } catch (SpannerException e) {
         assertEquals(ErrorCode.UNAUTHENTICATED, e.getErrorCode());
