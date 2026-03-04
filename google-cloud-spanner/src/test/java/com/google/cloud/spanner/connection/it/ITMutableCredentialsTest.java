@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.spanner.admin.database.v1.InstanceName;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -73,17 +75,28 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
 
     try (Spanner spanner = options.getService();
         DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
-      String dbName =
+     /* String dbName =
           DatabaseName.of(
                   getTestEnv().getTestHelper().getInstanceId().getProject(),
                   getTestEnv().getTestHelper().getInstanceId().getInstance(),
                   "TEST")
               .toString();
-      Database database = databaseAdminClient.getDatabase(dbName);
-      assertNotNull(database);
+      Database database = databaseAdminClient.getDatabase(dbName);*/
+      InstanceName instanceName = InstanceName.of(getTestEnv().getTestHelper().getInstanceId().getProject(), getTestEnv().getTestHelper().getInstanceId().getProject());
+      DatabaseAdminClient.ListDatabasesPagedResponse response =
+              databaseAdminClient.listDatabases(instanceName);
+
+      boolean databaseFound = false;
+      for (DatabaseAdminClient.ListDatabasesPage page : response.iteratePages()) {
+        for (Database database : page.iterateAll()) {
+             System.out.println("\t" + database.getName());
+             databaseFound = true;
+        }
+      }
+      assertTrue(databaseFound);
       try {
         mutableCredentials.updateCredentials(invalidCredentials);
-        databaseAdminClient.getDatabase(dbName);
+        databaseAdminClient.listDatabases(instanceName);
         fail("Expected UNAUTHENTICATED after switching to invalid credentials");
       } catch (SpannerException e) {
         assertEquals(ErrorCode.UNAUTHENTICATED, e.getErrorCode());
