@@ -838,6 +838,7 @@ public class SpannerClientHttpJsonTest {
             .setId(ByteString.EMPTY)
             .setReadTimestamp(Timestamp.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -886,6 +887,7 @@ public class SpannerClientHttpJsonTest {
             .setId(ByteString.EMPTY)
             .setReadTimestamp(Timestamp.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -936,6 +938,7 @@ public class SpannerClientHttpJsonTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .setSnapshotTimestamp(Timestamp.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -986,6 +989,7 @@ public class SpannerClientHttpJsonTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .setSnapshotTimestamp(Timestamp.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -1036,6 +1040,7 @@ public class SpannerClientHttpJsonTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .setSnapshotTimestamp(Timestamp.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -1088,6 +1093,7 @@ public class SpannerClientHttpJsonTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .setSnapshotTimestamp(Timestamp.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 

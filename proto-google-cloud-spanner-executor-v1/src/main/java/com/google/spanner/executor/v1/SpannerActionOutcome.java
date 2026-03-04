@@ -639,6 +639,43 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
     return changeStreamRecords_.get(index);
   }
 
+  public static final int SNAPSHOT_ISOLATION_TXN_READ_TIMESTAMP_FIELD_NUMBER = 11;
+  private long snapshotIsolationTxnReadTimestamp_ = 0L;
+
+  /**
+   *
+   *
+   * <pre>
+   * If not zero, it indicates the read timestamp to use for validating
+   * the SnapshotIsolation transaction.
+   * </pre>
+   *
+   * <code>optional int64 snapshot_isolation_txn_read_timestamp = 11;</code>
+   *
+   * @return Whether the snapshotIsolationTxnReadTimestamp field is set.
+   */
+  @java.lang.Override
+  public boolean hasSnapshotIsolationTxnReadTimestamp() {
+    return ((bitField0_ & 0x00000080) != 0);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * If not zero, it indicates the read timestamp to use for validating
+   * the SnapshotIsolation transaction.
+   * </pre>
+   *
+   * <code>optional int64 snapshot_isolation_txn_read_timestamp = 11;</code>
+   *
+   * @return The snapshotIsolationTxnReadTimestamp.
+   */
+  @java.lang.Override
+  public long getSnapshotIsolationTxnReadTimestamp() {
+    return snapshotIsolationTxnReadTimestamp_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -687,6 +724,9 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
     }
     for (int i = 0; i < changeStreamRecords_.size(); i++) {
       output.writeMessage(10, changeStreamRecords_.get(i));
+    }
+    if (((bitField0_ & 0x00000080) != 0)) {
+      output.writeInt64(11, snapshotIsolationTxnReadTimestamp_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -739,6 +779,11 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
       size +=
           com.google.protobuf.CodedOutputStream.computeMessageSize(10, changeStreamRecords_.get(i));
     }
+    if (((bitField0_ & 0x00000080) != 0)) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeInt64Size(
+              11, snapshotIsolationTxnReadTimestamp_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -786,6 +831,12 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
     }
     if (!getDmlRowsModifiedList().equals(other.getDmlRowsModifiedList())) return false;
     if (!getChangeStreamRecordsList().equals(other.getChangeStreamRecordsList())) return false;
+    if (hasSnapshotIsolationTxnReadTimestamp() != other.hasSnapshotIsolationTxnReadTimestamp())
+      return false;
+    if (hasSnapshotIsolationTxnReadTimestamp()) {
+      if (getSnapshotIsolationTxnReadTimestamp() != other.getSnapshotIsolationTxnReadTimestamp())
+        return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -836,6 +887,12 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
     if (getChangeStreamRecordsCount() > 0) {
       hash = (37 * hash) + CHANGE_STREAM_RECORDS_FIELD_NUMBER;
       hash = (53 * hash) + getChangeStreamRecordsList().hashCode();
+    }
+    if (hasSnapshotIsolationTxnReadTimestamp()) {
+      hash = (37 * hash) + SNAPSHOT_ISOLATION_TXN_READ_TIMESTAMP_FIELD_NUMBER;
+      hash =
+          (53 * hash)
+              + com.google.protobuf.Internal.hashLong(getSnapshotIsolationTxnReadTimestamp());
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -1034,6 +1091,7 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
         changeStreamRecordsBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000200);
+      snapshotIsolationTxnReadTimestamp_ = 0L;
       return this;
     }
 
@@ -1127,6 +1185,10 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
       if (((from_bitField0_ & 0x00000100) != 0)) {
         dmlRowsModified_.makeImmutable();
         result.dmlRowsModified_ = dmlRowsModified_;
+      }
+      if (((from_bitField0_ & 0x00000400) != 0)) {
+        result.snapshotIsolationTxnReadTimestamp_ = snapshotIsolationTxnReadTimestamp_;
+        to_bitField0_ |= 0x00000080;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1229,6 +1291,9 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
             changeStreamRecordsBuilder_.addAllMessages(other.changeStreamRecords_);
           }
         }
+      }
+      if (other.hasSnapshotIsolationTxnReadTimestamp()) {
+        setSnapshotIsolationTxnReadTimestamp(other.getSnapshotIsolationTxnReadTimestamp());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -1347,6 +1412,12 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
                 }
                 break;
               } // case 82
+            case 88:
+              {
+                snapshotIsolationTxnReadTimestamp_ = input.readInt64();
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 88
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -3446,6 +3517,82 @@ public final class SpannerActionOutcome extends com.google.protobuf.GeneratedMes
         changeStreamRecords_ = null;
       }
       return changeStreamRecordsBuilder_;
+    }
+
+    private long snapshotIsolationTxnReadTimestamp_;
+
+    /**
+     *
+     *
+     * <pre>
+     * If not zero, it indicates the read timestamp to use for validating
+     * the SnapshotIsolation transaction.
+     * </pre>
+     *
+     * <code>optional int64 snapshot_isolation_txn_read_timestamp = 11;</code>
+     *
+     * @return Whether the snapshotIsolationTxnReadTimestamp field is set.
+     */
+    @java.lang.Override
+    public boolean hasSnapshotIsolationTxnReadTimestamp() {
+      return ((bitField0_ & 0x00000400) != 0);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If not zero, it indicates the read timestamp to use for validating
+     * the SnapshotIsolation transaction.
+     * </pre>
+     *
+     * <code>optional int64 snapshot_isolation_txn_read_timestamp = 11;</code>
+     *
+     * @return The snapshotIsolationTxnReadTimestamp.
+     */
+    @java.lang.Override
+    public long getSnapshotIsolationTxnReadTimestamp() {
+      return snapshotIsolationTxnReadTimestamp_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If not zero, it indicates the read timestamp to use for validating
+     * the SnapshotIsolation transaction.
+     * </pre>
+     *
+     * <code>optional int64 snapshot_isolation_txn_read_timestamp = 11;</code>
+     *
+     * @param value The snapshotIsolationTxnReadTimestamp to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSnapshotIsolationTxnReadTimestamp(long value) {
+
+      snapshotIsolationTxnReadTimestamp_ = value;
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * If not zero, it indicates the read timestamp to use for validating
+     * the SnapshotIsolation transaction.
+     * </pre>
+     *
+     * <code>optional int64 snapshot_isolation_txn_read_timestamp = 11;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearSnapshotIsolationTxnReadTimestamp() {
+      bitField0_ = (bitField0_ & ~0x00000400);
+      snapshotIsolationTxnReadTimestamp_ = 0L;
+      onChanged();
+      return this;
     }
 
     // @@protoc_insertion_point(builder_scope:google.spanner.executor.v1.SpannerActionOutcome)

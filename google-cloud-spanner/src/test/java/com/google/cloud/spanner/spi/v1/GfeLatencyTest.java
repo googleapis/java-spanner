@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.spi.v1;
 
-import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static org.junit.Assert.*;
 
 import com.google.auth.oauth2.AccessToken;
@@ -129,7 +128,6 @@ public class GfeLatencyTest {
 
   @BeforeClass
   public static void startServer() throws Exception {
-    disableDefaultMtlsProvider();
     //noinspection deprecation
     SpannerRpcViews.registerGfeLatencyAndHeaderMissingCountViews();
 

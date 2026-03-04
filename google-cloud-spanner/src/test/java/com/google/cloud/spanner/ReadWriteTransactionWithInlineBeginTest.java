@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -102,7 +101,6 @@ public class ReadWriteTransactionWithInlineBeginTest {
 
   @BeforeClass
   public static void startStaticServer() throws Exception {
-    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));

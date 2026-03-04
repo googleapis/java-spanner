@@ -15,7 +15,6 @@
  */
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RESULTSET;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
@@ -60,7 +59,6 @@ public class BatchCreateSessionsSlowTest {
 
   @BeforeClass
   public static void startStaticServer() throws Exception {
-    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(

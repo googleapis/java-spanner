@@ -209,6 +209,14 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
   static final com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_google_spanner_executor_v1_ChangeQuorumCloudDatabaseAction_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_executor_v1_AdaptMessageAction_descriptor;
+  static final com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_google_spanner_executor_v1_AdaptMessageAction_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_executor_v1_AdaptMessageAction_AttachmentsEntry_descriptor;
+  static final com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_google_spanner_executor_v1_AdaptMessageAction_AttachmentsEntry_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
       internal_static_google_spanner_executor_v1_ListCloudDatabasesAction_descriptor;
   static final com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_google_spanner_executor_v1_ListCloudDatabasesAction_fieldAccessorTable;
@@ -272,6 +280,10 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
       internal_static_google_spanner_executor_v1_CancelOperationAction_descriptor;
   static final com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_google_spanner_executor_v1_CancelOperationAction_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_executor_v1_AddSplitPointsAction_descriptor;
+  static final com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_google_spanner_executor_v1_AddSplitPointsAction_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
       internal_static_google_spanner_executor_v1_StartBatchTransactionAction_descriptor;
   static final com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -398,7 +410,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\032SpannerAsyncActionResponse\022\021\n"
           + "\taction_id\030\001 \001(\005\022A\n"
           + "\007outcome\030\002"
-          + " \001(\01320.google.spanner.executor.v1.SpannerActionOutcome\"\361\n\n\r"
+          + " \001(\01320.google.spanner.executor.v1.SpannerActionOutcome\"\272\013\n\r"
           + "SpannerAction\022\025\n\r"
           + "database_path\030\001 \001(\t\022C\n"
           + "\017spanner_options\030\002 \001"
@@ -430,7 +442,9 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\033execute_change_stream_query\0302 \001(\01324.google.spanner"
           + ".executor.v1.ExecuteChangeStreamQueryH\000\022Q\n"
           + "\022query_cancellation\0303 \001(\01323.google.spa"
-          + "nner.executor.v1.QueryCancellationActionH\000B\010\n"
+          + "nner.executor.v1.QueryCancellationActionH\000\022G\n\r"
+          + "adapt_message\0304"
+          + " \001(\0132..google.spanner.executor.v1.AdaptMessageActionH\000B\010\n"
           + "\006action\"\212\001\n\n"
           + "ReadAction\022\r\n"
           + "\005table\030\001 \001(\t\022\022\n"
@@ -445,13 +459,17 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\tParameter\022\014\n"
           + "\004name\030\001 \001(\t\022%\n"
           + "\004type\030\002 \001(\0132\027.google.spanner.v1.Type\0220\n"
-          + "\005value\030\003 \001(\0132!.google.spanner.executor.v1.Value\"\206\001\n"
+          + "\005value\030\003 \001(\0132!.google.spanner.executor.v1.Value\"\266\001\n"
           + "\tDmlAction\0227\n"
           + "\006update\030\001 \001(\0132\'.google.spanner.executor.v1.QueryAction\022$\n"
-          + "\027autocommit_if_supported\030\002 \001(\010H\000\210\001\001B\032\n"
-          + "\030_autocommit_if_supported\"J\n"
+          + "\027autocommit_if_supported\030\002 \001(\010H\000\210\001\001\022\033\n"
+          + "\016last_statement\030\003 \001(\010H\001\210\001\001B\032\n"
+          + "\030_autocommit_if_supportedB\021\n"
+          + "\017_last_statement\"|\n"
           + "\016BatchDmlAction\0228\n"
-          + "\007updates\030\001 \003(\0132\'.google.spanner.executor.v1.QueryAction\"\311\003\n"
+          + "\007updates\030\001 \003(\0132\'.google.spanner.executor.v1.QueryAction\022\034\n"
+          + "\017last_statements\030\002 \001(\010H\000\210\001\001B\022\n"
+          + "\020_last_statements\"\311\003\n"
           + "\005Value\022\021\n"
           + "\007is_null\030\001 \001(\010H\000\022\023\n"
           + "\tint_value\030\002 \001(\003H\000\022\024\n\n"
@@ -500,33 +518,33 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\005table\030\001 \001(\t\022E\n"
           + "\006insert\030\002"
           + " \001(\01325.google.spanner.executor.v1.MutationAction.InsertArgs\022E\n"
-          + "\006update\030\003 \001(\013"
-          + "25.google.spanner.executor.v1.MutationAction.UpdateArgs\022O\n"
-          + "\020insert_or_update\030\004 \001("
-          + "\01325.google.spanner.executor.v1.MutationAction.InsertArgs\022F\n"
-          + "\007replace\030\005 \001(\01325.goog"
-          + "le.spanner.executor.v1.MutationAction.InsertArgs\0227\n"
+          + "\006update\030\003"
+          + " \001(\01325.google.spanner.executor.v1.MutationAction.UpdateArgs\022O\n"
+          + "\020insert_or_update\030\004"
+          + " \001(\01325.google.spanner.executor.v1.MutationAction.InsertArgs\022F\n"
+          + "\007replace\030\005"
+          + " \001(\01325.google.spanner.executor.v1.MutationAction.InsertArgs\0227\n"
           + "\013delete_keys\030\006 \001(\0132\".google.spanner.executor.v1.KeySet\"T\n"
           + "\024WriteMutationsAction\022<\n"
           + "\010mutation\030\001 \001(\0132*.google.spanner.executor.v1.MutationAction\"\337\002\n"
           + "\027PartitionedUpdateAction\022i\n"
-          + "\007options\030\001 \001(\0132S.google.spanner.executor.v1.PartitionedUpd"
-          + "ateAction.ExecutePartitionedUpdateOptionsH\000\210\001\001\0227\n"
+          + "\007options\030\001 \001(\0132S.google.spanner.executor.v1.Par"
+          + "titionedUpdateAction.ExecutePartitionedUpdateOptionsH\000\210\001\001\0227\n"
           + "\006update\030\002 \001(\0132\'.google.spanner.executor.v1.QueryAction\032\223\001\n"
           + "\037ExecutePartitionedUpdateOptions\022E\n"
-          + "\014rpc_priority\030\001 \001("
-          + "\0162*.google.spanner.v1.RequestOptions.PriorityH\000\210\001\001\022\020\n"
+          + "\014rpc_priority\030\001"
+          + " \001(\0162*.google.spanner.v1.RequestOptions.PriorityH\000\210\001\001\022\020\n"
           + "\003tag\030\002 \001(\tH\001\210\001\001B\017\n\r"
           + "_rpc_priorityB\006\n"
           + "\004_tagB\n\n"
           + "\010_options\"\256\002\n"
           + "\026StartTransactionAction\022A\n"
-          + "\013concurrency\030\001 \001(\0132\'.goog"
-          + "le.spanner.executor.v1.ConcurrencyH\000\210\001\001\0228\n"
+          + "\013concurrency\030\001"
+          + " \001(\0132\'.google.spanner.executor.v1.ConcurrencyH\000\210\001\001\0228\n"
           + "\005table\030\002 \003(\0132).google.spanner.executor.v1.TableMetadata\022\030\n"
           + "\020transaction_seed\030\003 \001(\t\022W\n"
-          + "\021execution_options\030\004 \001(\01327.google."
-          + "spanner.executor.v1.TransactionExecutionOptionsH\001\210\001\001B\016\n"
+          + "\021execution_options\030\004 \001("
+          + "\01327.google.spanner.executor.v1.TransactionExecutionOptionsH\001\210\001\001B\016\n"
           + "\014_concurrencyB\024\n"
           + "\022_execution_options\"\256\002\n"
           + "\013Concurrency\022\033\n"
@@ -546,73 +564,80 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "key_column\030\003 \003(\0132*.google.spanner.executor.v1.ColumnMetadata\"E\n"
           + "\016ColumnMetadata\022\014\n"
           + "\004name\030\001 \001(\t\022%\n"
-          + "\004type\030\002 \001(\0132\027.google.spanner.v1.Type\"1\n"
+          + "\004type\030\002 \001(\0132\027.google.spanner.v1.Type\"\357\001\n"
           + "\033TransactionExecutionOptions\022\022\n\n"
-          + "optimistic\030\001 \001(\010\"\230\001\n"
+          + "optimistic\030\001 \001(\010\022#\n"
+          + "\033exclude_from_change_streams\030\002 \001(\010\022\037\n"
+          + "\027serializable_optimistic\030\003 \001(\010\022%\n"
+          + "\035snapshot_isolation_optimistic\030\004 \001(\010\022&\n"
+          + "\036snapshot_isolation_pessimistic\030\005 \001(\010\022\'\n"
+          + "\037exclude_txn_from_change_streams\030\006 \001(\010\"\230\001\n"
           + "\027FinishTransactionAction\022F\n"
-          + "\004mode\030\001 \001(\01628.go"
-          + "ogle.spanner.executor.v1.FinishTransactionAction.Mode\"5\n"
+          + "\004mode\030\001 \001(\01628."
+          + "google.spanner.executor.v1.FinishTransactionAction.Mode\"5\n"
           + "\004Mode\022\024\n"
           + "\020MODE_UNSPECIFIED\020\000\022\n\n"
           + "\006COMMIT\020\001\022\013\n"
-          + "\007ABANDON\020\002\"\310\023\n"
+          + "\007ABANDON\020\002\"\226\024\n"
           + "\013AdminAction\022a\n"
-          + "\033create_user_instance_config\030\001 \001("
-          + "\0132:.google.spanner.executor.v1.CreateUserInstanceConfigActionH\000\022a\n"
-          + "\033update_user_instance_config\030\002 \001(\0132:.google.spanner.ex"
-          + "ecutor.v1.UpdateUserInstanceConfigActionH\000\022a\n"
-          + "\033delete_user_instance_config\030\003 \001(\0132"
-          + ":.google.spanner.executor.v1.DeleteUserInstanceConfigActionH\000\022]\n"
-          + "\031get_cloud_instance_config\030\004"
-          + " \001(\01328.google.spanner.executor.v1.GetCloudInstanceConfigActionH\000\022[\n"
-          + "\025list_instance_configs\030\005 \001(\0132:.google.spa"
-          + "nner.executor.v1.ListCloudInstanceConfigsActionH\000\022V\n"
-          + "\025create_cloud_instance\030\006 \001(\013"
-          + "25.google.spanner.executor.v1.CreateCloudInstanceActionH\000\022V\n"
+          + "\033create_user_instance_config\030\001 "
+          + "\001(\0132:.google.spanner.executor.v1.CreateUserInstanceConfigActionH\000\022a\n"
+          + "\033update_user_instance_config\030\002 \001(\0132:.google.spanner."
+          + "executor.v1.UpdateUserInstanceConfigActionH\000\022a\n"
+          + "\033delete_user_instance_config\030\003 \001("
+          + "\0132:.google.spanner.executor.v1.DeleteUserInstanceConfigActionH\000\022]\n"
+          + "\031get_cloud_instance_config\030\004 \001(\01328.google.spanner.exec"
+          + "utor.v1.GetCloudInstanceConfigActionH\000\022[\n"
+          + "\025list_instance_configs\030\005 \001(\0132:.google.s"
+          + "panner.executor.v1.ListCloudInstanceConfigsActionH\000\022V\n"
+          + "\025create_cloud_instance\030\006 \001"
+          + "(\01325.google.spanner.executor.v1.CreateCloudInstanceActionH\000\022V\n"
           + "\025update_cloud_instance\030\007"
           + " \001(\01325.google.spanner.executor.v1.UpdateCloudInstanceActionH\000\022V\n"
           + "\025delete_cloud_instance\030\010"
           + " \001(\01325.google.spanner.executor.v1.DeleteCloudInstanceActionH\000\022T\n"
-          + "\024list_cloud_instances\030\t \001(\01324.google.spanner"
-          + ".executor.v1.ListCloudInstancesActionH\000\022P\n"
+          + "\024list_cloud_instances\030\t \001(\01324.google.spann"
+          + "er.executor.v1.ListCloudInstancesActionH\000\022P\n"
           + "\022get_cloud_instance\030\n"
           + " \001(\01322.google.spanner.executor.v1.GetCloudInstanceActionH\000\022V\n"
-          + "\025create_cloud_database\030\013 \001(\01325.googl"
-          + "e.spanner.executor.v1.CreateCloudDatabaseActionH\000\022]\n"
+          + "\025create_cloud_database\030\013 \001(\01325.goo"
+          + "gle.spanner.executor.v1.CreateCloudDatabaseActionH\000\022]\n"
           + "\031update_cloud_database_ddl\030\014"
           + " \001(\01328.google.spanner.executor.v1.UpdateCloudDatabaseDdlActionH\000\022V\n"
           + "\025update_cloud_database\030\033"
           + " \001(\01325.google.spanner.executor.v1.UpdateCloudDatabaseActionH\000\022R\n"
           + "\023drop_cloud_database\030\r"
           + " \001(\01323.google.spanner.executor.v1.DropCloudDatabaseActionH\000\022T\n"
-          + "\024list_cloud_databases\030\016 \001(\01324.google.span"
-          + "ner.executor.v1.ListCloudDatabasesActionH\000\022g\n"
-          + "\036list_cloud_database_operations\030\017 \001"
-          + "(\0132=.google.spanner.executor.v1.ListCloudDatabaseOperationsActionH\000\022X\n"
-          + "\026restore_cloud_database\030\020"
-          + " \001(\01326.google.spanner.executor.v1.RestoreCloudDatabaseActionH\000\022P\n"
-          + "\022get_cloud_database\030\021 \001(\01322.google.spann"
-          + "er.executor.v1.GetCloudDatabaseActionH\000\022R\n"
-          + "\023create_cloud_backup\030\022 \001(\01323.google.sp"
-          + "anner.executor.v1.CreateCloudBackupActionH\000\022N\n"
-          + "\021copy_cloud_backup\030\023 \001(\01321.google."
-          + "spanner.executor.v1.CopyCloudBackupActionH\000\022L\n"
-          + "\020get_cloud_backup\030\024 \001(\01320.google.s"
-          + "panner.executor.v1.GetCloudBackupActionH\000\022R\n"
-          + "\023update_cloud_backup\030\025 \001(\01323.google."
-          + "spanner.executor.v1.UpdateCloudBackupActionH\000\022R\n"
-          + "\023delete_cloud_backup\030\026 \001(\01323.goo"
-          + "gle.spanner.executor.v1.DeleteCloudBackupActionH\000\022P\n"
-          + "\022list_cloud_backups\030\027 \001(\01322."
-          + "google.spanner.executor.v1.ListCloudBackupsActionH\000\022c\n"
+          + "\024list_cloud_databases\030\016 \001(\01324.google.sp"
+          + "anner.executor.v1.ListCloudDatabasesActionH\000\022g\n"
+          + "\036list_cloud_database_operations\030\017"
+          + " \001(\0132=.google.spanner.executor.v1.ListCloudDatabaseOperationsActionH\000\022X\n"
+          + "\026restore_cloud_database\030\020 \001(\01326.google.spanner.e"
+          + "xecutor.v1.RestoreCloudDatabaseActionH\000\022P\n"
+          + "\022get_cloud_database\030\021 \001(\01322.google.spa"
+          + "nner.executor.v1.GetCloudDatabaseActionH\000\022R\n"
+          + "\023create_cloud_backup\030\022 \001(\01323.google."
+          + "spanner.executor.v1.CreateCloudBackupActionH\000\022N\n"
+          + "\021copy_cloud_backup\030\023 \001(\01321.googl"
+          + "e.spanner.executor.v1.CopyCloudBackupActionH\000\022L\n"
+          + "\020get_cloud_backup\030\024 \001(\01320.google"
+          + ".spanner.executor.v1.GetCloudBackupActionH\000\022R\n"
+          + "\023update_cloud_backup\030\025 \001(\01323.googl"
+          + "e.spanner.executor.v1.UpdateCloudBackupActionH\000\022R\n"
+          + "\023delete_cloud_backup\030\026 \001(\01323.g"
+          + "oogle.spanner.executor.v1.DeleteCloudBackupActionH\000\022P\n"
+          + "\022list_cloud_backups\030\027 \001(\0132"
+          + "2.google.spanner.executor.v1.ListCloudBackupsActionH\000\022c\n"
           + "\034list_cloud_backup_operations\030\030"
           + " \001(\0132;.google.spanner.executor.v1.ListCloudBackupOperationsActionH\000\022G\n\r"
           + "get_operation\030\031"
           + " \001(\0132..google.spanner.executor.v1.GetOperationActionH\000\022M\n"
           + "\020cancel_operation\030\032"
           + " \001(\01321.google.spanner.executor.v1.CancelOperationActionH\000\022c\n"
-          + "\034change_quorum_cloud_database\030\034 \001(\0132;.google.spanner."
-          + "executor.v1.ChangeQuorumCloudDatabaseActionH\000B\010\n"
+          + "\034change_quorum_cloud_database\030\034 \001(\0132;.google.spanne"
+          + "r.executor.v1.ChangeQuorumCloudDatabaseActionH\000\022L\n"
+          + "\020add_split_points\030\035 \001(\01320.goog"
+          + "le.spanner.executor.v1.AddSplitPointsActionH\000B\010\n"
           + "\006action\"\245\001\n"
           + "\036CreateUserInstanceConfigAction\022\026\n"
           + "\016user_config_id\030\001 \001(\t\022\022\n\n"
@@ -641,7 +666,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\tpage_size\030\002 \001(\005H\000\210\001\001\022\027\n\n"
           + "page_token\030\003 \001(\tH\001\210\001\001B\014\n\n"
           + "_page_sizeB\r\n"
-          + "\013_page_token\"\253\003\n"
+          + "\013_page_token\"\360\003\n"
           + "\031CreateCloudInstanceAction\022\023\n"
           + "\013instance_id\030\001 \001(\t\022\022\n\n"
           + "project_id\030\002 \001(\t\022\032\n"
@@ -651,23 +676,27 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\022autoscaling_config\030\007 \001(\01323.go"
           + "ogle.spanner.admin.instance.v1.AutoscalingConfigH\002\210\001\001\022Q\n"
           + "\006labels\030\005 \003(\0132A.google.s"
-          + "panner.executor.v1.CreateCloudInstanceAction.LabelsEntry\032-\n"
+          + "panner.executor.v1.CreateCloudInstanceAction.LabelsEntry\022C\n"
+          + "\007edition\030\010 \001(\01622.goog"
+          + "le.spanner.admin.instance.v1.Instance.Edition\032-\n"
           + "\013LabelsEntry\022\013\n"
           + "\003key\030\001 \001(\t\022\r\n"
           + "\005value\030\002 \001(\t:\0028\001B\r\n"
           + "\013_node_countB\023\n"
           + "\021_processing_unitsB\025\n"
-          + "\023_autoscaling_config\"\273\003\n"
+          + "\023_autoscaling_config\"\200\004\n"
           + "\031UpdateCloudInstanceAction\022\023\n"
           + "\013instance_id\030\001 \001(\t\022\022\n\n"
           + "project_id\030\002 \001(\t\022\031\n"
           + "\014display_name\030\003 \001(\tH\000\210\001\001\022\027\n\n"
           + "node_count\030\004 \001(\005H\001\210\001\001\022\035\n"
           + "\020processing_units\030\005 \001(\005H\002\210\001\001\022T\n"
-          + "\022autoscaling_config\030\007 \001(\01323.google.spanne"
-          + "r.admin.instance.v1.AutoscalingConfigH\003\210\001\001\022Q\n"
-          + "\006labels\030\006 \003(\0132A.google.spanner.exec"
-          + "utor.v1.UpdateCloudInstanceAction.LabelsEntry\032-\n"
+          + "\022autoscaling_config\030\007"
+          + " \001(\01323.google.spanner.admin.instance.v1.AutoscalingConfigH\003\210\001\001\022Q\n"
+          + "\006labels\030\006"
+          + " \003(\0132A.google.spanner.executor.v1.UpdateCloudInstanceAction.LabelsEntry\022C\n"
+          + "\007edition\030\010"
+          + " \001(\01622.google.spanner.admin.instance.v1.Instance.Edition\032-\n"
           + "\013LabelsEntry\022\013\n"
           + "\003key\030\001 \001(\t\022\r\n"
           + "\005value\030\002 \001(\t:\0028\001B\017\n\r"
@@ -683,8 +712,8 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "project_id\030\002 \001(\t\022\023\n"
           + "\013database_id\030\003 \001(\t\022\025\n\r"
           + "sdl_statement\030\004 \003(\t\022M\n"
-          + "\021encryption_config\030\005"
-          + " \001(\01322.google.spanner.admin.database.v1.EncryptionConfig\022\024\n"
+          + "\021encryption_config\030\005 \001(\01322"
+          + ".google.spanner.admin.database.v1.EncryptionConfig\022\024\n"
           + "\007dialect\030\006 \001(\tH\000\210\001\001\022\036\n"
           + "\021proto_descriptors\030\007 \001(\014H\001\210\001\001B\n\n"
           + "\010_dialectB\024\n"
@@ -709,7 +738,18 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\037ChangeQuorumCloudDatabaseAction\022\031\n"
           + "\014database_uri\030\001 \001(\tH\000\210\001\001\022\031\n"
           + "\021serving_locations\030\002 \003(\tB\017\n\r"
-          + "_database_uri\"j\n"
+          + "_database_uri\"\204\002\n"
+          + "\022AdaptMessageAction\022\024\n"
+          + "\014database_uri\030\001 \001(\t\022\020\n"
+          + "\010protocol\030\002 \001(\t\022\017\n"
+          + "\007payload\030\003 \001(\014\022T\n"
+          + "\013attachments\030\004 \003(\0132?.goog"
+          + "le.spanner.executor.v1.AdaptMessageAction.AttachmentsEntry\022\r\n"
+          + "\005query\030\005 \001(\t\022\034\n"
+          + "\024prepare_then_execute\030\006 \001(\010\0322\n"
+          + "\020AttachmentsEntry\022\013\n"
+          + "\003key\030\001 \001(\t\022\r\n"
+          + "\005value\030\002 \001(\t:\0028\001\"j\n"
           + "\030ListCloudDatabasesAction\022\022\n\n"
           + "project_id\030\001 \001(\t\022\023\n"
           + "\013instance_id\030\002 \001(\t\022\021\n"
@@ -718,7 +758,8 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\030ListCloudInstancesAction\022\022\n\n"
           + "project_id\030\001 \001(\t\022\023\n"
           + "\006filter\030\002 \001(\tH\000\210\001\001\022\026\n"
-          + "\tpage_size\030\003 \001(\005H\001\210\001\001\022\027\n\n"
+          + "\tpage_size\030\003 \001(\005H\001\210\001\001\022\027\n"
+          + "\n"
           + "page_token\030\004 \001(\tH\002\210\001\001B\t\n"
           + "\007_filterB\014\n\n"
           + "_page_sizeB\r\n"
@@ -738,9 +779,10 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\tbackup_id\030\003 \001(\t\022\034\n"
           + "\024database_instance_id\030\004 \001(\t\022\023\n"
           + "\013database_id\030\005 \001(\t\022M\n"
-          + "\021encryption_config\030\007 \001(\01322"
-          + ".google.spanner.admin.database.v1.EncryptionConfig\"V\n"
-          + "\026GetCloudDatabaseAction\022\022\n\n"
+          + "\021encryption_config\030\007 \001(\0132"
+          + "2.google.spanner.admin.database.v1.EncryptionConfig\"V\n"
+          + "\026GetCloudDatabaseAction\022\022\n"
+          + "\n"
           + "project_id\030\001 \001(\t\022\023\n"
           + "\013instance_id\030\002 \001(\t\022\023\n"
           + "\013database_id\030\003 \001(\t\"\267\002\n"
@@ -792,7 +834,13 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\020long_running_sql\030\001 \001(\t\022\024\n"
           + "\014cancel_query\030\002 \001(\t\"*\n"
           + "\025CancelOperationAction\022\021\n"
-          + "\toperation\030\001 \001(\t\"\210\001\n"
+          + "\toperation\030\001 \001(\t\"\231\001\n"
+          + "\024AddSplitPointsAction\022\022\n\n"
+          + "project_id\030\001 \001(\t\022\023\n"
+          + "\013instance_id\030\002 \001(\t\022\023\n"
+          + "\013database_id\030\003 \001(\t\022C\n"
+          + "\014split_points\030\004"
+          + " \003(\0132-.google.spanner.admin.database.v1.SplitPoints\"\210\001\n"
           + "\033StartBatchTransactionAction\0224\n"
           + "\016batch_txn_time\030\001 \001(\0132\032.google.protobuf.TimestampH\000\022\r\n"
           + "\003tid\030\002 \001(\014H\000\022\033\n"
@@ -834,41 +882,43 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\020_partition_tokenB\031\n"
           + "\027_heartbeat_millisecondsB\023\n"
           + "\021_deadline_secondsB\026\n"
-          + "\024_cloud_database_role\"\242\005\n"
+          + "\024_cloud_database_role\"\200\006\n"
           + "\024SpannerActionOutcome\022\'\n"
           + "\006status\030\001 \001(\0132\022.google.rpc.StatusH\000\210\001\001\0224\n"
           + "\013commit_time\030\002"
           + " \001(\0132\032.google.protobuf.TimestampH\001\210\001\001\022@\n"
           + "\013read_result\030\003"
           + " \001(\0132&.google.spanner.executor.v1.ReadResultH\002\210\001\001\022B\n"
-          + "\014query_result\030\004 \001(\013"
-          + "2\'.google.spanner.executor.v1.QueryResultH\003\210\001\001\022\"\n"
+          + "\014query_result\030\004 \001(\0132\'."
+          + "google.spanner.executor.v1.QueryResultH\003\210\001\001\022\"\n"
           + "\025transaction_restarted\030\005 \001(\010H\004\210\001\001\022\031\n"
           + "\014batch_txn_id\030\006 \001(\014H\005\210\001\001\022@\n"
           + "\014db_partition\030\007 \003(\0132*.google.spanner.executor.v1.BatchPartition\022B\n"
-          + "\014admin_result\030\010 \001(\0132\'."
-          + "google.spanner.executor.v1.AdminResultH\006\210\001\001\022\031\n"
+          + "\014admin_result\030\010 \001(\0132\'.goo"
+          + "gle.spanner.executor.v1.AdminResultH\006\210\001\001\022\031\n"
           + "\021dml_rows_modified\030\t \003(\003\022M\n"
           + "\025change_stream_records\030\n"
-          + " \003(\0132..google.spanner.executor.v1.ChangeStreamRecordB\t\n"
+          + " \003(\0132..google.spanner.executor.v1.ChangeStreamRecord\0222\n"
+          + "%snapshot_isolation_txn_read_timestamp\030\013 \001(\003H\007\210\001\001B\t\n"
           + "\007_statusB\016\n"
           + "\014_commit_timeB\016\n"
           + "\014_read_resultB\017\n\r"
           + "_query_resultB\030\n"
           + "\026_transaction_restartedB\017\n\r"
           + "_batch_txn_idB\017\n\r"
-          + "_admin_result\"\231\003\n"
+          + "_admin_resultB(\n"
+          + "&_snapshot_isolation_txn_read_timestamp\"\231\003\n"
           + "\013AdminResult\022H\n"
-          + "\017backup_response\030\001 \001(\0132/.google."
-          + "spanner.executor.v1.CloudBackupResponse\022I\n"
-          + "\022operation_response\030\002"
-          + " \001(\0132-.google.spanner.executor.v1.OperationResponse\022L\n"
-          + "\021database_response\030\003"
-          + " \001(\01321.google.spanner.executor.v1.CloudDatabaseResponse\022L\n"
-          + "\021instance_response\030\004"
-          + " \001(\01321.google.spanner.executor.v1.CloudInstanceResponse\022Y\n"
-          + "\030instance_config_response\030\005 \001(\01327.google.spanne"
-          + "r.executor.v1.CloudInstanceConfigResponse\"\353\001\n"
+          + "\017backup_response\030\001 \001("
+          + "\0132/.google.spanner.executor.v1.CloudBackupResponse\022I\n"
+          + "\022operation_response\030\002 \001(\0132-"
+          + ".google.spanner.executor.v1.OperationResponse\022L\n"
+          + "\021database_response\030\003 \001(\01321.googl",
+      "e.spanner.executor.v1.CloudDatabaseResponse\022L\n"
+          + "\021instance_response\030\004 \001(\01321.google."
+          + "spanner.executor.v1.CloudInstanceResponse\022Y\n"
+          + "\030instance_config_response\030\005 \001(\01327.go"
+          + "ogle.spanner.executor.v1.CloudInstanceConfigResponse\"\353\001\n"
           + "\023CloudBackupResponse\022@\n"
           + "\016listed_backups\030\001 \003(\0132(.google.spanner.admin.database.v1.Backup\022?\n"
           + "\030listed_backup_operations\030\002"
@@ -885,19 +935,19 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\017next_page_token\030\002 \001(\t\022<\n"
           + "\010instance\030\003 \001(\0132*.google.spanner.admin.instance.v1.Instance\"\324\001\n"
           + "\033CloudInstanceConfigResponse\022Q\n"
-          + "\027listed_instance_configs\030\001 \003"
-          + "(\01320.google.spanner.admin.instance.v1.InstanceConfig\022\027\n"
+          + "\027listed_instance_configs\030\001"
+          + " \003(\01320.google.spanner.admin.instance.v1.InstanceConfig\022\027\n"
           + "\017next_page_token\030\002 \001(\t\022I\n"
-          + "\017instance_config\030\003"
-          + " \001(\01320.google.spanner.admin.instance.v1.InstanceConfig\"\367\001\n"
+          + "\017instance_config\030\003 \001(\01320.goog"
+          + "le.spanner.admin.instance.v1.InstanceConfig\"\367\001\n"
           + "\025CloudDatabaseResponse\022D\n"
-          + "\020listed_databases\030\001 \003(\0132*.google.spanner.admin.database.v1.",
-      "Database\022A\n"
+          + "\020listed_databases\030\001"
+          + " \003(\0132*.google.spanner.admin.database.v1.Database\022A\n"
           + "\032listed_database_operations\030\002"
           + " \003(\0132\035.google.longrunning.Operation\022\027\n"
           + "\017next_page_token\030\003 \001(\t\022<\n"
-          + "\010database\030\004 \001(\0132*"
-          + ".google.spanner.admin.database.v1.Database\"\336\001\n\n"
+          + "\010database\030\004"
+          + " \001(\0132*.google.spanner.admin.database.v1.Database\"\336\001\n\n"
           + "ReadResult\022\r\n"
           + "\005table\030\001 \001(\t\022\022\n"
           + "\005index\030\002 \001(\tH\000\210\001\001\022\032\n\r"
@@ -916,8 +966,8 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\022ChangeStreamRecord\022C\n"
           + "\013data_change\030\001"
           + " \001(\0132,.google.spanner.executor.v1.DataChangeRecordH\000\022L\n"
-          + "\017child_partition\030\002 \001(\0132"
-          + "1.google.spanner.executor.v1.ChildPartitionsRecordH\000\022@\n"
+          + "\017child_partition\030\002"
+          + " \001(\01321.google.spanner.executor.v1.ChildPartitionsRecordH\000\022@\n"
           + "\theartbeat\030\003 \001(\0132+.google.spanner.executor.v1.HeartbeatRecordH\000B\010\n"
           + "\006record\"\330\004\n"
           + "\020DataChangeRecord\022/\n"
@@ -926,8 +976,8 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\016transaction_id\030\003 \001(\t\022\026\n"
           + "\016is_last_record\030\004 \001(\010\022\r\n"
           + "\005table\030\005 \001(\t\022M\n"
-          + "\014column_types\030\006 \003(\01327.google.sp"
-          + "anner.executor.v1.DataChangeRecord.ColumnType\022>\n"
+          + "\014column_types\030\006 \003(\0132"
+          + "7.google.spanner.executor.v1.DataChangeRecord.ColumnType\022>\n"
           + "\004mods\030\007 \003(\01320.google.spanner.executor.v1.DataChangeRecord.Mod\022\020\n"
           + "\010mod_type\030\010 \001(\t\022\032\n"
           + "\022value_capture_type\030\t \001(\t\022\024\n"
@@ -946,28 +996,27 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
           + "\004keys\030\001 \001(\t\022\022\n\n"
           + "new_values\030\002 \001(\t\022\022\n\n"
           + "old_values\030\003 \001(\t\"\376\001\n"
-          + "\025ChildPartitionsRecord\022.\n"
-          + "\n"
+          + "\025ChildPartitionsRecord\022.\n\n"
           + "start_time\030\001 \001(\0132\032.google.protobuf.Timestamp\022\027\n"
           + "\017record_sequence\030\002 \001(\t\022Z\n"
-          + "\020child_partitions\030\003 \003(\0132@.google.spanner.execut"
-          + "or.v1.ChildPartitionsRecord.ChildPartition\032@\n"
+          + "\020child_partitions\030\003 \003(\0132@.google.spa"
+          + "nner.executor.v1.ChildPartitionsRecord.ChildPartition\032@\n"
           + "\016ChildPartition\022\r\n"
           + "\005token\030\001 \001(\t\022\037\n"
           + "\027parent_partition_tokens\030\002 \003(\t\"E\n"
           + "\017HeartbeatRecord\0222\n"
           + "\016heartbeat_time\030\001 \001(\0132\032.google.protobuf.Timestamp\"^\n"
           + "\016SpannerOptions\022L\n"
-          + "\024session_pool_options\030\001"
-          + " \001(\0132..google.spanner.executor.v1.SessionPoolOptions\"-\n"
+          + "\024session_pool_options\030\001 \001(\0132."
+          + ".google.spanner.executor.v1.SessionPoolOptions\"-\n"
           + "\022SessionPoolOptions\022\027\n"
           + "\017use_multiplexed\030\001 \001(\0102\314\001\n"
           + "\024SpannerExecutorProxy\022\211\001\n"
-          + "\022ExecuteActionAsync\0225.google.spanner.executor.v1."
-          + "SpannerAsyncActionRequest\0326.google.spanner.executor.v1.SpannerAsyncActionRespons"
-          + "e\"\000(\0010\001\032(\312A%spanner-cloud-executor.googleapis.comBx\n"
-          + "\036com.google.spanner.executor.v1B\022CloudExecutorProtoP\001Z@cloud.google."
-          + "com/go/spanner/executor/apiv1/executorpb;executorpbb\006proto3"
+          + "\022ExecuteActionAsync\0225.google.spanner.e"
+          + "xecutor.v1.SpannerAsyncActionRequest\0326.google.spanner.executor.v1.SpannerAsyncAc"
+          + "tionResponse\"\000(\0010\001\032(\312A%spanner-cloud-executor.googleapis.comBx\n"
+          + "\036com.google.spanner.executor.v1B\022CloudExecutorProtoP\001Z@cl"
+          + "oud.google.com/go/spanner/executor/apiv1/executorpb;executorpbb\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -1026,6 +1075,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ExecutePartition",
               "ExecuteChangeStreamQuery",
               "QueryCancellation",
+              "AdaptMessage",
               "Action",
             });
     internal_static_google_spanner_executor_v1_ReadAction_descriptor =
@@ -1058,7 +1108,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_DmlAction_descriptor,
             new java.lang.String[] {
-              "Update", "AutocommitIfSupported",
+              "Update", "AutocommitIfSupported", "LastStatement",
             });
     internal_static_google_spanner_executor_v1_BatchDmlAction_descriptor =
         getDescriptor().getMessageType(6);
@@ -1066,7 +1116,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_BatchDmlAction_descriptor,
             new java.lang.String[] {
-              "Updates",
+              "Updates", "LastStatements",
             });
     internal_static_google_spanner_executor_v1_Value_descriptor = getDescriptor().getMessageType(7);
     internal_static_google_spanner_executor_v1_Value_fieldAccessorTable =
@@ -1216,6 +1266,11 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
             internal_static_google_spanner_executor_v1_TransactionExecutionOptions_descriptor,
             new java.lang.String[] {
               "Optimistic",
+              "ExcludeFromChangeStreams",
+              "SerializableOptimistic",
+              "SnapshotIsolationOptimistic",
+              "SnapshotIsolationPessimistic",
+              "ExcludeTxnFromChangeStreams",
             });
     internal_static_google_spanner_executor_v1_FinishTransactionAction_descriptor =
         getDescriptor().getMessageType(19);
@@ -1259,6 +1314,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "GetOperation",
               "CancelOperation",
               "ChangeQuorumCloudDatabase",
+              "AddSplitPoints",
               "Action",
             });
     internal_static_google_spanner_executor_v1_CreateUserInstanceConfigAction_descriptor =
@@ -1323,6 +1379,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProcessingUnits",
               "AutoscalingConfig",
               "Labels",
+              "Edition",
             });
     internal_static_google_spanner_executor_v1_CreateCloudInstanceAction_LabelsEntry_descriptor =
         internal_static_google_spanner_executor_v1_CreateCloudInstanceAction_descriptor
@@ -1346,6 +1403,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProcessingUnits",
               "AutoscalingConfig",
               "Labels",
+              "Edition",
             });
     internal_static_google_spanner_executor_v1_UpdateCloudInstanceAction_LabelsEntry_descriptor =
         internal_static_google_spanner_executor_v1_UpdateCloudInstanceAction_descriptor
@@ -1415,8 +1473,24 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
             new java.lang.String[] {
               "DatabaseUri", "ServingLocations",
             });
-    internal_static_google_spanner_executor_v1_ListCloudDatabasesAction_descriptor =
+    internal_static_google_spanner_executor_v1_AdaptMessageAction_descriptor =
         getDescriptor().getMessageType(34);
+    internal_static_google_spanner_executor_v1_AdaptMessageAction_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+            internal_static_google_spanner_executor_v1_AdaptMessageAction_descriptor,
+            new java.lang.String[] {
+              "DatabaseUri", "Protocol", "Payload", "Attachments", "Query", "PrepareThenExecute",
+            });
+    internal_static_google_spanner_executor_v1_AdaptMessageAction_AttachmentsEntry_descriptor =
+        internal_static_google_spanner_executor_v1_AdaptMessageAction_descriptor.getNestedType(0);
+    internal_static_google_spanner_executor_v1_AdaptMessageAction_AttachmentsEntry_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+            internal_static_google_spanner_executor_v1_AdaptMessageAction_AttachmentsEntry_descriptor,
+            new java.lang.String[] {
+              "Key", "Value",
+            });
+    internal_static_google_spanner_executor_v1_ListCloudDatabasesAction_descriptor =
+        getDescriptor().getMessageType(35);
     internal_static_google_spanner_executor_v1_ListCloudDatabasesAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ListCloudDatabasesAction_descriptor,
@@ -1424,7 +1498,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "PageSize", "PageToken",
             });
     internal_static_google_spanner_executor_v1_ListCloudInstancesAction_descriptor =
-        getDescriptor().getMessageType(35);
+        getDescriptor().getMessageType(36);
     internal_static_google_spanner_executor_v1_ListCloudInstancesAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ListCloudInstancesAction_descriptor,
@@ -1432,7 +1506,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "Filter", "PageSize", "PageToken",
             });
     internal_static_google_spanner_executor_v1_GetCloudInstanceAction_descriptor =
-        getDescriptor().getMessageType(36);
+        getDescriptor().getMessageType(37);
     internal_static_google_spanner_executor_v1_GetCloudInstanceAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_GetCloudInstanceAction_descriptor,
@@ -1440,7 +1514,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId",
             });
     internal_static_google_spanner_executor_v1_ListCloudDatabaseOperationsAction_descriptor =
-        getDescriptor().getMessageType(37);
+        getDescriptor().getMessageType(38);
     internal_static_google_spanner_executor_v1_ListCloudDatabaseOperationsAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ListCloudDatabaseOperationsAction_descriptor,
@@ -1448,7 +1522,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "Filter", "PageSize", "PageToken",
             });
     internal_static_google_spanner_executor_v1_RestoreCloudDatabaseAction_descriptor =
-        getDescriptor().getMessageType(38);
+        getDescriptor().getMessageType(39);
     internal_static_google_spanner_executor_v1_RestoreCloudDatabaseAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_RestoreCloudDatabaseAction_descriptor,
@@ -1461,7 +1535,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "EncryptionConfig",
             });
     internal_static_google_spanner_executor_v1_GetCloudDatabaseAction_descriptor =
-        getDescriptor().getMessageType(39);
+        getDescriptor().getMessageType(40);
     internal_static_google_spanner_executor_v1_GetCloudDatabaseAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_GetCloudDatabaseAction_descriptor,
@@ -1469,7 +1543,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "DatabaseId",
             });
     internal_static_google_spanner_executor_v1_CreateCloudBackupAction_descriptor =
-        getDescriptor().getMessageType(40);
+        getDescriptor().getMessageType(41);
     internal_static_google_spanner_executor_v1_CreateCloudBackupAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CreateCloudBackupAction_descriptor,
@@ -1483,7 +1557,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "EncryptionConfig",
             });
     internal_static_google_spanner_executor_v1_CopyCloudBackupAction_descriptor =
-        getDescriptor().getMessageType(41);
+        getDescriptor().getMessageType(42);
     internal_static_google_spanner_executor_v1_CopyCloudBackupAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CopyCloudBackupAction_descriptor,
@@ -1491,7 +1565,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "BackupId", "SourceBackup", "ExpireTime",
             });
     internal_static_google_spanner_executor_v1_GetCloudBackupAction_descriptor =
-        getDescriptor().getMessageType(42);
+        getDescriptor().getMessageType(43);
     internal_static_google_spanner_executor_v1_GetCloudBackupAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_GetCloudBackupAction_descriptor,
@@ -1499,7 +1573,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "BackupId",
             });
     internal_static_google_spanner_executor_v1_UpdateCloudBackupAction_descriptor =
-        getDescriptor().getMessageType(43);
+        getDescriptor().getMessageType(44);
     internal_static_google_spanner_executor_v1_UpdateCloudBackupAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_UpdateCloudBackupAction_descriptor,
@@ -1507,7 +1581,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "BackupId", "ExpireTime",
             });
     internal_static_google_spanner_executor_v1_DeleteCloudBackupAction_descriptor =
-        getDescriptor().getMessageType(44);
+        getDescriptor().getMessageType(45);
     internal_static_google_spanner_executor_v1_DeleteCloudBackupAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_DeleteCloudBackupAction_descriptor,
@@ -1515,7 +1589,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "BackupId",
             });
     internal_static_google_spanner_executor_v1_ListCloudBackupsAction_descriptor =
-        getDescriptor().getMessageType(45);
+        getDescriptor().getMessageType(46);
     internal_static_google_spanner_executor_v1_ListCloudBackupsAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ListCloudBackupsAction_descriptor,
@@ -1523,7 +1597,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "Filter", "PageSize", "PageToken",
             });
     internal_static_google_spanner_executor_v1_ListCloudBackupOperationsAction_descriptor =
-        getDescriptor().getMessageType(46);
+        getDescriptor().getMessageType(47);
     internal_static_google_spanner_executor_v1_ListCloudBackupOperationsAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ListCloudBackupOperationsAction_descriptor,
@@ -1531,7 +1605,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ProjectId", "InstanceId", "Filter", "PageSize", "PageToken",
             });
     internal_static_google_spanner_executor_v1_GetOperationAction_descriptor =
-        getDescriptor().getMessageType(47);
+        getDescriptor().getMessageType(48);
     internal_static_google_spanner_executor_v1_GetOperationAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_GetOperationAction_descriptor,
@@ -1539,7 +1613,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Operation",
             });
     internal_static_google_spanner_executor_v1_QueryCancellationAction_descriptor =
-        getDescriptor().getMessageType(48);
+        getDescriptor().getMessageType(49);
     internal_static_google_spanner_executor_v1_QueryCancellationAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_QueryCancellationAction_descriptor,
@@ -1547,15 +1621,23 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "LongRunningSql", "CancelQuery",
             });
     internal_static_google_spanner_executor_v1_CancelOperationAction_descriptor =
-        getDescriptor().getMessageType(49);
+        getDescriptor().getMessageType(50);
     internal_static_google_spanner_executor_v1_CancelOperationAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CancelOperationAction_descriptor,
             new java.lang.String[] {
               "Operation",
             });
+    internal_static_google_spanner_executor_v1_AddSplitPointsAction_descriptor =
+        getDescriptor().getMessageType(51);
+    internal_static_google_spanner_executor_v1_AddSplitPointsAction_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+            internal_static_google_spanner_executor_v1_AddSplitPointsAction_descriptor,
+            new java.lang.String[] {
+              "ProjectId", "InstanceId", "DatabaseId", "SplitPoints",
+            });
     internal_static_google_spanner_executor_v1_StartBatchTransactionAction_descriptor =
-        getDescriptor().getMessageType(50);
+        getDescriptor().getMessageType(52);
     internal_static_google_spanner_executor_v1_StartBatchTransactionAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_StartBatchTransactionAction_descriptor,
@@ -1563,7 +1645,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "BatchTxnTime", "Tid", "CloudDatabaseRole", "Param",
             });
     internal_static_google_spanner_executor_v1_CloseBatchTransactionAction_descriptor =
-        getDescriptor().getMessageType(51);
+        getDescriptor().getMessageType(53);
     internal_static_google_spanner_executor_v1_CloseBatchTransactionAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloseBatchTransactionAction_descriptor,
@@ -1571,7 +1653,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Cleanup",
             });
     internal_static_google_spanner_executor_v1_GenerateDbPartitionsForReadAction_descriptor =
-        getDescriptor().getMessageType(52);
+        getDescriptor().getMessageType(54);
     internal_static_google_spanner_executor_v1_GenerateDbPartitionsForReadAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_GenerateDbPartitionsForReadAction_descriptor,
@@ -1579,7 +1661,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Read", "Table", "DesiredBytesPerPartition", "MaxPartitionCount",
             });
     internal_static_google_spanner_executor_v1_GenerateDbPartitionsForQueryAction_descriptor =
-        getDescriptor().getMessageType(53);
+        getDescriptor().getMessageType(55);
     internal_static_google_spanner_executor_v1_GenerateDbPartitionsForQueryAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_GenerateDbPartitionsForQueryAction_descriptor,
@@ -1587,7 +1669,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Query", "DesiredBytesPerPartition",
             });
     internal_static_google_spanner_executor_v1_BatchPartition_descriptor =
-        getDescriptor().getMessageType(54);
+        getDescriptor().getMessageType(56);
     internal_static_google_spanner_executor_v1_BatchPartition_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_BatchPartition_descriptor,
@@ -1595,7 +1677,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Partition", "PartitionToken", "Table", "Index",
             });
     internal_static_google_spanner_executor_v1_ExecutePartitionAction_descriptor =
-        getDescriptor().getMessageType(55);
+        getDescriptor().getMessageType(57);
     internal_static_google_spanner_executor_v1_ExecutePartitionAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ExecutePartitionAction_descriptor,
@@ -1603,7 +1685,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Partition",
             });
     internal_static_google_spanner_executor_v1_ExecuteChangeStreamQuery_descriptor =
-        getDescriptor().getMessageType(56);
+        getDescriptor().getMessageType(58);
     internal_static_google_spanner_executor_v1_ExecuteChangeStreamQuery_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ExecuteChangeStreamQuery_descriptor,
@@ -1618,7 +1700,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "CloudDatabaseRole",
             });
     internal_static_google_spanner_executor_v1_SpannerActionOutcome_descriptor =
-        getDescriptor().getMessageType(57);
+        getDescriptor().getMessageType(59);
     internal_static_google_spanner_executor_v1_SpannerActionOutcome_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_SpannerActionOutcome_descriptor,
@@ -1633,9 +1715,10 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "AdminResult",
               "DmlRowsModified",
               "ChangeStreamRecords",
+              "SnapshotIsolationTxnReadTimestamp",
             });
     internal_static_google_spanner_executor_v1_AdminResult_descriptor =
-        getDescriptor().getMessageType(58);
+        getDescriptor().getMessageType(60);
     internal_static_google_spanner_executor_v1_AdminResult_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_AdminResult_descriptor,
@@ -1647,7 +1730,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "InstanceConfigResponse",
             });
     internal_static_google_spanner_executor_v1_CloudBackupResponse_descriptor =
-        getDescriptor().getMessageType(59);
+        getDescriptor().getMessageType(61);
     internal_static_google_spanner_executor_v1_CloudBackupResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloudBackupResponse_descriptor,
@@ -1655,7 +1738,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ListedBackups", "ListedBackupOperations", "NextPageToken", "Backup",
             });
     internal_static_google_spanner_executor_v1_OperationResponse_descriptor =
-        getDescriptor().getMessageType(60);
+        getDescriptor().getMessageType(62);
     internal_static_google_spanner_executor_v1_OperationResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_OperationResponse_descriptor,
@@ -1663,7 +1746,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ListedOperations", "NextPageToken", "Operation",
             });
     internal_static_google_spanner_executor_v1_CloudInstanceResponse_descriptor =
-        getDescriptor().getMessageType(61);
+        getDescriptor().getMessageType(63);
     internal_static_google_spanner_executor_v1_CloudInstanceResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloudInstanceResponse_descriptor,
@@ -1671,7 +1754,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ListedInstances", "NextPageToken", "Instance",
             });
     internal_static_google_spanner_executor_v1_CloudInstanceConfigResponse_descriptor =
-        getDescriptor().getMessageType(62);
+        getDescriptor().getMessageType(64);
     internal_static_google_spanner_executor_v1_CloudInstanceConfigResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloudInstanceConfigResponse_descriptor,
@@ -1679,7 +1762,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ListedInstanceConfigs", "NextPageToken", "InstanceConfig",
             });
     internal_static_google_spanner_executor_v1_CloudDatabaseResponse_descriptor =
-        getDescriptor().getMessageType(63);
+        getDescriptor().getMessageType(65);
     internal_static_google_spanner_executor_v1_CloudDatabaseResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloudDatabaseResponse_descriptor,
@@ -1687,7 +1770,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "ListedDatabases", "ListedDatabaseOperations", "NextPageToken", "Database",
             });
     internal_static_google_spanner_executor_v1_ReadResult_descriptor =
-        getDescriptor().getMessageType(64);
+        getDescriptor().getMessageType(66);
     internal_static_google_spanner_executor_v1_ReadResult_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ReadResult_descriptor,
@@ -1695,7 +1778,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Table", "Index", "RequestIndex", "Row", "RowType",
             });
     internal_static_google_spanner_executor_v1_QueryResult_descriptor =
-        getDescriptor().getMessageType(65);
+        getDescriptor().getMessageType(67);
     internal_static_google_spanner_executor_v1_QueryResult_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_QueryResult_descriptor,
@@ -1703,7 +1786,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Row", "RowType",
             });
     internal_static_google_spanner_executor_v1_ChangeStreamRecord_descriptor =
-        getDescriptor().getMessageType(66);
+        getDescriptor().getMessageType(68);
     internal_static_google_spanner_executor_v1_ChangeStreamRecord_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ChangeStreamRecord_descriptor,
@@ -1711,7 +1794,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "DataChange", "ChildPartition", "Heartbeat", "Record",
             });
     internal_static_google_spanner_executor_v1_DataChangeRecord_descriptor =
-        getDescriptor().getMessageType(67);
+        getDescriptor().getMessageType(69);
     internal_static_google_spanner_executor_v1_DataChangeRecord_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_DataChangeRecord_descriptor,
@@ -1747,7 +1830,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Keys", "NewValues", "OldValues",
             });
     internal_static_google_spanner_executor_v1_ChildPartitionsRecord_descriptor =
-        getDescriptor().getMessageType(68);
+        getDescriptor().getMessageType(70);
     internal_static_google_spanner_executor_v1_ChildPartitionsRecord_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ChildPartitionsRecord_descriptor,
@@ -1764,7 +1847,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "Token", "ParentPartitionTokens",
             });
     internal_static_google_spanner_executor_v1_HeartbeatRecord_descriptor =
-        getDescriptor().getMessageType(69);
+        getDescriptor().getMessageType(71);
     internal_static_google_spanner_executor_v1_HeartbeatRecord_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_HeartbeatRecord_descriptor,
@@ -1772,7 +1855,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "HeartbeatTime",
             });
     internal_static_google_spanner_executor_v1_SpannerOptions_descriptor =
-        getDescriptor().getMessageType(70);
+        getDescriptor().getMessageType(72);
     internal_static_google_spanner_executor_v1_SpannerOptions_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_SpannerOptions_descriptor,
@@ -1780,7 +1863,7 @@ public final class CloudExecutorProto extends com.google.protobuf.GeneratedFile 
               "SessionPoolOptions",
             });
     internal_static_google_spanner_executor_v1_SessionPoolOptions_descriptor =
-        getDescriptor().getMessageType(71);
+        getDescriptor().getMessageType(73);
     internal_static_google_spanner_executor_v1_SessionPoolOptions_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_SessionPoolOptions_descriptor,

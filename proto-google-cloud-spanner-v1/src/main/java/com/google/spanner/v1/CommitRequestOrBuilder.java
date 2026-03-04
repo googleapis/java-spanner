@@ -364,5 +364,63 @@ public interface CommitRequestOrBuilder
    */
   com.google.spanner.v1.MultiplexedSessionPrecommitTokenOrBuilder getPrecommitTokenOrBuilder();
 
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Makes the Spanner requests location-aware if present.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 10 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the routingHint field is set.
+   */
+  boolean hasRoutingHint();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Makes the Spanner requests location-aware if present.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 10 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The routingHint.
+   */
+  com.google.spanner.v1.RoutingHint getRoutingHint();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Makes the Spanner requests location-aware if present.
+   *
+   * It gives the server hints that can be used to route the request
+   * to an appropriate server, potentially significantly decreasing latency and
+   * improving throughput. To achieve improved performance, most fields must be
+   * filled in with accurate values.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.RoutingHint routing_hint = 10 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.v1.RoutingHintOrBuilder getRoutingHintOrBuilder();
+
   com.google.spanner.v1.CommitRequest.TransactionCase getTransactionCase();
 }
