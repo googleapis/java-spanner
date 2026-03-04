@@ -17,19 +17,17 @@
 package com.google.cloud.spanner.connection.it;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
-import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.MutableCredentials;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.InstanceName;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,78 +36,64 @@ import org.junit.runners.JUnit4;
 
 @Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
-public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
-  private static final String VALID_KEY_RESOURCE =
-      "/com/google/cloud/spanner/connection/test-key.json";
+public class ITMutableCredentialsTest {
+  private static final String MISSING_PERM_KEY =
+      "/com/google/cloud/spanner/connection/test-key-missing-permissions.json";
 
-  private static final String INVALID_KEY_RESOURCE =
-      "/com/google/cloud/spanner/connection/invalid-test-key.json";
+  private static final String INVALID_KEY = "/com/google/cloud/spanner/connection/test-key.json";
 
   @Test
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
 
-    GoogleCredentials credentialsFromFile;
+    GoogleCredentials missingPermissionCredentials;
     try (InputStream stream =
-        ITMutableCredentialsTest.class.getResourceAsStream(VALID_KEY_RESOURCE)) {
-      assertNotNull("Missing test resource: " + VALID_KEY_RESOURCE, stream);
-      credentialsFromFile = GoogleCredentials.fromStream(stream);
+        ITMutableCredentialsTest.class.getResourceAsStream(MISSING_PERM_KEY)) {
+      missingPermissionCredentials = GoogleCredentials.fromStream(stream);
     }
-    assumeTrue(
-        "This test requires service account credentials",
-        credentialsFromFile instanceof ServiceAccountCredentials);
-
-    ServiceAccountCredentials validCredentials = (ServiceAccountCredentials) credentialsFromFile;
     ServiceAccountCredentials invalidCredentials;
-    try (InputStream stream =
-        ITMutableCredentialsTest.class.getResourceAsStream(INVALID_KEY_RESOURCE)) {
-      assertNotNull("Missing test resource: " + INVALID_KEY_RESOURCE, stream);
+    try (InputStream stream = ITMutableCredentialsTest.class.getResourceAsStream(INVALID_KEY)) {
       invalidCredentials = ServiceAccountCredentials.fromStream(stream);
     }
-
-    List<String> scopes = new ArrayList<>(getTestEnv().getTestHelper().getOptions().getScopes());
-    MutableCredentials mutableCredentials = new MutableCredentials(validCredentials, scopes);
+    List<String> scopes =
+        Collections.singletonList("https://www.googleapis.com/auth/cloud-platform");
+    // create MutableCredentials first with missing permissions
+    MutableCredentials mutableCredentials =
+        new MutableCredentials((ServiceAccountCredentials) missingPermissionCredentials, scopes);
 
     SpannerOptions options = SpannerOptions.newBuilder().setCredentials(mutableCredentials).build();
-
     try (Spanner spanner = options.getService();
         DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
-      /* String dbName =
-          DatabaseName.of(
-                  getTestEnv().getTestHelper().getInstanceId().getProject(),
-                  getTestEnv().getTestHelper().getInstanceId().getInstance(),
-                  "TEST")
-              .toString();
-      Database database = databaseAdminClient.getDatabase(dbName);*/
-      InstanceName instanceName =
-          InstanceName.of(
-              getTestEnv().getTestHelper().getInstanceId().getProject(),
-              getTestEnv().getTestHelper().getInstanceId().getInstance());
-      DatabaseAdminClient.ListDatabasesPagedResponse response =
-          databaseAdminClient.listDatabases(instanceName);
-
-      boolean databaseFound = false;
-      for (DatabaseAdminClient.ListDatabasesPage page : response.iteratePages()) {
-        for (Database database : page.iterateAll()) {
-          System.out.println("\t" + database.getName());
-          databaseFound = true;
-        }
-      }
-      assertTrue(databaseFound);
+      String project = "gcloud-devel";
+      String instance = "java-client-integration-tests";
       try {
-        mutableCredentials.updateCredentials(invalidCredentials);
-        DatabaseAdminClient.ListDatabasesPagedResponse responseFailure =
-            databaseAdminClient.listDatabases(instanceName);
-        for (DatabaseAdminClient.ListDatabasesPage page : responseFailure.iteratePages()) {
-          for (Database database : page.iterateAll()) {
-            System.out.println("\t" + database.getName());
-          }
-        }
-        fail("Expected UNAUTHENTICATED after switching to invalid credentials");
-      } catch (SpannerException e) {
-        assertEquals(ErrorCode.UNAUTHENTICATED, e.getErrorCode());
+        listDatabases(databaseAdminClient, project, instance);
+      } catch (Exception e) {
+        // specifically validate the permission denied error message
+        assertTrue(e.getMessage().contains("PERMISSION_DENIED"));
+        assertFalse(e.getMessage().contains("UNAUTHENTICATED"));
       }
-    } finally {
-      closeSpanner();
+
+      // update mutableCredentials now to use an invalid credential
+      mutableCredentials.updateCredentials(invalidCredentials);
+      try {
+        listDatabases(databaseAdminClient, project, instance);
+        fail("Expected UNAUTHENTICATED after switching to invalid credentials");
+      } catch (Exception e) {
+        assertTrue(e.getMessage().contains("UNAUTHENTICATED"));
+        assertFalse(e.getMessage().contains("PERMISSION_DENIED"));
+      }
+    }
+  }
+
+  private static void listDatabases(
+      DatabaseAdminClient databaseAdminClient, String projectId, String instanceId) {
+    DatabaseAdminClient.ListDatabasesPagedResponse response =
+        databaseAdminClient.listDatabases(InstanceName.of(projectId, instanceId));
+
+    for (DatabaseAdminClient.ListDatabasesPage page : response.iteratePages()) {
+      for (Database database : page.iterateAll()) {
+        // no-op
+      }
     }
   }
 }
