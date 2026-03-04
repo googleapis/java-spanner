@@ -29,8 +29,6 @@ import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
@@ -51,7 +49,8 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
 
     GoogleCredentials credentialsFromFile;
-    try (InputStream stream = Files.newInputStream(Paths.get(VALID_KEY_RESOURCE))) {
+    try (InputStream stream = ITMutableCredentialsTest.class.getResourceAsStream(VALID_KEY_RESOURCE)) {
+      assertNotNull("Missing test resource: " + VALID_KEY_RESOURCE, stream);
       credentialsFromFile = GoogleCredentials.fromStream(stream);
     }
     assumeTrue(
@@ -60,7 +59,7 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
 
     ServiceAccountCredentials validCredentials = (ServiceAccountCredentials) credentialsFromFile;
     ServiceAccountCredentials invalidCredentials;
-    try (InputStream stream = Files.newInputStream(Paths.get(INVALID_KEY_RESOURCE))) {
+    try (InputStream stream = ITMutableCredentialsTest.class.getResourceAsStream(INVALID_KEY_RESOURCE)) {
       assertNotNull("Missing test resource: " + INVALID_KEY_RESOURCE, stream);
       invalidCredentials = ServiceAccountCredentials.fromStream(stream);
     }
