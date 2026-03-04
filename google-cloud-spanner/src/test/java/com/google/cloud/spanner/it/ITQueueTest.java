@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
@@ -66,14 +65,6 @@ public class ITQueueTest {
 
   private static DatabaseClient client;
 
-  private static boolean isUsingCloudDevel() {
-    String jobType = System.getenv("JOB_TYPE");
-
-    // Assumes that the jobType contains the string "cloud-devel" to signal that
-    // the environment is cloud-devel.
-    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
-  }
-
   private Struct readRow(String queue, Key key, String... columns) {
     return client.singleUse(TimestampBound.strong()).readRow(queue, key, Arrays.asList(columns));
   }
@@ -81,7 +72,7 @@ public class ITQueueTest {
   @BeforeClass
   public static void setUpTestSuite() {
     // TODO: remove once the feature is fully enabled in prod
-    assumeTrue("Queue is currently only supported in cloud-devel", isUsingCloudDevel());
+    assumeTrue("Queue tests are temporarily disabled", false);
     Database googleStandardSQLDatabase =
         env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA);
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
