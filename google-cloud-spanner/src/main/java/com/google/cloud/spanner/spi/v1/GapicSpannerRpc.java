@@ -232,6 +232,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import io.opentelemetry.api.OpenTelemetry;
 
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
 @InternalApi
@@ -567,6 +568,17 @@ public class GapicSpannerRpc implements SpannerRpc {
         .build();
   }
 
+  @VisibleForTesting
+  OpenTelemetry getFallbackOpenTelemetry(SpannerOptions options) {
+    if (options.isEnableBuiltInMetrics()) {
+      OpenTelemetry builtInOtel = options.getBuiltInOpenTelemetry();
+      if (builtInOtel != null) {
+        return builtInOtel;
+      }
+    }
+    return OpenTelemetry.noop(); 
+  }
+
   private static KeyAwareChannel extractKeyAwareChannel(TransportChannel transportChannel) {
     if (transportChannel instanceof GrpcTransportChannel) {
       Channel channel = ((GrpcTransportChannel) transportChannel).getChannel();
@@ -671,7 +683,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
           GcpFallbackOpenTelemetry fallbackTelemetry =
               GcpFallbackOpenTelemetry.newBuilder()
-                  .withSdk(options.getOpenTelemetry())
+                  .withSdk(getFallbackOpenTelemetry(options))
                   .disableAllMetrics()
                   .enableMetrics(Arrays.asList("fallback_count", "call_status"))
                   .build();
