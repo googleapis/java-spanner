@@ -98,7 +98,7 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
       try {
         mutableCredentials.updateCredentials(invalidCredentials);
         DatabaseAdminClient.ListDatabasesPagedResponse responseFailure =
-                databaseAdminClient.listDatabases(instanceName);
+            databaseAdminClient.listDatabases(instanceName);
         for (DatabaseAdminClient.ListDatabasesPage page : responseFailure.iteratePages()) {
           for (Database database : page.iterateAll()) {
             System.out.println("\t" + database.getName());
