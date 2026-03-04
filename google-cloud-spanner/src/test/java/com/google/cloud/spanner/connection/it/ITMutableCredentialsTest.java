@@ -67,6 +67,7 @@ public class ITMutableCredentialsTest {
       String instance = "java-client-integration-tests";
       try {
         listDatabases(databaseAdminClient, project, instance);
+        fail("Expected PERMISSION_DENIED");
       } catch (Exception e) {
         // specifically validate the permission denied error message
         System.out.println("exception " + e.getMessage());
