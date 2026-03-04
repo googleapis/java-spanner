@@ -83,7 +83,7 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
       InstanceName instanceName =
           InstanceName.of(
               getTestEnv().getTestHelper().getInstanceId().getProject(),
-              getTestEnv().getTestHelper().getInstanceId().getProject());
+              getTestEnv().getTestHelper().getInstanceId().getInstance());
       DatabaseAdminClient.ListDatabasesPagedResponse response =
           databaseAdminClient.listDatabases(instanceName);
 
