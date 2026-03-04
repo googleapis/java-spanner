@@ -81,4 +81,34 @@ public interface BatchDmlActionOrBuilder
    * <code>repeated .google.spanner.executor.v1.QueryAction updates = 1;</code>
    */
   com.google.spanner.executor.v1.QueryActionOrBuilder getUpdatesOrBuilder(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to set this request with the last statement option in the
+   * transaction. The transaction should be committed after processing this
+   * request.
+   * </pre>
+   *
+   * <code>optional bool last_statements = 2;</code>
+   *
+   * @return Whether the lastStatements field is set.
+   */
+  boolean hasLastStatements();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to set this request with the last statement option in the
+   * transaction. The transaction should be committed after processing this
+   * request.
+   * </pre>
+   *
+   * <code>optional bool last_statements = 2;</code>
+   *
+   * @return The lastStatements.
+   */
+  boolean getLastStatements();
 }

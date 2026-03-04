@@ -518,7 +518,7 @@ public interface ReadRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. If present, it makes the Spanner requests location-aware.
+   * Optional. Makes the Spanner requests location-aware if present.
    *
    * It gives the server hints that can be used to route the request
    * to an appropriate server, potentially significantly decreasing latency and
@@ -538,7 +538,7 @@ public interface ReadRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. If present, it makes the Spanner requests location-aware.
+   * Optional. Makes the Spanner requests location-aware if present.
    *
    * It gives the server hints that can be used to route the request
    * to an appropriate server, potentially significantly decreasing latency and
@@ -558,7 +558,7 @@ public interface ReadRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. If present, it makes the Spanner requests location-aware.
+   * Optional. Makes the Spanner requests location-aware if present.
    *
    * It gives the server hints that can be used to route the request
    * to an appropriate server, potentially significantly decreasing latency and

@@ -20,15 +20,7 @@
 
 package com.google.spanner.executor.v1;
 
-/**
- *
- *
- * <pre>
- * Options for executing the transaction.
- * </pre>
- *
- * Protobuf type {@code google.spanner.executor.v1.TransactionExecutionOptions}
- */
+/** Protobuf type {@code google.spanner.executor.v1.TransactionExecutionOptions} */
 @com.google.protobuf.Generated
 public final class TransactionExecutionOptions extends com.google.protobuf.GeneratedMessage
     implements
@@ -87,6 +79,106 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     return optimistic_;
   }
 
+  public static final int EXCLUDE_FROM_CHANGE_STREAMS_FIELD_NUMBER = 2;
+  private boolean excludeFromChangeStreams_ = false;
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether traffic from this transaction will be excluded from tracking change
+   * streams with allow_txn_exclusion=true.
+   * </pre>
+   *
+   * <code>bool exclude_from_change_streams = 2;</code>
+   *
+   * @return The excludeFromChangeStreams.
+   */
+  @java.lang.Override
+  public boolean getExcludeFromChangeStreams() {
+    return excludeFromChangeStreams_;
+  }
+
+  public static final int SERIALIZABLE_OPTIMISTIC_FIELD_NUMBER = 3;
+  private boolean serializableOptimistic_ = false;
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether serializable isolation with optimistic mode concurrency should be
+   * used to execute this transaction.
+   * </pre>
+   *
+   * <code>bool serializable_optimistic = 3;</code>
+   *
+   * @return The serializableOptimistic.
+   */
+  @java.lang.Override
+  public boolean getSerializableOptimistic() {
+    return serializableOptimistic_;
+  }
+
+  public static final int SNAPSHOT_ISOLATION_OPTIMISTIC_FIELD_NUMBER = 4;
+  private boolean snapshotIsolationOptimistic_ = false;
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether snapshot isolation with optimistic mode concurrency should be used
+   * to execute this transaction.
+   * </pre>
+   *
+   * <code>bool snapshot_isolation_optimistic = 4;</code>
+   *
+   * @return The snapshotIsolationOptimistic.
+   */
+  @java.lang.Override
+  public boolean getSnapshotIsolationOptimistic() {
+    return snapshotIsolationOptimistic_;
+  }
+
+  public static final int SNAPSHOT_ISOLATION_PESSIMISTIC_FIELD_NUMBER = 5;
+  private boolean snapshotIsolationPessimistic_ = false;
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether snapshot isolation with pessimistic mode concurrency should be used
+   * to execute this transaction.
+   * </pre>
+   *
+   * <code>bool snapshot_isolation_pessimistic = 5;</code>
+   *
+   * @return The snapshotIsolationPessimistic.
+   */
+  @java.lang.Override
+  public boolean getSnapshotIsolationPessimistic() {
+    return snapshotIsolationPessimistic_;
+  }
+
+  public static final int EXCLUDE_TXN_FROM_CHANGE_STREAMS_FIELD_NUMBER = 6;
+  private boolean excludeTxnFromChangeStreams_ = false;
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to exclude mutations of this transaction from the allowed tracking
+   * change streams.
+   * </pre>
+   *
+   * <code>bool exclude_txn_from_change_streams = 6;</code>
+   *
+   * @return The excludeTxnFromChangeStreams.
+   */
+  @java.lang.Override
+  public boolean getExcludeTxnFromChangeStreams() {
+    return excludeTxnFromChangeStreams_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -104,6 +196,21 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     if (optimistic_ != false) {
       output.writeBool(1, optimistic_);
     }
+    if (excludeFromChangeStreams_ != false) {
+      output.writeBool(2, excludeFromChangeStreams_);
+    }
+    if (serializableOptimistic_ != false) {
+      output.writeBool(3, serializableOptimistic_);
+    }
+    if (snapshotIsolationOptimistic_ != false) {
+      output.writeBool(4, snapshotIsolationOptimistic_);
+    }
+    if (snapshotIsolationPessimistic_ != false) {
+      output.writeBool(5, snapshotIsolationPessimistic_);
+    }
+    if (excludeTxnFromChangeStreams_ != false) {
+      output.writeBool(6, excludeTxnFromChangeStreams_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -115,6 +222,24 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     size = 0;
     if (optimistic_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(1, optimistic_);
+    }
+    if (excludeFromChangeStreams_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(2, excludeFromChangeStreams_);
+    }
+    if (serializableOptimistic_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(3, serializableOptimistic_);
+    }
+    if (snapshotIsolationOptimistic_ != false) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeBoolSize(4, snapshotIsolationOptimistic_);
+    }
+    if (snapshotIsolationPessimistic_ != false) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeBoolSize(5, snapshotIsolationPessimistic_);
+    }
+    if (excludeTxnFromChangeStreams_ != false) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeBoolSize(6, excludeTxnFromChangeStreams_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -133,6 +258,11 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
         (com.google.spanner.executor.v1.TransactionExecutionOptions) obj;
 
     if (getOptimistic() != other.getOptimistic()) return false;
+    if (getExcludeFromChangeStreams() != other.getExcludeFromChangeStreams()) return false;
+    if (getSerializableOptimistic() != other.getSerializableOptimistic()) return false;
+    if (getSnapshotIsolationOptimistic() != other.getSnapshotIsolationOptimistic()) return false;
+    if (getSnapshotIsolationPessimistic() != other.getSnapshotIsolationPessimistic()) return false;
+    if (getExcludeTxnFromChangeStreams() != other.getExcludeTxnFromChangeStreams()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -146,6 +276,17 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + OPTIMISTIC_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getOptimistic());
+    hash = (37 * hash) + EXCLUDE_FROM_CHANGE_STREAMS_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getExcludeFromChangeStreams());
+    hash = (37 * hash) + SERIALIZABLE_OPTIMISTIC_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getSerializableOptimistic());
+    hash = (37 * hash) + SNAPSHOT_ISOLATION_OPTIMISTIC_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getSnapshotIsolationOptimistic());
+    hash = (37 * hash) + SNAPSHOT_ISOLATION_PESSIMISTIC_FIELD_NUMBER;
+    hash =
+        (53 * hash) + com.google.protobuf.Internal.hashBoolean(getSnapshotIsolationPessimistic());
+    hash = (37 * hash) + EXCLUDE_TXN_FROM_CHANGE_STREAMS_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getExcludeTxnFromChangeStreams());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -248,15 +389,7 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     return builder;
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * Options for executing the transaction.
-   * </pre>
-   *
-   * Protobuf type {@code google.spanner.executor.v1.TransactionExecutionOptions}
-   */
+  /** Protobuf type {@code google.spanner.executor.v1.TransactionExecutionOptions} */
   public static final class Builder extends com.google.protobuf.GeneratedMessage.Builder<Builder>
       implements
       // @@protoc_insertion_point(builder_implements:google.spanner.executor.v1.TransactionExecutionOptions)
@@ -288,6 +421,11 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
       super.clear();
       bitField0_ = 0;
       optimistic_ = false;
+      excludeFromChangeStreams_ = false;
+      serializableOptimistic_ = false;
+      snapshotIsolationOptimistic_ = false;
+      snapshotIsolationPessimistic_ = false;
+      excludeTxnFromChangeStreams_ = false;
       return this;
     }
 
@@ -327,6 +465,21 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.optimistic_ = optimistic_;
       }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.excludeFromChangeStreams_ = excludeFromChangeStreams_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.serializableOptimistic_ = serializableOptimistic_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.snapshotIsolationOptimistic_ = snapshotIsolationOptimistic_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.snapshotIsolationPessimistic_ = snapshotIsolationPessimistic_;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.excludeTxnFromChangeStreams_ = excludeTxnFromChangeStreams_;
+      }
     }
 
     @java.lang.Override
@@ -344,6 +497,21 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
         return this;
       if (other.getOptimistic() != false) {
         setOptimistic(other.getOptimistic());
+      }
+      if (other.getExcludeFromChangeStreams() != false) {
+        setExcludeFromChangeStreams(other.getExcludeFromChangeStreams());
+      }
+      if (other.getSerializableOptimistic() != false) {
+        setSerializableOptimistic(other.getSerializableOptimistic());
+      }
+      if (other.getSnapshotIsolationOptimistic() != false) {
+        setSnapshotIsolationOptimistic(other.getSnapshotIsolationOptimistic());
+      }
+      if (other.getSnapshotIsolationPessimistic() != false) {
+        setSnapshotIsolationPessimistic(other.getSnapshotIsolationPessimistic());
+      }
+      if (other.getExcludeTxnFromChangeStreams() != false) {
+        setExcludeTxnFromChangeStreams(other.getExcludeTxnFromChangeStreams());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -377,6 +545,36 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
                 bitField0_ |= 0x00000001;
                 break;
               } // case 8
+            case 16:
+              {
+                excludeFromChangeStreams_ = input.readBool();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+            case 24:
+              {
+                serializableOptimistic_ = input.readBool();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+            case 32:
+              {
+                snapshotIsolationOptimistic_ = input.readBool();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
+            case 40:
+              {
+                snapshotIsolationPessimistic_ = input.readBool();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 40
+            case 48:
+              {
+                excludeTxnFromChangeStreams_ = input.readBool();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 48
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -448,6 +646,301 @@ public final class TransactionExecutionOptions extends com.google.protobuf.Gener
     public Builder clearOptimistic() {
       bitField0_ = (bitField0_ & ~0x00000001);
       optimistic_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean excludeFromChangeStreams_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether traffic from this transaction will be excluded from tracking change
+     * streams with allow_txn_exclusion=true.
+     * </pre>
+     *
+     * <code>bool exclude_from_change_streams = 2;</code>
+     *
+     * @return The excludeFromChangeStreams.
+     */
+    @java.lang.Override
+    public boolean getExcludeFromChangeStreams() {
+      return excludeFromChangeStreams_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether traffic from this transaction will be excluded from tracking change
+     * streams with allow_txn_exclusion=true.
+     * </pre>
+     *
+     * <code>bool exclude_from_change_streams = 2;</code>
+     *
+     * @param value The excludeFromChangeStreams to set.
+     * @return This builder for chaining.
+     */
+    public Builder setExcludeFromChangeStreams(boolean value) {
+
+      excludeFromChangeStreams_ = value;
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether traffic from this transaction will be excluded from tracking change
+     * streams with allow_txn_exclusion=true.
+     * </pre>
+     *
+     * <code>bool exclude_from_change_streams = 2;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearExcludeFromChangeStreams() {
+      bitField0_ = (bitField0_ & ~0x00000002);
+      excludeFromChangeStreams_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean serializableOptimistic_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether serializable isolation with optimistic mode concurrency should be
+     * used to execute this transaction.
+     * </pre>
+     *
+     * <code>bool serializable_optimistic = 3;</code>
+     *
+     * @return The serializableOptimistic.
+     */
+    @java.lang.Override
+    public boolean getSerializableOptimistic() {
+      return serializableOptimistic_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether serializable isolation with optimistic mode concurrency should be
+     * used to execute this transaction.
+     * </pre>
+     *
+     * <code>bool serializable_optimistic = 3;</code>
+     *
+     * @param value The serializableOptimistic to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSerializableOptimistic(boolean value) {
+
+      serializableOptimistic_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether serializable isolation with optimistic mode concurrency should be
+     * used to execute this transaction.
+     * </pre>
+     *
+     * <code>bool serializable_optimistic = 3;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearSerializableOptimistic() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      serializableOptimistic_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean snapshotIsolationOptimistic_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether snapshot isolation with optimistic mode concurrency should be used
+     * to execute this transaction.
+     * </pre>
+     *
+     * <code>bool snapshot_isolation_optimistic = 4;</code>
+     *
+     * @return The snapshotIsolationOptimistic.
+     */
+    @java.lang.Override
+    public boolean getSnapshotIsolationOptimistic() {
+      return snapshotIsolationOptimistic_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether snapshot isolation with optimistic mode concurrency should be used
+     * to execute this transaction.
+     * </pre>
+     *
+     * <code>bool snapshot_isolation_optimistic = 4;</code>
+     *
+     * @param value The snapshotIsolationOptimistic to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSnapshotIsolationOptimistic(boolean value) {
+
+      snapshotIsolationOptimistic_ = value;
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether snapshot isolation with optimistic mode concurrency should be used
+     * to execute this transaction.
+     * </pre>
+     *
+     * <code>bool snapshot_isolation_optimistic = 4;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearSnapshotIsolationOptimistic() {
+      bitField0_ = (bitField0_ & ~0x00000008);
+      snapshotIsolationOptimistic_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean snapshotIsolationPessimistic_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether snapshot isolation with pessimistic mode concurrency should be used
+     * to execute this transaction.
+     * </pre>
+     *
+     * <code>bool snapshot_isolation_pessimistic = 5;</code>
+     *
+     * @return The snapshotIsolationPessimistic.
+     */
+    @java.lang.Override
+    public boolean getSnapshotIsolationPessimistic() {
+      return snapshotIsolationPessimistic_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether snapshot isolation with pessimistic mode concurrency should be used
+     * to execute this transaction.
+     * </pre>
+     *
+     * <code>bool snapshot_isolation_pessimistic = 5;</code>
+     *
+     * @param value The snapshotIsolationPessimistic to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSnapshotIsolationPessimistic(boolean value) {
+
+      snapshotIsolationPessimistic_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether snapshot isolation with pessimistic mode concurrency should be used
+     * to execute this transaction.
+     * </pre>
+     *
+     * <code>bool snapshot_isolation_pessimistic = 5;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearSnapshotIsolationPessimistic() {
+      bitField0_ = (bitField0_ & ~0x00000010);
+      snapshotIsolationPessimistic_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean excludeTxnFromChangeStreams_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to exclude mutations of this transaction from the allowed tracking
+     * change streams.
+     * </pre>
+     *
+     * <code>bool exclude_txn_from_change_streams = 6;</code>
+     *
+     * @return The excludeTxnFromChangeStreams.
+     */
+    @java.lang.Override
+    public boolean getExcludeTxnFromChangeStreams() {
+      return excludeTxnFromChangeStreams_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to exclude mutations of this transaction from the allowed tracking
+     * change streams.
+     * </pre>
+     *
+     * <code>bool exclude_txn_from_change_streams = 6;</code>
+     *
+     * @param value The excludeTxnFromChangeStreams to set.
+     * @return This builder for chaining.
+     */
+    public Builder setExcludeTxnFromChangeStreams(boolean value) {
+
+      excludeTxnFromChangeStreams_ = value;
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Whether to exclude mutations of this transaction from the allowed tracking
+     * change streams.
+     * </pre>
+     *
+     * <code>bool exclude_txn_from_change_streams = 6;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearExcludeTxnFromChangeStreams() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      excludeTxnFromChangeStreams_ = false;
       onChanged();
       return this;
     }

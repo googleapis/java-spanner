@@ -38,4 +38,74 @@ public interface TransactionExecutionOptionsOrBuilder
    * @return The optimistic.
    */
   boolean getOptimistic();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether traffic from this transaction will be excluded from tracking change
+   * streams with allow_txn_exclusion=true.
+   * </pre>
+   *
+   * <code>bool exclude_from_change_streams = 2;</code>
+   *
+   * @return The excludeFromChangeStreams.
+   */
+  boolean getExcludeFromChangeStreams();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether serializable isolation with optimistic mode concurrency should be
+   * used to execute this transaction.
+   * </pre>
+   *
+   * <code>bool serializable_optimistic = 3;</code>
+   *
+   * @return The serializableOptimistic.
+   */
+  boolean getSerializableOptimistic();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether snapshot isolation with optimistic mode concurrency should be used
+   * to execute this transaction.
+   * </pre>
+   *
+   * <code>bool snapshot_isolation_optimistic = 4;</code>
+   *
+   * @return The snapshotIsolationOptimistic.
+   */
+  boolean getSnapshotIsolationOptimistic();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether snapshot isolation with pessimistic mode concurrency should be used
+   * to execute this transaction.
+   * </pre>
+   *
+   * <code>bool snapshot_isolation_pessimistic = 5;</code>
+   *
+   * @return The snapshotIsolationPessimistic.
+   */
+  boolean getSnapshotIsolationPessimistic();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to exclude mutations of this transaction from the allowed tracking
+   * change streams.
+   * </pre>
+   *
+   * <code>bool exclude_txn_from_change_streams = 6;</code>
+   *
+   * @return The excludeTxnFromChangeStreams.
+   */
+  boolean getExcludeTxnFromChangeStreams();
 }

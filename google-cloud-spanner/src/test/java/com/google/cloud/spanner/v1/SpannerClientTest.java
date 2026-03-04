@@ -953,6 +953,7 @@ public class SpannerClientTest {
             .setId(ByteString.EMPTY)
             .setReadTimestamp(Timestamp.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -996,6 +997,7 @@ public class SpannerClientTest {
             .setId(ByteString.EMPTY)
             .setReadTimestamp(Timestamp.newBuilder().build())
             .setPrecommitToken(MultiplexedSessionPrecommitToken.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -1039,6 +1041,7 @@ public class SpannerClientTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .setSnapshotTimestamp(Timestamp.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -1085,6 +1088,7 @@ public class SpannerClientTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .setSnapshotTimestamp(Timestamp.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -1131,6 +1135,7 @@ public class SpannerClientTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .setSnapshotTimestamp(Timestamp.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -1177,6 +1182,7 @@ public class SpannerClientTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .setSnapshotTimestamp(Timestamp.newBuilder().build())
+            .setCacheUpdate(CacheUpdate.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 

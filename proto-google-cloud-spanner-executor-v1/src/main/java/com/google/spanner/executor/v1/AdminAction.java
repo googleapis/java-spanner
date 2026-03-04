@@ -106,6 +106,7 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
     GET_OPERATION(25),
     CANCEL_OPERATION(26),
     CHANGE_QUORUM_CLOUD_DATABASE(28),
+    ADD_SPLIT_POINTS(29),
     ACTION_NOT_SET(0);
     private final int value;
 
@@ -181,6 +182,8 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
           return CANCEL_OPERATION;
         case 28:
           return CHANGE_QUORUM_CLOUD_DATABASE;
+        case 29:
+          return ADD_SPLIT_POINTS;
         case 0:
           return ACTION_NOT_SET;
         default:
@@ -1789,6 +1792,60 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
     return com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.getDefaultInstance();
   }
 
+  public static final int ADD_SPLIT_POINTS_FIELD_NUMBER = 29;
+
+  /**
+   *
+   *
+   * <pre>
+   * Action that adds splits to a Cloud Spanner database.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+   *
+   * @return Whether the addSplitPoints field is set.
+   */
+  @java.lang.Override
+  public boolean hasAddSplitPoints() {
+    return actionCase_ == 29;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Action that adds splits to a Cloud Spanner database.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+   *
+   * @return The addSplitPoints.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.AddSplitPointsAction getAddSplitPoints() {
+    if (actionCase_ == 29) {
+      return (com.google.spanner.executor.v1.AddSplitPointsAction) action_;
+    }
+    return com.google.spanner.executor.v1.AddSplitPointsAction.getDefaultInstance();
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * Action that adds splits to a Cloud Spanner database.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.AddSplitPointsActionOrBuilder getAddSplitPointsOrBuilder() {
+    if (actionCase_ == 29) {
+      return (com.google.spanner.executor.v1.AddSplitPointsAction) action_;
+    }
+    return com.google.spanner.executor.v1.AddSplitPointsAction.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1894,6 +1951,9 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
     if (actionCase_ == 28) {
       output.writeMessage(
           28, (com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction) action_);
+    }
+    if (actionCase_ == 29) {
+      output.writeMessage(29, (com.google.spanner.executor.v1.AddSplitPointsAction) action_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -2044,6 +2104,11 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               28, (com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction) action_);
     }
+    if (actionCase_ == 29) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              29, (com.google.spanner.executor.v1.AddSplitPointsAction) action_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -2151,6 +2216,9 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
       case 28:
         if (!getChangeQuorumCloudDatabase().equals(other.getChangeQuorumCloudDatabase()))
           return false;
+        break;
+      case 29:
+        if (!getAddSplitPoints().equals(other.getAddSplitPoints())) return false;
         break;
       case 0:
       default:
@@ -2278,6 +2346,10 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
       case 28:
         hash = (37 * hash) + CHANGE_QUORUM_CLOUD_DATABASE_FIELD_NUMBER;
         hash = (53 * hash) + getChangeQuorumCloudDatabase().hashCode();
+        break;
+      case 29:
+        hash = (37 * hash) + ADD_SPLIT_POINTS_FIELD_NUMBER;
+        hash = (53 * hash) + getAddSplitPoints().hashCode();
         break;
       case 0:
       default:
@@ -2507,6 +2579,9 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
       if (changeQuorumCloudDatabaseBuilder_ != null) {
         changeQuorumCloudDatabaseBuilder_.clear();
       }
+      if (addSplitPointsBuilder_ != null) {
+        addSplitPointsBuilder_.clear();
+      }
       actionCase_ = 0;
       action_ = null;
       return this;
@@ -2634,6 +2709,9 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
       }
       if (actionCase_ == 28 && changeQuorumCloudDatabaseBuilder_ != null) {
         result.action_ = changeQuorumCloudDatabaseBuilder_.build();
+      }
+      if (actionCase_ == 29 && addSplitPointsBuilder_ != null) {
+        result.action_ = addSplitPointsBuilder_.build();
       }
     }
 
@@ -2788,6 +2866,11 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
         case CHANGE_QUORUM_CLOUD_DATABASE:
           {
             mergeChangeQuorumCloudDatabase(other.getChangeQuorumCloudDatabase());
+            break;
+          }
+        case ADD_SPLIT_POINTS:
+          {
+            mergeAddSplitPoints(other.getAddSplitPoints());
             break;
           }
         case ACTION_NOT_SET:
@@ -3025,6 +3108,13 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
                 actionCase_ = 28;
                 break;
               } // case 226
+            case 234:
+              {
+                input.readMessage(
+                    internalGetAddSplitPointsFieldBuilder().getBuilder(), extensionRegistry);
+                actionCase_ = 29;
+                break;
+              } // case 234
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -9488,6 +9578,226 @@ public final class AdminAction extends com.google.protobuf.GeneratedMessage
       actionCase_ = 28;
       onChanged();
       return changeQuorumCloudDatabaseBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilder<
+            com.google.spanner.executor.v1.AddSplitPointsAction,
+            com.google.spanner.executor.v1.AddSplitPointsAction.Builder,
+            com.google.spanner.executor.v1.AddSplitPointsActionOrBuilder>
+        addSplitPointsBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     *
+     * @return Whether the addSplitPoints field is set.
+     */
+    @java.lang.Override
+    public boolean hasAddSplitPoints() {
+      return actionCase_ == 29;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     *
+     * @return The addSplitPoints.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.AddSplitPointsAction getAddSplitPoints() {
+      if (addSplitPointsBuilder_ == null) {
+        if (actionCase_ == 29) {
+          return (com.google.spanner.executor.v1.AddSplitPointsAction) action_;
+        }
+        return com.google.spanner.executor.v1.AddSplitPointsAction.getDefaultInstance();
+      } else {
+        if (actionCase_ == 29) {
+          return addSplitPointsBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.AddSplitPointsAction.getDefaultInstance();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     */
+    public Builder setAddSplitPoints(com.google.spanner.executor.v1.AddSplitPointsAction value) {
+      if (addSplitPointsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        addSplitPointsBuilder_.setMessage(value);
+      }
+      actionCase_ = 29;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     */
+    public Builder setAddSplitPoints(
+        com.google.spanner.executor.v1.AddSplitPointsAction.Builder builderForValue) {
+      if (addSplitPointsBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        addSplitPointsBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 29;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     */
+    public Builder mergeAddSplitPoints(com.google.spanner.executor.v1.AddSplitPointsAction value) {
+      if (addSplitPointsBuilder_ == null) {
+        if (actionCase_ == 29
+            && action_
+                != com.google.spanner.executor.v1.AddSplitPointsAction.getDefaultInstance()) {
+          action_ =
+              com.google.spanner.executor.v1.AddSplitPointsAction.newBuilder(
+                      (com.google.spanner.executor.v1.AddSplitPointsAction) action_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 29) {
+          addSplitPointsBuilder_.mergeFrom(value);
+        } else {
+          addSplitPointsBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 29;
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     */
+    public Builder clearAddSplitPoints() {
+      if (addSplitPointsBuilder_ == null) {
+        if (actionCase_ == 29) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 29) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        addSplitPointsBuilder_.clear();
+      }
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     */
+    public com.google.spanner.executor.v1.AddSplitPointsAction.Builder getAddSplitPointsBuilder() {
+      return internalGetAddSplitPointsFieldBuilder().getBuilder();
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.AddSplitPointsActionOrBuilder
+        getAddSplitPointsOrBuilder() {
+      if ((actionCase_ == 29) && (addSplitPointsBuilder_ != null)) {
+        return addSplitPointsBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 29) {
+          return (com.google.spanner.executor.v1.AddSplitPointsAction) action_;
+        }
+        return com.google.spanner.executor.v1.AddSplitPointsAction.getDefaultInstance();
+      }
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Action that adds splits to a Cloud Spanner database.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.AddSplitPointsAction add_split_points = 29;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+            com.google.spanner.executor.v1.AddSplitPointsAction,
+            com.google.spanner.executor.v1.AddSplitPointsAction.Builder,
+            com.google.spanner.executor.v1.AddSplitPointsActionOrBuilder>
+        internalGetAddSplitPointsFieldBuilder() {
+      if (addSplitPointsBuilder_ == null) {
+        if (!(actionCase_ == 29)) {
+          action_ = com.google.spanner.executor.v1.AddSplitPointsAction.getDefaultInstance();
+        }
+        addSplitPointsBuilder_ =
+            new com.google.protobuf.SingleFieldBuilder<
+                com.google.spanner.executor.v1.AddSplitPointsAction,
+                com.google.spanner.executor.v1.AddSplitPointsAction.Builder,
+                com.google.spanner.executor.v1.AddSplitPointsActionOrBuilder>(
+                (com.google.spanner.executor.v1.AddSplitPointsAction) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 29;
+      onChanged();
+      return addSplitPointsBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:google.spanner.executor.v1.AdminAction)
