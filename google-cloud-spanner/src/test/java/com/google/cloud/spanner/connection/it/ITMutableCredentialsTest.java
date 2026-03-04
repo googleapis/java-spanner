@@ -69,6 +69,7 @@ public class ITMutableCredentialsTest {
         listDatabases(databaseAdminClient, project, instance);
       } catch (Exception e) {
         // specifically validate the permission denied error message
+        System.out.println("exception " + e.getMessage());
         assertTrue(e.getMessage().contains("PERMISSION_DENIED"));
         assertFalse(e.getMessage().contains("UNAUTHENTICATED"));
       }
