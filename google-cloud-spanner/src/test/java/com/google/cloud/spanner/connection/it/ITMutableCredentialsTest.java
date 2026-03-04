@@ -75,7 +75,7 @@ public class ITMutableCredentialsTest extends ITAbstractSpannerTest {
         DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
       String dbName =
           DatabaseName.of(
-                  GceTestEnvConfig.GCE_PROJECT_ID,
+                  getTestEnv().getTestHelper().getInstanceId().getProject(),
                   getTestEnv().getTestHelper().getInstanceId().getInstance(),
                   "TEST")
               .toString();
