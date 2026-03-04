@@ -201,6 +201,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.grpc.auth.MoreCallCredentials;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -232,7 +233,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import io.opentelemetry.api.OpenTelemetry;
 
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
 @InternalApi
@@ -576,7 +576,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         return builtInOtel;
       }
     }
-    return OpenTelemetry.noop(); 
+    return OpenTelemetry.noop();
   }
 
   private static KeyAwareChannel extractKeyAwareChannel(TransportChannel transportChannel) {
