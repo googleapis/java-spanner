@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.spi.v1;
 
-import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.NoCredentials;
@@ -110,7 +109,6 @@ public class SpannerRpcMetricsTest {
 
   @BeforeClass
   public static void startServer() throws Exception {
-    disableDefaultMtlsProvider();
     SpannerOptions.enableOpenTelemetryMetrics();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
