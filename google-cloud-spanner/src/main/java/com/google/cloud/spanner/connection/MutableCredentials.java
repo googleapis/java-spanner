@@ -19,12 +19,14 @@ import com.google.auth.CredentialTypeForMetrics;
 import com.google.auth.Credentials;
 import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.spanner.SpannerOptions;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
+import javax.annotation.Nonnull;
 
 /**
  * A mutable {@link Credentials} implementation that delegates authentication behavior to a scoped
@@ -41,14 +43,17 @@ import java.util.concurrent.Executor;
  */
 public class MutableCredentials extends Credentials {
   private volatile ServiceAccountCredentials delegate;
-  private final List<String> scopes;
+  private final Set<String> scopes;
 
-  public MutableCredentials(ServiceAccountCredentials credentials, List<String> scopes) {
-    if (scopes != null) {
-      this.scopes = new java.util.ArrayList<>(scopes);
-    } else {
-      this.scopes = Collections.emptyList();
+  public MutableCredentials(ServiceAccountCredentials credentials) {
+    this(credentials, SpannerOptions.getDefaultInstance().getScopes());
+  }
+
+  public MutableCredentials(ServiceAccountCredentials credentials, @Nonnull Set<String> scopes) {
+    if (scopes.isEmpty()) {
+      throw new IllegalArgumentException("Scopes must not be empty");
     }
+    this.scopes = new java.util.HashSet<>(scopes);
     delegate = (ServiceAccountCredentials) credentials.createScoped(this.scopes);
   }
 

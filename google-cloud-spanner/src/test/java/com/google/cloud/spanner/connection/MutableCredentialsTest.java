@@ -31,10 +31,7 @@ import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +43,7 @@ public class MutableCredentialsTest {
   ServiceAccountCredentials initialScopedCredentials = mock(ServiceAccountCredentials.class);
   ServiceAccountCredentials updatedCredentials = mock(ServiceAccountCredentials.class);
   ServiceAccountCredentials updatedScopedCredentials = mock(ServiceAccountCredentials.class);
-  List<String> scopes = Arrays.asList("scope-a", "scope-b");
+  Set<String> scopes = new HashSet<>(Arrays.asList("scope-a", "scope-b"));
   Map<String, List<String>> initialMetadata =
       Collections.singletonMap("Authorization", Collections.singletonList("v1"));
   Map<String, List<String>> updatedMetadata =
@@ -108,14 +105,9 @@ public class MutableCredentialsTest {
     verify(updatedScopedCredentials, times(1)).refresh();
   }
 
-  @Test
-  public void testCreateMutableCredentialsNullScopes() throws IOException {
-    setupInitialCredentials();
-
-    MutableCredentials credentials = new MutableCredentials(initialCredentials, null);
-    URI testUri = URI.create("https://spanner.googleapis.com");
-
-    validateInitialDelegatedCredentialsAreSet(credentials, testUri);
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateMutableCredentialsEmptyScopes() {
+    new MutableCredentials(initialCredentials, Collections.emptySet());
   }
 
   private void validateInitialDelegatedCredentialsAreSet(
