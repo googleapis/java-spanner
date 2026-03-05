@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 import com.google.auth.CredentialTypeForMetrics;
 import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.spanner.SpannerOptions;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -77,6 +78,25 @@ public class MutableCredentialsTest {
   }
 
   @Test
+  public void testCreateMutableCredentialsWithDefaultScopes() throws IOException {
+    Set<String> defaultScopes = SpannerOptions.getDefaultInstance().getScopes();
+    when(initialCredentials.createScoped(defaultScopes)).thenReturn(initialScopedCredentials);
+    when(initialScopedCredentials.getAuthenticationType()).thenReturn(initialAuthType);
+    when(initialScopedCredentials.getRequestMetadata(any(URI.class))).thenReturn(initialMetadata);
+    when(initialScopedCredentials.getUniverseDomain()).thenReturn(initialUniverseDomain);
+    when(initialScopedCredentials.getMetricsCredentialType())
+        .thenReturn(initialMetricsCredentialType);
+    when(initialScopedCredentials.hasRequestMetadata()).thenReturn(true);
+    when(initialScopedCredentials.hasRequestMetadataOnly()).thenReturn(true);
+
+    MutableCredentials credentials = new MutableCredentials(initialCredentials);
+    URI testUri = URI.create("https://spanner.googleapis.com");
+
+    validateInitialDelegatedCredentialsAreSet(credentials, testUri);
+    verify(initialCredentials).createScoped(defaultScopes);
+  }
+
+  @Test
   public void testUpdateMutableCredentials() throws IOException {
     setupInitialCredentials();
     setupUpdatedCredentials();
@@ -106,7 +126,7 @@ public class MutableCredentialsTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testCreateMutableCredentialsEmptyScopes() {
+  public void testCreateMutableCredentialsEmptyScopesThrowsError() {
     new MutableCredentials(initialCredentials, Collections.emptySet());
   }
 
