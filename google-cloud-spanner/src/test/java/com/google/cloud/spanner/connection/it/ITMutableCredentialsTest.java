@@ -65,7 +65,7 @@ public class ITMutableCredentialsTest {
     System.out.println("application default " + GoogleCredentials.getApplicationDefault());
     SpannerOptions options =
         SpannerOptions.newBuilder()
-                .setEmulatorHost(null)
+            .setEmulatorHost(null)
             .setCredentials(FixedCredentialsProvider.create(mutableCredentials).getCredentials())
             .build();
     System.out.println("initial credentials " + options.getCredentials());
