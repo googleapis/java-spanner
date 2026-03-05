@@ -79,7 +79,7 @@ public class MutableCredentialsTest {
 
   @Test
   public void testCreateMutableCredentialsWithDefaultScopes() throws IOException {
-    Set<String> defaultScopes = SpannerOptions.getDefaultInstance().getScopes();
+    Set<String> defaultScopes = SpannerOptions.SCOPES;
     when(initialCredentials.createScoped(defaultScopes)).thenReturn(initialScopedCredentials);
     when(initialScopedCredentials.getAuthenticationType()).thenReturn(initialAuthType);
     when(initialScopedCredentials.getRequestMetadata(any(URI.class))).thenReturn(initialMetadata);

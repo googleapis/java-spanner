@@ -43,7 +43,7 @@ public class ITMutableCredentialsTest {
 
   @Test
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
-    GoogleCredentials validCredentials;
+    GoogleCredentials validCredentials = null;
 
     // accept cert path overridden by environment variable for local testing
     if (System.getenv("GOOGLE_ACCOUNT_CREDENTIALS") != null) {
@@ -52,7 +52,10 @@ public class ITMutableCredentialsTest {
         validCredentials = GoogleCredentials.fromStream(stream);
       }
     } else {
-      validCredentials = GoogleCredentials.getApplicationDefault();
+      try {
+        validCredentials = GoogleCredentials.getApplicationDefault();
+      } catch (IOException e) {
+      }
     }
 
     // credentials must be ServiceAccountCredentials
@@ -68,8 +71,6 @@ public class ITMutableCredentialsTest {
     MutableCredentials mutableCredentials =
         new MutableCredentials((ServiceAccountCredentials) validCredentials);
 
-    System.out.println("validCredentials " + validCredentials);
-
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setEmulatorHost(
@@ -77,14 +78,17 @@ public class ITMutableCredentialsTest {
             // NoCredentials
             .setCredentials(mutableCredentials)
             .build();
-    System.out.println("initial credentials " + options.getCredentials());
+
     ProjectName projectName = ProjectName.of(options.getProjectId());
     try (Spanner spanner = options.getService();
         InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
       instanceAdminClient.listInstances(projectName);
+
       // update mutableCredentials now to use an invalid credentials
       mutableCredentials.updateCredentials(invalidCredentials);
+
       try {
+        // this call should now fail with new invalid credentials
         instanceAdminClient.listInstances(projectName);
         fail("Expected UNAUTHENTICATED after switching to invalid credentials");
       } catch (Exception e) {
