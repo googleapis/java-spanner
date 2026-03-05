@@ -47,7 +47,8 @@ public class ITMutableCredentialsTest {
     System.out.println("property" + System.getenv("GOOGLE_ACCOUNT_CREDENTIALS"));
     GoogleCredentials missingPermissionCredentials;
     try (InputStream stream =
-        Files.newInputStream(Paths.get("/tmpfs/src/gfile/secret_manager/java-it-service-account"))) {
+        Files.newInputStream(
+            Paths.get("/tmpfs/src/gfile/secret_manager/java-it-service-account"))) {
       missingPermissionCredentials = GoogleCredentials.fromStream(stream);
     }
     ServiceAccountCredentials invalidCredentials;
