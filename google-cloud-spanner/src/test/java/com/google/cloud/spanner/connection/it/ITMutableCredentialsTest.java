@@ -63,9 +63,9 @@ public class ITMutableCredentialsTest {
     System.out.println("missingPermissionCredentials " + missingPermissionCredentials);
 
     System.out.println("application default " + GoogleCredentials.getApplicationDefault());
-
     SpannerOptions options =
         SpannerOptions.newBuilder()
+                .setEmulatorHost(null)
             .setCredentials(FixedCredentialsProvider.create(mutableCredentials).getCredentials())
             .build();
     System.out.println("initial credentials " + options.getCredentials());
