@@ -64,7 +64,7 @@ public class ITMutableCredentialsTest {
             .setCredentials(FixedCredentialsProvider.create(mutableCredentials).getCredentials())
             .build();
     System.out.println("initial credentials " + options.getCredentials());
-    System.out.println("default projecct"  + options.getProjectId());
+    System.out.println("default projecct" + options.getProjectId());
     try (Spanner spanner = options.getService();
         InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
       String project = "gcloud-devel";
