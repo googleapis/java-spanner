@@ -74,7 +74,7 @@ public class ITMutableCredentialsTest {
         SpannerOptions.newBuilder()
             .setEmulatorHost(
                 null) // this setting is required otherwise SpannerOptions overrides credentials to
-                      // NoCredentials
+            // NoCredentials
             .setCredentials(mutableCredentials)
             .build();
     System.out.println("initial credentials " + options.getCredentials());
