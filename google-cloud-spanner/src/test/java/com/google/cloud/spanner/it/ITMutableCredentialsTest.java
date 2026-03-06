@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.connection.it;
+package com.google.cloud.spanner.it;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -42,7 +42,7 @@ import org.junit.runners.JUnit4;
 public class ITMutableCredentialsTest {
 
   private static final String INVALID_CERT_PATH =
-      "/com/google/cloud/spanner/connection/test-key.json";
+          "/com/google/cloud/spanner/connection/test-key.json";
 
   @Test
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
