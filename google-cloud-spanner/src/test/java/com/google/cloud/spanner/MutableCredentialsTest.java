@@ -29,10 +29,8 @@ import static org.mockito.Mockito.when;
 import com.google.auth.CredentialTypeForMetrics;
 import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-
 import java.io.IOException;
 import java.net.URI;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;

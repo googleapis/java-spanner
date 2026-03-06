@@ -19,7 +19,6 @@ import com.google.auth.CredentialTypeForMetrics;
 import com.google.auth.Credentials;
 import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -45,7 +44,9 @@ public class MutableCredentials extends Credentials {
   private volatile ServiceAccountCredentials delegate;
   private final Set<String> scopes;
 
-  /** Creates a MutableCredentials instance with default spanner scopes {@link SpannerOptions.SCOPES} */
+  /**
+   * Creates a MutableCredentials instance with default spanner scopes {@link SpannerOptions.SCOPES}
+   */
   public MutableCredentials(ServiceAccountCredentials credentials) {
     this(credentials, SpannerOptions.SCOPES);
   }

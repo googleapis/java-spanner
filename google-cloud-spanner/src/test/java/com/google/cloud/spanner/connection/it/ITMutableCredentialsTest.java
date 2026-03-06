@@ -16,19 +16,17 @@
 
 package com.google.cloud.spanner.connection.it;
 
-
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-
+import com.google.cloud.spanner.MutableCredentials;
 import com.google.cloud.spanner.SerialIntegrationTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.cloud.spanner.MutableCredentials;
 import com.google.spanner.admin.instance.v1.ProjectName;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,7 +84,7 @@ public class ITMutableCredentialsTest {
 
     ProjectName projectName = ProjectName.of(options.getProjectId());
     try (Spanner spanner = options.getService();
-         InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
       instanceAdminClient.listInstances(projectName);
 
       // update mutableCredentials now to use an invalid credentials
