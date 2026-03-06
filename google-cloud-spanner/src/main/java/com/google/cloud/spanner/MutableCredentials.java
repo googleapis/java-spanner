@@ -45,7 +45,7 @@ public class MutableCredentials extends Credentials {
   private final Set<String> scopes;
 
   /**
-   * Creates a MutableCredentials instance with default spanner scopes {@link SpannerOptions.SCOPES}
+   * Creates a MutableCredentials instance with default spanner scopes.
    */
   public MutableCredentials(ServiceAccountCredentials credentials) {
     this(credentials, SpannerOptions.SCOPES);
