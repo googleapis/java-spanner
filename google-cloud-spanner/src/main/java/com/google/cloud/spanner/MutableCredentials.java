@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.spanner.connection;
+package com.google.cloud.spanner;
 
 import com.google.auth.CredentialTypeForMetrics;
 import com.google.auth.Credentials;
 import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.spanner.SpannerOptions;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
  * {@link ServiceAccountCredentials} instance.
  *
  * <p>This class is intended for scenarios where an application needs to replace the underlying
- * service account credentials for a long running Spanner Client.
+ * service account credentials for a long-running Spanner Client.
  *
  * <p>All operations inherited from {@link Credentials} are forwarded to the current delegate,
  * including request metadata retrieval and token refresh. Calling {@link
@@ -45,6 +45,7 @@ public class MutableCredentials extends Credentials {
   private volatile ServiceAccountCredentials delegate;
   private final Set<String> scopes;
 
+  /** Creates a MutableCredentials instance with default spanner scopes {@link SpannerOptions.SCOPES} */
   public MutableCredentials(ServiceAccountCredentials credentials) {
     this(credentials, SpannerOptions.SCOPES);
   }

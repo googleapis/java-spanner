@@ -16,15 +16,13 @@
 
 package com.example.spanner;
 
-//[START mutable_credentials]
+// [START spanner_mutable_credentials]
 
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.connection.MutableCredentials;
-import com.google.spanner.admin.database.v1.DatabaseName;
-import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,16 +31,16 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class MutableCredentialsExample {
-
 
   static void createClientWithMutableCredentials() throws IOException {
     final String credentialsPath = "location_of_service_account_credential_json";
     Path path = Paths.get(credentialsPath);
     // Use an array to hold the mutable lastModifiedTime so it can be accessed in the lambda
-    FileTime[] lastModifiedTime = new FileTime[]{ Files.getLastModifiedTime(path) };
+    FileTime[] lastModifiedTime = new FileTime[] {Files.getLastModifiedTime(path)};
 
     // 1 - create service account credentials
     ServiceAccountCredentials serviceAccountCredentials;
@@ -54,32 +52,40 @@ public class MutableCredentialsExample {
     MutableCredentials mutableCredentials = new MutableCredentials(serviceAccountCredentials);
 
     // 3 - set credentials on your SpannerOptions builder to your mutableCredentials
-    SpannerOptions options = SpannerOptions.newBuilder()
-            .setCredentials(mutableCredentials)
-            .build();
+    SpannerOptions options = SpannerOptions.newBuilder().setCredentials(mutableCredentials).build();
 
-    // 4 - include logic for when to how your mutableCredentials
+    // 4 - include logic for when/how to update your mutableCredentials
     // In this example we'll use a SchedulerExecutorService to periodically check for updates
-    ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-    executorService.scheduleAtFixedRate(() -> {
-      try {
-        FileTime currentModifiedTime = Files.getLastModifiedTime(path);
-        if (currentModifiedTime.compareTo(lastModifiedTime[0]) > 0) {
-          lastModifiedTime[0] = currentModifiedTime;
-          try (FileInputStream is = new FileInputStream(credentialsPath)) {
-            ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(is);
-            mutableCredentials.updateCredentials(credentials);
-            System.out.println("Credentials rotated.");
+    ThreadFactory daemonThreadFactory =
+        runnable -> {
+          Thread thread = new Thread(runnable, "spanner-mutable-credentials-rotator");
+          thread.setDaemon(true);
+          return thread;
+        };
+    ScheduledExecutorService executorService =
+        Executors.newSingleThreadScheduledExecutor(daemonThreadFactory);
+    executorService.scheduleAtFixedRate(
+        () -> {
+          try {
+            FileTime currentModifiedTime = Files.getLastModifiedTime(path);
+            if (currentModifiedTime.compareTo(lastModifiedTime[0]) > 0) {
+              lastModifiedTime[0] = currentModifiedTime;
+              try (FileInputStream is = new FileInputStream(credentialsPath)) {
+                ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(is);
+                mutableCredentials.updateCredentials(credentials);
+              }
+            }
+          } catch (IOException e) {
+            System.err.println("Failed to check or update credentials: " + e.getMessage());
           }
-        }
-      } catch (IOException e) {
-        System.err.println("Failed to check or update credentials: " + e.getMessage());
-      }
-    }, 15, 15, TimeUnit.MINUTES);
+        },
+        15,
+        15,
+        TimeUnit.MINUTES);
 
     // 5. Use the client
     try (Spanner spanner = options.getService();
-         DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
       // Perform operations...
       // long running client operations will always use the latest credentials wrapped in
       // mutableCredentials
@@ -89,4 +95,4 @@ public class MutableCredentialsExample {
     }
   }
 }
-//[END mutable_credentials]
+// [END spanner_mutable_credentials]

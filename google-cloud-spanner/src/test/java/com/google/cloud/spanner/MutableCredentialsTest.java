@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.connection;
+package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,10 +29,16 @@ import static org.mockito.Mockito.when;
 import com.google.auth.CredentialTypeForMetrics;
 import com.google.auth.RequestMetadataCallback;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.spanner.SpannerOptions;
+
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
