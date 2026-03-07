@@ -24,11 +24,8 @@ import com.google.api.gax.retrying.TimedAttemptSettings;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
-import com.google.cloud.spanner.v1.stub.SpannerStub;
-import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.spanner.v1.RollbackRequest;
 import io.grpc.Context;
 import java.time.Duration;
 import java.util.concurrent.Callable;
@@ -39,36 +36,21 @@ import java.util.concurrent.CancellationException;
  * that uses specific settings to only retry on aborted transactions, without a timeout and without
  * a cap on the number of retries.
  */
-class SpannerRetryHelper {
+class TransactionRetryHelper {
+  private final RetrySettings retrySettings;
 
-  /**
-   * Use the same {@link RetrySettings} for retrying an aborted transaction as for retrying a {@link
-   * RollbackRequest}. The {@link RollbackRequest} automatically uses the default retry settings
-   * defined for the {@link SpannerStub}. By referencing these settings, the retry settings for
-   * retrying aborted transactions will also automatically be updated if the default retry settings
-   * are updated.
-   *
-   * <p>A read/write transaction should not timeout while retrying. The total timeout of the retry
-   * settings is therefore set to 24 hours and there is no max attempts value.
-   *
-   * <p>These default {@link RetrySettings} are only used if no retry information is returned by the
-   * {@link AbortedException}.
-   */
-  @VisibleForTesting
-  static final RetrySettings txRetrySettings =
-      SpannerStubSettings.newBuilder().rollbackSettings().getRetrySettings().toBuilder()
-          .setTotalTimeoutDuration(Duration.ofHours(24L))
-          .setMaxAttempts(0)
-          .build();
+  TransactionRetryHelper(RetrySettings retrySettings) {
+    this.retrySettings = retrySettings;
+  }
 
   /** Executes the {@link Callable} and retries if it fails with an {@link AbortedException}. */
-  static <T> T runTxWithRetriesOnAborted(Callable<T> callable) {
+  <T> T runTxWithRetriesOnAborted(Callable<T> callable) {
     return runTxWithRetriesOnAborted(callable, DefaultErrorHandler.INSTANCE);
   }
 
-  static <T> T runTxWithRetriesOnAborted(Callable<T> callable, ErrorHandler errorHandler) {
+  <T> T runTxWithRetriesOnAborted(Callable<T> callable, ErrorHandler errorHandler) {
     return runTxWithRetriesOnAborted(
-        callable, errorHandler, txRetrySettings, NanoClock.getDefaultClock());
+        callable, errorHandler, this.retrySettings, NanoClock.getDefaultClock());
   }
 
   /**
@@ -76,13 +58,13 @@ class SpannerRetryHelper {
    * the specific {@link RetrySettings}.
    */
   @VisibleForTesting
-  static <T> T runTxWithRetriesOnAborted(
+  <T> T runTxWithRetriesOnAborted(
       Callable<T> callable, RetrySettings retrySettings, ApiClock clock) {
     return runTxWithRetriesOnAborted(callable, DefaultErrorHandler.INSTANCE, retrySettings, clock);
   }
 
   @VisibleForTesting
-  static <T> T runTxWithRetriesOnAborted(
+  <T> T runTxWithRetriesOnAborted(
       Callable<T> callable,
       ErrorHandler errorHandler,
       RetrySettings retrySettings,

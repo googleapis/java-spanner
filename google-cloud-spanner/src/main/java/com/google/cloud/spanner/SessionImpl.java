@@ -301,8 +301,10 @@ class SessionImpl implements Session {
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
 
     try (IScope s = tracer.withSpan(span)) {
-      return SpannerRetryHelper.runTxWithRetriesOnAborted(
-          () -> new CommitResponse(spanner.getRpc().commit(request, getOptions())));
+      return spanner
+          .getTransactionRetryHelper()
+          .runTxWithRetriesOnAborted(
+              () -> new CommitResponse(spanner.getRpc().commit(request, getOptions())));
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
