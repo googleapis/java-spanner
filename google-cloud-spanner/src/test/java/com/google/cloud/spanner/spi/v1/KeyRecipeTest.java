@@ -130,6 +130,34 @@ public class KeyRecipeTest {
     assertTrue(target.limit.isEmpty());
   }
 
+  @Test
+  public void queryParamsCaseInsensitiveSafeForTurkishDotI() throws Exception {
+    // Turkish upper-case İ (U+0130) lower-cases to two characters under Locale.ROOT
+    // (i + combining dot above), so "SİCİL".length() != "SİCİL".toLowerCase(ROOT).length()
+    // and "SİCİL".equalsIgnoreCase("SİCİL".toLowerCase(ROOT)) is false.
+    // This is still safe because both the recipe identifier (server-sent) and the user's
+    // bound parameter name go through the same Locale.ROOT lower-casing before the
+    // HashMap lookup, so they produce the same string on both sides and the match succeeds.
+    com.google.spanner.v1.KeyRecipe recipeProto =
+        createRecipe(
+            "part { tag: 1 }\n"
+                + "part {\n"
+                + "  order: ASCENDING\n"
+                + "  null_order: NULLS_FIRST\n"
+                + "  type { code: STRING }\n"
+                + "  identifier: \"SİCİL\"\n"
+                + "}\n");
+
+    Struct params =
+        parseStruct(
+            "fields {\n" + "  key: \"SİCİL\"\n" + "  value { string_value: \"test\" }\n" + "}\n");
+
+    KeyRecipe recipe = KeyRecipe.create(recipeProto);
+    TargetRange target = recipe.queryParamsToTargetRange(params);
+    assertEquals(expectedKey("test"), target.start);
+    assertTrue(target.limit.isEmpty());
+  }
+
   private static com.google.spanner.v1.KeyRecipe createRecipe(String text)
       throws TextFormat.ParseException {
     com.google.spanner.v1.KeyRecipe.Builder builder = com.google.spanner.v1.KeyRecipe.newBuilder();
