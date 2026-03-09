@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
@@ -49,7 +50,9 @@ public class MutableCredentials extends Credentials {
     this(credentials, SpannerOptions.SCOPES);
   }
 
-  public MutableCredentials(ServiceAccountCredentials credentials, @Nonnull Set<String> scopes) {
+  public MutableCredentials(@Nonnull ServiceAccountCredentials credentials, @Nonnull Set<String> scopes) {
+    Objects.requireNonNull(credentials, "credentials must not be null");
+    Objects.requireNonNull(scopes, "scopes must not be null");
     if (scopes.isEmpty()) {
       throw new IllegalArgumentException("Scopes must not be empty");
     }
@@ -60,13 +63,16 @@ public class MutableCredentials extends Credentials {
   /**
    * Replaces the current delegate with a newly scoped credentials instance.
    *
+   * Note any in-flight RPC may continue to use the old credentials.
+   *
    * <p>The provided {@link ServiceAccountCredentials} is scoped using the same scopes that were
    * supplied when this {@link MutableCredentials} instance was created.
    *
    * @param credentials the new base service account credentials to scope and use for client
    *     authorization.
    */
-  public void updateCredentials(ServiceAccountCredentials credentials) {
+  public void updateCredentials(@Nonnull ServiceAccountCredentials credentials) {
+    Objects.requireNonNull(credentials, "credentials must not be null");
     delegate = (ServiceAccountCredentials) credentials.createScoped(scopes);
   }
 

@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -132,6 +133,31 @@ public class MutableCredentialsTest {
   @Test(expected = IllegalArgumentException.class)
   public void testCreateMutableCredentialsEmptyScopesThrowsError() {
     new MutableCredentials(initialCredentials, Collections.emptySet());
+  }
+
+  @Test
+  public void testCreateMutableCredentialsNullCredentialsThrowsError() {
+    NullPointerException exception =
+        assertThrows(NullPointerException.class, () -> new MutableCredentials(null, scopes));
+    assertEquals("credentials must not be null", exception.getMessage());
+  }
+
+  @Test
+  public void testCreateMutableCredentialsNullScopesThrowsError() {
+    NullPointerException exception =
+        assertThrows(
+            NullPointerException.class, () -> new MutableCredentials(initialCredentials, null));
+    assertEquals("scopes must not be null", exception.getMessage());
+  }
+
+  @Test
+  public void testUpdateMutableCredentialsNullCredentialsThrowsError() throws IOException {
+    setupInitialCredentials();
+    MutableCredentials credentials = new MutableCredentials(initialCredentials, scopes);
+
+    NullPointerException exception =
+        assertThrows(NullPointerException.class, () -> credentials.updateCredentials(null));
+    assertEquals("credentials must not be null", exception.getMessage());
   }
 
   private void validateInitialDelegatedCredentialsAreSet(
