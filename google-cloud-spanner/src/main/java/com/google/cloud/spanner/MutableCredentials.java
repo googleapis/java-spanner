@@ -50,7 +50,8 @@ public class MutableCredentials extends Credentials {
     this(credentials, SpannerOptions.SCOPES);
   }
 
-  public MutableCredentials(@Nonnull ServiceAccountCredentials credentials, @Nonnull Set<String> scopes) {
+  public MutableCredentials(
+      @Nonnull ServiceAccountCredentials credentials, @Nonnull Set<String> scopes) {
     Objects.requireNonNull(credentials, "credentials must not be null");
     Objects.requireNonNull(scopes, "scopes must not be null");
     if (scopes.isEmpty()) {
@@ -63,7 +64,7 @@ public class MutableCredentials extends Credentials {
   /**
    * Replaces the current delegate with a newly scoped credentials instance.
    *
-   * Note any in-flight RPC may continue to use the old credentials.
+   * <p>Note any in-flight RPC may continue to use the old credentials.
    *
    * <p>The provided {@link ServiceAccountCredentials} is scoped using the same scopes that were
    * supplied when this {@link MutableCredentials} instance was created.
