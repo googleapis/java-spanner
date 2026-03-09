@@ -30,7 +30,10 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -780,10 +783,12 @@ public final class KeyRecipe {
   }
 
   public TargetRange queryParamsToTargetRange(Struct in) {
+    final Map<String, Value> lowercaseFields = new HashMap<>();
+    for (Map.Entry<String, Value> entry : in.getFieldsMap().entrySet()) {
+      lowercaseFields.put(entry.getKey().toLowerCase(Locale.ROOT), entry.getValue());
+    }
     return encodeKeyInternal(
-        (index, identifier) -> {
-          return in.getFieldsMap().get(identifier);
-        },
+        (index, identifier) -> lowercaseFields.get(identifier.toLowerCase(Locale.ROOT)),
         KeyType.FULL_KEY);
   }
 
