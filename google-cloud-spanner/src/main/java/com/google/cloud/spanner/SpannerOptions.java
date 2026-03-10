@@ -128,7 +128,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final String GOOGLE_DEFAULT_UNIVERSE = "googleapis.com";
   private static final String EXPERIMENTAL_HOST_PROJECT_ID = "default";
 
-  private static final ImmutableSet<String> SCOPES =
+  static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
           "https://www.googleapis.com/auth/spanner.admin",
           "https://www.googleapis.com/auth/spanner.data");
