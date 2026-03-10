@@ -22,7 +22,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
-import com.google.cloud.spanner.connection.MutableCredentials;
+import com.google.cloud.spanner.MutableCredentials;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
