@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.protobuf.ByteString;
@@ -73,6 +74,87 @@ public class KeyRecipeTest {
     KeyRecipe recipe = KeyRecipe.create(recipeProto);
     TargetRange target = recipe.queryParamsToTargetRange(Struct.getDefaultInstance());
     assertEquals(expectedKey("const"), target.start);
+    assertTrue(target.limit.isEmpty());
+  }
+
+  @Test
+  public void queryParamsCaseInsensitiveFallback() throws Exception {
+    com.google.spanner.v1.KeyRecipe recipeProto =
+        createRecipe(
+            "part { tag: 1 }\n"
+                + "part {\n"
+                + "  order: ASCENDING\n"
+                + "  null_order: NULLS_FIRST\n"
+                + "  type { code: STRING }\n"
+                + "  identifier: \"id\"\n"
+                + "}\n");
+
+    Struct params =
+        parseStruct(
+            "fields {\n" + "  key: \"Id\"\n" + "  value { string_value: \"foo\" }\n" + "}\n");
+
+    KeyRecipe recipe = KeyRecipe.create(recipeProto);
+    TargetRange target = recipe.queryParamsToTargetRange(params);
+    assertEquals(expectedKey("foo"), target.start);
+    assertTrue(target.limit.isEmpty());
+  }
+
+  @Test
+  public void queryParamsCaseInsensitiveDuplicateUsesLastValue() throws Exception {
+    com.google.spanner.v1.KeyRecipe recipeProto =
+        createRecipe(
+            "part { tag: 1 }\n"
+                + "part {\n"
+                + "  order: ASCENDING\n"
+                + "  null_order: NULLS_FIRST\n"
+                + "  type { code: STRING }\n"
+                + "  identifier: \"ID\"\n"
+                + "}\n");
+
+    // Both "Id" and "id" normalize to "id"; the last one ("id"→"bar") wins.
+    Struct params =
+        parseStruct(
+            "fields {\n"
+                + "  key: \"Id\"\n"
+                + "  value { string_value: \"foo\" }\n"
+                + "}\n"
+                + "fields {\n"
+                + "  key: \"id\"\n"
+                + "  value { string_value: \"bar\" }\n"
+                + "}\n");
+
+    KeyRecipe recipe = KeyRecipe.create(recipeProto);
+    TargetRange target = recipe.queryParamsToTargetRange(params);
+    assertEquals(expectedKey("bar"), target.start);
+    assertFalse(target.approximate);
+    assertTrue(target.limit.isEmpty());
+  }
+
+  @Test
+  public void queryParamsCaseInsensitiveSafeForTurkishDotI() throws Exception {
+    // Turkish upper-case İ (U+0130) lower-cases to two characters under Locale.ROOT
+    // (i + combining dot above), so "SİCİL".length() != "SİCİL".toLowerCase(ROOT).length()
+    // and "SİCİL".equalsIgnoreCase("SİCİL".toLowerCase(ROOT)) is false.
+    // This is still safe because both the recipe identifier (server-sent) and the user's
+    // bound parameter name go through the same Locale.ROOT lower-casing before the
+    // HashMap lookup, so they produce the same string on both sides and the match succeeds.
+    com.google.spanner.v1.KeyRecipe recipeProto =
+        createRecipe(
+            "part { tag: 1 }\n"
+                + "part {\n"
+                + "  order: ASCENDING\n"
+                + "  null_order: NULLS_FIRST\n"
+                + "  type { code: STRING }\n"
+                + "  identifier: \"SİCİL\"\n"
+                + "}\n");
+
+    Struct params =
+        parseStruct(
+            "fields {\n" + "  key: \"SİCİL\"\n" + "  value { string_value: \"test\" }\n" + "}\n");
+
+    KeyRecipe recipe = KeyRecipe.create(recipeProto);
+    TargetRange target = recipe.queryParamsToTargetRange(params);
+    assertEquals(expectedKey("test"), target.start);
     assertTrue(target.limit.isEmpty());
   }
 
