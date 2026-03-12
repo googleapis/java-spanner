@@ -22,6 +22,7 @@ import static org.junit.Assume.assumeTrue;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.MutableCredentials;
 import com.google.cloud.spanner.SerialIntegrationTest;
 import com.google.cloud.spanner.Spanner;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -43,6 +45,8 @@ public class ITMutableCredentialsTest {
 
   private static final String INVALID_CERT_PATH =
       "/com/google/cloud/spanner/connection/test-key.json";
+
+  @ClassRule public static final IntegrationTestEnv env = new IntegrationTestEnv();
 
   @Test
   public void testMutableCredentialsUpdateAuthorizationForRunningClient() throws IOException {
@@ -75,7 +79,7 @@ public class ITMutableCredentialsTest {
         new MutableCredentials((ServiceAccountCredentials) validCredentials);
 
     SpannerOptions options =
-        SpannerOptions.newBuilder()
+        env.getTestHelper().getOptions().toBuilder()
             // this setting is required in the scenario SPANNER_EMULATOR_HOST is set otherwise
             // SpannerOptions overrides credentials to NoCredentials
             .setEmulatorHost(null)
