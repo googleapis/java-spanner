@@ -337,7 +337,9 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
   @Test
   public void testRetryWithNoSessionCreationWaitTime() {
     mockSpanner.setCreateSessionExecutionTime(
-        SimulatedExecutionTime.ofExceptions(
+        SimulatedExecutionTime.ofMinimumAndRandomTimeAndExceptions(
+            100,
+            0,
             Collections.singletonList(
                 Status.DEADLINE_EXCEEDED
                     .withDescription(

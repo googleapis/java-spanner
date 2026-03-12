@@ -80,7 +80,7 @@ public class ITBulkConnectionTest extends ITAbstractSpannerTest {
           });
     }
     executor.shutdown();
-    executor.awaitTermination(10L, TimeUnit.SECONDS);
+    assertThat(executor.awaitTermination(60L, TimeUnit.SECONDS), is(true));
     // close Spanner instances explicitly. This method will throw an exception if there are any
     // connections still open in the pool
     closeSpanner();
