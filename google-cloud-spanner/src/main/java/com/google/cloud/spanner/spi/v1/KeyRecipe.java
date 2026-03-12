@@ -30,7 +30,11 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -780,10 +784,26 @@ public final class KeyRecipe {
   }
 
   public TargetRange queryParamsToTargetRange(Struct in) {
+    // toLowerCase(Locale.ROOT) is safe for query parameter names, even for non-ASCII
+    // characters such as the Turkish upper-case İ (U+0130). Query parameter names cannot
+    // be quoted in Spanner SQL (the @paramName syntax imposes an unquoted identifier
+    // grammar), so both the identifier sent by the server in the KeyRecipe and the
+    // parameter name bound by the user must follow the same syntax rules. Applying the
+    // same Locale.ROOT case-folding to both sides guarantees a consistent match.
+    // If the server were to normalize identifiers differently, the only consequence is
+    // a routing miss and graceful fallback to the default endpoint — not a query failure.
+    //
+    // Sort field names before inserting into the map so that when two param names
+    // collide after case-folding (e.g. "Id" vs "ID") the winner is deterministic,
+    // matching the Go implementation.
+    List<String> fieldNames = new ArrayList<>(in.getFieldsMap().keySet());
+    Collections.sort(fieldNames);
+    final Map<String, Value> lowercaseFields = new HashMap<>(fieldNames.size());
+    for (String fieldName : fieldNames) {
+      lowercaseFields.put(fieldName.toLowerCase(Locale.ROOT), in.getFieldsMap().get(fieldName));
+    }
     return encodeKeyInternal(
-        (index, identifier) -> {
-          return in.getFieldsMap().get(identifier);
-        },
+        (index, identifier) -> lowercaseFields.get(identifier.toLowerCase(Locale.ROOT)),
         KeyType.FULL_KEY);
   }
 

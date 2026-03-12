@@ -559,21 +559,60 @@ public final class KeyRangeCache {
       tablets = newTablets;
     }
 
-    synchronized ChannelEndpoint fillRoutingHint(
+    ChannelEndpoint fillRoutingHint(
         boolean preferLeader,
         DirectedReadOptions directedReadOptions,
         RoutingHint.Builder hintBuilder) {
       boolean hasDirectedReadOptions =
           directedReadOptions.getReplicasCase()
               != DirectedReadOptions.ReplicasCase.REPLICAS_NOT_SET;
+
+      // Fast path: pick a tablet while holding the lock. If the endpoint is already
+      // cached on the tablet, return it immediately without releasing the lock.
+      // If the endpoint needs to be created (blocking network dial), release the
+      // lock first so other threads are not blocked during channel creation.
+      CachedTablet selected;
+      synchronized (this) {
+        selected =
+            selectTabletLocked(
+                preferLeader, hasDirectedReadOptions, hintBuilder, directedReadOptions);
+        if (selected == null) {
+          return null;
+        }
+        if (selected.endpoint != null || selected.serverAddress.isEmpty()) {
+          return selected.pick(hintBuilder);
+        }
+        // Slow path: endpoint not yet created. Capture the address and release the
+        // lock before calling endpointCache.get(), which may block on network dial.
+        hintBuilder.setTabletUid(selected.tabletUid);
+      }
+
+      String serverAddress = selected.serverAddress;
+      ChannelEndpoint endpoint = endpointCache.get(serverAddress);
+
+      synchronized (this) {
+        // Only update if the tablet's address hasn't changed since we released the lock.
+        if (selected.endpoint == null && selected.serverAddress.equals(serverAddress)) {
+          selected.endpoint = endpoint;
+        }
+        // Re-set tabletUid with the latest value in case update() ran concurrently.
+        hintBuilder.setTabletUid(selected.tabletUid);
+        return selected.endpoint;
+      }
+    }
+
+    private CachedTablet selectTabletLocked(
+        boolean preferLeader,
+        boolean hasDirectedReadOptions,
+        RoutingHint.Builder hintBuilder,
+        DirectedReadOptions directedReadOptions) {
       if (preferLeader
           && !hasDirectedReadOptions
           && hasLeader()
           && leader().distance <= MAX_LOCAL_REPLICA_DISTANCE
           && !leader().shouldSkip(hintBuilder)) {
-        return leader().pick(hintBuilder);
+        return leader();
       }
-
       for (CachedTablet tablet : tablets) {
         if (!tablet.matches(directedReadOptions)) {
           continue;
@@ -581,7 +620,7 @@ public final class KeyRangeCache {
         if (tablet.shouldSkip(hintBuilder)) {
           continue;
         }
-        return tablet.pick(hintBuilder);
+        return tablet;
       }
       return null;
     }
