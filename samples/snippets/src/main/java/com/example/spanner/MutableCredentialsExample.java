@@ -69,8 +69,8 @@ public class MutableCredentialsExample {
         () -> {
           try {
             FileTime currentModifiedTime = Files.getLastModifiedTime(path);
-            if (currentModifiedTime.compareTo(lastModifiedTime[0]) > 0) {
-              lastModifiedTime[0] = currentModifiedTime;
+            if (currentModifiedTime.compareTo(lastModifiedTime.get()) > 0) {
+              lastModifiedTime.set(currentModifiedTime);
               try (FileInputStream is = new FileInputStream(credentialsPath)) {
                 ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(is);
                 mutableCredentials.updateCredentials(credentials);
