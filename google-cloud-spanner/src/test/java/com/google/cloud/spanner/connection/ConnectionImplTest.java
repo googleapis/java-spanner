@@ -278,6 +278,11 @@ public class ConnectionImplTest {
         .thenReturn(select1ResultSetWithStats);
     when(singleUseReadOnlyTx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
         .thenReturn(select1ResultSetWithStats);
+    when(singleUseReadOnlyTx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.WITH_STATS))
+        .thenReturn(select1ResultSetWithStats);
+    when(singleUseReadOnlyTx.analyzeQuery(
+            Statement.of(SELECT), QueryAnalyzeMode.WITH_PLAN_AND_STATS))
+        .thenReturn(select1ResultSetWithStats);
     when(singleUseReadOnlyTx.getReadTimestamp())
         .then(
             invocation -> {
@@ -313,6 +318,11 @@ public class ConnectionImplTest {
                   .thenReturn(select1ResultSetWithStats);
               when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
                   .thenReturn(select1ResultSetWithStats);
+              when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.WITH_STATS))
+                  .thenReturn(select1ResultSetWithStats);
+              when(txContext.analyzeQuery(
+                      Statement.of(SELECT), QueryAnalyzeMode.WITH_PLAN_AND_STATS))
+                  .thenReturn(select1ResultSetWithStats);
               when(txContext.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
               return new SimpleTransactionManager(txContext, options.isReturnCommitStats());
             });
@@ -333,6 +343,10 @@ public class ConnectionImplTest {
               when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
                   .thenReturn(select1ResultSetWithStats);
               when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
+                  .thenReturn(select1ResultSetWithStats);
+              when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.WITH_STATS))
+                  .thenReturn(select1ResultSetWithStats);
+              when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.WITH_PLAN_AND_STATS))
                   .thenReturn(select1ResultSetWithStats);
               when(tx.getReadTimestamp())
                   .then(
