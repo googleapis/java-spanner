@@ -58,28 +58,33 @@ public final class CommitResponseProto extends com.google.protobuf.GeneratedFile
   static {
     java.lang.String[] descriptorData = {
       "\n\'google/spanner/v1/commit_response.prot"
-          + "o\022\021google.spanner.v1\032\037google/protobuf/ti"
-          + "mestamp.proto\032#google/spanner/v1/transac"
-          + "tion.proto\"\325\002\n\016CommitResponse\0224\n\020commit_"
-          + "timestamp\030\001 \001(\0132\032.google.protobuf.Timest"
-          + "amp\022C\n\014commit_stats\030\002 \001(\0132-.google.spann"
-          + "er.v1.CommitResponse.CommitStats\022N\n\017prec"
-          + "ommit_token\030\004 \001(\01323.google.spanner.v1.Mu"
-          + "ltiplexedSessionPrecommitTokenH\000\0226\n\022snap"
-          + "shot_timestamp\030\005 \001(\0132\032.google.protobuf.T"
-          + "imestamp\032%\n\013CommitStats\022\026\n\016mutation_coun"
-          + "t\030\001 \001(\003B\031\n\027MultiplexedSessionRetryB\266\001\n\025c"
-          + "om.google.spanner.v1B\023CommitResponseProt"
-          + "oP\001Z5cloud.google.com/go/spanner/apiv1/s"
-          + "pannerpb;spannerpb\252\002\027Google.Cloud.Spanne"
-          + "r.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Google:"
-          + ":Cloud::Spanner::V1b\006proto3"
+          + "o\022\021google.spanner.v1\032\037google/api/field_b"
+          + "ehavior.proto\032\037google/protobuf/timestamp"
+          + ".proto\032 google/spanner/v1/location.proto"
+          + "\032#google/spanner/v1/transaction.proto\"\220\003"
+          + "\n\016CommitResponse\0224\n\020commit_timestamp\030\001 \001"
+          + "(\0132\032.google.protobuf.Timestamp\022C\n\014commit"
+          + "_stats\030\002 \001(\0132-.google.spanner.v1.CommitR"
+          + "esponse.CommitStats\022N\n\017precommit_token\030\004"
+          + " \001(\01323.google.spanner.v1.MultiplexedSess"
+          + "ionPrecommitTokenH\000\0226\n\022snapshot_timestam"
+          + "p\030\005 \001(\0132\032.google.protobuf.Timestamp\0229\n\014c"
+          + "ache_update\030\006 \001(\0132\036.google.spanner.v1.Ca"
+          + "cheUpdateB\003\340A\001\032%\n\013CommitStats\022\026\n\016mutatio"
+          + "n_count\030\001 \001(\003B\031\n\027MultiplexedSessionRetry"
+          + "B\266\001\n\025com.google.spanner.v1B\023CommitRespon"
+          + "seProtoP\001Z5cloud.google.com/go/spanner/a"
+          + "piv1/spannerpb;spannerpb\252\002\027Google.Cloud."
+          + "Spanner.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032G"
+          + "oogle::Cloud::Spanner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
+              com.google.api.FieldBehaviorProto.getDescriptor(),
               com.google.protobuf.TimestampProto.getDescriptor(),
+              com.google.spanner.v1.LocationProto.getDescriptor(),
               com.google.spanner.v1.TransactionProto.getDescriptor(),
             });
     internal_static_google_spanner_v1_CommitResponse_descriptor = getDescriptor().getMessageType(0);
@@ -91,6 +96,7 @@ public final class CommitResponseProto extends com.google.protobuf.GeneratedFile
               "CommitStats",
               "PrecommitToken",
               "SnapshotTimestamp",
+              "CacheUpdate",
               "MultiplexedSessionRetry",
             });
     internal_static_google_spanner_v1_CommitResponse_CommitStats_descriptor =
@@ -102,8 +108,15 @@ public final class CommitResponseProto extends com.google.protobuf.GeneratedFile
               "MutationCount",
             });
     descriptor.resolveAllFeaturesImmutable();
+    com.google.api.FieldBehaviorProto.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
+    com.google.spanner.v1.LocationProto.getDescriptor();
     com.google.spanner.v1.TransactionProto.getDescriptor();
+    com.google.protobuf.ExtensionRegistry registry =
+        com.google.protobuf.ExtensionRegistry.newInstance();
+    registry.add(com.google.api.FieldBehaviorProto.fieldBehavior);
+    com.google.protobuf.Descriptors.FileDescriptor.internalUpdateFileDescriptor(
+        descriptor, registry);
   }
 
   // @@protoc_insertion_point(outer_class_scope)

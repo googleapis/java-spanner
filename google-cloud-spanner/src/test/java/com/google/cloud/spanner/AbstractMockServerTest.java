@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
-
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
@@ -51,7 +49,6 @@ abstract class AbstractMockServerTest {
 
   @BeforeClass
   public static void startMockServer() throws Exception {
-    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockInstanceAdmin = new MockInstanceAdminImpl();

@@ -271,7 +271,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Execution options (e.g., whether transaction is opaque, optimistic).
+   * Execution options (e.g., whether transaction is opaque, optimistic,
+   * excluded from change streams).
    * </pre>
    *
    * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -288,7 +289,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Execution options (e.g., whether transaction is opaque, optimistic).
+   * Execution options (e.g., whether transaction is opaque, optimistic,
+   * excluded from change streams).
    * </pre>
    *
    * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -307,7 +309,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Execution options (e.g., whether transaction is opaque, optimistic).
+   * Execution options (e.g., whether transaction is opaque, optimistic,
+   * excluded from change streams).
    * </pre>
    *
    * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1500,7 +1503,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1516,7 +1520,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1538,7 +1543,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1563,7 +1569,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1585,7 +1592,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1617,7 +1625,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1638,7 +1647,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1655,7 +1665,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;
@@ -1676,7 +1687,8 @@ public final class StartTransactionAction extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Execution options (e.g., whether transaction is opaque, optimistic).
+     * Execution options (e.g., whether transaction is opaque, optimistic,
+     * excluded from change streams).
      * </pre>
      *
      * <code>optional .google.spanner.executor.v1.TransactionExecutionOptions execution_options = 4;

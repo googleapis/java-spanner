@@ -264,4 +264,30 @@ public interface CreateCloudInstanceActionOrBuilder
    * <code>map&lt;string, string&gt; labels = 5;</code>
    */
   java.lang.String getLabelsOrThrow(java.lang.String key);
+
+  /**
+   *
+   *
+   * <pre>
+   * The edition of the instance.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+   *
+   * @return The enum numeric value on the wire for edition.
+   */
+  int getEditionValue();
+
+  /**
+   *
+   *
+   * <pre>
+   * The edition of the instance.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+   *
+   * @return The edition.
+   */
+  com.google.spanner.admin.instance.v1.Instance.Edition getEdition();
 }

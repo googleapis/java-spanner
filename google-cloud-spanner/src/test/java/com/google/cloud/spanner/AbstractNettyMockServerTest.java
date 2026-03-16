@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
-
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import io.grpc.ForwardingServerCall;
@@ -54,7 +52,6 @@ abstract class AbstractNettyMockServerTest {
 
   @BeforeClass
   public static void startMockServer() throws Exception {
-    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
 

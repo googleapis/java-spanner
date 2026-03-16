@@ -90,4 +90,34 @@ public interface DmlActionOrBuilder
    * @return The autocommitIfSupported.
    */
   boolean getAutocommitIfSupported();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to set this DML statement as the last statement in the
+   * transaction. The transaction should be committed after processing this DML
+   * statement.
+   * </pre>
+   *
+   * <code>optional bool last_statement = 3;</code>
+   *
+   * @return Whether the lastStatement field is set.
+   */
+  boolean hasLastStatement();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether to set this DML statement as the last statement in the
+   * transaction. The transaction should be committed after processing this DML
+   * statement.
+   * </pre>
+   *
+   * <code>optional bool last_statement = 3;</code>
+   *
+   * @return The lastStatement.
+   */
+  boolean getLastStatement();
 }

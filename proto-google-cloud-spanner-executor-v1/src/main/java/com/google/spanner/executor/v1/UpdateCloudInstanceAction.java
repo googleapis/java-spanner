@@ -55,6 +55,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     instanceId_ = "";
     projectId_ = "";
     displayName_ = "";
+    edition_ = 0;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -507,6 +508,45 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     return map.get(key);
   }
 
+  public static final int EDITION_FIELD_NUMBER = 8;
+  private int edition_ = 0;
+
+  /**
+   *
+   *
+   * <pre>
+   * The edition of the instance.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+   *
+   * @return The enum numeric value on the wire for edition.
+   */
+  @java.lang.Override
+  public int getEditionValue() {
+    return edition_;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * The edition of the instance.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+   *
+   * @return The edition.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.Instance.Edition getEdition() {
+    com.google.spanner.admin.instance.v1.Instance.Edition result =
+        com.google.spanner.admin.instance.v1.Instance.Edition.forNumber(edition_);
+    return result == null
+        ? com.google.spanner.admin.instance.v1.Instance.Edition.UNRECOGNIZED
+        : result;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -540,6 +580,10 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         output, internalGetLabels(), LabelsDefaultEntryHolder.defaultEntry, 6);
     if (((bitField0_ & 0x00000008) != 0)) {
       output.writeMessage(7, getAutoscalingConfig());
+    }
+    if (edition_
+        != com.google.spanner.admin.instance.v1.Instance.Edition.EDITION_UNSPECIFIED.getNumber()) {
+      output.writeEnum(8, edition_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -578,6 +622,10 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(7, getAutoscalingConfig());
     }
+    if (edition_
+        != com.google.spanner.admin.instance.v1.Instance.Edition.EDITION_UNSPECIFIED.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(8, edition_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -613,6 +661,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       if (!getAutoscalingConfig().equals(other.getAutoscalingConfig())) return false;
     }
     if (!internalGetLabels().equals(other.internalGetLabels())) return false;
+    if (edition_ != other.edition_) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -648,6 +697,8 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       hash = (37 * hash) + LABELS_FIELD_NUMBER;
       hash = (53 * hash) + internalGetLabels().hashCode();
     }
+    hash = (37 * hash) + EDITION_FIELD_NUMBER;
+    hash = (53 * hash) + edition_;
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -831,6 +882,7 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         autoscalingConfigBuilder_ = null;
       }
       internalGetMutableLabels().clear();
+      edition_ = 0;
       return this;
     }
 
@@ -897,6 +949,9 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
         result.labels_ = internalGetLabels();
         result.labels_.makeImmutable();
       }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.edition_ = edition_;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -939,6 +994,9 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
       }
       internalGetMutableLabels().mergeFrom(other.internalGetLabels());
       bitField0_ |= 0x00000040;
+      if (other.edition_ != 0) {
+        setEditionValue(other.getEditionValue());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -1014,6 +1072,12 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
                 bitField0_ |= 0x00000020;
                 break;
               } // case 58
+            case 64:
+              {
+                edition_ = input.readEnum();
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 64
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1935,6 +1999,103 @@ public final class UpdateCloudInstanceAction extends com.google.protobuf.Generat
     public Builder putAllLabels(java.util.Map<java.lang.String, java.lang.String> values) {
       internalGetMutableLabels().getMutableMap().putAll(values);
       bitField0_ |= 0x00000040;
+      return this;
+    }
+
+    private int edition_ = 0;
+
+    /**
+     *
+     *
+     * <pre>
+     * The edition of the instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+     *
+     * @return The enum numeric value on the wire for edition.
+     */
+    @java.lang.Override
+    public int getEditionValue() {
+      return edition_;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * The edition of the instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+     *
+     * @param value The enum numeric value on the wire for edition to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEditionValue(int value) {
+      edition_ = value;
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * The edition of the instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+     *
+     * @return The edition.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.instance.v1.Instance.Edition getEdition() {
+      com.google.spanner.admin.instance.v1.Instance.Edition result =
+          com.google.spanner.admin.instance.v1.Instance.Edition.forNumber(edition_);
+      return result == null
+          ? com.google.spanner.admin.instance.v1.Instance.Edition.UNRECOGNIZED
+          : result;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * The edition of the instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+     *
+     * @param value The edition to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEdition(com.google.spanner.admin.instance.v1.Instance.Edition value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00000080;
+      edition_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * The edition of the instance.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.instance.v1.Instance.Edition edition = 8;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearEdition() {
+      bitField0_ = (bitField0_ & ~0x00000080);
+      edition_ = 0;
+      onChanged();
       return this;
     }
 

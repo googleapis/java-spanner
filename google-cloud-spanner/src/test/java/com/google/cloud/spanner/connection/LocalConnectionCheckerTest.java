@@ -15,7 +15,6 @@
  */
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.DisableDefaultMtlsProvider.disableDefaultMtlsProvider;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_RESULTSET;
 import static org.junit.Assert.assertEquals;
@@ -40,7 +39,6 @@ public class LocalConnectionCheckerTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    disableDefaultMtlsProvider();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
 
