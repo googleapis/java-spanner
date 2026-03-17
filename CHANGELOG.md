@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.112.0](https://github.com/googleapis/java-spanner/compare/v6.111.1...v6.112.0) (2026-03-17)
+
+
+### Features
+
+* Ability to update credentials on long running client ([#4371](https://github.com/googleapis/java-spanner/issues/4371)) ([e238990](https://github.com/googleapis/java-spanner/commit/e238990077badb063b1b05b0d71f58859434f7ee))
+* Add SI, adapt, split point related proto ([7aa4d90](https://github.com/googleapis/java-spanner/commit/7aa4d90cd4f001713ee2b0b5113303a748b237e0))
+* **spanner:** Include cache updates and routing hint into BeginTransaction and Commit request/response respectively ([7aa4d90](https://github.com/googleapis/java-spanner/commit/7aa4d90cd4f001713ee2b0b5113303a748b237e0))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.67.0 ([7aa4d90](https://github.com/googleapis/java-spanner/commit/7aa4d90cd4f001713ee2b0b5113303a748b237e0))
+* Fix unclosed literal error for consecutive backslashes ([#4387](https://github.com/googleapis/java-spanner/issues/4387)) ([f4884a8](https://github.com/googleapis/java-spanner/commit/f4884a83d15dcff6e246c7db47c8bafc3369a0a3))
+
 ## [6.111.1](https://github.com/googleapis/java-spanner/compare/v6.111.0...v6.111.1) (2026-03-03)
 
 
