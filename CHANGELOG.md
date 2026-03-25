@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.113.0](https://github.com/googleapis/java-spanner/compare/v6.112.0...v6.113.0) (2026-03-25)
+
+
+### Features
+
+* Switch Eef metrics to using built in open telemetry ([#4385](https://github.com/googleapis/java-spanner/issues/4385)) ([0d0ad41](https://github.com/googleapis/java-spanner/commit/0d0ad4194dbfe46c505abcd237c93cbd39197331))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.68.0 ([bb63e92](https://github.com/googleapis/java-spanner/commit/bb63e929e96ee54e849e6295c074d4f4586c99f3))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.58.0 ([#4390](https://github.com/googleapis/java-spanner/issues/4390)) ([7f35761](https://github.com/googleapis/java-spanner/commit/7f357615c24ebb313043eabeae397f689866ad50))
+* Update googleapis/sdk-platform-java action to v2.68.0 ([#4389](https://github.com/googleapis/java-spanner/issues/4389)) ([737dfac](https://github.com/googleapis/java-spanner/commit/737dfac5972c921c8fd50a1e3c7c11652f67874d))
+
 ## [6.112.0](https://github.com/googleapis/java-spanner/compare/v6.111.1...v6.112.0) (2026-03-17)
 
 
