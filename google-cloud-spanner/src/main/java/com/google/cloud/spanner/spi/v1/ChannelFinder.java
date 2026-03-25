@@ -94,40 +94,36 @@ public final class ChannelFinder {
   }
 
   public ChannelEndpoint findServer(BeginTransactionRequest.Builder reqBuilder) {
-    if (!reqBuilder.hasMutationKey()
-        || !recipeCache.computeKeys(
-            reqBuilder.getMutationKey(), reqBuilder.getRoutingHintBuilder())) {
+    if (!reqBuilder.hasMutationKey()) {
       return null;
     }
-    return fillRoutingHint(
+    return routeMutation(
+        reqBuilder.getMutationKey(),
         preferLeader(reqBuilder.getOptions()),
-        KeyRangeCache.RangeMode.COVERING_SPLIT,
-        DirectedReadOptions.getDefaultInstance(),
         reqBuilder.getRoutingHintBuilder());
   }
 
-  public void fillRoutingHint(CommitRequest.Builder reqBuilder) {
+  public ChannelEndpoint fillRoutingHint(CommitRequest.Builder reqBuilder) {
     if (reqBuilder.getMutationsCount() == 0) {
-      return;
+      return null;
     }
     Mutation mutation = reqBuilder.getMutations(0);
-    if (!recipeCache.computeKeys(mutation, reqBuilder.getRoutingHintBuilder())) {
-      return;
-    }
-    fillRoutingHint(
-        /* preferLeader= */ true,
-        KeyRangeCache.RangeMode.COVERING_SPLIT,
-        DirectedReadOptions.getDefaultInstance(),
-        reqBuilder.getRoutingHintBuilder());
+    return routeMutation(mutation, /* preferLeader= */ true, reqBuilder.getRoutingHintBuilder());
   }
 
-  private ChannelEndpoint fillRoutingHint(
-      TransactionSelector transactionSelector,
-      DirectedReadOptions directedReadOptions,
-      KeyRangeCache.RangeMode rangeMode,
-      RoutingHint.Builder hintBuilder) {
+  private ChannelEndpoint routeMutation(
+      Mutation mutation, boolean preferLeader, RoutingHint.Builder hintBuilder) {
+    recipeCache.applySchemaGeneration(hintBuilder);
+    TargetRange target = recipeCache.mutationToTargetRange(mutation);
+    if (target == null) {
+      return null;
+    }
+    recipeCache.applyTargetRange(hintBuilder, target);
     return fillRoutingHint(
-        preferLeader(transactionSelector), rangeMode, directedReadOptions, hintBuilder);
+        preferLeader,
+        KeyRangeCache.RangeMode.COVERING_SPLIT,
+        DirectedReadOptions.getDefaultInstance(),
+        hintBuilder);
   }
 
   private ChannelEndpoint fillRoutingHint(

@@ -371,19 +371,24 @@ final class KeyAwareChannel extends ManagedChannel {
           }
           message = (RequestT) reqBuilder.build();
         } else if (message instanceof CommitRequest) {
-          CommitRequest.Builder reqBuilder = ((CommitRequest) message).toBuilder();
-          String databaseId = parentChannel.extractDatabaseIdFromSession(reqBuilder.getSession());
+          CommitRequest request = (CommitRequest) message;
+          String databaseId = parentChannel.extractDatabaseIdFromSession(request.getSession());
           if (databaseId != null) {
             finder = parentChannel.getOrCreateChannelFinder(databaseId);
           }
-          if (finder != null) {
-            finder.fillRoutingHint(reqBuilder);
+          CommitRequest.Builder reqBuilder = null;
+          if (finder != null && request.getMutationsCount() > 0) {
+            reqBuilder = request.toBuilder();
+            endpoint = finder.fillRoutingHint(reqBuilder);
+            request = reqBuilder.build();
           }
-          if (!reqBuilder.getTransactionId().isEmpty()) {
-            endpoint = parentChannel.affinityEndpoint(reqBuilder.getTransactionId());
-            transactionIdToClear = reqBuilder.getTransactionId();
+          if (!request.getTransactionId().isEmpty()) {
+            endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
+            transactionIdToClear = request.getTransactionId();
           }
-          message = (RequestT) reqBuilder.build();
+          if (reqBuilder != null) {
+            message = (RequestT) request;
+          }
         } else if (message instanceof RollbackRequest) {
           RollbackRequest request = (RollbackRequest) message;
           if (!request.getTransactionId().isEmpty()) {
