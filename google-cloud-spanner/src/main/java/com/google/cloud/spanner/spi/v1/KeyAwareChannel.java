@@ -383,7 +383,11 @@ final class KeyAwareChannel extends ManagedChannel {
             request = reqBuilder.build();
           }
           if (!request.getTransactionId().isEmpty()) {
-            endpoint = parentChannel.affinityEndpoint(request.getTransactionId());
+            ChannelEndpoint affinityEndpoint =
+                parentChannel.affinityEndpoint(request.getTransactionId());
+            if (affinityEndpoint != null) {
+              endpoint = affinityEndpoint;
+            }
             transactionIdToClear = request.getTransactionId();
           }
           if (reqBuilder != null) {

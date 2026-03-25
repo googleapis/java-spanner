@@ -27,7 +27,10 @@ import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RoutingHint;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -104,11 +107,35 @@ public final class ChannelFinder {
   }
 
   public ChannelEndpoint fillRoutingHint(CommitRequest.Builder reqBuilder) {
-    if (reqBuilder.getMutationsCount() == 0) {
+    Mutation mutation = selectMutationForRouting(reqBuilder.getMutationsList());
+    if (mutation == null) {
       return null;
     }
-    Mutation mutation = reqBuilder.getMutations(0);
     return routeMutation(mutation, /* preferLeader= */ true, reqBuilder.getRoutingHintBuilder());
+  }
+
+  private static Mutation selectMutationForRouting(List<Mutation> mutations) {
+    if (mutations.isEmpty()) {
+      return null;
+    }
+    List<Mutation> mutationsExcludingInsert = new ArrayList<>();
+    Mutation largestInsertMutation = null;
+    for (Mutation mutation : mutations) {
+      if (!mutation.hasInsert()) {
+        mutationsExcludingInsert.add(mutation);
+        continue;
+      }
+      if (largestInsertMutation == null
+          || mutation.getInsert().getValuesCount()
+              > largestInsertMutation.getInsert().getValuesCount()) {
+        largestInsertMutation = mutation;
+      }
+    }
+    if (!mutationsExcludingInsert.isEmpty()) {
+      return mutationsExcludingInsert.get(
+          ThreadLocalRandom.current().nextInt(mutationsExcludingInsert.size()));
+    }
+    return largestInsertMutation;
   }
 
   private ChannelEndpoint routeMutation(

@@ -405,6 +405,105 @@ public class KeyAwareChannelTest {
   }
 
   @Test
+  public void singleUseCommitUsesSameMutationSelectionHeuristicAsBeginTransaction()
+      throws Exception {
+    TestHarness harness = createHarness();
+    seedCache(harness, createMutationRecipeCacheUpdate());
+
+    Mutation deleteMutation = createDeleteMutation("b");
+
+    ClientCall<BeginTransactionRequest, Transaction> beginCall =
+        harness.channel.newCall(SpannerGrpc.getBeginTransactionMethod(), CallOptions.DEFAULT);
+    beginCall.start(new CapturingListener<Transaction>(), new Metadata());
+    beginCall.sendMessage(
+        BeginTransactionRequest.newBuilder()
+            .setSession(SESSION)
+            .setMutationKey(deleteMutation)
+            .build());
+
+    @SuppressWarnings("unchecked")
+    RecordingClientCall<BeginTransactionRequest, Transaction> beginDelegate =
+        (RecordingClientCall<BeginTransactionRequest, Transaction>)
+            harness.defaultManagedChannel.latestCall();
+
+    assertNotNull(beginDelegate.lastMessage);
+    RoutingHint expectedRoutingHint = beginDelegate.lastMessage.getRoutingHint();
+
+    ClientCall<CommitRequest, CommitResponse> commitCall =
+        harness.channel.newCall(SpannerGrpc.getCommitMethod(), CallOptions.DEFAULT);
+    commitCall.start(new CapturingListener<CommitResponse>(), new Metadata());
+    commitCall.sendMessage(
+        CommitRequest.newBuilder()
+            .setSession(SESSION)
+            .setSingleUseTransaction(
+                TransactionOptions.newBuilder()
+                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
+            .addMutations(createInsertMutation("a"))
+            .addMutations(deleteMutation)
+            .build());
+
+    @SuppressWarnings("unchecked")
+    RecordingClientCall<CommitRequest, CommitResponse> commitDelegate =
+        (RecordingClientCall<CommitRequest, CommitResponse>)
+            harness.defaultManagedChannel.latestCall();
+
+    assertNotNull(commitDelegate.lastMessage);
+    assertEquals(expectedRoutingHint, commitDelegate.lastMessage.getRoutingHint());
+  }
+
+  @Test
+  public void commitWithTransactionIdRoutesUsingRoutingHintWhenAffinityMissing() throws Exception {
+    TestHarness harness = createHarness();
+    ByteString transactionId = ByteString.copyFromUtf8("tx-without-affinity");
+    seedCache(harness, createMutationRecipeCacheUpdate());
+
+    ClientCall<CommitRequest, CommitResponse> firstCommitCall =
+        harness.channel.newCall(SpannerGrpc.getCommitMethod(), CallOptions.DEFAULT);
+    firstCommitCall.start(new CapturingListener<CommitResponse>(), new Metadata());
+    firstCommitCall.sendMessage(
+        CommitRequest.newBuilder()
+            .setSession(SESSION)
+            .setTransactionId(transactionId)
+            .addMutations(createInsertMutation("b"))
+            .build());
+
+    @SuppressWarnings("unchecked")
+    RecordingClientCall<CommitRequest, CommitResponse> firstCommitDelegate =
+        (RecordingClientCall<CommitRequest, CommitResponse>)
+            harness.defaultManagedChannel.latestCall();
+
+    assertNotNull(firstCommitDelegate.lastMessage);
+    RoutingHint routingHint = firstCommitDelegate.lastMessage.getRoutingHint();
+    assertFalse(routingHint.getKey().isEmpty());
+
+    seedCache(harness, createRangeCacheUpdateForHint(routingHint));
+
+    ClientCall<CommitRequest, CommitResponse> secondCommitCall =
+        harness.channel.newCall(SpannerGrpc.getCommitMethod(), CallOptions.DEFAULT);
+    secondCommitCall.start(new CapturingListener<CommitResponse>(), new Metadata());
+    secondCommitCall.sendMessage(
+        CommitRequest.newBuilder()
+            .setSession(SESSION)
+            .setTransactionId(transactionId)
+            .addMutations(createInsertMutation("b"))
+            .build());
+
+    assertThat(harness.endpointCache.callCountForAddress(DEFAULT_ADDRESS)).isEqualTo(3);
+    assertThat(harness.endpointCache.callCountForAddress("server-a:1234")).isEqualTo(1);
+
+    @SuppressWarnings("unchecked")
+    RecordingClientCall<CommitRequest, CommitResponse> commitDelegate =
+        (RecordingClientCall<CommitRequest, CommitResponse>)
+            harness.endpointCache.latestCallForAddress("server-a:1234");
+
+    assertNotNull(commitDelegate.lastMessage);
+    assertEquals(7L, commitDelegate.lastMessage.getRoutingHint().getDatabaseId());
+    assertEquals(
+        "1", commitDelegate.lastMessage.getRoutingHint().getSchemaGeneration().toStringUtf8());
+    assertFalse(commitDelegate.lastMessage.getRoutingHint().getKey().isEmpty());
+  }
+
+  @Test
   public void commitResponseCacheUpdateEnablesSubsequentBeginRoutingHint() throws Exception {
     TestHarness harness = createHarness();
     ByteString transactionId = ByteString.copyFromUtf8("tx-before-commit-cache-update");
@@ -893,6 +992,21 @@ public class KeyAwareChannelTest {
                 .addValues(
                     ListValue.newBuilder()
                         .addValues(Value.newBuilder().setStringValue(keyValue).build())
+                        .build()))
+        .build();
+  }
+
+  private static Mutation createDeleteMutation(String keyValue) {
+    return Mutation.newBuilder()
+        .setDelete(
+            Mutation.Delete.newBuilder()
+                .setTable("T")
+                .setKeySet(
+                    com.google.spanner.v1.KeySet.newBuilder()
+                        .addKeys(
+                            ListValue.newBuilder()
+                                .addValues(Value.newBuilder().setStringValue(keyValue).build())
+                                .build())
                         .build()))
         .build();
   }
