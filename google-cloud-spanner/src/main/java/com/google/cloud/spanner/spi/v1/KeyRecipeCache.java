@@ -230,6 +230,23 @@ public final class KeyRecipeCache {
     }
   }
 
+  boolean computeKeys(Mutation mutation, RoutingHint.Builder hintBuilder) {
+    if (!schemaGeneration.isEmpty()) {
+      hintBuilder.setSchemaGeneration(schemaGeneration);
+    }
+
+    TargetRange target = mutationToTargetRange(mutation);
+    if (target == null) {
+      return false;
+    }
+
+    hintBuilder.setKey(target.start);
+    if (!target.limit.isEmpty()) {
+      hintBuilder.setLimitKey(target.limit);
+    }
+    return true;
+  }
+
   public TargetRange mutationToTargetRange(Mutation mutation) {
     if (mutation == null) {
       return null;

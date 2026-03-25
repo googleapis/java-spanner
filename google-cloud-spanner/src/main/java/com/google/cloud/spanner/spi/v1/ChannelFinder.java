@@ -19,8 +19,10 @@ package com.google.cloud.spanner.spi.v1;
 import com.google.api.core.InternalApi;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CacheUpdate;
+import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.Mutation;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RoutingHint;
 import com.google.spanner.v1.TransactionOptions;
@@ -92,23 +94,31 @@ public final class ChannelFinder {
   }
 
   public ChannelEndpoint findServer(BeginTransactionRequest.Builder reqBuilder) {
-    if (!reqBuilder.hasMutationKey()) {
+    if (!reqBuilder.hasMutationKey()
+        || !recipeCache.computeKeys(
+            reqBuilder.getMutationKey(), reqBuilder.getRoutingHintBuilder())) {
       return null;
-    }
-    TargetRange target = recipeCache.mutationToTargetRange(reqBuilder.getMutationKey());
-    if (target == null) {
-      return null;
-    }
-    RoutingHint.Builder hintBuilder = RoutingHint.newBuilder();
-    hintBuilder.setKey(target.start);
-    if (!target.limit.isEmpty()) {
-      hintBuilder.setLimitKey(target.limit);
     }
     return fillRoutingHint(
         preferLeader(reqBuilder.getOptions()),
         KeyRangeCache.RangeMode.COVERING_SPLIT,
         DirectedReadOptions.getDefaultInstance(),
-        hintBuilder);
+        reqBuilder.getRoutingHintBuilder());
+  }
+
+  public void fillRoutingHint(CommitRequest.Builder reqBuilder) {
+    if (reqBuilder.getMutationsCount() == 0) {
+      return;
+    }
+    Mutation mutation = reqBuilder.getMutations(0);
+    if (!recipeCache.computeKeys(mutation, reqBuilder.getRoutingHintBuilder())) {
+      return;
+    }
+    fillRoutingHint(
+        /* preferLeader= */ true,
+        KeyRangeCache.RangeMode.COVERING_SPLIT,
+        DirectedReadOptions.getDefaultInstance(),
+        reqBuilder.getRoutingHintBuilder());
   }
 
   private ChannelEndpoint fillRoutingHint(
