@@ -27,6 +27,7 @@ import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ClientContext;
+import com.google.api.gax.rpc.LibraryMetadata;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StreamingCallSettings;
 import com.google.api.gax.rpc.StubSettings;
@@ -95,6 +96,7 @@ import javax.annotation.Generated;
  * retries.
  */
 @Generated("by gapic-generator-java")
+@SuppressWarnings("CanonicalDuration")
 public class SpannerExecutorProxyStubSettings
     extends StubSettings<SpannerExecutorProxyStubSettings> {
   /** The default scopes of the service. */
@@ -192,6 +194,14 @@ public class SpannerExecutorProxyStubSettings
     super(settingsBuilder);
 
     executeActionAsyncSettings = settingsBuilder.executeActionAsyncSettings().build();
+  }
+
+  @Override
+  protected LibraryMetadata getLibraryMetadata() {
+    return LibraryMetadata.newBuilder()
+        .setArtifactName("com.google.cloud:google-cloud-spanner")
+        .setRepository("googleapis/java-spanner")
+        .build();
   }
 
   /** Builder for SpannerExecutorProxyStubSettings. */

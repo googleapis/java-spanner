@@ -1,5 +1,38 @@
 # Changelog
 
+## [6.113.0](https://github.com/googleapis/java-spanner/compare/v6.112.0...v6.113.0) (2026-03-25)
+
+
+### Features
+
+* Switch Eef metrics to using built in open telemetry ([#4385](https://github.com/googleapis/java-spanner/issues/4385)) ([0d0ad41](https://github.com/googleapis/java-spanner/commit/0d0ad4194dbfe46c505abcd237c93cbd39197331))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.68.0 ([bb63e92](https://github.com/googleapis/java-spanner/commit/bb63e929e96ee54e849e6295c074d4f4586c99f3))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.58.0 ([#4390](https://github.com/googleapis/java-spanner/issues/4390)) ([7f35761](https://github.com/googleapis/java-spanner/commit/7f357615c24ebb313043eabeae397f689866ad50))
+* Update googleapis/sdk-platform-java action to v2.68.0 ([#4389](https://github.com/googleapis/java-spanner/issues/4389)) ([737dfac](https://github.com/googleapis/java-spanner/commit/737dfac5972c921c8fd50a1e3c7c11652f67874d))
+
+## [6.112.0](https://github.com/googleapis/java-spanner/compare/v6.111.1...v6.112.0) (2026-03-17)
+
+
+### Features
+
+* Ability to update credentials on long running client ([#4371](https://github.com/googleapis/java-spanner/issues/4371)) ([e238990](https://github.com/googleapis/java-spanner/commit/e238990077badb063b1b05b0d71f58859434f7ee))
+* Add SI, adapt, split point related proto ([7aa4d90](https://github.com/googleapis/java-spanner/commit/7aa4d90cd4f001713ee2b0b5113303a748b237e0))
+* **spanner:** Include cache updates and routing hint into BeginTransaction and Commit request/response respectively ([7aa4d90](https://github.com/googleapis/java-spanner/commit/7aa4d90cd4f001713ee2b0b5113303a748b237e0))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.67.0 ([7aa4d90](https://github.com/googleapis/java-spanner/commit/7aa4d90cd4f001713ee2b0b5113303a748b237e0))
+* Fix unclosed literal error for consecutive backslashes ([#4387](https://github.com/googleapis/java-spanner/issues/4387)) ([f4884a8](https://github.com/googleapis/java-spanner/commit/f4884a83d15dcff6e246c7db47c8bafc3369a0a3))
+
 ## [6.111.1](https://github.com/googleapis/java-spanner/compare/v6.111.0...v6.111.1) (2026-03-03)
 
 

@@ -145,7 +145,7 @@ public class SpannerStatementParser extends AbstractStatementParser {
             startQuote = 0;
           }
         } else if (c == '\\') {
-          lastCharWasEscapeChar = true;
+          lastCharWasEscapeChar = !lastCharWasEscapeChar;
         } else {
           lastCharWasEscapeChar = false;
         }
@@ -294,7 +294,7 @@ public class SpannerStatementParser extends AbstractStatementParser {
             startQuote = 0;
           }
         } else if (c == '\\') {
-          lastCharWasEscapeChar = true;
+          lastCharWasEscapeChar = !lastCharWasEscapeChar;
         } else {
           lastCharWasEscapeChar = false;
         }
